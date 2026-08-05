@@ -517,6 +517,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OpenOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Opens the callout as soon as the dropdown receives the focus, so tabbing into it (or clicking any part of it) already shows the items without a further click or key press.",
+        },
+        new()
+        {
             Name = "OverflowTextFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -785,6 +792,13 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The title to show when the mouse hovers over the dropdown.",
+        },
+        new()
+        {
+            Name = "TokenSeparators",
+            Type = "char[]?",
+            DefaultValue = "null",
+            Description = "The characters that split the text typed (or pasted) into the multi select ComboBox input into separate terms, each committed as its own selection exactly as typing it and pressing Enter would: a term naming an existing item selects it, and with Dynamic enabled a term naming none adds a new item.",
         },
         new()
         {

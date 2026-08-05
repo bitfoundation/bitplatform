@@ -2394,6 +2394,122 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 };";
 
     private readonly string example28RazorCode = @"
+<BitDropdown @bind-Values=""tokenSeparatorValues""
+             Responsive
+             MultiSelect
+             Combo Chips Dynamic
+             Items=""comboBoxCustoms""
+             TokenSeparators=""tokenSeparators""
+             NameSelectors=""comboBoxNameSelectors""
+             Label=""Multi select combo box with token separators""
+             Placeholder=""Type or paste options separated by , or ;""
+             DynamicValueGenerator=""@((Product item) => item.Text ?? """")""
+             OnDynamicAdd=""(Product item) => HandleOnDynamicAdd(item)"" />
+<div>Values: @string.Join(',', tokenSeparatorValues)</div>";
+    private readonly string example28CsharpCode = @"
+private char[] tokenSeparators = [',', ';'];
+private IEnumerable<string?> tokenSeparatorValues = [];
+
+private void HandleOnDynamicAdd(Product item)
+{
+    comboBoxCustoms.Add(item);
+}
+
+public class Product
+{
+    public string? Label { get; set; }
+    public string? CssClass { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? CssStyle { get; set; }
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
+private List<Product> comboBoxCustoms = new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Class = { Selector = c => c.CssClass },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Style = { Selector = c => c.CssStyle },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+    ValueSetter = (Product item, string value) => item.Value = value,
+    TextSetter = (string text, Product item) => item.Text = text
+};";
+
+    private readonly string example29RazorCode = @"
+<BitDropdown @bind-Value=""openOnFocusValue""
+             OpenOnFocus
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item""
+             Label=""Open on focus"" />
+<div>Value: @openOnFocusValue</div>";
+    private readonly string example29CsharpCode = @"
+private string? openOnFocusValue;
+
+public class Product
+{
+    public string? Label { get; set; }
+    public string? CssClass { get; set; }
+    public string? Key { get; set; }
+    public object? Payload { get; set; }
+    public bool Disabled { get; set; }
+    public bool Visible { get; set; } = true;
+    public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+    public string? CssStyle { get; set; }
+    public string? Text { get; set; }
+    public string? Title { get; set; }
+    public string? Value { get; set; }
+}
+
+private List<Product> GetBasicCustoms() => new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};
+
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
+{
+    Text = { Selector = c => c.Text },
+    Value = { Selector = c => c.Value },
+    ItemType = { Selector = c => c.Type },
+    IsEnabled = { Selector = c => c.Disabled is false }
+};";
+
+    private readonly string example30RazorCode = @"
 <BitDropdown Label=""Primary""
              MultiSelect
              ShowSearchBox
@@ -2457,7 +2573,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select items"" />";
-    private readonly string example28CsharpCode = @"
+    private readonly string example30CsharpCode = @"
 public class Product
 {
     public string? Label { get; set; }
@@ -2498,7 +2614,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example29RazorCode = @"
+    private readonly string example31RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -2554,7 +2670,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Items=""GetExternalIconBiCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />";
-    private readonly string example29CsharpCode = @"
+    private readonly string example31CsharpCode = @"
 public class Product
 {
     public string? Label { get; set; }
@@ -2645,7 +2761,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     IconName = { Selector = c => c.IconName },
 };";
 
-    private readonly string example30RazorCode = @"
+    private readonly string example32RazorCode = @"
 <BitDropdown Label=""Small""
              ShowSearchBox
              Items=""GetBasicCustoms()""
@@ -2669,7 +2785,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              NameSelectors=""nameSelectors""
              Size=""BitSize.Large""
              Placeholder=""Select an item"" />";
-    private readonly string example30CsharpCode = @"
+    private readonly string example32CsharpCode = @"
 public class Product
 {
     public string? Label { get; set; }
@@ -2705,7 +2821,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     IsEnabled = { Selector = c => c.Disabled is false },
 };";
 
-    private readonly string example31RazorCode = @"
+    private readonly string example33RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -2783,7 +2899,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
                                 Container = ""custom-container"",
                                 ItemButton = ""custom-item-button"",
                                 ScrollContainer = ""custom-scroll-container"" })"" />";
-    private readonly string example31CsharpCode = @"
+    private readonly string example33CsharpCode = @"
 public class Product
 {
     public string? Label { get; set; }
@@ -2842,7 +2958,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Value = { Selector = c => c.Value },
 };";
 
-    private readonly string example32RazorCode = @"
+    private readonly string example34RazorCode = @"
 <BitDropdown Label=""تک انتخابی""
              Dir=""BitDir.Rtl""
              Items=""GetRtlCustoms()""
@@ -2862,7 +2978,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Items=""GetRtlCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""لطفا انتخاب کنید"" />";
-    private readonly string example32CsharpCode = @"
+    private readonly string example34CsharpCode = @"
 public class Product
 {
     public string? Label { get; set; }

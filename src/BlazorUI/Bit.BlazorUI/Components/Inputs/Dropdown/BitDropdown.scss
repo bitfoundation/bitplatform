@@ -161,6 +161,9 @@
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
+    // Centers the content of Prefix/SuffixTemplate; the component's own children opt back
+    // into the full height with align-self: stretch.
+    align-items: center;
     min-height: var(--bit-drp-h);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
@@ -209,6 +212,7 @@
     overflow: hidden;
     font-weight: 400;
     position: relative;
+    align-self: stretch;
     white-space: nowrap;
     box-sizing: border-box;
     text-overflow: ellipsis;
@@ -279,6 +283,7 @@
     display: flex;
     cursor: pointer;
     align-items: center;
+    align-self: stretch;
     padding: 0 spacing(1);
 
     i {
@@ -390,6 +395,7 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
+    align-self: stretch;
     white-space: nowrap;
     padding: 0 spacing(1.25);
     min-height: var(--bit-drp-h);
@@ -666,7 +672,6 @@
 .bit-drp-clr,
 .bit-drp-cai {
     display: flex;
-    inset-inline-end: spacing(3.5);
     width: spacing(3.75);
     height: spacing(3.75);
     justify-content: center;

@@ -2233,6 +2233,144 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownSearchIgnoreDiacriticsShouldTolerateAstralCharacters()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // An emoji is a surrogate pair, whose halves are not valid strings of their own; folding the
+        // text one character at a time must pass them through instead of normalizing (and throwing).
+        var items = new List<BitDropdownItem<string>>
+        {
+            new() { Text = "🍎 Pomme", Value = "f-pom" },
+            new() { Text = "🍌 Banane", Value = "f-ban" },
+            new() { Text = "Pêche 🍑", Value = "f-pec" }
+        };
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchIgnoreDiacritics, true);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Change("Peche");
+
+        var options = component.FindAll(".bit-drp-itm");
+        Assert.AreEqual(1, options.Count);
+        Assert.AreEqual("Pêche 🍑", options[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownKeyboardOpenShouldHonorAutoFocusSearchBox()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.AutoFocusSearchBox, true);
+        });
+
+        // A search-first dropdown hands the focus to the search box on open, so an Enter open must
+        // not pull it onto an option like the plain open does.
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboInputShouldBeNamedAfterTheLabel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // The input does not inherit the accessible name of the combobox element around it, so
+        // without an AriaLabel it has to be tied to the label by hand.
+        var input = component.Find(".bit-drp-inp");
+        var labelId = component.Find(".bit-drp-lbl").Id;
+        Assert.AreEqual(labelId, input.GetAttribute("aria-labelledby"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Label, "Fruit");
+            parameters.Add(p => p.AriaLabel, "Pick a fruit");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // An explicit AriaLabel names the input itself, and a labelledby reference would override it.
+        input = component.Find(".bit-drp-inp");
+        Assert.AreEqual("Pick a fruit", input.GetAttribute("aria-label"));
+        Assert.IsFalse(input.HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownTokenSeparatorsShouldCommitEachTerm()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var added = new List<BitDropdownItem<string>>();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.TokenSeparators, new[] { ',' });
+            parameters.Add(p => p.OnDynamicAdd, (BitDropdownItem<string> i) => added.Add(i));
+            parameters.Add(p => p.DynamicValueGenerator, (BitDropdownItem<string>? item) => item?.Text ?? string.Empty);
+        });
+
+        // A pasted list splits on the separators and each term is committed like Enter would commit
+        // it: the ones naming existing items select them, the rest become new (dynamic) items.
+        component.Find(".bit-drp-inp").Input("Apple, Cherry, Banana");
+
+        CollectionAssert.AreEqual(
+            new[] { "Apple", "Cherry", "Banana" },
+            component.Instance.SelectedItems.Select(i => i.Text).ToArray());
+        CollectionAssert.AreEqual(new[] { "Cherry" }, added.Select(i => i.Text).ToArray());
+
+        // The committed terms must leave the input, or the leftover text would filter the next pick.
+        Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
+    }
+
+    [TestMethod]
+    public void BitDropdownOpenOnFocusShouldOpenTheCalloutButNotReopenAfterADismissal()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OpenOnFocus, true);
+        });
+
+        component.Find(".bit-drp-wrp").FocusIn();
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        // A dismissal moves the focus back to the trigger itself; the focus event that move produces
+        // must not reopen the callout the user just closed.
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        component.Find(".bit-drp-wrp").FocusIn();
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        // The suppression only stands for that one internal move; the next focus is the user again.
+        component.Find(".bit-drp-wrp").FocusIn();
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
     public void BitDropdownCloseOnSelectShouldOverrideTheDefaultOfEachMode()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

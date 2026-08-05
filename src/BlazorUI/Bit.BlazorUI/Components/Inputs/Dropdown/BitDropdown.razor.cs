@@ -36,6 +36,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private HashSet<TItem>? _collapsedItems;
     private bool _isResponsiveMode;
     private bool _internalIsOpenChange;
+    private bool _suppressOpenOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private List<TItem> _selectedItems = [];
@@ -514,6 +515,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public EventCallback<IEnumerable<TValue?>> OnValuesChange { get; set; }
 
     /// <summary>
+    /// Opens the callout as soon as the dropdown receives the focus, so tabbing into it (or clicking
+    /// any part of it) already shows the items without a further click or key press.
+    /// </summary>
+    [Parameter] public bool OpenOnFocus { get; set; }
+
+    /// <summary>
     /// Alias of ChildContent.
     /// </summary>
     [Parameter] public RenderFragment? Options { get; set; }
@@ -715,6 +722,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// The throttle time in milliseconds for the search and combo box inputs (applied when Immediate is enabled).
     /// </summary>
     [Parameter] public int ThrottleTime { get; set; }
+
+    /// <summary>
+    /// The characters that split the text typed (or pasted) into the multi select ComboBox input into
+    /// separate terms, each committed as its own selection exactly as typing it and pressing Enter
+    /// would: a term naming an existing item selects it, and with <see cref="Dynamic"/> enabled a term
+    /// naming none adds a new item. This is what turns a pasted "a, b, c" into three selections
+    /// instead of one literal term.
+    /// </summary>
+    [Parameter] public char[]? TokenSeparators { get; set; }
 
     /// <summary>
     /// The title to show when the mouse hovers over the dropdown.
@@ -989,6 +1005,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // chip) must not have the focus pulled to the dropdown at all.
         if (wasOpen && IsOpen is false)
         {
+            _suppressOpenOnFocus = true;
             await FocusTrigger();
         }
 
@@ -1921,6 +1938,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
         if (IsOpen) return;
 
+        _suppressOpenOnFocus = true;
         await FocusTrigger();
     }
 
@@ -2008,7 +2026,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             else
             {
                 await OpenCallout();
-                await FocusItem("selected");
+
+                // A keyboard open mirrors the pointer open: a search-first dropdown (AutoFocusSearchBox)
+                // hands the focus to the search box instead of the selected item. The arrow keys below
+                // keep focusing the items either way, since pressing them is asking to walk the list.
+                if (ShowSearchBox && AutoFocusSearchBox)
+                {
+                    await FocusOnSearchBox();
+                }
+                else
+                {
+                    await FocusItem("selected");
+                }
             }
         }
         else if (e.Key is "ArrowDown" or "ArrowUp")
@@ -2122,11 +2151,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     // These follow the focus of the whole dropdown, which is why they sit on the trigger and not on a
     // single element: focusin/focusout bubble, so the inner combo input is covered by them as well.
-    private Task HandleOnFocusIn(FocusEventArgs e)
+    private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return Task.CompletedTask;
+        if (IsEnabled is false) return;
 
-        return OnFocusIn.InvokeAsync(e);
+        // The focus this component moves back to the trigger itself (after a dismissal, or a pick that
+        // closed the callout) must not reopen what was just closed, so only a focus that was not
+        // preceded by such a move counts as the user coming in.
+        var suppressed = _suppressOpenOnFocus;
+        _suppressOpenOnFocus = false;
+
+        if (OpenOnFocus && suppressed is false)
+        {
+            await OpenCallout();
+        }
+
+        await OnFocusIn.InvokeAsync(e);
     }
 
     private Task HandleOnFocusOut(FocusEventArgs e)
@@ -2163,9 +2203,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _inputComboHasFocus = false;
     }
 
-    private Task HandleSearchBoxOnClear()
+    private async Task HandleSearchBoxOnClear()
     {
-        return ClearSearchBox();
+        await ClearSearchBox();
+
+        // The clear button only renders while there is a text, so activating it removes it from under
+        // the focus; the focus moves to the input it emptied instead of dropping to the document body.
+        await _searchInputRef.FocusAsync();
     }
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
@@ -2336,6 +2380,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         foreach (var c in text)
         {
+            // ASCII has no diacritics to fold, and a lone surrogate half (one of the two chars an emoji
+            // is made of) is not a valid string of its own, so normalizing it would throw.
+            if (char.IsAscii(c) || char.IsSurrogate(c))
+            {
+                builder.Append(c);
+                continue;
+            }
+
             var baseChar = c;
 
             foreach (var decomposed in c.ToString().Normalize(NormalizationForm.FormD))
@@ -2710,7 +2762,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             return;
         }
 
-        await CloseCallout();
+        // The add button goes away with the responsive panel it lives in, so the focus is restored to
+        // the trigger along with the close instead of being left on a hidden element.
+        await CloseCalloutAndRestoreFocus();
     }
 
     // The height available to the scrollable item list is the callout's height minus the parts that sit
@@ -2839,9 +2893,32 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
-    private Task HandleOnClickUnselectItem(TItem? item)
+    private async Task HandleOnClickUnselectItem(TItem? item)
     {
-        return UnselectItem(item);
+        await UnselectItem(item);
+
+        // The remove button goes away with the chip it belongs to, so a removal that stood moves the
+        // focus to the trigger instead of leaving it on an element that is no longer on the page. A
+        // refused removal (a one-way binding) keeps the chip, and the focus with it.
+        if (item is not null && GetIsSelected(item) is false)
+        {
+            _suppressOpenOnFocus = true;
+            await FocusTrigger();
+        }
+    }
+
+    private async Task HandleOnClearButtonClick()
+    {
+        await HandleOnClearClick();
+
+        // The clear button only renders while something is selected, so a clear that stood removes it
+        // from under the focus; the focus moves to the trigger it belongs to instead of dropping to
+        // the document body. A refused clear (a one-way binding) keeps the button, and the focus.
+        if (_selectedItems.Count == 0)
+        {
+            _suppressOpenOnFocus = true;
+            await FocusTrigger();
+        }
     }
 
     private async Task HandleOnComboInput(ChangeEventArgs e)
@@ -2853,6 +2930,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // the Enter and Backspace keys act on. It is kept apart from the search term because a debounced
         // or throttled search deliberately lags behind the typing.
         _comboInputText = e.Value?.ToString();
+
+        // A separator in the text (typed, or arriving all at once in a paste) marks it as a list of
+        // finished terms, which are committed right away instead of being searched for as one string.
+        if (MultiSelect && TokenSeparators is { Length: > 0 } && _comboInputText.HasValue() &&
+            _comboInputText!.IndexOfAny(TokenSeparators) >= 0)
+        {
+            await CommitTokens(_comboInputText!);
+            return;
+        }
 
         // A combo box filters as it is typed, so the term is applied right away - except when a debounce
         // or a throttle is configured, where applying it here would filter the list on every keystroke
@@ -2868,6 +2954,24 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
             await InvokeAsync(async () => await SearchComboItems(args)));
+    }
+
+    // Commits each separated term like Enter would: through AddDynamicItem, so an existing item gets
+    // selected, a term the selection already covers is refused, and a new item is only created when
+    // Dynamic allows it. Every term is committed - typing produces at most one (the separator keystroke
+    // itself lands here), and in the paste that produces several the text after the last separator is
+    // a term of its own, not one the user is still typing.
+    private async Task CommitTokens(string text)
+    {
+        foreach (var token in text.Split(TokenSeparators!, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            _comboInputText = token;
+            _searchText = token;
+
+            await AddDynamicItem();
+        }
+
+        await ClearComboBoxInput();
     }
 
     private async Task HandleOnComboChange(ChangeEventArgs e)

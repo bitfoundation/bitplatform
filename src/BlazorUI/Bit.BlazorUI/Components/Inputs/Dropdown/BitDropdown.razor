@@ -87,6 +87,9 @@
 
     @* The combobox is the interactive element of this input, so it is the one InputElement points at:
        the inherited FocusAsync of BitInputBase then focuses what a user would focus by hand. *@
+       
+    @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
+       to be reported here and not only on the input it wraps. *@
     <div @ref="InputElement"
          @onclick="HandleOnClick"
          @onkeydown="HandleOnTriggerKeyDown"
@@ -100,8 +103,6 @@
          autofocus="@AutoFocus"
          tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
          aria-haspopup="listbox"
-         @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
-            to be reported here and not only on the input it wraps. *@
          aria-autocomplete="@(Combo ? "list" : null)"
          aria-required="@(Required ? "true" : null)"
          aria-readonly="@(ReadOnly ? "true" : null)"
@@ -182,6 +183,8 @@
 
             @if (Combo)
             {
+                @* An input does not inherit the accessible name of the combobox element around
+                   it, so without an AriaLabel it is named after the label by hand. *@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
                        @oninput="@HandleOnComboInput"
@@ -194,6 +197,7 @@
                        value="@_comboInputText"
                        readonly="@ReadOnly"
                        aria-label="@AriaLabel"
+                       aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                        aria-autocomplete="list"
                        aria-controls="@(IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
@@ -218,7 +222,7 @@
             @* The keydown listener of Dropdowns.ts stops Enter and Space from reaching the trigger's
                keydown handler, so activating this button cannot toggle the callout while the other
                keys keep operating the dropdown. *@
-            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
+            <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
                     type="button"
                     title="@(ClearButtonAriaLabel ?? "Clear selection")"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear selection")"
@@ -370,6 +374,8 @@
     {
         <div style="@Styles?.ResponsiveComboInputContainer"
              class="bit-drp-cbi @Classes?.ResponsiveComboInputContainer">
+            @* An input does not inherit the accessible name of the combobox element around
+               it, so without an AriaLabel it is named after the label by hand. *@
             <input @ref="_comboBoxInputResponsiveRef" @onkeydown="@((k) => HandleOnKeyDown(k))" @oninput="@HandleOnComboInput" @onchange="@HandleOnComboChange" @onfocusin="HandleComboInputFocusIn" @onfocusout="HandleComboInputFocusOut"
                    style="@Styles?.ComboBoxInput"
                    class="bit-drp-icb @Classes?.ComboBoxInput"
@@ -377,6 +383,7 @@
                    value="@_comboInputText"
                    readonly="@ReadOnly"
                    aria-label="@AriaLabel"
+                   aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                    aria-autocomplete="list"
                    aria-controls="@_scrollContainerId"
                    placeholder="@Placeholder"

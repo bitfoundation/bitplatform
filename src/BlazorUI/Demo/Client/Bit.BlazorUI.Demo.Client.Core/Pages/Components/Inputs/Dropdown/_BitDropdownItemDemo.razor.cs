@@ -215,6 +215,11 @@ public partial class _BitDropdownItemDemo
     private string? closeOnSelectValue;
     private IEnumerable<string?> closeOnSelectValues = [];
 
+    private char[] tokenSeparators = [',', ';'];
+    private IEnumerable<string?> tokenSeparatorValues = [];
+
+    private string? openOnFocusValue;
+
     private string? autoSelectValue;
 
     private string comboBoxValueSample1 = default!;

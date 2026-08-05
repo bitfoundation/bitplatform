@@ -279,7 +279,8 @@
         <b>SearchBoxPlaceholder</b> sets its placeholder. By default an item matches when its text contains the typed
         term, ignoring case; <b>SearchFunction</b> replaces that algorithm with any predicate of your own (the examples
         below switch it to a starts-with and an ends-with match). <b>AutoFocusSearchBox</b> puts the caret in the search
-        input as soon as the callout opens, so typing filters right away. The search term is discarded whenever the
+        input as soon as the callout opens - with the pointer and with Enter or Space on the keyboard alike - so
+        typing filters right away. The search term is discarded whenever the
         callout closes, so the next opening always starts from the full list.
     </div>
     <br /><br />
@@ -1329,7 +1330,53 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
+<DemoExample Title="Token separators" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
+    <div>
+        The <b>TokenSeparators</b> parameter turns the listed characters into term endings for the multi select
+        ComboBox input: typing one commits the term before it exactly as pressing Enter would, and pasting a whole
+        delimited list commits every term it contains in one go. A term that names an existing item selects that item,
+        and &mdash; with <b>Dynamic</b> enabled &mdash; a term that names none becomes a new item, so a list copied out
+        of a spreadsheet or an e-mail turns into a selection without being retyped item by item. A term the selection
+        already covers is refused, so committing the same list twice does not duplicate anything.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="tokenSeparatorValues"
+                     Responsive
+                     MultiSelect
+                     Combo Chips Dynamic
+                     Items="comboBoxItems"
+                     TokenSeparators="tokenSeparators"
+                     Label="Multi select combo box with token separators"
+                     Placeholder="Type or paste options separated by , or ;"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                     OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
+        <br />
+        <div>Values: @string.Join(',', tokenSeparatorValues)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Open on focus" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
+    <div>
+        The <b>OpenOnFocus</b> parameter opens the callout the moment the dropdown receives the focus, so tabbing into
+        it (or clicking any part of it) already shows the items without a further click or key press &mdash; one
+        interaction fewer in a form that is filled top to bottom. The component still tells the user arriving apart
+        from its own focus management: a dismissal that returns the focus to the dropdown (Escape, a pick that closes
+        the callout) does not reopen what was just closed.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Value="openOnFocusValue"
+                     OpenOnFocus
+                     Items="GetBasicItems()"
+                     Placeholder="Select an item"
+                     Label="Open on focus" />
+        <br />
+        <div>Value: @openOnFocusValue</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
@@ -1404,7 +1451,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1489,7 +1536,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1519,7 +1566,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1568,7 +1615,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the
