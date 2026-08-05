@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -1702,6 +1703,384 @@ public class BitOtpInputTests : BunitTestContext
 
         Assert.AreEqual(2, invocations.Count);
         Assert.AreEqual(false, invocations[1].Arguments[3]);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldDescribeTheGroupWithTheDescription()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Label, "OTP");
+            parameters.Add(p => p.Description, "We sent a code to your phone.");
+        });
+
+        var wrapper = com.Find(".bit-otp-iwr");
+        var description = com.Find(".bit-otp-dsc");
+
+        Assert.AreEqual("We sent a code to your phone.", description.TextContent);
+        Assert.AreEqual(description.Id, wrapper.GetAttribute("aria-describedby"));
+
+        // The hint belongs to the code as a whole, so repeating it on every single input would make a
+        // screen reader read it again at every character.
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.IsFalse(input.HasAttribute("aria-describedby"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldRenderNoDescriptionByDefault()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-otp-dsc").Count);
+        Assert.IsFalse(com.Find(".bit-otp-iwr").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldPreferTheDescriptionTemplateOverTheDescription()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Description, "plain");
+            parameters.Add(p => p.Classes, new BitOtpInputClassStyles { Description = "custom-description" });
+            parameters.Add(p => p.DescriptionTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<b>templated</b>")));
+        });
+
+        var description = com.Find(".bit-otp-dsc");
+
+        Assert.AreEqual("<b>templated</b>", description.InnerHtml);
+        Assert.IsTrue(description.ClassList.Contains("custom-description"));
+        Assert.AreEqual(description.Id, com.Find(".bit-otp-iwr").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldLowercaseTheTypedCharacters()
+    {
+        // The conversion happens before the pattern is applied, so a pattern restricted to lower case
+        // letters accepts an upper case keystroke instead of rejecting it.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Lowercase, true);
+            parameters.Add(p => p.Pattern, "^[a-z]$");
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "A" });
+
+        Assert.AreEqual("a", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldLowercaseAPastedCode()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Lowercase, true);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("AB3D", 0));
+
+        Assert.AreEqual("ab3d", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldPreferTheUppercaseWhenBothCasesAreAskedFor()
+    {
+        // Asking for both at once is a contradiction rather than an order to apply, so one of them is
+        // picked instead of the two undoing each other.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Uppercase, true);
+            parameters.Add(p => p.Lowercase, true);
+            parameters.Add(p => p.DefaultValue, "aBcD");
+        });
+
+        Assert.AreEqual("ABCD", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldApplyALowercaseThatIsTurnedOnAtRuntime()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "AB1C");
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Lowercase, true);
+        });
+
+        Assert.AreEqual("ab1c", com.Instance.Value);
+        Assert.AreEqual("a", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldPullTheFocusBackToTheFirstEmptyInputWhenSequential()
+    {
+        // A character typed into the middle of an empty row would be reported as if it were the first one
+        // of the code, since an empty input contributes nothing to the joined value.
+        var focusInIndexes = new List<int>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Sequential, true);
+            parameters.Add(p => p.DefaultValue, "1");
+            parameters.Add(p => p.OnFocusIn, args => focusInIndexes.Add(args.Index));
+        });
+
+        await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
+
+        // The consumer is told about the input the user actually reached, and the focus is then corrected
+        // onto the first input left to fill.
+        CollectionAssert.AreEqual(new[] { 3 }, focusInIndexes);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotPullTheFocusBackOnACompleteCodeWhenSequential()
+    {
+        // Every character of a complete code stays clickable, otherwise the last one could never be
+        // corrected without clearing the whole code first.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Sequential, true);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotPullTheFocusBackWhenReadOnlyOrNotSequential()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.DefaultValue, "1");
+        });
+
+        await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+
+        // A read-only component is showing a code rather than waiting for one, so clicking a character of
+        // it is a way of reading it rather than of typing it.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Sequential, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        await com.FindAll(".bit-otp-inp")[3].FocusInAsync(new FocusEventArgs());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotLetAPastedChunkPunchAHoleWhenSequential()
+    {
+        // A component asked to keep the code free of holes cannot let a paste land past the first input
+        // left to fill either.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 5);
+            parameters.Add(p => p.Sequential, true);
+            parameters.Add(p => p.DefaultValue, "1");
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("23", 4));
+
+        Assert.AreEqual("123", com.Instance.Value);
+
+        var inputs = com.FindAll(".bit-otp-inp");
+        Assert.AreEqual("2", inputs[1].GetAttribute("value"));
+        Assert.AreEqual("3", inputs[2].GetAttribute("value"));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[4].GetAttribute("value")));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldPasteAChunkWhereItArrivedOnACompleteCodeWhenSequential()
+    {
+        // A complete code has no input left to fill, so the chunk simply overwrites where it arrived.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Sequential, true);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("9", 2));
+
+        Assert.AreEqual("1294", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldKeepTheCharactersAfterAPartiallyPastedChunk()
+    {
+        // A chunk that arrives at one input only replaces as many characters as it brings, so pasting a
+        // single character into the middle of a code must not take the rest of it down with it.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.DefaultValue, "123456");
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("99", 1));
+
+        Assert.AreEqual("199456", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldStillReplaceTheWholeCodeWhenTheValueIsAssigned()
+    {
+        // A value assigned to the component is the whole code, so everything it leaves over has to go.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.Value, "123456");
+            parameters.Add(p => p.ValueChanged, _ => { });
+        });
+
+        com.Render(parameters => parameters.Add(p => p.Value, "99"));
+
+        Assert.AreEqual("99", com.Instance.Value);
+
+        var inputs = com.FindAll(".bit-otp-inp");
+        Assert.AreEqual("9", inputs[0].GetAttribute("value"));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[2].GetAttribute("value")));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[5].GetAttribute("value")));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldPullTheCodeOutOfAPastedTextWithThePasteTransformer()
+    {
+        // The per character filtering cannot do this on its own for a code of letters, since the letters of
+        // the words around it match just as well as the ones of the code.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+            parameters.Add(p => p.Uppercase, true);
+            parameters.Add(p => p.PasteTransformer, v => Regex.Match(v, "[A-Za-z0-9]{6}").Value);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("your code is A1B2C3, do not share it", 0));
+
+        Assert.AreEqual("A1B2C3", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldApplyThePasteTransformerToAMultiCharacterInputEvent()
+    {
+        // An auto fill that writes the whole code into one input has to go through the very same steps as a
+        // paste, so that the two can never disagree.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.PasteTransformer, v => v.Replace("code:", string.Empty));
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "code:1234" });
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRaiseOnInvalidWhenThePasteTransformerRejectsTheChunk()
+    {
+        (string Value, int Index)? invalidArgs = null;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.OnInvalid, args => invalidArgs = args);
+            parameters.Add(p => p.PasteTransformer, _ => string.Empty);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("1234", 0));
+
+        Assert.IsTrue(string.IsNullOrEmpty(com.Instance.Value));
+        Assert.IsNotNull(invalidArgs);
+        // The text is reported the way it arrived, not the way the transformer left it.
+        Assert.AreEqual("1234", invalidArgs.Value.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldIgnoreAPasteTransformerThatThrows()
+    {
+        // The transformer runs in the middle of a paste, so an exception thrown out of it must not take the
+        // whole component down with it.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.PasteTransformer, _ => throw new InvalidOperationException());
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("1234", 0));
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldNotApplyThePasteTransformerToASingleTypedCharacter()
+    {
+        var transformerCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.PasteTransformer, v => { transformerCallCount++; return v; });
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+
+        Assert.AreEqual("1", com.Instance.Value);
+        Assert.AreEqual(0, transformerCallCount);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldNotSetTheJsSideUpAgainForALengthChange()
+    {
+        // The javascript listeners are delegated to the root element and resolve the input from the event
+        // target, so repeating the setup for a Length that changed would only tear the pending WebOTP
+        // request down and ask for it again, putting the permission prompt of the browser back up.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"].Count);
+
+        com.Render(parameters => parameters.Add(p => p.Length, 6));
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputBlurAsyncShouldBlurTheFocusedInput()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+        });
+
+        await com.InvokeAsync(() => com.Instance.BlurAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.blur"].Count);
     }
 
     [TestMethod]

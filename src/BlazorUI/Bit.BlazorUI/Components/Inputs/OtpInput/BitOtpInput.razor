@@ -10,6 +10,7 @@
 
     @{
         var hasLabel = LabelTemplate is not null || Label.HasValue();
+        var hasDescription = DescriptionTemplate is not null || Description.HasValue();
     }
 
     @if (LabelTemplate is not null)
@@ -38,11 +39,15 @@
         var separatorInterval = Math.Max(1, SeparatorInterval);
         var hasSeparator = SeparatorTemplate is not null || Separator.HasValue();
     }
+    @* The description is referenced by the group rather than by each input on purpose: an aria-describedby
+       on every one of them would make a screen reader read the whole hint again at every single character
+       of the code. *@
     <div role="group"
          style="@Styles?.InputsWrapper"
          class="bit-otp-iwr @Classes?.InputsWrapper"
          aria-label="@(hasLabel ? null : AriaLabel)"
-         aria-labelledby="@(hasLabel ? _labelId : null)">
+         aria-labelledby="@(hasLabel ? _labelId : null)"
+         aria-describedby="@(hasDescription ? _descriptionId : null)">
         @for (var i = 0; i < _length; i++)
         {
             int index = i;
@@ -89,6 +94,22 @@
                    disabled="@(IsEnabled is false)" />
         }
     </div>
+
+    @if (hasDescription)
+    {
+        <div id="@_descriptionId"
+             style="@Styles?.Description"
+             class="bit-otp-dsc @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
 
     @if (Name.HasValue())
     {

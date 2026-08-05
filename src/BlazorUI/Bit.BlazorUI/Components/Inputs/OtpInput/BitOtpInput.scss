@@ -20,6 +20,19 @@
     overflow-wrap: break-word;
 }
 
+//the helper text under the inputs. It is a touch smaller than the code itself, so that the sentence
+//explaining the code never outweighs the code it explains.
+.bit-otp-dsc {
+    margin: 0;
+    display: block;
+    max-width: 100%;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(0.625) 0 0;
+    font-size: calc(var(--bit-otp-fontsize) - #{spacing(0.5)});
+}
+
 .bit-otp-iwr {
     display: flex;
     align-items: center;
@@ -39,6 +52,9 @@
 
 .bit-otp-inp {
     cursor: text;
+    //a form control carries a padding of its own that is not the same on both sides in every engine, which
+    //would push the single character of a fixed width box off its center and clip it at the small size.
+    padding: 0;
     //a form control does not inherit the font of the page on its own, so both halves of it have to be
     //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
     //the label above it follows the theme.
@@ -159,6 +175,7 @@
 
 .bit-otp.bit-dis {
     .bit-otp-lbl,
+    .bit-otp-dsc,
     .bit-otp-sep {
         color: $clr-fg-dis;
     }
@@ -171,6 +188,13 @@
 }
 
 .bit-otp.bit-inv {
+    //the helper text is what says why the code was refused, so it reads as the message of the error state
+    //rather than as a hint standing next to it. It is also what keeps the failure from being carried by the
+    //color of the boxes alone.
+    .bit-otp-dsc {
+        color: $clr-err;
+    }
+
     .bit-otp-inp {
         border-color: $clr-err;
 

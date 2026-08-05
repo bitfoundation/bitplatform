@@ -10,13 +10,14 @@ namespace Bit.BlazorUI;
 public partial class BitOtpInput : BitInputBase<string?>
 {
     private int _length;
+    private bool _isSetup;
     private bool _autoFocused;
-    private int _setupLength = -1;
     private bool _setupSmsAutoFill;
     private string _labelId = default!;
     private string? _lastFilledValue;
     private Regex? _patternRegex;
     private string? _patternSource;
+    private string _descriptionId = default!;
     private string?[] _inputIds = [];
     private string?[] _inputValues = [];
     private bool[] _inputFocusStates = [];
@@ -25,7 +26,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     // The rules that decide which characters the code may hold. They are plain parameters, so they can
     // change at any time, and the characters that are already in the inputs have to follow them.
-    private (bool Uppercase, bool NormalizeDigits, string? Pattern, BitInputType? Type) _restrictions;
+    private (bool Uppercase, bool Lowercase, bool NormalizeDigits, string? Pattern, BitInputType? Type) _restrictions;
 
     // The index whose clearing was already applied by the keydown handler (Delete). The input event
     // that the browser raises afterwards must not clear it a second time, otherwise it would undo the
@@ -70,6 +71,21 @@ public partial class BitOtpInput : BitInputBase<string?>
     [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The description (helper text) rendered under the inputs, which the group of the inputs references
+    /// through its aria-describedby so that screen readers announce it along with the name of the group.
+    /// It is where the sentence that turns a row of empty boxes into a question the user can answer
+    /// belongs: where the code was sent, how long it is good for, or what a server that rejected it said.
+    /// </summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom template for the description (helper text) rendered under the inputs, which takes precedence
+    /// over the <see cref="Description"/>. It is referenced the very same way, so a "resend the code"
+    /// button or a countdown put in here is announced with the group as well.
+    /// </summary>
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// Label displayed above the inputs.
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -109,6 +125,15 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// Length of the OTP or number of the inputs.
     /// </summary>
     [Parameter] public int Length { get; set; } = 5;
+
+    /// <summary>
+    /// Turns every character of the code into its lower case form as it is typed or pasted, the mirror of
+    /// the <see cref="Uppercase"/> and applied under the very same rules: before the <see cref="Pattern"/>
+    /// is applied, so an expression restricted to lower case letters accepts an upper case keystroke, and
+    /// to a code that is assigned to the component as much as to one that is typed into it. The
+    /// <see cref="Uppercase"/> wins when both are set.
+    /// </summary>
+    [Parameter] public bool Lowercase { get; set; }
 
     /// <summary>
     /// The text rendered in place of every filled input, which hides the code without turning the inputs
@@ -174,6 +199,18 @@ public partial class BitOtpInput : BitInputBase<string?>
     [Parameter] public EventCallback<(ClipboardEventArgs Event, int Index)> OnPaste { get; set; }
 
     /// <summary>
+    /// A function applied to a chunk of characters that reaches the component in one go (a paste, an SMS
+    /// auto fill, or a multi character input event) before anything else is done with it, which is what
+    /// pulls the code out of the text it was copied inside of. The per character filtering of the
+    /// <see cref="Type"/> and the <see cref="Pattern"/> cannot do that on its own for a code of letters,
+    /// since the letters of the words around it match just as well as the ones of the code:
+    /// "your code is A1B2C3" would fill the inputs with "YOURCODEI". Returning an empty string rejects the
+    /// chunk, which raises <see cref="OnInvalid"/>. It is not applied to a single typed character, and an
+    /// exception thrown out of it leaves the chunk untouched rather than breaking the input.
+    /// </summary>
+    [Parameter] public Func<string, string>? PasteTransformer { get; set; }
+
+    /// <summary>
     /// A regular expression that every single character of the code has to match, which is what narrows
     /// the code down to a set of characters that no input type covers on its own, like upper case
     /// letters or hexadecimal digits. Characters that do not match are rejected while typing and
@@ -212,6 +249,17 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// row from another. It takes precedence over the <see cref="Separator"/>.
     /// </summary>
     [Parameter] public RenderFragment<int>? SeparatorTemplate { get; set; }
+
+    /// <summary>
+    /// Keeps the code free of holes: giving the focus to an input that sits after the first empty one, by
+    /// clicking it or with an arrow key, moves the focus to that first empty input instead, and a chunk of
+    /// characters that arrives at once (a paste or an auto fill) cannot land past it either, so the code is
+    /// always filled from its start onwards. Without it a character typed into the middle of an empty row
+    /// is reported as if it were the first one of the code, since the value is the characters of the inputs
+    /// joined together and an empty input contributes nothing to it. A complete code is left alone, so any
+    /// of its characters can still be clicked and corrected.
+    /// </summary>
+    [Parameter] public bool Sequential { get; set; }
 
     /// <summary>
     /// Turns the whole component into a single stop of the tab order: only the first input is reachable
@@ -266,6 +314,25 @@ public partial class BitOtpInput : BitInputBase<string?>
     public ElementReference[] InputElements => _inputRefs;
 
     /// <summary>
+    /// Removes the focus from the input of the BitOtpInput that currently holds it, which is what dismisses
+    /// the virtual keyboard of a phone once there is nothing left to type. Nothing happens when the focus
+    /// is somewhere else on the page, so a component that filled itself in the background never takes it
+    /// away from what the user is doing.
+    /// </summary>
+    public async ValueTask BlurAsync()
+    {
+        // The javascript side resolves the focused element from the root, which is only bound once the
+        // component has been rendered.
+        if (IsRendered is false) return;
+
+        try
+        {
+            await _js.BitOtpInputBlur(RootElement);
+        }
+        catch (JSDisconnectedException) { } // the circuit may already be gone at this point.
+    }
+
+    /// <summary>
     /// Clears the value of all of the inputs of the BitOtpInput.
     /// </summary>
     public async Task Clear()
@@ -307,19 +374,16 @@ public partial class BitOtpInput : BitInputBase<string?>
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
         if (value.HasNoValue()) return;
 
-        var sanitized = SanitizeValue(value);
+        var sanitized = SanitizeValue(TransformPastedValue(value));
         if (sanitized.HasNoValue())
         {
             await OnInvalid.InvokeAsync((value, Math.Clamp(index, 0, _length - 1)));
             return;
         }
 
-        // A code that fills the whole component always lands on the first input, no matter which one
-        // received the paste, since anything else would drop its leading characters. A shorter one is
-        // inserted where the user pasted it.
-        var startIndex = sanitized.Length >= _length ? 0 : Math.Clamp(index, 0, _length - 1);
+        var startIndex = GetChunkStartIndex(sanitized.Length, index);
 
-        SetInputsValue(sanitized, startIndex);
+        SetInputsValue(sanitized, startIndex, clearRest: false);
 
         CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
@@ -403,6 +467,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     protected override void OnInitialized()
     {
         _labelId = $"BitOtpInput-{UniqueId}-label";
+        _descriptionId = $"BitOtpInput-{UniqueId}-description";
 
         ResizeInputs();
 
@@ -424,7 +489,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // already in the inputs too, otherwise the component would keep showing (and reporting) a code
         // that it would now reject, and widening it has to give a code that was cut down on its way in a
         // chance to be applied again.
-        var restrictions = (Uppercase, NormalizeDigits, Pattern, Type);
+        var restrictions = (Uppercase, Lowercase, NormalizeDigits, Pattern, Type);
         var restrictionsChanged = _restrictions != restrictions;
         _restrictions = restrictions;
 
@@ -479,12 +544,14 @@ public partial class BitOtpInput : BitInputBase<string?>
         // over a component that would refuse the code anyway.
         var smsAutoFill = NoSmsAutoFill is false && ReadOnly is false && IsEnabled;
 
-        // The javascript side listens on the root element and resolves the input from the event target,
-        // so it only needs to be set up again when the number of inputs changes, and when the SMS
-        // request itself has to be made or dropped.
-        if (_setupLength == _length && _setupSmsAutoFill == smsAutoFill) return;
+        // The javascript side listens on the root element and resolves the input from the event target, so
+        // it does not care how many inputs there are and only has to be set up again when the SMS request
+        // itself has to be made or dropped. Repeating it for a Length that changed would tear the pending
+        // WebOTP request down and ask for it again, which is what puts the permission prompt of the
+        // browser back up over a component the user is already typing in.
+        if (_isSetup && _setupSmsAutoFill == smsAutoFill) return;
 
-        _setupLength = _length;
+        _isSetup = true;
         _setupSmsAutoFill = smsAutoFill;
 
         if (IsDisposed) return;
@@ -683,6 +750,19 @@ public partial class BitOtpInput : BitInputBase<string?>
         // otherwise cause on every single keystroke.
         if (HasFocusedStyling) StateHasChanged();
         await OnFocusIn.InvokeAsync((e, index));
+
+        // The pull back runs after the callback so that the consumer is told about the input the user
+        // actually reached before the focus is corrected, and it is skipped for a component that is only
+        // showing a code, where clicking a character is a way of reading it rather than of typing it.
+        if (Sequential is false || ReadOnly || IsDisposed) return;
+
+        var emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
+
+        // A complete code has no empty input to fall back to, so any of its characters stays clickable,
+        // and the first empty input itself is exactly where the focus is meant to be.
+        if (emptyIndex < 0 || emptyIndex >= index) return;
+
+        await _inputRefs[emptyIndex].FocusAsync();
     }
 
     private async Task HandleOnFocusOut(FocusEventArgs e, int index)
@@ -726,26 +806,27 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (newValue.HasValue())
         {
-            var diff = TransformValue(DiffValues(oldRendered, newValue));
+            var rawDiff = DiffValues(oldRendered, newValue);
 
-            if (diff.Length > 1)
+            if (rawDiff.Length > 1)
             {
                 // A chunk of characters arrives here when the browser fills the inputs itself or when
-                // a paste slips past the clipboard handler. It is filtered rather than rejected, the
-                // way the same code pasted through the clipboard would be.
-                var sanitized = SanitizeValue(diff);
+                // a paste slips past the clipboard handler. It goes through the very same steps as one
+                // that arrives through the clipboard, so that the two can never disagree: the transformer
+                // of the consumer first, then the filtering, and it is filtered rather than rejected.
+                var sanitized = SanitizeValue(TransformPastedValue(rawDiff));
 
                 if (sanitized.HasNoValue())
                 {
                     _inputValues[index] = oldValue;
 
-                    await OnInvalid.InvokeAsync((diff, index));
+                    await OnInvalid.InvokeAsync((rawDiff, index));
                 }
                 else
                 {
-                    var startIndex = sanitized.Length >= _length ? 0 : index;
+                    var startIndex = GetChunkStartIndex(sanitized.Length, index);
 
-                    SetInputsValue(sanitized, startIndex);
+                    SetInputsValue(sanitized, startIndex, clearRest: false);
 
                     CurrentValueAsString = string.Join(string.Empty, _inputValues);
 
@@ -756,29 +837,36 @@ public partial class BitOtpInput : BitInputBase<string?>
                     return;
                 }
             }
-            else if (IsAllowedValue(diff) is false)
-            {
-                _inputValues[index] = oldValue;
-
-                await OnInvalid.InvokeAsync((diff, index));
-            }
             else
             {
-                _inputValues[index] = diff;
+                // A single keystroke is not a chunk, so the transformer of the consumer has no part in it
+                // and only the casing and the digit normalization are applied.
+                var diff = TransformValue(rawDiff);
 
-                // Commit the current value before moving the focus to the next input.
-                // Auto-advancing the focus raises the focusout/focusin DOM events (and the
-                // consumer's OnFocusOut/OnFocusIn callbacks) synchronously while this method
-                // is awaiting FocusAsync. If the value is committed afterwards, those focus
-                // callbacks observe a stale, incomplete value. So we set it here first.
-                CurrentValueAsString = string.Join(string.Empty, _inputValues);
+                if (IsAllowedValue(diff) is false)
+                {
+                    _inputValues[index] = oldValue;
 
-                int nextIndex = index + 1;
-                if (nextIndex < _length) await _inputRefs[nextIndex].FocusAsync();
+                    await OnInvalid.InvokeAsync((diff, index));
+                }
+                else
+                {
+                    _inputValues[index] = diff;
 
-                await OnInput.InvokeAsync((e, index));
-                await CallOnFill();
-                return;
+                    // Commit the current value before moving the focus to the next input.
+                    // Auto-advancing the focus raises the focusout/focusin DOM events (and the
+                    // consumer's OnFocusOut/OnFocusIn callbacks) synchronously while this method
+                    // is awaiting FocusAsync. If the value is committed afterwards, those focus
+                    // callbacks observe a stale, incomplete value. So we set it here first.
+                    CurrentValueAsString = string.Join(string.Empty, _inputValues);
+
+                    int nextIndex = index + 1;
+                    if (nextIndex < _length) await _inputRefs[nextIndex].FocusAsync();
+
+                    await OnInput.InvokeAsync((e, index));
+                    await CallOnFill();
+                    return;
+                }
             }
         }
         else if (handledClear)
@@ -937,6 +1025,27 @@ public partial class BitOtpInput : BitInputBase<string?>
         }
     }
 
+    /// <summary>
+    /// The input that a chunk of characters arriving at once (a paste, an SMS auto fill, or a multi
+    /// character input event) starts at.
+    /// </summary>
+    private int GetChunkStartIndex(int chunkLength, int index)
+    {
+        // A code that fills the whole component always lands on the first input, no matter which one
+        // received it, since anything else would drop its leading characters. A shorter one is inserted
+        // where the user pasted it.
+        var startIndex = chunkLength >= _length ? 0 : Math.Clamp(index, 0, _length - 1);
+
+        if (Sequential is false) return startIndex;
+
+        // A component asked to keep the code free of holes cannot let a chunk land past the first input
+        // left to fill either, otherwise a paste would punch the very hole the typing is kept away from.
+        // A complete code has none, in which case the chunk simply overwrites where it arrived.
+        var emptyIndex = Array.FindIndex(_inputValues, v => v.HasNoValue());
+
+        return emptyIndex < 0 ? startIndex : Math.Min(startIndex, emptyIndex);
+    }
+
     private void ShiftInputValues(int index)
     {
         for (int i = index; i < _length; i++)
@@ -945,17 +1054,30 @@ public partial class BitOtpInput : BitInputBase<string?>
         }
     }
 
-    private void SetInputsValue(string? value, int startIndex = 0)
+    /// <param name="clearRest">
+    /// Whether the inputs the value does not reach are emptied. A value assigned to the component is the
+    /// whole code, so everything it leaves over has to go; a chunk that arrives at one input (a paste or an
+    /// auto fill) only replaces as many characters as it brings, so pasting a single character into the
+    /// middle of a code must not take the rest of it down with it.
+    /// </param>
+    private void SetInputsValue(string? value, int startIndex = 0, bool clearRest = true)
     {
         var chars = SanitizeValue(value).ToCharArray();
 
-        for (int i = 0; i < _length; i++)
+        for (int i = startIndex; i < _length; i++)
         {
-            if (i < startIndex) continue;
-
             var charIndex = i - startIndex;
 
-            _inputValues[i] = chars.Length > charIndex ? chars[charIndex].ToString() : null;
+            if (charIndex < chars.Length)
+            {
+                _inputValues[i] = chars[charIndex].ToString();
+            }
+            else
+            {
+                if (clearRest is false) return;
+
+                _inputValues[i] = null;
+            }
         }
     }
 
@@ -994,11 +1116,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (BlurOnFill)
         {
-            try
-            {
-                await _js.BitOtpInputBlur(RootElement);
-            }
-            catch (JSDisconnectedException) { } // the circuit may already be gone at this point.
+            await BlurAsync();
         }
 
         if (IsDisposed) return;
@@ -1063,13 +1181,36 @@ public partial class BitOtpInput : BitInputBase<string?>
         return new string([.. TransformValue(value!).Where(c => char.IsWhiteSpace(c) is false && IsAllowedChar(c))]);
     }
 
+    private string TransformPastedValue(string value)
+    {
+        if (PasteTransformer is null) return value;
+
+        try
+        {
+            return PasteTransformer(value) ?? string.Empty;
+        }
+        catch
+        {
+            // The transformer of the consumer runs in the middle of a paste, so an exception thrown out of
+            // it would take the whole component down with it. The chunk is left untouched instead, which
+            // falls back to the filtering that the component would have done without a transformer at all.
+            return value;
+        }
+    }
+
     private string TransformValue(string value)
     {
         // The invariant casing on purpose: a code is a sequence of symbols rather than a word, so the
         // casing rules of the current culture (the dotless i of Turkish above all) must not take part.
+        // Asking for both cases at once is a contradiction rather than an order to apply, so the upper
+        // case one is picked and the other is ignored instead of the two undoing each other.
         if (Uppercase)
         {
             value = value.ToUpperInvariant();
+        }
+        else if (Lowercase)
+        {
+            value = value.ToLowerInvariant();
         }
 
         if (NormalizeDigits)

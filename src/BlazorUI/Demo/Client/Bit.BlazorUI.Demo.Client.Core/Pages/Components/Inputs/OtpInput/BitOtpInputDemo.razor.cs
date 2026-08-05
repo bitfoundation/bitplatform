@@ -47,6 +47,20 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The description (helper text) rendered under the inputs, which the group of the inputs references through its aria-describedby so that screen readers announce it along with the name of the group. It is where the sentence that turns a row of empty boxes into a question the user can answer belongs: where the code was sent, how long it is good for, or what a server that rejected it said.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template for the description (helper text) rendered under the inputs, which takes precedence over the Description. It is referenced the very same way, so a \"resend the code\" button or a countdown put in here is announced with the group as well.",
+        },
+        new()
+        {
             Name = "InputAriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -88,6 +102,13 @@ public partial class BitOtpInputDemo
             Type = "int",
             DefaultValue = "5",
             Description = "Length of the OTP or number of the inputs. Values below 1 are clamped to 1, changing it at runtime keeps the characters of the inputs that survive the resize, and a value longer than the inputs can hold loses its extra characters instead of being reported as a value that is not shown.",
+        },
+        new()
+        {
+            Name = "Lowercase",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns every character of the code into its lower case form as it is typed or pasted, the mirror of the Uppercase and applied under the very same rules: before the Pattern is applied, so an expression restricted to lower case letters accepts an upper case keystroke, and to a code that is assigned to the component as much as to one that is typed into it. The Uppercase wins when both are set.",
         },
         new()
         {
@@ -154,6 +175,13 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "PasteTransformer",
+            Type = "Func<string, string>?",
+            DefaultValue = "null",
+            Description = "A function applied to a chunk of characters that reaches the component in one go (a paste, an SMS auto fill, or a multi character input event) before anything else is done with it, which is what pulls the code out of the text it was copied inside of. The per character filtering of the Type and the Pattern cannot do that on its own for a code of letters, since the letters of the words around it match just as well as the ones of the code: \"your code is A1B2C3\" would fill the inputs with \"YOURCODEI\". Returning an empty string rejects the chunk, which raises OnInvalid. It is not applied to a single typed character, and an exception thrown out of it leaves the chunk untouched rather than breaking the input.",
+        },
+        new()
+        {
             Name = "Pattern",
             Type = "string?",
             DefaultValue = "null",
@@ -193,6 +221,13 @@ public partial class BitOtpInputDemo
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
             Description = "Custom template rendered between the inputs in place of the Separator text, which is what puts an icon or any other markup between the groups of a code. The context is the zero based index of the input the separator is rendered before, so a template can tell one separator of the row from another. It takes precedence over the Separator.",
+        },
+        new()
+        {
+            Name = "Sequential",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the code free of holes: giving the focus to an input that sits after the first empty one, by clicking it or with an arrow key, moves the focus to that first empty input instead, and a chunk of characters that arrives at once (a paste or an auto fill) cannot land past it either, so the code is always filled from its start onwards. Without it a character typed into the middle of an empty row is reported as if it were the first one of the code, since the value is the characters of the inputs joined together and an empty input contributes nothing to it. A complete code is left alone, so any of its characters can still be clicked and corrected.",
         },
         new()
         {
@@ -275,6 +310,13 @@ public partial class BitOtpInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the label of the otp input.",
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description (helper text) of the otp input.",
                 },
                 new()
                 {
@@ -496,6 +538,12 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Name = "BlurAsync",
+            Type = "() => ValueTask",
+            Description = "Removes the focus from the input of the BitOtpInput that currently holds it, which is what dismisses the virtual keyboard of a phone. Nothing happens when the focus is somewhere else on the page, so a component that filled itself in the background never takes it away from what the user is doing.",
+        },
+        new()
+        {
             Name = "Clear",
             Type = "() => Task",
             Description = "Clears the value of all of the inputs of the BitOtpInput. It does nothing while the component is disabled or read-only.",
@@ -515,6 +563,7 @@ public partial class BitOtpInputDemo
     private string? maskValue;
 
     private string? pasteValue;
+    private string? transformedPasteValue;
 
     private string? oneWayValue;
     private string? twoWayValue;
@@ -557,16 +606,23 @@ public partial class BitOtpInputDemo
 
     private bool invalidState;
     private BitOtpInput? invalidOtpInput;
+    private string invalidDescription = "Enter the 6 digit code we sent you. Try 123456.";
     private void HandleInvalidDemoFill(string? value)
     {
         // Only the server that issued the code knows whether it is the right one, so the error state is
-        // set from the answer it gives rather than from a validator.
+        // set from the answer it gives rather than from a validator, and the answer itself goes into the
+        // description, which the group of the inputs is described by.
         invalidState = value != "123456";
+
+        invalidDescription = invalidState
+            ? "That code is not correct or has expired. Try 123456."
+            : "That code is correct.";
     }
 
     private async Task HandleInvalidDemoRetry()
     {
         invalidState = false;
+        invalidDescription = "Enter the 6 digit code we sent you. Try 123456.";
 
         if (invalidOtpInput is null) return;
 
@@ -589,7 +645,9 @@ public partial class BitOtpInputDemo
 
 <BitOtpInput AutoShift DefaultValue=""12345"" />
 
-<BitOtpInput BlurOnFill Length=""4"" />";
+<BitOtpInput BlurOnFill Length=""4"" />
+
+<BitOtpInput Sequential Length=""6"" Type=""BitInputType.Number"" />";
 
     private readonly string example2RazorCode = @"
 <BitOtpInput Label=""OTP"" />
@@ -604,6 +662,18 @@ public partial class BitOtpInputDemo
             <BitIcon IconName=""@BitIconName.TemporaryAccessPass"" />
         </BitStack>
     </LabelTemplate>
+</BitOtpInput>
+
+<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number""
+             Description=""We sent a 6 digit code to +1 555 0100. It stays valid for 10 minutes."" />
+
+<BitOtpInput Label=""Verification code"" Length=""6"" Type=""BitInputType.Number"">
+    <DescriptionTemplate>
+        <BitStack Horizontal FitWidth Gap=""0.25rem"" VerticalAlign=""BitAlignment.Center"">
+            <BitText Typography=""BitTypography.Caption1"">Didn't get it?</BitText>
+            <BitLink Href=""#example2"">Send it again</BitLink>
+        </BitStack>
+    </DescriptionTemplate>
 </BitOtpInput>";
 
     private readonly string example3RazorCode = @"
@@ -635,7 +705,9 @@ private string? maskValue;";
 
 <BitOtpInput Label=""Upper case letters"" Length=""4"" Pattern=""^[A-Z]$"" Placeholder=""A"" />
 
-<BitOtpInput Label=""Upper case letters, typed in any case"" Length=""4"" Pattern=""^[A-Z]$"" Placeholder=""A"" Uppercase />";
+<BitOtpInput Label=""Upper case letters, typed in any case"" Length=""4"" Pattern=""^[A-Z]$"" Placeholder=""A"" Uppercase />
+
+<BitOtpInput Label=""Lower case letters, typed in any case"" Length=""4"" Pattern=""^[a-z]$"" Placeholder=""a"" Lowercase />";
 
     private readonly string example6RazorCode = @"
 <BitOtpInput Label=""Single character"" Placeholder=""•"" />
@@ -670,15 +742,24 @@ private string? maskValue;";
 
 <BitOtpInput Label=""Localized announcement"" Length=""6"" InputAriaLabelFormat=""رقم {0} از {1}"" />
 
-<BitOtpInput Label=""Single tab stop"" Length=""6"" SingleTabStop />";
+<BitOtpInput Label=""Single tab stop"" Length=""6"" SingleTabStop />
+
+<BitOtpInput Label=""Described group"" Length=""6""
+             Description=""Enter the code from the text message we sent to +1 555 0100."" />";
 
     private readonly string example10RazorCode = @"
 <BitOtpInput Label=""Paste a code"" Length=""6"" Type=""BitInputType.Number"" @bind-Value=""pasteValue"" />
 <div>Value: @pasteValue</div>
 
+<BitOtpInput Label=""Alphanumeric, pulled out of the message"" Length=""6"" Uppercase
+             PasteTransformer=""@(v => Regex.Match(v, ""[A-Za-z0-9]{6}"").Value)""
+             @bind-Value=""transformedPasteValue"" />
+<div>Value: @transformedPasteValue</div>
+
 <BitOtpInput Label=""Without the SMS auto fill"" Length=""6"" NoSmsAutoFill />";
     private readonly string example10CsharpCode = @"
-private string? pasteValue;";
+private string? pasteValue;
+private string? transformedPasteValue;";
 
     private readonly string example11RazorCode = @"
 <BitOtpInput Label=""One-way"" Value=""@oneWayValue"" />
@@ -733,9 +814,10 @@ private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
     private readonly string example13RazorCode = @"
 <BitOtpInput @ref=""apiOtpInput"" Label=""OTP"" Length=""6"" DefaultValue=""123456"" />
 
-<BitStack Horizontal FitWidth Gap=""0.5rem"">
+<BitStack Horizontal FitWidth Gap=""0.5rem"" Wrap>
     <BitButton OnClick=""() => apiOtpInput?.FocusAsync(0)"">Focus first</BitButton>
     <BitButton OnClick=""() => apiOtpInput?.FocusAsync(5)"">Focus last</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => apiOtpInput?.BlurAsync()"">Blur</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleClearClick"">Clear</BitButton>
 </BitStack>";
     private readonly string example13CsharpCode = @"
@@ -782,12 +864,8 @@ private void HandleInvalidSubmit() { }";
 <BitOtpInput @ref=""invalidOtpInput"" Label=""Verification code"" Length=""6""
              Type=""BitInputType.Number""
              Invalid=""invalidState""
+             Description=""@invalidDescription""
              OnFill=""HandleInvalidDemoFill"" />
-
-@if (invalidState)
-{
-    <BitMessage Color=""BitColor.Error"">That code is not correct. Try 123456.</BitMessage>
-}
 
 <BitStack Horizontal FitWidth Gap=""0.5rem"">
     <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleInvalidDemoRetry"">Clear & retry</BitButton>
@@ -795,17 +873,24 @@ private void HandleInvalidSubmit() { }";
     private readonly string example15CsharpCode = @"
 private bool invalidState;
 private BitOtpInput? invalidOtpInput;
+private string invalidDescription = ""Enter the 6 digit code we sent you. Try 123456."";
 
 private void HandleInvalidDemoFill(string? value)
 {
     // Only the server that issued the code knows whether it is the right one, so the error state is
-    // set from the answer it gives rather than from a validator.
+    // set from the answer it gives rather than from a validator, and the answer itself goes into the
+    // description, which the group of the inputs is described by.
     invalidState = value != ""123456"";
+
+    invalidDescription = invalidState
+        ? ""That code is not correct or has expired. Try 123456.""
+        : ""That code is correct."";
 }
 
 private async Task HandleInvalidDemoRetry()
 {
     invalidState = false;
+    invalidDescription = ""Enter the 6 digit code we sent you. Try 123456."";
 
     if (invalidOtpInput is null) return;
 
@@ -856,6 +941,10 @@ private async Task HandleInvalidDemoRetry()
         letter-spacing: 0.1rem;
     }
 
+    .custom-description {
+        color: tomato;
+    }
+
     .custom-wrapper {
         gap: 0.25rem;
     }
@@ -886,17 +975,20 @@ private async Task HandleInvalidDemoRetry()
 <BitOtpInput Class=""custom-class"" />
 
 
-<BitOtpInput Label=""Styles""
+<BitOtpInput Label=""Styles"" Description=""Every part of the component has a slot of its own.""
              Styles=""@(new() { Root = ""margin-inline: 1rem;"",
                                Label = ""color: blueviolet; letter-spacing: 0.1rem;"",
+                               Description = ""color: blueviolet;"",
                                InputsWrapper = ""gap: 0.25rem;"",
                                Input = ""border-color: blueviolet;"",
                                Filled = ""background-color: #f3e8ff;"",
                                Focused = ""box-shadow: blueviolet 0 0 1rem;"" })"" />
 
 <BitOtpInput Label=""Classes"" Length=""6"" Separator=""-""
+             Description=""Every part of the component has a slot of its own.""
              Classes=""@(new() { Root = ""custom-root"",
                                 Label = ""custom-label"",
+                                Description = ""custom-description"",
                                 InputsWrapper = ""custom-wrapper"",
                                 Input = ""custom-input"",
                                 Filled = ""custom-filled"",

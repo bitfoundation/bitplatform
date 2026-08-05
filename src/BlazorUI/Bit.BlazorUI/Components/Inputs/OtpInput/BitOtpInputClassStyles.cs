@@ -13,6 +13,11 @@ public class BitOtpInputClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description (helper text) of the otp input.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the wrapper element of the inputs.
     /// </summary>
     public string? InputsWrapper { get; set; }
