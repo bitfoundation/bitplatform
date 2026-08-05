@@ -2626,6 +2626,23 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         finally
         {
+            // Balance the entry increment FIRST, before any awaited or otherwise throwing cleanup
+            // below: a CompleteViewTransitionAsync that faults (interop torn down mid-navigation)
+            // must not strand the counter above zero, which would make every later rematch check
+            // punt forever (see RunPendingRematchCoreAsync).
+            //
+            // A route registered while this pipeline was in flight and the deferred rematch check
+            // punted (see RunPendingRematchCoreAsync): now that the router is idle again, re-request
+            // the evaluation. Runs on the dispatcher like the rest of this finally, and only fires
+            // from the outermost frame of a re-entrant pipeline stack. The render this queues is
+            // itself part of the work the prerenderer waits for, so the correction still lands
+            // before static HTML is serialized.
+            _processingNavigation--;
+            if (_processingNavigation == 0 && _rematchRequested && _disposed is false)
+            {
+                RequestLateRegistrationRematch();
+            }
+
             // Safety net for the pending-navigation UI: if this navigation revealed it but bailed before
             // clearing it above (e.g. a loader threw and we routed to OnError), and we're still the current
             // navigation, hide it now. Guarded by version so a superseded pipeline can't clear the flag out
@@ -2668,18 +2685,6 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (ReferenceEquals(Volatile.Read(ref _navCts), newCts) is false)
             {
                 newCts.Dispose();
-            }
-
-            // A route registered while this pipeline was in flight and the deferred rematch check
-            // punted (see RunPendingRematchCoreAsync): now that the router is idle again, re-request
-            // the evaluation. Runs on the dispatcher like the rest of this finally, and only fires
-            // from the outermost frame of a re-entrant pipeline stack. The render this queues is
-            // itself part of the work the prerenderer waits for, so the correction still lands
-            // before static HTML is serialized.
-            _processingNavigation--;
-            if (_processingNavigation == 0 && _rematchRequested && _disposed is false)
-            {
-                RequestLateRegistrationRematch();
             }
         }
     }
