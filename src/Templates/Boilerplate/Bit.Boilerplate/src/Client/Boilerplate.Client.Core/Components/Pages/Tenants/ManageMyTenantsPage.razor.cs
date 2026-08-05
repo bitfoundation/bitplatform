@@ -138,7 +138,7 @@ public partial class ManageMyTenantsPage
 
         try
         {
-            // Update only ever targets the current tenant (See ITenantController.Update / AppFeatures.Management.Tenant_Write).
+            // Update only ever targets the current tenant (See ITenantController.Update / AppFeatures.Management.Tenant_Manage).
             await tenantController.Update(editingTenant, CurrentCancellationToken);
 
             await LoadTenants();

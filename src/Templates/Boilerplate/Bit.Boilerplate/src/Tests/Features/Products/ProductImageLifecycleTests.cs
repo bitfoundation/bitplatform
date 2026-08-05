@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using Boilerplate.Shared.Features.Products;
 using Boilerplate.Shared.Features.Categories;
 using Boilerplate.Shared.Features.Attachments;
-using Boilerplate.Server.Api.Features.Tenants;
 
 namespace Boilerplate.Tests.Features.Products;
 

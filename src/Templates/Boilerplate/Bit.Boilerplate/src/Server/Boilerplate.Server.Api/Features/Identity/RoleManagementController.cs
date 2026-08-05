@@ -84,9 +84,9 @@ public partial class RoleManagementController : AppControllerBase, IRoleManageme
         //#if (multitenant == true)
         if (User.HasFeature(AppFeatures.Management.Tenants_Manage_Global) is false)
         {
-            // Non Global admins may only see the roles of the current tenant.
             var tenantId = User.GetTenantId();
-            query = query.Where(u => u.Roles.Any(r => r.RoleId == roleId && r.Role!.TenantId == tenantId));
+            query = query.Where(u => u.Roles.Any(r => r.RoleId == roleId && r.Role!.TenantId == tenantId)
+                                     && u.Tenants.Any(tu => tu.TenantId == tenantId && tu.AcceptedOn != null));
         }
         //#endif
 
