@@ -110,9 +110,10 @@ public partial class AppAccentColorService : IDisposable
 
         // localStorage first, cookie second: they are written together, so they only diverge when
         // one of them is unavailable (localStorage throws in Safari private mode / blocked-storage
-        // setups, and a visitor can clear cookies alone). Either one on its own restores the accent.
-        var stored = NormalizeAccent(await _js.Invoke<string?>("localStorage.getItem", StorageKey))
-                  ?? NormalizeAccent(await _js.Invoke<string?>("getCookie", CookieName));
+        // setups, and a visitor can clear cookies alone). Either one on its own restores the accent,
+        // which is why each read is isolated - see TryReadAsync.
+        var stored = NormalizeAccent(await TryReadAsync("localStorage.getItem", StorageKey))
+                  ?? NormalizeAccent(await TryReadAsync("getCookie", CookieName));
 
         // The overlay is applied even when the prerender seed already put us on this accent: the
         // server painted it through a stylesheet rule, which the WebAssembly and Hybrid clients never
@@ -147,11 +148,11 @@ public partial class AppAccentColorService : IDisposable
 
         ActiveAccent = hex;
 
-        await _js.InvokeVoid("localStorage.setItem", StorageKey, hex);
+        await TryWriteAsync("localStorage.setItem", StorageKey, hex);
 
         // Mirrored into a cookie so the next navigation's prerender can paint this accent server-side
         // - localStorage is unreachable from there, which is what made the color flash on every load.
-        await _js.InvokeVoid("setCookie", CookieName, hex, CookieMaxAgeSeconds);
+        await TryWriteAsync("setCookie", CookieName, hex, CookieMaxAgeSeconds);
 
         await ApplyToCurrentThemeAsync(hex);
 
@@ -219,6 +220,42 @@ public partial class AppAccentColorService : IDisposable
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Reads one store, treating an unreachable one as "nothing persisted here". Neither store is
+    /// guaranteed to answer - a browser set to block site data throws on the very first localStorage
+    /// access, and Safari's private mode throws on write - and a store that refuses must not take the
+    /// other one, nor the applied overlay, down with it.
+    /// </summary>
+    private async Task<string?> TryReadAsync(string function, string key)
+    {
+        try
+        {
+            return await _js.Invoke<string?>(function, key);
+        }
+        catch (JSException ex)
+        {
+            _logger.LogWarning(ex, "Reading the persisted accent through {Function} failed.", function);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Writes one store, tolerating an unreachable one. The pick still applies for this session (and
+    /// is restored on the next load from whichever store did take it); losing one of them is not a
+    /// reason to leave the visitor on the old color. See <see cref="TryReadAsync"/>.
+    /// </summary>
+    private async Task TryWriteAsync(string function, params object?[] args)
+    {
+        try
+        {
+            await _js.InvokeVoid(function, args);
+        }
+        catch (JSException ex)
+        {
+            _logger.LogWarning(ex, "Persisting the accent through {Function} failed.", function);
+        }
     }
 
     private async Task ApplyToCurrentThemeAsync(string hex)
