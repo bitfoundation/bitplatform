@@ -1,0 +1,11 @@
+﻿<tr>
+    <td class="api-name">@Name</td>
+    <td class="api-signature"><code>@Signature</code></td>
+    <td class="api-desc">@Description</td>
+</tr>
+
+@code {
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string Signature { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+}

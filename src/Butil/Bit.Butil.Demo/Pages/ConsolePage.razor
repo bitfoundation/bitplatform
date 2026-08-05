@@ -1,0 +1,495 @@
+@page "/console"
+@inject Bit.Butil.Console console
+
+<PageTitle>Console - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="Console"
+            Lead="A complete C# mirror of the browser console: log levels, assertions, counters, timers, groups, tables, stack traces and profiling. Open your DevTools console (F12) - that is where everything below lands."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/console"
+            InjectAs="Console console" />
+
+<div class="stack">
+    <DemoSection Title="Log levels"
+                 Api="Log / Info / Warn / Error / Debug"
+                 Description="The five standard severity levels, each styled and filterable in DevTools. All accept any number of values, including objects."
+                 Code=@("""
+await console.Log("General output:", value);
+await console.Info("Informative:", value);
+await console.Warn("Warning:", value);
+await console.Error("Error:", value);
+await console.Debug("Debug level:", value);
+""")>
+        <div class="field">
+            <span class="field-label">Message (sent by most buttons on this page)</span>
+            <input @bind="message" @ref="inputRef" />
+        </div>
+        <div class="controls">
+            <button @onclick="LogAsync">Log</button>
+            <button @onclick="InfoAsync">Info</button>
+            <button @onclick="WarnAsync">Warn</button>
+            <button @onclick="ErrorAsync">Error</button>
+            <button class="secondary" @onclick="DebugAsync">Debug</button>
+        </div>
+        <DemoConsole @ref="levelsOutput" Title="log levels output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Assertions & inspection"
+                 Api="Assert / Dir / Dirxml"
+                 Description="Assert logs only when its condition is false. Dir prints an interactive property listing of an object, while Dirxml renders a DOM node as an expandable HTML tree."
+                 Code=@("""
+await console.Assert(items.Count > 0, "The list should never be empty!");
+
+await console.Dir(someObject);
+await console.Dirxml(elementReference);
+""")>
+        <div class="controls">
+            <button @onclick="AssertAsync">Assert (false)</button>
+            <button @onclick="DirAsync">Dir</button>
+            <button @onclick="DirxmlAsync">Dirxml</button>
+        </div>
+        <DemoConsole @ref="assertionsOutput" Title="assertions output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Tabular data"
+                 Api="Table"
+                 Description="Renders an array or object as a sortable table in DevTools; the optional second argument restricts which columns are shown."
+                 Code=@("""
+var people = new[]
+{
+    new { Name = "Ada", Role = "Engineer" },
+    new { Name = "Grace", Role = "Admiral" },
+};
+
+await console.Table(people);
+await console.Table(people, new[] { "Name" }); // only the Name column
+""")>
+        <div class="controls">
+            <button @onclick="TableAsync">Table</button>
+            <button class="secondary" @onclick="TableColumnsAsync">Table (Name column only)</button>
+        </div>
+        <DemoConsole @ref="tableOutput" Title="tabular data output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Counters"
+                 Api="Count / CountReset"
+                 Description="Count logs how many times it has been called with a given label; CountReset sets that counter back to zero."
+                 Code=@("""
+await console.Count("clicks");      // clicks: 1
+await console.Count("clicks");      // clicks: 2
+await console.CountReset("clicks"); // back to 0
+""")>
+        <div class="controls">
+            <button @onclick="CountAsync">Count</button>
+            <button class="secondary" @onclick="CountResetAsync">CountReset</button>
+        </div>
+        <DemoConsole @ref="countersOutput" Title="counters output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Timers"
+                 Api="Time / TimeLog / TimeEnd / TimeStamp"
+                 Description="Start a named timer, log intermediate readings, and stop it to print the total elapsed time. TimeStamp additionally drops a marker into the browser's performance timeline."
+                 Code=@("""
+await console.Time("load");
+await console.TimeLog("load");  // load: 102 ms
+await console.TimeEnd("load");  // load: 341 ms - timer ended
+
+await console.TimeStamp("checkpoint");
+""")>
+        <div class="controls">
+            <button @onclick="TimeAsync">Time</button>
+            <button @onclick="TimeLogAsync">TimeLog</button>
+            <button @onclick="TimeEndAsync">TimeEnd</button>
+            <button class="secondary" @onclick="TimeStampAsync">TimeStamp</button>
+        </div>
+        <DemoConsole @ref="timersOutput" Title="timers output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Groups"
+                 Api="Group / GroupCollapsed / GroupEnd"
+                 Description="Indents subsequent output into nested, collapsible groups. GroupCollapsed starts the group closed; GroupEnd steps back out one level."
+                 Code=@("""
+await console.Log("Outer level");
+await console.Group("Details");
+await console.Log("Inside the group");
+await console.GroupCollapsed("Collapsed by default");
+await console.Log("Hidden until expanded");
+await console.GroupEnd();
+await console.GroupEnd();
+""")>
+        <div class="controls">
+            <button @onclick="CreateGroupsAsync">Create grouped logs</button>
+        </div>
+        <DemoConsole @ref="groupsOutput" Title="groups output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Trace & profiling"
+                 Api="Trace / Profile / ProfileEnd"
+                 Description="Trace prints the current stack trace. Profile and ProfileEnd start and stop the browser's built-in JavaScript profiler under an optional name."
+                 Code=@("""
+await console.Trace("How did we get here?");
+
+await console.Profile("render");
+// ... the work you want profiled ...
+await console.ProfileEnd("render");
+""")>
+        <div class="controls">
+            <button @onclick="TraceAsync">Trace</button>
+            <button @onclick="ProfileAsync">Profile</button>
+            <button class="secondary" @onclick="ProfileEndAsync">ProfileEnd</button>
+        </div>
+        <DemoConsole @ref="traceOutput" Title="trace output" MirrorToDevTools="false" />
+    </DemoSection>
+
+    <DemoSection Title="Clear"
+                 Api="Clear"
+                 Description="Wipes the DevTools console (some browsers keep a 'Console was cleared' notice)."
+                 Code=@("""
+await console.Clear();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ClearAsync">Clear DevTools console</button>
+        </div>
+        <DemoConsole @ref="clearOutput" Title="clear output" MirrorToDevTools="false" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Open DevTools to see the results">
+    Everything on this page writes to the browser's own console. Press F12 (or Cmd+Option+I on macOS)
+    and keep the Console tab visible while clicking the buttons; the output panel below only confirms
+    each call was made.
+</Callout>
+
+<Callout Type="warning" Title="Profile is non-standard">
+    Profile and ProfileEnd are outside the console standard and behave differently across browsers -
+    some require DevTools to be open, and support may change over time.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Assert" Signature="Task Assert(bool? condition, params object?[]? args)" Description="Logs a message and stack trace if the condition is false." />
+    <ApiMember Name="Clear" Signature="Task Clear()" Description="Clears the console." />
+    <ApiMember Name="Count" Signature="Task Count(string? label = null)" Description="Logs the number of times this line has been called with the given label." />
+    <ApiMember Name="CountReset" Signature="Task CountReset(string? label = null)" Description="Resets the value of the counter with the given label." />
+    <ApiMember Name="Debug" Signature="Task Debug(params object?[]? args)" Description="Outputs a message to the console with the log level debug." />
+    <ApiMember Name="Dir" Signature="Task Dir(object? item, object? options = null)" Description="Displays an interactive listing of the properties of the specified object." />
+    <ApiMember Name="Dirxml" Signature="Task Dirxml(params object?[]? args)" Description="Displays an XML/HTML element representation of the specified object if possible." />
+    <ApiMember Name="Error" Signature="Task Error(params object?[]? args)" Description="Outputs an error message." />
+    <ApiMember Name="Group" Signature="Task Group(params object?[]? args)" Description="Creates a new inline group, indenting all following output by another level." />
+    <ApiMember Name="GroupCollapsed" Signature="Task GroupCollapsed(params object?[]? args)" Description="Creates a new inline group that starts collapsed." />
+    <ApiMember Name="GroupEnd" Signature="Task GroupEnd()" Description="Exits the current inline group." />
+    <ApiMember Name="Info" Signature="Task Info(params object?[]? args)" Description="Informative logging of information." />
+    <ApiMember Name="Log" Signature="Task Log(params object?[]? args)" Description="General output of logging information." />
+    <ApiMember Name="Profile" Signature="Task Profile(string? name = null)" Description="Starts the browser's built-in profiler, optionally under a name." />
+    <ApiMember Name="ProfileEnd" Signature="Task ProfileEnd(string? name = null)" Description="Stops the profiler; the resulting profile appears in the browser's performance tool." />
+    <ApiMember Name="Table" Signature="Task Table(object? data, object? properties = null)" Description="Displays tabular data as a table; the optional second argument selects the columns." />
+    <ApiMember Name="Time" Signature="Task Time(string? label = null)" Description="Starts a timer with the specified name; up to 10,000 timers can run per page." />
+    <ApiMember Name="TimeEnd" Signature="Task TimeEnd(string? label = null)" Description="Stops the specified timer and logs the elapsed time in milliseconds." />
+    <ApiMember Name="TimeLog" Signature="Task TimeLog(string? label = null, params object?[]? args)" Description="Logs the current value of the specified timer without stopping it." />
+    <ApiMember Name="TimeStamp" Signature="Task TimeStamp(string? label = null)" Description="Adds a marker to the browser performance tool's timeline." />
+    <ApiMember Name="Trace" Signature="Task Trace(params object?[]? args)" Description="Outputs a stack trace." />
+    <ApiMember Name="Warn" Signature="Task Warn(params object?[]? args)" Description="Outputs a warning message." />
+</ApiTable>
+
+@code {
+    private DemoConsole levelsOutput = default!;
+    private DemoConsole assertionsOutput = default!;
+    private DemoConsole tableOutput = default!;
+    private DemoConsole countersOutput = default!;
+    private DemoConsole timersOutput = default!;
+    private DemoConsole groupsOutput = default!;
+    private DemoConsole traceOutput = default!;
+    private DemoConsole clearOutput = default!;
+    private string message = "Hello from Bit.Butil";
+    private ElementReference inputRef;
+
+    private async Task LogAsync()
+    {
+        try
+        {
+            await console.Log("General output:", message);
+            await levelsOutput.Success("console.log sent - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await levelsOutput.Error("Log failed →", ex.Message);
+        }
+    }
+
+    private async Task InfoAsync()
+    {
+        try
+        {
+            await console.Info("Informative:", message);
+            await levelsOutput.Success("console.info sent - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await levelsOutput.Error("Info failed →", ex.Message);
+        }
+    }
+
+    private async Task WarnAsync()
+    {
+        try
+        {
+            await console.Warn("Warning:", message);
+            await levelsOutput.Success("console.warn sent - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await levelsOutput.Error("Warn failed →", ex.Message);
+        }
+    }
+
+    private async Task ErrorAsync()
+    {
+        try
+        {
+            await console.Error("Error:", message);
+            await levelsOutput.Success("console.error sent - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await levelsOutput.Error("Error call failed →", ex.Message);
+        }
+    }
+
+    private async Task DebugAsync()
+    {
+        try
+        {
+            await console.Debug("Debug level:", message);
+            await levelsOutput.Success("console.debug sent - enable the Verbose level in DevTools to see it.");
+        }
+        catch (Exception ex)
+        {
+            await levelsOutput.Error("Debug failed →", ex.Message);
+        }
+    }
+
+    private async Task AssertAsync()
+    {
+        try
+        {
+            await console.Assert(false, "Assertion failed:", message);
+            await assertionsOutput.Success("console.assert(false, ...) sent - DevTools shows the assertion.");
+        }
+        catch (Exception ex)
+        {
+            await assertionsOutput.Error("Assert failed →", ex.Message);
+        }
+    }
+
+    private async Task DirAsync()
+    {
+        try
+        {
+            await console.Dir(inputRef);
+            await assertionsOutput.Success("console.dir sent - expand the object in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await assertionsOutput.Error("Dir failed →", ex.Message);
+        }
+    }
+
+    private async Task DirxmlAsync()
+    {
+        try
+        {
+            await console.Dirxml(inputRef);
+            await assertionsOutput.Success("console.dirxml sent - the message input is shown as a DOM tree.");
+        }
+        catch (Exception ex)
+        {
+            await assertionsOutput.Error("Dirxml failed →", ex.Message);
+        }
+    }
+
+    private async Task TableAsync()
+    {
+        try
+        {
+            var people = new[]
+            {
+                new { Name = "Ada", Role = "Engineer" },
+                new { Name = "Grace", Role = "Admiral" },
+                new { Name = "Alan", Role = "Cryptanalyst" },
+            };
+            await console.Table(people);
+            await tableOutput.Success("console.table sent - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await tableOutput.Error("Table failed →", ex.Message);
+        }
+    }
+
+    private async Task TableColumnsAsync()
+    {
+        try
+        {
+            var people = new[]
+            {
+                new { Name = "Ada", Role = "Engineer" },
+                new { Name = "Grace", Role = "Admiral" },
+                new { Name = "Alan", Role = "Cryptanalyst" },
+            };
+            await console.Table(people, new[] { "Name" });
+            await tableOutput.Success("console.table sent with only the Name column - check DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await tableOutput.Error("Table failed →", ex.Message);
+        }
+    }
+
+    private async Task CountAsync()
+    {
+        try
+        {
+            await console.Count(message);
+            await countersOutput.Success($"console.count('{message}') sent - the tally lives in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await countersOutput.Error("Count failed →", ex.Message);
+        }
+    }
+
+    private async Task CountResetAsync()
+    {
+        try
+        {
+            await console.CountReset(message);
+            await countersOutput.Success($"console.countReset('{message}') sent.");
+        }
+        catch (Exception ex)
+        {
+            await countersOutput.Error("CountReset failed →", ex.Message);
+        }
+    }
+
+    private async Task TimeAsync()
+    {
+        try
+        {
+            await console.Time(message);
+            await timersOutput.Success($"Timer '{message}' started.");
+        }
+        catch (Exception ex)
+        {
+            await timersOutput.Error("Time failed →", ex.Message);
+        }
+    }
+
+    private async Task TimeLogAsync()
+    {
+        try
+        {
+            await console.TimeLog(message);
+            await timersOutput.Success($"Intermediate reading of timer '{message}' logged in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await timersOutput.Error("TimeLog failed →", ex.Message);
+        }
+    }
+
+    private async Task TimeEndAsync()
+    {
+        try
+        {
+            await console.TimeEnd(message);
+            await timersOutput.Success($"Timer '{message}' stopped - elapsed time is in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await timersOutput.Error("TimeEnd failed →", ex.Message);
+        }
+    }
+
+    private async Task TimeStampAsync()
+    {
+        try
+        {
+            await console.TimeStamp(message);
+            await timersOutput.Success("console.timeStamp sent - the marker is on the performance timeline.");
+        }
+        catch (Exception ex)
+        {
+            await timersOutput.Error("TimeStamp failed →", ex.Message);
+        }
+    }
+
+    private async Task CreateGroupsAsync()
+    {
+        try
+        {
+            await console.Log("Outer level");
+            await console.Group("Details");
+            await console.Log("Inside the group");
+            await console.GroupCollapsed("Collapsed by default");
+            await console.Log("Hidden until expanded");
+            await console.GroupEnd();
+            await console.GroupEnd();
+            await groupsOutput.Success("Grouped logs created - expand them in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await groupsOutput.Error("Group demo failed →", ex.Message);
+        }
+    }
+
+    private async Task TraceAsync()
+    {
+        try
+        {
+            await console.Trace("How did we get here?", message);
+            await traceOutput.Success("console.trace sent - the stack trace is in DevTools.");
+        }
+        catch (Exception ex)
+        {
+            await traceOutput.Error("Trace failed →", ex.Message);
+        }
+    }
+
+    private async Task ProfileAsync()
+    {
+        try
+        {
+            await console.Profile(message);
+            await traceOutput.Success($"Profiler '{message}' started (non-standard; browser-dependent).");
+        }
+        catch (Exception ex)
+        {
+            await traceOutput.Error("Profile failed →", ex.Message);
+        }
+    }
+
+    private async Task ProfileEndAsync()
+    {
+        try
+        {
+            await console.ProfileEnd(message);
+            await traceOutput.Success($"Profiler '{message}' stopped - see the browser's performance tool.");
+        }
+        catch (Exception ex)
+        {
+            await traceOutput.Error("ProfileEnd failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearAsync()
+    {
+        try
+        {
+            await console.Clear();
+            await clearOutput.Success("DevTools console cleared.");
+        }
+        catch (Exception ex)
+        {
+            await clearOutput.Error("Clear failed →", ex.Message);
+        }
+    }
+}

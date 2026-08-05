@@ -1,0 +1,294 @@
+@page "/web-locks"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebLocks webLocks
+
+<PageTitle>WebLocks - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="WebLocks"
+            Lead="Cooperative, cross-tab resource locking through navigator.locks: acquire a named lock as an IAsyncDisposable handle, run a callback while holding it, and query which locks are held or pending across the whole origin."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API"
+            InjectAs="WebLocks webLocks" />
+
+<div class="stack">
+
+    <Callout Type="info" Title="Try it with two tabs">
+        Locks are shared across every tab and worker of the origin. Open this page in a second tab,
+        acquire the lock in tab A, then press Acquire in tab B - B's request waits (see it under
+        Pending in the Query section) until A releases. Web Locks work in all modern browsers and
+        require a secure context.
+    </Callout>
+
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.locks."
+                 Code=@("""
+var supported = await webLocks.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Acquire and release"
+                 Api="Acquire"
+                 Description="Acquire hands you an IAsyncDisposable handle; dispose it to release the lock - the natural .NET counterpart to the callback-scoped JS API. By default the call waits until the lock is granted. With ifAvailable set to true it returns null immediately when the lock is taken, and steal transfers ownership from the current holder (use with care). Shared mode allows multiple concurrent holders, exclusive (the default) allows one."
+                 Code=@("""
+await using var handle = await webLocks.Acquire("my-resource");
+
+// ... the lock is held here ...
+
+// released when the handle is disposed
+
+// non-blocking attempt:
+var maybe = await webLocks.Acquire("my-resource", ifAvailable: true);
+if (maybe is null)
+{
+    // somebody else holds it
+}
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Lock name</label>
+                <input @bind="lockName" />
+            </div>
+            <div class="field">
+                <label class="field-label">Shared mode</label>
+                <input type="checkbox" @bind="sharedMode" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="() => Acquire(false)" disabled="@acquiring">Acquire (waits)</button>
+            <button class="secondary" @onclick="() => Acquire(true)" disabled="@acquiring">Acquire if available</button>
+            <button class="danger" @onclick="Release">Release</button>
+        </div>
+        <DemoConsole @ref="acquireOutput" Title="acquire output" />
+    </DemoSection>
+
+    <DemoSection Title="Run a guarded callback"
+                 Api="Run"
+                 Description="Run acquires the lock, executes your callback and releases automatically - even when the callback throws. This demo holds the lock for three seconds; race it from a second tab to watch the other request queue up."
+                 Code=@("""
+await webLocks.Run("my-resource", async () =>
+{
+    // the lock is held for the duration of this callback
+    await Task.Delay(3000);
+});
+// released automatically
+""")>
+        <div class="controls">
+            <button @onclick="RunGuarded" disabled="@running">Run 3-second callback</button>
+        </div>
+        <DemoConsole @ref="runOutput" Title="run output" />
+    </DemoSection>
+
+    <DemoSection Title="Query the lock manager"
+                 Api="Query"
+                 Description="Returns a snapshot of the origin's lock manager: every currently held lock and every pending request, each with its name, mode and an opaque client id identifying the tab or worker. Useful for diagnostics - acquire a lock in another tab first, then query here."
+                 Code=@("""
+var snapshot = await webLocks.Query();
+
+foreach (var held in snapshot.Held)
+{
+    // held.Name, held.Mode ("exclusive" / "shared"), held.ClientId
+}
+
+foreach (var pending in snapshot.Pending)
+{
+    // requests still waiting for the lock
+}
+""")>
+        <div class="controls">
+            <button @onclick="QueryLocks">Query held / pending</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <Callout Type="warning" Title="Cooperative, not mandatory">
+        Web Locks only coordinate code that opts into them - they do not protect storage or any other
+        resource from code that simply ignores the lock. A lock held by a tab is released automatically
+        when that tab closes or navigates away, so stale locks cannot outlive their holder.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.locks." />
+        <ApiMember Name="Acquire" Signature="ValueTask<IAsyncDisposable?> Acquire(string name, WebLockMode mode = WebLockMode.Exclusive, bool ifAvailable = false, bool steal = false, CancellationToken cancellationToken = default)" Description="Acquires the named lock; dispose the returned handle to release. Returns null when ifAvailable is true and the lock is not free." />
+        <ApiMember Name="Run" Signature="ValueTask Run(string name, Func<ValueTask> action, WebLockMode mode = WebLockMode.Exclusive, bool ifAvailable = false, bool steal = false, CancellationToken cancellationToken = default)" Description="Runs the action while holding the named lock and releases automatically." />
+        <ApiMember Name="Query" Signature="ValueTask<WebLockSnapshot> Query()" Description="Returns the current state of the lock manager." />
+        <ApiMember Name="WebLockMode" Signature="enum WebLockMode { Exclusive, Shared }" Description="Exclusive (default) allows a single holder; Shared allows multiple concurrent holders." />
+        <ApiMember Name="WebLockSnapshot.Held" Signature="WebLockInfo[] Held { get; set; }" Description="Locks currently held across the origin." />
+        <ApiMember Name="WebLockSnapshot.Pending" Signature="WebLockInfo[] Pending { get; set; }" Description="Requests still waiting for their lock." />
+        <ApiMember Name="WebLockInfo.Name" Signature="string Name { get; set; }" Description="The lock's name." />
+        <ApiMember Name="WebLockInfo.Mode" Signature="string Mode { get; set; }" Description="The lock's mode: exclusive or shared." />
+        <ApiMember Name="WebLockInfo.ClientId" Signature="string ClientId { get; set; }" Description="Opaque id of the tab or worker holding / requesting the lock." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole acquireOutput = default!;
+    private DemoConsole runOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private string lockName = "butil-demo-lock";
+    private bool sharedMode;
+    private IAsyncDisposable? heldLock;
+    private bool acquiring;
+    private bool running;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await webLocks.IsSupported();
+            await supportOutput.Info("navigator.locks supported:", supported);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Acquire(bool ifAvailable)
+    {
+        // set before the first await so the disabled binding is in place on the very first re-render
+        if (acquiring) return;
+        acquiring = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(lockName))
+            {
+                await acquireOutput.Warn("Enter a lock name first.");
+                return;
+            }
+
+            if (heldLock is not null)
+            {
+                await acquireOutput.Warn("This page already holds a lock - release it first.");
+                return;
+            }
+
+            var mode = sharedMode ? WebLockMode.Shared : WebLockMode.Exclusive;
+            var name = lockName.Trim();
+
+            if (ifAvailable is false)
+            {
+                await acquireOutput.Log($"Requesting '{name}' ({mode}) - this waits until the lock is granted...");
+            }
+
+            heldLock = await webLocks.Acquire(name, mode, ifAvailable);
+
+            if (heldLock is null)
+            {
+                await acquireOutput.Warn($"'{name}' is not available right now (ifAvailable: true returned null).");
+            }
+            else
+            {
+                await acquireOutput.Success($"Acquired '{name}' ({mode}). Press Release (or close the tab) to let other requests through.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await acquireOutput.Error(ex.Message);
+        }
+        finally
+        {
+            acquiring = false;
+        }
+    }
+
+    private async Task Release()
+    {
+        try
+        {
+            if (heldLock is null)
+            {
+                await acquireOutput.Warn("This page holds no lock.");
+                return;
+            }
+
+            await heldLock.DisposeAsync();
+            heldLock = null;
+            await acquireOutput.Success("Released.");
+        }
+        catch (Exception ex)
+        {
+            await acquireOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RunGuarded()
+    {
+        // set before the first await so the disabled binding is in place on the very first re-render
+        if (running) return;
+        running = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(lockName))
+            {
+                await runOutput.Warn("Enter a lock name first.");
+                return;
+            }
+
+            var name = lockName.Trim();
+            await runOutput.Log($"Running a 3-second callback while holding '{name}'...");
+
+            await webLocks.Run(name, async () =>
+            {
+                await Task.Delay(3000);
+            });
+
+            await runOutput.Success($"Callback finished - '{name}' was released automatically.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error(ex.Message);
+        }
+        finally
+        {
+            running = false;
+        }
+    }
+
+    private async Task QueryLocks()
+    {
+        try
+        {
+            var snapshot = await webLocks.Query();
+            await queryOutput.Info($"Held: {snapshot.Held.Length} | Pending: {snapshot.Pending.Length}");
+
+            foreach (var l in snapshot.Held)
+            {
+                await queryOutput.Log($"held - '{l.Name}' ({l.Mode}) client: {l.ClientId}");
+            }
+
+            foreach (var l in snapshot.Pending)
+            {
+                await queryOutput.Log($"pending - '{l.Name}' ({l.Mode}) client: {l.ClientId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (heldLock is not null)
+            {
+                await heldLock.DisposeAsync();
+                heldLock = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

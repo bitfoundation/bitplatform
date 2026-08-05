@@ -1,0 +1,206 @@
+@page "/web-authn"
+@inject Bit.Butil.WebAuthn webAuthn
+
+<PageTitle>WebAuthn - Bit.Butil</PageTitle>
+
+<PageHeader Category="Identity & Permissions"
+            Title="WebAuthn"
+            Lead="Create passkey (public-key) credentials and verify them with the Web Authentication API - biometrics, platform authenticators and security keys, driven entirely from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API"
+            InjectAs="WebAuthn webAuthn" />
+
+<div class="stack">
+    <DemoSection Title="Check availability"
+                 Api="IsAvailable"
+                 Description="Returns true when the browser exposes the Web Authentication API. WebAuthn requires a secure context, so expect false on plain http origins (localhost is exempt)."
+                 Code=@("""
+@inject Bit.Butil.WebAuthn webAuthn
+
+var isAvailable = await webAuthn.IsAvailable();
+""")>
+        <div class="controls">
+            <button @onclick="CheckAvailability">IsAvailable</button>
+        </div>
+        <DemoConsole @ref="availabilityOutput" Title="availability output" />
+    </DemoSection>
+
+    <DemoSection Title="Create a passkey credential"
+                 Api="CreateCredential"
+                 Description="Registers a new public-key credential with a platform authenticator (Windows Hello, Touch ID, Android biometrics). The options object mirrors PublicKeyCredentialCreationOptions; Butil accepts any serializable shape - anonymous objects, JsonElement or your own typed classes via the generic overload. The returned JsonElement carries the credential id, rawId and attestation response."
+                 Code=@("""
+var result = await webAuthn.CreateCredential(new
+{
+    challenge = "testChallenge",
+    rp = new { name = "testRp" },
+    attestation = "direct",
+    user = new { id = "userId", name = "testUser", displayName = "testUser" },
+    authenticatorSelection = new { authenticatorAttachment = "platform" },
+    pubKeyCredParams = new object[]
+    {
+        new { alg = -7, type = "public-key" },   // ES256
+        new { alg = -8, type = "public-key" },   // Ed25519
+        new { alg = -257, type = "public-key" }  // RS256
+    }
+});
+
+var credentialId = result.GetProperty("id").ToString();
+""")>
+        <div class="controls">
+            <button @onclick="Create">Create credential</button>
+        </div>
+        @if (createdId is not null)
+        {
+            <p class="section-desc">Created credential id: <code>@createdId</code></p>
+        }
+        <DemoConsole @ref="createOutput" Title="create credential output" />
+    </DemoSection>
+
+    <DemoSection Title="Get an assertion"
+                 Api="GetCredential"
+                 Description="Asks the authenticator to sign a challenge with an existing credential, producing an assertion your server would verify. Passing the previously created rawId in allowCredentials narrows the request to that passkey; an empty list lets the browser offer any discoverable credential for this origin."
+                 Code=@("""
+var options = createdRawId is null
+    ? new { challenge = "test", allowCredentials = new object[] { } }
+    : new { challenge = "test", allowCredentials = new object[] { new { id = createdRawId, type = "public-key" } } };
+
+var assertion = await webAuthn.GetCredential(options);
+
+var credentialId = assertion.GetProperty("id").ToString();
+""")>
+        <div class="controls">
+            <button @onclick="Get">Get assertion</button>
+        </div>
+        <DemoConsole @ref="assertionOutput" Title="assertion output" />
+    </DemoSection>
+
+    <DemoSection Title="One-line user verification"
+                 Api="Verify"
+                 Description="A convenience wrapper for the common re-authentication gesture: on first call it creates a Butil-managed credential and remembers its rawId in LocalStorage; on later calls it requests an assertion for that credential. Returns true when the user completes the native verification, false otherwise. Pass forceCreate to discard the remembered credential and register a fresh one."
+                 Code=@("""
+var verified = await webAuthn.Verify();
+
+// re-register instead of asserting the remembered credential:
+var reRegistered = await webAuthn.Verify(forceCreate: true);
+""")>
+        <div class="controls">
+            <button @onclick="Verify">Verify</button>
+            <button class="secondary" @onclick="VerifyForceCreate">Verify (forceCreate)</button>
+        </div>
+        <DemoConsole @ref="verifyOutput" Title="verify output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Challenges belong on the server">
+    This page uses hard-coded challenges so the demo is self-contained. A real application must generate a
+    cryptographically random challenge server-side for every ceremony, send it to the client, and verify the
+    signed response server-side (for example with the FIDO2 .NET library). A client-only flow proves the user
+    completed a local gesture - it does not authenticate anyone to your backend.
+</Callout>
+
+<Callout Type="info" Title="Secure context and user activation">
+    WebAuthn only works on https origins (or localhost) and the browser may require a recent user interaction
+    before showing the passkey prompt. If a call is rejected, the promise fails with a NotAllowedError which
+    surfaces here as a JSException.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsAvailable" Signature="Task<bool> IsAvailable()" Description="Checks that the WebAuthentication api is available on the client or not." />
+    <ApiMember Name="CreateCredential" Signature="Task<JsonElement> CreateCredential(object options)" Description="Creates a new credential from an arbitrary serializable options object." />
+    <ApiMember Name="CreateCredential" Signature="Task<JsonElement> CreateCredential(JsonElement options)" Description="Creates a new credential from a JsonElement options payload." />
+    <ApiMember Name="CreateCredential<TValue, TResult>" Signature="Task<TResult> CreateCredential<TValue, TResult>(TValue options)" Description="Typed overload: serializes TValue options and deserializes the credential into TResult." />
+    <ApiMember Name="GetCredential" Signature="Task<JsonElement> GetCredential(object options)" Description="Retrieves an assertion for an existing credential from an arbitrary serializable options object." />
+    <ApiMember Name="GetCredential" Signature="Task<JsonElement> GetCredential(JsonElement options)" Description="Retrieves an assertion from a JsonElement options payload." />
+    <ApiMember Name="GetCredential<TValue, TResult>" Signature="Task<TResult> GetCredential<TValue, TResult>(TValue options)" Description="Typed overload: serializes TValue options and deserializes the assertion into TResult." />
+    <ApiMember Name="Verify" Signature="Task<bool> Verify(bool forceCreate = false)" Description="Tries to get a valid credential using the minimum required options to expose a native verification feature. forceCreate registers a new credential instead of asserting the remembered one." />
+</ApiTable>
+
+@code {
+    private DemoConsole availabilityOutput = default!;
+    private DemoConsole createOutput = default!;
+    private DemoConsole assertionOutput = default!;
+    private DemoConsole verifyOutput = default!;
+    private string? createdId;
+    private string? createdRawId;
+
+    private async Task CheckAvailability()
+    {
+        try
+        {
+            await availabilityOutput.Success("IsAvailable →", await webAuthn.IsAvailable());
+        }
+        catch (Exception ex)
+        {
+            await availabilityOutput.Error("IsAvailable failed →", ex.Message);
+        }
+    }
+
+    private async Task Create()
+    {
+        try
+        {
+            var result = await webAuthn.CreateCredential(new
+            {
+                challenge = "testChallenge",
+                rp = new { name = "testRp" },
+                attestation = "direct",
+                user = new { id = "userId", name = "testUser", displayName = "testUser" },
+                authenticatorSelection = new { authenticatorAttachment = "platform" },
+                pubKeyCredParams = new object[]
+                {
+                    new { alg = -7, type = "public-key" },
+                    new { alg = -8, type = "public-key" },
+                    new { alg = -257, type = "public-key" }
+                }
+            });
+
+            createdId = result.GetProperty("id").ToString();
+            createdRawId = result.GetProperty("rawId").ToString();
+            await createOutput.Success("Created credential →", createdId);
+        }
+        catch (Exception ex)
+        {
+            await createOutput.Error("CreateCredential failed →", ex.Message);
+        }
+    }
+
+    private async Task Get()
+    {
+        try
+        {
+            var options = createdRawId is null
+                ? new { challenge = "test", allowCredentials = new object[] { } }
+                : new { challenge = "test", allowCredentials = new object[] { new { id = createdRawId, type = "public-key" } } };
+
+            var assertion = await webAuthn.GetCredential(options);
+            await assertionOutput.Success("Got assertion for credential →", assertion.GetProperty("id").ToString());
+        }
+        catch (Exception ex)
+        {
+            await assertionOutput.Error("GetCredential failed →", ex.Message);
+        }
+    }
+
+    private async Task Verify()
+    {
+        try
+        {
+            await verifyOutput.Success("Verify →", await webAuthn.Verify());
+        }
+        catch (Exception ex)
+        {
+            await verifyOutput.Error("Verify failed →", ex.Message);
+        }
+    }
+
+    private async Task VerifyForceCreate()
+    {
+        try
+        {
+            await verifyOutput.Success("Verify(forceCreate: true) →", await webAuthn.Verify(forceCreate: true));
+        }
+        catch (Exception ex)
+        {
+            await verifyOutput.Error("Verify failed →", ex.Message);
+        }
+    }
+}

@@ -1,0 +1,181 @@
+@page "/object-urls"
+@inject Bit.Butil.ObjectUrls objectUrls
+
+<PageTitle>ObjectUrls - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="ObjectUrls"
+            Lead="Turn any C# byte array into a blob: URL the browser can link to, render or download - a managed wrapper over URL.createObjectURL and URL.revokeObjectURL with automatic cleanup."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static"
+            InjectAs="ObjectUrls objectUrls" />
+
+<div class="stack">
+    <DemoSection Title="Create a URL from C# bytes"
+                 Api="Create"
+                 Description="Create builds a Blob from your bytes (with the MIME type you pass) and returns its blob: URL. The URL is origin-scoped and works anywhere a regular URL does: anchors, images, iframes, downloads. Type some text, create a URL for it, then open or download the result."
+                 Code=@("""
+byte[] bytes = Encoding.UTF8.GetBytes("Hello from Bit.Butil!");
+
+string url = await objectUrls.Create(bytes, "text/plain");
+
+// <a href="@url" target="_blank">Open</a>
+// <a href="@url" download="note.txt">Download note.txt</a>
+""")>
+        <div class="field">
+            <span class="field-label">Text for the blob</span>
+            <textarea @bind="_blobText" rows="3" placeholder="Hello from Bit.Butil!"></textarea>
+        </div>
+        <div class="controls">
+            <button @onclick="CreateTextUrl">Create object URL</button>
+        </div>
+        @if (_textUrl is not null)
+        {
+            <p style="margin-top:0.75rem">
+                <a href="@_textUrl" target="_blank" rel="noopener">Open blob URL</a>
+                &nbsp;·&nbsp;
+                <a href="@_textUrl" download="butil-note.txt">Download butil-note.txt</a>
+            </p>
+        }
+        <DemoConsole @ref="createOutput" Title="create output" />
+    </DemoSection>
+
+    <DemoSection Title="Render an image built in C#"
+                 Api="Create"
+                 Description="Any MIME type works. Here an SVG document is composed as a plain C# string, turned into an object URL with the image/svg+xml type and rendered by a regular img tag - no server, no data URL inflation."
+                 Code=@("""
+var svg = $"<svg xmlns='http://www.w3.org/2000/svg' width='240' height='120'>" +
+          $"<rect width='240' height='120' rx='12' fill='#4f46e5'/>" +
+          $"<text x='120' y='68' text-anchor='middle' fill='#fff' font-size='18'>Made at {DateTime.Now:HH:mm:ss}</text>" +
+          "</svg>";
+
+string url = await objectUrls.Create(Encoding.UTF8.GetBytes(svg), "image/svg+xml");
+""")>
+        <div class="controls">
+            <button @onclick="CreateSvgUrl">Generate image</button>
+        </div>
+        @if (_svgUrl is not null)
+        {
+            <img src="@_svgUrl" alt="SVG generated in C#" style="margin-top:1rem;max-width:240px;border-radius:8px" />
+        }
+        <DemoConsole @ref="imageOutput" Title="image output" />
+    </DemoSection>
+
+    <DemoSection Title="Revoke a URL"
+                 Api="Revoke"
+                 Description="Each object URL pins its Blob in memory until the document unloads or the URL is revoked. Revoke as soon as a URL is no longer referenced - after the download started or the image loaded. Revoking invalidates the URL immediately: links created above stop working."
+                 Code=@("""
+await objectUrls.Revoke(url);
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="RevokeAll">Revoke the URLs created above</button>
+        </div>
+        <DemoConsole @ref="revokeOutput" Title="revoke output" />
+    </DemoSection>
+
+    <DemoSection Title="Lifetime and automatic cleanup"
+                 Api="Create(track) / DisposeAsync"
+                 Description="ObjectUrls tracks every URL it creates and revokes any still outstanding when the service is disposed (end of circuit or app scope), so forgotten URLs don't leak. Pass track: false when a URL must outlive the service - then revoking it becomes your responsibility."
+                 Code=@("""
+// tracked (default): auto-revoked on DisposeAsync if you forget
+string tracked = await objectUrls.Create(bytes, "application/pdf");
+
+// untracked: survives disposal; call Revoke yourself
+string longLived = await objectUrls.Create(bytes, "application/pdf", track: false);
+""") />
+</div>
+
+<Callout Type="info" Title="Object URLs are per-document">
+    A blob: URL only resolves inside the document that created it. It cannot be persisted, shared with
+    other tabs or sent to a server - treat it as a short-lived, in-page handle to bytes you already have.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Create" Signature='ValueTask<string> Create(byte[] data, string mimeType = "application/octet-stream", bool track = true)' Description="Creates an object URL from raw bytes plus an optional MIME type. Tracked URLs are auto-revoked on disposal." />
+    <ApiMember Name="Revoke" Signature="ValueTask Revoke(string objectUrl)" Description="Revokes a previously created object URL, releasing the underlying Blob." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Revokes every still-outstanding tracked URL created by this instance." />
+</ApiTable>
+
+@code {
+    private DemoConsole createOutput = default!;
+    private DemoConsole imageOutput = default!;
+    private DemoConsole revokeOutput = default!;
+
+    private string _blobText = "Hello from Bit.Butil ObjectUrls!";
+    private string? _textUrl;
+    private string? _svgUrl;
+
+    private async Task CreateTextUrl()
+    {
+        try
+        {
+            if (_textUrl is not null)
+            {
+                await objectUrls.Revoke(_textUrl);
+                _textUrl = null;
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(_blobText);
+            _textUrl = await objectUrls.Create(bytes, "text/plain");
+            await createOutput.Success("Create →", _textUrl);
+        }
+        catch (Exception ex)
+        {
+            await createOutput.Error("Create failed:", ex.Message);
+        }
+    }
+
+    private async Task CreateSvgUrl()
+    {
+        try
+        {
+            if (_svgUrl is not null)
+            {
+                await objectUrls.Revoke(_svgUrl);
+                _svgUrl = null;
+            }
+
+            var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='120'>" +
+                      "<rect width='240' height='120' rx='12' fill='#4f46e5'/>" +
+                      "<text x='120' y='58' text-anchor='middle' fill='#ffffff' font-family='sans-serif' font-size='18'>Bit.Butil</text>" +
+                      $"<text x='120' y='84' text-anchor='middle' fill='#c7d2fe' font-family='sans-serif' font-size='12'>Made in C# at {DateTime.Now:HH:mm:ss}</text>" +
+                      "</svg>";
+
+            _svgUrl = await objectUrls.Create(Encoding.UTF8.GetBytes(svg), "image/svg+xml");
+            await imageOutput.Success("Create (image/svg+xml) →", _svgUrl);
+        }
+        catch (Exception ex)
+        {
+            await imageOutput.Error("Create failed:", ex.Message);
+        }
+    }
+
+    private async Task RevokeAll()
+    {
+        try
+        {
+            if (_textUrl is null && _svgUrl is null)
+            {
+                await revokeOutput.Warn("Nothing to revoke - create a URL first.");
+                return;
+            }
+
+            if (_textUrl is not null)
+            {
+                await objectUrls.Revoke(_textUrl);
+                await revokeOutput.Log("Revoked", _textUrl);
+                _textUrl = null;
+            }
+
+            if (_svgUrl is not null)
+            {
+                await objectUrls.Revoke(_svgUrl);
+                await revokeOutput.Log("Revoked", _svgUrl);
+                _svgUrl = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            await revokeOutput.Error("Revoke failed:", ex.Message);
+        }
+    }
+}

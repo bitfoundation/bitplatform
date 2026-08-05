@@ -1,0 +1,74 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting started - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Getting started"
+            Lead="Bit.Butil ships as a single NuGet package plus one script tag. Three steps and every browser API on this site is available as an injectable C# service." />
+
+<DemoSection Title="1. Install the package"
+             Description="Bit.Butil targets .NET 8, 9 and 10, works in Blazor WebAssembly, Blazor Server and Blazor Hybrid (MAUI), and is fully trimmable."
+             Code=@("dotnet add package Bit.Butil")
+             Language="shell" />
+
+<DemoSection Title="2. Add the script"
+             Description="Add the Butil bridge script to your host page (index.html, App.razor or _Host.cshtml), next to the Blazor script."
+             Code=@("""
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.webassembly.js"></script>
+""")
+             Language="html" />
+
+<DemoSection Title="3. Register the services"
+             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model."
+             Code=@("""
+using Bit.Butil;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.Services.AddBitButilServices();
+
+await builder.Build().RunAsync();
+""") />
+
+<DemoSection Title="Use any API"
+             Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included."
+             Code=@("""
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.Keyboard keyboard
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await clipboard.WriteText("Hello from C#!");
+
+        await keyboard.Add(ButilKeyCodes.F10, args => { /* ... */ }, ButilModifiers.Ctrl);
+    }
+}
+""")
+             Language="razor" />
+
+<DemoSection Title="Optional: fast invoke"
+             Api="BitButil.UseFastInvoke"
+             Description="On Blazor WebAssembly, APIs backed by synchronous JavaScript (LocalStorage, Cookie, Console, Location, ...) can skip the async interop machinery entirely. Call it once at startup; asynchronous browser APIs are unaffected."
+             Code=@("""
+BitButil.UseFastInvoke();
+
+// switch back at any time:
+BitButil.UseNormalInvoke();
+""") />
+
+<Callout Type="warning" Title="Browser support varies by API">
+    Butil exposes the browser's own capabilities, so each feature is only as available as the underlying
+    web API. Pages on this site link to the relevant MDN reference, and experimental APIs (NFC, Idle
+    Detection, Eye Dropper, ...) are called out explicitly.
+</Callout>
+
+<Callout Type="info" Title="Where to next?">
+    Browse the sidebar, or start with the most popular APIs:
+    <a href="storage">LocalStorage</a>, <a href="clipboard">Clipboard</a>, <a href="keyboard">Keyboard</a>,
+    <a href="crypto">Crypto</a> and <a href="web-authn">WebAuthn</a>.
+</Callout>

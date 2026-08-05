@@ -1,0 +1,363 @@
+@page "/web-audio"
+@implements IAsyncDisposable
+@inject Bit.Butil.WebAudio webAudio
+
+<PageTitle>WebAudio - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="WebAudio"
+            Lead="Play sound from C# with the Web Audio API: decode and play audio buffers, generate oscillator tones, and control per-playback and master gain - all through one shared AudioContext."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
+            InjectAs="WebAudio webAudio" />
+
+<div class="stack">
+    <DemoSection Title="Support and context state"
+                 Api="IsSupported / Resume / Suspend"
+                 Description="IsSupported reports whether the runtime exposes AudioContext. Butil manages a single shared context behind the scenes: Resume wakes it up (required on some mobile browsers before any sound can play) and Suspend releases the audio hardware while keeping the graph intact."
+                 Code=@("""
+@inject Bit.Butil.WebAudio webAudio
+
+var isSupported = await webAudio.IsSupported();
+
+await webAudio.Resume();  // call from a click handler to satisfy autoplay policies
+
+await webAudio.Suspend(); // silence everything without tearing the context down
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="ResumeContext">Resume</button>
+            <button class="secondary" @onclick="SuspendContext">Suspend</button>
+        </div>
+        <DemoConsole @ref="contextOutput" Title="context output" />
+    </DemoSection>
+
+    <DemoSection Title="Play a tone"
+                 Api="PlayTone"
+                 Description="PlayTone spins up an oscillator - sine, triangle, square or sawtooth - at the given frequency. A positive durationMs stops it automatically; a duration of 0 keeps the tone running until you stop it through the returned AudioPlaybackHandle. The startGain sets the per-source volume."
+                 Code=@("""
+// one-shot beep, stops itself after 600 ms:
+await webAudio.PlayTone(440, durationMs: 600, waveform: "sine", startGain: 0.5);
+
+// open-ended tone you stop manually:
+var handle = await webAudio.PlayTone(220, durationMs: 0, waveform: "sawtooth");
+// ...
+await handle.Stop();
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Frequency (@frequency Hz)</span>
+                <input type="range" min="80" max="2000" step="10" @bind="frequency" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Waveform</span>
+                <select @bind="waveform">
+                    <option value="sine">sine</option>
+                    <option value="triangle">triangle</option>
+                    <option value="square">square</option>
+                    <option value="sawtooth">sawtooth</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Tone gain (@toneGain.ToString("0.0"))</span>
+                <input type="range" min="0" max="1" step="0.1" @bind="toneGain" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="PlayBeep">Play 600 ms beep</button>
+            <button @onclick="StartTone" disabled="@(toneHandle is not null)">Start open-ended tone</button>
+            <button class="danger" @onclick="StopTone" disabled="@(toneHandle is null)">Stop tone</button>
+        </div>
+        <DemoConsole @ref="toneOutput" Title="tone output" />
+    </DemoSection>
+
+    <DemoSection Title="Play an audio buffer"
+                 Api="PlayBuffer"
+                 Description="PlayBuffer decodes any container the browser understands (wav, mp3, ogg, ...) from a byte array and plays it - bytes you fetched over HTTP, read from a user file or, as here, synthesized in C#. Set loop to keep it repeating; the returned handle stops it and adjusts its gain while playing."
+                 Code=@("""
+byte[] bytes = await httpClient.GetByteArrayAsync("music/chime.wav");
+
+var handle = await webAudio.PlayBuffer(bytes, startGain: 1.0, loop: false);
+
+await handle.SetGain(0.3); // duck the volume while it plays
+await handle.Stop();
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="loopBuffer" /> Loop</label>
+            <button @onclick="PlayChime">Play generated chime</button>
+            <button class="danger" @onclick="StopBuffer" disabled="@(bufferHandle is null)">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Playback gain (@bufferGain.ToString("0.0"))</span>
+            <input type="range" min="0" max="1" step="0.1" @bind="bufferGain" @bind:event="oninput" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="ApplyBufferGain" disabled="@(bufferHandle is null)">Apply gain to playback</button>
+        </div>
+        <DemoConsole @ref="bufferOutput" Title="buffer output" />
+    </DemoSection>
+
+    <DemoSection Title="Master gain"
+                 Api="SetMasterGain"
+                 Description="Every Butil-managed playback routes through one master gain node. SetMasterGain (0 to 1) scales tones and buffers alike - the natural hook for an app-wide volume slider or a mute toggle."
+                 Code=@("""
+await webAudio.SetMasterGain(0.5); // half volume for everything
+
+await webAudio.SetMasterGain(0);   // mute
+""")>
+        <div class="field">
+            <span class="field-label">Master gain (@masterGain.ToString("0.0"))</span>
+            <input type="range" min="0" max="1" step="0.1" @bind="masterGain" @bind:event="oninput" />
+        </div>
+        <div class="controls">
+            <button @onclick="ApplyMasterGain">Apply master gain</button>
+        </div>
+        <DemoConsole @ref="masterGainOutput" Title="master gain output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Autoplay policies block un-gestured audio">
+    Browsers create the AudioContext in a suspended state until the user interacts with the page. Start your
+    first playback - or call Resume - from a click or key handler; audio triggered from OnInitializedAsync
+    will stay silent on mobile Safari and produce a console warning on Chromium.
+</Callout>
+
+<Callout Type="info" Title="A deliberately small surface">
+    The wrapper exposes the high-traffic operations: play a buffer, play a tone and gain control. For custom
+    node graphs - filters, analysers, spatial panners - build the graph in JavaScript and call into it via
+    interop; Butil's shared context does not get in the way.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes AudioContext." />
+    <ApiMember Name="Resume" Signature="ValueTask Resume()" Description="Resumes a suspended AudioContext. Mobile Safari requires this on the first user interaction." />
+    <ApiMember Name="Suspend" Signature="ValueTask Suspend()" Description="Suspends the shared AudioContext." />
+    <ApiMember Name="SetMasterGain" Signature="ValueTask SetMasterGain(double value)" Description="Sets the master gain (in [0, 1]) applied to every Butil-managed playback." />
+    <ApiMember Name="PlayBuffer" Signature="ValueTask<AudioPlaybackHandle> PlayBuffer(byte[] data, double startGain = 1.0, bool loop = false)" Description="Decodes and plays the given audio bytes. Returns a handle for stop/gain control." />
+    <ApiMember Name="PlayTone" Signature="ValueTask<AudioPlaybackHandle> PlayTone(double frequency, double durationMs = 0, string waveform = &quot;sine&quot;, double startGain = 0.5)" Description="Plays a sine/triangle/square/sawtooth oscillator; durationMs of 0 means an open-ended tone you stop manually." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Closes the underlying AudioContext and stops any in-flight playback; called automatically when the scoped service is disposed." />
+    <ApiMember Name="AudioPlaybackHandle.Id" Signature="Guid Id" Description="The internal playback id." />
+    <ApiMember Name="AudioPlaybackHandle.Stop" Signature="ValueTask Stop()" Description="Stops playback immediately." />
+    <ApiMember Name="AudioPlaybackHandle.SetGain" Signature="ValueTask SetGain(double value)" Description="Sets per-source gain in [0, 1]." />
+    <ApiMember Name="AudioPlaybackHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Stops the playback if it is still running." />
+</ApiTable>
+
+@code {
+    private DemoConsole contextOutput = default!;
+    private DemoConsole toneOutput = default!;
+    private DemoConsole bufferOutput = default!;
+    private DemoConsole masterGainOutput = default!;
+    private double frequency = 440;
+    private string waveform = "sine";
+    private double toneGain = 0.5;
+    private bool loopBuffer;
+    private double bufferGain = 1.0;
+    private double masterGain = 1.0;
+    private AudioPlaybackHandle? toneHandle;
+    private AudioPlaybackHandle? bufferHandle;
+    private byte[]? chimeWav;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await contextOutput.Success("IsSupported →", await webAudio.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ResumeContext()
+    {
+        try
+        {
+            await webAudio.Resume();
+            await contextOutput.Log("Resume → context running");
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("Resume failed →", ex.Message);
+        }
+    }
+
+    private async Task SuspendContext()
+    {
+        try
+        {
+            await webAudio.Suspend();
+            await contextOutput.Log("Suspend → context suspended");
+        }
+        catch (Exception ex)
+        {
+            await contextOutput.Error("Suspend failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayBeep()
+    {
+        try
+        {
+            await webAudio.Resume(); // the click that got us here is the gesture the autoplay policy wants
+            await webAudio.PlayTone(frequency, durationMs: 600, waveform: waveform, startGain: toneGain);
+            await toneOutput.Log($"PlayTone → {frequency} Hz {waveform}, 600 ms");
+        }
+        catch (Exception ex)
+        {
+            await toneOutput.Error("PlayTone failed →", ex.Message);
+        }
+    }
+
+    private async Task StartTone()
+    {
+        try
+        {
+            await StopToneInternal();
+            await webAudio.Resume();
+            toneHandle = await webAudio.PlayTone(frequency, durationMs: 0, waveform: waveform, startGain: toneGain);
+            await toneOutput.Log($"PlayTone → open-ended {frequency} Hz {waveform} (handle {toneHandle.Id})");
+        }
+        catch (Exception ex)
+        {
+            await toneOutput.Error("PlayTone failed →", ex.Message);
+        }
+    }
+
+    private async Task StopTone()
+    {
+        try
+        {
+            await StopToneInternal();
+            await toneOutput.Log("Stop → tone stopped");
+        }
+        catch (Exception ex)
+        {
+            await toneOutput.Error("Stop failed →", ex.Message);
+        }
+    }
+
+    private async Task PlayChime()
+    {
+        try
+        {
+            await StopBufferInternal();
+            await webAudio.Resume();
+
+            chimeWav ??= GenerateChimeWav();
+            bufferHandle = await webAudio.PlayBuffer(chimeWav, startGain: bufferGain, loop: loopBuffer);
+            await bufferOutput.Log($"PlayBuffer → {chimeWav.Length:N0} bytes, loop={loopBuffer} (handle {bufferHandle.Id})");
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("PlayBuffer failed →", ex.Message);
+        }
+    }
+
+    private async Task StopBuffer()
+    {
+        try
+        {
+            await StopBufferInternal();
+            await bufferOutput.Log("Stop → buffer playback stopped");
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("Stop failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyBufferGain()
+    {
+        try
+        {
+            if (bufferHandle is null) return;
+
+            await bufferHandle.SetGain(bufferGain);
+            await bufferOutput.Log($"SetGain → {bufferGain:0.0}");
+        }
+        catch (Exception ex)
+        {
+            await bufferOutput.Error("SetGain failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyMasterGain()
+    {
+        try
+        {
+            await webAudio.SetMasterGain(masterGain);
+            await masterGainOutput.Log($"SetMasterGain → {masterGain:0.0}");
+        }
+        catch (Exception ex)
+        {
+            await masterGainOutput.Error("SetMasterGain failed →", ex.Message);
+        }
+    }
+
+    private async Task StopToneInternal()
+    {
+        if (toneHandle is null) return;
+
+        await toneHandle.DisposeAsync();
+        toneHandle = null;
+    }
+
+    private async Task StopBufferInternal()
+    {
+        if (bufferHandle is null) return;
+
+        await bufferHandle.DisposeAsync();
+        bufferHandle = null;
+    }
+
+    /// <summary>Synthesizes a short C-major chime as a 16-bit mono PCM wav, so the demo needs no external asset.</summary>
+    private static byte[] GenerateChimeWav()
+    {
+        const int sampleRate = 44100;
+        const double durationSeconds = 1.2;
+        var sampleCount = (int)(sampleRate * durationSeconds);
+        var dataSize = sampleCount * 2;
+
+        using var stream = new MemoryStream(44 + dataSize);
+        using var writer = new BinaryWriter(stream);
+
+        writer.Write("RIFF"u8);
+        writer.Write(36 + dataSize);
+        writer.Write("WAVE"u8);
+        writer.Write("fmt "u8);
+        writer.Write(16);
+        writer.Write((short)1);       // PCM
+        writer.Write((short)1);       // mono
+        writer.Write(sampleRate);
+        writer.Write(sampleRate * 2); // byte rate
+        writer.Write((short)2);       // block align
+        writer.Write((short)16);      // bits per sample
+        writer.Write("data"u8);
+        writer.Write(dataSize);
+
+        double[] chord = [261.63, 329.63, 392.00]; // C4, E4, G4
+        for (var i = 0; i < sampleCount; i++)
+        {
+            var t = (double)i / sampleRate;
+            var envelope = Math.Exp(-3 * t);
+            var sample = chord.Sum(f => Math.Sin(2 * Math.PI * f * t)) / chord.Length;
+            writer.Write((short)(sample * envelope * short.MaxValue * 0.8));
+        }
+
+        writer.Flush();
+        return stream.ToArray();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await StopToneInternal();
+            await StopBufferInternal();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}
