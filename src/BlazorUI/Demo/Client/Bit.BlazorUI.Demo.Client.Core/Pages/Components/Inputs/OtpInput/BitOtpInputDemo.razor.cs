@@ -259,7 +259,7 @@ public partial class BitOtpInputDemo
             Name = "Type",
             Type = "BitInputType?",
             DefaultValue = "null",
-            Description = "Type of the inputs, which also decides the virtual keyboard of the mobile browsers. The Number type asks for the numeric keypad and rejects every character that is not a digit, whether it is typed or pasted, without rendering a native number input (which would carry spin buttons and report an empty value for characters like e or -).",
+            Description = "Type of the inputs, which also decides the virtual keyboard of the mobile browsers. The Number type asks for the numeric keypad and rejects every character that is not a digit, whether it is typed or pasted, without rendering a native number input (which would carry spin buttons and report an empty value for characters like e or -). The Email and the Url types are rendered as text inputs for the same reason, since the constraint validation they carry can never be satisfied by a single character and would keep a plain html form from submitting; only the keyboard they ask for is kept.",
             LinkType = LinkType.Link,
             Href = "#input-type-enum",
         },
@@ -534,7 +534,7 @@ public partial class BitOtpInputDemo
         {
             Name = "InputElements",
             Type = "ElementReference[]",
-            Description = "The ElementReferences to the input elements of the BitOtpInput.",
+            Description = "The ElementReferences to the input elements of the BitOtpInput. The inherited InputElement, which every input component carries a single one of, stands for the input holding the first character of the code.",
         },
         new()
         {

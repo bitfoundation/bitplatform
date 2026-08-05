@@ -90,7 +90,7 @@
                    aria-invalid="@GetAriaInvalid()"
                    @* the input holding the first character of the code stays in the tab order whichever
                       way the row is laid out, since Tab addresses the code rather than the layout. *@
-                   tabindex="@(SingleTabStop && index > 0 ? -1 : (int?)null)"
+                   tabindex="@GetTabIndex(index)"
                    disabled="@(IsEnabled is false)" />
         }
     </div>

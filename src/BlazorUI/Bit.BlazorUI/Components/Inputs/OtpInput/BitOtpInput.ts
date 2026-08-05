@@ -22,6 +22,23 @@ namespace BitBlazorUI {
                 input?.select();
             }, { signal });
 
+            // The row of boxes reads as a single field, so the gaps between them (and the separators
+            // sitting in those gaps) have to behave like a part of it rather than as dead space. A click
+            // that misses a box lands on the input the typing is meant to carry on in, which is the first
+            // one left to fill, or on the last one when the code is already complete.
+            root.addEventListener('click', (e: Event) => {
+                if (OtpInput.getInput(e)) return;
+
+                const target = e.target as HTMLElement;
+                if (!target?.closest?.('.bit-otp-iwr')) return;
+
+                const inputs = Array.from(root.querySelectorAll<HTMLInputElement>('input.bit-otp-inp'))
+                                    .filter(i => !i.disabled && !i.readOnly);
+                if (!inputs.length) return;
+
+                (inputs.find(i => !i.value) ?? inputs[inputs.length - 1]).focus();
+            }, { signal });
+
             root.addEventListener('paste', async (e: ClipboardEvent) => {
                 const input = OtpInput.getInput(e);
                 if (!input) return;

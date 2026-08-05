@@ -135,6 +135,78 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(inputModeAttribute, bitOtpInput.GetAttribute("inputmode"));
     }
 
+    [TestMethod,
+        DataRow(BitInputType.Email, "email"),
+        DataRow(BitInputType.Url, "url")
+    ]
+    public void BitOtpInputShouldNotRenderTheConstraintValidatedTypes(BitInputType inputType, string expectedInputMode)
+    {
+        // An email or a url typed input carries a constraint validation that a single character can never
+        // satisfy, which would leave every box permanently invalid and keep a plain html form from ever
+        // submitting. Only the keyboard the type was picked for survives, which is the inputmode.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, inputType);
+        });
+
+        var input = com.Find(".bit-otp-inp");
+
+        Assert.AreEqual("text", input.GetAttribute("type"));
+        Assert.AreEqual(expectedInputMode, input.GetAttribute("inputmode"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldStillRenderATelTypedInput()
+    {
+        // Unlike the email and the url types, the tel one carries no constraint validation, so there is
+        // nothing about it that a single character box cannot satisfy.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, BitInputType.Tel);
+        });
+
+        var input = com.Find(".bit-otp-inp");
+
+        Assert.AreEqual("tel", input.GetAttribute("type"));
+        Assert.AreEqual("tel", input.GetAttribute("inputmode"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldRenderTheTabIndexOnEveryInput()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.TabIndex, "2");
+        });
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.AreEqual("2", input.GetAttribute("tabindex"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldKeepTheInputsOutOfTheTabOrderOverTheTabIndex()
+    {
+        // An input that the SingleTabStop takes out of the tab order has no position left to be placed at,
+        // so the TabIndex of the consumer only reaches the one input that is still reachable.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.TabIndex, "2");
+            parameters.Add(p => p.SingleTabStop, true);
+        });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.AreEqual("2", inputs[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", inputs[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", inputs[2].GetAttribute("tabindex"));
+    }
+
     [TestMethod]
     public void BitOtpInputShouldRespondToFocusEventsWithIndex()
     {
@@ -767,6 +839,45 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputShouldDropTheInvisibleCharactersOfAPastedCode()
+    {
+        // A code copied out of a right-to-left message carries the bidi marks it is written with, and a few
+        // clipboards prepend a byte order mark. They are invisible, so they used to fill the boxes with
+        // characters the user could not see and hand the server a code it never issued.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 6);
+        });
+
+        // A byte order mark, the left-to-right and the right-to-left marks, a zero width space, a zero
+        // width joiner and the Arabic letter mark, spread through a plain six digit code.
+        var code = "\uFEFF\u200E1\u200F2\u200B3\u200D4\u061C56";
+
+        await com.InvokeAsync(() => com.Instance._SetValue(code, 0));
+
+        Assert.AreEqual("123456", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldRejectAnInvisibleCharacterThatArrivesOnItsOwn()
+    {
+        // Neither an input type nor a pattern is consulted about a character a code is never made of, so
+        // it is refused whichever way it reaches the component.
+        (string Value, int Index)? invalidArgs = null;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.OnInvalid, args => invalidArgs = args);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "\u200E" });
+
+        Assert.IsTrue(string.IsNullOrEmpty(com.Instance.Value));
+        Assert.IsNotNull(invalidArgs);
+    }
+
+    [TestMethod]
     public async Task BitOtpInputShouldKeepTheFocusedInputOnBackspaceWhenItHoldsACharacter()
     {
         // Backspace used to move the focus back even when it had a character to delete right where it
@@ -885,6 +996,25 @@ public class BitOtpInputTests : BunitTestContext
         await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "•2" });
 
         Assert.AreEqual("2", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldKeepTheCharacterWhenAnInputEventChangesNothing()
+    {
+        // An input event that reports exactly what the input was already showing (a step of an IME, or a
+        // keystroke the browser took back on its own) leaves nothing to write, and writing the nothing it
+        // left used to delete the character that the input still shows.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Mask, "••");
+            parameters.Add(p => p.DefaultValue, "1");
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "••" });
+
+        Assert.AreEqual("1", com.Instance.Value);
+        Assert.AreEqual("••", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
     }
 
     [TestMethod]
@@ -2068,6 +2198,20 @@ public class BitOtpInputTests : BunitTestContext
         com.Render(parameters => parameters.Add(p => p.Length, 6));
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.OtpInput.setup"].Count);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldBindTheInheritedInputElementToTheFirstInput()
+    {
+        // The base class carries a single InputElement along with the FocusAsync overloads that address
+        // it, which used to run against an element reference that was never bound.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+        });
+
+        Assert.IsFalse(string.IsNullOrEmpty(com.Instance.InputElement.Id));
+        Assert.AreEqual(com.Instance.InputElements[0].Id, com.Instance.InputElement.Id);
     }
 
     [TestMethod]

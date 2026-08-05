@@ -1,4 +1,5 @@
 using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -524,6 +525,16 @@ public partial class BitOtpInput : BitInputBase<string?>
             _dotnetObj = DotNetObjectReference.Create(this);
         }
 
+        // The base class carries a single InputElement along with the FocusAsync overloads that address
+        // it, and an OTP input has one element per character rather than one altogether. The input holding
+        // the first character of the code stands in for it, so that the inherited members keep working
+        // instead of running against an element reference that was never bound. It is re-bound on every
+        // render because a Length that changes replaces the whole array of references.
+        if (_inputRefs.Length > 0)
+        {
+            InputElement = _inputRefs[0];
+        }
+
         // A disabled input cannot take the focus, so a component that starts out disabled is focused on
         // the first render that finds it enabled rather than losing the auto focus altogether.
         if (IsEnabled && AutoFocus && _autoFocused is false)
@@ -602,18 +613,22 @@ public partial class BitOtpInput : BitInputBase<string?>
         }
     }
 
+    // Only the types whose native element can actually hold a single character are rendered as they are.
     // A number typed input is the wrong element for a single character box: it reports an empty value for
     // the characters a number accepts but a code does not (e, +, -, .), it carries spin buttons, and the
-    // mouse wheel changes it. The numeric keyboard it is picked for comes from the inputmode below
-    // instead, and the digits are enforced by IsAllowedChar, so it is rendered as a text input.
+    // mouse wheel changes it. The email and the url typed ones carry a constraint validation that a single
+    // character can never satisfy, which would leave every box permanently invalid and keep a plain html
+    // form from ever submitting. All three are rendered as text inputs instead: the keyboard they were
+    // picked for comes from the inputmode below and the characters are enforced by IsAllowedChar, so
+    // nothing of what the type was asked for is lost.
     private string GetInputType() => Type switch
     {
         BitInputType.Text => "text",
         BitInputType.Number => "text",
         BitInputType.Password => "password",
-        BitInputType.Email => "email",
+        BitInputType.Email => "text",
         BitInputType.Tel => "tel",
-        BitInputType.Url => "url",
+        BitInputType.Url => "text",
         _ => "text"
     };
 
@@ -657,6 +672,18 @@ public partial class BitOtpInput : BitInputBase<string?>
                 : null;
     }
 
+    // The tab order of a group of inputs holding a single value is decided by two things at once: the
+    // SingleTabStop, which takes every input but the first one out of it, and the TabIndex of the
+    // consumer, which places the component itself in an order of its own. The first one wins for the
+    // inputs it removes, since a removed input has no position to be placed at, and the second one is
+    // applied to the inputs that are still reachable.
+    private string? GetTabIndex(int index)
+    {
+        if (SingleTabStop && index > 0) return "-1";
+
+        return TabIndex;
+    }
+
     private string GetInputAriaLabel(int index)
     {
         // Formatted by hand rather than with string.Format so that a consumer supplied format can never
@@ -691,7 +718,9 @@ public partial class BitOtpInput : BitInputBase<string?>
             AppendStyle(cssStyles, Styles.Focused);
         }
 
-        return cssStyles.ToString();
+        // A Styles object that carries none of the slots of an input leaves nothing to declare, and an
+        // empty style attribute on every one of them is noise in the markup rather than a style.
+        return cssStyles.Length > 0 ? cssStyles.ToString() : null;
     }
 
     private static void AppendStyle(StringBuilder styles, string style)
@@ -715,24 +744,24 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         cssClasses.Append("bit-otp-inp");
 
-        if (Classes?.Input is not null)
+        if (Classes.Input is not null)
         {
-            cssClasses.Append(' ').Append(Classes?.Input);
+            cssClasses.Append(' ').Append(Classes.Input);
         }
 
         if (_inputValues[index].HasValue())
         {
             cssClasses.Append(" bit-otp-fld");
 
-            if (Classes?.Filled is not null)
+            if (Classes.Filled is not null)
             {
-                cssClasses.Append(' ').Append(Classes?.Filled);
+                cssClasses.Append(' ').Append(Classes.Filled);
             }
         }
 
-        if (Classes?.Focused is not null && _inputFocusStates[index])
+        if (Classes.Focused is not null && _inputFocusStates[index])
         {
-            cssClasses.Append(' ').Append(Classes?.Focused);
+            cssClasses.Append(' ').Append(Classes.Focused);
         }
 
         return cssClasses.ToString();
@@ -843,7 +872,14 @@ public partial class BitOtpInput : BitInputBase<string?>
                 // and only the casing and the digit normalization are applied.
                 var diff = TransformValue(rawDiff);
 
-                if (IsAllowedValue(diff) is false)
+                if (diff.HasNoValue())
+                {
+                    // An input event that did not change what the input is showing (a step of an IME, or a
+                    // keystroke the browser took back on its own) leaves nothing to write, and writing the
+                    // nothing it left would delete the character that the input still shows.
+                    _inputValues[index] = oldValue;
+                }
+                else if (IsAllowedValue(diff) is false)
                 {
                     _inputValues[index] = oldValue;
 
@@ -1128,6 +1164,14 @@ public partial class BitOtpInput : BitInputBase<string?>
 
     private bool IsAllowedChar(char value)
     {
+        // A code copied out of a message brings more than its own characters along: the bidi marks that a
+        // right-to-left message is written with, the zero width joiners of the scripts that need them and
+        // the byte order mark that a few clipboards prepend are all invisible, so they would fill the boxes
+        // with characters the user cannot see and hand the server a code it never issued. The control
+        // characters are dropped for the very same reason. Neither of them is a character a code is ever
+        // made of, so no input type and no pattern has to be consulted about them.
+        if (char.IsControl(value) || char.GetUnicodeCategory(value) is UnicodeCategory.Format) return false;
+
         // int.TryParse used to stand in for the numeric check, which rejected any numeric code longer
         // than int.MaxValue has digits and accepted a leading sign.
         if (Type is BitInputType.Number && char.IsAsciiDigit(value) is false) return false;

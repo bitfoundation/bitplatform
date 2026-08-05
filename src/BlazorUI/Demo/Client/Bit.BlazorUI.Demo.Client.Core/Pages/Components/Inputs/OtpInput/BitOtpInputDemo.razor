@@ -29,6 +29,15 @@
         </div>
         <br />
         <div>
+            The mouse is treated the same way: focusing a box selects the character it holds, so typing replaces
+            it instead of appending to it, and a click that lands in the gap between two boxes, or on a separator,
+            is not swallowed either — it puts the caret in the box the typing is meant to carry on in, which is
+            the first one still empty, or the last one once the code is complete. The whole row therefore behaves
+            like the single field it represents rather than like a handful of unrelated boxes standing next to
+            each other.
+        </div>
+        <br />
+        <div>
             <b>IsEnabled</b> and <b>ReadOnly</b> are the two ways to stop the user from editing the code:
             a disabled component is dimmed and drops out of the tab order, while a read-only one still reads and
             copies like normal text, which is what an already confirmed code should look like.
@@ -141,6 +150,14 @@
             number accepts but a code does not, such as <code>e</code> or <code>-</code>.
             <b>Password</b> masks the characters with the bullet of the browser, which is what a code that stays
             on screen for a while should do.
+        </div>
+        <br />
+        <div>
+            The same reasoning applies to <b>Email</b> and <b>Url</b>: those input types carry a constraint
+            validation that a single character can never satisfy, so a row of them would report itself as
+            permanently invalid to the browser and keep a plain HTML form from ever submitting. They are rendered
+            as text inputs as well and contribute only their keyboard, through the <code>inputmode</code>.
+            <b>Tel</b> is the exception and is rendered as it is, since it validates nothing.
         </div>
         <br />
         <div>
@@ -318,6 +335,15 @@
         </div>
         <br />
         <div>
+            <b>TabIndex</b> places the component itself somewhere in the tab order and is rendered on each box,
+            which is what puts a code entry ahead of the fields printed above it on a page whose reading order
+            and DOM order disagree. It composes with <b>SingleTabStop</b> rather than fighting it: a box that
+            was taken out of the tab order has no position left to be given, so only the reachable one carries
+            it. Use it sparingly, since a positive value pulls the component out of the natural order of the
+            document for every user, not only for the one it was meant to help.
+        </div>
+        <br />
+        <div>
             The rest of the accessible behavior comes for free: <b>Required</b> marks every box as required for
             the browser and for assistive technologies, a failing validation adds <code>aria-invalid</code> to
             them, the separators are hidden from screen readers so the code is never read out with the dashes in
@@ -353,6 +379,15 @@
             the <b>Type</b> or the <b>Pattern</b> rejects, which is what lets a code copied as
             <code>123-456</code> or together with the words around it be pasted as is instead of being refused.
             <b>Uppercase</b> applies to it too.
+        </div>
+        <br />
+        <div>
+            The characters that carry no glyph at all are dropped whatever the <b>Type</b> and the <b>Pattern</b>
+            say, since no code is ever made of them: the bidi marks that a message written in Persian or Arabic
+            carries around its digits, the zero width joiners of the scripts that need them, the byte order mark
+            that a few clipboards prepend, and the control characters. They are invisible, so letting them
+            through would fill the boxes with characters the user cannot see and hand the server a code it never
+            issued — a code that looks right on screen and is refused every single time.
         </div>
         <br />
         <div>
@@ -545,7 +580,12 @@
             <b>Description</b>, which carries the sentence the server answered with. Because the group of boxes
             references the description through <code>aria-describedby</code>, the reason is announced to a screen
             reader user rather than only being drawn in red next to boxes they cannot see, and a colour alone is
-            never the only carrier of the message.
+            never the only carrier of the message. A description that is referenced this way is announced when
+            the focus reaches the code, though, not at the moment the server answers; when the answer arrives
+            while the focus is elsewhere, put the sentence inside a <b>DescriptionTemplate</b> whose own markup
+            carries an <code>aria-live="polite"</code>, so that it is read out as it changes. It is deliberately
+            not done for you, since a description holding a countdown or a "resend the code" link would then be
+            announced on every tick.
         </div>
         <br />
         <BitOtpInput @ref="invalidOtpInput" Label="Verification code" Length="6"
