@@ -21,7 +21,10 @@ namespace BitBlazorUI {
         // HandleOnTriggerKeyDown and HandleOnCalloutKeyDown methods of BitDropdown, which is where a
         // key added to or removed from these lists has to be reflected as well.
         private static readonly TRIGGER_KEYS = ['ArrowDown', 'ArrowUp'];
-        private static readonly CALLOUT_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp'];
+        // Tab is in the list because the dropdown moves the focus back to the trigger itself when the
+        // callout closes (see CloseCalloutAndRestoreFocus): letting the browser tab out of the callout
+        // first would move the focus from the end of the document, where the callout is rendered.
+        private static readonly CALLOUT_KEYS = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Tab'];
 
         // These are only handled when the focus is not in the search/combo input, where they keep
         // their caret behavior.
@@ -188,8 +191,15 @@ namespace BitBlazorUI {
             top = Math.max(0, Math.min(max, top));
             if (top === scroller.scrollTop) return null;
 
-            const first = items[0];
-            const last = items[items.length - 1];
+            // Which window is rendered, rather than which elements: Blazor updates the reused rows of a
+            // Virtualize in place, so the ends of the new window are usually the same elements carrying
+            // different items - a comparison by identity alone would never see the re-render and would
+            // wait out every frame below before falling back.
+            const windowOf = (rendered: HTMLElement[]) => rendered.length === 0 ? '' :
+                [rendered[0].id, rendered[0].textContent,
+                 rendered[rendered.length - 1].id, rendered[rendered.length - 1].textContent].join(' ');
+
+            const before = windowOf(items);
 
             scroller.scrollTop = top;
 
@@ -197,7 +207,7 @@ namespace BitBlazorUI {
                 await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
                 const rendered = Dropdowns._getItems(callout);
-                if (rendered.length > 0 && (rendered[0] !== first || rendered[rendered.length - 1] !== last)) {
+                if (rendered.length > 0 && windowOf(rendered) !== before) {
                     return { items: rendered, mode: nextMode };
                 }
             }

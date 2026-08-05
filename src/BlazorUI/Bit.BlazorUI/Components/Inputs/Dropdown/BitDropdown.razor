@@ -14,7 +14,9 @@
     var itemCheckIconCss = GetItemCheckIconCss();
 
     RenderFragment emptyContent =
-        @<div style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
+        @* The empty state is not an option, so it is marked presentational to keep it out of the
+           options of the listbox it is rendered in; its text stays exposed either way. *@
+        @<div role="presentation" style="@Styles?.EmptyContent" class="bit-drp-emp @Classes?.EmptyContent">
             @if (HasSearchText && (NoResultsTemplate is not null || NoResultsText.HasValue()))
             {
                 @if (NoResultsTemplate is not null)

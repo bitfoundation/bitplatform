@@ -161,6 +161,7 @@
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
+
     // Centers the content of Prefix/SuffixTemplate; the component's own children opt back
     // into the full height with align-self: stretch.
     align-items: center;
@@ -673,7 +674,9 @@
 .bit-drp-cai {
     display: flex;
     width: spacing(3.75);
-    height: spacing(3.75);
+    // Follows the height of the dropdown like Prefix/Suffix do, so the button fills the trigger
+    // in every size instead of only in the medium one.
+    height: var(--bit-drp-h);
     justify-content: center;
     background-color: $clr-bg-sec;
 
@@ -855,8 +858,7 @@
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
     border-top-color: var(--bit-drp-clr);
-    animation: bit-drp-spinner-animation 1.3s linear infinite;
-    animation-timing-function: cubic-bezier(0.53, 0.21, 0.29, 0.67);
+    animation: bit-drp-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-drp-spinner-animation {

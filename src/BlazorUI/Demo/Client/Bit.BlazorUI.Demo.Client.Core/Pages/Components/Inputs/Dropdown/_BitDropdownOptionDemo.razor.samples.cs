@@ -898,6 +898,11 @@ private readonly List<BitDropdownItem<string>> basicItems =
     </Options>
 </BitDropdown>";
     private readonly string example13CsharpCode = @"
+public class DropdownItemData
+{
+    public string? IconName { get; set; }
+}
+
 private readonly List<BitDropdownItem<string>> dataItems =
 [
     new() { ItemType = BitDropdownItemType.Header, Text = ""Items"", Data = new DropdownItemData { IconName = ""BulletedList2"" }  },

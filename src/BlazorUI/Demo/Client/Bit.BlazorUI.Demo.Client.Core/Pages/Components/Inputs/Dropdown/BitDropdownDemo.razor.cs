@@ -388,17 +388,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "MaxSelectedItems",
-            Type = "int?",
-            DefaultValue = "null",
-            Description = "The maximum number of items that can be selected in multi select mode. A value that is not greater than zero (and null) means no limit.",
-        },
-        new()
-        {
             Name = "MaxDisplayedItems",
             Type = "int?",
             DefaultValue = "null",
             Description = "The maximum number of selected items rendered in the dropdown itself. Beyond it, the chips display collapses the extra ones into an overflow indicator and the text display switches to a summary. Zero or null renders every selected item.",
+        },
+        new()
+        {
+            Name = "MaxSelectedItems",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "The maximum number of items that can be selected in multi select mode. A value that is not greater than zero (and null) means no limit.",
         },
         new()
         {
@@ -533,17 +533,17 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "OverflowTextFormat",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The composite format of the overflow indicator that stands for the selected items beyond MaxDisplayedItems in the chips display, for example \"+{0}\".",
-        },
-        new()
-        {
             Name = "Options",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Alias of ChildContent.",
+        },
+        new()
+        {
+            Name = "OverflowTextFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the overflow indicator that stands for the selected items beyond MaxDisplayedItems in the chips display, for example \"+{0}\".",
         },
         new()
         {
