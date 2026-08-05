@@ -62,6 +62,16 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Walnut", Value = "n-wal" }
     ];
 
+    private List<BitDropdownItem<string>> GetAccentedItems() =>
+    [
+        new() { Text = "José", Value = "n-jos" },
+        new() { Text = "Renée", Value = "n-ren" },
+        new() { Text = "Müller", Value = "n-mul" },
+        new() { Text = "Ångström", Value = "n-ang" },
+        new() { Text = "Zoë", Value = "n-zoe" },
+        new() { Text = "Smith", Value = "n-smi" }
+    ];
+
     private List<BitDropdownItem<string>> GetLocalizedItems() =>
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "Früchte" },
@@ -201,6 +211,11 @@ public partial class _BitDropdownItemDemo
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
+
+    private string? closeOnSelectValue;
+    private IEnumerable<string?> closeOnSelectValues = [];
+
+    private string? autoSelectValue;
 
     private string comboBoxValueSample1 = default!;
     private string comboBoxValueSample2 = default!;

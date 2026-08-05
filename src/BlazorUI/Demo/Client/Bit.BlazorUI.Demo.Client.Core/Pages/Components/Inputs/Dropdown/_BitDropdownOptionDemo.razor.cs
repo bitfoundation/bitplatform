@@ -27,6 +27,15 @@ public partial class _BitDropdownOptionDemo
         new() { Text = "Item e", Value = "E", Data = new DropdownItemData { IconName = "Repair" } },
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
     ];
+    private readonly List<BitDropdownItem<string>> accentedItems =
+    [
+        new() { Text = "José", Value = "n-jos" },
+        new() { Text = "Renée", Value = "n-ren" },
+        new() { Text = "Müller", Value = "n-mul" },
+        new() { Text = "Ångström", Value = "n-ang" },
+        new() { Text = "Zoë", Value = "n-zoe" },
+        new() { Text = "Smith", Value = "n-smi" }
+    ];
     private readonly List<BitDropdownItem<string>> rtlItems =
     [
         new() { ItemType = BitDropdownItemType.Header, Text = "میوه ها" },
@@ -145,6 +154,11 @@ public partial class _BitDropdownOptionDemo
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
+
+    private string? closeOnSelectValue;
+    private IEnumerable<string?> closeOnSelectValues = [];
+
+    private string? autoSelectValue;
 
     private string comboBoxValueSample1 = default!;
     private string comboBoxValueSample2 = default!;

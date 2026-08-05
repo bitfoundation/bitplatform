@@ -20,6 +20,15 @@
     var groupId = itemType == BitDropdownItemType.Normal ? Dropdown.GetItemGroupId(Item) : null;
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
+
+    // A custom header template renders whatever it likes, so neither the id its items point at nor the
+    // hidden state can be put on an element inside it; the wrapper carries both instead. The default
+    // rendering keeps them on the header element itself, where they were.
+    var isTemplatedHeader = itemType == BitDropdownItemType.Header && Dropdown.HeaderTemplate is not null;
+    var wrapperId = isTemplatedHeader ? headerId : null;
+    var wrapperStyle = isTemplatedHeader && isHidden
+                        ? $"display:none;{Dropdown.GetStyle(Item)}"
+                        : Dropdown.GetStyle(Item);
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
     var isDisabled = itemType == BitDropdownItemType.Normal && Dropdown.GetIsItemDisabled(Item);
 
@@ -36,7 +45,8 @@
 @* The wrappers carry the per-item style and layout only; marking them presentational keeps the option
    elements as the direct children of the listbox for assistive technologies. *@
 <div role="presentation"
-     style="@Dropdown.GetStyle(Item)"
+     id="@wrapperId"
+     style="@wrapperStyle"
      class="@wrapperClass">
     @if (itemType == BitDropdownItemType.Header)
     {

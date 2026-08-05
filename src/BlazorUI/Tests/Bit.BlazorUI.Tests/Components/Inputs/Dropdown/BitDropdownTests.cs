@@ -2189,6 +2189,350 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
     }
 
+    [TestMethod]
+    public void BitDropdownSearchIgnoreDiacriticsShouldMatchTheFoldedText()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetAccentedDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.HighlightSearch, true);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // Without the folding an unaccented term finds nothing, which is exactly what makes a search
+        // box useless to anyone typing on a keyboard that has no accented keys.
+        component.Find(".bit-drp-sin").Change("Jose");
+        Assert.AreEqual(0, component.FindAll(".bit-drp-itm").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.HighlightSearch, true);
+            parameters.Add(p => p.SearchIgnoreDiacritics, true);
+        });
+
+        var options = component.FindAll(".bit-drp-itm");
+        Assert.AreEqual(1, options.Count);
+        Assert.AreEqual("José", options[0].TextContent.Trim());
+
+        // Folding keeps one character per character, so the highlighted range still lines up with the
+        // original (accented) text rather than sliding along it.
+        Assert.AreEqual("José", component.Find(".bit-drp-hlt").TextContent);
+
+        component.Find(".bit-drp-sin").Change("Muller");
+
+        options = component.FindAll(".bit-drp-itm");
+        Assert.AreEqual(1, options.Count);
+        Assert.AreEqual("Müller", options[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownCloseOnSelectShouldOverrideTheDefaultOfEachMode()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A single select pick closes the callout by default, because the pick is the whole
+        // interaction; CloseOnSelect=false keeps it open so the user can try another option.
+        var single = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.CloseOnSelect, false);
+        });
+
+        single.Find(".bit-drp-wrp").Click();
+        Assert.IsTrue(single.Instance.IsOpen);
+
+        single.FindAll("[role=option]")[1].Click();
+
+        Assert.IsTrue(single.Instance.IsOpen);
+        Assert.AreEqual("f-ora", single.Instance.Value);
+
+        // A multi select callout stays open by default so the next item can be picked right away;
+        // CloseOnSelect=true turns each pick into a complete interaction of its own.
+        var multi = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.CloseOnSelect, true);
+        });
+
+        multi.Find(".bit-drp-wrp").Click();
+        Assert.IsTrue(multi.Instance.IsOpen);
+
+        multi.FindAll("[role=option]")[0].Click();
+
+        Assert.IsFalse(multi.Instance.IsOpen);
+        Assert.AreEqual(1, multi.Instance.SelectedItems.Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownCloseOnSelectShouldKeepTheDefaultsWhenNotSet()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var single = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        single.Find(".bit-drp-wrp").Click();
+        single.FindAll("[role=option]")[0].Click();
+
+        Assert.IsFalse(single.Instance.IsOpen);
+
+        var multi = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.MultiSelect, true);
+        });
+
+        multi.Find(".bit-drp-wrp").Click();
+        multi.FindAll("[role=option]")[0].Click();
+
+        Assert.IsTrue(multi.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitDropdownAutoSelectFirstMatchShouldCommitAPartiallyTypedTerm()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("ban");
+
+        var items = GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("ban");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // Without the parameter a term that matches no item exactly commits to nothing at all.
+        Assert.IsNull(component.Instance.Value);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.AutoSelectFirstMatch, true);
+        });
+
+        comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("ban");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual("f-ban", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownAutoSelectFirstMatchShouldTakePrecedenceOverDynamic()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("ora");
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.AutoSelectFirstMatch, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("ora");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // A term that names an item the list already has selects that item instead of creating a
+        // second one that only looks like it.
+        Assert.AreEqual("f-ora", component.Instance.Value);
+        Assert.AreEqual("Orange", component.Instance.SelectedItem?.Text);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboDebounceShouldAlsoDelayTheFiltering()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.DebounceTime, 3000);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-inp").Input("app");
+
+        // The input shows the typed text at once - it is what the user is looking at...
+        Assert.AreEqual("app", component.Find(".bit-drp-inp").GetAttribute("value"));
+
+        // ...while the list is only filtered once the debounce elapses, which is the whole point of
+        // configuring one. Applying the term as it was typed used to leave the rate limit governing
+        // nothing but the OnSearch callback and the ItemsProvider.
+        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownTabOnTheTriggerShouldCloseTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+
+        // Alt+ArrowDown reveals the popup without moving the focus into it, so the Tab that leaves the
+        // dropdown is seen by the trigger and not by the callout - and must still dismiss the popup,
+        // which is rendered at the end of the document and would otherwise be left behind, open.
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownSelectItemShouldMirrorUnselectItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, items);
+        });
+
+        await component.InvokeAsync(() => component.Instance.SelectItem(items[1]));
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+
+        // An item that is already selected is left alone: picking it again would unselect it, which
+        // is what UnselectItem is for.
+        await component.InvokeAsync(() => component.Instance.SelectItem(items[1]));
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+
+        await component.InvokeAsync(() => component.Instance.SelectItem(items[2]));
+        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+
+        await component.InvokeAsync(() => component.Instance.UnselectItem(items[1]));
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.AreEqual("f-ban", component.Instance.SelectedItems[0].Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownTemplatedHeaderShouldStillCarryTheGroupIdAndHiddenState()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = new List<BitDropdownItem<string>>
+        {
+            new() { Text = "Fruits", ItemType = BitDropdownItemType.Header },
+            new() { Text = "Apple", Value = "f-app" },
+            new() { Text = "Vegetables", IsHidden = true, ItemType = BitDropdownItemType.Header },
+            new() { Text = "Broccoli", Value = "v-bro" }
+        };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.HeaderTemplate, (BitDropdownItem<string> item) =>
+                builder => builder.AddContent(0, item.Text));
+        });
+
+        var headers = component.FindAll(".bit-drp-ihw");
+        var options = component.FindAll("[role=option]");
+
+        // A custom template renders whatever it likes, so the generated id its items point at (and the
+        // hidden state) have to land on the wrapper, or the reference dangles on a missing element.
+        Assert.AreEqual(2, headers.Count);
+        Assert.IsTrue(headers[0].GetAttribute("id").HasValue());
+        Assert.AreEqual(headers[0].GetAttribute("id"), options[0].GetAttribute("aria-describedby"));
+
+        // A hidden header names nothing, so it is not rendered and its items are left without a group.
+        Assert.IsTrue(headers[1].GetAttribute("style")?.Contains("display:none") is true);
+        Assert.IsFalse(options[1].HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownOnDynamicAddShouldNotFireForARefusedSelection()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("New Item");
+
+        var added = new List<BitDropdownItem<string>>();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.MaxSelectedItems, 1);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnDynamicAdd, (BitDropdownItem<string> i) => added.Add(i));
+            parameters.Add(p => p.DynamicValueGenerator, (BitDropdownItem<string>? item) => item?.Text ?? string.Empty);
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("New Item");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, added.Count);
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+
+        // The limit is reached, so the second item is refused - and a refused selection is not an item
+        // that was added, however much it was typed.
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("Another Item");
+
+        comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("Another Item");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, added.Count);
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownSelectAllShouldClearWhenTheSelectionLimitIsReached()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.ShowSelectAll, true);
+            parameters.Add(p => p.MaxSelectedItems, 2);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // The limit stops the select all halfway, which is as far as it can go.
+        component.Find(".bit-drp-sab").Click();
+        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.AreEqual("mixed", component.Find(".bit-drp-sab").GetAttribute("aria-checked"));
+
+        // It can never reach "all selected", so without this the item would be a control that does
+        // nothing at all from here on; clearing is the only move left, and the list below it says the
+        // same thing, since every unselected item is disabled while the limit holds.
+        component.Find(".bit-drp-sab").Click();
+        Assert.AreEqual(0, component.Instance.SelectedItems.Count);
+    }
+
     private void HandleValueChanged(string value)
     {
         _bitDropdownValue = value;
@@ -2216,6 +2560,14 @@ public class BitDropdownTests : BunitTestContext
         new() { Text = "Orange", Value = "f-ora" },
         new() { Text = "Banana", Value = "f-ban" },
         new() { Text = "Broccoli", Value = "v-bro" }
+    };
+
+
+    private static List<BitDropdownItem<string>> GetAccentedDropdownItems() => new()
+    {
+        new() { Text = "José", Value = "n-jos" },
+        new() { Text = "Müller", Value = "n-mul" },
+        new() { Text = "Smith", Value = "n-smi" }
     };
 
 

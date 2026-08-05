@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,6 +14,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int? _providerTotalItems;
     private Dictionary<TItem, int>? _providerPositions;
     private string? _searchText;
+    private string? _comboInputText;
+    private string? _foldedSearchTextKey;
+    private string? _foldedSearchText;
     private int _optionsVersion;
     private int _searchedItemsCacheVersion = -1;
     private string? _searchedItemsCacheKey;
@@ -81,16 +85,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public bool AutoFocusSearchBox { get; set; }
 
     /// <summary>
+    /// Makes Enter in the ComboBox mode pick the first item the typed text matches when no item matches
+    /// it exactly, which is what an autocomplete does: typing "app" and pressing Enter then selects
+    /// "Apple" instead of doing nothing. It takes precedence over <see cref="Dynamic"/>, so a term that
+    /// matches an existing item selects that item rather than creating a new one out of it.
+    /// </summary>
+    [Parameter] public bool AutoSelectFirstMatch { get; set; }
+
+    /// <summary>
     /// Removes the already selected items from the callout, which suits a multi select dropdown whose
     /// selection is visible as chips and whose list is therefore only about what is left to pick.
     /// A group header left naming nothing, and a divider left without items on one of its sides, are
     /// removed along with them.
+    /// It has no effect when the items come from an <see cref="ItemsProvider"/>, which hands over the
+    /// window it was asked for and is the only place that can leave the selected items out of it.
     /// </summary>
     [Parameter] public bool HideSelectedItems { get; set; }
 
     /// <summary>
     /// Highlights the part of the item text that matched the current search text in the callout.
     /// Only applies to the default item rendering, not to a custom <see cref="ItemTemplate"/>.
+    /// The highlighted part is found by the built-in algorithm (<see cref="SearchMode"/> and
+    /// <see cref="SearchIgnoreDiacritics"/>), so a custom <see cref="SearchFunction"/> that matches by
+    /// some other rule can produce items with nothing to highlight.
     /// </summary>
     [Parameter] public bool HighlightSearch { get; set; }
 
@@ -163,6 +180,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
     [Parameter] public BitDropdownClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Determines whether picking an item in the callout closes it. It defaults to the behavior each
+    /// mode expects: a single select dropdown closes, because the pick is the whole interaction, while
+    /// a multi select one stays open so the next item can be picked right away. Set it explicitly to
+    /// keep a single select callout open (a long list the user keeps trying options from) or to close a
+    /// multi select one after every pick.
+    /// </summary>
+    [Parameter] public bool? CloseOnSelect { get; set; }
 
     /// <summary>
     /// The general color of the dropdown.
@@ -251,12 +277,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public string? EmptyText { get; set; }
 
     /// <summary>
-    /// Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.
+    /// Decides whether the text committed in the ComboBox mode already stands for one of the selected
+    /// items, in place of the default comparison of that text with the item texts, ignoring case. It
+    /// receives the selected items and the committed text, and returning true stops the commit, so the
+    /// same item cannot be selected (or created) twice under a name your data considers equivalent.
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, bool>? ExistsSelectedItemFunction { get; set; }
 
     /// <summary>
-    /// Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.
+    /// Finds the item the text committed in the ComboBox mode stands for, in place of the default
+    /// comparison of that text with the item texts, ignoring case. It receives the items and the
+    /// committed text; the item it returns gets selected, and only when it returns none does
+    /// <see cref="AutoSelectFirstMatch"/> and then <see cref="Dynamic"/> get their turn.
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, TItem>? FindItemFunction { get; set; }
 
@@ -451,7 +483,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     /// <summary>
     /// The callback that is called when the dropdown (or any element inside it, like the ComboBox
-    /// input) loses the focus.
+    /// input) loses the focus. The callout is rendered outside the dropdown so that it can escape any
+    /// clipping ancestor, so moving the focus into it (with the arrow keys, or by clicking the search
+    /// box) counts as leaving the dropdown here.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
@@ -594,6 +628,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Takes precedence over <see cref="SearchMode"/>, which only configures the default algorithm.
     /// </summary>
     [Parameter] public Func<ICollection<TItem>, string, ICollection<TItem>>? SearchFunction { get; set; }
+
+    /// <summary>
+    /// Matches the search text against the item texts with the diacritics of both removed, so that
+    /// "Jose" finds "José" and "Muller" finds "Müller". The item text itself is left untouched, and so
+    /// is the part of it that <see cref="HighlightSearch"/> emphasizes. Ignored when a
+    /// <see cref="SearchFunction"/> is provided, which does its own matching.
+    /// </summary>
+    [Parameter] public bool SearchIgnoreDiacritics { get; set; }
 
     /// <summary>
     /// Determines how the text of an item is matched against the search text by the default
@@ -784,6 +826,25 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Selects the given item exactly as picking it in the callout would, so the same events fire and
+    /// the same close and focus behavior follows. An item that is already selected is left alone: in
+    /// multi select mode picking it again would unselect it, which <see cref="UnselectItem"/> is for.
+    /// </summary>
+    public async Task SelectItem(TItem? item)
+    {
+        if (item is null) return;
+
+        if (GetIsSelected(item)) return;
+
+        await HandleOnItemClick(item);
+    }
+
+    /// <summary>
+    /// Unselects the given item exactly as picking an already selected one in the callout would (or, in
+    /// single select mode, as the clear button would), so the same events fire. An item that is not
+    /// selected is left alone.
+    /// </summary>
     public async Task UnselectItem(TItem? item)
     {
         if (item is null) return;
@@ -907,15 +968,27 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (GetItemType(item) != BitDropdownItemType.Normal) return;
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
 
+        var wasOpen = IsOpen;
+
         // A one-way bound IsOpen must not block the selection itself: the selection proceeds and the
         // close attempt inside it simply becomes a no-op (AssignIsOpen refuses the change), which is
         // exactly the controlled behavior a one-way IsOpen asks for.
         await AddOrRemoveSelectedItem(item);
 
-        if (MultiSelect is false)
+        // A multi select callout stays open by default so the next item can be picked right away; only
+        // an explicit CloseOnSelect turns each pick into a complete interaction of its own. The single
+        // select close happens inside AddOrRemoveSelectedItem, which every selection path goes through.
+        if (MultiSelect && CloseOnSelect is true)
         {
-            // Selecting an item hides the callout along with the focused option,
-            // so return the focus to the dropdown (or its combo input).
+            await CloseCallout();
+        }
+
+        // Closing the callout hides the focused option with it, so the focus returns to the dropdown
+        // (or to its combo input) instead of falling to the document body. A callout that stays open
+        // keeps the focus on the option, and one that was never open (an unselect through the API or a
+        // chip) must not have the focus pulled to the dropdown at all.
+        if (wasOpen && IsOpen is false)
+        {
             await FocusTrigger();
         }
 
@@ -1545,20 +1618,23 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
 
 
-    private async Task AddOrRemoveSelectedItem(TItem? item, bool addDynamic = false)
+    // Returns whether the selection actually changed, which the dynamic item flow needs: a refused
+    // selection (a read-only dropdown, a one-way binding, a reached limit) must not be reported as an
+    // item that was added.
+    private async Task<bool> AddOrRemoveSelectedItem(TItem? item, bool addDynamic = false)
     {
-        if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (ReadOnly) return false;
+        if (IsEnabled is false) return false;
 
-        if (item is null) return;
+        if (item is null) return false;
 
         if (MultiSelect)
         {
-            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
+            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return false;
 
             var isSelected = GetIsSelected(item) is false;
 
-            if (isSelected && IsMaxSelectedItemsReached) return;
+            if (isSelected && IsMaxSelectedItemsReached) return false;
 
             var tempValue = Values?.ToList() ?? [];
 
@@ -1604,7 +1680,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         else
         {
-            if (InvalidValueBinding()) return;
+            if (InvalidValueBinding()) return false;
 
             var oldSelectedItem = _selectedItems.FirstOrDefault();
 
@@ -1624,13 +1700,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 ClassBuilder.Reset();
             }
 
-            await CloseCallout();
+            // A single select pick is the whole interaction, so the callout closes with it - unless
+            // CloseOnSelect says otherwise, which keeps a long list open while the user tries options.
+            if (CloseOnSelect is not false)
+            {
+                await CloseCallout();
+            }
 
             await ClearSearchBox();
 
             await ClearComboBoxInput();
 
-            if (isSameItemSelected && Reselectable is false) return;
+            // The item is the selection either way, so this reports a selection that stands; only the
+            // events of picking it again are what Reselectable holds back.
+            if (isSameItemSelected && Reselectable is false) return true;
 
             await OnSelectItem.InvokeAsync(item);
         }
@@ -1645,6 +1728,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
         }
+
+        return true;
     }
 
     private void UpdateSelectedItemsFromValues()
@@ -1870,6 +1955,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsEnabled is false) return;
 
         if (e.Key is "Escape")
+        {
+            await CloseCallout();
+            return;
+        }
+
+        // Tab moves the focus out of the dropdown, and a popup the focus has left is a popup nothing
+        // can dismiss any more: the callout is rendered at the end of the document, so it is not even
+        // next in the tab order. It reaches here from the trigger itself (opened with Alt+ArrowDown) and
+        // from the ComboBox input, whose keydown bubbles through the trigger.
+        if (e.Key is "Tab")
         {
             await CloseCallout();
             return;
@@ -2179,11 +2274,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (Combo is false) return;
         if (IsEnabled is false) return;
-        if (_searchText.HasNoValue()) return;
+        // Both are checked: a term the rate limiter has not applied yet is still in the input, and the
+        // input is exactly what this has to leave empty.
+        if (_searchText.HasNoValue() && _comboInputText.HasNoValue()) return;
 
         _rateLimiter.Reset();
 
         _searchText = null;
+        _comboInputText = null;
 
         RefreshOptions();
 
@@ -2209,12 +2307,62 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // an ItemsProvider, does not turn every first keystroke into a query).
     private string? SearchText => _searchText.HasValue() && _searchText!.Length >= MinSearchLength ? _searchText : null;
 
+    // The search text with its diacritics folded away when SearchIgnoreDiacritics is on, computed once
+    // per search instead of once per item since every item is matched against the same term.
+    private string? FoldedSearchText
+    {
+        get
+        {
+            var search = SearchText;
+
+            if (search is null || SearchIgnoreDiacritics is false) return search;
+
+            if (_foldedSearchTextKey != search)
+            {
+                _foldedSearchTextKey = search;
+                _foldedSearchText = RemoveDiacritics(search);
+            }
+
+            return _foldedSearchText;
+        }
+    }
+
+    // A copy of the text with the diacritic of each character removed. It is folded one character at a
+    // time on purpose: the result then has exactly as many characters as the original, so an index found
+    // in it still points at the same place in the text the search highlight has to cut.
+    private static string RemoveDiacritics(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+
+        foreach (var c in text)
+        {
+            var baseChar = c;
+
+            foreach (var decomposed in c.ToString().Normalize(NormalizationForm.FormD))
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(decomposed) == UnicodeCategory.NonSpacingMark) continue;
+
+                baseChar = decomposed;
+                break;
+            }
+
+            builder.Append(baseChar);
+        }
+
+        return builder.ToString();
+    }
+
     internal bool IsItemTextMatch(string? text)
     {
         if (text is null) return false;
 
-        var search = SearchText;
+        var search = FoldedSearchText;
         if (search is null) return true;
+
+        if (SearchIgnoreDiacritics)
+        {
+            text = RemoveDiacritics(text);
+        }
 
         return SearchMode switch
         {
@@ -2232,8 +2380,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (HighlightSearch is false) return -1;
         if (text is null) return -1;
 
-        var search = SearchText;
+        var search = FoldedSearchText;
         if (search is null) return -1;
+
+        // Folding keeps the character count, so an index found in the folded text is also the index of
+        // the matched part of the original one - which is the text the highlight actually cuts.
+        if (SearchIgnoreDiacritics)
+        {
+            text = RemoveDiacritics(text);
+        }
 
         return SearchMode switch
         {
@@ -2420,7 +2575,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
 
             await AssignValues([]);
-            await OnValuesChange.InvokeAsync(Values);
+
+            // A copy, like every other call site: handing over the live Values collection (which a
+            // refused assignment can even leave null) makes the subscriber's snapshot change under it.
+            await OnValuesChange.InvokeAsync([.. (Values ?? [])!]);
         }
         else
         {
@@ -2493,7 +2651,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         var comparer = EqualityComparer<TValue>.Default;
 
         List<TValue?> newValues;
-        if (candidates.TrueForAll(GetIsSelected))
+        // Nothing more can be added once the selection limit is reached, so the item clears there too
+        // rather than being a control that does nothing at all - the list below it says the same thing,
+        // since every item that is not selected yet is disabled while the limit holds.
+        if (candidates.TrueForAll(GetIsSelected) || IsMaxSelectedItemsReached)
         {
             // All (searched) items are selected, so the select all item clears them, keeping
             // the selected values that are not part of the current search results.
@@ -2565,7 +2726,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
         }
 
-        if (MultiSelect && ShowSelectAll && ItemsProvider is null)
+        if (MultiSelect && ShowSelectAll && ItemsProvider is null && IsLoading is false)
         {
             offset += Size switch { BitSize.Small => 31, BitSize.Large => 45, _ => 37 };
         }
@@ -2599,7 +2760,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
     {
-        if (ItemsProvider is null) return default;
+        // An empty result rather than the default one, whose Items is null: Virtualize skips the result
+        // of a cancelled request, but nothing guarantees it skips this one.
+        if (ItemsProvider is null) return new ItemsProviderResult<TItem>([], 0);
 
         // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
         // The token is not passed to the delay on purpose: a cancellation is a normal outcome here (the
@@ -2609,13 +2772,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await Task.Delay(ItemsProviderDebounceTime);
         }
 
-        if (request.CancellationToken.IsCancellationRequested) return default;
+        if (request.CancellationToken.IsCancellationRequested) return new ItemsProviderResult<TItem>([], 0);
 
         // Combine the query parameters from Virtualize with the ones from PaginationState
         var providerRequest = new BitDropdownItemsProviderRequest<TItem>(request.StartIndex, request.Count, SearchText, request.CancellationToken);
         var providerResult = await ItemsProvider(providerRequest);
 
-        if (request.CancellationToken.IsCancellationRequested) return default;
+        if (request.CancellationToken.IsCancellationRequested) return new ItemsProviderResult<TItem>([], 0);
 
         _lastShownItems = [.. providerResult.Items];
         _providerTotalItems = providerResult.TotalItemCount;
@@ -2656,7 +2819,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         else if (eventArgs.Key == "Enter")
         {
-            _searchText = await _js.BitUtilsGetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
+            // Read from the DOM rather than from the field: the keystroke that produced the current text
+            // may not have reached the input handler yet, and a debounced search is meant to lag behind
+            // it anyway, while Enter has to act on exactly what the user is looking at.
+            _comboInputText = await _js.BitUtilsGetProperty(_isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef, "value");
+            _searchText = _comboInputText;
 
             await AddDynamicItem();
 
@@ -2666,7 +2833,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             await CloseCallout();
         }
-        else if (eventArgs.Key == "Backspace" && _searchText.HasNoValue())
+        else if (eventArgs.Key == "Backspace" && _comboInputText.HasNoValue())
         {
             await RemoveLastSelectedItem();
         }
@@ -2682,9 +2849,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
 
-        _searchText = e.Value?.ToString();
+        // What the input actually holds, which is what the dropdown has to render back into it and what
+        // the Enter and Backspace keys act on. It is kept apart from the search term because a debounced
+        // or throttled search deliberately lags behind the typing.
+        _comboInputText = e.Value?.ToString();
 
-        RefreshOptions();
+        // A combo box filters as it is typed, so the term is applied right away - except when a debounce
+        // or a throttle is configured, where applying it here would filter the list on every keystroke
+        // and leave the rate limit governing nothing but the OnSearch callback and the ItemsProvider.
+        if (Immediate is false || (DebounceTime <= 0 && ThrottleTime <= 0))
+        {
+            _searchText = _comboInputText;
+
+            RefreshOptions();
+        }
 
         if (Immediate is false) return;
 
@@ -2696,6 +2874,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
+
+        _comboInputText = e.Value?.ToString();
 
         if (Immediate) return;
 
@@ -2748,13 +2928,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (IsEnabled is false) return;
 
-        if (_searchText.HasNoValue()) return;
+        // The text of the input, not the (possibly debounced) search term: this acts on what the user
+        // typed and is looking at.
+        if (_comboInputText.HasNoValue()) return;
 
         if (_selectedItems.Count > 0)
         {
             var hasItem = ExistsSelectedItemFunction is not null ?
-                          ExistsSelectedItemFunction.Invoke(_selectedItems, _searchText!) :
-                          _selectedItems.Exists(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+                          ExistsSelectedItemFunction.Invoke(_selectedItems, _comboInputText!) :
+                          _selectedItems.Exists(i => GetText(i).HasValue() && _comboInputText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
 
             if (hasItem) return;
         }
@@ -2763,8 +2945,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (searchItems is not null && searchItems.Count > 0)
         {
             var item = FindItemFunction is not null ?
-                       FindItemFunction.Invoke(searchItems, _searchText!) :
-                       (searchItems).FirstOrDefault(i => GetText(i).HasValue() && _searchText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+                       FindItemFunction.Invoke(searchItems, _comboInputText!) :
+                       (searchItems).FirstOrDefault(i => GetText(i).HasValue() && _comboInputText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
 
             if (item is not null && GetIsSelected(item) is false)
             {
@@ -2774,9 +2956,28 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
 
+        // Nothing matches the typed text exactly, so it stands for the first item it does match - the
+        // autocomplete behavior that lets a partially typed term be committed with a single Enter. It
+        // comes before the dynamic item below on purpose: a term that names an item the list already has
+        // should select that item rather than create a second one beside it.
+        if (AutoSelectFirstMatch)
+        {
+            var match = GetDisplayItems().FirstOrDefault(i => GetItemType(i) == BitDropdownItemType.Normal &&
+                                                              GetIsHidden(i) is false &&
+                                                              GetIsEnabled(i) &&
+                                                              GetIsSelected(i) is false);
+
+            if (match is not null)
+            {
+                await AddOrRemoveSelectedItem(match);
+
+                return;
+            }
+        }
+
         if (Dynamic is false) return;
 
-        var text = _searchText;
+        var text = _comboInputText;
         if (typeof(TItem) == typeof(BitDropdownItem<TValue>))
         {
             var dropdownItem = new BitDropdownItem<TValue>
@@ -2791,8 +2992,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 dropdownItem.Value = DynamicValueGenerator(dropdownItem as TItem);
             }
-            await AddOrRemoveSelectedItem(dropdownItem as TItem, true);
-            await OnDynamicAdd.InvokeAsync(dropdownItem as TItem);
+
+            // Only a selection that stands is an item that was added: a refused one (the selection
+            // limit is reached, the binding is one-way) never became part of anything.
+            if (await AddOrRemoveSelectedItem(dropdownItem as TItem, true))
+            {
+                await OnDynamicAdd.InvokeAsync(dropdownItem as TItem);
+            }
         }
         else if (typeof(TItem) == typeof(BitDropdownOption<TValue>))
         {
@@ -2808,8 +3014,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             {
                 dropdownOption.Value = DynamicValueGenerator(dropdownOption as TItem);
             }
-            await AddOrRemoveSelectedItem(dropdownOption as TItem, true);
-            await OnDynamicAdd.InvokeAsync(dropdownOption as TItem);
+
+            if (await AddOrRemoveSelectedItem(dropdownOption as TItem, true))
+            {
+                await OnDynamicAdd.InvokeAsync(dropdownOption as TItem);
+            }
         }
         else
         {
@@ -2834,8 +3043,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 customItem.SetValueToProperty(NameSelectors.Value.Name, DynamicValueGenerator(customItem)!);
             }
 
-            await AddOrRemoveSelectedItem(customItem, true);
-            await OnDynamicAdd.InvokeAsync(customItem);
+            if (await AddOrRemoveSelectedItem(customItem, true))
+            {
+                await OnDynamicAdd.InvokeAsync(customItem);
+            }
         }
     }
 

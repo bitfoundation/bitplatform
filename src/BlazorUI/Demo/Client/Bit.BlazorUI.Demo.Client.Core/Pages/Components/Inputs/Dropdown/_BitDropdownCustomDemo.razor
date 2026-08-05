@@ -331,14 +331,19 @@
 
 <DemoExample Title="Search options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        Three parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
+        Four parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
         is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
         <b>ExactMatch</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
         given number of characters, which keeps a one-letter term from being treated as a real query (and, with an
-        <b>ItemsProvider</b>, from turning every first keystroke into a request). <b>HighlightSearch</b> emphasizes the
-        matched part of each item text so the reason an item is in the result is visible at a glance. Whenever a search
-        is active the number of results is also announced to screen readers, with a message you can localize through
-        the <b>SearchResultsText</b> parameter.
+        <b>ItemsProvider</b>, from turning every first keystroke into a request). <b>SearchIgnoreDiacritics</b> matches
+        the term against the item texts with the diacritics of both folded away, so <b>Jose</b> finds <b>José</b> and
+        <b>Muller</b> finds <b>Müller</b> &mdash; which is what makes the search usable to anyone typing on a keyboard
+        that has no accented keys. <b>HighlightSearch</b> emphasizes the matched part of each item text so the reason an
+        item is in the result is visible at a glance, and it keeps lining up with the accented text because the folding
+        replaces each character with exactly one character. Whenever a search is active the number of results is also
+        announced to screen readers, with a message you can localize through the <b>SearchResultsText</b> parameter.
+        All four configure the built-in algorithm only; a <b>SearchFunction</b> replaces it outright and does its own
+        matching.
     </div>
     <br />
     <div class="example-content">
@@ -361,6 +366,17 @@
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item"
                      SearchBoxPlaceholder="Type at least 3 characters" />
+        <br /><br />
+        <BitDropdown Label="SearchIgnoreDiacritics"
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     HighlightSearch
+                     SearchIgnoreDiacritics
+                     Items="GetAccentedCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select a name"
+                     SearchBoxPlaceholder="Try jose, muller or angstrom" />
         <br /><br />
         <BitDropdown Label="HighlightSearch"
                      ShowSearchBox
@@ -703,11 +719,27 @@
         The <b>Combo</b> parameter turns the dropdown into a ComboBox: an editable input renders in place of the selected
         text and filters the items as you type, so the trigger doubles as the search box. <b>Enter</b> selects the item
         whose text matches what was typed, <b>Backspace</b> on an empty input removes the last selected item, the arrow
-        keys open the callout, and a term that was typed but never turned into a selection is discarded when the callout
-        closes, so the input goes back to showing the current selection.
+        keys open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
+        selection is discarded when the callout closes, so the input goes back to showing the current selection.
+        <br /><br />
+        Requiring the typed text to match an item exactly makes Enter a dead key for anyone who only typed the beginning
+        of a name, so <b>AutoSelectFirstMatch</b> lets a partial term stand for the first item it matches: typing
+        <b>ban</b> and pressing Enter then selects <b>Banana</b>. It takes precedence over the <b>Dynamic</b> mode below,
+        so a term that names an item the list already has selects that item instead of creating a second one beside it.
     </div>
     <br />
     <div class="example-content">
+        <BitDropdown @bind-Value="autoSelectValue"
+                     Combo
+                     Immediate
+                     AutoSelectFirstMatch
+                     Items="comboBoxCustoms"
+                     Label="AutoSelectFirstMatch"
+                     NameSelectors="comboBoxNameSelectors"
+                     Placeholder="Type a few letters and press Enter" />
+        <br />
+        <div>Value: @autoSelectValue</div>
+        <br /><br />
         <BitDropdown @bind-Value="comboBoxValueSample1"
                      Combo
                      Responsive
@@ -837,9 +869,12 @@
         When the <b>Dynamic</b> parameter is true, a text typed into the ComboBox that matches no existing item can be
         added as a new one, which is what makes free-form values (tags, e-mail recipients, ad-hoc categories) possible.
         <b>DynamicValueGenerator</b> produces the value of the new item from its text and <b>OnDynamicAdd</b> notifies
-        about the addition so the item can be persisted into the source collection. Before creating anything the
-        component first looks for an existing match; <b>FindItemFunction</b> and <b>ExistsSelectedItemFunction</b>
-        replace the default case-insensitive text comparison used for those two lookups.
+        about the addition so the item can be persisted into the source collection &mdash; and only about an addition
+        that stands, so a term refused by the selection limit or by a one-way binding is never reported as one. Before
+        creating anything the component first looks for an existing match; <b>FindItemFunction</b> and
+        <b>ExistsSelectedItemFunction</b> replace the default case-insensitive text comparison used for those two
+        lookups, and <b>AutoSelectFirstMatch</b> gets its turn between them and the creation, so a partially typed term
+        that names an existing item selects it instead of creating a near-duplicate.
     </div>
     <div class="example-content">
         <br />
@@ -893,7 +928,9 @@
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
         first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on. <b>Alt+ArrowDown</b> is the exception among the openers: it
+        dropdown, and <b>Tab</b> closes it and moves on &mdash; from the trigger just as much as from inside the callout, so a
+        popup revealed without the focus is never left behind when the focus leaves the dropdown.
+        <b>Alt+ArrowDown</b> is the exception among the openers: it
         reveals the list without moving the focus into it, so the trigger keeps it and the plain arrows can walk the
         list afterwards. Opening the callout with a mouse click focuses the selected
         item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
@@ -935,7 +972,9 @@
         selection. It only ever applies to what the user can actually see: disabled items are skipped, and while a
         search is active it selects the search result rather than the whole list, leaving selections made outside the
         result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
-        come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected.
+        come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected. It also honors
+        <b>MaxSelectedItems</b>: it stops at the limit, and once there is no room left it clears the selection instead
+        of doing nothing.
         While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
         from the keyboard, even when the select all item itself is not shown.
     </div>
@@ -969,7 +1008,9 @@
         The <b>MaxSelectedItems</b> parameter limits how many items can be selected in the multi select dropdown. Once
         the limit is reached the unselected items are disabled rather than silently refusing the click, so the boundary
         is visible before it is hit, and they become available again as soon as an item is unselected. The select all
-        item honors the same limit and stops adding items once it is reached.
+        item honors the same limit and stops adding items once it is reached &mdash; and since it can then never reach
+        "all selected", the next click on it clears the selection instead of leaving the user with a control that does
+        nothing.
     </div>
     <br />
     <div class="example-content">
@@ -1307,7 +1348,44 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
+<DemoExample Title="Close on select" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
+    <div>
+        Each mode dismisses the callout the way its interaction expects: a single select dropdown closes on the pick,
+        because that pick is the whole interaction, while a multi select one stays open so the next item can be chosen
+        without reopening the list. <b>CloseOnSelect</b> overrides that decision in both directions. Set it to
+        <b>false</b> on a single select dropdown to keep the list open while the user tries one option after another
+        against the page behind it, or to <b>true</b> on a multi select one to turn every pick into a complete
+        interaction of its own &mdash; useful when each selection triggers work that the user should see before
+        choosing again.
+        <br /><br />
+        Whichever way it goes, the focus follows: a callout that closes hands the focus back to the dropdown (or to its
+        ComboBox input), so the keyboard is never left stranded on an element that has just been removed from the page,
+        while a callout that stays open keeps the focus on the option that was picked, ready for the next arrow key.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Value="closeOnSelectValue"
+                     CloseOnSelect="false"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     Label="Single select that stays open" />
+        <br />
+        <div>Value: @closeOnSelectValue</div>
+        <br /><br />
+        <BitDropdown @bind-Values="closeOnSelectValues"
+                     MultiSelect
+                     CloseOnSelect="true"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     Label="Multi select that closes on each pick" />
+        <br />
+        <div>Values: @string.Join(", ", closeOnSelectValues)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
@@ -1382,7 +1460,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
+<DemoExample Title="External Icons" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29">
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1469,7 +1547,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1502,7 +1580,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30">
+<DemoExample Title="Style & Class" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31">
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1551,7 +1629,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the

@@ -57,6 +57,16 @@ public partial class _BitDropdownCustomDemo
         new() { Text = "Lettuce", Value = "v-let" }
     ];
 
+    private List<Product> GetAccentedCustoms() =>
+    [
+        new() { Text = "José", Value = "n-jos" },
+        new() { Text = "Renée", Value = "n-ren" },
+        new() { Text = "Müller", Value = "n-mul" },
+        new() { Text = "Ångström", Value = "n-ang" },
+        new() { Text = "Zoë", Value = "n-zoe" },
+        new() { Text = "Smith", Value = "n-smi" }
+    ];
+
     private List<Product> GetDataCustoms() =>
     [
         new() { Type = BitDropdownItemType.Header, Text = "Items", Payload = new DropdownItemData { IconName = "BulletedList2" } },
@@ -236,6 +246,11 @@ public partial class _BitDropdownCustomDemo
 
     private string successMessage = string.Empty;
     private FormValidationDropdownModel validationModel = new();
+
+    private string? closeOnSelectValue;
+    private IEnumerable<string?> closeOnSelectValues = [];
+
+    private string? autoSelectValue;
 
     private string comboBoxValueSample1 = default!;
     private string comboBoxValueSample2 = default!;
