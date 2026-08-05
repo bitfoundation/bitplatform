@@ -4,59 +4,130 @@
 @{
     var selectedIcon = BitIconInfo.From(SelectedIcon, SelectedIconName ?? "FavoriteStarFill");
     var unselectedIcon = BitIconInfo.From(UnselectedIcon, UnselectedIconName ?? "FavoriteStar");
+    var max = _Max;
+    var steps = _StepsPerItem;
+    var displayValue = _DisplayValue;
+    var tabbableIndex = _TabbableIndex;
+    var interactive = IsEnabled && ReadOnly is false;
 }
 
+@* A read-only rating is no longer a set of choices but a picture of a value, so it drops the radiogroup
+   and is announced as a single labelled image instead of a group of unreachable radios. That also takes
+   aria-required and aria-disabled with it: neither is supported on the img role, and an unchangeable
+   picture of a value has nothing to require or disable in the first place. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onkeydown="HandleOnKeyDown"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel"
-     aria-readonly="@ReadOnly"
-     role=@(ReadOnly ? null : "radiogroup")>
+     aria-label="@_AriaLabel"
+     role="@(ReadOnly ? "img" : "radiogroup")"
+     aria-readonly="@(ReadOnly ? "true" : null)"
+     aria-invalid="@(ValueInvalid is true ? "true" : null)"
+     aria-required="@(ReadOnly is false && Required ? "true" : null)"
+     aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)"
+     aria-orientation="@(ReadOnly is false && Vertical ? "vertical" : null)">
 
-    @for (int item = 1; item <= Max; item++)
+    @for (int item = 1; item <= max; item++)
     {
         var index = item;
         var percentage = GetPercentage(index);
+        var isCurrent = index == CurrentValue;
+        // A per-item icon replaces the shared pair for that position only, which is what turns a plain
+        // scale into one that changes shape as it fills - a frown at one end and a grin at the other.
+        var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
+        var itemUnselectedIcon = GetUnselectedIcon?.Invoke(index) ?? unselectedIcon;
 
-        <button @onclick="() => HandleOnClick(index)"
+        <button @ref="_itemRefs[index - 1]"
+                @onclick="() => HandleOnClick(index)"
+                @onmouseover="() => HandleOnHover(index)"
                 type="button"
-                role="radio"
+                title="@GetItemTitle(index)"
                 style="@Styles?.Button"
-                aria-hidden="@ReadOnly"
+                role="@(ReadOnly ? null : "radio")"
                 class="bit-rtg-btn @Classes?.Button"
-                aria-checked="@(index == CurrentValue)"
-                data-is-current="@(index == CurrentValue)"
-                disabled=@(IsEnabled is false || ReadOnly)
-                tabindex=@(index == CurrentValue ? "0" : "-1")>
+                autofocus="@(AutoFocus && index == tabbableIndex)"
+                aria-hidden="@(ReadOnly ? "true" : null)"
+                aria-setsize="@(ReadOnly ? null : max.ToString())"
+                aria-posinset="@(ReadOnly ? null : index.ToString())"
+                aria-checked="@(ReadOnly ? null : (isCurrent ? "true" : "false"))"
+                data-is-current="@(isCurrent ? "true" : "false")"
+                disabled="@(IsEnabled is false || ReadOnly)"
+                tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
 
-            @if (AriaLabelFormat.HasValue())
+            @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
+               of an interactive rating carries one. The items of a read-only rating are aria-hidden behind
+               the single label of the group, which leaves them nothing to name. *@
+            @if (ReadOnly is false)
             {
                 <span class="bit-rtg-alb">
-                    @string.Format(AriaLabelFormat!, index, Max)
+                    @GetItemAriaLabel(index)
                 </span>
             }
 
             <div class="bit-rtg-ict @Classes?.IconContainer" style="@Styles?.IconContainer">
-                <i aria-hidden="true"
-                   style="@Styles?.UnselectedIcon"
-                   class="bit-rtg-iem @(percentage == 100 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
-                </i>
-                <i aria-hidden="true"
-                   style=@(FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}"))
-                   class="bit-rtg-ifl @(percentage > 0 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
-                </i>
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(new BitRatingItemContext(index, max, percentage, displayValue, CurrentValue))
+                }
+                else
+                {
+                    @* The base layer swaps to the filled glyph once the item is complete, so the two layers
+                       cannot show a seam between them at 100%. *@
+                    <i aria-hidden="true"
+                       style="@Styles?.UnselectedIcon"
+                       class="bit-rtg-iem @(percentage == 100 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
+                    </i>
+                    <i aria-hidden="true"
+                       style="@GetFillStyle(percentage)"
+                       class="bit-rtg-ifl @(percentage > 0 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
+                    </i>
+                }
             </div>
+
+            @* Below a precision of a whole item, the item is covered by transparent slices that each commit
+               their own fraction. They are decorative overlays rather than extra tab stops: the item keeps
+               being the single radio of the group, and the keyboard reaches the same fractions with the
+               arrow keys, which step by the Precision. *@
+            @if (steps > 1 && interactive)
+            {
+                for (int step = 1; step <= steps; step++)
+                {
+                    var stepValue = GetStepValue(index, step);
+
+                    <span aria-hidden="true"
+                          class="bit-rtg-seg"
+                          @onclick="() => HandleOnClick(stepValue)"
+                          @onclick:stopPropagation="true"
+                          @onmouseover="() => HandleOnHover(stepValue)"
+                          @onmouseover:stopPropagation="true"
+                          style="@GetSegmentStyle(step)">
+                    </span>
+                }
+            }
         </button>
     }
 
-    <input @ref="InputElement" @attributes="InputHtmlAttributes"
-           max="@Max"
+    @* A fractional value checks none of the radios - 3.5 is neither three stars nor four - so it is
+       announced through this live region instead of being rounded into a radio that would misreport it. *@
+    @if (ReadOnly is false)
+    {
+        <span class="bit-rtg-alb" aria-live="polite">@_LiveValueText</span>
+    }
+
+    <input @attributes="InputHtmlAttributes"
+           max="@max"
            name="@Name"
            type="number"
+           tabindex="-1"
+           aria-hidden="true"
+           required="@Required"
            readonly="@ReadOnly"
            class="bit-input-hidden"
-           value="@CurrentValueAsString"
-           min="@(AllowZeroStars ? 0 : 1)" />
+           disabled="@(IsEnabled is false)"
+           min="@_MinAttribute"
+           step="@_StepAttribute"
+           value="@CurrentValueAsString" />
 </div>
