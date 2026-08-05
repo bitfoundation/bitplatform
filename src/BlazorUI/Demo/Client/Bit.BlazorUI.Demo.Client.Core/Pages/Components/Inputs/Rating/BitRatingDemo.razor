@@ -191,7 +191,7 @@
             is what lets the same component read as a like, a heart or a checklist. The two icons are drawn on top
             of each other and the selected one is clipped to the fill percentage, so the pair works best when both
             glyphs share an outline - a hollow shape and its filled twin. For icons from an external library, see
-            the <a href="#example19"><b>External Icons</b></a> section below.
+            the <a href="components/rating#example19"><b>External Icons</b></a> section below.
         </div>
         <br />
         <div class="example-box">
@@ -213,7 +213,7 @@
             fills - thumbs down at the low end and thumbs up at the high end, or a different face at every step.
             Each callback receives the one-based position of the item and may return null to fall back to
             <b>SelectedIcon</b> / <b>SelectedIconName</b>, so only the positions that need their own glyph have to
-            be answered. This is the lightweight half of <a href="#example11"><b>ItemTemplate</b></a>: the
+            be answered. This is the lightweight half of <a href="components/rating#example11"><b>ItemTemplate</b></a>: the
             component keeps drawing the item, so the two-layer partial fill of a fractional value goes on working.
         </div>
         <br />
@@ -240,7 +240,7 @@
             <b>ItemTitles</b> gives each item its own native tooltip, in order, so hovering an item spells out what
             it means instead of leaving the user to count stars. The same words double as the accessible name of
             the item, which is a better answer for a screen reader than "4 of 5" - unless
-            <a href="#example15"><b>AriaLabelFormat</b></a> overrides it. A list shorter than the rating simply
+            <a href="components/rating#example15"><b>AriaLabelFormat</b></a> overrides it. A list shorter than the rating simply
             leaves the remaining items without a tooltip, and they fall back to their position in the scale.
         </div>
         <br />
@@ -259,7 +259,7 @@
             <b>IsSelected</b>, and both the previewed <b>DisplayValue</b> and the committed <b>Value</b> - which is
             enough to drive anything from a numbered scale to the mood faces below. Note that a template renders
             whatever you give it as a whole, so a partial fill is yours to express if it matters; when all you
-            need is a different glyph per position, <a href="#example9"><b>GetSelectedIcon</b></a> keeps the
+            need is a different glyph per position, <a href="components/rating#example9"><b>GetSelectedIcon</b></a> keeps the
             built-in partial fill instead.
         </div>
         <br />
@@ -445,7 +445,7 @@
             <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on non-default
             surfaces like the inverted panel below. And since Color is an ordinary parameter, it can be
             computed from the bound value itself - which is what the
-            <a href="#example17"><b>Score-based styling</b></a> section above builds on.
+            <a href="components/rating#example17"><b>Score-based styling</b></a> section above builds on.
         </div>
         <br />
         <div class="example-box">
@@ -484,7 +484,7 @@
             <b>BitIconInfo.Bi</b> build the class names for FontAwesome and Bootstrap Icons, <b>BitIconInfo.Css</b>
             takes whatever classes you hand it, and a plain string works too. They take precedence over
             <b>SelectedIconName</b> / <b>UnselectedIconName</b> when both are set, and the same type is what the
-            per-item <a href="#example9"><b>GetSelectedIcon</b></a> callback returns. Remember to reference the
+            per-item <a href="components/rating#example9"><b>GetSelectedIcon</b></a> callback returns. Remember to reference the
             stylesheet of the icon library itself.
         </div>
 

@@ -107,9 +107,16 @@
     clip-path: inset(50%);
 }
 
+// A flex container rather than an inline-block, so that the box is exactly the icon it holds. An
+// inline-block sizes itself to a line box, and the line box carries the descender of the surrounding text
+// font under an icon glyph that has none of its own, which leaves a few pixels of slack below the icon.
+// The slack costs a horizontal rating nothing, because its filled layer hangs from the top edge the icon
+// starts at, but a vertical rating anchors that layer to the bottom edge and measures its fill against
+// this box: the fill would be drawn below the glyph it is meant to cover, and a half-filled item would
+// show more than half. It also keeps the step slices, which cover the item, centred on what is drawn.
 .bit-rtg-ict {
+    display: flex;
     position: relative;
-    display: inline-block;
 }
 
 .bit-rtg-iem {
