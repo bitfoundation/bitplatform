@@ -1,0 +1,22 @@
+﻿<section class="api-table-section">
+    <h2>@Title</h2>
+    <div class="api-table-wrap">
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Member</th>
+                    <th>Signature</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @ChildContent
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "API reference";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

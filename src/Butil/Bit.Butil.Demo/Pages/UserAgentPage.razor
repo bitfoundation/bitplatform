@@ -1,0 +1,195 @@
+@page "/user-agent"
+@inject Bit.Butil.UserAgent userAgent
+
+<PageTitle>UserAgent - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="UserAgent"
+            Lead="Turn the cryptic user-agent string into structured facts - browser, engine, OS and device - and tap the modern User-Agent Client Hints API where the browser offers it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent"
+            InjectAs="UserAgent userAgent" />
+
+<div class="stack">
+    <DemoSection Title="Extract structured properties"
+                 Api="Extract"
+                 Description="Parses a user-agent string into a UserAgentProperties object with the browser name and version, layout engine, manufacturer, product and operating system details. With no argument it parses the current browser's own string."
+                 Code=@("""
+UserAgentProperties props = await userAgent.Extract();
+
+Console.WriteLine(props.Name);      // "Chrome"
+Console.WriteLine(props.Version);   // "126.0.0.0"
+Console.WriteLine(props.Layout);    // "Blink"
+Console.WriteLine(props.OsName);    // "Windows"
+Console.WriteLine(props.OsVersion); // "11"
+
+// or analyze any string, e.g. one captured from a server log:
+var other = await userAgent.Extract("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 ...)");
+""")>
+        <div class="field">
+            <span class="field-label">Custom user-agent string (optional)</span>
+            <input @bind="customUserAgent" placeholder="Leave empty to analyze the current browser" />
+        </div>
+        <div class="controls">
+            <button @onclick="ExtractProperties">Extract</button>
+        </div>
+        <DemoConsole @ref="extractOutput" Title="extract output" />
+    </DemoSection>
+
+    <DemoSection Title="Client Hints support and basics"
+                 Api="IsClientHintsSupported / GetPlatform / IsMobile"
+                 Description="User-Agent Client Hints (navigator.userAgentData) are the privacy-friendly successor to UA-string sniffing. These low-entropy reads are available without any prompt on supporting browsers."
+                 Code=@("""
+bool supported = await userAgent.IsClientHintsSupported();
+
+string platform = await userAgent.GetPlatform();  // "Windows", "" when unsupported
+bool mobile = await userAgent.IsMobile();
+""")>
+        <div class="controls">
+            <button @onclick="ReadClientHintBasics">Read basics</button>
+        </div>
+        <DemoConsole @ref="basicsOutput" Title="client hints basics output" />
+    </DemoSection>
+
+    <DemoSection Title="Brands"
+                 Api="GetBrands"
+                 Description="The low-entropy brand list identifies the browser and its engine family without revealing precise versions. Browsers without Client Hints return an empty array."
+                 Code=@("""
+UserAgentBrand[] brands = await userAgent.GetBrands();
+
+foreach (var brand in brands)
+{
+    Console.WriteLine($"{brand.Brand} {brand.Version}");
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadBrands">GetBrands</button>
+        </div>
+        <DemoConsole @ref="brandsOutput" Title="brands output" />
+    </DemoSection>
+
+    <DemoSection Title="High-entropy values"
+                 Api="GetHighEntropyValues"
+                 Description="Detailed facts such as CPU architecture, exact platform version and device model must be requested hint by hint; the browser may decline any of them, so every property of the result is nullable."
+                 Code=@("""
+HighEntropyUserAgent values = await userAgent.GetHighEntropyValues(
+    "architecture", "bitness", "model", "platformVersion", "fullVersionList");
+
+Console.WriteLine(values.Architecture);    // "x86"
+Console.WriteLine(values.Bitness);         // "64"
+Console.WriteLine(values.PlatformVersion); // "15.0.0"
+""")>
+        <div class="controls">
+            <button @onclick="ReadHighEntropyValues">GetHighEntropyValues</button>
+        </div>
+        <DemoConsole @ref="highEntropyOutput" Title="high-entropy values output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Client Hints are Chromium-first">
+    <code>navigator.userAgentData</code> currently ships in Chromium-based browsers only; Firefox and Safari
+    report it as unsupported. Always check <code>IsClientHintsSupported</code> first and fall back to
+    <code>Extract</code>, which works everywhere because it parses the classic user-agent string.
+</Callout>
+
+<Callout Type="warning" Title="Feature-detect, don't UA-sniff">
+    User-agent strings are frozen, spoofed and reduced by modern browsers. Use this data for analytics,
+    diagnostics and coarse tailoring - for behavior switches, prefer feature detection.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Extract" Signature="ValueTask<UserAgentProperties> Extract(string? userAgentString = null)" Description="Parses the given (or current) user-agent string into structured browser, engine and OS properties." />
+    <ApiMember Name="IsClientHintsSupported" Signature="ValueTask<bool> IsClientHintsSupported()" Description="True when the runtime exposes navigator.userAgentData (UA Client Hints)." />
+    <ApiMember Name="GetBrands" Signature="ValueTask<UserAgentBrand[]> GetBrands()" Description="Low-entropy brand list; empty on browsers without UA-CH." />
+    <ApiMember Name="IsMobile" Signature="ValueTask<bool> IsMobile()" Description="True when the user agent identifies itself as a mobile device." />
+    <ApiMember Name="GetPlatform" Signature="ValueTask<string> GetPlatform()" Description="The OS family reported by the UA-CH layer; empty string when unsupported." />
+    <ApiMember Name="GetHighEntropyValues" Signature="ValueTask<HighEntropyUserAgent> GetHighEntropyValues(params string[] hints)" Description="Requests high-entropy UA values; each hint must be named explicitly and any may come back null." />
+</ApiTable>
+
+@code {
+    private DemoConsole extractOutput = default!;
+    private DemoConsole basicsOutput = default!;
+    private DemoConsole brandsOutput = default!;
+    private DemoConsole highEntropyOutput = default!;
+
+    private string customUserAgent = "";
+
+    private async Task ExtractProperties()
+    {
+        try
+        {
+            var props = await userAgent.Extract(string.IsNullOrWhiteSpace(customUserAgent) ? null : customUserAgent);
+            await extractOutput.Info("Name:", props.Name, "| Version:", props.Version);
+            await extractOutput.Info("Layout:", props.Layout, "| Product:", props.Product, "| Manufacturer:", props.Manufacturer);
+            await extractOutput.Info("OS:", props.OsName, props.OsVersion, "| Architecture:", props.OsArchitecture);
+            await extractOutput.Info("Description:", props.Description);
+        }
+        catch (Exception ex)
+        {
+            await extractOutput.Error("Extract failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadClientHintBasics()
+    {
+        try
+        {
+            var supported = await userAgent.IsClientHintsSupported();
+            await basicsOutput.Info("IsClientHintsSupported:", supported);
+            if (supported is false)
+            {
+                await basicsOutput.Warn("This browser does not expose navigator.userAgentData.");
+            }
+            var platform = await userAgent.GetPlatform();
+            await basicsOutput.Info("Platform:", string.IsNullOrEmpty(platform) ? "(unsupported)" : platform);
+            await basicsOutput.Info("IsMobile:", await userAgent.IsMobile());
+        }
+        catch (Exception ex)
+        {
+            await basicsOutput.Error("Reading Client Hints basics failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadBrands()
+    {
+        try
+        {
+            var brands = await userAgent.GetBrands();
+            if (brands.Length == 0)
+            {
+                await brandsOutput.Warn("No brands reported (UA Client Hints unsupported).");
+                return;
+            }
+            foreach (var brand in brands)
+            {
+                await brandsOutput.Info("Brand:", $"{brand.Brand} {brand.Version}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await brandsOutput.Error("GetBrands failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadHighEntropyValues()
+    {
+        try
+        {
+            var values = await userAgent.GetHighEntropyValues(
+                "architecture", "bitness", "model", "platformVersion", "fullVersionList");
+            await highEntropyOutput.Info("Architecture:", values.Architecture, "| Bitness:", values.Bitness);
+            await highEntropyOutput.Info("Platform:", values.Platform, values.PlatformVersion);
+            await highEntropyOutput.Info("Model:", string.IsNullOrEmpty(values.Model) ? "(none)" : values.Model, "| Mobile:", values.Mobile);
+            if (values.FullVersionList is not null)
+            {
+                foreach (var brand in values.FullVersionList)
+                {
+                    await highEntropyOutput.Info("Full version:", $"{brand.Brand} {brand.Version}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await highEntropyOutput.Error("GetHighEntropyValues failed (unsupported browser?):", ex.Message);
+        }
+    }
+}

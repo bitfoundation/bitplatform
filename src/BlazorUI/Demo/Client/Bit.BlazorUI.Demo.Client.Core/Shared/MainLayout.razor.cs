@@ -16,6 +16,35 @@ public partial class MainLayout : IDisposable
     [AutoInject] private AppAccentColorService _accentColorService = default!;
 
 
+    /// <summary>
+    /// The accent the server read from its cookie while prerendering (see App.razor in the server
+    /// project). Null on the clients, which have no such cookie to cascade - they restore the accent
+    /// from their own stores once interactive.
+    /// </summary>
+    [CascadingParameter(Name = nameof(PrerenderedAccentColor))] public string? PrerenderedAccentColor { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Before the first render, so the swatches - which render below this layout - mark the
+            // visitor's accent in the prerendered markup rather than flipping to it on hydration.
+            // Round-tripped through the prerender state because the interactive client runs in its
+            // own service scope, where the cascaded (HttpContext-backed) value is gone: without it
+            // the swatches would drop back to Blue for the renders between hydration and the point
+            // where AppAccentColorService can reach localStorage.
+            _accentColorService.SeedFromPrerender(await _prerenderStateService.GetValue(
+                nameof(PrerenderedAccentColor), () => Task.FromResult(PrerenderedAccentColor)));
+
+            await base.OnInitializedAsync();
+        }
+        catch (Exception exp)
+        {
+            _exceptionHandler.Handle(exp);
+        }
+    }
 
     protected override void OnInitialized()
     {

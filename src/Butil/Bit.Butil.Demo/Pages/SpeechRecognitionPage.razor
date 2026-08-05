@@ -1,0 +1,220 @@
+@page "/speech-recognition"
+@implements IAsyncDisposable
+@inject Bit.Butil.SpeechRecognition speechRecognition
+
+<PageTitle>SpeechRecognition - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="SpeechRecognition"
+            Lead="Speech-to-text from C#: start a recognition session with language and interim-result options, stream transcripts into your components and stop or dispose the session when done."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition"
+            InjectAs="SpeechRecognition speechRecognition" />
+
+<div class="stack">
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes a SpeechRecognition implementation - standard or webkit-prefixed. The Butil script resolves both, so you never have to feature-detect the prefix yourself."
+                 Code=@("""
+@inject Bit.Butil.SpeechRecognition speechRecognition
+
+var isSupported = await speechRecognition.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Start a session"
+                 Api="Start"
+                 Description="Start begins listening and returns an IAsyncDisposable handle. Options select the language, whether recognition keeps running across pauses (Continuous), whether interim non-final transcripts are reported (InterimResults) and how many alternatives to surface. Each result arrives in the onResult callback as a SpeechRecognitionResult with Transcript, Confidence and IsFinal."
+                 Code=@("""
+await using var session = await speechRecognition.Start(
+    new SpeechRecognitionOptions
+    {
+        Lang = "en-US",
+        Continuous = true,
+        InterimResults = true,
+        MaxAlternatives = 1,
+    },
+    onResult: result =>
+    {
+        // result.Transcript, result.Confidence (0-1), result.IsFinal
+    },
+    onError: message => { /* mic denied, no speech, network, ... */ },
+    onEnd: () => { /* engine stopped listening */ });
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Language (BCP-47)</span>
+                <input @bind="lang" placeholder="en-US" />
+            </div>
+            <div class="field">
+                <span class="field-label">Max alternatives</span>
+                <input type="number" min="1" max="5" @bind="maxAlternatives" />
+            </div>
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="continuous" /> Continuous</label>
+            <label><input type="checkbox" @bind="interimResults" /> Interim results</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartRecognition" disabled="@recognizing">Start listening</button>
+            <button class="danger" @onclick="StopRecognition" disabled="@(recognitionHandle is null)">Stop</button>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(transcript))
+        {
+            <p class="section-desc">Live transcript: <strong>@transcript</strong></p>
+        }
+        <DemoConsole @ref="sessionOutput" Title="session output" />
+    </DemoSection>
+
+    <DemoSection Title="Stop and clean up"
+                 Api="Stop / DisposeAsync"
+                 Description="Disposing the handle returned by Start stops that session and detaches its callbacks - an await using block covers the common case. The service itself is IAsyncDisposable too and tears down every live session when the scope ends, but pages that hold a handle across renders should dispose it explicitly in their own DisposeAsync."
+                 Code=@("""
+@implements IAsyncDisposable
+
+@code {
+    private IAsyncDisposable? session;
+
+    private async Task Stop()
+    {
+        if (session is null) return;
+        await session.DisposeAsync(); // stops the engine and detaches callbacks
+        session = null;
+    }
+
+    public async ValueTask DisposeAsync() => await Stop();
+}
+""")
+                 Language="razor" />
+</div>
+
+<Callout Type="warning" Title="Browser support is narrow">
+    Chromium-based browsers expose the engine as webkitSpeechRecognition (Butil handles the prefix) and may
+    process audio on Google's servers; Safari supports it from 14.1 with on-device processing; Firefox ships
+    it disabled by default. Always gate the UI behind IsSupported and design a typed-input fallback.
+</Callout>
+
+<Callout Type="info" Title="Microphone permission and secure context">
+    The first Start triggers the browser's microphone permission prompt and requires a secure context
+    (https or localhost). A denied prompt surfaces through onError with a not-allowed message - handle it
+    rather than assuming recognition began.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes a SpeechRecognition implementation (standard or webkit-prefixed)." />
+    <ApiMember Name="Start" Signature="Task<IAsyncDisposable> Start(SpeechRecognitionOptions options, Action<SpeechRecognitionResult>? onResult = null, Action<string>? onError = null, Action? onEnd = null)" Description="Starts recognition and returns a handle that stops the session when disposed. At least one callback must be provided." />
+    <ApiMember Name="Stop" Signature="ValueTask Stop(Guid id)" Description="Stops the matching recognition session early. Equivalent to disposing the handle." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Stops every live session and releases the interop reference; called automatically when the scoped service is disposed." />
+    <ApiMember Name="SpeechRecognitionOptions" Signature="class { string? Lang; bool Continuous; bool InterimResults = true; int MaxAlternatives = 1; }" Description="Session configuration: language tag, keep-listening mode, interim reporting and alternative count." />
+    <ApiMember Name="SpeechRecognitionResult" Signature="class { string Transcript; double Confidence; bool IsFinal; }" Description="One transcript: recognized text, engine confidence in [0, 1] and whether it is final." />
+    <ApiMember Name="InvokeSpeechRecognitionResult / Error / End" Signature="void InvokeSpeechRecognition…(…)" Description="JSInvokable interop plumbing dispatched from the Butil script - not intended for app code." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole sessionOutput = default!;
+    private string lang = "en-US";
+    private bool continuous = true;
+    private bool interimResults = true;
+    private int maxAlternatives = 1;
+    private string transcript = "";
+    private bool recognizing;
+    private IAsyncDisposable? recognitionHandle;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await speechRecognition.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task StartRecognition()
+    {
+        try
+        {
+            if (!await speechRecognition.IsSupported())
+            {
+                await sessionOutput.Warn("SpeechRecognition is not supported in this browser.");
+                return;
+            }
+
+            await StopRecognitionInternal();
+
+            transcript = "";
+            recognizing = true;
+
+            recognitionHandle = await speechRecognition.Start(
+                new SpeechRecognitionOptions
+                {
+                    Lang = string.IsNullOrWhiteSpace(lang) ? null : lang,
+                    Continuous = continuous,
+                    InterimResults = interimResults,
+                    MaxAlternatives = maxAlternatives,
+                },
+                onResult: result => _ = InvokeAsync(async () =>
+                {
+                    transcript = result.Transcript;
+                    if (result.IsFinal)
+                    {
+                        await sessionOutput.Success($"Final ({result.Confidence:P0}) →", result.Transcript);
+                    }
+                    else
+                    {
+                        await sessionOutput.Log("Interim →", result.Transcript);
+                    }
+                }),
+                onError: message => _ = InvokeAsync(async () =>
+                {
+                    await sessionOutput.Error("Recognition error →", message);
+                }),
+                onEnd: () => _ = InvokeAsync(async () =>
+                {
+                    recognizing = false;
+                    recognitionHandle = null;
+                    await sessionOutput.Info("Recognition ended.");
+                }));
+
+            await sessionOutput.Log("Listening… speak into your microphone.");
+        }
+        catch (Exception ex)
+        {
+            recognizing = false;
+            await sessionOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task StopRecognition()
+    {
+        try
+        {
+            await StopRecognitionInternal();
+            await sessionOutput.Log("Stop → session disposed");
+        }
+        catch (Exception ex)
+        {
+            await sessionOutput.Error("Stop failed →", ex.Message);
+        }
+    }
+
+    private async Task StopRecognitionInternal()
+    {
+        if (recognitionHandle is null) return;
+
+        await recognitionHandle.DisposeAsync();
+        recognitionHandle = null;
+        recognizing = false;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await StopRecognitionInternal();
+    }
+}

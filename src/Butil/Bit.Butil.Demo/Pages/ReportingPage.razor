@@ -1,0 +1,197 @@
+@page "/reporting"
+@implements IAsyncDisposable
+@inject Bit.Butil.Reporting reporting
+
+<PageTitle>Reporting - Bit.Butil</PageTitle>
+
+<PageHeader Category="Screen & Diagnostics"
+            Title="Reporting"
+            Lead="Surface the browser's own health reports - deprecations, interventions, CSP violations and crashes - to your C# code through the Reporting API's ReportingObserver, so they can travel to your monitoring stack alongside ordinary errors."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/ReportingObserver"
+            InjectAs="Reporting reporting" />
+
+<div class="stack">
+    <DemoSection Title="Feature detection"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes ReportingObserver. Check it before subscribing on browsers you do not control."
+                 Code=@("""
+if (await reporting.IsSupported())
+{
+    // safe to subscribe
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="feature detection output" />
+    </DemoSection>
+
+    <DemoSection Title="Observe every report"
+                 Api="Subscribe"
+                 Description="Registers a handler that receives each batch of browser-generated reports. With buffered set to true (the default) reports queued before the observer registered are delivered too."
+                 Code=@("""
+var subscription = await reporting.Subscribe(reports =>
+{
+    foreach (var report in reports)
+    {
+        // report.Type → "deprecation", "intervention", ...
+        // report.Url  → the page the report applies to
+        // report.Body → type-specific payload as a JsonElement
+    }
+});
+
+// later, when no longer needed:
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe">Subscribe</button>
+            <button class="danger" @onclick="Unsubscribe">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="observeOutput" Title="reports output" />
+    </DemoSection>
+
+    <DemoSection Title="Filter report types"
+                 Api="Subscribe"
+                 Description="Pass a whitelist of report types to receive only what you care about - for example just deprecations, so you learn early when the app relies on an API scheduled for removal."
+                 Code=@("""
+var subscription = await reporting.Subscribe(
+    reports =>
+    {
+        foreach (var report in reports)
+        {
+            // only deprecation reports arrive here
+        }
+    },
+    types: ["deprecation"],
+    buffered: true);
+""") />
+
+    <DemoSection Title="Reading the report body"
+                 Api="BrowserReport"
+                 Description="The body shape varies per report type, so it is surfaced as a JsonElement. For a deprecation report, for instance, the body carries the offending API id and a human-readable message."
+                 Code=@("""
+foreach (var report in reports)
+{
+    if (report.Type is "deprecation")
+    {
+        var id = report.Body.GetProperty("id").GetString();
+        var message = report.Body.GetProperty("message").GetString();
+        // e.g. log it, or forward it to your telemetry backend
+    }
+}
+""") />
+</div>
+
+<Callout Type="info" Title="Reports arrive on the browser's schedule">
+    After subscribing, entries appear only when the browser actually generates a report - for example
+    when the page calls a deprecated API or the browser intervenes against an abusive pattern. A quiet
+    console after subscribing simply means this page has given the browser nothing to complain about.
+</Callout>
+
+<Callout Type="warning" Title="Browser support">
+    ReportingObserver is available in Chromium-based browsers (Chrome, Edge, Opera); Firefox and Safari
+    do not currently expose it. Use IsSupported before subscribing.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes ReportingObserver." />
+    <ApiMember Name="Subscribe" Signature="Task<ButilSubscription> Subscribe(Action<BrowserReport[]> handler, string[]? types = null, bool buffered = true)" Description="Subscribes to browser-generated reports, optionally filtered by type; the returned subscription stops observation when disposed." />
+    <ApiMember Name="InvokeBrowserReport" Signature="void InvokeBrowserReport(Guid id, BrowserReport[] reports)" Description="JS interop bridge invoked on each report batch; not intended for application code." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects all observers and releases the interop reference." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole observeOutput = default!;
+    private ButilSubscription? reportSub;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await reporting.IsSupported();
+            if (supported)
+            {
+                await supportOutput.Success("ReportingObserver is supported in this browser.");
+            }
+            else
+            {
+                await supportOutput.Warn("ReportingObserver is NOT supported in this browser.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            if (reportSub is not null)
+            {
+                await observeOutput.Warn("Already subscribed.");
+                return;
+            }
+
+            if (await reporting.IsSupported() is false)
+            {
+                await observeOutput.Warn("Cannot subscribe: ReportingObserver is not supported here.");
+                return;
+            }
+
+            reportSub = await reporting.Subscribe(reports => _ = OnReports(reports));
+            await observeOutput.Log("Subscribed - reports will appear when the browser generates them.");
+        }
+        catch (Exception ex)
+        {
+            await observeOutput.Error("Subscribe failed →", ex.Message);
+        }
+    }
+
+    private async Task OnReports(BrowserReport[] reports)
+    {
+        try
+        {
+            foreach (var report in reports)
+            {
+                await observeOutput.Info($"Report → [{report.Type}] {report.Url}");
+                await observeOutput.Log("  body:", report.Body);
+            }
+        }
+        catch (Exception ex)
+        {
+            await observeOutput.Error("Report handler failed →", ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (reportSub is null)
+            {
+                await observeOutput.Warn("Not subscribed.");
+                return;
+            }
+
+            await reportSub.DisposeAsync();
+            reportSub = null;
+            await observeOutput.Log("Subscription removed.");
+        }
+        catch (Exception ex)
+        {
+            await observeOutput.Error("Unsubscribe failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (reportSub is not null)
+        {
+            await reportSub.DisposeAsync();
+            reportSub = null;
+        }
+    }
+}

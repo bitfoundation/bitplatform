@@ -1,0 +1,398 @@
+@page "/mutation-observer"
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<PageTitle>MutationObserver - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="MutationObserver"
+            Lead="React to DOM changes from C#: ObserveMutations is an extension method on any ElementReference that reports added and removed nodes, attribute changes and text edits as strongly typed records - no polling, no JavaScript."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" />
+
+<div class="stack">
+<DemoSection Title="Watch child-list changes"
+             Api="ObserveMutations"
+             Description="Capture the element with the ref directive and call ObserveMutations with the IJSRuntime and a handler. With no options it defaults to watching added and removed nodes across the whole subtree - the most common case. Start observing, then add and remove items to see childList records arrive."
+             Code=@("""
+@inject IJSRuntime js
+
+<div @ref="container">...</div>
+
+@code {
+    private ElementReference container;
+    private ButilSubscription? subscription;
+
+    private async Task Start()
+    {
+        // defaults to ChildList = true, Subtree = true
+        subscription = await container.ObserveMutations(js, records =>
+        {
+            foreach (var record in records)
+            {
+                Console.WriteLine($"{record.Type}: +{record.AddedCount} / -{record.RemovedCount}");
+            }
+        });
+    }
+}
+""")
+             Language="razor">
+    <div @ref="containerRef" data-state="idle"
+         style="max-width:22rem;border:1px dashed #6366f1;border-radius:8px;padding:0.6rem;">
+        <div>Observed container - change count: @changeCount</div>
+        @foreach (var item in items)
+        {
+            <div style="padding:0.25rem 0.5rem;margin-top:0.3rem;border:1px solid #22c55e;border-radius:6px;">@item</div>
+        }
+    </div>
+    <div class="controls">
+        <button @onclick="StartChildList" disabled="@(childListSub is not null)">Start observing</button>
+        <button class="secondary" @onclick="AddItem">Add item</button>
+        <button class="secondary" @onclick="RemoveItem" disabled="@(items.Count == 0)">Remove item</button>
+        <button class="danger" @onclick="() => StopChildList(childListOutput)" disabled="@(childListSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="childListOutput" Title="child-list output" />
+</DemoSection>
+
+<DemoSection Title="Watch attributes"
+             Api="MutationObserverOptions.Attributes / AttributeOldValue / AttributeFilter"
+             Description="Set Attributes to true to receive a record for every attribute change on the target. AttributeOldValue includes the previous value in each record, and AttributeFilter narrows the watch to specific attribute names so unrelated changes stay silent."
+             Code=@("""
+await container.ObserveMutations(js, records =>
+{
+    foreach (var record in records)
+    {
+        Console.WriteLine($"{record.AttributeName}: {record.OldValue} -> changed");
+    }
+}, new MutationObserverOptions
+{
+    Attributes = true,
+    AttributeOldValue = true,
+    AttributeFilter = ["data-state"],
+});
+""")>
+    <div class="controls">
+        <button @onclick="StartAttributes" disabled="@(attributeSub is not null)">Observe data-state only</button>
+        <button class="secondary" @onclick="MutateWatchedAttribute">Change data-state</button>
+        <button class="secondary" @onclick="MutateOtherAttribute">Change data-other (filtered out)</button>
+        <button class="danger" @onclick="() => StopAttributes(attributesOutput)" disabled="@(attributeSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="attributesOutput" Title="attributes output" />
+</DemoSection>
+
+<DemoSection Title="Watch text changes"
+             Api="MutationObserverOptions.CharacterData / CharacterDataOldValue"
+             Description="CharacterData watches edits to text nodes; pair it with Subtree so text anywhere inside the container is covered, and CharacterDataOldValue to receive the previous text. Incrementing the counter below makes Blazor update a text node inside the observed container."
+             Code=@("""
+await container.ObserveMutations(js, records =>
+{
+    foreach (var record in records)
+    {
+        Console.WriteLine($"text changed, was: {record.OldValue}");
+    }
+}, new MutationObserverOptions
+{
+    CharacterData = true,
+    CharacterDataOldValue = true,
+    Subtree = true,
+});
+""")>
+    <div class="controls">
+        <button @onclick="StartCharacterData" disabled="@(characterDataSub is not null)">Observe text</button>
+        <button class="secondary" @onclick="IncrementCounter">Increment change count</button>
+        <button class="danger" @onclick="() => StopCharacterData(textOutput)" disabled="@(characterDataSub is null)">Stop</button>
+    </div>
+    <DemoConsole @ref="textOutput" Title="text changes output" />
+</DemoSection>
+
+<DemoSection Title="Reading records"
+             Api="MutationRecord"
+             Description="DOM nodes cannot cross the interop boundary, so each MutationRecord is a flattened summary: the mutation type, the target's tag name and id, the attribute name and old value where applicable, and how many nodes were added or removed."
+             Code=@("""
+await container.ObserveMutations(js, records =>
+{
+    foreach (var record in records)
+    {
+        var type = record.Type;          // "childList" | "attributes" | "characterData"
+        var tag = record.TargetTagName;  // e.g. "DIV"
+        var id = record.TargetId;        // element id, when present
+        var attr = record.AttributeName; // attributes mutations only
+        var old = record.OldValue;       // when *OldValue options are enabled
+        var added = record.AddedCount;   // childList mutations only
+        var removed = record.RemovedCount;
+    }
+});
+""")>
+    <div class="controls">
+        <button class="secondary" @onclick="LogLatestRecord" disabled="@(latestRecord is null)">Log latest record as JSON</button>
+    </div>
+    <DemoConsole @ref="recordsOutput" Title="records output" />
+</DemoSection>
+
+<DemoSection Title="Stopping"
+             Api="ButilSubscription"
+             Description="ObserveMutations returns a ButilSubscription; disposing it disconnects the observer and releases the interop reference. Dispose every observer you start - at the latest in your component's DisposeAsync, as this page does."
+             Code=@("""
+@implements IAsyncDisposable
+
+private ButilSubscription? subscription;
+
+public async ValueTask DisposeAsync()
+{
+    if (subscription is not null)
+    {
+        await subscription.DisposeAsync();
+    }
+}
+""")
+             Language="razor">
+    <div class="controls">
+        <button class="danger" @onclick="StopEverything">Dispose all observers on this page</button>
+    </div>
+    <DemoConsole @ref="stoppingOutput" Title="stopping output" />
+</DemoSection>
+</div>
+
+<Callout Type="info" Title="Blazor renders count as mutations too">
+    The observer sees every DOM change inside the watched subtree - including the ones Blazor itself makes
+    when it re-renders. That is exactly what powers the demos above, but when watching a region your own
+    components render, expect records for Blazor's diff updates as well as for external changes.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="ObserveMutations" Signature="Task<ButilSubscription> ObserveMutations(IJSRuntime js, Action<MutationRecord[]> handler, MutationObserverOptions? options = null)" Description="Extension method on ElementReference. Starts observing and returns a disposable subscription. Null options default to ChildList and Subtree." />
+    <ApiMember Name="MutationObserverOptions.ChildList" Signature="bool ChildList { get; set; }" Description="Watch for added or removed children." />
+    <ApiMember Name="MutationObserverOptions.Attributes" Signature="bool Attributes { get; set; }" Description="Watch for attribute changes on the target." />
+    <ApiMember Name="MutationObserverOptions.CharacterData" Signature="bool CharacterData { get; set; }" Description="Watch for character-data changes within the target." />
+    <ApiMember Name="MutationObserverOptions.Subtree" Signature="bool Subtree { get; set; }" Description="Apply the chosen options to the entire subtree, not just the immediate target." />
+    <ApiMember Name="MutationObserverOptions.AttributeOldValue" Signature="bool AttributeOldValue { get; set; }" Description="Include the previous attribute value in each record." />
+    <ApiMember Name="MutationObserverOptions.CharacterDataOldValue" Signature="bool CharacterDataOldValue { get; set; }" Description="Include the previous character-data value in each record." />
+    <ApiMember Name="MutationObserverOptions.AttributeFilter" Signature="string[]? AttributeFilter { get; set; }" Description="Optional whitelist of attribute names to watch. Null means all." />
+    <ApiMember Name="MutationRecord.Type" Signature="string Type { get; set; }" Description="One of &quot;attributes&quot;, &quot;characterData&quot; or &quot;childList&quot;." />
+    <ApiMember Name="MutationRecord.TargetTagName" Signature="string TargetTagName { get; set; }" Description="Tag name of the target node, or empty for non-element targets." />
+    <ApiMember Name="MutationRecord.TargetId" Signature="string? TargetId { get; set; }" Description="Id of the target node when present." />
+    <ApiMember Name="MutationRecord.AttributeName" Signature="string? AttributeName { get; set; }" Description="Attribute name (attributes mutations only)." />
+    <ApiMember Name="MutationRecord.AttributeNamespace" Signature="string? AttributeNamespace { get; set; }" Description="Attribute namespace (attributes mutations only)." />
+    <ApiMember Name="MutationRecord.OldValue" Signature="string? OldValue { get; set; }" Description="Previous value when the matching *OldValue option was enabled." />
+    <ApiMember Name="MutationRecord.AddedCount" Signature="int AddedCount { get; set; }" Description="Number of nodes added (childList mutations only)." />
+    <ApiMember Name="MutationRecord.RemovedCount" Signature="int RemovedCount { get; set; }" Description="Number of nodes removed (childList mutations only)." />
+    <ApiMember Name="ButilSubscription.Id" Signature="Guid Id { get; }" Description="The internal listener id of the subscription." />
+    <ApiMember Name="ButilSubscription.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Disconnects the observer and releases the interop reference. Idempotent." />
+</ApiTable>
+
+@code {
+    private DemoConsole childListOutput = default!;
+    private DemoConsole attributesOutput = default!;
+    private DemoConsole textOutput = default!;
+    private DemoConsole recordsOutput = default!;
+    private DemoConsole stoppingOutput = default!;
+
+    private ElementReference containerRef;
+
+    private ButilSubscription? childListSub;
+    private ButilSubscription? attributeSub;
+    private ButilSubscription? characterDataSub;
+
+    private MutationRecord? latestRecord;
+
+    private readonly List<string> items = [];
+    private int itemCounter;
+    private int changeCount;
+
+    private async Task StartChildList()
+    {
+        try
+        {
+            childListSub = await containerRef.ObserveMutations(js, records =>
+            {
+                foreach (var record in records)
+                {
+                    latestRecord = record;
+                    _ = childListOutput.Log($"childList → +{record.AddedCount} / -{record.RemovedCount} in <{record.TargetTagName}>");
+                }
+
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            await childListOutput.Log("Observing child-list changes (default options) - add or remove items");
+        }
+        catch (Exception ex)
+        {
+            await childListOutput.Error(ex.Message);
+        }
+    }
+
+    private void AddItem()
+    {
+        itemCounter++;
+        items.Add($"Item {itemCounter}");
+    }
+
+    private void RemoveItem()
+    {
+        if (items.Count == 0) return;
+
+        items.RemoveAt(items.Count - 1);
+    }
+
+    private async Task StopChildList(DemoConsole output)
+    {
+        try
+        {
+            if (childListSub is null) return;
+
+            await childListSub.DisposeAsync();
+            childListSub = null;
+            await output.Warn("Child-list observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartAttributes()
+    {
+        try
+        {
+            attributeSub = await containerRef.ObserveMutations(js, records =>
+            {
+                foreach (var record in records)
+                {
+                    latestRecord = record;
+                    _ = attributesOutput.Log($"attributes → {record.AttributeName} changed (was: {record.OldValue ?? "null"})");
+                }
+
+                _ = InvokeAsync(StateHasChanged);
+            }, new MutationObserverOptions
+            {
+                Attributes = true,
+                AttributeOldValue = true,
+                AttributeFilter = ["data-state"],
+            });
+
+            await attributesOutput.Log("Observing attribute changes filtered to data-state");
+        }
+        catch (Exception ex)
+        {
+            await attributesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task MutateWatchedAttribute()
+    {
+        try
+        {
+            await containerRef.SetAttribute("data-state", Guid.NewGuid().ToString("N")[..8]);
+        }
+        catch (Exception ex)
+        {
+            await attributesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task MutateOtherAttribute()
+    {
+        try
+        {
+            await containerRef.SetAttribute("data-other", Guid.NewGuid().ToString("N")[..8]);
+            await attributesOutput.Info("data-other changed - the filtered observer stays silent");
+        }
+        catch (Exception ex)
+        {
+            await attributesOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopAttributes(DemoConsole output)
+    {
+        try
+        {
+            if (attributeSub is null) return;
+
+            await attributeSub.DisposeAsync();
+            attributeSub = null;
+            await output.Warn("Attribute observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task StartCharacterData()
+    {
+        try
+        {
+            characterDataSub = await containerRef.ObserveMutations(js, records =>
+            {
+                foreach (var record in records)
+                {
+                    latestRecord = record;
+                    _ = textOutput.Log($"characterData → text changed (was: {record.OldValue ?? "null"})");
+                }
+
+                _ = InvokeAsync(StateHasChanged);
+            }, new MutationObserverOptions
+            {
+                CharacterData = true,
+                CharacterDataOldValue = true,
+                Subtree = true,
+            });
+
+            await textOutput.Log("Observing text changes - increment the change count");
+        }
+        catch (Exception ex)
+        {
+            await textOutput.Error(ex.Message);
+        }
+    }
+
+    private void IncrementCounter()
+    {
+        changeCount++;
+    }
+
+    private async Task StopCharacterData(DemoConsole output)
+    {
+        try
+        {
+            if (characterDataSub is null) return;
+
+            await characterDataSub.DisposeAsync();
+            characterDataSub = null;
+            await output.Warn("Character-data observer disposed");
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private async Task LogLatestRecord()
+    {
+        try
+        {
+            if (latestRecord is null) return;
+
+            await recordsOutput.Success("Latest record →", latestRecord);
+        }
+        catch (Exception ex)
+        {
+            await recordsOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task StopEverything()
+    {
+        await StopChildList(stoppingOutput);
+        await StopAttributes(stoppingOutput);
+        await StopCharacterData(stoppingOutput);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (childListSub is not null) await childListSub.DisposeAsync();
+        if (attributeSub is not null) await attributeSub.DisposeAsync();
+        if (characterDataSub is not null) await characterDataSub.DisposeAsync();
+    }
+}

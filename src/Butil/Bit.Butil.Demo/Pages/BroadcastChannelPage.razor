@@ -1,0 +1,196 @@
+@page "/broadcast-channel"
+@implements IAsyncDisposable
+@inject Bit.Butil.BroadcastChannel broadcastChannel
+
+<PageTitle>BroadcastChannel - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="BroadcastChannel"
+            Lead="Simple same-origin pub/sub between tabs, windows, iframes and workers: post a message on a named channel and every other listener on that channel receives it."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API"
+            InjectAs="BroadcastChannel broadcastChannel" />
+
+<div class="stack">
+
+    <Callout Type="info" Title="Try it with two tabs">
+        Open this page in a second tab, press Subscribe in both, then post a message from either one -
+        it appears in the other tab's console. Per the spec, a sender never receives its own message,
+        so posting in a single tab logs nothing locally.
+    </Callout>
+
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes BroadcastChannel. The API is available in every modern browser and requires no permissions."
+                 Code=@("""
+var supported = await broadcastChannel.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Subscribe to a channel"
+                 Api="Subscribe"
+                 Description="Subscribes to a named channel. Every message arrives as a JsonElement so you can deserialize into whatever shape you expect; the optional onError callback fires on a messageerror event (a payload that could not be deserialized). One BroadcastChannel instance can host any number of named channels - the JS-side channel is created on first subscribe per name and torn down when its last subscription is disposed."
+                 Code=@("""
+var subscription = await broadcastChannel.Subscribe("butil-demo",
+    onMessage: data =>
+    {
+        // data is a JsonElement - e.g. data.GetString() for plain text
+    },
+    onError: () =>
+    {
+        // a message on the channel failed to deserialize
+    });
+
+// later, to detach:
+await subscription.DisposeAsync();
+""")>
+        <div class="field">
+            <label class="field-label">Channel name</label>
+            <input @bind="channelName" />
+        </div>
+        <div class="controls">
+            <button @onclick="Subscribe">Subscribe</button>
+            <button class="secondary" @onclick="Unsubscribe">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="subscribeOutput" Title="subscription output" />
+    </DemoSection>
+
+    <DemoSection Title="Post a message"
+                 Api="Post"
+                 Description="Sends a message to every other listener on the channel within the same origin. Any JSON-serializable value works - strings, numbers or whole objects. Remember: the sender itself does not receive the message, so watch the console of the other tab."
+                 Code=@("""
+await broadcastChannel.Post("butil-demo", "Hello, other tabs!");
+
+// objects work too:
+await broadcastChannel.Post("butil-demo", new { user = "alice", action = "signed-in" });
+""")>
+        <div class="field">
+            <label class="field-label">Message</label>
+            <input @bind="message" />
+        </div>
+        <div class="controls">
+            <button @onclick="PostMessage">Post to channel</button>
+        </div>
+        <DemoConsole @ref="postOutput" Title="post output" />
+    </DemoSection>
+
+    <Callout Type="warning" Title="Same origin only">
+        Broadcast channels are partitioned by origin (scheme, host and port). Tabs from other origins -
+        even subdomains - never see the messages, which also makes the API unsuitable for cross-site
+        communication by design.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes BroadcastChannel." />
+        <ApiMember Name="Post" Signature="ValueTask Post<T>(string channelName, T message)" Description="Sends the message to every other listener on the channel in the same origin (the sender does not receive its own message)." />
+        <ApiMember Name="Subscribe" Signature="Task<ButilSubscription> Subscribe(string channelName, Action<JsonElement>? onMessage, Action? onError = null)" Description="Subscribes to the channel; each message arrives as a JsonElement. Dispose the returned subscription to detach." />
+        <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every subscription created by this instance and releases the interop reference." />
+        <ApiMember Name="InvokeBroadcastChannelMessage" Signature="void InvokeBroadcastChannelMessage(Guid id, JsonElement data)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+        <ApiMember Name="InvokeBroadcastChannelError" Signature="void InvokeBroadcastChannelError(Guid id)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole subscribeOutput = default!;
+    private DemoConsole postOutput = default!;
+    private string channelName = "butil-demo";
+    private string message = "Hello from another tab!";
+    private string subscribedChannel = string.Empty;
+    private ButilSubscription? subscription;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await broadcastChannel.IsSupported();
+            await supportOutput.Info("BroadcastChannel supported:", supported);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Subscribe()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(channelName))
+            {
+                await subscribeOutput.Warn("Enter a channel name first.");
+                return;
+            }
+
+            if (subscription is not null)
+            {
+                await subscribeOutput.Warn($"Already subscribed to '{subscribedChannel}' - unsubscribe first to switch channels.");
+                return;
+            }
+
+            var name = channelName.Trim();
+            subscription = await broadcastChannel.Subscribe(name,
+                onMessage: data => _ = subscribeOutput.Log($"['{name}'] received:", data),
+                onError: () => _ = subscribeOutput.Error($"['{name}'] messageerror - a message could not be deserialized."));
+
+            subscribedChannel = name;
+            await subscribeOutput.Success($"Subscribed to '{name}'. Open this page in a second tab and post from there.");
+        }
+        catch (Exception ex)
+        {
+            await subscribeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task Unsubscribe()
+    {
+        try
+        {
+            if (subscription is null)
+            {
+                await subscribeOutput.Warn("Not subscribed.");
+                return;
+            }
+
+            await subscription.DisposeAsync();
+            subscription = null;
+            await subscribeOutput.Log($"Unsubscribed from '{subscribedChannel}'.");
+            subscribedChannel = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            await subscribeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task PostMessage()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(channelName))
+            {
+                await postOutput.Warn("Enter a channel name first.");
+                return;
+            }
+
+            await broadcastChannel.Post(channelName.Trim(), message);
+            await postOutput.Success($"Posted to '{channelName.Trim()}'. Other subscribed tabs receive it; this tab does not (spec behavior).");
+        }
+        catch (Exception ex)
+        {
+            await postOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null)
+        {
+            await subscription.DisposeAsync();
+        }
+    }
+}
