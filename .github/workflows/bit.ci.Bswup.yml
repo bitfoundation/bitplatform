@@ -43,6 +43,12 @@ jobs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: 24
+        cache: npm
+        # Both lock files feed the shared npm cache: Bit.Bswup's drives the
+        # InstallNodejsDependencies build step, the tests' drives `npm ci` below.
+        cache-dependency-path: |
+          src/Bswup/Bit.Bswup/package-lock.json
+          src/Bswup/Tests/bit-bswup-js/package-lock.json
 
     - name: dotnet workload restore
       run:  cd src/Bswup && dotnet workload restore
@@ -53,3 +59,11 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Bswup/Bit.Bswup.slnx
+
+    # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
+    # the build step itself (e.g. the minifier re-introducing downleveled syntax).
+    - name: JS tests (service worker, page script, progress UI)
+      run: |
+        cd src/Bswup/Tests/bit-bswup-js
+        npm ci
+        npm test

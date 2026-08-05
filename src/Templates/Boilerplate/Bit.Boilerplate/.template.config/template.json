@@ -479,7 +479,10 @@
                         "src/Shared/Features/Products/IProductController.cs",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Dashboard/**",
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Categories/**",
-                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**"
+                        "src/Client/Boilerplate.Client.Core/Components/Pages/Products/**",
+                        // Drive ProductController / CategoryController, which this same rule removes.
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs"
                     ]
                 },
                 {
@@ -499,7 +502,9 @@
                         "src/Shared/Features/Products/**",
                         "src/Server/Boilerplate.Server.Api/Features/Categories/**",
                         "src/Server/Boilerplate.Server.Api/Features/Products/**",
-                        "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*"
+                        "src/Client/Boilerplate.Client.Core/wwwroot/images/car_placeholder*",
+                        // Covers ProductConfiguration's seed and ProductDto.FormattedPrice, both of which this rule removes.
+                        "src/Tests/Features/Products/ProductCultureSafetyTests.cs"
                     ]
                 },
                 {
@@ -571,6 +576,9 @@
                         "src/Tests/Features/Identity/RoleClaimGrantAllowListTests.cs",
                         "src/Tests/Features/Identity/WebAuthnCredentialOwnershipTests.cs",
                         "src/Tests/Features/Attachments/AttachmentReplacementTests.cs",
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Products/ProductCultureSafetyTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsWireContractTests.cs",
                         "src/Tests/Features/ErrorHandling/ErrorWriterRobustnessTests.cs",
                         "src/Tests/Features/ErrorHandling/ProblemDetailsConversionTests.cs",

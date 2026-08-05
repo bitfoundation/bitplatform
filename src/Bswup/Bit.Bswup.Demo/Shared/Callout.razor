@@ -1,0 +1,19 @@
+﻿<div class="callout callout-@Type">
+    <div class="callout-title">@(Title ?? DefaultTitle)</div>
+    <div class="callout-body">@ChildContent</div>
+</div>
+
+@code {
+    /// <summary>note | tip | warning | danger</summary>
+    [Parameter] public string Type { get; set; } = "note";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string DefaultTitle => Type switch
+    {
+        "tip" => "Tip",
+        "warning" => "Warning",
+        "danger" => "Caution",
+        _ => "Note"
+    };
+}

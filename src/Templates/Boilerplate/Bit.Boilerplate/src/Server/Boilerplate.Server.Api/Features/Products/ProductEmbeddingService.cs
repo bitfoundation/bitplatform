@@ -24,7 +24,7 @@ public partial class ProductEmbeddingService
     public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
     {
         if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
-            return dbContext.Products.Where(p => EF.Functions.Like(p.Name, searchQuery));
+            return dbContext.Products.Where(p => EF.Functions.Like(p.Name!, $"%{searchQuery}%"));
 
         // It would be a good idea to try finding products using full-text search first, and if not enough results are found, then use the vector-based search.
         // Note that test products data that have been seeded do not have embeddings, so searching for them will not return any results.
@@ -58,7 +58,11 @@ public partial class ProductEmbeddingService
 
     public async Task Embed(Product product, CancellationToken cancellationToken)
     {
-        if (AppDbContext.IsEmbeddingEnabled is false && env.IsDevelopment())
+        // Not `&& env.IsDevelopment()` like SearchProducts above. With embeddings off, ProductConfiguration calls
+        // `builder.Ignore(p => p.Embedding)`, so there is no column to write to: generating a vector anyway would bill
+        // the embedding API per product write and then discard the result without a word. Reading is meant to fail
+        // loudly on that misconfiguration (See .docs/25); writing has nothing to be loud about.
+        if (AppDbContext.IsEmbeddingEnabled is false)
             return;
 
         List<(string text, float weight)> inputs = [];

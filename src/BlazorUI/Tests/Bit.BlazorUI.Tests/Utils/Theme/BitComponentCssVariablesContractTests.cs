@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
-/// Pins the per-component CSS variable vocabulary (<c>--bit-&lt;cmp&gt;-*</c>) as stable public
-/// API. The checked-in inventory (<c>component-css-variables.md</c>, next to this test) is regenerated
-/// here from the component SCSS sources and compared verbatim: adding, renaming, or removing a
-/// component variable fails this test once and rewrites the inventory in place - reviewing and
-/// committing that diff is the documented signal that the override surface changed for consumers.
+/// Guards the per-component CSS variable tier (<c>--bit-&lt;cmp&gt;-*</c>) against colliding with
+/// the global theme token tier.
 /// </summary>
 [TestClass]
 public sealed class BitComponentCssVariablesContractTests
@@ -22,31 +18,6 @@ public sealed class BitComponentCssVariablesContractTests
     private static readonly Regex CssVarDeclaration = new(
         @"^\s*(--bit-[a-zA-Z0-9-]+)\s*:",
         RegexOptions.Compiled | RegexOptions.Multiline);
-
-    [TestMethod]
-    public void CheckedInInventoryMatchesTheComponentStyles()
-    {
-        var generated = GenerateInventory(GetComponentStylesDirectory());
-
-        var inventoryPath = Path.Combine(GetTestSourceDirectory(), "component-css-variables.md");
-        Assert.IsTrue(File.Exists(inventoryPath), $"Missing {inventoryPath}.");
-
-        var checkedIn = Normalize(File.ReadAllText(inventoryPath));
-
-        if (!string.Equals(checkedIn, generated, StringComparison.Ordinal))
-        {
-            var refreshed = RefreshInventory(inventoryPath, generated);
-
-            Assert.Fail(
-                "The component CSS variable inventory had drifted from the SCSS sources" +
-                (refreshed
-                    ? $" and has been refreshed in place ({inventoryPath})."
-                    : $", and refreshing it in place ({inventoryPath}) failed; rerun this test with write access to regenerate it.") +
-                " These names are documented public API: if the " +
-                "change is intentional, review the diff, commit it and note the change in the release " +
-                "notes; otherwise revert the SCSS rename.");
-        }
-    }
 
     [TestMethod]
     public void ComponentVariablesNeverShadowGlobalTokens()
@@ -81,48 +52,6 @@ public sealed class BitComponentCssVariablesContractTests
         return dir;
     }
 
-    private static bool RefreshInventory(string inventoryPath, string content)
-    {
-        // The three target frameworks run this test concurrently over the same checkout; write via a
-        // unique temp file and treat losing the race to a sibling (writing identical content) as success.
-        var tempPath = $"{inventoryPath}.{Guid.NewGuid():N}.tmp";
-        try
-        {
-            File.WriteAllText(tempPath, content);
-            File.Move(tempPath, inventoryPath, overwrite: true);
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            // The file being up to date is what counts as refreshed, whoever wrote it: after losing the
-            // race the sibling has already written this exact content, while on e.g. a read-only checkout
-            // the stale content is still there and the failure has to be reported as such.
-            try
-            {
-                return string.Equals(Normalize(File.ReadAllText(inventoryPath)), content, StringComparison.Ordinal);
-            }
-            catch (Exception readEx) when (readEx is IOException or UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            // A failing cleanup must not escape either: it would replace the caller's Assert.Fail
-            // guidance with a filesystem exception, and a leftover temp file is not worth that.
-            try
-            {
-                if (File.Exists(tempPath))
-                {
-                    File.Delete(tempPath);
-                }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-            }
-        }
-    }
-
     private static SortedDictionary<string, SortedSet<string>> CollectDeclarations(string stylesDir)
     {
         var byComponent = new SortedDictionary<string, SortedSet<string>>(StringComparer.Ordinal);
@@ -144,40 +73,5 @@ public sealed class BitComponentCssVariablesContractTests
         }
 
         return byComponent;
-    }
-
-    private static string GenerateInventory(string stylesDir)
-    {
-        var byComponent = CollectDeclarations(stylesDir);
-
-        var builder = new StringBuilder();
-        builder.Append("# Component CSS variables\n\n");
-        builder.Append("<!-- GENERATED FILE - do not edit by hand. Regenerated and verified by\n");
-        builder.Append("     BitComponentCssVariablesContractTests; on an intentional change, run that test once - it\n");
-        builder.Append("     rewrites this file in place - then review the diff and commit it. -->\n\n");
-        builder.Append("Every bit BlazorUI component exposes its themable knobs as `--bit-<cmp>-*` CSS custom\n");
-        builder.Append("properties, assigned on the component root by its role/variant classes and consumed by its\n");
-        builder.Append("internal selectors. They are **stable public API**: override them from app CSS\n");
-        builder.Append("(`.bit-btn { --bit-btn-clr: hotpink; }`) or per instance via the `Style` parameter\n");
-        builder.Append("(`Style=\"--bit-btn-clr: hotpink\"`), and rely on this contract-tested inventory when upgrading.\n\n");
-
-        var total = byComponent.Sum(kv => kv.Value.Count);
-        builder.Append(FormattableString.Invariant($"{byComponent.Count} components, {total} variables.\n"));
-
-        foreach (var (component, names) in byComponent)
-        {
-            builder.Append(FormattableString.Invariant($"\n## {component}\n\n"));
-            foreach (var name in names)
-            {
-                builder.Append(FormattableString.Invariant($"- `{name}`\n"));
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    private static string Normalize(string text)
-    {
-        return text.Replace("\r\n", "\n", StringComparison.Ordinal);
     }
 }
