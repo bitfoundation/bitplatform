@@ -1,4 +1,4 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -8,9 +8,16 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
+    @{
+        var hasLabel = LabelTemplate is not null || Label.HasValue();
+    }
+
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_inputIds[0]">
+        <label id="@_labelId"
+               for="@_inputIds[0]"
+               style="@Styles?.Label"
+               class="bit-otp-lbl @Classes?.Label">
             @LabelTemplate
         </label>
     }
@@ -27,13 +34,27 @@
     @{
         var inputType = GetInputType();
         var inputMode = GetInputMode();
+        var autoComplete = NoSmsAutoFill ? BitAutoCompleteValue.Off : BitAutoCompleteValue.OneTimeCode;
+        var separatorInterval = Math.Max(1, SeparatorInterval);
+        var hasSeparator = Separator.HasValue();
     }
-    <div style="@Styles?.InputsWrapper" class="bit-otp-iwr @Classes?.InputsWrapper">
-        @for (var i = 0; i < Length; i++)
+    <div role="group"
+         style="@Styles?.InputsWrapper"
+         class="bit-otp-iwr @Classes?.InputsWrapper"
+         aria-label="@(hasLabel ? null : AriaLabel)"
+         aria-labelledby="@(hasLabel ? _labelId : null)">
+        @for (var i = 0; i < _length; i++)
         {
             int index = i;
 
-            <input @ref="_inputRefs[index]"
+            if (index > 0 && hasSeparator && index % separatorInterval == 0)
+            {
+                <span aria-hidden="true"
+                      style="@Styles?.Separator"
+                      class="bit-otp-sep @Classes?.Separator">@Separator</span>
+            }
+
+            <input @ref="_inputRefs[index]" @attributes="InputHtmlAttributes"
                    @onpaste="e => HandleOnPaste(e, index)"
                    @oninput="e => HandleOnInput(e, index)"
                    @onfocusin="e => HandleOnFocusIn(e, index)"
@@ -42,14 +63,29 @@
                    type="@inputType"
                    autocorrect="off"
                    spellcheck="false"
+                   readonly="@ReadOnly"
+                   required="@Required"
                    autocapitalize="none"
                    id="@_inputIds[index]"
                    inputmode="@inputMode"
-                   value="@_inputValues[index]"
+                   autocomplete="@autoComplete"
+                   value="@GetInputValue(index)"
                    style="@GetInputStyles(index)"
                    class="@GetInputClasses(index)"
-                   disabled="@(IsEnabled is false)"
-                   autocomplete="@BitAutoCompleteValue.OneTimeCode" />
+                   placeholder="@GetPlaceholder(index)"
+                   aria-label="@GetInputAriaLabel(index)"
+                   disabled="@(IsEnabled is false)" />
         }
     </div>
+
+    @if (Name.HasValue())
+    {
+        @* The value of an OTP input is the whole code, so it is posted as a single named field
+           instead of one per input. A disabled component contributes nothing to the form, which is
+           what disabling the hidden field reproduces. *@
+        <input type="hidden"
+               name="@Name"
+               value="@CurrentValueAsString"
+               disabled="@(IsEnabled is false)" />
+    }
 </div>

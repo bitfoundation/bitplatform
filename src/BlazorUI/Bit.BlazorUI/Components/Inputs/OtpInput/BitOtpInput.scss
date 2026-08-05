@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-otp {
     display: flex;
@@ -7,28 +7,6 @@
     flex-direction: column;
     font-family: $tg-font-family;
     font-size: var(--bit-otp-fontsize);
-
-    &.bit-dis {
-        .bit-otp-lbl {
-            color: $clr-fg-dis;
-        }
-
-        .bit-otp-inp {
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
-        }
-    }
-
-    &.bit-inv {
-        .bit-otp-inp {
-            outline: none;
-            border-color: $clr-err;
-
-            &:focus-visible {
-                @include focus-ring($clr-err-focus);
-            }
-        }
-    }
 }
 
 .bit-otp-lbl {
@@ -44,33 +22,86 @@
 
 .bit-otp-iwr {
     display: flex;
+    align-items: center;
     gap: spacing(1.25);
     box-sizing: border-box;
     flex-direction: var(--bit-otp-iwr-flexdirection);
 }
 
+//the separator is decoration only (it is aria-hidden in the markup), so it must never swallow a click
+//meant for the input next to it nor end up inside a copied selection of the code.
+.bit-otp-sep {
+    line-height: 1;
+    user-select: none;
+    color: $clr-fg-sec;
+    pointer-events: none;
+}
+
 .bit-otp-inp {
     display: flex;
-    cursor: pointer;
+    cursor: text;
     font-size: inherit;
     text-align: center;
+    color: $clr-fg-pri;
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield;
     width: var(--bit-otp-size);
     height: var(--bit-otp-size);
-    background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    &::placeholder {
+        color: $clr-fg-ter;
+    }
+
+    //the spin buttons of a number typed input would not fit in a single character wide box, and the
+    //value is a code rather than a quantity, so they are removed in every engine.
     &::-webkit-inner-spin-button,
     &::-webkit-outer-spin-button {
         -webkit-appearance: none
     }
+}
 
-    &:focus-visible {
-        @include focus-ring;
+//Outline - the default: each input is a box drawn with the border color, filled with the page surface.
+.bit-otp-otl {
+    .bit-otp-inp {
+        border-color: $clr-brd-pri;
+        background-color: $clr-bg-pri;
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
+    }
+}
+
+//Fill: the box is painted with the secondary surface and carries no rule of its own, for a softer
+//looking field that still reads as a single character slot.
+.bit-otp-fil {
+    .bit-otp-inp {
+        border-color: transparent;
+        background-color: $clr-bg-sec;
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
+    }
+}
+
+//Text: only an underline is painted, for a code entry that should not outweigh the content around it.
+.bit-otp-txt {
+    .bit-otp-inp {
+        border-radius: 0;
+        border-color: $clr-brd-pri;
+        background-color: transparent;
+        border-width: 0 0 $shp-border-width 0;
+
+        &:focus-visible {
+            border-color: var(--bit-otp-clr);
+        }
     }
 }
 
@@ -84,6 +115,62 @@
 
 .bit-otp-vrt.bit-otp-rvs {
     --bit-otp-iwr-flexdirection: column-reverse;
+}
+
+.bit-otp-rdl {
+    .bit-otp-inp {
+        cursor: default;
+    }
+}
+
+.bit-otp-req {
+    .bit-otp-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+//the focus ring and the disabled/invalid overrides are declared after the variants on purpose: they are
+//as specific as the variant rules, so only the source order keeps a focused input from painting the
+//accent color over an error, or a disabled component from keeping its variant colors.
+.bit-otp .bit-otp-inp {
+    &:focus-visible {
+        @include focus-ring(var(--bit-otp-clr-focus));
+    }
+}
+
+.bit-otp.bit-dis {
+    .bit-otp-lbl,
+    .bit-otp-sep {
+        color: $clr-fg-dis;
+    }
+
+    .bit-otp-inp {
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+}
+
+.bit-otp.bit-inv {
+    .bit-otp-inp {
+        border-color: $clr-err;
+
+        &:focus-visible {
+            border-color: $clr-err;
+            @include focus-ring($clr-err-focus);
+        }
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-otp-#{$role} {
+        --bit-otp-clr: #{role($tokens, main)};
+        --bit-otp-clr-focus: #{role($tokens, focus)};
+    }
 }
 
 

@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitOtpInputClassStyles
 {
@@ -26,4 +26,14 @@ public class BitOtpInputClassStyles
     /// Custom CSS classes/styles for current focused input in otp input.
     /// </summary>
     public string? Focused { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each filled input in otp input.
+    /// </summary>
+    public string? Filled { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the separator rendered between the inputs of the otp input.
+    /// </summary>
+    public string? Separator { get; set; }
 }
