@@ -26,7 +26,6 @@
     "vscode": {
       "extensions": [
         "GitHub.copilot",
-        "glenn2223.live-sass",
         "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",

@@ -1,7 +1,6 @@
 {
     "files.encoding": "utf8",
     "files.autoGuessEncoding": false,
-    "liveSassCompile.settings.watchOnLaunch": true,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
     "chat.tools.autoApprove": true,
@@ -17,7 +16,7 @@
         "*.json": "$(capture).*.json, $(capture).*.json",
         "AGENTS.md": "CLAUDE.md, GEMINI.md, COPILOT.md"
     },
-    "workbench.editorAssociations": {   
+    "workbench.editorAssociations": {
         "*.md": "vscode.markdown.preview.editor"
     }
 }

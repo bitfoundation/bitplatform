@@ -46,7 +46,7 @@ public static partial class Program
 
         //-:cnd:noEmit
 #if Development
-        _ = ScssCompilerService.WatchScssFiles(app);
+        FileWatcherService.Start(app);
 #endif
         //+:cnd:noEmit
 
