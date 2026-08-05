@@ -11,8 +11,11 @@ namespace Bit.BlazorUI;
 public partial class BitRating : BitInputBase<double>
 {
     private double? _hoverValue;
-    private bool _preventKeyDownDefault;
     private ElementReference[] _itemRefs = [];
+
+
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -221,7 +224,7 @@ public partial class BitRating : BitInputBase<double>
         await base.OnInitializedAsync();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The hidden number input is the form value carrier of the rating, not something the user is ever
         // meant to land on, so FocusAsync is pointed at the item that actually holds the tab stop instead.
@@ -232,7 +235,18 @@ public partial class BitRating : BitInputBase<double>
             InputElement = _itemRefs[index - 1];
         }
 
-        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            try
+            {
+                // Prevents the default behavior (scrolling) of the navigation keys handled by the items'
+                // keydown handler, since Blazor cannot conditionally preventDefault per key.
+                await _js.BitRatingsSetup(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     protected override string RootElementClass => "bit-rtg";
@@ -588,15 +602,12 @@ public partial class BitRating : BitInputBase<double>
     // The whole rating is a single tab stop that the arrow keys move through, as the WAI-ARIA radiogroup
     // pattern describes. The step of every move is the Precision, so a half-star rating is reachable from
     // the keyboard exactly like it is with the pointer.
+    // The arrow, Home, End and Page keys scroll the page by default, so their default action is suppressed
+    // while the rating navigates with them. That is done from JavaScript (see Ratings.setup) rather than
+    // through @onkeydown:preventDefault, whose value only takes effect from the next render on - which is
+    // one press too late - and is kept key-scoped there so Tab, Space and Enter still behave normally.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        // The arrow, Home, End and Page keys scroll the page by default, so their default action is
-        // suppressed while the rating navigates with them. Kept key-scoped so Tab, Space and Enter - and the
-        // digits, which nothing else on a focused button reacts to - still behave normally.
-        _preventKeyDownDefault = IsEnabled && ReadOnly is false
-                              && e.Key is "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight"
-                                       or "Home" or "End" or "PageUp" or "PageDown";
-
         if (IsEnabled is false || ReadOnly) return;
 
         var isRtl = Dir == BitDir.Rtl;
@@ -688,5 +699,20 @@ public partial class BitRating : BitInputBase<double>
         {
             // The element reference is not attached yet (or anymore), which leaves the focus where it is.
         }
+    }
+
+
+
+    protected override async ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed || disposing is false) return;
+
+        try
+        {
+            await _js.BitRatingsDispose(_Id);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        await base.DisposeAsync(disposing);
     }
 }

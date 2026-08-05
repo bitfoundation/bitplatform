@@ -12,9 +12,10 @@
 
     // While the pointer is over an interactive rating the filled part - which the hover preview has
     // already extended to the item under the pointer - shifts to the hover shade, so the preview reads
-    // as "this is what a click would give you" rather than as the committed value.
+    // as "this is what a click would give you" rather than as the committed value. An invalid rating is
+    // left out of it, so the error color it is painted with survives the pointer passing over it.
     @media (hover: hover) {
-        &:hover:not(.bit-dis):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-ifl {
+        &:hover:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-ifl {
             color: var(--bit-rtg-clr-hover);
         }
     }

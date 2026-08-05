@@ -358,7 +358,7 @@ public class BitRatingTests : BunitTestContext
 
         var input = component.Find(".bit-input-hidden");
 
-        Assert.AreEqual(value.ToString(), input.GetAttribute("value"));
+        Assert.AreEqual(value.ToString(CultureInfo.InvariantCulture), input.GetAttribute("value"));
     }
 
     [TestMethod,
@@ -378,7 +378,7 @@ public class BitRatingTests : BunitTestContext
         // The DefaultValue starts the uncontrolled mode, and is still held to the range of the rating.
         var expected = System.Math.Clamp(defaultValue, 1, max);
 
-        Assert.AreEqual(expected.ToString(), component.Find(".bit-input-hidden").GetAttribute("value"));
+        Assert.AreEqual(expected.ToString(CultureInfo.InvariantCulture), component.Find(".bit-input-hidden").GetAttribute("value"));
     }
 
     [TestMethod,
@@ -397,7 +397,7 @@ public class BitRatingTests : BunitTestContext
 
         // The DefaultValue only seeds the uncontrolled mode, so once a Value is supplied - even the
         // unrated 0, which is then pulled up into the range - the DefaultValue is out of the picture.
-        Assert.AreEqual(expected.ToString(), component.Find(".bit-input-hidden").GetAttribute("value"));
+        Assert.AreEqual(expected.ToString(CultureInfo.InvariantCulture), component.Find(".bit-input-hidden").GetAttribute("value"));
     }
 
     [TestMethod]
