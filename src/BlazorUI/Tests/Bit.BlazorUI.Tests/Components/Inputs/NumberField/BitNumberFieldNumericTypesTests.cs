@@ -704,4 +704,48 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         clearButton.Click();
         Assert.IsNull(component.Instance.Value);
     }
+
+    [TestMethod]
+    public void BitNumberFieldShouldClearTheValueWithTheEscapeKey()
+    {
+        // The clear button stays out of the tab order (see BitNumberFieldClearButtonShouldBeAccessible),
+        // so Escape is the keyboard path to the clear action.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, 10);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotClearWithTheEscapeKeyWhenTheClearButtonIsHidden()
+    {
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 10);
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(10, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldKeepTheValueWhenTheRoundingScaleOverflows()
+    {
+        // A negative Precision rounds to a power of ten; an extreme one makes that scale infinite,
+        // which must leave the value untouched instead of producing NaN.
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.Precision, -400);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "1.5" });
+
+        Assert.AreEqual(1.5, component.Instance.Value);
+    }
 }

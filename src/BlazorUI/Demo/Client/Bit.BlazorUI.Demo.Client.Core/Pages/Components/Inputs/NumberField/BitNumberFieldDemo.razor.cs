@@ -360,7 +360,7 @@ public partial class BitNumberFieldDemo
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types). The button is not rendered while the field is read-only or has no value.",
+            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types). The button is not rendered while the field is read-only or has no value. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it.",
         },
         new()
         {

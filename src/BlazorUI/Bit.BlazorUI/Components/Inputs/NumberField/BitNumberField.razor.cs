@@ -401,6 +401,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Whether to show the clear button when the BitNumberField has a value,
     /// resetting the value to null with a single click (most useful with nullable value types).
     /// The button is not rendered while the field is read-only or has no value.
+    /// It stays out of the tab order (like the increment/decrement buttons), the Escape key being
+    /// the keyboard equivalent of clicking it.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
 
@@ -868,6 +870,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 SetBoundValue(_max);
                 break;
 
+            // The clear button is deliberately kept out of the tab order (like the spin buttons), so
+            // Escape provides the keyboard path to the clear action, as it does in BitSearchBox. It
+            // only acts when the clear button is actually rendered, i.e. there is something to clear.
+            case "Escape":
+                if (HasModifier(e) || ShowClearButton is false) return;
+                if (CurrentValue is null && _tempValue.HasNoValue()) return;
+                await HandleOnClearButtonClick();
+                break;
+
             default:
                 break;
         }
@@ -902,7 +913,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             liveValue = await _js.BitUtilsGetProperty(InputElement, "value");
         }
-        catch { }
+        catch (JSDisconnectedException) { } // the circuit is gone, the last committed value is used
+        catch (InvalidOperationException) { } // JS interop is unavailable during prerendering
 
         if (liveValue.HasValue() && string.Equals(liveValue, GetDisplayValueAsString(), StringComparison.Ordinal) is false)
         {
@@ -1467,6 +1479,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (precision >= 0) return Math.Round(value, Math.Min(precision, 15));
 
         var scale = Math.Pow(10, -precision);
+
+        // An extreme negative precision overflows the scale to infinity, which would turn the scaled
+        // rounding into NaN; the original value is kept as is (as RoundDecimal does on overflow).
+        if (double.IsFinite(scale) is false) return value;
+
         return Math.Round(value / scale) * scale;
     }
 
