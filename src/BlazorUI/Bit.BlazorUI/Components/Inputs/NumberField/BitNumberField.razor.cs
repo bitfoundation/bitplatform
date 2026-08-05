@@ -31,6 +31,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string _inputMode;
     private readonly string _labelId;
     private readonly string _inputId;
+    private readonly string _descriptionId;
     private readonly string _defaultInputMode;
     private readonly Type _typeOfValue;
     private readonly TValue _zeroValue;
@@ -65,6 +66,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
+        _descriptionId = $"BitNumberField-{UniqueId}-description";
 
         _defaultInputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
         _inputMode = _defaultInputMode;
@@ -75,6 +77,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// The general color of the number field, used for its focus indicator and for the icon,
+    /// prefix and suffix while the field is focused (Primary by default).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Accent { get; set; }
 
     /// <summary>
     /// Detailed description of the input for the benefit of screen readers. It is rendered into a
@@ -101,6 +110,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Sets the control's aria-valuetext.
     /// </summary>
     [Parameter] public string? AriaValueText { get; set; }
+
+    /// <summary>
+    /// The color kind of the number field background (Primary by default).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Background { get; set; }
+
+    /// <summary>
+    /// The color kind of the number field border (Primary by default).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColorKind? Border { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitNumberField.
@@ -151,6 +172,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? DecrementTitle { get; set; }
 
     /// <summary>
+    /// A hint rendered under the field, describing what is expected of it (e.g. the accepted range
+    /// or the unit). Unlike <see cref="AriaDescription"/> it is visible, and the input references it
+    /// through its aria-describedby attribute so it is announced along with the field.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// A custom template rendered in place of the <see cref="Description"/>, referenced by the input
+    /// through its aria-describedby attribute just the same.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
     /// A custom function to normalize the raw input string before it gets parsed into the value.
     /// When provided, it takes precedence over <see cref="NormalizeDigits"/> and lets the developer plug in their own
     /// culture-specific or domain-specific transformation (e.g. mapping characters from a particular keyboard layout).
@@ -161,6 +197,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// aliases will display the canonical value instead.
     /// </summary>
     [Parameter] public Func<string?, string?>? DigitsNormalizer { get; set; }
+
+    /// <summary>
+    /// Stretches the number field to the full width of its container. By default the field only
+    /// takes the width it needs, which keeps a stepper from spanning a whole form row.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool FullWidth { get; set; }
 
     /// <summary>
     /// Hides the text input element while keeping the increment/decrement buttons functional,
@@ -289,6 +332,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
+    /// Removes the border of the number field, which is what you want when it sits inside a surface
+    /// that already provides one (a toolbar, a table cell or a card).
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool NoBorder { get; set; }
+
+    /// <summary>
     /// Keeps values typed outside of the <see cref="Min"/>/<see cref="Max"/> range intact instead of clamping
     /// them to the nearest bound, so that a form validation (e.g. a <c>[Range]</c> data annotation) can report
     /// the out-of-range value to the user instead of it being silently corrected.
@@ -346,6 +396,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback<TValue> OnDecrement { get; set; }
 
     /// <summary>
+    /// Callback for when the Enter key is pressed on the input. It is invoked after the typed text has
+    /// been committed, so the bound value it observes is already the one the user just entered.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
+
+    /// <summary>
     /// Callback for when focus moves into the input
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
@@ -375,6 +431,19 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Callback for when a key is released on the input.
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
+
+    /// <summary>
+    /// Callback for when a step lands the value on (or beyond) the explicit <see cref="Max"/>, letting
+    /// the consumer react to the ceiling being hit - by explaining why the value stopped growing, for
+    /// instance. It only fires for an explicit Max, and only on the step that reaches it.
+    /// </summary>
+    [Parameter] public EventCallback<TValue> OnMaxReached { get; set; }
+
+    /// <summary>
+    /// Callback for when a step lands the value on (or beyond) the explicit <see cref="Min"/>. It only
+    /// fires for an explicit Min, and only on the step that reaches it.
+    /// </summary>
+    [Parameter] public EventCallback<TValue> OnMinReached { get; set; }
 
     /// <summary>
     /// The amount by which the value changes when the user presses the PageUp/PageDown keys, providing a
@@ -492,6 +561,62 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// Renders the number field with a single bottom rule instead of a full border, the classic
+    /// "underlined" input variant.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Underlined { get; set; }
+
+
+
+    /// <summary>
+    /// Increments the value by the <see cref="Step"/>, exactly as the increment button does - bounds,
+    /// snapping, rounding and the <see cref="OnIncrement"/>/<see cref="OnMaxReached"/> callbacks all
+    /// included. It lets an external control (a slider, a keypad, a hardware button) drive the field
+    /// without the consumer having to reimplement its arithmetic. It does nothing while the field is
+    /// disabled or read-only, or when the value already sits at the <see cref="Max"/>.
+    /// </summary>
+    public Task IncrementAsync() => SpinAsync(isIncrement: true);
+
+    /// <summary>
+    /// Decrements the value by the <see cref="Step"/>, the mirror image of <see cref="IncrementAsync"/>.
+    /// </summary>
+    public Task DecrementAsync() => SpinAsync(isIncrement: false);
+
+    /// <summary>
+    /// Clears whatever the field is showing - a value or a string that failed to parse - and raises
+    /// <see cref="OnClear"/>, exactly as the clear button and the Escape key do (without requiring
+    /// <see cref="ShowClearButton"/>, since there is no button involved). It does nothing while the
+    /// field is disabled or read-only.
+    /// </summary>
+    public Task ClearAsync() => InvokeAsync(async () =>
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        await ClearValue();
+
+        // Unlike the clear button, this call does not arrive through an event handler, so nothing
+        // re-renders the component on its own.
+        StateHasChanged();
+
+        await OnClear.InvokeAsync();
+    });
+
+    /// <summary>
+    /// The shared body of <see cref="IncrementAsync"/>/<see cref="DecrementAsync"/>. It is dispatched
+    /// through InvokeAsync so that a call arriving from a background thread (a timer, a SignalR message)
+    /// still mutates the component on its own renderer's synchronization context.
+    /// </summary>
+    private Task SpinAsync(bool isIncrement) => InvokeAsync(async () =>
+    {
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+
+        if (IsSpinBlocked(isIncrement)) return;
+
+        await ChangeValueAndInvokeEvents(isIncrement);
+    });
+
 
 
     protected override string RootElementClass => "bit-nfl";
@@ -513,6 +638,56 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-nfl-req" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required && Label.HasNoValue() ? "bit-nfl-rnl" : string.Empty);
+
+        ClassBuilder.Register(() => FullWidth ? "bit-nfl-fwd" : string.Empty);
+
+        // The description is a third child of the root flex box, which the row label layouts have to
+        // wrap onto a line of its own; the class is what scopes that to the fields that need it.
+        ClassBuilder.Register(() => Description.HasValue() || DescriptionTemplate is not null ? "bit-nfl-hds" : string.Empty);
+
+        ClassBuilder.Register(() => NoBorder ? "bit-nfl-nbd" : string.Empty);
+
+        ClassBuilder.Register(() => Underlined ? "bit-nfl-und" : string.Empty);
+
+        ClassBuilder.Register(() => Accent switch
+        {
+            BitColor.Primary => "bit-nfl-pri",
+            BitColor.Secondary => "bit-nfl-sec",
+            BitColor.Tertiary => "bit-nfl-ter",
+            BitColor.Info => "bit-nfl-inf",
+            BitColor.Success => "bit-nfl-suc",
+            BitColor.Warning => "bit-nfl-wrn",
+            BitColor.SevereWarning => "bit-nfl-swr",
+            BitColor.Error => "bit-nfl-err",
+            BitColor.PrimaryBackground => "bit-nfl-pbg",
+            BitColor.SecondaryBackground => "bit-nfl-sbg",
+            BitColor.TertiaryBackground => "bit-nfl-tbg",
+            BitColor.PrimaryForeground => "bit-nfl-pfg",
+            BitColor.SecondaryForeground => "bit-nfl-sfg",
+            BitColor.TertiaryForeground => "bit-nfl-tfg",
+            BitColor.PrimaryBorder => "bit-nfl-pbr",
+            BitColor.SecondaryBorder => "bit-nfl-sbr",
+            BitColor.TertiaryBorder => "bit-nfl-tbr",
+            _ => "bit-nfl-pri"
+        });
+
+        ClassBuilder.Register(() => Background switch
+        {
+            BitColorKind.Primary => "bit-nfl-bpr",
+            BitColorKind.Secondary => "bit-nfl-bse",
+            BitColorKind.Tertiary => "bit-nfl-btr",
+            BitColorKind.Transparent => "bit-nfl-btn",
+            _ => "bit-nfl-bpr"
+        });
+
+        ClassBuilder.Register(() => Border switch
+        {
+            BitColorKind.Primary => "bit-nfl-brp",
+            BitColorKind.Secondary => "bit-nfl-brs",
+            BitColorKind.Tertiary => "bit-nfl-brt",
+            BitColorKind.Transparent => "bit-nfl-brn",
+            _ => "bit-nfl-brp"
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -923,6 +1098,39 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private bool HasVisibleText() => GetDisplayValueAsString().HasValue();
 
+    /// <summary>
+    /// The effective range, with the bounds ordered so that a misconfigured Min greater than Max
+    /// simply describes the same (swapped) range rather than an empty one - matching
+    /// <see cref="CheckMinAndMax"/>, which is what actually keeps the value inside it.
+    /// </summary>
+    private (TValue Min, TValue Max) GetOrderedBounds()
+    {
+        return Comparer<TValue>.Default.Compare(_min, _max) <= 0 ? (_min, _max) : (_max, _min);
+    }
+
+    /// <summary>
+    /// Whether <paramref name="value"/> sits at (or beyond) the maximum, i.e. incrementing can no
+    /// longer move it. Only an explicit <see cref="Max"/> counts: the numeric type's own extreme is
+    /// an overflow guard rather than a bound the user is meant to be told about.
+    /// </summary>
+    private bool IsAtMax(TValue? value)
+    {
+        if (_hasExplicitMax is false || value is null) return false;
+
+        return Comparer<TValue>.Default.Compare(value, GetOrderedBounds().Max) >= 0;
+    }
+
+    /// <summary>
+    /// Whether <paramref name="value"/> sits at (or below) the minimum, i.e. decrementing can no
+    /// longer move it.
+    /// </summary>
+    private bool IsAtMin(TValue? value)
+    {
+        if (_hasExplicitMin is false || value is null) return false;
+
+        return Comparer<TValue>.Default.Compare(value, GetOrderedBounds().Min) <= 0;
+    }
+
 
 
     private async Task HandleOnStringValueSet(string? value)
@@ -948,6 +1156,25 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // plain input would report.
         _ = OnKeyDown.InvokeAsync(e);
 
+        // Enter is the commit gesture of a text input, and it stays one even on a read-only field
+        // (where there is nothing to commit but the consumer may still want to act on it), so it is
+        // handled before the ReadOnly guard that stops the value-changing keys below.
+        if (e.Key is "Enter" && HasModifier(e) is false && OnEnter.HasDelegate)
+        {
+            // The browser raises its change event on Enter, but only for text that actually differs
+            // from what it last committed; reading the live text makes the callback observe the typed
+            // value in every case, including the Immediate mode where nothing is pending at all.
+            if (ReadOnly is false && InvalidValueBinding() is false)
+            {
+                await CommitPendingInputValue();
+
+                if (IsDisposed) return;
+            }
+
+            await OnEnter.InvokeAsync(e);
+            return;
+        }
+
         if (ReadOnly || InvalidValueBinding()) return;
 
         switch (e.Key)
@@ -963,7 +1190,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 {
                     await CommitPendingInputValue();
                 }
-                ChangeValue(+1);
+                // The value is already sitting on the bound this key steps towards, exactly as for the
+                // spin button that goes inert there: nothing changes, so nothing is reported either.
+                if (IsSpinBlocked(isIncrement: true)) break;
+
+                await ChangeValueAsync(+1);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -977,7 +1208,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 {
                     await CommitPendingInputValue();
                 }
-                ChangeValue(-1);
+                if (IsSpinBlocked(isIncrement: false)) break;
+
+                await ChangeValueAsync(-1);
 
                 if (OnDecrement.HasDelegate)
                 {
@@ -995,7 +1228,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 {
                     await CommitPendingInputValue();
                 }
-                if (_hasPageStep) ChangeValue(+1, _pageStep); else ChangeValue(+10, _step);
+                if (IsSpinBlocked(isIncrement: true)) break;
+
+                if (_hasPageStep) await ChangeValueAsync(+1, _pageStep); else await ChangeValueAsync(+10, _step);
 
                 if (OnIncrement.HasDelegate)
                 {
@@ -1009,7 +1244,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 {
                     await CommitPendingInputValue();
                 }
-                if (_hasPageStep) ChangeValue(-1, _pageStep); else ChangeValue(-10, _step);
+                if (IsSpinBlocked(isIncrement: false)) break;
+
+                if (_hasPageStep) await ChangeValueAsync(-1, _pageStep); else await ChangeValueAsync(-10, _step);
 
                 if (OnDecrement.HasDelegate)
                 {
@@ -1023,12 +1260,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // selecting to the start of the text) keep their standard text-editing behavior.
             case "Home":
                 if (HasModifier(e) || _hasExplicitMin is false) return;
-                SetBoundValue(_min);
+                await SetBoundValueAsync(_min);
                 break;
 
             case "End":
                 if (HasModifier(e) || _hasExplicitMax is false) return;
-                SetBoundValue(_max);
+                await SetBoundValueAsync(_max);
                 break;
 
             // The clear button is deliberately kept out of the tab order (like the spin buttons), so
@@ -1086,19 +1323,43 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (e.Key is not ("Enter" or " " or "Spacebar")) return;
 
+        if (IsSpinBlocked(isIncrement)) return;
+
         await ChangeValueAndInvokeEvents(isIncrement);
     }
 
     /// <summary>
     /// Sets the value straight to one of the range bounds (used by the Home/End keys).
     /// </summary>
-    private void SetBoundValue(TValue bound)
+    private async Task SetBoundValueAsync(TValue bound)
     {
         ClearPreservedDisplayValue();
+
+        var previous = CurrentValue;
 
         CurrentValue = CheckMinAndMax(bound);
 
         StateHasChanged();
+
+        await NotifyBoundReached(previous);
+    }
+
+    /// <summary>
+    /// Raises <see cref="OnMaxReached"/>/<see cref="OnMinReached"/> when the value has just landed on
+    /// a bound it was not already sitting on, so a consumer hears about the ceiling (or the floor)
+    /// exactly once per approach rather than on every further attempt to pass it.
+    /// </summary>
+    private async Task NotifyBoundReached(TValue? previousValue)
+    {
+        if (OnMaxReached.HasDelegate && IsAtMax(CurrentValue) && IsAtMax(previousValue) is false)
+        {
+            await OnMaxReached.InvokeAsync(CurrentValue);
+        }
+
+        if (OnMinReached.HasDelegate && IsAtMin(CurrentValue) && IsAtMin(previousValue) is false)
+        {
+            await OnMinReached.InvokeAsync(CurrentValue);
+        }
     }
 
     /// <summary>
@@ -1208,6 +1469,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             if (IsDisposed) return;
         }
 
+        // The pending text was committed just above, so this is the first point where it is known
+        // whether the value the user is looking at still has room to move in this direction.
+        if (IsSpinBlocked(isIncrement)) return;
+
         await ChangeValueAndInvokeEvents(isIncrement);
 
         if (IsDisposed) return;
@@ -1250,27 +1515,43 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // merely hovered field would silently change data while the user is scrolling the page.
         if (_hasFocus is false) return;
 
-        if (e.DeltaY < 0)
-        {
-            await CommitPendingInputValue();
-            ChangeValue(InvertMouseWheel ? -1 : +1);
-        }
-        else if (e.DeltaY > 0)
-        {
-            await CommitPendingInputValue();
-            ChangeValue(InvertMouseWheel ? +1 : -1);
-        }
+        if (e.DeltaY == 0) return;
+
+        var isIncrement = (e.DeltaY < 0) != InvertMouseWheel;
+
+        await CommitPendingInputValue();
+
+        // As for the keys and the buttons: the wheel cannot push the value past a bound it already
+        // sits on, so it neither changes anything nor reports anything.
+        if (IsSpinBlocked(isIncrement)) return;
+
+        // The wheel is a spin like any other, so it reports through OnIncrement/OnDecrement as the
+        // buttons and the arrow keys do - a consumer listening for "the user stepped the value"
+        // should not have to special-case the input device it came from.
+        await ChangeValueAndInvokeEvents(isIncrement);
     }
 
     private async Task HandleOnClearButtonClick()
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
+        await ClearValue();
 
         await InputElement.FocusAsync();
 
         await OnClear.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Wipes whatever the field is showing - a value or a string that failed to parse. It is shared by
+    /// the clear button, the Escape key and the public <see cref="ClearAsync"/>, none of which should
+    /// differ in what "clearing" means.
+    /// </summary>
+    private async Task ClearValue()
+    {
+        ClearPreservedDisplayValue();
+
+        await HandleOnStringValueChangeAsync(new() { Value = string.Empty });
     }
 
 
@@ -1284,9 +1565,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         while (cts.IsCancellationRequested is false && IsDisposed is false)
         {
+            // A held button that has run the value into its bound has nothing left to do; stopping the
+            // loop keeps it from spending the rest of the press re-raising OnIncrement/OnDecrement for
+            // a value that no longer moves.
+            if (IsSpinBlocked(isIncrement)) return;
+
+            var valueBeforeStep = CurrentValue;
+
             await ChangeValueAndInvokeEvents(isIncrement);
 
             if (cts.IsCancellationRequested || IsDisposed) return;
+
+            // A step that moved nothing will not move anything on the next pass either, so the press
+            // has run out of room even though no explicit bound reports it. That happens whenever the
+            // grid and the range disagree - SnapToStep with a Max that is not a multiple of the Step
+            // pins the value just below it - and without this the held button would spin forever,
+            // re-raising OnIncrement/OnDecrement for a value that never changes again.
+            if (EqualityComparer<TValue>.Default.Equals(CurrentValue, valueBeforeStep)) return;
 
             StateHasChanged();
 
@@ -1294,9 +1589,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
+    /// <summary>
+    /// Whether a step in the given direction is pointless because the value already sits at the bound
+    /// it would move towards. It is what turns the corresponding spin button into its "at the bound"
+    /// state and what keeps that button from raising events that cannot change anything.
+    /// </summary>
+    private bool IsSpinBlocked(bool isIncrement) => isIncrement ? IsAtMax(CurrentValue) : IsAtMin(CurrentValue);
+
     private async Task ChangeValueAndInvokeEvents(bool isIncrement)
     {
-        ChangeValue(isIncrement ? +1 : -1);
+        await ChangeValueAsync(isIncrement ? +1 : -1);
 
         if (isIncrement && OnIncrement.HasDelegate)
         {
@@ -1309,13 +1611,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private void ChangeValue(int factor)
+    private Task ChangeValueAsync(int factor)
     {
-        ChangeValue(factor, _step);
+        return ChangeValueAsync(factor, _step);
     }
 
-    private void ChangeValue(int factor, TValue step)
+    private async Task ChangeValueAsync(int factor, TValue step)
     {
+        var previousValue = CurrentValue;
+
         TValue result;
 
         if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double))
@@ -1377,6 +1681,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         CurrentValue = result;
 
         StateHasChanged();
+
+        await NotifyBoundReached(previousValue);
     }
 
     private void ResetCts()

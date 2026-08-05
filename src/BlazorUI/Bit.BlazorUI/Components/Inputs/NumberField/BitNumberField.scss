@@ -36,6 +36,10 @@
             color: $clr-fg-dis;
         }
 
+        .bit-nfl-des span {
+            color: $clr-fg-dis;
+        }
+
         .bit-nfl-aup,
         .bit-nfl-adn,
         .bit-nfl-cbt {
@@ -52,8 +56,14 @@
             border-color: $clr-err;
         }
 
-        &.bit-nfl-fcs .bit-nfl-cnt {
+        // The underlined variant is excluded so it gets only the bottom-rule treatment below -
+        // applying the full ring would leave its forced-colors outline behind.
+        &.bit-nfl-fcs:not(.bit-nfl-und) .bit-nfl-cnt {
             @include focus-ring($clr-err-focus);
+        }
+
+        &.bit-nfl-fcs.bit-nfl-und .bit-nfl-cnt {
+            @include focus-underline-ring($clr-err-focus);
         }
     }
 
@@ -108,9 +118,9 @@
     position: relative;
     align-items: center;
     box-sizing: border-box;
-    background-color: $clr-bg-pri;
     border-radius: $shp-border-radius;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    background-color: var(--bit-nfl-clr-bg);
+    border: $shp-border-width $shp-border-style var(--bit-nfl-clr-brd);
 }
 
 .bit-nfl-hdi {
@@ -234,6 +244,21 @@
     }
 }
 
+// The value has reached the bound this button steps towards, so it is inert - but deliberately not
+// `disabled`, since in HideInput mode it may well be the element holding the focus. It keeps its
+// place in the tab order and its focus ring, and only loses its affordance and its hover feedback.
+.bit-nfl-sbb {
+    cursor: default;
+    color: $clr-fg-dis;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-dis;
+            background-color: transparent;
+        }
+    }
+}
+
 .bit-nfl-aup {
     height: 50%;
     border-radius: 0;
@@ -273,8 +298,23 @@
 }
 
 .bit-nfl-fcs {
-    .bit-nfl-cnt {
-        @include focus-ring;
+    .bit-nfl-lic {
+        color: var(--bit-nfl-clr);
+    }
+
+    .bit-nfl-pre,
+    .bit-nfl-suf {
+        color: var(--bit-nfl-clr);
+    }
+
+    // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
+    // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
+    &:not(.bit-nfl-und) .bit-nfl-cnt {
+        @include focus-ring(var(--bit-nfl-clr-focus));
+    }
+
+    &.bit-nfl-und .bit-nfl-cnt {
+        @include focus-underline-ring(var(--bit-nfl-clr-focus));
     }
 }
 
@@ -325,4 +365,182 @@
         color: $clr-req;
         inset-inline-end: spacing(-1.25);
     }
+}
+
+.bit-nfl-fwd {
+    width: 100%;
+}
+
+.bit-nfl-nbd {
+    .bit-nfl-cnt {
+        border: none;
+    }
+}
+
+.bit-nfl-und {
+    .bit-nfl-cnt {
+        border-radius: 0;
+        border-width: 0 0 $shp-border-width 0;
+    }
+}
+
+.bit-nfl-des {
+    width: 100%;
+
+    span {
+        color: $clr-fg-pri;
+        font-size: spacing(1.25);
+    }
+}
+
+// A description is a third child of the root flex box, which the column label layouts stack under the
+// field on their own. The row layouts (label beside the field) have to wrap it onto a line of its own
+// instead, which means the field gives up its fixed full width and simply fills the rest of the first
+// line. The wrapping is scoped to the layouts that need it so a description-less field is untouched.
+.bit-nfl-hds {
+    &.bit-nfl-lst,
+    &.bit-nfl-led {
+        flex-wrap: wrap;
+
+        .bit-nfl-cnt {
+            width: auto;
+            flex: 1 1 0;
+        }
+
+        .bit-nfl-des {
+            flex: 0 0 100%;
+        }
+    }
+
+    // column-reverse renders its children bottom-up, so the source order has to be inverted for the
+    // description to still end up under the field, where a hint belongs.
+    &.bit-nfl-lbt {
+        .bit-nfl-des {
+            order: 1;
+        }
+
+        .bit-nfl-cnt {
+            order: 2;
+        }
+    }
+}
+
+
+.bit-nfl-pri {
+    --bit-nfl-clr: #{$clr-pri};
+    --bit-nfl-clr-focus: #{$clr-pri-focus};
+}
+
+.bit-nfl-sec {
+    --bit-nfl-clr: #{$clr-sec};
+    --bit-nfl-clr-focus: #{$clr-sec-focus};
+}
+
+.bit-nfl-ter {
+    --bit-nfl-clr: #{$clr-ter};
+    --bit-nfl-clr-focus: #{$clr-ter-focus};
+}
+
+.bit-nfl-inf {
+    --bit-nfl-clr: #{$clr-inf};
+    --bit-nfl-clr-focus: #{$clr-inf-focus};
+}
+
+.bit-nfl-suc {
+    --bit-nfl-clr: #{$clr-suc};
+    --bit-nfl-clr-focus: #{$clr-suc-focus};
+}
+
+.bit-nfl-wrn {
+    --bit-nfl-clr: #{$clr-wrn};
+    --bit-nfl-clr-focus: #{$clr-wrn-focus};
+}
+
+.bit-nfl-swr {
+    --bit-nfl-clr: #{$clr-swr};
+    --bit-nfl-clr-focus: #{$clr-swr-focus};
+}
+
+.bit-nfl-err {
+    --bit-nfl-clr: #{$clr-err};
+    --bit-nfl-clr-focus: #{$clr-err-focus};
+}
+
+.bit-nfl-pbg {
+    --bit-nfl-clr: #{$clr-bg-pri};
+    --bit-nfl-clr-focus: #{$clr-bg-pri-focus};
+}
+
+.bit-nfl-sbg {
+    --bit-nfl-clr: #{$clr-bg-sec};
+    --bit-nfl-clr-focus: #{$clr-bg-sec-focus};
+}
+
+.bit-nfl-tbg {
+    --bit-nfl-clr: #{$clr-bg-ter};
+    --bit-nfl-clr-focus: #{$clr-bg-ter-focus};
+}
+
+.bit-nfl-pfg {
+    --bit-nfl-clr: #{$clr-fg-pri};
+    --bit-nfl-clr-focus: #{$clr-fg-pri-focus};
+}
+
+.bit-nfl-sfg {
+    --bit-nfl-clr: #{$clr-fg-sec};
+    --bit-nfl-clr-focus: #{$clr-fg-sec-focus};
+}
+
+.bit-nfl-tfg {
+    --bit-nfl-clr: #{$clr-fg-ter};
+    --bit-nfl-clr-focus: #{$clr-fg-ter-focus};
+}
+
+.bit-nfl-pbr {
+    --bit-nfl-clr: #{$clr-brd-pri};
+    --bit-nfl-clr-focus: #{$clr-brd-pri-focus};
+}
+
+.bit-nfl-sbr {
+    --bit-nfl-clr: #{$clr-brd-sec};
+    --bit-nfl-clr-focus: #{$clr-brd-sec-focus};
+}
+
+.bit-nfl-tbr {
+    --bit-nfl-clr: #{$clr-brd-ter};
+    --bit-nfl-clr-focus: #{$clr-brd-ter-focus};
+}
+
+
+.bit-nfl-bpr {
+    --bit-nfl-clr-bg: #{$clr-bg-pri};
+}
+
+.bit-nfl-bse {
+    --bit-nfl-clr-bg: #{$clr-bg-sec};
+}
+
+.bit-nfl-btr {
+    --bit-nfl-clr-bg: #{$clr-bg-ter};
+}
+
+.bit-nfl-btn {
+    --bit-nfl-clr-bg: transparent;
+}
+
+
+.bit-nfl-brp {
+    --bit-nfl-clr-brd: #{$clr-brd-pri};
+}
+
+.bit-nfl-brs {
+    --bit-nfl-clr-brd: #{$clr-brd-sec};
+}
+
+.bit-nfl-brt {
+    --bit-nfl-clr-brd: #{$clr-brd-ter};
+}
+
+.bit-nfl-brn {
+    --bit-nfl-clr-brd: transparent;
 }

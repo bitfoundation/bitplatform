@@ -21,7 +21,31 @@
     // then doing nothing - the same reasoning that keeps the clear button hidden while read-only.
     var spinDisabled = IsEnabled is false || ReadOnly;
 
-    var describedById = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+    // A value sitting on an explicit bound cannot be spun any further in that direction. The button is
+    // marked aria-disabled (and styled accordingly) rather than given the disabled attribute, so that it
+    // stays in the accessibility tree and keeps its focus - which matters in HideInput mode, where the
+    // buttons are the only tab stops and losing focus on hitting the bound would strand the user.
+    var incrementBlocked = spinDisabled is false && IsAtMax(CurrentValue);
+    var decrementBlocked = spinDisabled is false && IsAtMin(CurrentValue);
+
+    var incrementInoperable = spinDisabled || incrementBlocked;
+    var decrementInoperable = spinDisabled || decrementBlocked;
+
+    var incrementBlockedClass = incrementBlocked ? " bit-nfl-sbb" : "";
+    var decrementBlockedClass = decrementBlocked ? " bit-nfl-sbb" : "";
+
+    var hasDescription = Description.HasValue() || DescriptionTemplate is not null;
+
+    var ariaDescriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
+
+    // The visible description and the screen-reader-only one are both legitimate, and a field can carry
+    // either or both, so aria-describedby references whichever are present (in reading order).
+    var describedById = string.Join(' ', new[] { hasDescription ? _descriptionId : null, ariaDescriptionId }
+                                        .Where(id => id.HasValue()));
+    if (describedById.HasNoValue())
+    {
+        describedById = null;
+    }
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -81,15 +105,15 @@
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
-                    class="bit-nfl-sbn @Classes?.DecrementButton"
+                    class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
                     title="@DecrementTitle"
-                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-disabled="@(decrementInoperable ? "true" : null)"
                     aria-label="@decrementLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
                        aria-hidden="true"
-                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon.GetCssClasses() @Classes?.DecrementIcon" />
+                       class="bit-nfl-bic bit-nfl-sbi @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
         }
@@ -105,6 +129,11 @@
                    value="@CurrentValueAsString"
                    disabled="@(IsEnabled is false)"
                    type="hidden" />
+
+            @* Without the spinbutton input there is nothing left to announce the value: a hidden input
+               is not exposed to assistive technologies. A visually hidden live region takes over, so a
+               screen reader user pressing the buttons still hears what the value became. *@
+            <span class="bit-nfl-dsc" role="status" aria-live="polite" aria-atomic="true">@GetDisplayValueAsString()</span>
         }
         else
         {
@@ -152,7 +181,7 @@
                         tabindex="-1"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
                         disabled="@(IsEnabled is false)">
-                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
+                    <i style="@Styles?.ClearButtonIcon" class="@clearButtonIcon?.GetCssClasses() @Classes?.ClearButtonIcon" aria-hidden="true" />
                 </button>
             }
         }
@@ -170,11 +199,11 @@
                         tabindex="@spinTabIndex"
                         data-is-focusable="@(HideInput ? "true" : "false")"
                         style="@Styles?.IncrementButton"
-                        class="bit-nfl-aup @Classes?.IncrementButton"
+                        class="bit-nfl-aup@(incrementBlockedClass) @Classes?.IncrementButton"
                         disabled="@spinDisabled"
                         title="@IncrementTitle"
                         aria-label="@incrementLabel"
-                        aria-disabled="@(spinDisabled ? "true" : null)">
+                        aria-disabled="@(incrementInoperable ? "true" : null)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
                            aria-hidden="true"
@@ -192,11 +221,11 @@
                         tabindex="@spinTabIndex"
                         data-is-focusable="@(HideInput ? "true" : "false")"
                         style="@Styles?.DecrementButton"
-                        class="bit-nfl-adn @Classes?.DecrementButton"
+                        class="bit-nfl-adn@(decrementBlockedClass) @Classes?.DecrementButton"
                         disabled="@spinDisabled"
                         title="@DecrementTitle"
                         aria-label="@decrementLabel"
-                        aria-disabled="@(spinDisabled ? "true" : null)">
+                        aria-disabled="@(decrementInoperable ? "true" : null)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                         <i style="@Styles?.DecrementIcon"
                            aria-hidden="true"
@@ -216,10 +245,10 @@
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
-                    class="bit-nfl-sbn @Classes?.DecrementButton"
+                    class="bit-nfl-sbn@(decrementBlockedClass) @Classes?.DecrementButton"
                     disabled="@spinDisabled"
                     title="@DecrementTitle"
-                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-disabled="@(decrementInoperable ? "true" : null)"
                     aria-label="@decrementLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
@@ -237,10 +266,10 @@
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.IncrementButton"
-                    class="bit-nfl-sbn @Classes?.IncrementButton"
+                    class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"
                     title="@IncrementTitle"
-                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-disabled="@(incrementInoperable ? "true" : null)"
                     aria-label="@incrementLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
@@ -260,10 +289,10 @@
                     type="button"
                     tabindex="@spinTabIndex"
                     style="@Styles?.IncrementButton"
-                    class="bit-nfl-sbn @Classes?.IncrementButton"
+                    class="bit-nfl-sbn@(incrementBlockedClass) @Classes?.IncrementButton"
                     disabled="@spinDisabled"
                     title="@IncrementTitle"
-                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-disabled="@(incrementInoperable ? "true" : null)"
                     aria-label="@incrementLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
@@ -296,10 +325,26 @@
         }
     </div>
 
-    @if (describedById is not null)
+    @if (hasDescription)
+    {
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-nfl-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (ariaDescriptionId is not null)
     {
         @* aria-describedby takes an id reference, so the description text has to live in an element
            of its own. It is visually hidden and only exists for assistive technologies. *@
-        <span id="@describedById" class="bit-nfl-dsc">@AriaDescription</span>
+        <span id="@ariaDescriptionId" class="bit-nfl-dsc">@AriaDescription</span>
     }
 </div>

@@ -6,6 +6,15 @@ public partial class BitNumberFieldDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the number field, used for its focus indicator and for the icon, prefix and suffix while the field is focused (Primary by default).",
+            LinkType = LinkType.Link,
+            Href = "#bit-color",
+        },
+        new()
+        {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
@@ -38,6 +47,24 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Sets the control's aria-valuetext.",
+        },
+        new()
+        {
+            Name = "Background",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the number field background (Primary by default).",
+            LinkType = LinkType.Link,
+            Href = "#bit-color-kind",
+        },
+        new()
+        {
+            Name = "Border",
+            Type = "BitColorKind?",
+            DefaultValue = "null",
+            Description = "The color kind of the number field border (Primary by default).",
+            LinkType = LinkType.Link,
+            Href = "#bit-color-kind",
         },
         new()
         {
@@ -96,10 +123,31 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A hint rendered under the field, describing what is expected of it (e.g. the accepted range or the unit). Unlike AriaDescription it is visible, and the input references it through its aria-describedby attribute so it is announced along with the field.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template rendered in place of the Description, referenced by the input through its aria-describedby attribute just the same.",
+        },
+        new()
+        {
             Name = "DigitsNormalizer",
             Type = "Func<string?, string?>?",
             DefaultValue = "null",
             Description = "A custom function to normalize the raw input string before it gets parsed into the value. When provided, it takes precedence over NormalizeDigits and lets the developer plug in their own culture-specific or domain-specific transformation.",
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stretches the number field to the full width of its container. By default the field only takes the width it needs, which keeps a stepper from spanning a whole form row.",
         },
         new()
         {
@@ -236,6 +284,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "NoBorder",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the border of the number field, which is what you want when it sits inside a surface that already provides one (a toolbar, a table cell or a card).",
+        },
+        new()
+        {
             Name = "NoClamp",
             Type = "bool",
             DefaultValue = "false",
@@ -295,6 +350,12 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "OnEnter",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when the Enter key is pressed on the input. It is invoked after the typed text has been committed, so the bound value it observes is already the one the user just entered.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
             Description = "Callback for when focus moves into the input.",
@@ -328,6 +389,18 @@ public partial class BitNumberFieldDemo
             Name = "OnKeyUp",
             Type = "EventCallback<KeyboardEventArgs>",
             Description = "Callback for when a key is released on the input.",
+        },
+        new()
+        {
+            Name = "OnMaxReached",
+            Type = "EventCallback<TValue>",
+            Description = "Callback for when a step lands the value on (or beyond) the explicit Max, letting the consumer react to the ceiling being hit. It only fires for an explicit Max, and only on the step that reaches it.",
+        },
+        new()
+        {
+            Name = "OnMinReached",
+            Type = "EventCallback<TValue>",
+            Description = "Callback for when a step lands the value on (or beyond) the explicit Min. It only fires for an explicit Min, and only on the step that reaches it.",
         },
         new()
         {
@@ -446,6 +519,13 @@ public partial class BitNumberFieldDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "A more descriptive title for the control, visible on its tooltip.",
+        },
+        new()
+        {
+            Name = "Underlined",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the number field with a single bottom rule instead of a full border, the classic \"underlined\" input variant.",
         }
     ];
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -513,6 +593,20 @@ public partial class BitNumberFieldDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the number field's decrement icon container."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's description."
+                },
+                new()
+                {
+                    Name = "DescriptionContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the number field's description container."
                 },
                 new()
                 {
@@ -748,20 +842,77 @@ public partial class BitNumberFieldDemo
                 }
             ]
         },
+        new()
+        {
+            Id = "bit-color",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name= "Primary", Description="Primary general color.", Value="0" },
+                new() { Name= "Secondary", Description="Secondary general color.", Value="1" },
+                new() { Name= "Tertiary", Description="Tertiary general color.", Value="2" },
+                new() { Name= "Info", Description="Info general color.", Value="3" },
+                new() { Name= "Success", Description="Success general color.", Value="4" },
+                new() { Name= "Warning", Description="Warning general color.", Value="5" },
+                new() { Name= "SevereWarning", Description="SevereWarning general color.", Value="6" },
+                new() { Name= "Error", Description="Error general color.", Value="7" },
+                new() { Name= "PrimaryBackground", Description="Primary background color.", Value="8" },
+                new() { Name= "SecondaryBackground", Description="Secondary background color.", Value="9" },
+                new() { Name= "TertiaryBackground", Description="Tertiary background color.", Value="10" },
+                new() { Name= "PrimaryForeground", Description="Primary foreground color.", Value="11" },
+                new() { Name= "SecondaryForeground", Description="Secondary foreground color.", Value="12" },
+                new() { Name= "TertiaryForeground", Description="Tertiary foreground color.", Value="13" },
+                new() { Name= "PrimaryBorder", Description="Primary border color.", Value="14" },
+                new() { Name= "SecondaryBorder", Description="Secondary border color.", Value="15" },
+                new() { Name= "TertiaryBorder", Description="Tertiary border color.", Value="16" }
+            ]
+        },
+        new()
+        {
+            Id = "bit-color-kind",
+            Name = "BitColorKind",
+            Description = "Defines the color kinds available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name= "Primary", Description="Primary color kind.", Value="0" },
+                new() { Name= "Secondary", Description="Secondary color kind.", Value="1" },
+                new() { Name= "Tertiary", Description="Tertiary color kind.", Value="2" },
+                new() { Name= "Transparent", Description="Transparent color kind.", Value="3" }
+            ]
+        },
     ];
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
         {
-            Name = "InputElement",
-            Type = "ElementReference",
-            Description = "The ElementReference to the input element of the BitNumberField.",
+            Name = "ClearAsync",
+            Type = "Task",
+            Description = "Clears whatever the field is showing - a value or a string that failed to parse - and raises OnClear, exactly as the clear button and the Escape key do (without requiring ShowClearButton, since there is no button involved). It does nothing while the field is disabled or read-only.",
+        },
+        new()
+        {
+            Name = "DecrementAsync",
+            Type = "Task",
+            Description = "Decrements the value by the Step, the mirror image of IncrementAsync.",
         },
         new()
         {
             Name = "FocusAsync",
             Type = "ValueTask",
             Description = "Gives focus to the input element of the BitNumberField.",
+        },
+        new()
+        {
+            Name = "IncrementAsync",
+            Type = "Task",
+            Description = "Increments the value by the Step, exactly as the increment button does - bounds, snapping, rounding and the OnIncrement/OnMaxReached callbacks all included. It does nothing while the field is disabled or read-only, or when the value already sits at the Max.",
+        },
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the input element of the BitNumberField.",
         }
     ];
 
@@ -803,6 +954,12 @@ public partial class BitNumberFieldDemo
     private int onKeyUpCounter;
     private int onClickCounter;
     private string? lastKey;
+    private string? boundMessage;
+    private string? enterMessage;
+    private int? enterValue;
+
+    private int? apiValue = 4;
+    private BitNumberField<int?>? apiNumberField;
 
     private int? classesValue;
 
@@ -847,6 +1004,21 @@ public partial class BitNumberFieldDemo
     private void HandleInvalidSubmit()
     {
         SuccessMessage = string.Empty;
+    }
+
+    private void HandleMinReached(int value)
+    {
+        boundMessage = $"Reached the minimum ({value}).";
+    }
+
+    private void HandleMaxReached(int value)
+    {
+        boundMessage = $"Reached the maximum ({value}).";
+    }
+
+    private void HandleEnter()
+    {
+        enterMessage = $"Submitted: {enterValue}.";
     }
 
     // Custom normalizer: maps any Unicode decimal digit to its Latin equivalent

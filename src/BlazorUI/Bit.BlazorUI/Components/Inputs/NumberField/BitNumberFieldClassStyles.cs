@@ -23,6 +23,16 @@ public class BitNumberFieldClassStyles
     public string? DecrementIconContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the numeric field's description.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the numeric field's description container.
+    /// </summary>
+    public string? DescriptionContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the numeric field's increment button.
     /// </summary>
     public string? IncrementButton { get; set; }
