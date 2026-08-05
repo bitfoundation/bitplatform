@@ -112,8 +112,32 @@ public partial class AppAccentColorService : IDisposable
         // one of them is unavailable (localStorage throws in Safari private mode / blocked-storage
         // setups, and a visitor can clear cookies alone). Either one on its own restores the accent,
         // which is why each read is isolated - see TryReadAsync.
-        var stored = NormalizeAccent(await TryReadAsync("localStorage.getItem", StorageKey))
-                  ?? NormalizeAccent(await TryReadAsync("getCookie", CookieName));
+        var fromStorage = NormalizeAccent(await TryReadAsync("localStorage.getItem", StorageKey));
+        var stored = fromStorage ?? NormalizeAccent(await TryReadAsync("getCookie", CookieName));
+
+        // Nothing restored and nothing seeded, so there is no overlay to apply - and no prerendered
+        // <style> to drop either, because BuildPrerenderCss emits none for the packaged Blue. This is
+        // the path almost every visit takes, so it is worth keeping off the interop calls below.
+        if (stored is null && ActiveAccent is BitAccentColorPresets.Blue) return;
+
+        // Both stores are rewritten from whichever one answered, because ApplyAsync - the only other
+        // writer - needs a fresh pick to run, so a divergence left standing here would be permanent:
+        //  - the cookie on every visit, because its ~400-day cap is absolute, and because a visitor
+        //    who picked an accent before this cookie existed has only the localStorage copy. Without
+        //    this the server keeps prerendering the packaged Blue and the accent keeps flashing in.
+        //  - localStorage only when it did not answer: it either threw, or was cleared while the
+        //    cookie survived.
+        // The theme half of the pair already self-heals the same way - BitTheme.init's set() rewrites
+        // the preference cookie on boot.
+        if (stored is not null)
+        {
+            await TryInvokeVoidAsync("setCookie", CookieName, stored, CookieMaxAgeSeconds);
+
+            if (fromStorage is null)
+            {
+                await TryInvokeVoidAsync("localStorage.setItem", StorageKey, stored);
+            }
+        }
 
         // The overlay is applied even when the prerender seed already put us on this accent: the
         // server painted it through a stylesheet rule, which the WebAssembly and Hybrid clients never
@@ -139,8 +163,10 @@ public partial class AppAccentColorService : IDisposable
         // The server's first-paint copy has done its job, and the overlay just applied covers the
         // same ground. Leaving it would make a later switch back to Blue - which only clears the
         // overlay - look like it did nothing, because the rule would keep repainting the accent the
-        // page happened to load with. Removed after the apply so nothing paints unaccented in between.
-        await _js.InvokeVoid("removeElementById", PrerenderStyleElementId);
+        // page happened to load with. Removed after the apply so nothing paints unaccented in between,
+        // and through the tolerant path because a circuit that dropped mid-restore must not surface
+        // here as an unhandled error - the overlay is already applied by this point.
+        await TryInvokeVoidAsync("removeElementById", PrerenderStyleElementId);
     }
 
     /// <summary>
@@ -153,11 +179,11 @@ public partial class AppAccentColorService : IDisposable
 
         ActiveAccent = hex;
 
-        await TryWriteAsync("localStorage.setItem", StorageKey, hex);
+        await TryInvokeVoidAsync("localStorage.setItem", StorageKey, hex);
 
         // Mirrored into a cookie so the next navigation's prerender can paint this accent server-side
         // - localStorage is unreachable from there, which is what made the color flash on every load.
-        await TryWriteAsync("setCookie", CookieName, hex, CookieMaxAgeSeconds);
+        await TryInvokeVoidAsync("setCookie", CookieName, hex, CookieMaxAgeSeconds);
 
         await ApplyToCurrentThemeAsync(hex);
 
@@ -231,7 +257,8 @@ public partial class AppAccentColorService : IDisposable
     /// Reads one store, treating an unreachable one as "nothing persisted here". Neither store is
     /// guaranteed to answer - a browser set to block site data throws on the very first localStorage
     /// access, and Safari's private mode throws on write - and a store that refuses must not take the
-    /// other one, nor the applied overlay, down with it.
+    /// other one, nor the applied overlay, down with it. See the remarks on
+    /// <see cref="TryInvokeVoidAsync"/> for why the catch is this wide.
     /// </summary>
     private async Task<string?> TryReadAsync(string function, string key)
     {
@@ -239,7 +266,7 @@ public partial class AppAccentColorService : IDisposable
         {
             return await _js.Invoke<string?>(function, key);
         }
-        catch (JSException ex)
+        catch (Exception ex)
         {
             _logger.LogWarning(ex, "Reading the persisted accent through {Function} failed.", function);
             return null;
@@ -247,19 +274,28 @@ public partial class AppAccentColorService : IDisposable
     }
 
     /// <summary>
-    /// Writes one store, tolerating an unreachable one. The pick still applies for this session (and
-    /// is restored on the next load from whichever store did take it); losing one of them is not a
-    /// reason to leave the visitor on the old color. See <see cref="TryReadAsync"/>.
+    /// Invokes one store write (or the prerender-style cleanup), tolerating a call that cannot get
+    /// through. The pick still applies for this session, and is restored on the next load from
+    /// whichever store did take it; losing one of them is not a reason to leave the visitor on the
+    /// old color. See <see cref="TryReadAsync"/>.
     /// </summary>
-    private async Task TryWriteAsync(string function, params object?[] args)
+    /// <remarks>
+    /// Catches <see cref="Exception"/> rather than <see cref="JSException"/> because that is not what
+    /// actually fails here: a browser that blocks site data throws a <see cref="JSException"/>, but
+    /// the far more common failure on the Server render mode is the circuit going away
+    /// (<see cref="JSDisconnectedException"/>, which derives straight from <see cref="Exception"/>) or
+    /// the interop call timing out (<see cref="TaskCanceledException"/>). Narrowing to
+    /// <see cref="JSException"/> let exactly those unwind the whole restore.
+    /// </remarks>
+    private async Task TryInvokeVoidAsync(string function, params object?[] args)
     {
         try
         {
             await _js.InvokeVoid(function, args);
         }
-        catch (JSException ex)
+        catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Persisting the accent through {Function} failed.", function);
+            _logger.LogWarning(ex, "Invoking {Function} for the accent failed.", function);
         }
     }
 

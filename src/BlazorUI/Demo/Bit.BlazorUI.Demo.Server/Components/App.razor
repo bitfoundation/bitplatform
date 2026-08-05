@@ -36,16 +36,21 @@
     // stored (or the visitor follows the OS), which the inline head script below resolves. Tampered
     // values are rejected and treated as "nothing stored".
     var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference);
-    // Browser chrome color: matched to the theme when we know it, otherwise left at the dark default
-    // that app.ts corrects on boot (only a system-following visitor reaches that case). "Ends with
-    // dark" is the same rule app.ts and the app's own stylesheets use, so presets like fluent-dark
-    // are classified the same way everywhere.
-    var themeIsLight = rootThemeAttributes.TryGetValue(BitThemeAttributeNames.Theme, out var themeName)
-                       && themeName is string name
-                       && name.EndsWith("dark", StringComparison.Ordinal) is false;
-    var themeColor = themeIsLight ? "#ffffff" : "#0d1117";
+    // Browser chrome color. "Ends with dark" is the same rule app.ts and the app's own stylesheets
+    // use, so presets like fluent-dark are classified the same way everywhere.
+    const string darkThemeColor = "#0d1117";
+    const string lightThemeColor = "#ffffff";
+    // Null while the visitor follows the OS, which the server cannot read. The tag then has to guess,
+    // and the script under it carries the client's answer back - see there.
+    var resolvedTheme = rootThemeAttributes.TryGetValue(BitThemeAttributeNames.Theme, out var themeName)
+                        ? themeName as string
+                        : null;
+    var themeColor = resolvedTheme?.EndsWith("dark", StringComparison.Ordinal) is false ? lightThemeColor : darkThemeColor;
     // The accented palette, so a visitor who picked one of the "Make it yours" colors is not shown
     // the packaged blue first. Null unless a non-default accent is stored - see BuildPrerenderCss.
+    // Startup/Services.cs reads this same cookie a second time and cascades it as PrerenderedAccentColor,
+    // which is what marks the right swatch as active; this half only paints. Two reads rather than one
+    // because a host page cannot cascade a value and a component cannot write into <head>.
     var accentCss = AppAccentColorService.BuildPrerenderCss(HttpContext.Request.Cookies[AppAccentColorService.CookieName]);
 }
 
@@ -67,13 +72,33 @@
         @* Next to the theme bootstrap because it is the same job: get the palette right before the
            first paint rather than repainting it on hydration. Outranks the packaged palette on
            specificity, so it works from <head> regardless of where the stylesheets are (see
-           BuildPrerenderCss). The id is how the client drops it once it owns the overlay. *@
+           BuildPrerenderCss). The id is how the client drops it once it owns the overlay.
+           Keep this AFTER the inline script above - the ordering is load-bearing, not tidiness. The
+           two rules below are split on bit-theme, and that script is what puts the attribute on <html>
+           for a visitor who follows the OS. Emitted first, the :not() rule would match the not-yet-set
+           attribute and paint a dark-OS visitor the light accent palette. *@
         <style id="@AppAccentColorService.PrerenderStyleElementId">@((MarkupString)accentCss)</style>
     }
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
     <meta name="theme-color" content="@themeColor" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
+    @if (resolvedTheme is null)
+    {
+        @* The tag above had to guess (the dark default), because this visitor follows the OS and only
+           the client can resolve that - which the inline script at the top of <head> has already done,
+           onto <html>. Read it back and correct the tag here, while the browser is still parsing
+           <head>. app.ts does this same job on every later toggle, but it cannot cover the first paint:
+           app.js loads at the end of <body>, long after the address bar has been painted. Rewrites the
+           one tag rather than adding a media-qualified second one, which would shadow it for the
+           querySelector both this and app.ts rely on. *@
+        <Script>
+            document.querySelector('meta[name="theme-color"]').content =
+                (document.documentElement.getAttribute('@BitThemeAttributeNames.Theme') || '').endsWith('dark')
+                    ? '@darkThemeColor'
+                    : '@lightThemeColor';
+        </Script>
+    }
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),

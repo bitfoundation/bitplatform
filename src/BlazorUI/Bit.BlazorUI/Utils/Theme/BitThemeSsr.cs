@@ -116,8 +116,11 @@ public static class BitThemeSsr
     }
 
     /// <summary>
-    /// The single resolution both public overloads format: an ordered list so the string form keeps
-    /// emitting <c>bit-theme-system bit-theme-default="…"</c> in that order.
+    /// The single resolution both public overloads format. A list rather than a map because the
+    /// string overload joins these in order and is pinned to emit
+    /// <c>bit-theme-system bit-theme-default="…"</c> that way round. The map overload carries the
+    /// order no further than <see cref="Dictionary{TKey, TValue}"/> happens to, which is fine:
+    /// splatting is order-insensitive.
     /// </summary>
     private static List<KeyValuePair<string, object>> BuildRootThemeAttributePairs(string? persistedPreference, string? defaultTheme)
     {
