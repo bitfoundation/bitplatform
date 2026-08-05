@@ -1,14 +1,14 @@
 @namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
 
+@* read by the javascript side at the moment of a copy, so that turning the masking on and off never
+   has to tear the listeners (and the pending WebOTP request behind them) down and set them up again. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     @* read by the javascript side at the moment of a copy, so that turning the masking on and off never
-        has to tear the listeners (and the pending WebOTP request behind them) down and set them up again. *@
      data-bit-otp-nocopy="@(IsCodeHidden ? "true" : null)">
 
     @{
@@ -54,14 +54,14 @@
     @* The description is referenced by the group rather than by each input on purpose: an aria-describedby
        on every one of them would make a screen reader read the whole hint again at every single character
        of the code. *@
+    @* The code is being checked, which is a wait the user is in the middle of rather than a piece of
+       decoration, so it is announced on the group that holds the code instead of only being drawn. *@
     <div role="group"
          style="@Styles?.InputsWrapper"
          class="bit-otp-iwr @Classes?.InputsWrapper"
          aria-label="@(hasLabel ? null : AriaLabel)"
          aria-labelledby="@(hasLabel ? _labelId : null)"
          aria-describedby="@(hasDescription ? _descriptionId : null)"
-         @* the code is being checked, which is a wait the user is in the middle of rather than a piece of
-            decoration, so it is announced on the group that holds the code instead of only being drawn. *@
          aria-busy="@(IsLoading ? "true" : null)">
         @for (var i = 0; i < _length; i++)
         {
@@ -79,6 +79,11 @@
             @* No maxlength is rendered on purpose. Capping an input at a single character would make the
                browser truncate the code that an autofill (or a paste that the clipboard handler did not
                catch) writes into it, and it is exactly that whole chunk which is spread over the inputs. *@
+            @* rendered after the splat of the InputHtmlAttributes on purpose, so that the error
+               state of the Invalid parameter reaches the inputs as well as the one a failing
+               validation puts into those attributes. *@
+            @* the input holding the first character of the code stays in the tab order whichever
+               way the row is laid out, since Tab addresses the code rather than the layout. *@
             <input @ref="_inputRefs[index]" @attributes="InputHtmlAttributes"
                    @onpaste="e => HandleOnPaste(e, index)"
                    @oninput="e => HandleOnInput(e, index)"
@@ -103,12 +108,7 @@
                    class="@GetInputClasses(index)"
                    placeholder="@GetPlaceholder(index)"
                    aria-label="@GetInputAriaLabel(index)"
-                   @* rendered after the splat of the InputHtmlAttributes on purpose, so that the error
-                      state of the Invalid parameter reaches the inputs as well as the one a failing
-                      validation puts into those attributes. *@
                    aria-invalid="@GetAriaInvalid()"
-                   @* the input holding the first character of the code stays in the tab order whichever
-                      way the row is laid out, since Tab addresses the code rather than the layout. *@
                    tabindex="@GetTabIndex(index)"
                    disabled="@(IsEnabled is false)" />
         }
