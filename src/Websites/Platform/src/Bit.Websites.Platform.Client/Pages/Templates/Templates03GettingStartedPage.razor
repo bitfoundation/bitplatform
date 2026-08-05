@@ -224,21 +224,20 @@ rm $HOME/dotnet.tar.gz</CodeBox>
                             }
                         </BitStack>
                     }
-                    <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
-                    <div class="section-card-txt">
-                        <ul>
-                            <li>
-                                <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
-                                <ul dir="auto">
-                                    <li><a href="https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass" title="Live Sass Compiler" rel="nofollow">Live Sass Compiler</a></li>
-                                    @if (showCrossPlatform)
-                                    {
-                                        <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
-                                    }
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
+                    @if (showCrossPlatform)
+                    {
+                        <BitText Typography="BitTypography.H6" Gutter>VS Code</BitText>
+                        <div class="section-card-txt">
+                            <ul>
+                                <li>
+                                    <a href="https://code.visualstudio.com/#alt-downloads" title="VS Code" rel="nofollow">Visual Studio Code</a> with following extensions:
+                                    <ul dir="auto">
+                                            <li><a href="https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-maui" title=".NET MAUI" rel="nofollow">.NET MAUI</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    }
                 </BitPivotItem>
             </BitPivot>
         </div>

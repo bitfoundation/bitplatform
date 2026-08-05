@@ -17,7 +17,7 @@ public partial class Templates05CreateProjectPage
     private Parameter<bool> redis = new() { Value = false, Default = false };
     private Parameter<bool> aspire = new() { Value = true, Default = true };
     private Parameter<bool> multiTenant = new() { Value = true, Default = true };
-    private Parameter<bool> brouter = new() { Value = true, Default = true };
+    private Parameter<bool> brouter = new() { Value = false, Default = false };
 
     private Parameter<string> captcha = new()
     {

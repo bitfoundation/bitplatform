@@ -68,15 +68,15 @@ Before implementing any changes, you **MUST** complete the following:
 ## 4. Critical Command Reference
 
 <!--#if (aspire == true)-->
--   **Build the project**: Run `dotnet build` in Boilerplate.Server.AppHost project root directory.
--   **Run the project**: Run `dotnet watch` in Boilerplate.Server.AppHost project root directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
+-   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.AppHost project directory.
+-   **Run the project**: Run `aspire start`. If needed, you may use the Playwright MCP tools to interact with the `serverweb` resource running by aspire to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 <!--#else-->
--   **Build the project**: Run `dotnet build` in Boilerplate.Server.Web project root directory.
--   **Run the project**: Run `dotnet watch` in Boilerplate.Server.Web project root directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
+-   **Build the project**: Run `dotnet build` in src/Server/Boilerplate.Server.Web project directory.
+-   **Run the project**: Run `dotnet watch` in src/Server/Boilerplate.Server.Web project directory. If needed, you may use the Playwright MCP tools to interact with the running UI to validate things (navigate, click, fill forms, take screenshots), and use `browser_evaluate` to run in-page JavaScript to accelerate the process (e.g. quickly locating elements, extracting data, or asserting state).
 <!--#endif-->
--   **Run tests**: Run `dotnet test` in Boilerplate.Tests project root directory.
--   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in Boilerplate.Server.Api project root directory.
--   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in Boilerplate.Shared project root directory.
+-   **Run tests**: Run `dotnet test` in src/Tests/Boilerplate.Tests project directory.
+-   **Add new migrations**: Run `dotnet ef migrations add <MigrationName> --output-dir Infrastructure/Data/Migrations --verbose` in src/Server/Boilerplate.Server.Api project directory.
+-   **Generate Resx C# code**: Run `dotnet build -t:PrepareResources` in src/Shared/Boilerplate.Shared project directory.
 
 ## 5. Coding Conventions & Best Practices
 
@@ -93,6 +93,7 @@ Before implementing any changes, you **MUST** complete the following:
 -   **Style Bit.BlazorUI Components Correctly**: Use the `::deep` selector in your `.scss` files to style `Bit.BlazorUI` components.
 -   **Use Theme Colors in C# and Razor**: In C# and Razor files, you **MUST** use `BitColor` enum and `BitCss` class to apply theme colors instead of hardcoded colors. Use `BitColor` for component parameters (e.g., `BitColor.Primary`, `BitColor.TertiaryBackground`). Use `BitCss.Class` for CSS classes (e.g., `@BitCss.Class.Color.Background.Primary`, `@BitCss.Class.Color.Foreground.Secondary`). Use `BitCss.Var` for inline styles with CSS variables (e.g., `border-color:var(@BitCss.Var.Color.Border.Primary)`). This ensures automatic dark/light mode support.
 -   **Use Theme Colors in SCSS**: In SCSS files, you **MUST** use SCSS variables from `_bit-css-variables.scss` instead of hardcoded colors. Import the file and use variables like `$bit-color-primary`, `$bit-color-foreground-primary`, `$bit-color-background-secondary`, etc. These map to CSS custom properties that automatically adapt to dark/light modes. Available variable categories include: primary, secondary, tertiary, info, success, warning, severe-warning, error, foreground, background, border, and neutral colors.
+-   **Localize User-Visible Text with String Literals**: When you add or change ANY user-visible text, you **MUST NOT** add, rename, or edit keys in `.resx` files - `.resx` changes are not supported by hot reload (`dotnet watch` / `aspire start`) and force a full restart. Instead, use the `IStringLocalizer` string indexer with the literal English text, e.g. `Localizer["Welcome back {0}!", user.GetDisplayName()]` or `@Localizer["Product saved successfully."]`. `Localizer[nameof(AppStrings.X)]` stays as-is for existing keys whose text you are not changing; do not create a duplicate literal for them. Only when the user **explicitly** asks to apply translations, move all such literals into `resx` files, and switch the call sites back to `Localizer[nameof(AppStrings.X)]`.
 -   **Use Enhanced Lifecycle Methods**: In components inheriting from `AppComponentBase` or pages inheriting from `AppPageBase`, you **MUST** use `OnInitAsync`, `OnParamsSetAsync`, and `OnAfterFirstRenderAsync`.
 -   **WrapHandled**: Use `WrapHandled` for event handlers in razor files to prevent unhandled exceptions.
 Example 1: `OnClick="WrapHandled(MyMethod)"` instead of `OnClick="MyMethod"`.
