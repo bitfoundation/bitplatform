@@ -32,11 +32,19 @@ public partial class BitNumberFieldDemo
 </BitNumberField>";
 
     private readonly string example3RazorCode = @"
+<BitNumberField Label=""Compact mode (default look)"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
+
+<BitNumberField Label=""Inline mode"" TValue=""int"" Mode=""BitSpinButtonMode.Inline"" />
+
+<BitNumberField Label=""Spread mode"" TValue=""int"" Mode=""BitSpinButtonMode.Spread"" />
+
 <BitNumberField Label=""Label & Icon"" TValue=""int""
                 IconName=""@BitIconName.Lightbulb"" />
 
 <BitNumberField Label=""Compact mode"" TValue=""int""
                 Mode=""BitSpinButtonMode.Compact""
+                IncrementTitle=""Like it more""
+                DecrementTitle=""Like it less""
                 IncrementIconName=""@BitIconName.LikeSolid""
                 DecrementIconName=""@BitIconName.DislikeSolid"" />
 
@@ -53,12 +61,20 @@ public partial class BitNumberFieldDemo
     private readonly string example4RazorCode = @"
 <BitNumberField Label=""Age"" TValue=""int?"" ShowClearButton DefaultValue=""28"" />
 
-<BitNumberField Label=""Custom icon"" TValue=""int?"" ShowClearButton ClearButtonIconName=""@BitIconName.Delete"" DefaultValue=""28"" />";
+<BitNumberField Label=""Custom icon"" TValue=""int?"" ShowClearButton ClearButtonIconName=""@BitIconName.Delete"" DefaultValue=""28"" />
+
+<BitNumberField Label=""OnClear & Escape (press Escape to clear)"" TValue=""int?"" ShowClearButton
+                DefaultValue=""28"" OnClear=""() => clearedCounter++"" />
+<div>cleared: @clearedCounter time(s)</div>";
+    private readonly string example4CsharpCode = @"
+private int clearedCounter;";
 
     private readonly string example5RazorCode = @"
 <BitNumberField Label=""N0"" DefaultValue=""1234567890d"" NumberFormat=""N0"" />
 
 <BitNumberField Label=""C0"" DefaultValue=""150"" NumberFormat=""C0"" />
+
+<BitNumberField Label=""C2 (try typing a negative amount)"" DefaultValue=""1234.5"" NumberFormat=""C2"" />
 
 <BitNumberField Label=""000000"" DefaultValue=""1363"" NumberFormat=""000000"" />";
 
@@ -78,10 +94,16 @@ public partial class BitNumberFieldDemo
 <BitRating @bind-Value=""oneWayValue"" />
 
 <BitNumberField Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<BitRating @bind-Value=""twoWayValue"" />";
+<BitRating @bind-Value=""twoWayValue"" />
+
+<BitNumberField Label=""Uncontrolled (DefaultValue & OnChange)"" TValue=""int?""
+                DefaultValue=""7"" Mode=""BitSpinButtonMode.Compact""
+                OnChange=""(int? v) => uncontrolledValue = v"" />
+<div>last OnChange value: [@uncontrolledValue]</div>";
     private readonly string example7CsharpCode = @"
 private double oneWayValue;
 private double twoWayValue;
+private int? uncontrolledValue;
 ";
 
     private readonly string example8RazorCode = @"
@@ -141,13 +163,19 @@ private int hideInputValue;";
 
     private readonly string example12RazorCode = @"
 <BitToggle @bind-Value=""invertMouseWheel"" Text=""Invert Mouse Wheel"" />
-<BitNumberField InvertMouseWheel=""invertMouseWheel"" Label=""Use Shift + Mouse Wheel"" TValue=""int"" />";
+
+<BitNumberField InvertMouseWheel=""invertMouseWheel"" Label=""Click to focus, then Shift + Mouse Wheel"" TValue=""int"" />
+
+<BitNumberField NoMouseWheel Label=""NoMouseWheel (the wheel never changes it)"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />";
     private readonly string example12CsharpCode = @"
 private bool invertMouseWheel;";
 
     private readonly string example13RazorCode = @"
 <BitNumberField Label=""Immediate"" TValue=""int?"" @bind-Value=""immediateValue"" Immediate />
 <div>Value: [@immediateValue]</div>
+
+<BitNumberField Label=""Immediate & decimals (try typing 1.25)"" TValue=""double?"" @bind-Value=""immediateDecimalValue"" Immediate />
+<div>Value: [@immediateDecimalValue]</div>
 
 <BitNumberField Label=""Immediate & DebounceTime (300ms)"" TValue=""int?"" @bind-Value=""debounceValue"" Immediate DebounceTime=""300"" />
 <div>Value: [@debounceValue]</div>
@@ -156,6 +184,7 @@ private bool invertMouseWheel;";
 <div>Value: [@throttleValue]</div>";
     private readonly string example13CsharpCode = @"
 private int? immediateValue;
+private double? immediateDecimalValue;
 private int? debounceValue;
 private int? throttleValue;";
 
@@ -178,12 +207,23 @@ private int inputReadOnlyValue = 10;";
 <div>OnChange Counter: @onChangeCounter</div>
 
 <BitNumberField Label=""OnClear"" TValue=""int?"" ShowClearButton DefaultValue=""5"" OnClear=""() => onClearCounter++"" />
-<div>OnClear Counter: @onClearCounter</div>";
+<div>OnClear Counter: @onClearCounter</div>
+
+<BitNumberField Label=""OnKeyDown, OnKeyUp & OnClick"" TValue=""int?""
+                OnClick=""() => onClickCounter++""
+                OnKeyUp=""() => onKeyUpCounter++""
+                OnKeyDown=""(KeyboardEventArgs e) => lastKey = e.Key"" />
+<div>Last key down: [@lastKey]</div>
+<div>OnKeyUp Counter: @onKeyUpCounter</div>
+<div>OnClick Counter: @onClickCounter</div>";
     private readonly string example15CsharpCode = @"
 private int onIncrementCounter;
 private int onDecrementCounter;
 private int onChangeCounter;
-private int onClearCounter;";
+private int onClearCounter;
+private int onKeyUpCounter;
+private int onClickCounter;
+private string? lastKey;";
 
     private readonly string example16RazorCode = @"
 <BitNumberField Label=""Without NormalizeDigits"" @bind-Value=""normalizeOffValue"" Placeholder=""۱۲۳"" />
@@ -230,6 +270,16 @@ private string? CustomDigitsNormalizer(string? value)
     <ValidationMessage For=""@(() => validationModel.Age)"" />
     <br />
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>
+
+<EditForm Model=""@validationModel"">
+    <DataAnnotationsValidator />
+
+    <BitNumberField Label=""Custom ParsingErrorMessage (try typing letters)""
+                    DisplayName=""Weight""
+                    ParsingErrorMessage=""{0} must be a number.""
+                    @bind-Value=""parsingErrorValue"" />
+    <ValidationMessage For=""@(() => parsingErrorValue)"" />
 </EditForm>";
     private readonly string example17CsharpCode = @"
 public class BitNumberFieldValidationModel
@@ -239,7 +289,8 @@ public class BitNumberFieldValidationModel
     public int? Age { get; set; }
 }
 
-private BitNumberFieldValidationModel validationModel = new();";
+private BitNumberFieldValidationModel validationModel = new();
+private double? parsingErrorValue;";
 
     private readonly string example18RazorCode = @"
 <BitNumberField Label=""byte"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""byteValue"" />
@@ -252,12 +303,17 @@ private BitNumberFieldValidationModel validationModel = new();";
 <div>value: [@doubleValue]</div>
 
 <BitNumberField Label=""decimal"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""decimalValue"" Step=""0.01"" />
-<div>value: [@decimalValue]</div>";
+<div>value: [@decimalValue]</div>
+
+<BitNumberField Label=""Negative values on touch (InputMode.Text)"" Mode=""BitSpinButtonMode.Compact""
+                InputMode=""BitInputMode.Text"" Min=""-100"" Max=""100"" @bind-Value=""signedValue"" />
+<div>value: [@signedValue]</div>";
     private readonly string example18CsharpCode = @"
 private byte byteValue = 5;
 private long longValue = 1_000_000_000_000;
 private double doubleValue = 1.5;
-private decimal decimalValue = 0.05m;";
+private decimal decimalValue = 0.05m;
+private int signedValue = -5;";
 
     private readonly string example19RazorCode = @"
 <BitNumberField Label=""Step = 5 (typing 7 commits 5)"" SnapToStep Step=""5"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""snapValue"" />
@@ -274,6 +330,43 @@ private int snapAnchoredValue = 2;
 private double snapFractionValue;";
 
     private readonly string example20RazorCode = @"
+<BitNumberField Label=""Clamping (default): typing 500 commits 100"" Min=""0"" Max=""100"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""clampValue"" />
+<div>value: [@clampValue]</div>
+
+<BitNumberField Label=""NoClamp: typing 500 commits 500"" NoClamp Min=""0"" Max=""100"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""noClampValue"" />
+<div>value: [@noClampValue]</div>
+
+<EditForm Model=""@rangeModel"">
+    <DataAnnotationsValidator />
+    <BitNumberField Label=""NoClamp & [Range(0, 100)]"" NoClamp Min=""0"" Max=""100"" @bind-Value=""rangeModel.Percentage"" />
+    <ValidationMessage For=""@(() => rangeModel.Percentage)"" />
+</EditForm>";
+    private readonly string example20CsharpCode = @"
+private int clampValue;
+private int noClampValue;
+
+public class RangeModel
+{
+    [Range(0, 100, ErrorMessage = ""The percentage must be between 0 and 100"")]
+    public int Percentage { get; set; }
+}
+
+private RangeModel rangeModel = new();";
+
+    private readonly string example21RazorCode = @"
+<BitNumberField Label=""Volume"" TValue=""int"" Min=""0"" Max=""10"" Mode=""BitSpinButtonMode.Compact""
+                AriaDescription=""Use the up and down arrow keys to adjust the volume between 0 and 10.""
+                IncrementAriaLabel=""Louder""
+                DecrementAriaLabel=""Quieter"" />
+
+<BitNumberField Label=""Rating"" TValue=""int"" Min=""1"" Max=""5"" DefaultValue=""3"" Mode=""BitSpinButtonMode.Compact""
+                AriaValueText=""3 out of 5 stars"" />
+
+<BitNumberField Label=""Quantity (2 of 3)"" TValue=""int?"" ShowClearButton DefaultValue=""1""
+                AriaSetSize=""3"" AriaPositionInSet=""2""
+                ClearButtonAriaLabel=""Remove the quantity"" />";
+
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>Component Icon (FontAwesome):</div>
@@ -298,7 +391,7 @@ private double snapFractionValue;";
                 IncrementIcon=""@BitIconInfo.Bi(""plus-circle-fill"")""
                 DecrementIcon=""@BitIconInfo.Bi(""dash-circle-fill"")"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -394,7 +487,7 @@ private double snapFractionValue;";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />

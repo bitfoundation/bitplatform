@@ -7,6 +7,21 @@
     var incrementIcon = BitIconInfo.From(IncrementIcon, IncrementIconName ?? "ChevronDownSmall bit-ico-r180");
     var decrementIcon = BitIconInfo.From(DecrementIcon, DecrementIconName ?? "ChevronDownSmall");
     var clearButtonIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Cancel");
+
+    // The spin buttons are icon-only, so they always need an accessible name.
+    var incrementLabel = IncrementAriaLabel ?? "Increase value";
+    var decrementLabel = DecrementAriaLabel ?? "Decrease value";
+
+    // The buttons normally stay out of the tab order (the focused input is the spinbutton and already
+    // handles the whole keyboard set). In HideInput mode there is no focusable input left, so they
+    // become the only way to operate the component and must be reachable by keyboard.
+    var spinTabIndex = HideInput ? 0 : -1;
+
+    // A read-only field cannot be spun either, so the buttons say so instead of looking operable and
+    // then doing nothing - the same reasoning that keeps the clear button hidden while read-only.
+    var spinDisabled = IsEnabled is false || ReadOnly;
+
+    var describedById = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -36,6 +51,7 @@
     }
 
     <div title="@Title"
+         @onclick="HandleOnInputContainerClick"
          style="@Styles?.InputContainer"
          class="bit-nfl-cnt@(HideInput ? " bit-nfl-hdi" : "") @Classes?.InputContainer"
          aria-label="@AriaLabel"
@@ -60,16 +76,19 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointerdown:preventDefault
+                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
                     type="button"
-                    tabindex="-1"
+                    tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn @Classes?.DecrementButton"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@spinDisabled"
                     title="@DecrementTitle"
-                    aria-disabled="@(IsEnabled is false)"
-                    aria-label="@DecrementAriaLabel">
+                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-label="@decrementLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
+                       aria-hidden="true"
                        class="bit-nfl-bic bit-nfl-sbi @decrementIcon.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
@@ -91,7 +110,9 @@
         {
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                    @onblur="HandleOnBlur"
+                   @onclick="HandleOnClick"
                    @onfocus="HandleOnFocus"
+                   @onkeyup="HandleOnKeyUp"
                    @onkeydown="HandleOnKeyDown"
                    @onfocusin="HandleOnFocusIn"
                    @onfocusout="HandleOnFocusOut"
@@ -117,12 +138,12 @@
                    role="spinbutton"
                    aria-valuemin="@GetAriaValueMin()"
                    aria-valuemax="@GetAriaValueMax()"
-                   aria-describedby="@AriaDescription"
+                   aria-describedby="@describedById"
                    aria-valuenow="@GetAriaValueNow()"
                    aria-valuetext="@GetAriaValueText()"
-                   aria-disabled="@(IsEnabled is false)" />
+                   aria-disabled="@(IsEnabled is false ? "true" : null)" />
 
-            @if (ShowClearButton && ReadOnly is false && (CurrentValue is not null || _tempValue.HasValue()))
+            @if (ShowClearButton && ReadOnly is false && HasVisibleText())
             {
                 <button @onclick="HandleOnClearButtonClick"
                         style="@Styles?.ClearButton"
@@ -143,17 +164,20 @@
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerdown="() => HandleOnPointerDown(true)"
+                        @onpointerdown:preventDefault
+                        @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
                         type="button"
-                        tabindex="-1"
-                        data-is-focusable="false"
+                        tabindex="@spinTabIndex"
+                        data-is-focusable="@(HideInput ? "true" : "false")"
                         style="@Styles?.IncrementButton"
                         class="bit-nfl-aup @Classes?.IncrementButton"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@spinDisabled"
                         title="@IncrementTitle"
-                        aria-label="@IncrementAriaLabel"
-                        aria-disabled="@(IsEnabled is false)">
+                        aria-label="@incrementLabel"
+                        aria-disabled="@(spinDisabled ? "true" : null)">
                     <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                         <i style="@Styles?.IncrementIcon"
+                           aria-hidden="true"
                            class="bit-nfl-bic @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                     </span>
                 </button>
@@ -162,17 +186,20 @@
                         @onpointerup="HandleOnPointerUpOrOut"
                         @onpointerout="HandleOnPointerUpOrOut"
                         @onpointerdown="() => HandleOnPointerDown(false)"
+                        @onpointerdown:preventDefault
+                        @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
                         type="button"
-                        tabindex="-1"
-                        data-is-focusable="false"
+                        tabindex="@spinTabIndex"
+                        data-is-focusable="@(HideInput ? "true" : "false")"
                         style="@Styles?.DecrementButton"
                         class="bit-nfl-adn @Classes?.DecrementButton"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@spinDisabled"
                         title="@DecrementTitle"
-                        aria-label="@DecrementAriaLabel"
-                        aria-disabled="@(IsEnabled is false)">
+                        aria-label="@decrementLabel"
+                        aria-disabled="@(spinDisabled ? "true" : null)">
                     <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                         <i style="@Styles?.DecrementIcon"
+                           aria-hidden="true"
                            class="bit-nfl-bic @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                     </span>
                 </button>
@@ -184,16 +211,19 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(false)"
+                    @onpointerdown:preventDefault
+                    @onkeydown="(e) => HandleOnButtonKeyDown(e, false)"
                     type="button"
-                    tabindex="-1"
+                    tabindex="@spinTabIndex"
                     style="@Styles?.DecrementButton"
                     class="bit-nfl-sbn @Classes?.DecrementButton"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@spinDisabled"
                     title="@DecrementTitle"
-                    aria-disabled="@(IsEnabled is false)"
-                    aria-label="@DecrementAriaLabel">
+                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-label="@decrementLabel">
                 <span style="@Styles?.DecrementIconContainer" class="bit-nfl-aic @Classes?.DecrementIconContainer">
                     <i style="@Styles?.DecrementIcon"
+                       aria-hidden="true"
                        class="bit-nfl-bic bit-nfl-sbi @decrementIcon?.GetCssClasses() @Classes?.DecrementIcon" />
                 </span>
             </button>
@@ -202,16 +232,19 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointerdown:preventDefault
+                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
                     type="button"
-                    tabindex="-1"
+                    tabindex="@spinTabIndex"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn @Classes?.IncrementButton"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@spinDisabled"
                     title="@IncrementTitle"
-                    aria-disabled="@(IsEnabled is false)"
-                    aria-label="@IncrementAriaLabel">
+                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-label="@incrementLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
+                       aria-hidden="true"
                        class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
@@ -222,16 +255,19 @@
                     @onpointerup="HandleOnPointerUpOrOut"
                     @onpointerout="HandleOnPointerUpOrOut"
                     @onpointerdown="() => HandleOnPointerDown(true)"
+                    @onpointerdown:preventDefault
+                    @onkeydown="(e) => HandleOnButtonKeyDown(e, true)"
                     type="button"
-                    tabindex="-1"
+                    tabindex="@spinTabIndex"
                     style="@Styles?.IncrementButton"
                     class="bit-nfl-sbn @Classes?.IncrementButton"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@spinDisabled"
                     title="@IncrementTitle"
-                    aria-disabled="@(IsEnabled is false)"
-                    aria-label="@IncrementAriaLabel">
+                    aria-disabled="@(spinDisabled ? "true" : null)"
+                    aria-label="@incrementLabel">
                 <span style="@Styles?.IncrementIconContainer" class="bit-nfl-aic @Classes?.IncrementIconContainer">
                     <i style="@Styles?.IncrementIcon"
+                       aria-hidden="true"
                        class="bit-nfl-bic bit-nfl-sbi @incrementIcon?.GetCssClasses() @Classes?.IncrementIcon" />
                 </span>
             </button>
@@ -259,4 +295,11 @@
             </div>
         }
     </div>
+
+    @if (describedById is not null)
+    {
+        @* aria-describedby takes an id reference, so the description text has to live in an element
+           of its own. It is visually hidden and only exists for assistive technologies. *@
+        <span id="@describedById" class="bit-nfl-dsc">@AriaDescription</span>
+    }
 </div>

@@ -15,9 +15,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 {
     private int? _precision;
     private bool _hasFocus;
-    private string? _tempValue;
     private string? _displayValue;
     private TValue? _displayValueSource;
+    private bool _displayValueIsTransient;
     private bool _keepDisplayValueOnNextChange;
     private bool _lastNormalizationActive;
     private TValue _min = default!;
@@ -28,9 +28,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue _pageStep = default!;
     private bool _hasPageStep;
     private string? _registeredPreventKeys;
+    private string _inputMode;
     private readonly string _labelId;
     private readonly string _inputId;
-    private readonly string _inputMode;
+    private readonly string _defaultInputMode;
     private readonly Type _typeOfValue;
     private readonly TValue _zeroValue;
     private ElementReference _buttonIncrement;
@@ -65,7 +66,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _inputId = $"BitNumberField-{UniqueId}-input";
         _labelId = $"BitNumberField-{UniqueId}-label";
 
-        _inputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
+        _defaultInputMode = (_typeOfValue == typeof(decimal) || _typeOfValue == typeof(double) || _typeOfValue == typeof(float)) ? "decimal" : "numeric";
+        _inputMode = _defaultInputMode;
     }
 
 
@@ -75,7 +77,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
     /// <summary>
-    /// Detailed description of the input for the benefit of screen readers.
+    /// Detailed description of the input for the benefit of screen readers. It is rendered into a
+    /// visually hidden element that the input references through its aria-describedby attribute.
     /// </summary>
     [Parameter] public string? AriaDescription { get; set; }
 
@@ -223,6 +226,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? IncrementTitle { get; set; }
 
     /// <summary>
+    /// Overrides the virtual keyboard the browser shows for the input. By default it is Numeric for the
+    /// integral types and Decimal for the fractional ones (float, double and decimal). Since neither of
+    /// those keypads offers a minus sign on every platform, a field that has to accept negative values
+    /// on touch devices is better served by Text, which brings up the full keyboard.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetInputMode))]
+    public BitInputMode? InputMode { get; set; }
+
+    /// <summary>
     /// Reverses the direction of the value change when the user spins the value using the mouse wheel
     /// (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).
     /// </summary>
@@ -276,6 +289,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public BitSpinButtonMode? Mode { get; set; }
 
     /// <summary>
+    /// Keeps values typed outside of the <see cref="Min"/>/<see cref="Max"/> range intact instead of clamping
+    /// them to the nearest bound, so that a form validation (e.g. a <c>[Range]</c> data annotation) can report
+    /// the out-of-range value to the user instead of it being silently corrected.
+    /// Stepping with the increment/decrement buttons, the arrow keys or the mouse wheel still stays inside the
+    /// range, and the Home/End keys still jump to the bounds.
+    /// </summary>
+    [Parameter] public bool NoClamp { get; set; }
+
+    /// <summary>
+    /// Disables changing the value using the mouse wheel entirely (by default the value changes when the wheel
+    /// is scrolled over the focused field while the Shift key is held down).
+    /// </summary>
+    [Parameter] public bool NoMouseWheel { get; set; }
+
+    /// <summary>
     /// Disables the automatic select-all of the input's text when the field receives focus.
     /// </summary>
     [Parameter] public bool NoSelectOnFocus { get; set; }
@@ -308,6 +336,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback OnClear { get; set; }
 
     /// <summary>
+    /// Callback for when the input is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
     /// Callback for when the decrement button or down arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnDecrement { get; set; }
@@ -331,6 +364,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Callback for when the increment button or up arrow key is pressed.
     /// </summary>
     [Parameter] public EventCallback<TValue> OnIncrement { get; set; }
+
+    /// <summary>
+    /// Callback for when a key is pressed down on the input. It is invoked for every key, including the ones
+    /// the field handles itself (the arrow keys, PageUp/PageDown, Home/End and Escape).
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
+
+    /// <summary>
+    /// Callback for when a key is released on the input.
+    /// </summary>
+    [Parameter] public EventCallback<KeyboardEventArgs> OnKeyUp { get; set; }
 
     /// <summary>
     /// The amount by which the value changes when the user presses the PageUp/PageDown keys, providing a
@@ -398,9 +442,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public string? ClearButtonAriaLabel { get; set; }
 
     /// <summary>
-    /// Whether to show the clear button when the BitNumberField has a value,
+    /// Whether to show the clear button whenever the field is showing something,
     /// resetting the value to null with a single click (most useful with nullable value types).
-    /// The button is not rendered while the field is read-only or has no value.
+    /// "Showing something" covers a string the user typed that failed to parse as well as a real value,
+    /// so the button is also there to wipe an entry that has to be corrected. It is not rendered while
+    /// the field is read-only or empty.
     /// It stays out of the tab order (like the increment/decrement buttons), the Escape key being
     /// the keyboard equivalent of clicking it.
     /// </summary>
@@ -543,6 +589,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         List<string> keys = [];
         if (interactive)
         {
+            // The arrows spin the value, so the browser must not also move the caret to the start/end
+            // of the text underneath - the caret is expected to stay where the user left it.
+            keys.Add("ArrowUp");
+            keys.Add("ArrowDown");
             keys.Add("PageUp");
             keys.Add("PageDown");
             if (_hasExplicitMin) keys.Add("Home");
@@ -551,13 +601,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // Shift+wheel is handled as a value change, so the browser's (horizontal) scrolling has to be
         // suppressed along with it; the flag piggybacks on the same change detection as the key list.
-        var joinedKeys = $"{string.Join(',', keys)}|{interactive}";
+        // It mirrors the conditions of HandleOnMouseWheel exactly - notably the focus requirement, so
+        // that scrolling the page over a merely hovered field keeps its normal browser behavior.
+        var preventWheel = interactive && NoMouseWheel is false && _hasFocus;
+
+        var joinedKeys = $"{string.Join(',', keys)}|{interactive}|{preventWheel}";
         if (string.Equals(joinedKeys, _registeredPreventKeys, StringComparison.Ordinal)) return;
 
         try
         {
             await _js.BitUtilsRegisterPreventKeys(InputElement, [.. keys]);
-            await _js.BitUtilsRegisterPreventShiftWheel(InputElement, interactive);
+            await _js.BitUtilsRegisterPreventShiftWheel(InputElement, preventWheel);
             _registeredPreventKeys = joinedKeys;
         }
         catch { } // JS is unavailable (e.g. a disconnected circuit); the keys still work, only with their browser default side effects.
@@ -565,10 +619,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
-        // Reset the preserved display text. It is set again below only when the digit
-        // normalization is the sole transformation applied to the user's input.
-        _displayValue = null;
-        _displayValueSource = default;
+        // Reset the preserved display text. It is set again below only when the text the user typed
+        // still represents exactly the value that got committed.
+        ClearPreservedDisplayValue();
         _keepDisplayValueOnNextChange = false;
 
         var originalValue = value;
@@ -617,7 +670,24 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             return false;
         }
 
-        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
+        if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result) is false)
+        {
+            // A number carrying whitespace between its digit groups ("1 234", or the non-breaking and
+            // narrow no-break spaces that spreadsheets and web pages use for grouping) is a perfectly
+            // ordinary thing to paste into a number field, yet the invariant parse rejects it. Retrying
+            // without the whitespace rescues that input. Only whitespace is removed, so nothing that
+            // is not a plain number starts parsing, and no separator whose meaning differs per culture
+            // is reinterpreted.
+            var unspaced = RemoveWhiteSpace(value);
+            if (string.Equals(unspaced, value, StringComparison.Ordinal) ||
+                unspaced.HasNoValue() ||
+                BindConverter.TryConvertTo(unspaced, CultureInfo.InvariantCulture, out result) is false)
+            {
+                parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                return false;
+            }
+        }
+
         {
             // The invariant culture parses "NaN" and "Infinity" into valid float/double values, but a
             // NaN value would escape the min/max clamping entirely (every NaN comparison is false) and
@@ -634,9 +704,29 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             result = Snap(result);
 
-            result = CheckMinAndMax(result);
+            // NoClamp lets an out-of-range typed value through so that the form validation can report
+            // it. The bounds still apply to every other way of changing the value (stepping, Home/End).
+            if (NoClamp is false)
+            {
+                result = CheckMinAndMax(result);
+            }
 
             result = Normalize(result);
+
+            // While typing in Immediate mode the value is committed on every keystroke, which would
+            // otherwise reformat the input text under the caret and make intermediate states
+            // unreachable - typing "1." would immediately snap back to "1", so a decimal could never
+            // be typed at all. The raw text is therefore kept visible as long as it still parses into
+            // exactly the committed value (i.e. no clamping, snapping or rounding altered it).
+            if (Immediate
+                && _hasFocus
+                && NumberFormat is null
+                && digitsNormalized is false
+                && originalValue.HasValue()
+                && EqualityComparer<TValue>.Default.Equals(parsedValue, result))
+            {
+                SetPreservedDisplayValue(originalValue, result, transient: true);
+            }
 
             // Keep the user's original text visible in the input when digit normalization was the
             // only transformation, i.e. the parsed number wasn't altered by min/max clamping or
@@ -656,22 +746,67 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 && EqualityComparer<TValue>.Default.Equals(parsedValue, result)
                 && IsDisplayDigitEquivalent(originalValue, result))
             {
-                _displayValue = originalValue;
-                _displayValueSource = result;
-                // The value assignment that immediately follows this parse (raised through
-                // OnValueChanged) is the one that produced this preserved text, so it must not clear
-                // it. Any later value change comes from elsewhere (parent/model) and should discard it.
-                _keepDisplayValueOnNextChange = true;
+                SetPreservedDisplayValue(originalValue, result);
             }
 
             parsingErrorMessage = null;
             return true;
         }
-        else
+    }
+
+    /// <summary>
+    /// Removes every Unicode whitespace character (including the non-breaking and narrow no-break
+    /// spaces commonly used as digit group separators) from the value.
+    /// </summary>
+    private static string? RemoveWhiteSpace(string? value)
+    {
+        if (value.HasNoValue()) return value;
+
+        var sb = new System.Text.StringBuilder(value!.Length);
+        foreach (var c in value!)
         {
-            parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
-            return false;
+            if (char.IsWhiteSpace(c)) continue;
+
+            sb.Append(c);
         }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Keeps <paramref name="originalValue"/> (the exact text the user typed) visible in the input
+    /// instead of the canonical formatting of <paramref name="value"/>, for as long as the value stays
+    /// the one this text produced.
+    /// </summary>
+    private void SetPreservedDisplayValue(string? originalValue, TValue value, bool transient = false)
+    {
+        _displayValue = originalValue;
+        _displayValueSource = value;
+
+        // A transient preservation only exists to keep the caret usable while the user is still
+        // typing; it is dropped as soon as the field loses focus so the canonical (and possibly
+        // formatted) value becomes visible again, as it does in the regular on-commit flow.
+        _displayValueIsTransient = transient;
+
+
+
+        // The value assignment that immediately follows this parse (raised through OnValueChanged) is
+        // the one that produced this preserved text, so it must not clear it. Any later value change
+        // comes from elsewhere (parent/model) and should discard it. When the parse did not actually
+        // change the value, no OnValueChanged follows at all, so the flag must not be armed either -
+        // it would otherwise be consumed by (and swallow the reset of) a later unrelated change.
+        _keepDisplayValueOnNextChange = EqualityComparer<TValue>.Default.Equals(value, CurrentValue) is false;
+    }
+
+    /// <summary>
+    /// Drops any preserved user-typed text so that the canonical (and possibly formatted) rendering
+    /// of the current value becomes visible again.
+    /// </summary>
+    private void ClearPreservedDisplayValue()
+    {
+        _displayValue = null;
+        _displayValueSource = default;
+        _displayValueIsTransient = false;
     }
 
     /// <summary>
@@ -728,7 +863,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             return _displayValue;
         }
 
-        return CurrentValueAsString;
+        var current = CurrentValueAsString;
+
+        // A NumberFormat is a presentation concern: "$1,234" or "001363" is how the value should read,
+        // not what the user should have to edit around. While the field is focused the plain number is
+        // shown instead, and the formatted rendering comes back on the way out. This is skipped when
+        // NoSelectOnFocus is set: without the select-all, swapping the text on focus would move the
+        // caret the user just placed, and keeping the text stable then matters more.
+        if (_hasFocus is false || NumberFormat is null || NoSelectOnFocus) return current;
+
+        // Only the formatted rendering is swapped out. A string the user typed that failed to parse is
+        // still sitting in the input (CurrentValueAsString returns it verbatim) and must stay there for
+        // them to correct.
+        if (string.Equals(current, FormatValueAsString(CurrentValue), StringComparison.Ordinal) is false) return current;
+
+        return CurrentValue is null ? null : BindConverter.FormatValue(CurrentValue, CultureInfo.InvariantCulture)?.ToString();
     }
 
     /// <summary>
@@ -767,12 +916,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : "0";
     }
 
-    protected override Task HandleOnStringValueChangeAsync(ChangeEventArgs e)
-    {
-        _tempValue = e.Value?.ToString();
-
-        return base.HandleOnStringValueChangeAsync(e);
-    }
+    /// <summary>
+    /// Whether the input is currently showing anything at all - either a value or a string the user
+    /// typed that failed to parse and is still sitting there to be corrected. It is what decides
+    /// whether there is something for the clear button (and the Escape key) to clear.
+    /// </summary>
+    private bool HasVisibleText() => GetDisplayValueAsString().HasValue();
 
 
 
@@ -792,11 +941,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (IsEnabled is false) return;
+
+        // The consumer callback is invoked for every key (even the ones handled below as value
+        // commands) and before the internal handling, so that it observes the same key sequence a
+        // plain input would report.
+        _ = OnKeyDown.InvokeAsync(e);
+
+        if (ReadOnly || InvalidValueBinding()) return;
 
         switch (e.Key)
         {
+            // A modifier turns an arrow into a text-editing command rather than a spin (Shift+ArrowUp
+            // extends the selection to the start of the text, and Ctrl/Alt combinations belong to the
+            // browser and the OS), so those are left alone - as they are for PageUp/PageDown below.
             case "ArrowUp":
+                if (HasModifier(e)) return;
                 // On key auto-repeat the input text cannot have changed since the previous step, so
                 // the JS roundtrip that reads the live text is skipped.
                 if (e.Repeat is false)
@@ -812,6 +972,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 break;
 
             case "ArrowDown":
+                if (HasModifier(e)) return;
                 if (e.Repeat is false)
                 {
                     await CommitPendingInputValue();
@@ -875,7 +1036,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // only acts when the clear button is actually rendered, i.e. there is something to clear.
             case "Escape":
                 if (HasModifier(e) || ShowClearButton is false) return;
-                if (CurrentValue is null && _tempValue.HasNoValue()) return;
+                if (HasVisibleText() is false) return;
                 await HandleOnClearButtonClick();
                 break;
 
@@ -886,13 +1047,54 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private static bool HasModifier(KeyboardEventArgs e) => e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey;
 
+    private async Task HandleOnKeyUp(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnKeyUp.InvokeAsync(e);
+    }
+
+    private async Task HandleOnClick(MouseEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        await OnClick.InvokeAsync(e);
+    }
+
+    /// <summary>
+    /// Clicking anywhere on the field - its prefix, suffix, icon or the padding around the text - puts
+    /// the caret in the input, the way a native text field behaves. The input itself and the buttons
+    /// take care of their own focus, so this only ever has an effect on the decorative parts.
+    /// </summary>
+    private async Task HandleOnInputContainerClick()
+    {
+        // Clicking the input itself already focused it, so the interop round trip is skipped there.
+        if (IsEnabled is false || HideInput || _hasFocus) return;
+
+        await InputElement.FocusAsync();
+    }
+
+    /// <summary>
+    /// Activates an increment/decrement button from the keyboard. The buttons are driven by pointer
+    /// events (to support the press-and-hold continuous spin), which the browser does not synthesize
+    /// for a keyboard activation, so Enter/Space are handled explicitly. This only matters while the
+    /// buttons are reachable by keyboard, i.e. in <see cref="HideInput"/> mode.
+    /// </summary>
+    private async Task HandleOnButtonKeyDown(KeyboardEventArgs e, bool isIncrement)
+    {
+        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+
+        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
+
+        await ChangeValueAndInvokeEvents(isIncrement);
+    }
+
     /// <summary>
     /// Sets the value straight to one of the range bounds (used by the Home/End keys).
     /// </summary>
     private void SetBoundValue(TValue bound)
     {
-        _displayValue = null;
-        _displayValueSource = default;
+        ClearPreservedDisplayValue();
 
         CurrentValue = CheckMinAndMax(bound);
 
@@ -946,6 +1148,14 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         if (IsEnabled is false) return;
 
         _hasFocus = false;
+
+        // The text kept visible only to keep the caret usable while typing (Immediate mode) has served
+        // its purpose; leaving the field is the commit point where the canonical value must show.
+        if (_displayValueIsTransient)
+        {
+            ClearPreservedDisplayValue();
+        }
+
         ClassBuilder.Reset();
         StyleBuilder.Reset();
         await OnFocusOut.InvokeAsync(e);
@@ -971,14 +1181,31 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
 
-        //Change focus from input to number field
-        if (isIncrement)
+        // Focus belongs on the input: it is the element carrying the spinbutton role and its value, so
+        // keeping it focused is what lets a screen reader announce each change and lets the user carry
+        // on with the arrow keys after a click. The buttons themselves suppress the browser's default
+        // focus-on-press (see the pointerdown preventDefault in the markup) so this is the only focus
+        // move that happens. With HideInput there is no input to focus, and the pressed button - which
+        // is then a real tab stop - takes the focus instead.
+        if (HideInput)
         {
-            await _buttonIncrement.FocusAsync();
+            await (isIncrement ? _buttonIncrement : _buttonDecrement).FocusAsync();
         }
         else
         {
-            await _buttonDecrement.FocusAsync();
+            if (_hasFocus is false)
+            {
+                await InputElement.FocusAsync();
+            }
+
+            // Since the press no longer moves focus out of the input, the browser no longer raises the
+            // change event that would have committed freshly typed text. The step therefore has to read
+            // the live text itself, exactly as the arrow keys and the wheel do, so that typing a number
+            // and then clicking a spin button steps from what is on screen rather than from the stale
+            // previously committed value.
+            await CommitPendingInputValue();
+
+            if (IsDisposed) return;
         }
 
         await ChangeValueAndInvokeEvents(isIncrement);
@@ -987,19 +1214,27 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ResetCts();
 
-        var cts = _continuousChangeValueCts;
+        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held,
+        // so awaiting it would leave the pointerdown event handler (and the render it drives) pending
+        // for the whole duration of the press. Its lifetime is owned by the cancellation token source
+        // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
+        _ = ContinuousChangeValueAfterDelay(isIncrement, _continuousChangeValueCts);
+    }
+
+    /// <summary>
+    /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
+    /// button was released (or the component went away) in the meantime.
+    /// </summary>
+    private async Task ContinuousChangeValueAfterDelay(bool isIncrement, CancellationTokenSource cts)
+    {
         try
         {
-            await Task.Run(async () =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await Task.Delay(Math.Max(1, ContinuousSpinDelay));
-                    await ContinuousChangeValue(isIncrement, cts);
-                });
-            }, cts.Token);
+            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
+
+            await InvokeAsync(() => ContinuousChangeValue(isIncrement, cts));
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) { } // the button was released before the continuous spin started
+        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
     }
 
     private void HandleOnPointerUpOrOut()
@@ -1009,8 +1244,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private async Task HandleOnMouseWheel(WheelEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly || InvalidValueBinding()) return;
+        if (IsEnabled is false || ReadOnly || NoMouseWheel || InvalidValueBinding()) return;
         if (e.ShiftKey is false) return;
+        // The wheel only spins the value of the field the user is actually editing. Reacting to a
+        // merely hovered field would silently change data while the user is scrolling the page.
+        if (_hasFocus is false) return;
 
         if (e.DeltaY < 0)
         {
@@ -1037,18 +1275,23 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
 
 
+    /// <summary>
+    /// Repeats the value change while an increment/decrement button is held down. It is an iterative
+    /// loop rather than a self-recursive call so that a long press cannot pile up an ever growing
+    /// chain of pending async continuations.
+    /// </summary>
     private async Task ContinuousChangeValue(bool isIncrement, CancellationTokenSource cts)
     {
-        if (cts.IsCancellationRequested || IsDisposed) return;
+        while (cts.IsCancellationRequested is false && IsDisposed is false)
+        {
+            await ChangeValueAndInvokeEvents(isIncrement);
 
-        await ChangeValueAndInvokeEvents(isIncrement);
+            if (cts.IsCancellationRequested || IsDisposed) return;
 
-        if (IsDisposed) return;
+            StateHasChanged();
 
-        StateHasChanged();
-
-        await Task.Delay(Math.Max(1, ContinuousSpinInterval));
-        await ContinuousChangeValue(isIncrement, cts);
+            await Task.Delay(Math.Max(1, ContinuousSpinInterval));
+        }
     }
 
     private async Task ChangeValueAndInvokeEvents(bool isIncrement)
@@ -1129,8 +1372,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
         // user-typed display text is no longer relevant and the formatted value should be shown.
-        _displayValue = null;
-        _displayValueSource = default;
+        ClearPreservedDisplayValue();
 
         CurrentValue = result;
 
@@ -1447,6 +1689,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         _precision = Precision ?? CalculatePrecision();
     }
 
+    private void OnSetInputMode()
+    {
+        _inputMode = InputMode?.ToString().ToLowerInvariant() ?? _defaultInputMode;
+    }
+
     private TValue Normalize(TValue value)
     {
         // No rounding is applied unless an explicit Precision is provided or a fractional Step
@@ -1544,8 +1791,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // The value changed from a source other than the preserved user input (e.g. the parent
             // resetting or reloading the bound value), so any preserved display text is now stale and
             // must be discarded to avoid re-showing old user-typed text for a model-driven value.
-            _displayValue = null;
-            _displayValueSource = default;
+            ClearPreservedDisplayValue();
         }
 
         NormalizeValue();

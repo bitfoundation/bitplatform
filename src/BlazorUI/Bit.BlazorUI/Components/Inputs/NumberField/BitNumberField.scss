@@ -218,6 +218,20 @@
             background-color: $clr-bg-pri-hover;
         }
     }
+
+    // In HideInput mode the spin buttons become keyboard focusable (there is no input left to focus),
+    // so they need a visible focus indicator of their own.
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    // The buttons are also disabled while the field is read-only, where the root does not carry the
+    // bit-dis class, so the disabled look has to be attached to the buttons themselves.
+    &:disabled {
+        cursor: default;
+        pointer-events: none;
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-nfl-aup {
@@ -280,6 +294,18 @@
         font-size: spacing(1.75);
         padding-bottom: spacing(0.125);
     }
+}
+
+.bit-nfl-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-nfl-req {

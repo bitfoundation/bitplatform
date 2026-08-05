@@ -9,7 +9,7 @@ public partial class BitNumberFieldDemo
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Detailed description of the input for the benefit of screen readers.",
+            Description = "Detailed description of the input for the benefit of screen readers. It is rendered into a visually hidden element that the input references through its aria-describedby attribute.",
         },
         new()
         {
@@ -167,6 +167,15 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "InputMode",
+            Type = "BitInputMode?",
+            DefaultValue = "null",
+            Description = "Overrides the virtual keyboard the browser shows for the input. By default it is Numeric for the integral types and Decimal for the fractional ones (float, double and decimal). Since neither of those keypads offers a minus sign on every platform, a field that has to accept negative values on touch devices is better served by Text, which brings up the full keyboard.",
+            LinkType = LinkType.Link,
+            Href = "#inputMode-enum",
+        },
+        new()
+        {
             Name = "InvertMouseWheel",
             Type = "bool",
             DefaultValue = "false",
@@ -227,6 +236,20 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "NoClamp",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps values typed outside of the Min/Max range intact instead of clamping them to the nearest bound, so that a form validation (e.g. a [Range] data annotation) can report the out-of-range value to the user instead of it being silently corrected. Stepping with the increment/decrement buttons, the arrow keys or the mouse wheel still stays inside the range, and the Home/End keys still jump to the bounds.",
+        },
+        new()
+        {
+            Name = "NoMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables changing the value using the mouse wheel entirely (by default the value changes when the wheel is scrolled over the focused field while the Shift key is held down).",
+        },
+        new()
+        {
             Name = "NoSelectOnFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -260,6 +283,12 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback for when the input is clicked.",
+        },
+        new()
+        {
             Name = "OnDecrement",
             Type = "EventCallback<TValue>",
             Description = "Callback for when the decrement button or down arrow key is pressed.",
@@ -287,6 +316,18 @@ public partial class BitNumberFieldDemo
             Name = "OnIncrement",
             Type = "EventCallback<TValue>",
             Description = "Callback for when the increment button or up arrow key is pressed.",
+        },
+        new()
+        {
+            Name = "OnKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when a key is pressed down on the input. It is invoked for every key, including the ones the field handles itself (the arrow keys, PageUp/PageDown, Home/End and Escape).",
+        },
+        new()
+        {
+            Name = "OnKeyUp",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback for when a key is released on the input.",
         },
         new()
         {
@@ -360,7 +401,7 @@ public partial class BitNumberFieldDemo
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types). The button is not rendered while the field is read-only or has no value. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it.",
+            Description = "Whether to show the clear button whenever the field is showing something, resetting the value to null with a single click (most useful with nullable value types). \"Showing something\" covers a string the user typed that failed to parse as well as a real value, so the button is also there to wipe an entry that has to be corrected. It is not rendered while the field is read-only or empty. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it.",
         },
         new()
         {
@@ -625,6 +666,63 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Id = "inputMode-enum",
+            Name = "BitInputMode",
+            Description = "This allows a browser to display an appropriate virtual keyboard.",
+            Items =
+            [
+                new()
+                {
+                    Name= "None",
+                    Description="No virtual keyboard. For when the page implements its own keyboard input control.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Standard input keyboard for the user's current locale.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Decimal",
+                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Numeric",
+                    Description="Numeric input keyboard, but only requires the digits 0–9.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Tel",
+                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Search",
+                    Description="A virtual keyboard optimized for search input.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Email",
+                    Description="A virtual keyboard optimized for entering email addresses.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Url",
+                    Description="A keypad optimized for entering URLs.",
+                    Value="7",
+                }
+            ]
+        },
+        new()
+        {
             Id = "spinMode-enum",
             Name = "BitSpinButtonMode",
             Description = "",
@@ -684,10 +782,15 @@ public partial class BitNumberFieldDemo
 
     private double oneWayValue;
     private double twoWayValue;
+    private int? uncontrolledValue;
 
     private int? immediateValue;
+    private double? immediateDecimalValue;
     private int? debounceValue;
     private int? throttleValue;
+
+    private int clampValue;
+    private int noClampValue;
 
     private int readOnlyValue = 10;
     private int inputReadOnlyValue = 10;
@@ -696,6 +799,10 @@ public partial class BitNumberFieldDemo
     private int onDecrementCounter;
     private int onChangeCounter;
     private int onClearCounter;
+    private int clearedCounter;
+    private int onKeyUpCounter;
+    private int onClickCounter;
+    private string? lastKey;
 
     private int? classesValue;
 
@@ -715,9 +822,19 @@ public partial class BitNumberFieldDemo
     private long longValue = 1_000_000_000_000;
     private double doubleValue = 1.5;
     private decimal decimalValue = 0.05m;
+    private int signedValue = -5;
 
     private string SuccessMessage = string.Empty;
     private BitNumberFieldValidationModel validationModel = new();
+    private double? parsingErrorValue;
+
+    public class RangeModel
+    {
+        [Range(0, 100, ErrorMessage = "The percentage must be between 0 and 100")]
+        public int Percentage { get; set; }
+    }
+
+    private RangeModel rangeModel = new();
 
     private async Task HandleValidSubmit()
     {

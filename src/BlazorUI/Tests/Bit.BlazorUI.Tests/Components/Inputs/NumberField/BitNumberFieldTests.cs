@@ -322,17 +322,19 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(max is not null ? int.Parse(max).ToString() : null, input.GetAttribute("aria-valuemax"));
     }
 
-    [Ignore]
     [TestMethod,
          DataRow(3),
          DataRow(5)
     ]
-    public async Task BitNumberFieldOnIncrementTest(int countOfClicks)
+    public void BitNumberFieldOnIncrementTest(int countOfClicks)
     {
         var onIncrementEventCounter = 0;
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            // A long delay keeps the press-and-hold spin out of the picture, so each press contributes
+            // exactly one increment no matter how long the test itself takes.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Add(p => p.OnIncrement, () => onIncrementEventCounter++);
         });
 
@@ -340,24 +342,24 @@ public class BitNumberFieldTests : BunitTestContext
         for (var i = 0; i < countOfClicks; i++)
         {
             increaseButton.PointerDown();
-            await Task.Delay(1);
             increaseButton.PointerUp();
         }
 
         Assert.AreEqual(countOfClicks, onIncrementEventCounter);
+        Assert.AreEqual(countOfClicks, component.Instance.Value);
     }
 
-    [Ignore]
     [TestMethod,
          DataRow(3),
          DataRow(5)
     ]
-    public async Task BitNumberFieldOnDecrementTest(int countOfClicks)
+    public void BitNumberFieldOnDecrementTest(int countOfClicks)
     {
         var onDecrementEventCounter = 20;
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Add(p => p.OnDecrement, () => onDecrementEventCounter--);
         });
 
@@ -365,11 +367,11 @@ public class BitNumberFieldTests : BunitTestContext
         for (var i = 0; i < countOfClicks; i++)
         {
             decreaseButton.PointerDown();
-            await Task.Delay(1);
             decreaseButton.PointerUp();
         }
 
         Assert.AreEqual(20 - countOfClicks, onDecrementEventCounter);
+        Assert.AreEqual(-countOfClicks, component.Instance.Value);
     }
 
     [TestMethod,
@@ -883,7 +885,22 @@ public class BitNumberFieldTests : BunitTestContext
 
         var input = component.Find("input");
 
-        Assert.AreEqual(ariaDescription, input.GetAttribute("aria-describedby"));
+        // aria-describedby is an id reference, so the description text is rendered into a visually
+        // hidden element of its own and the input points at that element.
+        if (ariaDescription is null)
+        {
+            Assert.IsNull(input.GetAttribute("aria-describedby"));
+            Assert.AreEqual(0, component.FindAll(".bit-nfl-dsc").Count);
+        }
+        else
+        {
+            var describedById = input.GetAttribute("aria-describedby");
+            Assert.IsFalse(string.IsNullOrEmpty(describedById));
+
+            var description = component.Find(".bit-nfl-dsc");
+            Assert.AreEqual(describedById, description.Id);
+            Assert.AreEqual(ariaDescription, description.TextContent);
+        }
     }
 
     [TestMethod,
@@ -1356,12 +1373,11 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult, inputValue);
     }
 
-    [Ignore]
     [TestMethod,
          DataRow(5, 2, "4"),
          DataRow(1, 15, "1")
     ]
-    public async Task BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, string step)
+    public void BitNumberFieldTwoWayBoundWithCustomHandlerShouldWorkCorrect(int value, int countOfIncrements, string step)
     {
         BitNumberFieldTwoWayBoundValue = value;
 
@@ -1371,14 +1387,14 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.Value, BitNumberFieldTwoWayBoundValue);
             parameters.Add(p => p.ValueChanged, HandleValueChanged);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
         });
 
         var incrementButton = component.Find("button.bit-nfl-aup");
         for (var i = 0; i < countOfIncrements; i++)
         {
             incrementButton.PointerDown();
-
-            await Task.Delay(1);
+            incrementButton.PointerUp();
         }
 
         var expectedValue = value + int.Parse(step) * countOfIncrements;
@@ -1398,56 +1414,86 @@ public class BitNumberFieldTests : BunitTestContext
         ntfLabelChild.MarkupMatches(labelFragment);
     }
 
-    [Ignore]
-    [TestMethod,
-         DataRow(3, "1", "100", 475),
-         DataRow(3, "1", "100", 550)
-    ]
-    public void BitNumberFieldContinuousIncrementOnPointerDownTest(int defaultValue, string step, string max, int timeout)
+    [TestMethod]
+    public async Task BitNumberFieldContinuousIncrementOnPointerDownTest()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.Step, step);
-            parameters.Add(p => p.Max, max);
-            parameters.Add(p => p.DefaultValue, defaultValue);
+            parameters.Add(p => p.Step, "1");
+            parameters.Add(p => p.Max, "10000");
+            parameters.Add(p => p.DefaultValue, 0);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 20);
+            parameters.Add(p => p.ContinuousSpinInterval, 5);
         });
 
-        var input = component.Find("input");
         var incrementButton = component.Find("button.bit-nfl-aup");
-        var initialIncrementCount = timeout / 400;
-        var continuousIncrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
-        var expectedResult = defaultValue + int.Parse(step) * (initialIncrementCount + continuousIncrementCount);
-        incrementButton.PointerDown();
 
-        component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
-            TimeSpan.FromMilliseconds(timeout));
+        // The press itself performs a single step, and the pointerdown handler must return right away
+        // instead of staying pending for the whole duration of the press.
+        incrementButton.PointerDown();
+        Assert.AreEqual(1, component.Instance.Value);
+
+        // Holding the button down then keeps the value climbing on its own.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value >= 5), TimeSpan.FromSeconds(10));
+
+        incrementButton.PointerUp();
+
+        // ... and releasing it stops the spin for good.
+        var valueAfterRelease = component.Instance.Value;
+        await Task.Delay(100);
+        Assert.AreEqual(valueAfterRelease, component.Instance.Value);
     }
 
-    [Ignore]
-    [TestMethod,
-         DataRow(50, "1", "0", 475),
-         DataRow(50, "1", "0", 550)
-    ]
-    public void BitNumberFieldContinuousDecrementOnPointerDownTest(int defaultValue, string step, string min, int timeout)
+    [TestMethod]
+    public async Task BitNumberFieldContinuousDecrementOnPointerDownTest()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
-            parameters.Add(p => p.Step, step);
-            parameters.Add(p => p.Min, min);
-            parameters.Add(p => p.DefaultValue, defaultValue);
+            parameters.Add(p => p.Step, "1");
+            parameters.Add(p => p.Min, "-10000");
+            parameters.Add(p => p.DefaultValue, 0);
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 20);
+            parameters.Add(p => p.ContinuousSpinInterval, 5);
         });
 
-        var input = component.Find("input");
+        var decrementButton = component.Find("button.bit-nfl-adn");
+
+        decrementButton.PointerDown();
+        Assert.AreEqual(-1, component.Instance.Value);
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.Value <= -5), TimeSpan.FromSeconds(10));
+
+        decrementButton.PointerUp();
+
+        var valueAfterRelease = component.Instance.Value;
+        await Task.Delay(100);
+        Assert.AreEqual(valueAfterRelease, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldContinuousSpinShouldStopAtTheBound()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Step, "1");
+            parameters.Add(p => p.Max, "5");
+            parameters.Add(p => p.DefaultValue, 0);
+            parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
+            parameters.Add(p => p.ContinuousSpinDelay, 20);
+            parameters.Add(p => p.ContinuousSpinInterval, 5);
+        });
+
         var incrementButton = component.Find("button.bit-nfl-aup");
-        var initialDecrementCount = timeout / 400;
-        var continuousDecrementCount = timeout >= 400 ? (timeout - 400) / 75 : 0;
-        var expectedResult = defaultValue - int.Parse(step) * (initialDecrementCount + continuousDecrementCount);
         incrementButton.PointerDown();
 
-        component.WaitForAssertion(() => Assert.AreEqual(expectedResult.ToString(), input.GetAttribute("value")),
-            TimeSpan.FromMilliseconds(timeout));
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Value), TimeSpan.FromSeconds(10));
+
+        await Task.Delay(100);
+        Assert.AreEqual(5, component.Instance.Value);
+
+        incrementButton.PointerUp();
     }
 
     [TestMethod,
