@@ -6,11 +6,11 @@
 
 <PageOutlet Url="components/numberfield"
             Title="NumberField"
-            Description="A NumberField lets you enter and format numeric values of any .NET number type, with min/max clamping, stepping buttons, keyboard and mouse wheel support, and optional prefixes and suffixes." />
+            Description="A NumberField lets you enter and format numeric values of any .NET number type, with min/max clamping, stepping buttons, full spinbutton keyboard support, mouse wheel interaction, and optional prefixes and suffixes." />
 
 <DemoPage Name="NumberField"
           SecondaryNames="@(["NumberInput"])"
-          Description="A NumberField (also known as a number input or spin button) allows entering any .NET numeric value (int, double, decimal, etc., including their nullable variants). It supports min/max clamping, custom steps, rounding precision, .NET number formatting, increment/decrement buttons in several layouts, keyboard (Up/Down arrows) and mouse wheel (Shift+wheel) interaction, non-Latin digit normalization, and full form validation integration."
+          Description="A NumberField (also known as a number input or spin button) allows entering any .NET numeric value (int, double, decimal, etc., including their nullable variants). It supports min/max clamping, custom steps with optional snapping, rounding precision, .NET number formatting, increment/decrement buttons in several layouts, the full ARIA spinbutton keyboard set (Up/Down arrows, PageUp/PageDown, Home/End), mouse wheel (Shift+wheel) interaction, non-Latin digit normalization, and full form validation integration."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -173,7 +173,8 @@
         <div>
             The <b>Min</b> and <b>Max</b> parameters bound the value of the field: any value entered or spun outside the range
             gets clamped to the nearest bound. When they are not provided, the natural range of the underlying numeric type applies
-            (so spinning can never overflow the type).
+            (so spinning can never overflow the type). When an explicit bound is provided, the <b>Home</b> and <b>End</b> keys
+            jump the value straight to the minimum and maximum, following the ARIA spinbutton pattern.
         </div>
         <br />
         <div class="example-box">
@@ -193,6 +194,8 @@
             The <b>Step</b> parameter sets the amount added or removed on each spin, whether it comes from the increment/decrement
             buttons, the Up/Down arrow keys, or the mouse wheel (while holding Shift). A fractional step such as <b>0.1</b> also
             implies the rounding precision of typed values, unless an explicit <b>Precision</b> is provided.
+            The <b>PageUp</b> and <b>PageDown</b> keys jump by a larger amount: the <b>PageStep</b> parameter when provided,
+            or 10 times the Step otherwise.
             Combined with <b>Min</b> and <b>Max</b>, stepping stops exactly at the bounds.
             Stepping always applies to the value currently visible in the input, so typing a number and immediately
             pressing an arrow key steps from the newly typed value.
@@ -209,6 +212,9 @@
             <br />
             <BitNumberField Label="Step & Min & Max (5, 0, 25)" Step="5" Min="0" Max="25" Mode="BitSpinButtonMode.Compact" @bind-Value="stepMinMaxValue" />
             <div>value: [@stepMinMaxValue]</div>
+            <br />
+            <BitNumberField Label="PageStep = 20 (press PageUp/PageDown)" PageStep="20" Mode="BitSpinButtonMode.Compact" @bind-Value="pageStepValue" />
+            <div>value: [@pageStepValue]</div>
             <br />
             <BitNumberField Label="Fast continuous spin (hold a button)" Mode="BitSpinButtonMode.Compact"
                             ContinuousSpinDelay="200" ContinuousSpinInterval="25"
@@ -403,7 +409,28 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="SnapToStep" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            Enabling <b>SnapToStep</b> snaps every committed value to the nearest multiple of the <b>Step</b>, so typed values
+            land on the same grid that the increment/decrement stepping produces. The grid is anchored at the <b>Min</b> when
+            one is provided (with Min=2 and Step=3 the reachable values are 2, 5, 8, ...), otherwise at zero.
+            It also works with fractional steps, snapping typed decimals to the nearest fraction (e.g. 0.3 becomes 0.25 with
+            a 0.25 step). Without SnapToStep, typed values are kept as-is, aside from min/max clamping and precision rounding.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitNumberField Label="Step = 5 (typing 7 commits 5)" SnapToStep Step="5" Mode="BitSpinButtonMode.Compact" @bind-Value="snapValue" />
+            <div>value: [@snapValue]</div>
+            <br />
+            <BitNumberField Label="Min = 2 & Step = 3 (typing 7 commits 8)" SnapToStep Min="2" Step="3" Mode="BitSpinButtonMode.Compact" @bind-Value="snapAnchoredValue" />
+            <div>value: [@snapAnchoredValue]</div>
+            <br />
+            <BitNumberField Label="Fractional step (typing 0.3 commits 0.25)" SnapToStep Step="0.25" Mode="BitSpinButtonMode.Compact" @bind-Value="snapFractionValue" />
+            <div>value: [@snapFractionValue]</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b>, <b>IncrementIcon</b>, and <b>DecrementIcon</b> parameters.</div>
 
         <br />
@@ -450,7 +477,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
         <div>
             The appearance can be customized at every level: the root <b>Style</b> and <b>Class</b> parameters, plus the
             <b>Styles</b> and <b>Classes</b> parameters that target each internal part of the component
@@ -485,7 +512,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>
             The BitNumberField fully supports right-to-left (RTL) rendering, either using its <b>Dir</b> parameter or a cascading
             <b>BitDir.Rtl</b> value: the label, the buttons, the required indicator and the input alignment all flip accordingly.

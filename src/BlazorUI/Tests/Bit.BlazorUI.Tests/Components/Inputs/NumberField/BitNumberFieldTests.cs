@@ -1058,6 +1058,188 @@ public class BitNumberFieldTests : BunitTestContext
         Assert.AreEqual(expectedResult.ToString(), inputValue);
     }
 
+    [TestMethod]
+    public void BitNumberFieldPageUpAndPageDownShouldChangeValueByTenTimesStepByDefault()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.Step, "2");
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        Assert.AreEqual(70, component.Instance.Value);
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPageUpAndPageDownShouldUseProvidedPageStep()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.Step, "2");
+            parameters.Add(p => p.PageStep, "25");
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        Assert.AreEqual(75, component.Instance.Value);
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPageUpShouldClampAtMax()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 95);
+            parameters.Add(p => p.Max, "100");
+        });
+
+        component.Find("input").KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+
+        Assert.AreEqual(100, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPageKeysShouldBeIgnoredWithModifiers()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp", ShiftKey = true });
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp", CtrlKey = true });
+
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldPageKeysShouldInvokeIncrementAndDecrementCallbacks()
+    {
+        var incremented = 0;
+        var decremented = 0;
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.OnIncrement, (int _) => incremented++);
+            parameters.Add(p => p.OnDecrement, (int _) => decremented++);
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+
+        Assert.AreEqual(1, incremented);
+        Assert.AreEqual(1, decremented);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHomeAndEndShouldJumpToExplicitMinAndMax()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.Min, "10");
+            parameters.Add(p => p.Max, "90");
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.AreEqual(10, component.Instance.Value);
+
+        input.KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.AreEqual(90, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHomeAndEndShouldBeIgnoredWithoutExplicitBounds()
+    {
+        // Without an explicit Min/Max, Home/End must not jump to the underlying type's extremes
+        // (e.g. int.MinValue) and must keep their standard text-caret behavior.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Home" });
+        input.KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHomeAndEndShouldBeIgnoredWithModifiers()
+    {
+        // Shift+Home/Shift+End select text; they must not be hijacked as value commands.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.Min, "10");
+            parameters.Add(p => p.Max, "90");
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Home", ShiftKey = true });
+        input.KeyDown(new KeyboardEventArgs { Key = "End", CtrlKey = true });
+
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldHomeShouldBeIgnoredWithUnparsableMin()
+    {
+        // An unparsable Min falls back to the type minimum as an overflow guard, but it is not an
+        // explicit bound: Home must not jump the value to int.MinValue (and no aria-valuemin renders).
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.Min, "abc");
+        });
+
+        var input = component.Find("input");
+
+        Assert.IsFalse(input.HasAttribute("aria-valuemin"));
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldKeyboardShouldNotChangeValueWhenReadOnly()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 50);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Min, "10");
+            parameters.Add(p => p.Max, "90");
+        });
+
+        var input = component.Find("input");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.KeyDown(new KeyboardEventArgs { Key = "Home" });
+
+        Assert.AreEqual(50, component.Instance.Value);
+    }
+
     [TestMethod,
          DataRow(50.02, "0", "100", "25"),
          DataRow(50.02, "0", "100", "112.2"),

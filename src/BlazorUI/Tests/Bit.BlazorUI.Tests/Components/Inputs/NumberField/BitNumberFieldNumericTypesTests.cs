@@ -303,6 +303,171 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         Assert.AreEqual(6d, component.Instance.Value);
     }
 
+    [TestMethod,
+         DataRow("NaN"),
+         DataRow("Infinity"),
+         DataRow("-Infinity")
+    ]
+    public void BitNumberFieldShouldRejectNonFiniteInput(string userInput)
+    {
+        // The invariant culture parses "NaN"/"Infinity" into valid doubles, but NaN escapes min/max
+        // clamping entirely (every comparison is false), so non-finite input must be rejected.
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 5d);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(5d, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotClearNullableValueWhenFormatCleaningEmptiesInput()
+    {
+        // With a NumberFormat, symbol cleaning strips non-numeric characters; input like "abc"
+        // becomes an empty string, which must surface a parse error instead of silently converting
+        // to null and wiping the value.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.NumberFormat, "N0");
+            parameters.Add(p => p.DefaultValue, 42);
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "abc" });
+
+        Assert.AreEqual(42, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldParseParenthesizedNegativeCurrency()
+    {
+        // Accounting-style currency formats render negatives in parentheses (en-US "C0": "($150)").
+        // Committing that text back must restore the negative sign.
+        var originalCulture = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+
+            var component = RenderComponent<BitNumberField<int>>(parameters =>
+            {
+                parameters.Add(p => p.NumberFormat, "C0");
+            });
+
+            component.Find("input").Change(new ChangeEventArgs { Value = "($150)" });
+
+            Assert.AreEqual(-150, component.Instance.Value);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [TestMethod,
+         DataRow("7", 5),   // nearest multiple of 5 below
+         DataRow("8", 10),  // nearest multiple of 5 above
+         DataRow("13", 15)  // nearest multiple of 5 above
+    ]
+    public void BitNumberFieldShouldSnapTypedValueToStepWhenSnapToStepEnabled(string userInput, int expectedValue)
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.SnapToStep, true);
+            parameters.Add(p => p.Step, "5");
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldAnchorSnapGridAtMin()
+    {
+        // With Min=2 and Step=3 the reachable values are 2, 5, 8, ... (the grid is anchored at Min,
+        // not zero), so 7 snaps to 8 rather than to 6.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.SnapToStep, true);
+            parameters.Add(p => p.Min, "2");
+            parameters.Add(p => p.Step, "3");
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "7" });
+
+        Assert.AreEqual(8, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldSnapFractionalValues()
+    {
+        var component = RenderComponent<BitNumberField<double>>(parameters =>
+        {
+            parameters.Add(p => p.SnapToStep, true);
+            parameters.Add(p => p.Step, "0.25");
+        });
+
+        var input = component.Find("input");
+
+        input.Change(new ChangeEventArgs { Value = "0.3" });
+        Assert.AreEqual(0.25, component.Instance.Value);
+
+        // An exact midpoint (0.375) snaps away from zero (0.5, not 0.25).
+        input.Change(new ChangeEventArgs { Value = "0.375" });
+        Assert.AreEqual(0.5, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldSnapWhenSpinningFromMisalignedValue()
+    {
+        // Spinning from a misaligned value (e.g. one bound before SnapToStep was enabled) must land
+        // on the step grid: 7 + 5 = 12 -> snapped to 10.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.SnapToStep, true);
+            parameters.Add(p => p.Step, "5");
+            parameters.Add(p => p.DefaultValue, 7);
+        });
+
+        Spin(component, up: true);
+
+        Assert.AreEqual(10, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotSnapTypedValueWithoutSnapToStep()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Step, "5");
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = "7" });
+
+        Assert.AreEqual(7, component.Instance.Value);
+    }
+
+    [TestMethod,
+         DataRow("5", 5),    // inside the effective (swapped) range -> unchanged
+         DataRow("20", 10),  // above the effective upper bound (the provided Min) -> clamped down
+         DataRow("-5", 0)    // below the effective lower bound (the provided Max) -> clamped up
+    ]
+    public void BitNumberFieldShouldTolerateSwappedMinAndMax(string userInput, int expectedValue)
+    {
+        // A misconfigured Min greater than Max must not produce out-of-range results; the effective
+        // range is simply the ordered pair of the two bounds.
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "10");
+            parameters.Add(p => p.Max, "0");
+        });
+
+        component.Find("input").Change(new ChangeEventArgs { Value = userInput });
+
+        Assert.AreEqual(expectedValue, component.Instance.Value);
+    }
+
     [TestMethod]
     public void BitNumberFieldShouldHaveSpinbuttonRole()
     {
@@ -412,6 +577,21 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         });
 
         Assert.AreEqual("پاک کردن", component.Find(".bit-nfl-cbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldNotRenderClearButtonWhenReadOnly()
+    {
+        // A read-only field cannot be cleared, so rendering the clear button would only offer a
+        // dead control.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, 10);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-nfl-cbt").Count);
     }
 
     [TestMethod]

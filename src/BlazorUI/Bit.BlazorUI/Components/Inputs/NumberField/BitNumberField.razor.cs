@@ -6,9 +6,10 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// A NumberField (number input / spin button) allows entering values of any .NET numeric type, including their
-/// nullable variants. It supports min/max clamping, custom steps, rounding precision, .NET number formatting,
-/// increment/decrement buttons in several layouts, keyboard and mouse wheel interaction, non-Latin digit
-/// normalization and full form validation integration.
+/// nullable variants. It supports min/max clamping, custom steps with optional snapping, rounding precision,
+/// .NET number formatting, increment/decrement buttons in several layouts, the full ARIA spinbutton keyboard set
+/// (Up/Down arrows, PageUp/PageDown, Home/End), mouse wheel interaction, non-Latin digit normalization and full
+/// form validation integration.
 /// </summary>
 public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : BitTextInputBase<TValue>
 {
@@ -21,7 +22,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private bool _lastNormalizationActive;
     private TValue _min = default!;
     private TValue _max = default!;
+    private bool _hasExplicitMin;
+    private bool _hasExplicitMax;
     private TValue _step = default!;
+    private TValue _pageStep = default!;
+    private bool _hasPageStep;
+    private string? _registeredPreventKeys;
     private readonly string _labelId;
     private readonly string _inputId;
     private readonly string _inputMode;
@@ -327,6 +333,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     [Parameter] public EventCallback<TValue> OnIncrement { get; set; }
 
     /// <summary>
+    /// The amount by which the value changes when the user presses the PageUp/PageDown keys, providing a
+    /// larger jump than the regular <see cref="Step"/>. It is a string to support any numeric type of the
+    /// field; when not provided (or unparsable), PageUp/PageDown change the value by 10 times the Step.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetPageStep))]
+    public string? PageStep { get; set; }
+
+    /// <summary>
     /// The message format used for invalid values entered in the input.
     /// </summary>
     [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field is not valid.";
@@ -385,8 +400,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Whether to show the clear button when the BitNumberField has a value,
     /// resetting the value to null with a single click (most useful with nullable value types).
+    /// The button is not rendered while the field is read-only or has no value.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>
+    /// Snaps the committed value to the nearest multiple of the <see cref="Step"/> (anchored at the
+    /// <see cref="Min"/> when one is provided), so typed values align to the same grid that the
+    /// increment/decrement stepping produces. Without it, typed values are kept as-is (aside from
+    /// min/max clamping and precision rounding).
+    /// </summary>
+    [Parameter] public bool SnapToStep { get; set; }
 
     /// <summary>
     /// The difference between two adjacent values of the number field, applied when spinning the value using
@@ -484,6 +508,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             if (Min is not null) OnSetMin();
             if (Max is not null) OnSetMax();
             if (Step is not null) OnSetStep();
+            if (PageStep is not null) OnSetPageStep();
 
             // Precision can be derived from Step (CalculatePrecision), so it must be recomputed using
             // the now-normalized Step; otherwise a non-Latin decimal Step (e.g. "۰٫۰۱") could leave
@@ -492,6 +517,48 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        await RegisterPreventKeys();
+    }
+
+    /// <summary>
+    /// Suppresses the browser's default action of the navigation keys the field handles as value
+    /// commands (PageUp/PageDown scrolling the page, and Home/End moving the caret when an explicit
+    /// Min/Max makes them jump to the bounds). The registration is a plain JS-side listener, updated
+    /// only when the effective key list changes (e.g. when ReadOnly or Min/Max toggles).
+    /// </summary>
+    private async Task RegisterPreventKeys()
+    {
+        if (IsDisposed) return;
+
+        var interactive = IsEnabled && ReadOnly is false && HideInput is false;
+
+        List<string> keys = [];
+        if (interactive)
+        {
+            keys.Add("PageUp");
+            keys.Add("PageDown");
+            if (_hasExplicitMin) keys.Add("Home");
+            if (_hasExplicitMax) keys.Add("End");
+        }
+
+        // Shift+wheel is handled as a value change, so the browser's (horizontal) scrolling has to be
+        // suppressed along with it; the flag piggybacks on the same change detection as the key list.
+        var joinedKeys = $"{string.Join(',', keys)}|{interactive}";
+        if (string.Equals(joinedKeys, _registeredPreventKeys, StringComparison.Ordinal)) return;
+
+        try
+        {
+            await _js.BitUtilsRegisterPreventKeys(InputElement, [.. keys]);
+            await _js.BitUtilsRegisterPreventShiftWheel(InputElement, interactive);
+            _registeredPreventKeys = joinedKeys;
+        }
+        catch { } // JS is unavailable (e.g. a disconnected circuit); the keys still work, only with their browser default side effects.
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -518,18 +585,30 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (NumberFormat is not null)
         {
+            // Accounting-style formats render negative values in parentheses (e.g. "($1,234)" for the
+            // en-US "C" format). CleanValue below only extracts digits, dots and minus signs, so the
+            // negativity carried by the parentheses has to be detected first and restored afterwards.
+            var openParenIndex = value?.IndexOf('(') ?? -1;
+            var isParenthesizedNegative = openParenIndex >= 0 && (value?.IndexOf(')') ?? -1) > openParenIndex;
+
             // The formatted display is produced with the current culture (e.g. "1.234,50" in German),
             // so its culture-specific separators have to be mapped back to the invariant form before
             // the symbol stripping and the invariant parse.
             value = CleanValue(MapCultureSeparatorsToInvariant(value));
+
+            if (isParenthesizedNegative && value.HasValue() && value![0] is not '-')
+            {
+                value = $"-{value}";
+            }
         }
 
-        // The input collapsed to an empty string purely because digit normalization stripped its
-        // contents (e.g. an Arabic thousands separator "٬" typed on its own, or a custom normalizer
-        // removing units/symbols). For nullable types BindConverter would happily turn "" into null,
-        // silently clearing the value. Since the user did type something non-empty, surface a parse
-        // error instead so the value is not silently lost.
-        if (digitsNormalized && value.HasNoValue() && originalValue.HasValue())
+        // The input collapsed to an empty string purely because a transformation stripped its
+        // contents: digit normalization (e.g. an Arabic thousands separator "٬" typed on its own, or
+        // a custom normalizer removing units/symbols) or the NumberFormat symbol cleaning (e.g. "abc"
+        // containing no digits at all). For nullable types BindConverter would happily turn "" into
+        // null, silently clearing the value. Since the user did type something non-empty, surface a
+        // parse error instead so the value is not silently lost.
+        if (value.HasNoValue() && originalValue.HasValue())
         {
             result = default;
             parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
@@ -538,7 +617,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         if (BindConverter.TryConvertTo(value, CultureInfo.InvariantCulture, out result))
         {
+            // The invariant culture parses "NaN" and "Infinity" into valid float/double values, but a
+            // NaN value would escape the min/max clamping entirely (every NaN comparison is false) and
+            // neither is meaningful numeric input, so both are rejected as unparsable.
+            if ((result is double d && double.IsFinite(d) is false) ||
+                (result is float f && float.IsFinite(f) is false))
+            {
+                result = default;
+                parsingErrorMessage = string.Format(CultureInfo.InvariantCulture, ParsingErrorMessage, DisplayName ?? FieldIdentifier.FieldName);
+                return false;
+            }
+
             var parsedValue = result;
+
+            result = Snap(result);
 
             result = CheckMinAndMax(result);
 
@@ -598,12 +690,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private string? GetAriaValueMin()
     {
-        return Min is null ? null : BindConverter.FormatValue(_min, CultureInfo.InvariantCulture)?.ToString();
+        return _hasExplicitMin ? BindConverter.FormatValue(_min, CultureInfo.InvariantCulture)?.ToString() : null;
     }
 
     private string? GetAriaValueMax()
     {
-        return Max is null ? null : BindConverter.FormatValue(_max, CultureInfo.InvariantCulture)?.ToString();
+        return _hasExplicitMax ? BindConverter.FormatValue(_max, CultureInfo.InvariantCulture)?.ToString() : null;
     }
 
     /// <summary>
@@ -730,9 +822,70 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                 }
                 break;
 
+            // PageUp/PageDown change the value by a larger step than the arrow keys (per the ARIA
+            // spinbutton pattern): the PageStep when provided, otherwise 10 times the regular Step.
+            // A modifier key means the user is not spinning (e.g. Shift+PageUp extends a selection),
+            // so those combinations are left to the browser.
+            case "PageUp":
+                if (HasModifier(e)) return;
+                if (e.Repeat is false)
+                {
+                    await CommitPendingInputValue();
+                }
+                if (_hasPageStep) ChangeValue(+1, _pageStep); else ChangeValue(+10, _step);
+
+                if (OnIncrement.HasDelegate)
+                {
+                    await OnIncrement.InvokeAsync(CurrentValue);
+                }
+                break;
+
+            case "PageDown":
+                if (HasModifier(e)) return;
+                if (e.Repeat is false)
+                {
+                    await CommitPendingInputValue();
+                }
+                if (_hasPageStep) ChangeValue(-1, _pageStep); else ChangeValue(-10, _step);
+
+                if (OnDecrement.HasDelegate)
+                {
+                    await OnDecrement.InvokeAsync(CurrentValue);
+                }
+                break;
+
+            // Home/End jump to the minimum/maximum (per the ARIA spinbutton pattern), but only when an
+            // explicit Min/Max is provided - jumping to the underlying type's extreme (e.g.
+            // int.MinValue) would hardly ever be what the user wants. Modified keys (e.g. Shift+Home
+            // selecting to the start of the text) keep their standard text-editing behavior.
+            case "Home":
+                if (HasModifier(e) || _hasExplicitMin is false) return;
+                SetBoundValue(_min);
+                break;
+
+            case "End":
+                if (HasModifier(e) || _hasExplicitMax is false) return;
+                SetBoundValue(_max);
+                break;
+
             default:
                 break;
         }
+    }
+
+    private static bool HasModifier(KeyboardEventArgs e) => e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey;
+
+    /// <summary>
+    /// Sets the value straight to one of the range bounds (used by the Home/End keys).
+    /// </summary>
+    private void SetBoundValue(TValue bound)
+    {
+        _displayValue = null;
+        _displayValueSource = default;
+
+        CurrentValue = CheckMinAndMax(bound);
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -903,13 +1056,18 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private void ChangeValue(int factor)
     {
+        ChangeValue(factor, _step);
+    }
+
+    private void ChangeValue(int factor, TValue step)
+    {
         TValue result;
 
         if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double))
         {
             // double covers the full range of both float and double; going out of range saturates to
             // an infinity which the clamp below brings back to the min/max bound.
-            var r = Convert.ToDouble(CurrentValue) + (factor * Convert.ToDouble(_step));
+            var r = Convert.ToDouble(CurrentValue) + (factor * Convert.ToDouble(step));
 
             var min = Convert.ToDouble(_min);
             var max = Convert.ToDouble(_max);
@@ -920,7 +1078,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         else if (_typeOfValue == typeof(decimal))
         {
             var current = Convert.ToDecimal(CurrentValue);
-            var delta = factor * Convert.ToDecimal(_step);
+            var delta = factor * Convert.ToDecimal(step);
 
             decimal r;
             try
@@ -945,7 +1103,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // nor wrap around; the result is clamped before narrowing back to the target type. This
             // also avoids the int-promotion of small-type arithmetic (byte + byte is an int) that
             // cannot be unboxed back into the smaller TValue.
-            var r = Convert.ToDecimal(CurrentValue) + (factor * Convert.ToDecimal(_step));
+            var r = Convert.ToDecimal(CurrentValue) + (factor * Convert.ToDecimal(step));
 
             var min = Convert.ToDecimal(_min);
             var max = Convert.ToDecimal(_max);
@@ -954,6 +1112,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             result = (TValue)Convert.ChangeType(r, _typeOfValue, CultureInfo.InvariantCulture);
         }
 
+        result = Snap(result);
         result = CheckMinAndMax(result);
 
         // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
@@ -1007,20 +1166,64 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
              : _zeroValue;
     }
 
+    /// <summary>
+    /// Snaps the value to the nearest multiple of the <see cref="Step"/> when <see cref="SnapToStep"/>
+    /// is enabled. The stepping grid is anchored at the <see cref="Min"/> when one is provided (so with
+    /// Min=2 and Step=3 the reachable values are 2, 5, 8, ...), otherwise at zero. Values that cannot
+    /// be snapped safely (overflow at the extremes of the numeric type) are returned unchanged; the
+    /// regular min/max clamping still applies afterwards.
+    /// </summary>
+    private TValue Snap(TValue value)
+    {
+        if (SnapToStep is false || value is null) return value;
+
+        try
+        {
+            if (_typeOfValue == typeof(float) || _typeOfValue == typeof(double))
+            {
+                var step = Convert.ToDouble(_step);
+                if (step <= 0 || double.IsFinite(step) is false) return value;
+
+                var basis = _hasExplicitMin ? Convert.ToDouble(_min) : 0d;
+                var snapped = basis + (Math.Round((Convert.ToDouble(value) - basis) / step, MidpointRounding.AwayFromZero) * step);
+                if (double.IsFinite(snapped) is false) return value;
+
+                return (TValue)Convert.ChangeType(snapped, _typeOfValue, CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                // decimal arithmetic is exact for the fractional steps of the decimal type and spans
+                // the full range of every integral type, avoiding any floating-point drift.
+                var step = Convert.ToDecimal(_step);
+                if (step <= 0) return value;
+
+                var basis = _hasExplicitMin ? Convert.ToDecimal(_min) : 0m;
+                var snapped = basis + (Math.Round((Convert.ToDecimal(value) - basis) / step, MidpointRounding.AwayFromZero) * step);
+
+                return (TValue)Convert.ChangeType(snapped, _typeOfValue, CultureInfo.InvariantCulture);
+            }
+        }
+        catch (OverflowException)
+        {
+            return value;
+        }
+    }
+
     private TValue CheckMinAndMax(TValue result)
     {
-        return _typeOfValue == typeof(byte) ? Convert.ToByte(result) < Convert.ToByte(_min) ? _min : Convert.ToByte(result) > Convert.ToByte(_max) ? _max : result
-             : _typeOfValue == typeof(sbyte) ? Convert.ToSByte(result) < Convert.ToSByte(_min) ? _min : Convert.ToSByte(result) > Convert.ToSByte(_max) ? _max : result
-             : _typeOfValue == typeof(short) ? Convert.ToInt16(result) < Convert.ToInt16(_min) ? _min : Convert.ToInt16(result) > Convert.ToInt16(_max) ? _max : result
-             : _typeOfValue == typeof(ushort) ? Convert.ToUInt16(result) < Convert.ToUInt16(_min) ? _min : Convert.ToUInt16(result) > Convert.ToUInt16(_max) ? _max : result
-             : _typeOfValue == typeof(int) ? Convert.ToInt32(result) < Convert.ToInt32(_min) ? _min : Convert.ToInt32(result) > Convert.ToInt32(_max) ? _max : result
-             : _typeOfValue == typeof(uint) ? Convert.ToUInt32(result) < Convert.ToUInt32(_min) ? _min : Convert.ToUInt32(result) > Convert.ToUInt32(_max) ? _max : result
-             : _typeOfValue == typeof(long) ? Convert.ToInt64(result) < Convert.ToInt64(_min) ? _min : Convert.ToInt64(result) > Convert.ToInt64(_max) ? _max : result
-             : _typeOfValue == typeof(ulong) ? Convert.ToUInt64(result) < Convert.ToUInt64(_min) ? _min : Convert.ToUInt64(result) > Convert.ToUInt64(_max) ? _max : result
-             : _typeOfValue == typeof(float) ? Convert.ToSingle(result) < Convert.ToSingle(_min) ? _min : Convert.ToSingle(result) > Convert.ToSingle(_max) ? _max : result
-             : _typeOfValue == typeof(decimal) ? Convert.ToDecimal(result) < Convert.ToDecimal(_min) ? _min : Convert.ToDecimal(result) > Convert.ToDecimal(_max) ? _max : result
-             : _typeOfValue == typeof(double) ? Convert.ToDouble(result) < Convert.ToDouble(_min) ? _min : Convert.ToDouble(result) > Convert.ToDouble(_max) ? _max : result
-             : _zeroValue;
+        if (result is null) return result;
+
+        // Comparer<TValue>.Default uses the numeric type's own IComparable<T> implementation, so the
+        // comparison is exact for every supported type (including ulong values beyond long.MaxValue
+        // and the full decimal range). Ordering the bounds first keeps the clamping sensible even
+        // when a misconfigured Min is greater than Max (the effective range is simply swapped).
+        var comparer = Comparer<TValue>.Default;
+        var (min, max) = comparer.Compare(_min, _max) <= 0 ? (_min, _max) : (_max, _min);
+
+        if (comparer.Compare(result, min) < 0) return min;
+        if (comparer.Compare(result, max) > 0) return max;
+
+        return result;
     }
 
     private static string? NormalizeUnicodeDigits(string? value)
@@ -1161,26 +1364,33 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private void OnSetMin()
     {
         var min = CleanValue(NormalizeNumericParameter(Min));
-        if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result))
+        if (BindConverter.TryConvertTo(min, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
-            _min = result ?? GetTypeMinValue();
+            _min = result;
+            _hasExplicitMin = true;
         }
         else
         {
+            // An absent or unparsable Min falls back to the type's own minimum, which only acts as an
+            // overflow guard - it is not treated as an explicit bound (no aria-valuemin, no Home key
+            // jump, no snap anchoring).
             _min = GetTypeMinValue();
+            _hasExplicitMin = false;
         }
     }
 
     private void OnSetMax()
     {
         var max = CleanValue(NormalizeNumericParameter(Max));
-        if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result))
+        if (BindConverter.TryConvertTo(max, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
         {
-            _max = result ?? GetTypeMaxValue();
+            _max = result;
+            _hasExplicitMax = true;
         }
         else
         {
             _max = GetTypeMaxValue();
+            _hasExplicitMax = false;
         }
     }
 
@@ -1202,6 +1412,22 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // The precision can be derived from the Step parameter, so it has to be recomputed whenever
         // the Step changes (an explicitly provided Precision parameter still takes precedence).
         OnSetPrecision();
+    }
+
+    private void OnSetPageStep()
+    {
+        var pageStep = CleanValue(NormalizeNumericParameter(PageStep));
+        if (BindConverter.TryConvertTo(pageStep, CultureInfo.InvariantCulture, out TValue? result) && result is not null)
+        {
+            _pageStep = result;
+            _hasPageStep = true;
+        }
+        else
+        {
+            // No usable PageStep: PageUp/PageDown fall back to 10 times the regular Step.
+            _pageStep = default!;
+            _hasPageStep = false;
+        }
     }
 
     private void OnSetPrecision()

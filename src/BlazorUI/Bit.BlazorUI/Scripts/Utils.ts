@@ -119,6 +119,53 @@
             } catch (e) { console.error("BitBlazorUI.Utils.scrollElementIntoView:", e); }
         }
 
+        // Registers a wheel listener on the element that suppresses the browser's default scrolling
+        // while the Shift key is held (used by spin controls that turn Shift+wheel into a value
+        // change; without it a scrollable ancestor would also scroll horizontally). Passing active =
+        // false turns the suppression off in place; the listener itself is garbage-collected with the
+        // element. The listener must be registered non-passive to be allowed to call preventDefault.
+        public static registerPreventShiftWheel(element: HTMLElement, active: boolean) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitPreventShiftWheel = active;
+
+                if (el.__bitPreventShiftWheelRegistered) return;
+                el.__bitPreventShiftWheelRegistered = true;
+
+                element.addEventListener('wheel', (e: WheelEvent) => {
+                    if ((element as any).__bitPreventShiftWheel && e.shiftKey) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerPreventShiftWheel:", e); }
+        }
+
+        // Registers a keydown listener on the element that suppresses the browser's default action
+        // for the given keys (e.g. PageUp/PageDown scrolling the page while a spinbutton handles
+        // them as value changes). Calling it again updates the key list in place, and an empty list
+        // effectively disables the suppression, so no separate unregister call is needed - the
+        // listener is garbage-collected with the element itself.
+        public static registerPreventKeys(element: HTMLElement, keys: string[]) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitPreventKeys = keys || [];
+
+                if (el.__bitPreventKeysRegistered) return;
+                el.__bitPreventKeysRegistered = true;
+
+                element.addEventListener('keydown', (e: KeyboardEvent) => {
+                    const currentKeys = (element as any).__bitPreventKeys as string[];
+                    if (currentKeys && currentKeys.indexOf(e.key) >= 0 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                        e.preventDefault();
+                    }
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerPreventKeys:", e); }
+        }
+
         public static selectText(element: HTMLInputElement) {
             if (!element) return;
 

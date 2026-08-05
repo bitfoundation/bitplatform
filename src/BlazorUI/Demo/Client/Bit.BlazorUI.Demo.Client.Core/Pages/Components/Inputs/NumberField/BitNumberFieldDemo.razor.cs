@@ -182,8 +182,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "LabelPosition",
-            Type = "BitLabelPosition",
-            DefaultValue = "BitLabelPosition.Top",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
             Description = "The position of the label in regards to the field (Top by default).",
             LinkType = LinkType.Link,
             Href = "#labelPosition-enum",
@@ -191,8 +191,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "Label",
-            Type = "string",
-            DefaultValue = "string.Empty",
+            Type = "string?",
+            DefaultValue = "null",
             Description = "Descriptive label for the number field, rendered next to it (per LabelPosition) and read by screen readers.",
         },
         new()
@@ -290,6 +290,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "PageStep",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The amount by which the value changes when the user presses the PageUp/PageDown keys, providing a larger jump than the regular Step. It is a string to support any numeric type of the field; when not provided (or unparsable), PageUp/PageDown change the value by 10 times the Step.",
+        },
+        new()
+        {
             Name = "ParsingErrorMessage",
             Type = "string",
             DefaultValue="The {0} field is not valid.",
@@ -353,7 +360,14 @@ public partial class BitNumberFieldDemo
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types).",
+            Description = "Whether to show the clear button when the BitNumberField has a value, resetting the value to null with a single click (most useful with nullable value types). The button is not rendered while the field is read-only or has no value.",
+        },
+        new()
+        {
+            Name = "SnapToStep",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Snaps the committed value to the nearest multiple of the Step (anchored at the Min when one is provided), so typed values align to the same grid that the increment/decrement stepping produces. Without it, typed values are kept as-is (aside from min/max clamping and precision rounding).",
         },
         new()
         {
@@ -662,6 +676,11 @@ public partial class BitNumberFieldDemo
     private double fractionalStepValue;
     private int stepMinMaxValue;
     private int fastSpinValue;
+    private int pageStepValue;
+
+    private int snapValue;
+    private int snapAnchoredValue = 2;
+    private double snapFractionValue;
 
     private double oneWayValue;
     private double twoWayValue;

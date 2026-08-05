@@ -108,6 +108,9 @@ private int minMaxValue;";
 <BitNumberField Label=""Step & Min & Max (5, 0, 25)"" Step=""5"" Min=""0"" Max=""25"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""stepMinMaxValue"" />
 <div>value: [@stepMinMaxValue]</div>
 
+<BitNumberField Label=""PageStep = 20 (press PageUp/PageDown)"" PageStep=""20"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""pageStepValue"" />
+<div>value: [@pageStepValue]</div>
+
 <BitNumberField Label=""Fast continuous spin (hold a button)"" Mode=""BitSpinButtonMode.Compact""
                 ContinuousSpinDelay=""200"" ContinuousSpinInterval=""25""
                 @bind-Value=""fastSpinValue"" />
@@ -116,6 +119,7 @@ private int minMaxValue;";
 private int stepValue;
 private double fractionalStepValue;
 private int stepMinMaxValue;
+private int pageStepValue;
 private int fastSpinValue;";
 
     private readonly string example10RazorCode = @"
@@ -256,6 +260,20 @@ private double doubleValue = 1.5;
 private decimal decimalValue = 0.05m;";
 
     private readonly string example19RazorCode = @"
+<BitNumberField Label=""Step = 5 (typing 7 commits 5)"" SnapToStep Step=""5"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""snapValue"" />
+<div>value: [@snapValue]</div>
+
+<BitNumberField Label=""Min = 2 & Step = 3 (typing 7 commits 8)"" SnapToStep Min=""2"" Step=""3"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""snapAnchoredValue"" />
+<div>value: [@snapAnchoredValue]</div>
+
+<BitNumberField Label=""Fractional step (typing 0.3 commits 0.25)"" SnapToStep Step=""0.25"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""snapFractionValue"" />
+<div>value: [@snapFractionValue]</div>";
+    private readonly string example19CsharpCode = @"
+private int snapValue;
+private int snapAnchoredValue = 2;
+private double snapFractionValue;";
+
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>Component Icon (FontAwesome):</div>
@@ -280,7 +298,7 @@ private decimal decimalValue = 0.05m;";
                 IncrementIcon=""@BitIconInfo.Bi(""plus-circle-fill"")""
                 DecrementIcon=""@BitIconInfo.Bi(""dash-circle-fill"")"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -376,7 +394,7 @@ private decimal decimalValue = 0.05m;";
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(classesValue is null ? string.Empty : "" custom-label-top"")}"" })"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <CascadingValue Value=""BitDir.Rtl"">
 
     <BitNumberField Label=""برچسب در بالا"" TValue=""int"" Mode=""BitSpinButtonMode.Compact"" />
