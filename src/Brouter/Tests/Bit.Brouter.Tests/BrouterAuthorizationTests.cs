@@ -122,4 +122,27 @@ public class BrouterAuthorizationTests : BunitTestContext
             () => RenderComponent<DiscoveryHost>());
         StringAssert.Contains(exception.Message, "authorization");
     }
+
+    [TestMethod]
+    public async Task Authorize_page_reached_by_the_late_registration_rematch_fails_closed()
+    {
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/secure");
+
+        // Mount at /secure before the route exists: nothing matches, so no auth check runs yet.
+        var cut = RenderComponent<LateRegisteredAuthHost>(p => p.Add(h => h.ShowSecure, false));
+
+        // Reveal the [Authorize] route. It now reaches the screen through the rematch rather than
+        // the boot navigation - a different pipeline entry point that must fail closed just the
+        // same. The rematch runs as a component lifecycle task (BrouterRematchRunner), so the
+        // fail-closed throw reaches the renderer instead of being swallowed by a detached
+        // continuation - which would leave the developer with no signal at all.
+        cut.Render(p => p.Add(h => h.ShowSecure, true));
+
+        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsInstanceOfType<InvalidOperationException>(exception);
+        StringAssert.Contains(exception.Message, "authorization");
+        Assert.AreEqual(0, cut.FindAll("[data-testid=secure]").Count,
+            "an [Authorize] page must never render without an authorization check");
+    }
 }

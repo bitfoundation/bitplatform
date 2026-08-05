@@ -396,8 +396,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // per-mount burst) never get here - the flag is still false - so startup cost is zero.
         if (_initialNavigationStarted)
         {
-            _rematchRequested = true;
-            ScheduleLateRegistrationRematch();
+            RequestLateRegistrationRematch();
         }
     }
     internal void UnregisterRoute(Broute route)
@@ -424,6 +423,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         _routesDirty = true;
         _routeRegistrationVersion++;
+
+        // Deliberately asymmetric with RegisterRoute: no rematch is requested here. Unregistration
+        // runs from Broute.Dispose, which also fires while the whole router (or the whole circuit)
+        // is being torn down, so re-entering the navigation pipeline from it is not safe in general.
+        // The consequence is that removing the currently-committed route leaves the router showing
+        // nothing rather than falling back to NotFound until the next navigation - long-standing
+        // behavior, not introduced with the rematch. Fixing it needs a teardown-aware signal.
     }
 
     /// <summary>
@@ -679,11 +685,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // against the grown route set, or its finally re-schedules the check once idle).
     private int _processingNavigation;
 
-    // Late-registration rematch bookkeeping (see RegisterRoute / ScheduleLateRegistrationRematch).
+    // Late-registration rematch bookkeeping (see RegisterRoute / RequestLateRegistrationRematch).
     // _rematchRequested: a post-boot registration happened and hasn't been evaluated yet.
-    // _rematchScheduled: an evaluation continuation is already queued (debounce).
+    // _rematchRenderPending: a render carrying the request to BrouterRematchRunner is already
+    // queued (debounce - every registration until that render lands folds into one evaluation).
+    // _rematchVersion: bumped per request so the runner always receives a changed parameter set.
     private bool _rematchRequested;
-    private bool _rematchScheduled;
+    private bool _rematchRenderPending;
+    private long _rematchVersion;
 
     /// <summary>
     /// Runs the initial navigation for the URL the app mounted at. Called by the boot navigator
@@ -711,44 +720,82 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Debounced evaluator for routes that registered after the initial navigation: once the
-    /// current render drain (and any in-flight navigation pipeline) is done, re-select the winner
-    /// for the current URL and - only when the grown route set actually changes it - re-run the
-    /// navigation so the screen reflects the route set that exists NOW. This is what turns a
-    /// too-early boot (see <see cref="BrouterInitializer"/>'s quiet-round heuristic), an async
-    /// wrapper finally mounting its routes, or a conditionally-rendered route appearing at its own
-    /// URL from "stuck until the next navigation" into a self-correcting extra render pass.
+    /// Flags that a post-boot registration needs the winner re-evaluated, and renders so
+    /// <see cref="BrouterRematchRunner"/> picks the request up as a parameter change.
     /// </summary>
-    private void ScheduleLateRegistrationRematch()
+    /// <remarks>
+    /// Routing the evaluation through a child component's lifecycle - rather than a detached
+    /// <c>InvokeAsync</c> continuation - is what makes the correction visible to static
+    /// prerendering. The renderer only waits (and only routes exceptions) for tasks returned from
+    /// component lifecycle methods; a bare dispatcher continuation is neither awaited by
+    /// <c>WaitForQuiescenceAsync</c> nor error-handled, so the prerenderer would serialize its HTML
+    /// before the correction ran - emitting an empty router for exactly the deep-wrapper case the
+    /// rematch exists to rescue - and any exception the pipeline deliberately rethrows (an SSR
+    /// redirect's <c>NavigationException</c>, a fail-closed <c>[Authorize]</c> guard) would vanish.
+    /// </remarks>
+    private void RequestLateRegistrationRematch()
     {
-        if (_rematchScheduled) return;
-        _rematchScheduled = true;
-        _ = InvokeAsync(async () =>
-        {
-            // One yield coalesces a whole render-drain's worth of registrations (an @if revealing
-            // several routes, a wrapper mounting a subtree) into a single evaluation.
-            await Task.Yield();
-            _rematchScheduled = false;
-            if (_disposed) return;
+        _rematchRequested = true;
 
-            // A pipeline is mid-flight: leave _rematchRequested set - its finally re-schedules
-            // this check once the router is idle, and evaluating against a half-committed chain
-            // here would produce a false winner-diff that supersedes (and so restarts) it.
-            if (_processingNavigation > 0) return;
-            _rematchRequested = false;
+        // Debounce: one render is enough to hand the runner the request, and every registration
+        // arriving before that render lands is folded into the same evaluation.
+        if (_rematchRenderPending || _disposed) return;
+        _rematchRenderPending = true;
+        _rematchVersion++;
+        StateHasChanged();
+    }
 
-            // Pure winner probe (SelectWinner never mutates): the registration only matters when
-            // it changes the outcome for the URL already on screen. Reference-comparing against
-            // the committed leaf also covers the not-found case (null == null -> no-op).
-            var winnerMatch = SelectWinner(CurrentLocation);
-            var committedLeaf = _committedChain.Length > 0 ? _committedChain[^1] : null;
-            if (ReferenceEquals(winnerMatch?.Route, committedLeaf)) return;
+    /// <summary>
+    /// Evaluator for routes that registered after the initial navigation, invoked from
+    /// <see cref="BrouterRematchRunner"/>'s lifecycle: once the current render drain (and any
+    /// in-flight navigation pipeline) is done, re-select the winner for the current URL and - only
+    /// when the grown route set actually changes it - re-run the navigation so the screen reflects
+    /// the route set that exists NOW. This is what turns a too-early boot (see
+    /// <see cref="BrouterInitializer"/>'s quiet-round heuristic), an async wrapper finally mounting
+    /// its routes, or a conditionally-rendered route appearing at its own URL from "stuck until the
+    /// next navigation" into a self-correcting extra render pass.
+    /// </summary>
+    internal Task RunPendingRematchAsync()
+    {
+        // Synchronous fast path: the runner's parameters are supplied on every render of this
+        // router, and almost none of those carry a pending request. Returning an already-completed
+        // task keeps them off the renderer's pending-task list entirely.
+        if (_rematchRequested is false || _disposed) return Task.CompletedTask;
 
-            // Same-URL re-navigation: routes present in both chains keep their instances
-            // (renavigation semantics), so only the corrected part of the tree re-renders.
-            // Replace: no history entry is involved in a route-set correction.
-            await ProcessNavigationAsync(CurrentLocation, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Replace);
-        });
+        return RunPendingRematchCoreAsync();
+    }
+
+    private async Task RunPendingRematchCoreAsync()
+    {
+        // One yield coalesces a whole render-drain's worth of registrations (an @if revealing
+        // several routes, a wrapper mounting a subtree) into a single evaluation, and lets the
+        // declaration cascade finish before we judge the winner. Unlike a detached continuation,
+        // this yield stays inside the prerenderer's quiescence wait: the renderer is awaiting THIS
+        // task, so the resumption is guaranteed to happen before the HTML is serialized.
+        await Task.Yield();
+
+        _rematchRenderPending = false;
+        if (_disposed) return;
+
+        // A pipeline is mid-flight: leave _rematchRequested set - its finally re-requests this
+        // check once the router is idle, and evaluating against a half-committed chain here would
+        // produce a false winner-diff that supersedes (and so restarts) it.
+        if (_processingNavigation > 0) return;
+        // A concurrent runner generation may have consumed the request while this one was yielding.
+        if (_rematchRequested is false) return;
+        _rematchRequested = false;
+
+        // Pure winner probe (SelectWinner never mutates): the registration only matters when
+        // it changes the outcome for the URL already on screen. Reference-comparing against
+        // the committed leaf also covers the not-found case (null == null -> no-op).
+        var winnerMatch = SelectWinner(CurrentLocation);
+        var committedLeaf = _committedChain.Length > 0 ? _committedChain[^1] : null;
+        if (ReferenceEquals(winnerMatch?.Route, committedLeaf)) return;
+
+        // Same-URL re-navigation: routes present in both chains keep their instances
+        // (renavigation semantics), so only the corrected part of the tree re-renders.
+        // Replace: no history entry is involved in a route-set correction.
+        await ProcessNavigationAsync(CurrentLocation, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Replace);
     }
 
     // The active router-level error boundary state (see RenderNavigationError). Non-null only when a
@@ -1391,6 +1438,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             b.OpenComponent<BrouterInitializer>(5);
             b.AddAttribute(6, nameof(BrouterInitializer.Router), this);
             b.AddAttribute(7, nameof(BrouterInitializer.ObservedVersion), _routeRegistrationVersion);
+            b.CloseComponent();
+
+            // Late-registration rematch runner: a permanently-mounted, never-rendering component
+            // whose only job is to give RunPendingRematchAsync a component lifecycle to return its
+            // task from, so the renderer awaits the correction (and error-handles it) instead of it
+            // running detached - see RequestLateRegistrationRematch. PendingVersion changes on every
+            // request so the parameter set is guaranteed to differ.
+            b.OpenComponent<BrouterRematchRunner>(8);
+            b.AddAttribute(9, nameof(BrouterRematchRunner.Router), this);
+            b.AddAttribute(10, nameof(BrouterRematchRunner.PendingVersion), _rematchVersion);
             b.CloseComponent();
             }));
             bo.CloseComponent();
@@ -2336,11 +2393,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
                     // During static server rendering / prerender, NavigationManager.NavigateTo throws
                     // NavigationException as the framework's redirect signal (a loader may redirect,
-                    // e.g. an auth gate). It must unwind out of the boot navigator's lifecycle (see
-                    // BrouterInitialNavigator) so the endpoint can
-                    // issue the HTTP redirect; swallowing it into OnError would drop the redirect
-                    // entirely. Scan for it before any other error handling so an SSR redirect wins
-                    // over a sibling loader's failure (root-most redirect wins if several threw).
+                    // e.g. an auth gate). It must unwind out of the lifecycle method that started
+                    // this pipeline (BrouterInitialNavigator's OnInitializedAsync for the boot
+                    // navigation, BrouterRematchRunner's OnParametersSetAsync for a late-registration
+                    // correction) so the endpoint can issue the HTTP redirect; swallowing it into
+                    // OnError would drop the redirect entirely. Scan for it before any other error
+                    // handling so an SSR redirect wins over a sibling loader's failure (root-most
+                    // redirect wins if several threw).
                     // Interactive NavigateTo never throws, so this is inert outside SSR.
                     foreach (var (_, error) in results)
                     {
@@ -2549,8 +2608,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (NavigationException)
         {
             // SSR/prerender redirect signal (see the loader catch above). Let it propagate out of
-            // the boot navigator's lifecycle (see BrouterInitialNavigator) so the framework can
-            // turn it into an HTTP redirect. A guard or
+            // the lifecycle method that started this pipeline (see BrouterInitialNavigator /
+            // BrouterRematchRunner) so the framework can turn it into an HTTP redirect. A guard or
             // OnNavigating handler that redirects via NavigationManager during prerender lands here.
             throw;
         }
@@ -2612,13 +2671,15 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             }
 
             // A route registered while this pipeline was in flight and the deferred rematch check
-            // punted (see ScheduleLateRegistrationRematch): now that the router is idle again,
-            // re-schedule the evaluation. Runs on the dispatcher like the rest of this finally,
-            // and only fires from the outermost frame of a re-entrant pipeline stack.
+            // punted (see RunPendingRematchCoreAsync): now that the router is idle again, re-request
+            // the evaluation. Runs on the dispatcher like the rest of this finally, and only fires
+            // from the outermost frame of a re-entrant pipeline stack. The render this queues is
+            // itself part of the work the prerenderer waits for, so the correction still lands
+            // before static HTML is serialized.
             _processingNavigation--;
             if (_processingNavigation == 0 && _rematchRequested && _disposed is false)
             {
-                ScheduleLateRegistrationRematch();
+                RequestLateRegistrationRematch();
             }
         }
     }

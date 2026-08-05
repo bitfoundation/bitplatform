@@ -40,6 +40,8 @@ namespace Bit.Brouter;
 /// Deeper wrapper stacks make the navigator fire before every route registered - which is exactly
 /// the late-registration case <see cref="Brouter.RegisterRoute"/>'s rematch handles: the outcome is
 /// corrected in a follow-up batch (no worse than the old two-batch mount), never silently wrong.
+/// That correction is owned by <see cref="BrouterRematchRunner"/>'s lifecycle precisely so it holds
+/// under prerendering too - see that type's remarks for why a detached continuation does not.
 /// </para>
 /// <para>
 /// Once <see cref="Brouter.InitialNavigationStarted"/> is true every sentinel renders empty, so the
@@ -151,4 +153,39 @@ internal sealed class BrouterInitialNavigator : ComponentBase
     [Parameter] public Brouter Router { get; set; } = default!;
 
     protected override Task OnInitializedAsync() => Router.RunInitialNavigationAsync();
+}
+
+/// <summary>
+/// Permanently-mounted, never-rendering sibling of the <see cref="BrouterInitializer"/> chain whose
+/// only job is to own the lifecycle task for a late-registration rematch (see
+/// <c>Brouter.RequestLateRegistrationRematch</c>).
+/// </summary>
+/// <remarks>
+/// <para>
+/// A rematch cannot be fired from a detached <c>InvokeAsync</c> continuation, because the renderer
+/// only tracks tasks returned from component lifecycle methods. Static prerendering awaits exactly
+/// those (<c>WaitForQuiescenceAsync</c>) before serializing HTML, and routes exceptions from exactly
+/// those to its error handling. A detached continuation gets neither: the prerenderer would emit an
+/// empty router for the very deep-wrapper case the rematch exists to rescue, and an SSR redirect's
+/// <c>NavigationException</c> or a fail-closed <c>[Authorize]</c> guard would be swallowed silently.
+/// </para>
+/// <para>
+/// Routing the work through <c>OnParametersSetAsync</c> instead puts it on exactly the same footing
+/// as the initial navigation (which <see cref="BrouterInitialNavigator"/> returns from
+/// <c>OnInitializedAsync</c>): awaited by prerendering, and surfaced through the renderer on
+/// failure. The router re-renders on every request so this component's parameters are re-supplied;
+/// requests that turn out to be no-ops cost a single completed-task return.
+/// </para>
+/// </remarks>
+internal sealed class BrouterRematchRunner : ComponentBase
+{
+    [Parameter] public Brouter Router { get; set; } = default!;
+
+    /// <summary>
+    /// Bumped by every rematch request so the supplied parameter set always differs from the last -
+    /// the request itself lives in the router's state, this only guarantees delivery.
+    /// </summary>
+    [Parameter] public long PendingVersion { get; set; }
+
+    protected override Task OnParametersSetAsync() => Router.RunPendingRematchAsync();
 }
