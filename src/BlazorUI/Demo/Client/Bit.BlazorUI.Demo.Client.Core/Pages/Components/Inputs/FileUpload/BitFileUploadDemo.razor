@@ -1,12 +1,12 @@
-@page "/components/fileupload"
+﻿@page "/components/fileupload"
 @page "/components/file-upload"
 
 <PageOutlet Url="components/fileupload"
             Title="FileUpload"
-            Description="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL." />
+            Description="An upload component that sends files to a server endpoint over HTTP, with browse, drag-and-drop, paste, folder and camera selection, chunked transfers, progress, retries and validation." />
 
 <DemoPage Name="FileUpload"
-          Description="BitFileUpload component wraps the HTML file input element(s) and uploads them to a given URL. The files can be removed by specifying the URL they have been uploaded. Moreover, it provides several other options including single or multiple or automatic file uploading. By automatic, it means the files can be automatically uploaded after being selected. It is possible to specify a maximum size for each file if need be. Additionally, by specifying file extensions, the files can be restricted to certain types."
+          Description="BitFileUpload is the transport half of working with files: it takes the files the user hands over and uploads them to a server endpoint over HTTP. Files arrive through the file dialog, a drag out of the OS, a clipboard paste, a whole folder or the camera on a phone, and go out automatically on selection or on demand, as a single request per file or in chunks whose size can adapt to the connection speed, with a concurrency limit keeping the rest in a queue. Every file reports its own progress, speed and time remaining and can be paused, resumed, canceled, retried - manually, or automatically, resuming from the last chunk that made it - and removed from the server again. Selections are validated on arrival against size, count, extension, MIME type, duplicate, image dimension and custom rules; rejected files stay visible with an explanatory message and are never sent. The upload and remove requests are customizable with headers, query strings, form fields, an HTTP method, credentials and a timeout, either fixed at selection time or minted per request by an async provider, which is what makes an expiring token or a presigned URL work over a long transfer. The whole control is themable and templatable, every built-in message and icon can be replaced, and the state changes are announced to screen readers. For plain file selection without any uploading, reach for the BitFileInput component instead."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -14,160 +14,831 @@
           GitHubUrl="Inputs/FileUpload/BitFileUpload.razor"
           GitHubDemoUrl="Inputs/FileUpload/BitFileUploadDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>Files can be uploaded after selecting them.</div><br />
+        <div>
+            Out of the box the BitFileUpload offers three ways to hand a file over: click the browse button to open
+            the file dialog, drag a file out of the OS and drop it anywhere on the component, or focus the component
+            and paste a file from the clipboard. The selected file appears in the built-in file list with its name,
+            its human-readable size and an upload button that starts sending it to the <b>UploadUrl</b>; while files
+            hover over the component the browse button turns into a dashed drop indicator. During the upload the item
+            shows a progress bar with pause and cancel buttons, and once it settles, a status message reports the
+            outcome.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" />
     </DemoExample>
 
-    <DemoExample Title="Multiple" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <div>Multiple files can be selected.</div><br />
+    <DemoExample Title="AllowDrop & AllowPaste" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            The two alternative selection routes can be switched off independently. <b>AllowDrop</b> controls dragging
+            files out of the OS onto the component: turning it off keeps the drop from being handled and shows a
+            "no drop" cursor, while still swallowing the event so the browser does not navigate away to the dropped
+            file and lose the page state. <b>AllowPaste</b> controls pasting files from the clipboard; a paste is only
+            delivered to the component while the focus is inside it, so the browse button has to be focused first.
+            Both take effect immediately when toggled at runtime, as the checkboxes below demonstrate.
+        </div>
+        <br />
+        <BitCheckbox @bind-Value="allowDrop" Label="AllowDrop" />
+        <br />
+        <BitCheckbox @bind-Value="allowPaste" Label="AllowPaste" />
+        <br />
+        <BitFileUpload Label="Select, drop or paste files" UploadUrl="@UploadUrl" AllowDrop="allowDrop" AllowPaste="allowPaste" />
+    </DemoExample>
+
+    <DemoExample Title="Description" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            Telling the user the rules before they run into them is the single biggest usability win an uploader can
+            offer. <b>Description</b> renders a short hint under the browse button and - the part that is easy to
+            forget - wires it to that button through aria-describedby, so a screen reader reads the constraints out
+            together with the button instead of leaving them to be discovered by trial and error. Spell out the
+            accepted types and the size ceiling there, matching whatever <b>Accept</b>, <b>AllowedExtensions</b> and
+            <b>MaxSize</b> actually enforce. <b>DescriptionTemplate</b> takes over when the hint needs markup of its
+            own, such as the icon below, and <b>Classes.Description</b> / <b>Styles.Description</b> restyle it.
+        </div>
+        <br />
+        <BitFileUpload Label="Browse for a document" UploadUrl="@UploadUrl" Accept=".pdf,.docx" MaxSize="1024 * 1024 * 5"
+                       Description="PDF or DOCX, up to 5 MB." />
+        <br />
+        <BitFileUpload Label="Browse for an image" UploadUrl="@UploadUrl" Accept="image/*" MaxSize="1024 * 1024 * 2">
+            <DescriptionTemplate>
+                <i class="bit-icon bit-icon--Info" />
+                <span>Images only. Up to <b>2 MB</b>.</span>
+            </DescriptionTemplate>
+        </BitFileUpload>
+    </DemoExample>
+
+    <DemoExample Title="Multiple" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>Multiple</b> lets the file dialog hand over several files at once and lets a single drop or paste carry
+            several files, each uploading independently with its own progress, pause, cancel and status. Without it
+            the dialog is limited to one file and only the first file of a multi-file drop is taken.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple />
     </DemoExample>
 
-    <DemoExample Title="AutoUpload" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>The BitFileUpload can automatically starts the upload after file selection is done.</div><br />
+    <DemoExample Title="AutoUpload" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>AutoUpload</b> starts sending the files the moment they are selected, skipping the per-file upload
+            button entirely - the pattern to reach for when selection itself expresses the intent to upload, like an
+            avatar picker or an attachment area.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoUpload />
     </DemoExample>
 
-    <DemoExample Title="AutoReset" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Automatically resets the BitFileUpload state each time before browsing files.</div><br />
+    <DemoExample Title="AutoReset" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>AutoReset</b> clears the file list and the upload state just before the file dialog opens, so every
+            browse starts from a clean slate - the list empties even if the dialog is then cancelled. Handy when a
+            stale, already-uploaded selection lingering behind the dialog would be misleading.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" AutoReset />
     </DemoExample>
 
-    <DemoExample Title="Append" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>When selected, additional files will be appended to the existing list without overwriting previous selections.</div><br />
+    <DemoExample Title="Append" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            A new selection normally replaces whatever is in the list. <b>Append</b> keeps the existing files - along
+            with their upload state - and adds the new selection to the end instead, letting the user build the batch
+            up over several rounds of browsing, dropping or pasting.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Append />
     </DemoExample>
 
-    <DemoExample Title="MaxSize" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>The file size can be limited using the MaxSize parameter.</div><br />
-        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1" />
+    <DemoExample Title="AllowDuplicates" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            Building a batch up over several rounds of browsing makes it easy to pick the same file twice without
+            noticing, and uploading it twice is rarely what anyone meant. Turning <b>AllowDuplicates</b> off rejects
+            a newly selected file that matches one already in the list - by name, size and last modified time, which
+            is as close to an identity as the browser exposes for a picked file - showing the
+            <b>DuplicateErrorMessage</b> under it instead of sending it a second time. The rejection is not final:
+            remove the file it duplicates and the copy becomes eligible again, since the rule is re-evaluated over
+            the whole list on every change. Try selecting the same file twice below.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple Append
+                       AllowDuplicates="false" ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="AllowedExtensions" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Limits file browsing by the provided file extensions.</div><br />
+    <DemoExample Title="Size limits" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>MaxSize</b> and <b>MinSize</b> bound the size of each file in bytes, while <b>MaxTotalSize</b> bounds
+            what the whole list adds up to - the limit that actually matches a per-request or per-user storage quota,
+            which a per-file ceiling alone cannot express. A file outside the allowed range is marked as not allowed
+            right at selection time - with the <b>MaxSizeErrorMessage</b>, <b>MinSizeErrorMessage</b> or
+            <b>MaxTotalSizeErrorMessage</b> shown under it - and it is never sent to the server; the file stays
+            visible in the list so the user can see exactly what was rejected and why instead of it disappearing
+            silently. Only the files that pass the other validations consume the total-size budget, and a file turned
+            away by it becomes eligible again as soon as removals free up room.
+        </div>
+        <br />
+        <div>Max 1 MB per file:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1" />
+        <br /><br />
+        <div>Min 1 KB per file:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MinSize="1024" />
+        <br /><br />
+        <div>Max 2 MB in total across the batch:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple Append
+                       MaxTotalSize="1024 * 1024 * 2" ShowRemoveButton RemoveUrl="@RemoveUrl" />
+        <br /><br />
+        <div>Custom error message:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" MaxSize="1024 * 1024 * 1"
+                       MaxSizeErrorMessage="The file is too big! Please select a file smaller than 1 MB." />
+    </DemoExample>
+
+    <DemoExample Title="Accept & AllowedExtensions" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            The two work at different moments and are both worth setting. <b>Accept</b> is passed straight to the
+            accept attribute of the underlying input, which only hints the <i>file dialog</i> to pre-filter what it
+            offers - it is a convenience, never a guarantee, since a drop, a paste or a "show all files" switch walks
+            right past it. <b>AllowedExtensions</b> is the actual rule: it checks every file however it arrived and
+            marks the mismatches as not allowed with the <b>NotAllowedExtensionErrorMessage</b>, so they stay visible
+            in the list with their reason and are never sent.
+        </div>
+        <br />
+        <div>
+            Its entries are matched leniently - an extension may be written with or without its leading dot and in
+            any casing - and an entry containing a slash is treated as a MIME type instead, with a trailing wildcard
+            like <b>image/*</b> covering a whole group. When <b>Accept</b> is not set, the list also generates the
+            accept attribute on its own, which is why setting <b>AllowedExtensions</b> alone is usually all you need;
+            set <b>Accept</b> explicitly only when the dialog filter should differ from the rule.
+        </div>
+        <br />
+        <div>Accept only (the dialog filters, but a dropped file of any type is still taken and uploaded):</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Accept=".png,.jpg" />
+        <br /><br />
+        <div>AllowedExtensions (the rule, which also generates the accept attribute):</div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        AllowedExtensions="@(new List<string> { ".gif",".jpg",".mp4" })" />
+        <br /><br />
+        <div>MIME types (every image plus PDFs):</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       AllowedExtensions="@(new List<string> { "image/*", "application/pdf" })" />
     </DemoExample>
 
-    <DemoExample Title="Removable" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div>Enables the remove functionality of the BitFileUpload.</div><br />
+    <DemoExample Title="MaxCount" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            <b>MaxCount</b> caps how many files the list can hold - 3 in this example. Files arriving beyond the cap
+            stay visible but are marked as not allowed with the <b>MaxCountErrorMessage</b> and never uploaded, so
+            the user sees exactly which files did not make it instead of them disappearing silently. Only files that
+            pass the other validations consume a slot, so a file rejected for its size or type never pushes a good
+            file over the cap, and a file already uploading or uploaded keeps the slot it holds rather than being
+            taken back by a later selection. Combined with <b>Append</b> the cap applies to the whole accumulated
+            list, not just a single selection - and since the cap is re-evaluated on every change, removing a file
+            takes the next one waiting behind it back in.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple Append MaxCount="3"
+                       ShowRemoveButton RemoveUrl="@RemoveUrl" />
+    </DemoExample>
+
+    <DemoExample Title="FileValidator" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            When the built-in checks are not enough, <b>FileValidator</b> runs a custom function for each newly
+            selected file after those checks pass. Returning an error message marks the file as not allowed and shows
+            the message under it - the file is never uploaded; returning null accepts the file. Any rule expressible
+            over the file's metadata works - this example rejects empty (zero-byte) files. A validator that throws
+            only invalidates its own file, using the exception message as the error text, rather than aborting the
+            whole selection.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple FileValidator="@ValidateEmptyFile" />
+    </DemoExample>
+
+    <DemoExample Title="Directory" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>Directory</b> turns the picker into a folder picker: the dialog asks for a directory instead of a file
+            and every file inside it - and inside its subfolders, at any depth - lands in the list as a separate
+            upload with its own progress and status. It does the same for a drag and drop, walking a dropped folder
+            into its contents rather than ignoring it, which the plain file input cannot do on its own. The browser
+            warns the user before handing a whole folder over, and the usual validations still apply to every file
+            that comes out of it, so pairing it with <b>AllowedExtensions</b>, <b>MaxCount</b> or <b>MaxTotalSize</b>
+            is what keeps a stray folder from turning into a thousand uploads. Pair it with <b>ConcurrentUploads</b>
+            to keep the transfers orderly.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop a folder" UploadUrl="@UploadUrl" Directory Multiple
+                       ConcurrentUploads="3" MaxCount="20" />
+    </DemoExample>
+
+    <DemoExample Title="Capture" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            On a phone or a tablet, <b>Capture</b> asks the browser to open the camera or the microphone directly
+            instead of the file browser, which turns the uploader into a one-tap "take a photo and send it" control.
+            <b>"user"</b> asks for the front (selfie) camera and <b>"environment"</b> for the rear one; which one is
+            actually honored is up to the device, and a desktop browser ignores the attribute altogether and opens
+            the usual file dialog. Combine it with <b>Accept</b> to say what kind of capture is wanted - an image, a
+            video or an audio recording - and with <b>AutoUpload</b> so the shot goes out the moment it is taken.
+        </div>
+        <br />
+        <BitFileUpload Label="Take a photo" UploadUrl="@UploadUrl" Accept="image/*" Capture="environment" AutoUpload
+                       Description="Opens the rear camera on a mobile device." />
+        <br />
+        <BitFileUpload Label="Record a video" UploadUrl="@UploadUrl" Accept="video/*" Capture="user"
+                       Description="Opens the front camera on a mobile device." />
+    </DemoExample>
+
+    <DemoExample Title="Preview" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            A file name is a poor way to tell one photo from another, so <b>ShowPreview</b> puts a thumbnail of every
+            selected image at the head of its file item, letting the user confirm they picked the right picture
+            before a single byte goes out. The thumbnail is produced entirely in the browser from an object URL, so
+            nothing is uploaded to render it and non-image files simply keep the plain item. The URL is also handed
+            back as soon as the file is removed or the component is reset, which is what keeps a long-lived page from
+            holding every picture ever picked in memory. <b>BitFileInfo.PreviewUrl</b> exposes the same URL for a
+            custom <b>FileViewTemplate</b>, and <b>Classes.Preview</b> / <b>Styles.Preview</b> restyle the built-in
+            thumbnail.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop images" UploadUrl="@UploadUrl" Multiple ShowPreview
+                       Accept="image/*" ShowRemoveButton RemoveUrl="@RemoveUrl"
+                       Description="The selected images are previewed right in the list." />
+    </DemoExample>
+
+    <DemoExample Title="Image dimensions" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <div>
+            A size limit in bytes is a poor way to say "no tiny avatars" or "nothing bigger than 4K": what matters
+            for an image is its pixels, and a heavily compressed photo can be small in bytes and enormous on screen.
+            <b>ReadImageDimensions</b> decodes every selected image right in the browser and fills the
+            <b>Width</b> and <b>Height</b> of its <b>BitFileInfo</b> before the validations run, so a
+            <b>FileValidator</b> can turn an image away for its dimensions without a single byte leaving the
+            machine - and the rejected file stays in the list with its reason, exactly like any other rejection.
+        </div>
+        <br />
+        <div>
+            Decoding is not free: a folder full of photos costs time and memory to walk through, which is why it is
+            off by default and why the decoding runs a few images at a time rather than all at once. Non-image
+            files, and images the browser cannot decode, simply keep both values null - a validator has to treat
+            that as "unknown" rather than as a failure. The values are also there for a custom
+            <b>FileViewTemplate</b> to render, as the second uploader below does.
+        </div>
+        <br />
+        <div>Between 200x200 and 4000x4000 pixels:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop images" UploadUrl="@UploadUrl" Multiple ShowPreview
+                       Accept="image/*" ReadImageDimensions FileValidator="@ValidateImageDimensions"
+                       Description="Images between 200x200 and 4000x4000 pixels." />
+        <br /><br />
+        <div>Showing the dimensions of each image:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop images" UploadUrl="@UploadUrl" Multiple
+                       Accept="image/*" ReadImageDimensions>
+            <FileViewTemplate Context="file">
+                <div class="dimensions-item">
+                    <span>@file.Name</span>
+                    <span>@(file.Width is null ? "unknown size" : $"{file.Width} x {file.Height}")</span>
+                </div>
+            </FileViewTemplate>
+        </BitFileUpload>
+    </DemoExample>
+
+    <DemoExample Title="Removable" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            <b>ShowRemoveButton</b> puts a remove button on each settled file item. A file whose bytes never reached
+            the server is simply dropped from the view, while a file that has (partially or fully) uploaded is
+            deleted from the server through a DELETE request to the <b>RemoveUrl</b>, carrying the file name as a
+            query string and the file id in the <b>BIT_FILE_ID</b> header; a non-success response marks the file with
+            the <b>FailedRemoveMessage</b> instead of pretending it is gone. <b>RemoveButtonTitle</b> localizes the
+            button tooltip and its accessible label.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>Different events can be configured for the upload process.</div><br />
-        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
-                       OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All File Uploaded")"
+    <DemoExample Title="Events" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <div>
+            Every stage of the process surfaces through a callback: <b>OnChange</b> fires whenever a file's status
+            changes, <b>OnInvalid</b> right after it whenever a selection carries rejected files - handy for driving
+            a summary or blocking a submit button - <b>OnUploading</b> right before a file's first request (the
+            natural place to attach per-file HTTP headers like below), <b>OnProgress</b> on every progress tick,
+            <b>OnUploadComplete</b> / <b>OnUploadFailed</b> when a file settles, <b>OnRemoveComplete</b> /
+            <b>OnRemoveFailed</b> for removals, and <b>OnAllUploadsComplete</b> once the whole batch has reached a
+            terminal state, which is what drives the message below. Try a file over 1 MB to see <b>OnInvalid</b> at
+            work.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple MaxSize="1024 * 1024 * 1"
+                       OnAllUploadsComplete="@(() => onAllUploadsCompleteText = "All files are uploaded")"
+                       OnInvalid="@(files => onInvalidText = $"{files.Length} file(s) rejected: {string.Join(", ", files.Select(f => f.Name))}")"
                        OnUploading="@(info => info.HttpHeaders = new Dictionary<string, string> { {"key1", "value1"} })" />
+        <br />
         <div>@onAllUploadsCompleteText</div>
+        <div>@onInvalidText</div>
     </DemoExample>
 
-    <DemoExample Title="Http requests" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-        <div>The http requests of Upload and Remove can be customized with http headers and query strings.</div><br />
+    <DemoExample Title="Http requests" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+        <div>
+            The upload and remove requests are fully customizable. Static <b>UploadRequestHttpHeaders</b> /
+            <b>RemoveRequestHttpHeaders</b> and <b>UploadRequestQueryStrings</b> / <b>RemoveRequestQueryStrings</b>
+            attach headers and query strings to the respective requests, and <b>UploadRequestFormFields</b> adds
+            extra multipart fields next to the file content itself - the target folder, an album id, a caption -
+            for the endpoints that read their metadata from the form rather than from the URL.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
                        UploadRequestQueryStrings="@(new Dictionary<string, string>{ {"qs1", "qsValue1" } })"
                        UploadRequestHttpHeaders="@(new Dictionary<string, string>{ {"header1", "value1" } })"
+                       UploadRequestFormFields="@(new Dictionary<string, string>{ {"folder", "invoices" } })"
                        RemoveRequestQueryStrings="@(new Dictionary<string, string>{ {"qs2", "qsValue2" } })"
                        RemoveRequestHttpHeaders="@(new Dictionary<string, string>{ {"header2", "value2" } })" />
+        <br /><br />
+        <div>
+            Each of the three has an async <b>...Provider</b> counterpart, and the difference is not only that it
+            is a function: a provider is invoked right before <i>every single request</i> - each file, and each
+            chunk of a chunked file - while the static values are fixed once, when the files are selected. That is
+            what makes a provider the right place for anything that expires: an access token that has to be fresh
+            when the request actually goes out, or a presigned URL good for one upload only, which
+            <b>UploadUrlProvider</b> mints for the endpoint itself. A value that never changes belongs in the
+            static parameter instead, since a provider costs an await per request.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple ChunkedUpload
+                       UploadRequestHttpHeadersProvider="@GetFreshAuthHeaders" />
+        <br />
+        <div>Requests so far: @tokenRequestCount</div>
+        <br /><br />
+        <div>
+            The transport itself is configurable too: <b>UploadRequestHttpMethod</b> switches the verb ("POST" by
+            default - a PUT is what presigned URL flows usually expect), <b>UploadFormFieldName</b> renames the form
+            field carrying the file content ("file" by default), <b>WithCredentials</b> sends cookies and
+            authorization headers along on cross-origin requests, and <b>UploadTimeout</b> fails a request - each
+            file or chunk - that takes longer than the given time. On the other side,
+            <b>RemoveRequestHttpMethod</b> does the same for the removal, whose "DELETE" some APIs would rather
+            receive as a "POST".
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+                       UploadRequestHttpMethod="POST"
+                       UploadFormFieldName="file"
+                       RemoveRequestHttpMethod="DELETE"
+                       ShowRemoveButton
+                       WithCredentials
+                       UploadTimeout="TimeSpan.FromMinutes(10)" />
     </DemoExample>
 
-    <DemoExample Title="Chunked" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>Files can be uploaded in chunks.</div><br />
+    <DemoExample Title="Chunked" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+        <div>
+            <b>ChunkedUpload</b> slices each file and sends it as a series of sequential requests instead of one
+            monolithic one, which is what makes pausing, resuming and recovering large uploads practical: a paused or
+            failed file resumes from the last successfully uploaded chunk rather than starting over, so a dropped
+            connection costs one chunk instead of the whole transfer. <b>ChunkSize</b> pins the size of each slice in
+            bytes, while <b>AutoChunkSize</b> adapts it to the observed connection speed on the fly, between 512 KB
+            and 10 MB - large enough on a fast link to keep the request overhead negligible, small enough on a slow
+            one to keep the progress moving and a retry cheap.
+        </div>
+        <br />
+        <div>
+            The server side reassembles the file, and every chunk request carries what it needs to do so reliably:
+            the <b>BIT_FILE_ID</b> header correlating the chunks of one file, and the byte range of the chunk both as
+            the standard <b>Content-Range</b> header (<b>bytes from-to/total</b>) and as the plain
+            <b>BIT_CHUNK_FROM</b>, <b>BIT_CHUNK_TO</b> and <b>BIT_FILE_SIZE</b> headers for the handlers that would
+            rather not parse it. Writing each chunk at its own offset rather than blindly appending is what makes the
+            server correct in the face of a retried chunk. Note that CORS treats these as custom request headers, so
+            a cross-origin endpoint has to allow them.
+        </div>
+        <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload />
+        <br /><br />
+        <div>Adaptive chunk sizing:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" ChunkedUpload AutoChunkSize />
     </DemoExample>
 
-    <DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>The BitFileUpload can be further customized using templates.</div><br />
-        <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl">
-            <LabelTemplate>
-                @if (FileUploadIsEmpty())
-                {
-                    <div class="browse-file" @onclick="() => bitFileUpload.Browse()">
-                        <div class="browse-file-header">
-                            <i class="bit-icon bit-icon--CloudUpload" />
-                            <div>
-                                Drag and drop or
-                            </div>
-                            <div>
-                                <strong>
-                                    Browse file
-                                </strong>
-                            </div>
-                        </div>
+    <DemoExample Title="Retry" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+        <div>
+            Networks fail, so a professional uploader plans for it. <b>AutoRetries</b> retries a failed upload
+            automatically - up to the given number of times per file, waiting <b>AutoRetryDelay</b> before each
+            attempt - and in the chunked mode every retry resumes from the last successfully uploaded chunk instead
+            of starting over. Pausing or canceling a file while a retry is still waiting out its delay wins over that
+            retry, so the outcome the user asked for is the one that stands.
+        </div>
+        <br />
+        <div>
+            Not every failure deserves another attempt, so the budget is only spent where a second try could go
+            differently: network errors, timeouts, 408, 429 and the 5xx server errors are retried, while the other
+            4xx - a 404 pointing nowhere, a 413 that is simply too large, a 401 - settle the file immediately rather
+            than repeating an identical doomed request. <b>ShouldAutoRetry</b> replaces that rule with your own,
+            receiving the file and the status code and returning whether to retry.
+        </div>
+        <br />
+        <div>
+            Once the automatic budget is exhausted the file settles as failed, and the item offers a retry button -
+            distinct from the plain upload button of a never-started file, both in its icon and in its wording, so a
+            second attempt never reads as a first one. Pressing it tries again with a fresh automatic budget, exactly
+            like calling <b>Upload</b> with that file from code does. <b>RetryIcon</b>, <b>RetryIconName</b> and
+            <b>RetryButtonTitle</b> restyle and localize it, falling back to their upload counterparts when unset.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       AutoRetries="2" AutoRetryDelay="TimeSpan.FromSeconds(1)" />
+        <br /><br />
+        <div>
+            A non-existing endpoint (404): the built-in rule does not retry it, so the file fails at once and offers
+            the manual retry button.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@NonExistingUploadUrl"
+                       AutoRetries="2" AutoRetryDelay="TimeSpan.FromSeconds(1)"
+                       RetryButtonTitle="Try again" />
+        <br /><br />
+        <div>The same endpoint with a <b>ShouldAutoRetry</b> that insists: watch it retry twice before settling.</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@NonExistingUploadUrl"
+                       AutoRetries="2" AutoRetryDelay="TimeSpan.FromSeconds(1)"
+                       ShouldAutoRetry="@((file, status) => true)"
+                       RetryButtonTitle="Try again" />
+    </DemoExample>
 
-                        <div class="browse-file-footer">
-                            <div>
-                                Max file size: 2 MB
-                            </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bpm
-                            </div>
-                        </div>
-                    </div>
-                }
-            </LabelTemplate>
-            <FileViewTemplate Context="file">
-                @if (file.Status != BitFileUploadStatus.Removed)
+    <DemoExample Title="ConcurrentUploads" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <div>
+            By default every file of a batch is put on the wire at once, which is the fastest option on a healthy
+            connection but not always the kindest one: browsers only keep a handful of connections open per host,
+            and a server behind a rate limit or a slow disk would rather not meet fifty simultaneous uploads.
+            <b>ConcurrentUploads</b> caps how many files may be in flight at the same time; the rest wait in a queue
+            in selection order and each one starts the moment a slot frees up - whether the file holding it completed,
+            failed, was canceled or was merely paused. Set it to 0 (the default) to keep starting everything at once.
+        </div>
+        <br />
+        <div>
+            The cap counts files, not requests: a chunked file holds its single slot for the whole run of its chunks
+            rather than going back to the end of the queue between two of them. Note that the queue only governs the
+            start of an upload, so a file started explicitly through <b>Upload(file)</b> waits its turn just like a
+            file of a batch does.
+        </div>
+        <br />
+        <div>
+            A file waiting for its turn says so rather than looking exactly like one nobody asked to upload: its
+            item shows the <b>QueuedUploadMessage</b> - "Waiting to upload" by default, and the place to translate
+            it - drops the start button, since starting something already on its way would do nothing, and keeps a
+            cancel button so it can be called off before its turn ever comes. <b>BitFileInfo.IsQueued</b> exposes
+            the same state to a custom <b>FileViewTemplate</b>.
+        </div>
+        <br />
+        <div>Two files at a time:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple ConcurrentUploads="2" />
+        <br /><br />
+        <div>One file at a time (a strictly sequential queue), with a translated waiting message:</div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple AutoUpload
+                       ConcurrentUploads="1" QueuedUploadMessage="In the queue…" />
+    </DemoExample>
+
+    <DemoExample Title="Overall progress" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+        <div>
+            Besides the per-file progress, the component aggregates the batch as a whole: <b>TotalSize</b> and
+            <b>TotalUploadedSize</b> expose the combined byte counts of the files that are actually being uploaded -
+            rejected and removed files do not count - and <b>OverallUploadProgress</b> turns them into a single
+            percentage, weighting every file by its size. Rendering it is a matter of re-reading those properties
+            whenever <b>OnProgress</b> or <b>OnChange</b> fires, which is exactly what drives the BitProgress below.
+            Select several files and upload them all to see the combined bar move.
+        </div>
+        <br />
+        <BitFileUpload @ref="overallFileUpload" Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple
+                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+        <br />
+        <BitProgress Percent="@(overallFileUpload?.OverallUploadProgress ?? 0)" ShowPercentNumber />
+    </DemoExample>
+
+    <DemoExample Title="Speed & time remaining" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+        <div>
+            A percentage answers "how far along is this"; what a user waiting on a large upload actually wants to
+            know is "how much longer". Every running file measures the speed of the request currently in flight and
+            exposes it on its <b>BitFileInfo</b>: <b>UploadSpeed</b> in bytes per second and <b>RemainingTime</b> as
+            a <b>TimeSpan</b> derived from it and the bytes still to send. Both are null while a file is not on the
+            wire - before it starts, once it settles, and for the first fraction of a second of a request, where a
+            reading taken over almost no time would say nothing but a huge number.
+        </div>
+        <br />
+        <div>
+            They are updated on every progress tick, so rendering them is a matter of re-reading them from
+            <b>OnProgress</b>, as the summary below does. In the chunked mode the speed is measured over the chunk
+            in flight, which is what makes it follow a connection that speeds up or slows down mid-file instead of
+            averaging the whole transfer into a number that stops reacting.
+        </div>
+        <br />
+        <div>
+            The batch has the same two numbers of its own: <b>TotalUploadSpeed</b> adds up the speed of every file
+            currently on the wire - what the connection as a whole is carrying, which is the honest figure when
+            several files are uploading at once - and <b>OverallRemainingTime</b> divides the bytes still to go by
+            it. Both are null while nothing is uploading, which is the difference between "not moving" and
+            "moving at zero".
+        </div>
+        <br />
+        <BitFileUpload @ref="speedFileUpload" Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple
+                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+        <br />
+        @foreach (var file in SpeedFiles)
+        {
+            <div>
+                @file.Name -
+                @(file.UploadSpeed is null ? "-" : $"{file.UploadSpeed / 1024:N0} KB/s")
+                (@(file.RemainingTime is null ? "-" : $"{file.RemainingTime:mm\\:ss} left"))
+            </div>
+        }
+        <br />
+        <div>
+            <b>
+                Batch: @(speedFileUpload?.TotalUploadSpeed is null ? "idle" : $"{speedFileUpload.TotalUploadSpeed / 1024:N0} KB/s")
+                (@(speedFileUpload?.OverallRemainingTime is null ? "-" : $"{speedFileUpload.OverallRemainingTime:mm\\:ss} left"))
+            </b>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="FileSizeFormatter" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+        <div>
+            Each file item shows its uploaded and total size through a built-in humanizer that speaks English and
+            counts in binary units. <b>FileSizeFormatter</b> takes that decision over: it receives a size in bytes
+            and returns whatever text should appear, which is where a localized unit name, a different rounding, or
+            the decimal base some platforms prefer belongs. The example below drops down to raw byte counts with
+            thousands separators.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple
+                       FileSizeFormatter="@(size => $"{size:N0} bytes")" />
+    </DemoExample>
+
+    <DemoExample Title="HideFileView" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+        <div>
+            <b>HideFileView</b> takes the built-in file list away without taking the files with it: they are still
+            selected, still validated, still uploaded and still reported through <b>Files</b> and the callbacks -
+            they are simply not drawn. That is what you want when the surrounding page already shows the attachments
+            in its own layout, when the uploader has to collapse into a single button, or when the list belongs
+            somewhere else on the screen entirely. The example below renders its own summary from the <b>OnChange</b>
+            callback while the component itself shows nothing but the browse button. Reach for
+            <b>FileViewTemplate</b> instead when the list should stay where it is and only look different.
+        </div>
+        <br />
+        <BitFileUpload @ref="hiddenViewFileUpload" Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       Multiple AutoUpload HideFileView
+                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+        <br />
+        @if (HiddenViewFiles.Any())
+        {
+            <ul>
+                @foreach (var file in HiddenViewFiles)
                 {
-                    <div class="file-list">
-                        <div class="file-info">
-                            <div class="file-info-ico">
-                                <i class="bit-icon bit-icon--FileImage" />
-                            </div>
-                            <div class="file-info-data">
-                                <div class="file-info-title">
-                                    <div class="file-info-name">@file.Name</div>
-                                    <div class="file-info-btns">
-                                        <label for="@bitFileUpload.InputId"><i class="bit-icon bit-icon--CloudUpload upload-ico" /></label>
-                                        <i class="bit-icon bit-icon--ChromeClose remove-ico" @onclick="HandleRemoveOnClick" />
-                                    </div>
+                    <li>@file.Name - @file.Status</li>
+                }
+            </ul>
+            <div>Overall progress: @(hiddenViewFileUpload?.OverallUploadProgress ?? 0)%</div>
+        }
+        else
+        {
+            <div>No file selected yet.</div>
+        }
+    </DemoExample>
+
+    <DemoExample Title="Templates" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
+        <div>
+            The default UI can be swapped out entirely: <b>LabelTemplate</b> replaces the browse button - here with a
+            full drop-zone panel that hides itself once files are selected - and <b>FileViewTemplate</b> replaces
+            each item of the file list, receiving the file info as its context with its name, size, progress, speed
+            and status all available for rendering. The template is only asked for the files that are actually in
+            the list, so a removed file never leaves an empty item behind. Replacing the browse button also replaces
+            the built-in dashed drop indicator that lives on it, so a custom label should bring its own drag
+            feedback: <b>Classes.Dragging</b> puts a class on the root element for as long as files hover over the
+            component.
+        </div>
+        <br />
+        <div>
+            Two things are worth carrying over from the default UI when replacing it. The controls should be real
+            <b>button</b> elements rather than clickable divs or icons, so they stay reachable with Tab and can be
+            activated with Enter or Space, and each of them should name the file it acts on through an aria-label -
+            a list of identical "Remove" buttons tells a screen reader user nothing about which file they are on.
+            And since the context is the file itself, the per-file overloads are the ones to call:
+            <b>Upload(file)</b> and <b>RemoveFile(file)</b> act on that one file, while their no-argument forms
+            would sweep through the whole batch.
+        </div>
+        <br />
+        <div>
+            <BitFileUpload @ref="bitFileUpload" UploadUrl="@UploadUrl" RemoveUrl="@RemoveUrl"
+                           Classes="@(new() { Dragging = "custom-drop-zone" })">
+                <LabelTemplate>
+                    @if (FileUploadIsEmpty())
+                    {
+                        @* a real button rather than a clickable div, so the drop zone is reachable with Tab
+                           and activated with Enter or Space like the built-in browse button it replaces. *@
+                        <button type="button" class="browse-file" @onclick="() => bitFileUpload.Browse()">
+                            <div class="browse-file-header">
+                                <i class="bit-icon bit-icon--CloudUpload" />
+                                <div>
+                                    Drag and drop or
                                 </div>
-                                @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
-                                {
-                                    var fileUploadPercent = GetFileUploadPercent(file);
-                                    <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
-                                    <div class="file-info-progressbar-container">
-                                        <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
-                                }
+                                <div>
+                                    <strong>
+                                        Browse file
+                                    </strong>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="file-list-footer">
-                            <div>
-                                Max file size: 2 MB
+                            <div class="browse-file-footer">
+                                <div>
+                                    Max file size: 2 MB
+                                </div>
+                                <div>
+                                    Supported file types: jpg, jpeg, png, bmp
+                                </div>
                             </div>
-                            <div>
-                                Supported file types: jpg, jpeg, png, bpm
+                        </button>
+                    }
+                </LabelTemplate>
+                <FileViewTemplate Context="file">
+                    @if (file.Status != BitFileUploadStatus.Removed)
+                    {
+                        <div class="file-list">
+                            <div class="file-info">
+                                <div class="file-info-ico">
+                                    <i class="bit-icon bit-icon--FileImage" />
+                                </div>
+                                <div class="file-info-data">
+                                    <div class="file-info-title">
+                                        <div class="file-info-name">@file.Name</div>
+                                        @* each action names the file it acts on and applies to that file
+                                           alone, which is what the context of the template is there for. *@
+                                        <div class="file-info-btns">
+                                            <button type="button" aria-label="@($"Upload {file.Name}")" @onclick="() => bitFileUpload.Upload(file)">
+                                                <i class="bit-icon bit-icon--CloudUpload upload-ico" />
+                                            </button>
+                                            <button type="button" aria-label="@($"Remove {file.Name}")" @onclick="() => bitFileUpload.RemoveFile(file)">
+                                                <i class="bit-icon bit-icon--ChromeClose remove-ico" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @if (file.Status is BitFileUploadStatus.InProgress or BitFileUploadStatus.Pending)
+                                    {
+                                        var fileUploadPercent = GetFileUploadPercent(file);
+                                        <div class="file-info-subtitle">@GetFileUploadSize(file) - @fileUploadPercent%</div>
+                                        <div class="file-info-progressbar-container">
+                                            <div class="file-info-progressbar" role="progressbar" style="width:@fileUploadPercent%;" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@fileUploadPercent"></div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="@(file.Status == BitFileUploadStatus.Completed ? "file-info-s-msg" : "file-info-e-msg")">@GetUploadMessageStr(file)</div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="file-list-footer">
+                                <div>
+                                    Max file size: 2 MB
+                                </div>
+                                <div>
+                                    Supported file types: jpg, jpeg, png, bmp
+                                </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </FileViewTemplate>
-        </BitFileUpload>
+                    }
+                </FileViewTemplate>
+            </BitFileUpload>
+        </div>
         <br />
         <BitButton OnClick="HandleUploadOnClick">Upload</BitButton>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>Use a custom method for the open file selection dialog.</div><br />
-        <BitFileUpload @ref="bitFileUploadWithBrowseFile"
-                       Label=""
+    <DemoExample Title="Public API" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
+        <div>
+            The component can be driven entirely from code: <b>Browse</b> opens the file dialog (here the built-in
+            browse button is hidden with <b>HideLabel</b> and replaced by external BitButtons), <b>Upload</b> starts
+            the upload of a specific file or every file, <b>PauseUpload</b> and <b>CancelUpload</b> stop them,
+            <b>RemoveFile</b> removes files, and <b>Reset</b> clears the whole state. Each of them takes a single
+            file or, with no argument, applies to the whole batch. <b>Files</b> exposes the current selection with
+            each file's status and progress, and <b>UploadStatus</b> reports the state of the batch as a whole -
+            pending until the first upload starts, in progress from then on, and completed once every file has
+            reached a terminal state.
+        </div>
+        <br />
+        <div>
+            The difference between the two ways of stopping is what happens next. <b>PauseUpload</b> applies to the
+            files that are actually on their way: it aborts the in-flight request and keeps the bytes that made it,
+            so calling <b>Upload</b> again resumes from there - from the last completed chunk in the chunked mode -
+            and it takes a file still waiting in the concurrency queue back out of that queue. A file nobody asked
+            to upload has nothing to pause, so it is left exactly as it is.
+        </div>
+        <br />
+        <div>
+            <b>CancelUpload</b> settles the file as canceled instead, and does so immediately whether it was
+            running, waiting in the queue, paused or merely selected, so the outcome is visible on every file rather
+            than being recorded as an intention on some of them. Files that have already settled are left alone: a
+            completed upload cannot be taken back from the server by anything happening on this side, and calling
+            off a file that already failed would only replace the reason it failed with a less useful one. A
+            canceled file can still be started again later, and its item offers the retry button for exactly that.
+        </div>
+        <br />
+        <BitFileUpload @ref="bitFileUploadWithBrowseFile" HideLabel Multiple
                        UploadUrl="@UploadUrl"
                        RemoveUrl="@RemoveUrl" />
         <br />
-        <BitButton OnClick="HandleBrowseFileOnClick">Browse file</BitButton>
+        <div class="api-buttons">
+            <BitButton OnClick="HandleBrowseFileOnClick">Browse files</BitButton>
+            <BitButton OnClick="() => bitFileUploadWithBrowseFile.Upload()">Upload all</BitButton>
+            <BitButton OnClick="() => bitFileUploadWithBrowseFile.PauseUpload()">Pause all</BitButton>
+            <BitButton OnClick="() => bitFileUploadWithBrowseFile.CancelUpload()">Cancel all</BitButton>
+            <BitButton OnClick="() => bitFileUploadWithBrowseFile.Reset()">Reset</BitButton>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Accessibility" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29">
         <div>
-            Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>UploadIcon</b>, 
-            <b>PauseIcon</b>, <b>CancelIcon</b>, and <b>RemoveIcon</b> parameters (<BitLink Href="#bit-icon-info">BitIconInfo</BitLink>).
+            The BitFileUpload is accessible out of the box: the browse button is a real button - focusable with Tab
+            and activated with Enter or Space - the hidden native input points to it via aria-labelledby, the file
+            list carries list and listitem roles, every action button (upload, pause, cancel, remove) gets an
+            aria-label naming the file it acts on, and the progress bar exposes its percentage through the
+            progressbar role. A visually hidden live region announces the selection and every upload outcome, so a
+            screen reader user hears how many files were taken, which uploads succeeded and which failed without
+            having to go looking. <b>AnnouncementProvider</b> replaces that built-in English sentence with text of
+            your own - the natural place to translate it or to word it around your domain, as the second example
+            does. <b>AriaLabel</b> labels the browse button, overriding its visible text for assistive technologies
+            when a short label does not say enough on its own.
+        </div>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl"
+                       AriaLabel="Select a document to upload" />
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple
+                       AnnouncementProvider="@AnnounceUploads" />
+    </DemoExample>
+
+    <DemoExample Title="Variant" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30">
+        <div>
+            The browse button is the visual weight the component carries on a page, and <b>Variant</b> decides how
+            much of it there is. <b>Fill</b> - the default - paints the button in a solid block of the
+            <BitLink Href="#example31">Color</BitLink> and is the right call when uploading is the main thing the
+            screen is for. <b>Outline</b> keeps only the rule around it in that color and fills in on hover, for an
+            uploader sitting among other form fields that should not shout over them. <b>Text</b> drops both the rule
+            and the fill, leaving a colored label for the places where the uploader is a secondary affordance. The
+            drop indicator and the file list follow the variant along, and a disabled component drops the role colors
+            entirely for the neutral disabled look, whichever variant it uses.
+        </div>
+        <br />
+        <BitChoiceGroup @bind-Value="variant" Horizontal TItem="BitChoiceGroupOption<BitVariant>" TValue="BitVariant">
+            <BitChoiceGroupOption Text="Fill" Value="BitVariant.Fill" />
+            <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
+            <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
+        </BitChoiceGroup>
+        <br />
+        <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" Variant="variant" />
+        <br />
+        <BitFileUpload Label="Disabled" UploadUrl="@UploadUrl" Variant="variant" IsEnabled="false" />
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31">
+        <div>
+            <b>Color</b> picks the role color the component speaks in. It is not only the browse button: the dashed
+            drop indicator, the progress bar of every running file, the paused status message, the removal spinner
+            and the hovered action buttons all take it, so the whole control reads as one piece instead of a themed
+            button next to a default-blue list. All the standard bit color roles are available - the semantic ones
+            (Primary, Secondary, Tertiary, Info, Success, Warning, SevereWarning, Error) as well as the background,
+            foreground and border families - each of them carrying its own hover and active shades and its own
+            readable on-color for the label.
+        </div>
+        <br />
+        <div class="upload-grid">
+            <BitFileUpload Label="Primary" UploadUrl="@UploadUrl" Color="BitColor.Primary" />
+            <BitFileUpload Label="Secondary" UploadUrl="@UploadUrl" Color="BitColor.Secondary" />
+            <BitFileUpload Label="Tertiary" UploadUrl="@UploadUrl" Color="BitColor.Tertiary" />
+            <BitFileUpload Label="Info" UploadUrl="@UploadUrl" Color="BitColor.Info" />
+            <BitFileUpload Label="Success" UploadUrl="@UploadUrl" Color="BitColor.Success" />
+            <BitFileUpload Label="Warning" UploadUrl="@UploadUrl" Color="BitColor.Warning" />
+            <BitFileUpload Label="SevereWarning" UploadUrl="@UploadUrl" Color="BitColor.SevereWarning" />
+            <BitFileUpload Label="Error" UploadUrl="@UploadUrl" Color="BitColor.Error" />
+        </div>
+        <br /><br />
+        <div>Background, foreground and border colors:</div>
+        <br />
+        <div class="upload-grid">
+            <BitFileUpload Label="PrimaryBackground" UploadUrl="@UploadUrl" Color="BitColor.PrimaryBackground" />
+            <BitFileUpload Label="SecondaryBackground" UploadUrl="@UploadUrl" Color="BitColor.SecondaryBackground" />
+            <BitFileUpload Label="TertiaryBackground" UploadUrl="@UploadUrl" Color="BitColor.TertiaryBackground" />
+            <BitFileUpload Label="PrimaryForeground" UploadUrl="@UploadUrl" Color="BitColor.PrimaryForeground" />
+            <BitFileUpload Label="SecondaryForeground" UploadUrl="@UploadUrl" Color="BitColor.SecondaryForeground" />
+            <BitFileUpload Label="TertiaryForeground" UploadUrl="@UploadUrl" Color="BitColor.TertiaryForeground" />
+            <BitFileUpload Label="PrimaryBorder" UploadUrl="@UploadUrl" Color="BitColor.PrimaryBorder" />
+            <BitFileUpload Label="SecondaryBorder" UploadUrl="@UploadUrl" Color="BitColor.SecondaryBorder" />
+            <BitFileUpload Label="TertiaryBorder" UploadUrl="@UploadUrl" Color="BitColor.TertiaryBorder" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32">
+        <div>
+            The action button icons are not limited to the built-in icon font: <b>UploadIcon</b>, <b>RetryIcon</b>,
+            <b>PauseIcon</b>, <b>CancelIcon</b> and <b>RemoveIcon</b> take a
+            <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> or a raw CSS class string that can point at any icon
+            library whose stylesheet is loaded, like FontAwesome or Bootstrap Icons below. Use
+            <b>BitIconInfo.Fa()</b>, <b>BitIconInfo.Bi()</b> or <b>BitIconInfo.Css()</b> to build one, or stick with
+            the built-in font and just pick different icons via the <b>...IconName</b> counterparts. Upload a file
+            against a failing endpoint to see the retry icon take the place of the upload one.
         </div>
 
         <br />
@@ -180,6 +851,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
                        UploadIcon="@("fa-solid fa-upload")"
                        PauseIcon="@("fa-solid fa-pause")"
+                       RetryIcon="@("fa-solid fa-rotate-right")"
                        CancelIcon="@("fa-solid fa-xmark")"
                        RemoveIcon="@("fa-solid fa-trash")" />
 
@@ -188,6 +860,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
                        UploadIcon="@BitIconInfo.Fa("solid cloud-arrow-up")"
                        PauseIcon="@BitIconInfo.Fa("solid circle-pause")"
+                       RetryIcon="@BitIconInfo.Fa("solid arrow-rotate-right")"
                        CancelIcon="@BitIconInfo.Fa("solid circle-xmark")"
                        RemoveIcon="@BitIconInfo.Fa("solid trash-can")" />
 
@@ -200,6 +873,7 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
                        UploadIcon="@("bi bi-cloud-upload")"
                        PauseIcon="@("bi bi-pause-circle")"
+                       RetryIcon="@("bi bi-arrow-clockwise")"
                        CancelIcon="@("bi bi-x-circle")"
                        RemoveIcon="@("bi bi-trash")" />
 
@@ -208,8 +882,92 @@
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl"
                        UploadIcon="@BitIconInfo.Bi("cloud-arrow-up")"
                        PauseIcon="@BitIconInfo.Bi("pause-circle")"
+                       RetryIcon="@BitIconInfo.Bi("arrow-repeat")"
                        CancelIcon="@BitIconInfo.Bi("x-circle")"
                        RemoveIcon="@BitIconInfo.Bi("trash")" />
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33">
+        <div>
+            <b>Size</b> scales the whole control in one move - the height, padding and font of the browse button, the
+            text of the file items and their size line, the action buttons and their icons, and the image preview
+            thumbnails all step together, so a <b>Small</b> uploader tucked into a dense form and a <b>Large</b> one
+            headlining a drop area both stay internally proportioned. <b>Medium</b> is the default. The dimensions
+            come from CSS custom properties on the root element, so a size can still be fine-tuned from
+            <b>Styles</b> without redefining the whole scale.
+        </div>
+        <br />
+        <BitFileUpload Label="Small" UploadUrl="@UploadUrl" Size="BitSize.Small" ShowRemoveButton RemoveUrl="@RemoveUrl" />
+        <br />
+        <BitFileUpload Label="Medium" UploadUrl="@UploadUrl" Size="BitSize.Medium" ShowRemoveButton RemoveUrl="@RemoveUrl" />
+        <br />
+        <BitFileUpload Label="Large" UploadUrl="@UploadUrl" Size="BitSize.Large" ShowRemoveButton RemoveUrl="@RemoveUrl" />
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example34RazorCode" Id="example34">
+        <div>
+            <b>Style</b> and <b>Class</b> land on the root element, which inline styles and a single class cover
+            well. For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts - the browse
+            button, the description, the file list, each file item, its name, size, percentage, progress bar, status
+            message and every action button and icon - and their <b>Dragging</b> entry applies to the root element
+            only while files are being dragged over the component, which is how the examples below restyle the drop
+            state without touching the idle look.
+        </div>
+
+        <br /><br />
+
+        <div>Component's Style & Class:</div>
+        <br />
+        <div>
+            <BitFileUpload Label="Styled file upload" UploadUrl="@UploadUrl"
+                           Style="box-shadow: dodgerblue 0 0 1rem; border-radius: 1rem; padding: 0.5rem;" />
+            <br />
+            <BitFileUpload Label="Classed file upload" UploadUrl="@UploadUrl" Class="custom-class" />
+        </div>
+
+        <br /><br /><br />
+
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div>
+            <BitFileUpload Label="Styles" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl" Styles="@(new()
+                           {
+                               Label = "border-color: deeppink; background-color: deeppink; color: white;",
+                               Dragging = "background-color: lavenderblush;",
+                               FileName = "color: deeppink;",
+                               ProgressBar = "background-color: deeppink;"
+                           })" />
+            <br />
+            <BitFileUpload Label="Classes" UploadUrl="@UploadUrl" ShowRemoveButton RemoveUrl="@RemoveUrl" Classes="@(new()
+                           {
+                               Label = "custom-label",
+                               Dragging = "custom-dragging",
+                               FileItem = "custom-item",
+                               RemoveButton = "custom-remove"
+                           })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example35RazorCode" Id="example35">
+        <div>
+            Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout for right-to-left languages - the browse
+            button, the file names, sizes, progress bars and action buttons all follow - and the localizable texts
+            (the <b>Label</b>, the status messages and the button titles) complete the picture, so the BitFileUpload
+            reads naturally inside an RTL page like the Farsi example below.
+        </div>
+        <br />
+        <div dir="rtl">
+            <BitFileUpload Dir="BitDir.Rtl"
+                           Label="انتخاب یا رها کردن فایل"
+                           UploadUrl="@UploadUrl"
+                           ShowRemoveButton RemoveUrl="@RemoveUrl"
+                           UploadButtonTitle="بارگذاری"
+                           PauseButtonTitle="توقف"
+                           CancelButtonTitle="لغو"
+                           RemoveButtonTitle="حذف"
+                           SuccessfulUploadMessage="بارگذاری فایل موفق بود"
+                           FailedUploadMessage="بارگذاری فایل شکست خورد" />
+        </div>
     </DemoExample>
 
 </DemoPage>

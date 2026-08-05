@@ -177,10 +177,16 @@ public static partial class Program
 
         // Register distributed lock factory
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
             return new Medallion.Threading.Redis.RedisDistributedLock(lockKey, sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent").GetDatabase());
         }));
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#else
         services.AddTransient(sp => new DistributedLockFactory((string lockKey) =>
         {
@@ -299,6 +305,9 @@ public static partial class Program
             });
         }
         //#if (redis == true)
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
         else
         {
             // Use Redis as SignalR backplane for scaling out across multiple server instances
@@ -307,6 +316,9 @@ public static partial class Program
                 options.Configuration.ChannelPrefix = RedisChannel.Literal("Boilerplate:SignalR:");
             });
         }
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
         //#endif
         //#endif
 
@@ -574,11 +586,17 @@ public static partial class Program
             if (appSettings.Hangfire?.UseIsolatedStorage is not true)
             {
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 hangfireConfiguration.UseRedisStorage(sp.GetRequiredKeyedService<IConnectionMultiplexer>("redis-persistent"), new RedisStorageOptions
                 {
                     Prefix = "Boilerplate:Hangfire:",
                     Db = 1, // Use a dedicated Redis database for Hangfire
                 });
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#else
                 hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
                 {

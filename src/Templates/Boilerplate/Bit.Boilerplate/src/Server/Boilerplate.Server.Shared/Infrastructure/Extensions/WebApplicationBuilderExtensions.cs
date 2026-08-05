@@ -65,17 +65,29 @@ public static class WebApplicationBuilderExtensions
 
             services
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 .AddFusionCacheRedisDistributedLocker()
                 .AddFusionCacheStackExchangeRedisBackplane()
                 .ConfigureRedisOptions()
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#endif
                 .AddFusionCache()
                 .AsHybridCache()
                 .WithRegisteredMemoryCache()
                 //#if (redis == true)
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
                 .WithRegisteredBackplane()
                 .WithRegisteredDistributedCache()
                 .WithRegisteredDistributedLocker()
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
                 //#endif
                 .WithDefaultEntryOptions(options => options.Size = AppMemoryCache.EstimatedEntrySizeInBytes)
                 // Auto-clone hands out a copy instead of the cached instance, so code that mutates what it reads from the cache
@@ -89,8 +101,14 @@ public static class WebApplicationBuilderExtensions
             services.AddFusionOutputCache(); // For ASP.NET Core Output Caching with FusionCache
 
             // Registering Microsoft's IDistributedCache here doesn't mean you have to use it in your code. It's only for libraries that might rely on it.
-            //#if(redis == true)
+            //#if (redis == true)
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
             services.AddStackExchangeRedisCache(_ => { });
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
             //#else
             services.AddDistributedMemoryCache();
             //#endif
