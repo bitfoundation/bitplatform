@@ -12,6 +12,11 @@ public partial class BitRatingDemo
 <BitRating ReadOnly DefaultValue=""3.5"" />";
 
     private readonly string example2RazorCode = @"
+<div style=""display:flex;align-items:center;gap:0.5rem"">
+    <BitRating Max=""1"" ReadOnly DefaultValue=""1"" />
+    <BitLabel>4.2 · 1,034 reviews</BitLabel>
+</div>
+
 <BitRating Max=""3"" DefaultValue=""2"" />
 
 <BitRating Max=""6"" DefaultValue=""4"" />
@@ -247,6 +252,32 @@ Hidden: [ <BitRating Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
     private readonly string example17RazorCode = @"
+<BitRating Color=""GetScoreColor()"" @bind-Value=""scoreValue"" />
+<BitLabel>@scoreWords[(int)scoreValue]</BitLabel>
+
+<BitRating Color=""GetScoreColor()""
+           GetSelectedIcon=""GetScoreIcon""
+           GetUnselectedIcon=""GetScoreIcon""
+           @bind-Value=""scoreValue"" />";
+    private readonly string example17CsharpCode = @"
+private double scoreValue = 2;
+private readonly string[] scoreWords = [""Unrated"", ""Poor"", ""Poor"", ""Okay"", ""Great"", ""Great""];
+
+private BitColor GetScoreColor() => scoreValue switch
+{
+    <= 2 => BitColor.Error,
+    <= 3 => BitColor.Warning,
+    _ => BitColor.Success
+};
+
+private BitIconInfo GetScoreIcon(int index) => BitIconInfo.Bit(scoreValue switch
+{
+    <= 2 => BitIconName.Sad,
+    <= 3 => BitIconName.EmojiNeutral,
+    _ => BitIconName.Emoji2
+});";
+
+    private readonly string example18RazorCode = @"
 <BitRating Color=""BitColor.Primary"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.Secondary"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.Tertiary"" DefaultValue=""3.5"" />
@@ -267,7 +298,7 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitRating Color=""BitColor.SecondaryBorder"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.TertiaryBorder"" DefaultValue=""3.5"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitRating DefaultValue=""3.5"" SelectedIcon=""@(""fa-solid fa-star"")"" UnselectedIcon=""@(""fa-regular fa-star"")"" />
@@ -281,14 +312,14 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
 <BitRating DefaultValue=""3.5"" SelectedIcon=""@BitIconInfo.Bi(""heart-fill"")"" UnselectedIcon=""@BitIconInfo.Bi(""heart"")"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitRating Size=""BitSize.Small"" DefaultValue=""3"" />
 
 <BitRating Size=""BitSize.Medium"" DefaultValue=""3"" />
 
 <BitRating Size=""BitSize.Large"" DefaultValue=""3"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -317,7 +348,7 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
 <BitRating DefaultValue=""3.5"" Classes=""@(new() { SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitRating Dir=""BitDir.Rtl"" DefaultValue=""3"" />
 
 <BitRating Dir=""BitDir.Rtl"" Precision=""0.5"" DefaultValue=""3.5"" />";

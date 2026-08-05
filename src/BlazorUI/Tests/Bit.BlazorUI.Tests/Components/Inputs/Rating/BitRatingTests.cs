@@ -541,6 +541,49 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitRatingShouldEndThePreviewWhenAValueIsCommitted()
+    {
+        double value = 1;
+        double? hovered = null;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnHoverChange, (double? v) => hovered = v);
+        });
+
+        component.FindAll(".bit-rtg-btn")[3].MouseOver();
+
+        Assert.AreEqual(4d, hovered);
+
+        component.FindAll(".bit-rtg-btn")[3].Click();
+
+        // The preview has served its purpose once the value lands: the committed value is rendered and
+        // OnHoverChange reports the end of the preview without waiting for the pointer to leave.
+        Assert.AreEqual(4d, value);
+        Assert.IsNull(hovered);
+    }
+
+    [TestMethod]
+    public void BitRatingSegmentShouldCommitACleanTenth()
+    {
+        double value = 0;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.1);
+            parameters.Add(p => p.AllowZeroStars, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The seventh segment of the first item is 0.7, which naive floating point arithmetic would
+        // produce as 0.7000000000000001. (AllowZeroStars opens up the values below 1, which would
+        // otherwise be clamped up to the minimum of 1.)
+        component.FindAll(".bit-rtg-seg")[6].Click();
+
+        Assert.AreEqual(0.7, value);
+        Assert.AreEqual("0.7", component.Find(".bit-input-hidden").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitRatingShouldRespectAllowClear()
     {
         double value = 3;
@@ -1156,6 +1199,20 @@ public class BitRatingTests : BunitTestContext
     {
         // A radiogroup is horizontal by default, so only the vertical case has anything to announce.
         Assert.IsFalse(RenderComponent<BitRating>().Find(".bit-rtg").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitRatingReadOnlyVerticalShouldNotClaimAnOrientation()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        // aria-orientation belongs to the radiogroup pattern; the img role a read-only rating takes has
+        // no use for it, even though the items are still stacked visually.
+        Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-orientation"));
     }
 
     [TestMethod]

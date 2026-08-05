@@ -45,10 +45,18 @@
             the scale of the whole control. Five is the familiar default, but a coarser three-point scale or a
             much finer one are just as valid; the items wrap when the row runs out of room, which is what keeps a
             100-point rating usable inside a narrow container. A value above the Max is pulled back down to it,
-            so the scale can be tightened at runtime without leaving an impossible value behind.
+            so the scale can be tightened at runtime without leaving an impossible value behind. And at the other
+            extreme, a Max of 1 turns the rating into the compact single-star badge that sits next to a numeric
+            score and a review count.
         </div>
         <br />
         <div class="example-box">
+            <div>Max is 1 (a compact review summary):</div>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+                <BitRating Max="1" ReadOnly DefaultValue="1" />
+                <BitLabel>4.2 · 1,034 reviews</BitLabel>
+            </div>
+            <br />
             <div>Max is 3:</div>
             <BitRating Max="3" DefaultValue="2" />
             <br />
@@ -183,7 +191,7 @@
             is what lets the same component read as a like, a heart or a checklist. The two icons are drawn on top
             of each other and the selected one is clipped to the fill percentage, so the pair works best when both
             glyphs share an outline - a hollow shape and its filled twin. For icons from an external library, see
-            the <a href="#example18"><b>External Icons</b></a> section below.
+            the <a href="#example19"><b>External Icons</b></a> section below.
         </div>
         <br />
         <div class="example-box">
@@ -404,14 +412,40 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Score-based styling" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            The parameters of the rating are re-read on every render, so they can be computed from the very
+            value the rating is bound to - which is all it takes to restyle the scale by the score it shows.
+            The first rating below derives its <b>Color</b> from its own value, turning from red through orange
+            to green as the score climbs the bands; the second derives its icons the same way, so a low score
+            frowns and a high one smiles. This is the styling to reach for when "2 of 5" and "5 of 5" are
+            different kinds of news rather than different amounts of the same one - and it needs no dedicated
+            API, just callbacks and parameters that close over the bound value.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>The color follows the score:</div>
+            <BitRating Color="GetScoreColor()" @bind-Value="scoreValue" />
+            <BitLabel>@scoreWords[(int)scoreValue]</BitLabel>
+            <br />
+            <div>The icon follows it too:</div>
+            <BitRating Color="GetScoreColor()"
+                       GetSelectedIcon="GetScoreIcon"
+                       GetUnselectedIcon="GetScoreIcon"
+                       @bind-Value="scoreValue" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Color</b> picks the theme color the filled part of the items is painted in, with <b>Primary</b> as
             the default. The unfilled part deliberately stays neutral whatever the color is, so it keeps reading as
             "not rated yet" instead of as a second, dimmer accent. The semantic colors - <b>Success</b>,
             <b>Warning</b>, <b>Error</b> and friends - tie the rating to what the score means, while the
             <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it legible on non-default
-            surfaces like the inverted panel below.
+            surfaces like the inverted panel below. And since Color is an ordinary parameter, it can be
+            computed from the bound value itself - which is what the
+            <a href="#example17"><b>Score-based styling</b></a> section above builds on.
         </div>
         <br />
         <div class="example-box">
@@ -443,7 +477,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>SelectedIcon</b> and <b>UnselectedIcon</b> take a <b>BitIconInfo</b> instead of a built-in icon
             name, which is how icons from an external library are used. <b>BitIconInfo.Fa</b> and
@@ -479,7 +513,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Size</b> scales the items, from the <b>Small</b> that fits inline next to a line of text to the
             <b>Large</b> that carries a rating asked as the main question on a page. <b>Medium</b> is the default.
@@ -498,7 +532,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element of the rating, which is enough for the framing
             around it. <b>Styles</b> and <b>Classes</b> go a level deeper and address the parts by name -
@@ -519,7 +553,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
         <div>
             Setting <b>Dir</b> to <b>Rtl</b> mirrors the whole rating: the first item moves to the right, the
             partial fill of a fractional value grows from the right edge of its item, the transparent slices of a

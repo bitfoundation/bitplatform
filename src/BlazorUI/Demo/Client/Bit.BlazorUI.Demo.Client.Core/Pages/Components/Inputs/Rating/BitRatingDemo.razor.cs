@@ -456,6 +456,9 @@ public partial class BitRatingDemo
 
     private double accessibilityValue = 3;
 
+    private double scoreValue = 2;
+    private readonly string[] scoreWords = ["Unrated", "Poor", "Poor", "Okay", "Great", "Great"];
+
     public BitRatingDemoFormModel ValidationModel = new();
     public string? SuccessMessage;
 
@@ -469,6 +472,20 @@ public partial class BitRatingDemo
     }
 
     private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 1]);
+
+    private BitColor GetScoreColor() => scoreValue switch
+    {
+        <= 2 => BitColor.Error,
+        <= 3 => BitColor.Warning,
+        _ => BitColor.Success
+    };
+
+    private BitIconInfo GetScoreIcon(int index) => BitIconInfo.Bit(scoreValue switch
+    {
+        <= 2 => BitIconName.Sad,
+        <= 3 => BitIconName.EmojiNeutral,
+        _ => BitIconName.Emoji2
+    });
 
     private string GetRatingAriaLabel(double value, double max) => $"Rated {value} out of {max}";
 
