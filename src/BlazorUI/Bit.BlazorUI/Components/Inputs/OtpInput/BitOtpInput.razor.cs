@@ -10,6 +10,7 @@ namespace Bit.BlazorUI;
 public partial class BitOtpInput : BitInputBase<string?>
 {
     private int _length;
+    private bool _autoFocused;
     private int _setupLength = -1;
     private bool _setupSmsAutoFill;
     private string _labelId = default!;
@@ -80,6 +81,15 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// readers announce for each input. The default is "{0} of {1}".
     /// </summary>
     [Parameter] public string? InputAriaLabelFormat { get; set; }
+
+    /// <summary>
+    /// Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a
+    /// phone brings up without changing the element that is rendered. It defaults to the keyboard that
+    /// matches the <see cref="Type"/>, so it is only needed to ask for a keyboard the type does not imply,
+    /// like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards)
+    /// for a code of digits.
+    /// </summary>
+    [Parameter] public BitInputMode? InputMode { get; set; }
 
     /// <summary>
     /// Length of the OTP or number of the inputs.
@@ -162,6 +172,22 @@ public partial class BitOtpInput : BitInputBase<string?>
     [Parameter] public int SeparatorInterval { get; set; } = 1;
 
     /// <summary>
+    /// Custom template rendered between the inputs in place of the <see cref="Separator"/> text, which is
+    /// what puts an icon or any other markup between the groups of a code. The context is the zero based
+    /// index of the input the separator is rendered before, so a template can tell one separator of the
+    /// row from another. It takes precedence over the <see cref="Separator"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<int>? SeparatorTemplate { get; set; }
+
+    /// <summary>
+    /// Turns the whole component into a single stop of the tab order: only the first input is reachable
+    /// with the Tab key and the rest are left to the auto advancing focus, the arrow keys and the mouse.
+    /// Tabbing out of the code then lands on the element after it rather than on its next character,
+    /// which is what a group of inputs that hold one single value is expected to do.
+    /// </summary>
+    [Parameter] public bool SingleTabStop { get; set; }
+
+    /// <summary>
     /// The size of the inputs.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -227,7 +253,9 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// </summary>
     public ValueTask FocusAsync(int index = 0)
     {
-        if (_inputRefs.Length == 0) return ValueTask.CompletedTask;
+        // The element references are only bound once the inputs have been rendered, so calling this from
+        // an initializing consumer would ask the browser to focus an element that is not there yet.
+        if (IsRendered is false || _inputRefs.Length == 0) return ValueTask.CompletedTask;
 
         return _inputRefs[Math.Clamp(index, 0, _inputRefs.Length - 1)].FocusAsync();
     }
@@ -351,13 +379,16 @@ public partial class BitOtpInput : BitInputBase<string?>
         {
             SetInputsValue(CurrentValue);
 
-            // A code longer than the inputs can hold has to lose its extra characters, and reporting a
-            // value that the component is not showing would leave the two out of sync for good, so the
-            // value follows what ended up in the inputs. Only the length is checked here: a value that
-            // the Pattern narrows down is left to the consumer rather than rewritten behind their back.
-            if (CurrentValue?.Length > _length)
+            var appliedValue = string.Join(string.Empty, _inputValues);
+
+            // What ends up in the inputs is not always what was assigned: a code longer than the inputs
+            // can hold loses its extra characters, the Uppercase turns it into its upper case form and
+            // the Pattern along with the Type drop the characters they reject. Reporting a value that the
+            // component is not showing would leave the two out of sync for good, so the value follows
+            // what ended up in the inputs rather than the other way around.
+            if ((CurrentValue ?? string.Empty) != appliedValue)
             {
-                CurrentValueAsString = string.Join(string.Empty, _inputValues);
+                CurrentValueAsString = appliedValue;
             }
         }
 
@@ -375,8 +406,12 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (IsEnabled is false) return;
 
-        if (firstRender && AutoFocus)
+        // A disabled input cannot take the focus, so a component that starts out disabled is focused on
+        // the first render that finds it enabled rather than losing the auto focus altogether.
+        if (AutoFocus && _autoFocused is false)
         {
+            _autoFocused = true;
+
             await _inputRefs[0].FocusAsync();
         }
 
@@ -395,7 +430,11 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         if (IsDisposed) return;
 
-        await _js.BitOtpInputSetup(UniqueId, _dotnetObj, RootElement, smsAutoFill);
+        try
+        {
+            await _js.BitOtpInputSetup(UniqueId, _dotnetObj, RootElement, smsAutoFill);
+        }
+        catch (JSDisconnectedException) { } // the circuit may already be gone at this point.
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -414,19 +453,26 @@ public partial class BitOtpInput : BitInputBase<string?>
     private void ResizeInputs()
     {
         var oldValues = _inputValues;
+        var oldFocusStates = _inputFocusStates;
 
         _length = NormalizedLength;
+
+        // A code of another length is another code, so the completed one that OnFill was raised for last
+        // must not keep the callback from firing for the code that fills the resized component.
+        _lastFilledValue = null;
 
         _inputIds = Enumerable.Range(0, _length).Select(i => $"BitOtpInput-{UniqueId}-input-{i}").ToArray();
         _inputRefs = new ElementReference[_length];
         _inputValues = new string?[_length];
         _inputFocusStates = new bool[_length];
 
-        // Growing or shrinking the component keeps whatever the user has already typed in the inputs
-        // that survive the resize.
+        // Growing or shrinking the component keeps whatever the user has already typed in the inputs that
+        // survive the resize, along with the focus state of the one they are typing in: no focusout is
+        // raised for the inputs that the resize removes, so a lost focus state would never be restored.
         for (int i = 0; i < Math.Min(oldValues.Length, _length); i++)
         {
             _inputValues[i] = oldValues[i];
+            _inputFocusStates[i] = oldFocusStates[i];
         }
     }
 
@@ -446,8 +492,9 @@ public partial class BitOtpInput : BitInputBase<string?>
     };
 
     // The inputmode is what decides the virtual keyboard on a phone, which is where a one-time code is
-    // typed most of the time, so every type maps to the keyboard that matches it.
-    private string GetInputMode() => Type switch
+    // typed most of the time, so every type maps to the keyboard that matches it, unless the InputMode
+    // asks for another one.
+    private string GetInputMode() => InputMode?.ToString().ToLowerInvariant() ?? Type switch
     {
         BitInputType.Number => "numeric",
         BitInputType.Email => "email",

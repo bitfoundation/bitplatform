@@ -84,18 +84,28 @@ namespace BitBlazorUI {
         }
 
         private static setupSmsAutoFill(dotnetObj: DotNetObject, signal: AbortSignal) {
+            // The WebOTP API is only available to a secure top level browsing context, and the credential
+            // management API it hangs off of is missing altogether outside of one, so asking for the
+            // feature alone is not enough to know that the call below can be made.
             if (!('OTPCredential' in window)) return;
+            if (!navigator.credentials?.get) return;
+            if (window.top !== window.self) return;
 
-            navigator.credentials.get({
-                otp: { transport: ['sms'] },
-                signal: signal
-            } as any).then(async (otp: any) => {
-                if (!otp?.code) return;
+            try {
+                navigator.credentials.get({
+                    otp: { transport: ['sms'] },
+                    signal: signal
+                } as any).then(async (otp: any) => {
+                    if (!otp?.code) return;
 
-                await OtpInput.setValue(dotnetObj, otp.code, 0);
-            }).catch(() => {
-                // the request is aborted on dispose and rejected when the user dismisses it.
-            });
+                    await OtpInput.setValue(dotnetObj, otp.code, 0);
+                }).catch(() => {
+                    // the request is aborted on dispose and rejected when the user dismisses it.
+                });
+            } catch (e) {
+                // a browser that rejects the request synchronously (an insecure context above all) must
+                // not take the rest of the component down with it.
+            }
         }
     }
 }

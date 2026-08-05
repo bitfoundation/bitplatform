@@ -20,7 +20,7 @@ public partial class BitOtpInputDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the first input is auto focused on the first render.",
+            Description = "If true, the first input is auto focused on the first render. A component that starts out disabled cannot take the focus, so it is focused on the first render that finds it enabled instead of losing the auto focus altogether.",
         },
         new()
         {
@@ -51,6 +51,15 @@ public partial class BitOtpInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The composite format of the aria-label rendered on each input, where {0} is the one based index of the input and {1} is the Length. Set it to localize the position that screen readers announce for each input. The default is \"{0} of {1}\".",
+        },
+        new()
+        {
+            Name = "InputMode",
+            Type = "BitInputMode?",
+            DefaultValue = "null",
+            Description = "Sets the inputmode html attribute of the inputs, which is what decides the virtual keyboard that a phone brings up without changing the element that is rendered or the characters that are accepted. It defaults to the keyboard that matches the Type, so it is only needed to ask for a keyboard the type does not imply, like the telephone keypad (whose keys are larger than the numeric ones on most Android keyboards) for a code of digits.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode-enum",
         },
         new()
         {
@@ -157,6 +166,20 @@ public partial class BitOtpInputDemo
             Type = "int",
             DefaultValue = "1",
             Description = "The number of inputs of each group that the Separator is rendered between, which is how a long code is split into the chunks it is usually printed in, like 123-456. The default is 1, meaning a separator between every pair of inputs. Values below 1 are treated as 1.",
+        },
+        new()
+        {
+            Name = "SeparatorTemplate",
+            Type = "RenderFragment<int>?",
+            DefaultValue = "null",
+            Description = "Custom template rendered between the inputs in place of the Separator text, which is what puts an icon or any other markup between the groups of a code. The context is the zero based index of the input the separator is rendered before, so a template can tell one separator of the row from another. It takes precedence over the Separator.",
+        },
+        new()
+        {
+            Name = "SingleTabStop",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the whole component into a single stop of the tab order: only the input holding the first character of the code is reachable with the Tab key and the rest are left to the auto advancing focus, the arrow keys and the mouse. Tabbing out of the code then lands on the element after it rather than on its next character.",
         },
         new()
         {
@@ -348,6 +371,63 @@ public partial class BitOtpInputDemo
         },
         new()
         {
+            Id = "input-mode-enum",
+            Name = "BitInputMode",
+            Description = "Defines the inputmode html attribute, which is what lets a browser display an appropriate virtual keyboard.",
+            Items =
+            [
+                new()
+                {
+                    Name= "None",
+                    Description="No virtual keyboard. For when the page implements its own keyboard input control.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="Standard input keyboard for the user's current locale.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Decimal",
+                    Description="Fractional numeric input keyboard containing the digits and decimal separator for the user's locale.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Numeric",
+                    Description="Numeric input keyboard, but only requires the digits 0–9.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Tel",
+                    Description="A telephone keypad input, including the digits 0–9, the asterisk (*), and the pound (#) key.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Search",
+                    Description="A virtual keyboard optimized for search input.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Email",
+                    Description="A virtual keyboard optimized for entering email addresses.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Url",
+                    Description="A keypad optimized for entering URLs.",
+                    Value="7",
+                }
+            ]
+        },
+        new()
+        {
             Id = "variant-enum",
             Name = "BitVariant",
             Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
@@ -404,13 +484,15 @@ public partial class BitOtpInputDemo
         {
             Name = "FocusAsync",
             Type = "(int index = 0) => ValueTask",
-            Description = "Gives focus to a specific input element of the BitOtpInput. The index is clamped into the range of the rendered inputs.",
+            Description = "Gives focus to a specific input element of the BitOtpInput. The index is clamped into the range of the rendered inputs, and calling it before the component has rendered does nothing rather than asking the browser for an element that is not there yet.",
         }
     ];
 
 
 
     private string? maskValue;
+
+    private string? pasteValue;
 
     private string? oneWayValue;
     private string? twoWayValue;
@@ -485,7 +567,8 @@ public partial class BitOtpInputDemo
     private readonly string example3RazorCode = @"
 <BitOtpInput Label=""Text"" Type=""BitInputType.Text"" />
 <BitOtpInput Label=""Number"" Type=""BitInputType.Number"" />
-<BitOtpInput Label=""Password"" Type=""BitInputType.Password"" />";
+<BitOtpInput Label=""Password"" Type=""BitInputType.Password"" />
+<BitOtpInput Label=""Number, with the telephone keypad"" Type=""BitInputType.Number"" InputMode=""BitInputMode.Tel"" />";
 
     private readonly string example4RazorCode = @"
 <BitOtpInput Label=""Bullet"" Mask=""●"" DefaultValue=""12345"" />
@@ -518,7 +601,13 @@ private string? maskValue;";
 
 <BitOtpInput Label=""Grouped by 3"" Length=""6"" Separator=""-"" SeparatorInterval=""3"" />
 
-<BitOtpInput Label=""Grouped by 4"" Length=""8"" Separator=""—"" SeparatorInterval=""4"" Type=""BitInputType.Number"" />";
+<BitOtpInput Label=""Grouped by 4"" Length=""8"" Separator=""—"" SeparatorInterval=""4"" Type=""BitInputType.Number"" />
+
+<BitOtpInput Label=""Icon separator"" Length=""6"" SeparatorInterval=""3"" Type=""BitInputType.Number"">
+    <SeparatorTemplate>
+        <BitIcon IconName=""@BitIconName.Remove"" />
+    </SeparatorTemplate>
+</BitOtpInput>";
 
     private readonly string example8RazorCode = @"
 <BitOtpInput Label=""Default"" />
@@ -533,19 +622,27 @@ private string? maskValue;";
 
 <BitOtpInput Label=""Localized announcement"" Length=""6"" InputAriaLabelFormat=""رقم {0} از {1}"" />
 
-<BitOtpInput Label=""Without the SMS auto fill"" Length=""6"" NoSmsAutoFill />";
+<BitOtpInput Label=""Single tab stop"" Length=""6"" SingleTabStop />";
 
     private readonly string example10RazorCode = @"
+<BitOtpInput Label=""Paste a code"" Length=""6"" Type=""BitInputType.Number"" @bind-Value=""pasteValue"" />
+<div>Value: @pasteValue</div>
+
+<BitOtpInput Label=""Without the SMS auto fill"" Length=""6"" NoSmsAutoFill />";
+    private readonly string example10CsharpCode = @"
+private string? pasteValue;";
+
+    private readonly string example11RazorCode = @"
 <BitOtpInput Label=""One-way"" Value=""@oneWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""oneWayValue"" />
 
 <BitOtpInput Label=""Two-way"" @bind-Value=""twoWayValue"" />
 <BitTextField Style=""margin-top: 5px;"" @bind-Value=""twoWayValue"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private string? oneWayValue;
 private string? twoWayValue;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitOtpInput Label=""OnChange"" OnChange=""v => onChangeValue = v"" />
 <div>OnChange value: @onChangeValue</div>
 
@@ -571,7 +668,7 @@ private string? twoWayValue;";
 <BitOtpInput Label=""OnPaste"" OnPaste=""args => onPasteArgs = args"" />
 <div>Focus type: @onPasteArgs?.Event.Type</div>
 <div>Input index: @onPasteArgs?.Index</div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? onChangeValue;
 private string? onFillValue;
 private (FocusEventArgs Event, int Index)? onFocusInArgs;
@@ -580,7 +677,7 @@ private (ChangeEventArgs Event, int Index)? onInputArgs;
 private (KeyboardEventArgs Event, int Index)? onKeyDownArgs;
 private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitOtpInput @ref=""apiOtpInput"" Label=""OTP"" Length=""6"" DefaultValue=""123456"" />
 
 <BitStack Horizontal FitWidth Gap=""0.5rem"">
@@ -588,7 +685,7 @@ private (ClipboardEventArgs Event, int Index)? onPasteArgs;";
     <BitButton OnClick=""() => apiOtpInput?.FocusAsync(5)"">Focus last</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""HandleClearClick"">Clear</BitButton>
 </BitStack>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitOtpInput? apiOtpInput;
 
 private async Task HandleClearClick()
@@ -599,7 +696,7 @@ private async Task HandleClearClick()
     await apiOtpInput.FocusAsync();
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -615,7 +712,7 @@ private async Task HandleClearClick()
 
     <BitButton Style=""margin-top: 10px;"" ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class ValidationOtpInputModel
 {
     [Required(ErrorMessage = ""The OTP value is required."")]
@@ -628,12 +725,12 @@ private ValidationOtpInputModel validationOtpInputModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitOtpInput Label=""Fill"" Variant=""BitVariant.Fill"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Outline"" Variant=""BitVariant.Outline"" DefaultValue=""12345"" />
 <BitOtpInput Label=""Text"" Variant=""BitVariant.Text"" DefaultValue=""12345"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitOtpInput Label=""Primary"" Accent=""BitColor.Primary"" />
 <BitOtpInput Label=""Secondary"" Accent=""BitColor.Secondary"" />
 <BitOtpInput Label=""Tertiary"" Accent=""BitColor.Tertiary"" />
@@ -643,12 +740,12 @@ private void HandleInvalidSubmit() { }";
 <BitOtpInput Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" />
 <BitOtpInput Label=""Error"" Accent=""BitColor.Error"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitOtpInput Label=""Small"" Size=""BitSize.Small"" />
 <BitOtpInput Label=""Medium"" Size=""BitSize.Medium"" />
 <BitOtpInput Label=""Large"" Size=""BitSize.Large"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         gap: 1rem;
@@ -704,7 +801,7 @@ private void HandleInvalidSubmit() { }";
                                 Focused = ""custom-focused"",
                                 Separator = ""custom-separator"" })"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitOtpInput Label=""پیش‌فرض"" Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""معکوس"" Reversed Dir=""BitDir.Rtl"" />
 <BitOtpInput Label=""جداکننده"" Length=""6"" Separator=""-"" Dir=""BitDir.Rtl"" />";

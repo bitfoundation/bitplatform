@@ -40,7 +40,11 @@
 .bit-otp-inp {
     display: flex;
     cursor: text;
+    //a form control does not inherit the font of the page on its own, so both halves of it have to be
+    //asked for explicitly, otherwise the code would be drawn in the default font of the browser while
+    //the label above it follows the theme.
     font-size: inherit;
+    font-family: inherit;
     text-align: center;
     color: $clr-fg-pri;
     align-items: center;
@@ -72,6 +76,14 @@
         border-color: $clr-brd-pri;
         background-color: $clr-bg-pri;
 
+        //the hover rule is qualified so that it lights up nothing but a box the user can actually type
+        //in: never a disabled or a read-only component, and never over the accent color of the focused
+        //input. The very same qualifiers are repeated in the invalid block below, which is what keeps a
+        //hovered box red while the code is in error.
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-brd-pri-hover;
+        }
+
         &:focus-visible {
             border-color: var(--bit-otp-clr);
         }
@@ -84,6 +96,10 @@
     .bit-otp-inp {
         border-color: transparent;
         background-color: $clr-bg-sec;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            background-color: $clr-bg-sec-hover;
+        }
 
         &:focus-visible {
             border-color: var(--bit-otp-clr);
@@ -98,6 +114,10 @@
         border-color: $clr-brd-pri;
         background-color: transparent;
         border-width: 0 0 $shp-border-width 0;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-brd-pri-hover;
+        }
 
         &:focus-visible {
             border-color: var(--bit-otp-clr);
@@ -156,6 +176,10 @@
 .bit-otp.bit-inv {
     .bit-otp-inp {
         border-color: $clr-err;
+
+        &:enabled:read-write:hover:not(:focus-visible) {
+            border-color: $clr-err;
+        }
 
         &:focus-visible {
             border-color: $clr-err;

@@ -36,7 +36,7 @@
         var inputMode = GetInputMode();
         var autoComplete = NoSmsAutoFill ? BitAutoCompleteValue.Off : BitAutoCompleteValue.OneTimeCode;
         var separatorInterval = Math.Max(1, SeparatorInterval);
-        var hasSeparator = Separator.HasValue();
+        var hasSeparator = SeparatorTemplate is not null || Separator.HasValue();
     }
     <div role="group"
          style="@Styles?.InputsWrapper"
@@ -49,11 +49,16 @@
 
             if (index > 0 && hasSeparator && index % separatorInterval == 0)
             {
+                @* The two expressions are written back to back on purpose: a separator is a single glyph
+                   most of the time, so any whitespace around it would show up right next to the code. *@
                 <span aria-hidden="true"
                       style="@Styles?.Separator"
-                      class="bit-otp-sep @Classes?.Separator">@Separator</span>
+                      class="bit-otp-sep @Classes?.Separator">@(SeparatorTemplate is null ? Separator : null)@(SeparatorTemplate?.Invoke(index))</span>
             }
 
+            @* No maxlength is rendered on purpose. Capping an input at a single character would make the
+               browser truncate the code that an autofill (or a paste that the clipboard handler did not
+               catch) writes into it, and it is exactly that whole chunk which is spread over the inputs. *@
             <input @ref="_inputRefs[index]" @attributes="InputHtmlAttributes"
                    @onpaste="e => HandleOnPaste(e, index)"
                    @oninput="e => HandleOnInput(e, index)"
@@ -74,6 +79,9 @@
                    class="@GetInputClasses(index)"
                    placeholder="@GetPlaceholder(index)"
                    aria-label="@GetInputAriaLabel(index)"
+                   @* the input holding the first character of the code stays in the tab order whichever
+                      way the row is laid out, since Tab addresses the code rather than the layout. *@
+                   tabindex="@(SingleTabStop && index > 0 ? -1 : (int?)null)"
                    disabled="@(IsEnabled is false)" />
         }
     </div>

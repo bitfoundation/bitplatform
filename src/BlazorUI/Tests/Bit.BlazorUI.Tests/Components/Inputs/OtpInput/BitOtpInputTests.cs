@@ -1061,6 +1061,234 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(smsAutoFill, invocations[0].Arguments[3]);
     }
 
+    [TestMethod,
+        DataRow(BitInputMode.Numeric, "numeric"),
+        DataRow(BitInputMode.Tel, "tel"),
+        DataRow(BitInputMode.Text, "text")
+    ]
+    public void BitOtpInputShouldRespectTheInputMode(BitInputMode inputMode, string expected)
+    {
+        // The inputmode is what decides the virtual keyboard of a phone, and it is asked for on its own so
+        // that a keyboard the Type does not imply (the telephone keypad for a code of digits) can be used.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, BitInputType.Text);
+            parameters.Add(p => p.InputMode, inputMode);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-otp-inp").GetAttribute("inputmode"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldFallBackToTheInputModeOfTheType()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 2);
+            parameters.Add(p => p.Type, BitInputType.Number);
+        });
+
+        Assert.AreEqual("numeric", com.Find(".bit-otp-inp").GetAttribute("inputmode"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldRenderTheSeparatorTemplateInsteadOfTheSeparator()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Separator, "-");
+            parameters.Add(p => p.SeparatorInterval, 2);
+            parameters.Add(p => p.SeparatorTemplate, (RenderFragment<int>)(index => builder => builder.AddMarkupContent(0, $"<i>{index}</i>")));
+        });
+
+        var separators = com.FindAll(".bit-otp-sep");
+
+        Assert.AreEqual(1, separators.Count);
+        // The context of the template is the index of the input the separator is rendered before.
+        Assert.AreEqual("<i>2</i>", separators[0].InnerHtml);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldRenderTheSeparatorTemplateWithoutASeparatorText()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.SeparatorTemplate, (RenderFragment<int>)(_ => builder => builder.AddMarkupContent(0, "<i>x</i>")));
+        });
+
+        Assert.AreEqual(2, com.FindAll(".bit-otp-sep").Count);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldKeepEveryInputInTheTabOrderByDefault()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+        });
+
+        foreach (var input in com.FindAll(".bit-otp-inp"))
+        {
+            Assert.IsFalse(input.HasAttribute("tabindex"));
+        }
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldBecomeASingleTabStop()
+    {
+        // Only the input holding the first character of the code stays reachable with the Tab key, so a
+        // keyboard user tabs past the whole code in one press instead of one per character.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.SingleTabStop, true);
+        });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.IsFalse(inputs[0].HasAttribute("tabindex"));
+        Assert.AreEqual("-1", inputs[1].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", inputs[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldUppercaseTheValueThatIsAssignedToIt()
+    {
+        // Showing the upper case form of a code while reporting the value that was assigned would leave
+        // the inputs and the value out of sync for good.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Uppercase, true);
+            parameters.Add(p => p.DefaultValue, "ab1c");
+        });
+
+        Assert.AreEqual("AB1C", com.Instance.Value);
+        Assert.AreEqual("A", com.FindAll(".bit-otp-inp")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldDropTheCharactersOfAnAssignedValueThatThePatternRejects()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Pattern, "^[0-9]$");
+            parameters.Add(p => p.DefaultValue, "1z2y");
+        });
+
+        Assert.AreEqual("12", com.Instance.Value);
+
+        var inputs = com.FindAll(".bit-otp-inp");
+        Assert.AreEqual("1", inputs[0].GetAttribute("value"));
+        Assert.AreEqual("2", inputs[1].GetAttribute("value"));
+        Assert.IsTrue(string.IsNullOrEmpty(inputs[2].GetAttribute("value")));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldCallOnFillAgainAfterTheLengthHasChanged()
+    {
+        // A code of another length is another code, so the completed one that the callback was raised for
+        // last must not keep it from firing for the code that fills the resized component.
+        var onFillCallCount = 0;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.OnFill, _ => onFillCallCount++);
+        });
+
+        await com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "1" });
+        await com.FindAll(".bit-otp-inp")[1].InputAsync(new ChangeEventArgs { Value = "2" });
+        await com.FindAll(".bit-otp-inp")[2].InputAsync(new ChangeEventArgs { Value = "3" });
+        Assert.AreEqual(1, onFillCallCount);
+
+        com.Render(parameters => parameters.Add(p => p.Length, 2));
+        com.Render(parameters => parameters.Add(p => p.Length, 3));
+
+        await com.FindAll(".bit-otp-inp")[2].InputAsync(new ChangeEventArgs { Value = "3" });
+
+        Assert.AreEqual("123", com.Instance.Value);
+        Assert.AreEqual(2, onFillCallCount);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputClearShouldDoNothingWhenReadOnly()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, "1234");
+        });
+
+        await com.InvokeAsync(() => com.Instance.Clear());
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldBindTheLabelToTheFirstInput()
+    {
+        // Clicking the label has to move the focus into the code, which is what the for attribute does.
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.Label, "OTP");
+        });
+
+        var inputs = com.FindAll(".bit-otp-inp");
+
+        Assert.AreEqual(inputs[0].Id, com.Find(".bit-otp-lbl").GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldKeepTheFirstCharactersOfAPastedCodeThatIsTooLong()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("123456", 0));
+
+        Assert.AreEqual("1234", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldIgnoreAPastedValueThatIsEntirelyRejected()
+    {
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Type, BitInputType.Number);
+            parameters.Add(p => p.DefaultValue, "12");
+        });
+
+        await com.InvokeAsync(() => com.Instance._SetValue("   abc   ", 0));
+
+        Assert.AreEqual("12", com.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputShouldForwardTheIndexOfTheInputThatRaisedTheKeyDown()
+    {
+        var keyDownIndex = -1;
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.OnKeyDown, args => keyDownIndex = args.Index);
+        });
+
+        await com.FindAll(".bit-otp-inp")[2].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
+
+        Assert.AreEqual(2, keyDownIndex);
+    }
+
     [TestMethod]
     public async Task BitOtpInputShouldClearASingleInputOnDeleteWithoutAutoShift()
     {
