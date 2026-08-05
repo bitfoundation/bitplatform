@@ -10,7 +10,7 @@ public partial class _BitDropdownItemDemo
 
 <BitDropdown Label=""Multi select""
              MultiSelect
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Placeholder=""Select items"" />
 
@@ -74,7 +74,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              StickyHeaders
              MultiSelect
              Items=""GetGroupedItems()""
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Select items"" />";
     private readonly string example2CsharpCode = @"
 private List<BitDropdownItem<string>> GetGroupedItems() =>
@@ -177,7 +177,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              MultiSelect
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty"" />";
+             DefaultValues=""@(Array.Empty<string>())"" />";
     private readonly string example4CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -203,7 +203,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              MultiSelect
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty"" />
+             DefaultValues=""@(Array.Empty<string>())"" />
 
 <div style=""padding:0.5rem;border-radius:0.5rem;background:linear-gradient(90deg,#ff00cc7f,#3333997f)"">
     <BitDropdown Transparent
@@ -327,7 +327,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              ShowSearchBox
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              SearchBoxPlaceholder=""Search items"" />
 
 
@@ -347,7 +347,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              ShowSearchBox
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              SearchBoxPlaceholder=""Search items""
              SearchFunction=""(items, text) => items.Where(i => i.Text?.EndsWith(text, StringComparison.OrdinalIgnoreCase) ?? false).ToArray()"" />";
     private readonly string example9CsharpCode = @"
@@ -746,7 +746,7 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
              MultiSelect
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              OnSelectItem=""(BitDropdownItem<string> item) => selectedItem2 = item"" />
 <div>Selected Value: @selectedItem2?.Value</div>
 
@@ -1044,7 +1044,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              MultiSelect
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty"" />";
+             DefaultValues=""@(Array.Empty<string>())"" />";
     private readonly string example19CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -1075,7 +1075,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              SelectAllText=""Select all of them""
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              SearchBoxPlaceholder=""Search items""
              Label=""Custom text & search"" />";
     private readonly string example20CsharpCode = @"
@@ -1297,7 +1297,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              OverscanCount=""5""
              Items=""virtualizeItems2""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty"" />
+             DefaultValues=""@(Array.Empty<string>())"" />
 
 
 <BitDropdown Label=""Single select""
@@ -1657,7 +1657,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Primary""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Primary""
              Placeholder=""Select items"" />
@@ -1665,7 +1665,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Secondary""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Secondary""
              Placeholder=""Select items"" />
@@ -1673,7 +1673,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Tertiary""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Tertiary""
              Placeholder=""Select items"" />
@@ -1681,7 +1681,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Info""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Info""
              Placeholder=""Select items"" />
@@ -1689,7 +1689,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Success""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Success""
              Placeholder=""Select items"" />
@@ -1697,7 +1697,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Warning""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Warning""
              Placeholder=""Select items"" />
@@ -1705,7 +1705,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""SevereWarning""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.SevereWarning""
              Placeholder=""Select items"" />
@@ -1713,7 +1713,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <BitDropdown Label=""Error""
              MultiSelect
              ShowSearchBox
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Items=""GetBasicItems()""
              Color=""BitColor.Error""
              Placeholder=""Select items"" />";
@@ -1997,7 +1997,7 @@ private List<BitDropdownItem<string>> GetStyleClassItems() => new()
              MultiSelect
              Dir=""BitDir.Rtl""
              Items=""GetRtlItems()""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""انتخاب چند گزینه ای"" />
 
 <BitDropdown Label=""تک انتخابی ریسپانسیو""

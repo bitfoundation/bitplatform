@@ -2673,21 +2673,38 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return GetDisplayItems().Any(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false) is false;
     }
 
+    // Read on every render of the callout, so the items are counted in place rather than collected into
+    // a list first - the state only needs the two counts, not the items themselves.
     private (bool AllSelected, bool AnySelected) GetSelectAllState()
     {
-        var candidates = GetSelectAllCandidateItems();
-        if (candidates.Count == 0) return (false, false);
+        var count = 0;
+        var selectedCount = 0;
 
-        var selectedCount = candidates.Count(GetIsSelected);
+        foreach (var item in GetSearchedItems())
+        {
+            if (IsSelectAllCandidate(item) is false) continue;
 
-        return (selectedCount == candidates.Count, selectedCount > 0);
+            count++;
+
+            if (GetIsSelected(item))
+            {
+                selectedCount++;
+            }
+        }
+
+        if (count == 0) return (false, false);
+
+        return (selectedCount == count, selectedCount > 0);
+    }
+
+    private bool IsSelectAllCandidate(TItem item)
+    {
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
     }
 
     private List<TItem> GetSelectAllCandidateItems()
     {
-        return [.. GetSearchedItems().Where(i => GetItemType(i) == BitDropdownItemType.Normal &&
-                                                 GetIsHidden(i) is false &&
-                                                 GetIsEnabled(i))];
+        return [.. GetSearchedItems().Where(IsSelectAllCandidate)];
     }
 
     private async Task HandleOnSelectAllClick()

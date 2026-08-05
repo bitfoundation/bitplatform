@@ -132,7 +132,7 @@
         <BitDropdown Label="StickyHeaders"
                      StickyHeaders
                      MultiSelect
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
             <Options>
@@ -889,7 +889,7 @@
         <BitDropdown Label="Multi select"
                      MultiSelect
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      TItem="BitDropdownOption<string>" TValue="string"
                      OnSelectItem="(BitDropdownOption<string> item) => selectedItem2 = item">
             @foreach (var item in basicItems)
@@ -1277,7 +1277,7 @@
         <BitDropdown Label="Multi select"
                      MultiSelect
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
@@ -1322,7 +1322,7 @@
                      ShowSearchBox
                      SelectAllText="Select all of them"
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      SearchBoxPlaceholder="Search items"
                      Label="Custom text & search"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1507,7 +1507,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example24RazorCode" Id="example24">
+<DemoExample Title="Virtualization" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>Virtualizing large item lists is demonstrated with the <b>Items</b> and <b>ItemsProvider</b> APIs; check the <b>Item</b> and <b>Custom</b> tabs for the examples.</div>
 </DemoExample>
 

@@ -36,20 +36,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "HideSelectedItems",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Removes the already selected items from the callout, which suits a multi select dropdown whose selection is visible as chips and whose list is therefore only about what is left to pick. A group header left naming nothing, and a divider left without items on one of its sides, are removed along with them. It has no effect when the items come from an ItemsProvider, which hands over the window it was asked for and is the only place that can leave the selected items out of it.",
-        },
-        new()
-        {
-            Name = "HighlightSearch",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Highlights the part of the item text that matched the current search text in the callout. Only applies to the default item rendering, not to a custom ItemTemplate. The highlighted part is found by the built-in algorithm (SearchMode and SearchIgnoreDiacritics), so a custom SearchFunction that matches by some other rule can produce items with nothing to highlight.",
-        },
-        new()
-        {
             Name = "CalloutFooterTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -133,15 +119,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The general color of the dropdown.",
-            LinkType = LinkType.Link,
-            Href = "#color-enum",
-        },
-        new()
-        {
             Name = "ClearButtonAriaLabel",
             Type = "string?",
             DefaultValue = "null",
@@ -169,6 +146,15 @@ public partial class BitDropdownDemo
             Type = "bool?",
             DefaultValue = "null",
             Description = "Determines whether picking an item in the callout closes it. It defaults to the behavior each mode expects: a single select dropdown closes, because the pick is the whole interaction, while a multi select one stays open so the next item can be picked right away. Set it explicitly to keep a single select callout open (a long list the user keeps trying options from) or to close a multi select one after every pick.",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the dropdown.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -253,12 +239,14 @@ public partial class BitDropdownDemo
         {
             Name = "ExistsSelectedItemFunction",
             Type = "Func<ICollection<TItem>, string, bool>?",
+            DefaultValue = "null",
             Description = "Decides whether the text committed in the ComboBox mode already stands for one of the selected items, in place of the default comparison of that text with the item texts, ignoring case. It receives the selected items and the committed text, and returning true stops the commit, so the same item cannot be selected (or created) twice under a name your data considers equivalent.",
         },
         new()
         {
             Name = "FindItemFunction",
             Type = "Func<ICollection<TItem>, string, TItem?>?",
+            DefaultValue = "null",
             Description = "Finds the item the text committed in the ComboBox mode stands for, in place of the default comparison of that text with the item texts, ignoring case. It receives the items and the committed text; the item it returns gets selected, and only when it returns none does AutoSelectFirstMatch and then Dynamic get their turn.",
         },
         new()
@@ -274,6 +262,20 @@ public partial class BitDropdownDemo
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
             Description = "The custom template for rendering the header items of the dropdown.",
+        },
+        new()
+        {
+            Name = "HideSelectedItems",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the already selected items from the callout, which suits a multi select dropdown whose selection is visible as chips and whose list is therefore only about what is left to pick. A group header left naming nothing, and a divider left without items on one of its sides, are removed along with them. It has no effect when the items come from an ItemsProvider, which hands over the window it was asked for and is the only place that can leave the selected items out of it.",
+        },
+        new()
+        {
+            Name = "HighlightSearch",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Highlights the part of the item text that matched the current search text in the callout. Only applies to the default item rendering, not to a custom ItemTemplate. The highlighted part is found by the built-in algorithm (SearchMode and SearchIgnoreDiacritics), so a custom SearchFunction that matches by some other rule can produce items with nothing to highlight.",
         },
         new()
         {
@@ -418,6 +420,13 @@ public partial class BitDropdownDemo
             Type = "string",
             DefaultValue = ", ",
             Description = "The delimiter for joining the values to create the text of the dropdown in multi select mode.",
+        },
+        new()
+        {
+            Name = "Name",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the hidden native select element that mirrors the selection, so the value takes part in a plain HTML form post. It is intended for use with forms and is not displayed in the UI.",
         },
         new()
         {

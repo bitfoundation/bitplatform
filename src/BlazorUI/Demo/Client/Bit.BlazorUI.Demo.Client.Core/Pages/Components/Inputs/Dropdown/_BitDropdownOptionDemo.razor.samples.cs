@@ -122,7 +122,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <BitDropdown Label=""StickyHeaders""
              StickyHeaders
              MultiSelect
-             DefaultValue=""@("""")""
+             DefaultValues=""@(Array.Empty<string>())""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <Options>
@@ -983,7 +983,7 @@ private readonly List<BitDropdownItem<string>> dataItems =
 <BitDropdown Label=""Multi select""
              MultiSelect
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              TItem=""BitDropdownOption<string>"" TValue=""string""
              OnSelectItem=""(BitDropdownOption<string> item) => selectedItem2 = item"">
     @foreach (var item in basicItems)
@@ -1383,7 +1383,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <BitDropdown Label=""Multi select""
              MultiSelect
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {
@@ -1424,7 +1424,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              ShowSearchBox
              SelectAllText=""Select all of them""
              Placeholder=""Select items""
-             DefaultValue=""@string.Empty""
+             DefaultValues=""@(Array.Empty<string>())""
              SearchBoxPlaceholder=""Search items""
              Label=""Custom text & search""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
