@@ -99,6 +99,10 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
+function removeElementById(id: string) {
+    document.getElementById(id)?.remove();
+}
+
 const windowResizeListeners: { [key: string]: () => void } = {};
 
 function registerWindowResizeListener(id: string, dotnetObj: any, methodName: string) {
@@ -117,6 +121,26 @@ function unregisterWindowResizeListener(id: string) {
     delete windowResizeListeners[id];
 }
 
+// Cookies are how a client-side preference reaches the server, which needs it to prerender the page
+// the way the visitor left it - localStorage is unreachable from there. Lax + the 400-day cap
+// browsers clamp to, mirroring what the library writes for its own theme-preference cookie.
+function setCookie(name: string, value: string, maxAgeSeconds: number) {
+    const secure = location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
+}
+
+function getCookie(name: string): string | null {
+    const prefix = `${name}=`;
+    const match = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(prefix));
+    if (match == null) return null;
+
+    try {
+        return decodeURIComponent(match.substring(prefix.length));
+    } catch {
+        return match.substring(prefix.length);
+    }
+}
+
 declare namespace BitBlazorUI {
     class Theme { static init(options: any): void; }
 }
@@ -127,6 +151,10 @@ declare namespace BitBlazorUI {
 BitBlazorUI.Theme.init({
     system: true,
     persist: true,
+    // Mirror every theme change into the bit-theme-preference cookie so the server can paint the
+    // right theme into the prerendered markup (see App.razor). Without it the server would fall back
+    // to following the OS and the app would flash the wrong theme for visitors who picked one.
+    persistCookie: true,
     onChange: (newTheme: string, oldTheme: string) => {
         const name = (newTheme ?? '').toLowerCase();
         const isDark = name === 'dark' || name.endsWith('-dark');

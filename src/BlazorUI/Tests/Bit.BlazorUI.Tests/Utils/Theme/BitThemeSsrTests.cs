@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -162,5 +163,49 @@ public sealed class BitThemeSsrTests
         // marker with no injected attribute or markup - never the tampered value.
         Assert.AreEqual("bit-theme-system",
             BitThemeSsr.BuildRootThemeAttributes("system", defaultTheme: "\"><b>"));
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapEmitsMarkersAsBooleansAndNamesAsStrings()
+    {
+        // Blazor renders a bool `true` attribute as a valueless marker and a string as name="value",
+        // so the map has to distinguish the two - that is the whole point of the overload.
+        var concrete = BitThemeSsr.BuildRootThemeAttributeMap("dark");
+        CollectionAssert.AreEquivalent(new[] { BitThemeAttributeNames.Theme }, concrete.Keys.ToArray());
+        Assert.AreEqual("dark", concrete[BitThemeAttributeNames.Theme]);
+
+        var system = BitThemeSsr.BuildRootThemeAttributeMap("system", defaultTheme: "light");
+        CollectionAssert.AreEquivalent(
+            new[] { BitThemeAttributeNames.ThemeSystem, BitThemeAttributeNames.ThemeDefault },
+            system.Keys.ToArray());
+        Assert.AreEqual(true, system[BitThemeAttributeNames.ThemeSystem]);
+        Assert.AreEqual("light", system[BitThemeAttributeNames.ThemeDefault]);
+    }
+
+    [DataTestMethod]
+    [DataRow(null, null, DisplayName = "nothing stored")]
+    [DataRow("   ", null, DisplayName = "blank preference")]
+    [DataRow("dark", null, DisplayName = "concrete preference")]
+    [DataRow("  Fluent-DARK  ", null, DisplayName = "unnormalized preference")]
+    [DataRow("system", null, DisplayName = "system without default")]
+    [DataRow("system", "light", DisplayName = "system with default")]
+    [DataRow(null, "light", DisplayName = "default only")]
+    [DataRow("\"><script>alert(1)</script>", null, DisplayName = "tampered preference")]
+    [DataRow("system", "\"><b>", DisplayName = "tampered default")]
+    public void BuildRootThemeAttributeMapMatchesTheStringOverload(string? preference, string? defaultTheme)
+    {
+        // Both overloads are formatted from one resolution; this pins them together so a change to
+        // either can't silently give the Razor host a different first paint than the raw-string host.
+        // Compared as sets: attribute order is meaningless to a splat (and the string overload's own
+        // ordering is already pinned by BuildRootThemeAttributesSystemFollowsOsAndCarriesDefault).
+        var rendered = BitThemeSsr.BuildRootThemeAttributeMap(preference, defaultTheme)
+                                  .Select(a => a.Value is bool ? a.Key : $"{a.Key}=\"{a.Value}\"")
+                                  .OrderBy(a => a, StringComparer.Ordinal);
+
+        var expected = BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme)
+                                  .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                  .OrderBy(a => a, StringComparer.Ordinal);
+
+        CollectionAssert.AreEqual(expected.ToArray(), rendered.ToArray());
     }
 }

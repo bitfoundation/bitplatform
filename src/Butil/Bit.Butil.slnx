@@ -14,4 +14,5 @@
     <Project Path="Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
   </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
+  <Project Path="Bit.Butil.Demo/Bit.Butil.Demo.csproj" />
 </Solution>

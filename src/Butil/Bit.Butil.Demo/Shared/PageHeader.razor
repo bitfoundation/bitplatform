@@ -1,0 +1,28 @@
+﻿<div class="page-header">
+    <span class="eyebrow">@Category</span>
+    <h1>@Title</h1>
+    @if (!string.IsNullOrWhiteSpace(Lead))
+    {
+        <p class="lead">@Lead</p>
+    }
+    <div class="page-header-links">
+        @if (!string.IsNullOrWhiteSpace(InjectAs))
+        {
+            <code class="inject-chip">@("@inject") Bit.Butil.@InjectAs</code>
+        }
+        @if (!string.IsNullOrWhiteSpace(MdnUrl))
+        {
+            <a class="mdn-link" href="@MdnUrl" target="_blank" rel="noopener noreferrer">MDN reference ↗</a>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Category { get; set; } = "Bit.Butil";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Lead { get; set; }
+    [Parameter] public string? MdnUrl { get; set; }
+
+    /// <summary>The class name to show in the "@inject Bit.Butil.X" chip, e.g. "Clipboard clipboard".</summary>
+    [Parameter] public string? InjectAs { get; set; }
+}

@@ -3,6 +3,7 @@ using System.IO.Compression;
 using Bit.BlazorUI.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Bit.BlazorUI.Demo.Client.Core.Components;
+using Bit.BlazorUI.Demo.Client.Core.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -59,6 +60,15 @@ public static class Services
             return httpContext?.Items?.ContainsKey("RenderForMcpClient") is true
                 || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
         });
+
+        // The accent the visitor picked, so the prerendered markup marks the right swatch as active.
+        // The matching palette reaches the same response as a stylesheet rule from App.razor, which
+        // reads this same cookie for itself; this only carries the value into the component tree,
+        // where MainLayout picks it up and round-trips it through the prerender state for the
+        // interactive pass. Null once the circuit outlives the request (no HttpContext) - by then the
+        // client has read its own stores.
+        services.AddCascadingValue("PrerenderedAccentColor", sp =>
+            sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Cookies[AppAccentColorService.CookieName]);
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {

@@ -1,0 +1,521 @@
+@page "/crypto"
+@inject Bit.Butil.Crypto crypto
+
+<PageTitle>Crypto - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="Crypto"
+            Lead="Drive the browser's Web Crypto engine from C#: strong randomness, hashing, HMAC, AES and RSA-OAEP encryption, PBKDF2 derivation and RSA-PSS / ECDSA signatures - no JavaScript required."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto"
+            InjectAs="Crypto crypto" />
+
+<div class="stack">
+    <DemoSection Title="Random values"
+                 Api="RandomUuid / GetRandomValues"
+                 Description="RandomUuid returns a cryptographically strong v4 UUID as a Guid. GetRandomValues fills up to 65,536 bytes per call with strong random data - ideal for keys, IVs and salts."
+                 Code=@("""
+Guid uuid = await crypto.RandomUuid();
+
+byte[] iv = await crypto.GetRandomValues(16);
+""")>
+        <div class="controls">
+            <button @onclick="RandomUuid">RandomUuid</button>
+            <button @onclick="RandomBytes">GetRandomValues (16 bytes)</button>
+        </div>
+        <DemoConsole @ref="randomOutput" Title="random values output" />
+    </DemoSection>
+
+    <DemoSection Title="Hashing"
+                 Api="Digest"
+                 Description="Digest computes a SHA-256, SHA-384 or SHA-512 hash of arbitrary bytes via SubtleCrypto.digest. The algorithm is selected with the CryptoKeyHash enum."
+                 Code=@("""
+byte[] data = Encoding.UTF8.GetBytes("Bit.Butil");
+
+byte[] hash = await crypto.Digest(CryptoKeyHash.Sha256, data);
+""")>
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_hashInput" placeholder="Message to hash" />
+        </div>
+        <div class="controls">
+            <button @onclick='() => DigestHash(CryptoKeyHash.Sha256, "SHA-256")'>SHA-256</button>
+            <button @onclick='() => DigestHash(CryptoKeyHash.Sha384, "SHA-384")'>SHA-384</button>
+            <button @onclick='() => DigestHash(CryptoKeyHash.Sha512, "SHA-512")'>SHA-512</button>
+        </div>
+        <DemoConsole @ref="digestOutput" Title="hashing output" />
+    </DemoSection>
+
+    <DemoSection Title="AES encrypt & decrypt"
+                 Api="Encrypt / Decrypt"
+                 Description="The CryptoAlgorithm overload covers the common cases in one line: pick AES-GCM (authenticated, recommended), AES-CBC or AES-CTR and pass the key, data and IV. This demo generates a 256-bit key plus a random IV, encrypts your text, then decrypts the cipher back."
+                 Code=@("""
+byte[] key = await crypto.GenerateAesKey(256);
+byte[] iv = await crypto.GetRandomValues(16);
+byte[] data = Encoding.UTF8.GetBytes("Secret message");
+
+byte[] cipher = await crypto.Encrypt(CryptoAlgorithm.AesGcm, key, data, iv: iv);
+byte[] plain = await crypto.Decrypt(CryptoAlgorithm.AesGcm, key, cipher, iv: iv);
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Plain text</span>
+                <input @bind="_plainText" placeholder="Secret message..." />
+            </div>
+            <div class="field">
+                <span class="field-label">Algorithm</span>
+                <select @bind="_aesAlgorithm">
+                    <option value="AES-GCM">AES-GCM</option>
+                    <option value="AES-CBC">AES-CBC</option>
+                </select>
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="EncryptAes">Encrypt</button>
+            <button class="secondary" @onclick="DecryptAes">Decrypt</button>
+        </div>
+        @if (_cipherHex.Length > 0)
+        {
+            <div class="field" style="margin-top:0.75rem">
+                <span class="field-label">Cipher (hex)</span>
+                <input value="@_cipherHex" readonly />
+            </div>
+        }
+        <DemoConsole @ref="aesOutput" Title="AES output" />
+    </DemoSection>
+
+    <DemoSection Title="Algorithm parameter classes"
+                 Api="Encrypt<T> / Decrypt<T>"
+                 Description="For full control, pass a typed parameter object instead of the enum: AesGcmCryptoAlgorithmParams (Iv, AdditionalData, TagLength), AesCbcCryptoAlgorithmParams (Iv), AesCtrCryptoAlgorithmParams (Counter, Length) or RsaOaepCryptoAlgorithmParams (Label). The live demo generates an RSA-OAEP key pair, encrypts with the public key and decrypts with the private key."
+                 Code=@("""
+// AES-GCM with additional authenticated data and explicit tag length
+byte[] cipher = await crypto.Encrypt(new AesGcmCryptoAlgorithmParams
+{
+    Iv = iv,
+    AdditionalData = aad,
+    TagLength = AesGcmTagLength.Sixteen,
+}, key, data);
+
+// RSA-OAEP: encrypt with the SPKI public key, decrypt with the PKCS8 private key
+RsaKeyPair pair = await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
+
+byte[] rsaCipher = await crypto.Encrypt(new RsaOaepCryptoAlgorithmParams(), pair.PublicKey, data);
+byte[] rsaPlain = await crypto.Decrypt(new RsaOaepCryptoAlgorithmParams(), pair.PrivateKey, rsaCipher);
+""")>
+        <div class="field">
+            <span class="field-label">Text for the RSA-OAEP round-trip</span>
+            <input @bind="_rsaText" placeholder="Top secret..." />
+        </div>
+        <div class="controls">
+            <button @onclick="RsaRoundTrip">Generate key pair, encrypt & decrypt</button>
+        </div>
+        <DemoConsole @ref="rsaOaepOutput" Title="RSA-OAEP output" />
+    </DemoSection>
+
+    <DemoSection Title="HMAC sign & verify"
+                 Api="GenerateHmacKey / SignHmac / VerifyHmac"
+                 Description="SignHmac produces a keyed authentication tag over your data; VerifyHmac checks a tag in constant time inside the browser engine. Keys can come from GenerateHmacKey or any shared secret."
+                 Code=@("""
+byte[] key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+byte[] data = Encoding.UTF8.GetBytes("message");
+
+byte[] tag = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
+bool valid = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, tag, data);
+""")>
+        <div class="field">
+            <span class="field-label">Message</span>
+            <input @bind="_hmacInput" placeholder="Message to authenticate" />
+        </div>
+        <div class="controls">
+            <button @onclick="HmacSignVerify">Sign + verify</button>
+        </div>
+        <DemoConsole @ref="hmacOutput" Title="HMAC output" />
+    </DemoSection>
+
+    <DemoSection Title="Key generation"
+                 Api="GenerateAesKey / GenerateHmacKey / GenerateRsaKeyPair / GenerateEcdsaKeyPair"
+                 Description="Generate symmetric keys as raw bytes, or RSA / ECDSA pairs as SPKI (public) and PKCS8 (private) DER bytes ready for Encrypt, SignRsaPss and SignEcdsa - or for export to a server."
+                 Code=@("""
+byte[] aesKey = await crypto.GenerateAesKey(256);
+byte[] hmacKey = await crypto.GenerateHmacKey(CryptoKeyHash.Sha512);
+
+RsaKeyPair rsa = await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
+EcKeyPair ec = await crypto.GenerateEcdsaKeyPair("P-256");
+""")>
+        <div class="controls">
+            <button @onclick="GenAesKey">AES-256 key</button>
+            <button @onclick="GenHmacKey">HMAC key</button>
+            <button @onclick="GenRsaPair">RSA-2048 pair</button>
+            <button @onclick="GenEcPair">ECDSA P-256 pair</button>
+        </div>
+        <DemoConsole @ref="keyGenOutput" Title="key generation output" />
+    </DemoSection>
+
+    <DemoSection Title="Password-based derivation"
+                 Api="DerivePbkdf2"
+                 Description="DerivePbkdf2 stretches a password into key material using PBKDF2 with a salt, an iteration count and the requested output size in bits. Use a random per-user salt and a six-figure iteration count."
+                 Code=@("""
+byte[] salt = await crypto.GetRandomValues(16);
+
+byte[] derived = await crypto.DerivePbkdf2(
+    Encoding.UTF8.GetBytes(password),
+    salt,
+    iterations: 100_000,
+    outputLengthBits: 256);
+""")>
+        <div class="field">
+            <span class="field-label">Password</span>
+            <input @bind="_password" placeholder="correct horse battery staple" />
+        </div>
+        <div class="controls">
+            <button @onclick="DeriveKey">Derive 256 bits (100,000 iterations)</button>
+        </div>
+        <DemoConsole @ref="deriveOutput" Title="PBKDF2 output" />
+    </DemoSection>
+
+    <DemoSection Title="Digital signatures"
+                 Api="SignRsaPss / VerifyRsaPss / SignEcdsa / VerifyEcdsa"
+                 Description="Sign with the PKCS8 private key, verify with the SPKI public key. RSA-PSS takes a salt length; ECDSA takes the named curve (P-256, P-384 or P-521). Both default the hash to SHA-256."
+                 Code=@("""
+byte[] data = Encoding.UTF8.GetBytes("signed payload");
+
+RsaKeyPair rsa = await crypto.GenerateRsaKeyPair();
+byte[] pssSig = await crypto.SignRsaPss(rsa.PrivateKey, data);
+bool pssOk = await crypto.VerifyRsaPss(rsa.PublicKey, pssSig, data);
+
+EcKeyPair ec = await crypto.GenerateEcdsaKeyPair("P-256");
+byte[] ecSig = await crypto.SignEcdsa(ec.PrivateKey, data, "P-256");
+bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
+""")>
+        <div class="field">
+            <span class="field-label">Message to sign</span>
+            <input @bind="_signMessage" placeholder="Signed by Butil" />
+        </div>
+        <div class="controls">
+            <button @onclick="RsaPssSignVerify">RSA-PSS sign + verify</button>
+            <button @onclick="EcdsaSignVerify">ECDSA sign + verify</button>
+        </div>
+        <DemoConsole @ref="signatureOutput" Title="signatures output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Secure context and key handling">
+    SubtleCrypto only exists in secure contexts (HTTPS or localhost). Also note that Butil's key helpers
+    return extractable key bytes to .NET across the interop channel - convenient, but the material may
+    surface in interop logs or memory dumps. Avoid logging keys, and prefer server-side key custody when
+    keys must never leave a hardware or secure boundary.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="RandomUuid" Signature="ValueTask<Guid> RandomUuid()" Description="Returns a cryptographically strong random Guid (v4 UUID)." />
+    <ApiMember Name="GetRandomValues" Signature="ValueTask<byte[]> GetRandomValues(int length)" Description="Fills length bytes (max 65,536 per call) with cryptographically strong random values." />
+    <ApiMember Name="Digest" Signature="ValueTask<byte[]> Digest(CryptoKeyHash algorithm, byte[] data)" Description="Computes a SHA-256 / SHA-384 / SHA-512 digest of the data." />
+    <ApiMember Name="SignHmac" Signature="ValueTask<byte[]> SignHmac(CryptoKeyHash algorithm, byte[] key, byte[] data)" Description="Produces an HMAC tag for the data using the given symmetric key." />
+    <ApiMember Name="VerifyHmac" Signature="ValueTask<bool> VerifyHmac(CryptoKeyHash algorithm, byte[] key, byte[] signature, byte[] data)" Description="Verifies an HMAC tag previously produced by SignHmac or any compatible producer." />
+    <ApiMember Name="GenerateAesKey" Signature="ValueTask<byte[]> GenerateAesKey(int bits = 256)" Description="Generates a fresh AES key (128, 192 or 256 bits) as raw bytes." />
+    <ApiMember Name="GenerateHmacKey" Signature="ValueTask<byte[]> GenerateHmacKey(CryptoKeyHash algorithm = CryptoKeyHash.Sha256, int? lengthBits = null)" Description="Generates an HMAC key of the requested length and hash as raw bytes." />
+    <ApiMember Name="GenerateRsaKeyPair" Signature="ValueTask<RsaKeyPair> GenerateRsaKeyPair(int modulusLengthBits = 2048, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Generates an RSA-OAEP key pair; returns SPKI public and PKCS8 private DER bytes." />
+    <ApiMember Name="GenerateEcdsaKeyPair" Signature='ValueTask<EcKeyPair> GenerateEcdsaKeyPair(string curve = "P-256")' Description="Generates an ECDSA key pair on the named curve (P-256, P-384, P-521)." />
+    <ApiMember Name="DerivePbkdf2" Signature="ValueTask<byte[]> DerivePbkdf2(byte[] password, byte[] salt, int iterations, int outputLengthBits, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Derives raw bytes from a password using PBKDF2." />
+    <ApiMember Name="SignRsaPss" Signature="ValueTask<byte[]> SignRsaPss(byte[] privateKey, byte[] data, int saltLength = 32, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Produces an RSA-PSS signature using a PKCS8 private key." />
+    <ApiMember Name="VerifyRsaPss" Signature="ValueTask<bool> VerifyRsaPss(byte[] publicKey, byte[] signature, byte[] data, int saltLength = 32, CryptoKeyHash algorithm = CryptoKeyHash.Sha256)" Description="Verifies an RSA-PSS signature using an SPKI public key." />
+    <ApiMember Name="SignEcdsa" Signature='ValueTask<byte[]> SignEcdsa(byte[] privateKey, byte[] data, string curve = "P-256", CryptoKeyHash algorithm = CryptoKeyHash.Sha256)' Description="Produces an ECDSA signature using a PKCS8 private key." />
+    <ApiMember Name="VerifyEcdsa" Signature='ValueTask<bool> VerifyEcdsa(byte[] publicKey, byte[] signature, byte[] data, string curve = "P-256", CryptoKeyHash algorithm = CryptoKeyHash.Sha256)' Description="Verifies an ECDSA signature using an SPKI public key." />
+    <ApiMember Name="Encrypt<T>" Signature="ValueTask<byte[]> Encrypt<T>(T algorithm, byte[] key, byte[] data, CryptoKeyHash? keyHash = null) where T : ICryptoAlgorithmParams" Description="Encrypts data with a typed algorithm parameter object (AES-GCM / AES-CBC / AES-CTR / RSA-OAEP). keyHash applies to RSA-OAEP key import only." />
+    <ApiMember Name="Encrypt" Signature="ValueTask<byte[]> Encrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)" Description="Convenience overload selecting the algorithm via the CryptoAlgorithm enum; iv feeds the AES IV/counter." />
+    <ApiMember Name="Decrypt<T>" Signature="ValueTask<byte[]> Decrypt<T>(T algorithm, byte[] key, byte[] data, CryptoKeyHash? keyHash = null) where T : ICryptoAlgorithmParams" Description="Decrypts data with a typed algorithm parameter object." />
+    <ApiMember Name="Decrypt" Signature="ValueTask<byte[]> Decrypt(CryptoAlgorithm algorithm, byte[] key, byte[] data, byte[]? iv = null, CryptoKeyHash? keyHash = null)" Description="Convenience overload selecting the algorithm via the CryptoAlgorithm enum." />
+</ApiTable>
+
+@code {
+    private DemoConsole randomOutput = default!;
+    private DemoConsole digestOutput = default!;
+    private DemoConsole aesOutput = default!;
+    private DemoConsole rsaOaepOutput = default!;
+    private DemoConsole hmacOutput = default!;
+    private DemoConsole keyGenOutput = default!;
+    private DemoConsole deriveOutput = default!;
+    private DemoConsole signatureOutput = default!;
+
+    private string _hashInput = "Bit.Butil";
+    private string _plainText = "The quick brown fox";
+    private string _aesAlgorithm = "AES-GCM";
+    private string _cipherHex = string.Empty;
+    private string _rsaText = "Top secret";
+    private string _hmacInput = "Authenticate me";
+    private string _password = "correct horse battery staple";
+    private string _signMessage = "Signed by Butil";
+
+    private byte[]? _aesKey;
+    private byte[]? _aesIv;
+    private byte[]? _cipher;
+    private CryptoAlgorithm _usedAlgorithm = CryptoAlgorithm.AesGcm;
+    private RsaKeyPair? _rsaPair;
+
+    private async Task RandomUuid()
+    {
+        try
+        {
+            var uuid = await crypto.RandomUuid();
+            await randomOutput.Success("RandomUuid →", uuid);
+        }
+        catch (Exception ex)
+        {
+            await randomOutput.Error("RandomUuid failed:", ex.Message);
+        }
+    }
+
+    private async Task RandomBytes()
+    {
+        try
+        {
+            var bytes = await crypto.GetRandomValues(16);
+            await randomOutput.Success("GetRandomValues →", Convert.ToHexString(bytes));
+        }
+        catch (Exception ex)
+        {
+            await randomOutput.Error("GetRandomValues failed:", ex.Message);
+        }
+    }
+
+    private async Task DigestHash(CryptoKeyHash algorithm, string label)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_hashInput))
+            {
+                await digestOutput.Warn("Enter a message to hash first.");
+                return;
+            }
+
+            var hash = await crypto.Digest(algorithm, Encoding.UTF8.GetBytes(_hashInput));
+            await digestOutput.Success($"Digest ({label}) →", Convert.ToHexString(hash));
+        }
+        catch (Exception ex)
+        {
+            await digestOutput.Error("Digest failed:", ex.Message);
+        }
+    }
+
+    private async Task EncryptAes()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_plainText))
+            {
+                await aesOutput.Warn("Enter some text to encrypt first.");
+                return;
+            }
+
+            _aesKey ??= await crypto.GenerateAesKey(256);
+            _aesIv = await crypto.GetRandomValues(16);
+            _usedAlgorithm = _aesAlgorithm == "AES-CBC" ? CryptoAlgorithm.AesCbc : CryptoAlgorithm.AesGcm;
+
+            _cipher = await crypto.Encrypt(_usedAlgorithm, _aesKey, Encoding.UTF8.GetBytes(_plainText), iv: _aesIv);
+            _cipherHex = Convert.ToHexString(_cipher);
+            await aesOutput.Success($"Encrypt ({_aesAlgorithm}) →", $"{_cipher.Length} cipher bytes: {_cipherHex}");
+        }
+        catch (Exception ex)
+        {
+            await aesOutput.Error("Encrypt failed:", ex.Message);
+        }
+    }
+
+    private async Task DecryptAes()
+    {
+        try
+        {
+            if (_cipher is null || _aesKey is null || _aesIv is null)
+            {
+                await aesOutput.Warn("Encrypt something first.");
+                return;
+            }
+
+            var plainBytes = await crypto.Decrypt(_usedAlgorithm, _aesKey, _cipher, iv: _aesIv);
+            await aesOutput.Success("Decrypt →", $"\"{Encoding.UTF8.GetString(plainBytes)}\"");
+        }
+        catch (Exception ex)
+        {
+            await aesOutput.Error("Decrypt failed:", ex.Message);
+        }
+    }
+
+    private async Task RsaRoundTrip()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_rsaText))
+            {
+                await rsaOaepOutput.Warn("Enter some text first.");
+                return;
+            }
+
+            if (_rsaPair is null)
+            {
+                await rsaOaepOutput.Info("Generating RSA-2048 key pair...");
+                _rsaPair = await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
+            }
+
+            var data = Encoding.UTF8.GetBytes(_rsaText);
+            var cipher = await crypto.Encrypt(new RsaOaepCryptoAlgorithmParams(), _rsaPair.PublicKey, data);
+            await rsaOaepOutput.Success("Encrypt (RSA-OAEP) →", $"{cipher.Length} cipher bytes");
+
+            var plain = await crypto.Decrypt(new RsaOaepCryptoAlgorithmParams(), _rsaPair.PrivateKey, cipher);
+            await rsaOaepOutput.Success("Decrypt (RSA-OAEP) →", $"\"{Encoding.UTF8.GetString(plain)}\"");
+        }
+        catch (Exception ex)
+        {
+            await rsaOaepOutput.Error("RSA-OAEP round-trip failed:", ex.Message);
+        }
+    }
+
+    private async Task HmacSignVerify()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_hmacInput))
+            {
+                await hmacOutput.Warn("Enter a message to authenticate first.");
+                return;
+            }
+
+            var key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+            var data = Encoding.UTF8.GetBytes(_hmacInput);
+
+            var tag = await crypto.SignHmac(CryptoKeyHash.Sha256, key, data);
+            await hmacOutput.Success("SignHmac →", Convert.ToHexString(tag));
+
+            var valid = await crypto.VerifyHmac(CryptoKeyHash.Sha256, key, tag, data);
+            await hmacOutput.Success("VerifyHmac →", valid);
+        }
+        catch (Exception ex)
+        {
+            await hmacOutput.Error("HMAC failed:", ex.Message);
+        }
+    }
+
+    private async Task GenAesKey()
+    {
+        try
+        {
+            var key = await crypto.GenerateAesKey(256);
+            await keyGenOutput.Success("GenerateAesKey →", $"{key.Length * 8}-bit key, first 8 bytes: {Convert.ToHexString(key.AsSpan(0, 8))}...");
+        }
+        catch (Exception ex)
+        {
+            await keyGenOutput.Error("GenerateAesKey failed:", ex.Message);
+        }
+    }
+
+    private async Task GenHmacKey()
+    {
+        try
+        {
+            var key = await crypto.GenerateHmacKey(CryptoKeyHash.Sha256);
+            await keyGenOutput.Success("GenerateHmacKey →", $"{key.Length * 8}-bit key");
+        }
+        catch (Exception ex)
+        {
+            await keyGenOutput.Error("GenerateHmacKey failed:", ex.Message);
+        }
+    }
+
+    private async Task GenRsaPair()
+    {
+        try
+        {
+            await keyGenOutput.Info("Generating RSA-2048 key pair...");
+            var pair = await crypto.GenerateRsaKeyPair(2048, CryptoKeyHash.Sha256);
+            await keyGenOutput.Success("GenerateRsaKeyPair →", $"public (SPKI) {pair.PublicKey.Length} bytes, private (PKCS8) {pair.PrivateKey.Length} bytes");
+        }
+        catch (Exception ex)
+        {
+            await keyGenOutput.Error("GenerateRsaKeyPair failed:", ex.Message);
+        }
+    }
+
+    private async Task GenEcPair()
+    {
+        try
+        {
+            var pair = await crypto.GenerateEcdsaKeyPair("P-256");
+            await keyGenOutput.Success("GenerateEcdsaKeyPair →", $"curve {pair.Curve}, public {pair.PublicKey.Length} bytes, private {pair.PrivateKey.Length} bytes");
+        }
+        catch (Exception ex)
+        {
+            await keyGenOutput.Error("GenerateEcdsaKeyPair failed:", ex.Message);
+        }
+    }
+
+    private async Task DeriveKey()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_password))
+            {
+                await deriveOutput.Warn("Enter a password first.");
+                return;
+            }
+
+            var salt = await crypto.GetRandomValues(16);
+            await deriveOutput.Info("Deriving with 100,000 PBKDF2 iterations...");
+
+            var derived = await crypto.DerivePbkdf2(Encoding.UTF8.GetBytes(_password), salt, 100_000, 256);
+            await deriveOutput.Success("DerivePbkdf2 →", Convert.ToHexString(derived));
+        }
+        catch (Exception ex)
+        {
+            await deriveOutput.Error("DerivePbkdf2 failed:", ex.Message);
+        }
+    }
+
+    private async Task RsaPssSignVerify()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_signMessage))
+            {
+                await signatureOutput.Warn("Enter a message to sign first.");
+                return;
+            }
+
+            await signatureOutput.Info("Generating RSA key pair and signing...");
+            var pair = await crypto.GenerateRsaKeyPair();
+            var data = Encoding.UTF8.GetBytes(_signMessage);
+
+            var signature = await crypto.SignRsaPss(pair.PrivateKey, data);
+            await signatureOutput.Success("SignRsaPss →", $"{signature.Length}-byte signature");
+
+            var valid = await crypto.VerifyRsaPss(pair.PublicKey, signature, data);
+            await signatureOutput.Success("VerifyRsaPss →", valid);
+        }
+        catch (Exception ex)
+        {
+            await signatureOutput.Error("RSA-PSS failed:", ex.Message);
+        }
+    }
+
+    private async Task EcdsaSignVerify()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_signMessage))
+            {
+                await signatureOutput.Warn("Enter a message to sign first.");
+                return;
+            }
+
+            var pair = await crypto.GenerateEcdsaKeyPair("P-256");
+            var data = Encoding.UTF8.GetBytes(_signMessage);
+
+            var signature = await crypto.SignEcdsa(pair.PrivateKey, data, "P-256");
+            await signatureOutput.Success("SignEcdsa →", $"{signature.Length}-byte signature");
+
+            var valid = await crypto.VerifyEcdsa(pair.PublicKey, signature, data, "P-256");
+            await signatureOutput.Success("VerifyEcdsa →", valid);
+        }
+        catch (Exception ex)
+        {
+            await signatureOutput.Error("ECDSA failed:", ex.Message);
+        }
+    }
+}

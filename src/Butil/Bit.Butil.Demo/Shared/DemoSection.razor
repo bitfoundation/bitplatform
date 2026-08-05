@@ -1,0 +1,48 @@
+﻿<section class="demo-section" id="@Slug">
+    <h2>
+        <a class="anchor" href="@(Href)#@Slug">#</a>
+        @Title
+        @if (!string.IsNullOrWhiteSpace(Api))
+        {
+            <span class="badge">@Api</span>
+        }
+    </h2>
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <p class="section-desc">@Description</p>
+    }
+    @if (!string.IsNullOrWhiteSpace(Code))
+    {
+        <CodeBlock Code="@Code" Language="@Language" />
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="demo-area">
+            <span class="demo-area-label">Live demo</span>
+            @ChildContent
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>The API member(s) this section documents, shown as a badge, e.g. "WriteText / ReadText".</summary>
+    [Parameter] public string? Api { get; set; }
+
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>An optional code snippet rendered above the live demo.</summary>
+    [Parameter] public string? Code { get; set; }
+
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>The live, interactive part of the section.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Inject] private NavigationManager NavManager { get; set; } = default!;
+
+    private string Href => new Uri(NavManager.Uri).AbsolutePath;
+
+    private string Slug => string.Concat(Title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-'));
+}
