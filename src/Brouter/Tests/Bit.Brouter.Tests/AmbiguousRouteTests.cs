@@ -115,7 +115,7 @@ public class AmbiguousRouteTests : BunitTestContext
         cut.Render(p => p.Add(h => h.Show, "b"));
 
         // Route b's late registration already triggers a winner re-evaluation at the current URL
-        // (see Brouter.ScheduleLateRegistrationRematch); the round-trip below additionally proves
+        // (see Brouter.RequestLateRegistrationRematch); the round-trip below additionally proves
         // a fresh navigation selects the re-registered template.
         nav.NavigateTo("http://localhost/elsewhere");
         nav.NavigateTo("http://localhost/dup");
