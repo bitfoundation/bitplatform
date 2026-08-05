@@ -93,33 +93,33 @@ public class BrouterAuthorizationTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
+    public void Authorize_page_fails_closed_under_the_DefaultLayout_only_composition()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // AutoAuthLayoutHost sets only DefaultLayout, composing the framework RouteView - which
         // performs no authorization check at all - so Brouter's own guard must throw rather than
-        // silently render the [Authorize] page.
-        _ = RenderComponent<AutoAuthLayoutHost>();
-
-        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.IsInstanceOfType<InvalidOperationException>(exception);
+        // silently render the [Authorize] page. The single-batch initial mount (see
+        // BrouterInitializer) renders the matched page inside the first render pass, so the
+        // fail-closed throw surfaces synchronously from the mount itself.
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => RenderComponent<AutoAuthLayoutHost>());
         StringAssert.Contains(exception.Message, "authorization");
     }
 
     [TestMethod]
-    public async Task Authorize_page_rendered_natively_fails_closed()
+    public void Authorize_page_rendered_natively_fails_closed()
     {
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         nav.NavigateTo("http://localhost/secure");
 
         // DiscoveryHost sets no Found and no auth parameters, so SecurePage would render natively -
         // which must throw rather than silently skip the [Authorize] check (mirroring RouteView).
-        _ = RenderComponent<DiscoveryHost>();
-
-        var exception = await Context!.Renderer.UnhandledException.WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.IsInstanceOfType<InvalidOperationException>(exception);
+        // As above, the initial mount renders the page in the first render pass, so the throw
+        // surfaces synchronously from the mount.
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => RenderComponent<DiscoveryHost>());
         StringAssert.Contains(exception.Message, "authorization");
     }
 }

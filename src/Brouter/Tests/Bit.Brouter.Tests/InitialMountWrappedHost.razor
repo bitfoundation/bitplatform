@@ -1,0 +1,11 @@
+@* Routes declared behind a wrapper component (the common "extract routes into <AppRoutes/>"
+   pattern). The wrapper adds a registration-silent wave; the sentinel must still settle in-batch. *@
+
+<InitialBatchProbe />
+<Brouter>
+    <InitialMountWrapper>
+        <Broute Path="/home">
+            <Content><InitialMountContent /></Content>
+        </Broute>
+    </InitialMountWrapper>
+</Brouter>

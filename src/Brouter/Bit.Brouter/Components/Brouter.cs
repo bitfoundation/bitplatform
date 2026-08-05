@@ -321,6 +321,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // called off-dispatcher this reasoning breaks and the access would need real synchronization.
     private Broute[] _routesSnapshot = [];
     private bool _routesDirty = true;
+
+    // Monotonic version of the registration set, bumped by every RegisterRoute/UnregisterRoute.
+    // The boot sentinel (BrouterInitializer) watches it to detect when the declaration tree has
+    // finished registering during the initial mount. Same single-dispatcher discipline as _routes.
+    private long _routeRegistrationVersion;
+    internal long RouteRegistrationVersion => _routeRegistrationVersion;
+
     internal void RegisterRoute(Broute route)
     {
         // Reject templates that would be ambiguous with an already-registered route. A hand-declared /
@@ -378,6 +385,20 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         }
         _routes.Add(route);
         _routesDirty = true;
+        _routeRegistrationVersion++;
+
+        // A route registering AFTER the initial navigation already ran can change the correct
+        // outcome for the URL currently on screen: a conditionally-rendered (@if) Broute appearing,
+        // routes mounted behind an async wrapper, or a wrapper chain deep enough that the boot
+        // sentinel fired before it finished rendering (see BrouterInitializer). Schedule a deferred
+        // winner re-evaluation; it resolves as a cheap no-op when the newcomer doesn't beat the
+        // committed route. Registrations during the initial declaration cascade (the common,
+        // per-mount burst) never get here - the flag is still false - so startup cost is zero.
+        if (_initialNavigationStarted)
+        {
+            _rematchRequested = true;
+            ScheduleLateRegistrationRematch();
+        }
     }
     internal void UnregisterRoute(Broute route)
     {
@@ -402,6 +423,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             route.TemplateCollisionKey = null;
         }
         _routesDirty = true;
+        _routeRegistrationVersion++;
     }
 
     /// <summary>
@@ -644,6 +666,91 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private bool _noRouteMatched;
     private long _navVersion;
 
+    // True once the initial navigation has been fired (by the boot navigator, or short-circuited
+    // because a real navigation arrived first). Gates the boot sentinel's inert mode and arms the
+    // late-registration rematch. Same single-dispatcher discipline as the other nav-state fields.
+    private bool _initialNavigationStarted;
+    internal bool InitialNavigationStarted => _initialNavigationStarted;
+
+    // Depth of currently-executing ProcessNavigationAsync frames. A counter rather than a bool:
+    // a departure/dispose callback can call NavigateTo synchronously, whose LocationChanged
+    // handler's InvokeAsync inlines on the dispatcher and re-enters the pipeline. Used to defer
+    // the late-registration rematch while any pipeline is in flight (its own commit matches
+    // against the grown route set, or its finally re-schedules the check once idle).
+    private int _processingNavigation;
+
+    // Late-registration rematch bookkeeping (see RegisterRoute / ScheduleLateRegistrationRematch).
+    // _rematchRequested: a post-boot registration happened and hasn't been evaluated yet.
+    // _rematchScheduled: an evaluation continuation is already queued (debounce).
+    private bool _rematchRequested;
+    private bool _rematchScheduled;
+
+    /// <summary>
+    /// Runs the initial navigation for the URL the app mounted at. Called by the boot navigator
+    /// (see <see cref="BrouterInitializer"/>) once the declaration tree has settled - during the
+    /// first render batch, so a synchronous pipeline commits the matched route into that same
+    /// batch and the interactive takeover after prerender never flashes an empty router.
+    /// Idempotent: only the first call does anything.
+    /// </summary>
+    internal Task RunInitialNavigationAsync()
+    {
+        if (_initialNavigationStarted || _disposed) return Task.CompletedTask;
+        _initialNavigationStarted = true;
+
+        // A real navigation can arrive before the boot sentinel settles (a LocationChanged fired
+        // during the first batch). That pipeline already owns the navigation state and matched the
+        // newest URL - running a second, stale "initial" pipeline underneath it would supersede it
+        // and re-fire its hooks. Any pipeline having started (_navVersion moved) means boot is moot.
+        if (_navVersion != 0) return Task.CompletedTask;
+
+        // The From is Empty (we just mounted), the To is the URL we're at now. decisionAlreadyMade
+        // is false - the LocationChanging handler is not registered yet (and does not fire for the
+        // initial load anyway), so the full pipeline runs the guards here. The first mount is
+        // reported as a Push (a fresh navigation), never a Pop.
+        return ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Push).AsTask();
+    }
+
+    /// <summary>
+    /// Debounced evaluator for routes that registered after the initial navigation: once the
+    /// current render drain (and any in-flight navigation pipeline) is done, re-select the winner
+    /// for the current URL and - only when the grown route set actually changes it - re-run the
+    /// navigation so the screen reflects the route set that exists NOW. This is what turns a
+    /// too-early boot (see <see cref="BrouterInitializer"/>'s quiet-round heuristic), an async
+    /// wrapper finally mounting its routes, or a conditionally-rendered route appearing at its own
+    /// URL from "stuck until the next navigation" into a self-correcting extra render pass.
+    /// </summary>
+    private void ScheduleLateRegistrationRematch()
+    {
+        if (_rematchScheduled) return;
+        _rematchScheduled = true;
+        _ = InvokeAsync(async () =>
+        {
+            // One yield coalesces a whole render-drain's worth of registrations (an @if revealing
+            // several routes, a wrapper mounting a subtree) into a single evaluation.
+            await Task.Yield();
+            _rematchScheduled = false;
+            if (_disposed) return;
+
+            // A pipeline is mid-flight: leave _rematchRequested set - its finally re-schedules
+            // this check once the router is idle, and evaluating against a half-committed chain
+            // here would produce a false winner-diff that supersedes (and so restarts) it.
+            if (_processingNavigation > 0) return;
+            _rematchRequested = false;
+
+            // Pure winner probe (SelectWinner never mutates): the registration only matters when
+            // it changes the outcome for the URL already on screen. Reference-comparing against
+            // the committed leaf also covers the not-found case (null == null -> no-op).
+            var winnerMatch = SelectWinner(CurrentLocation);
+            var committedLeaf = _committedChain.Length > 0 ? _committedChain[^1] : null;
+            if (ReferenceEquals(winnerMatch?.Route, committedLeaf)) return;
+
+            // Same-URL re-navigation: routes present in both chains keep their instances
+            // (renavigation semantics), so only the corrected part of the tree re-renders.
+            // Replace: no history entry is involved in a route-set correction.
+            await ProcessNavigationAsync(CurrentLocation, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Replace);
+        });
+    }
+
     // The active router-level error boundary state (see RenderNavigationError). Non-null only when a
     // commit-phase failure bubbled past every route boundary and Brouter.ErrorContent is set; rendered
     // by BuildRenderTree in place of routed content. Cleared at the start of each navigation.
@@ -868,15 +975,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         base.OnInitialized();
 
-        // Validate here as well as in OnParametersSet: the first OnParametersSet only runs after the
-        // async initialization below completes, and a misconfiguration should fail the first render
-        // synchronously instead of surfacing as an unhandled async exception.
+        // Validate as early as possible so a misconfiguration fails the first render synchronously
+        // (OnParametersSet re-validates for later parameter updates).
         ValidateChildContentAlias();
 
-        // Compute discovered routes here (not only in OnParametersSet): the initial route match runs in
-        // OnInitializedAsync, before OnParametersSet, and the synthetic <Broute> children must already be
-        // present in the first render so they register in time to be matched on the initial navigation.
-        // OnParametersSet still re-checks afterwards to pick up runtime changes to the assembly set.
+        // Compute discovered routes here (not only in OnParametersSet): the synthetic <Broute>
+        // children must be present in the FIRST render so they register before the boot sentinel
+        // settles and the initial match runs (see BrouterInitializer). OnParametersSet still
+        // re-checks afterwards to pick up runtime changes to the assembly set.
         RefreshDiscoveredRoutesIfNeeded();
 
         _brouterService.Attach(this, _navManager);
@@ -991,8 +1097,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         if (added is false) return;
 
         // Recompute discovery with the grown runtime set, then let the renderer flush once so the
-        // new synthetic <Broute> children run OnInitialized and register - the same yield-to-register
-        // technique the initial mount uses (see OnInitializedAsync).
+        // new synthetic <Broute> children run OnInitialized and register before matching proceeds.
+        // (This mid-pipeline yield is fine: the current page stays visible while it happens, unlike
+        // the initial mount, where the boot sentinel keeps everything in one batch instead - see
+        // BrouterInitializer.)
         _discoveryComputed = false;
         RefreshDiscoveredRoutesIfNeeded();
         StateHasChanged();
@@ -1056,31 +1164,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         return BroutePrerenderState.TryRestore(persisted, out value, _loaderStateJsonOptions);
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        // Yield once so ComponentBase performs the initial synchronous render of our
-        // ChildContent. That first render is what causes the declared <Broute> children to
-        // register themselves with us (each one calls RegisterRoute from its own OnInitialized).
-        // Until they've registered there is nothing to match against, which is why the initial
-        // match cannot run any earlier than this.
-        //
-        // Doing the initial match here - rather than in OnAfterRenderAsync - is what enables
-        // static server prerendering. OnAfterRenderAsync never runs during prerender, so the old
-        // placement left the prerendered HTML empty (no route was ever matched server-side).
-        // OnInitializedAsync, by contrast, runs during prerender and the renderer awaits it - and
-        // the StateHasChanged it triggers - before serializing the HTML, so the matched route is
-        // included in the prerendered output. When the component later becomes interactive its
-        // lifecycle runs again and the match re-runs naturally.
-        await Task.Yield();
-
-        // Initial render: the From is Empty (we just mounted), the To is the URL we're at now.
-        // decisionAlreadyMade is false - the LocationChanging handler is not registered yet (and does
-        // not fire for the initial load anyway), so the full pipeline runs the guards here. The first
-        // mount is reported as a Push (a fresh navigation), never a Pop.
-        await ProcessNavigationAsync(BrouterLocation.Empty, CurrentLocation, decisionAlreadyMade: false, BrouterNavigationType.Push);
-    }
+    // NOTE: there is deliberately no OnInitializedAsync here. The initial navigation is fired by
+    // the boot sentinel chain that BuildRenderTree emits after the route declarations (see
+    // BrouterInitializer): it waits - inside the first render batch - for the declared <Broute>
+    // children to register, then runs the pipeline. The old implementation awaited Task.Yield()
+    // here instead, which worked but split the mount across two render batches; after prerendering,
+    // the first interactive batch then replaced the server-rendered HTML with an EMPTY router for a
+    // frame - a visible flash of blank content. Static prerendering still works: the sentinel and
+    // navigator run in component lifecycle the prerenderer awaits before serializing HTML.
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -1111,8 +1202,9 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 // Enabling navigation interception genuinely requires an interactive runtime, so it stays
                 // in OnAfterRenderAsync, which only runs once interactivity is established. Under prerender
-                // this method doesn't run at all - that's fine: the initial match already happened in
-                // OnInitializedAsync, and interception is enabled here once the component goes interactive.
+                // this method doesn't run at all - that's fine: the initial match already happened during
+                // the first render (see BrouterInitializer), and interception is enabled here once the
+                // component goes interactive.
                 //
                 // Enabling navigation interception is best-effort: on a disconnected circuit or an interop
                 // failure it can throw, but the navigation pipeline itself (and any subsequent reconnects /
@@ -1289,6 +1381,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             {
                 b.AddContent(4, ErrorContent(_navError));
             }
+
+            // Boot sentinel: fires the initial navigation once the declared/discovered route tree
+            // above has finished registering - within this same render batch, so the first frame
+            // already contains the matched page (see BrouterInitializer). Emitted last so every
+            // route frame above initializes before the sentinel does. ObservedVersion is baked at
+            // frame-build time (before this render's children register); the sentinel recursion
+            // accounts for that. Inert (renders empty) once the initial navigation has run.
+            b.OpenComponent<BrouterInitializer>(5);
+            b.AddAttribute(6, nameof(BrouterInitializer.Router), this);
+            b.AddAttribute(7, nameof(BrouterInitializer.ObservedVersion), _routeRegistrationVersion);
+            b.CloseComponent();
             }));
             bo.CloseComponent();
         }));
@@ -1373,8 +1476,14 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     {
         get
         {
+            // Broad catch on purpose: an un-populated RendererInfo throws InvalidOperationException
+            // in real Blazor, but test renderers throw their own types (bUnit's
+            // MissingRendererInfoException derives directly from Exception). Any failure to read
+            // it means "unknown host" - and letting the read take down the navigation pipeline
+            // (silently skipping everything after this probe) is far worse than defaulting to
+            // interactive, which merely skips the static-SSR-only 404 propagation.
             try { return RendererInfo.IsInteractive; }
-            catch (InvalidOperationException) { return true; }
+            catch (Exception) { return true; }
         }
     }
 
@@ -1852,7 +1961,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade, BrouterNavigationType navType)
     {
         // Now that we own the renderer's dispatcher (via InvokeAsync from the LocationChanged
-        // handler, or directly from OnAfterRenderAsync for the initial render), publish the
+        // handler, or from the boot navigator's lifecycle for the initial render), publish the
         // target location atomically with the start of this pipeline. The whole pipeline below
         // reads `to` rather than CurrentLocation, so a later navigation publishing a newer
         // CurrentLocation cannot make our `ctx.To` desync from what we're matching against.
@@ -1899,6 +2008,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         // failed/superseded navigation can never leave the browser holding a frozen snapshot.
         var viewTransitionStarted = false;
         var viewTransitionStaged = false;
+
+        // See _processingNavigation: lets the late-registration rematch defer while any pipeline
+        // frame is in flight. Immediately before the try so the finally's decrement always balances.
+        _processingNavigation++;
 
         try
         {
@@ -2223,7 +2336,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
                     // During static server rendering / prerender, NavigationManager.NavigateTo throws
                     // NavigationException as the framework's redirect signal (a loader may redirect,
-                    // e.g. an auth gate). It must unwind out of OnInitializedAsync so the endpoint can
+                    // e.g. an auth gate). It must unwind out of the boot navigator's lifecycle (see
+                    // BrouterInitialNavigator) so the endpoint can
                     // issue the HTTP redirect; swallowing it into OnError would drop the redirect
                     // entirely. Scan for it before any other error handling so an SSR redirect wins
                     // over a sibling loader's failure (root-most redirect wins if several threw).
@@ -2435,7 +2549,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         catch (NavigationException)
         {
             // SSR/prerender redirect signal (see the loader catch above). Let it propagate out of
-            // OnInitializedAsync so the framework can turn it into an HTTP redirect. A guard or
+            // the boot navigator's lifecycle (see BrouterInitialNavigator) so the framework can
+            // turn it into an HTTP redirect. A guard or
             // OnNavigating handler that redirects via NavigationManager during prerender lands here.
             throw;
         }
@@ -2494,6 +2609,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             if (ReferenceEquals(Volatile.Read(ref _navCts), newCts) is false)
             {
                 newCts.Dispose();
+            }
+
+            // A route registered while this pipeline was in flight and the deferred rematch check
+            // punted (see ScheduleLateRegistrationRematch): now that the router is idle again,
+            // re-schedule the evaluation. Runs on the dispatcher like the rest of this finally,
+            // and only fires from the outermost frame of a re-entrant pipeline stack.
+            _processingNavigation--;
+            if (_processingNavigation == 0 && _rematchRequested && _disposed is false)
+            {
+                ScheduleLateRegistrationRematch();
             }
         }
     }
