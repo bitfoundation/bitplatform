@@ -331,12 +331,12 @@ private string? CustomDigitsNormalizer(string? value)
 {
     if (string.IsNullOrEmpty(value)) return value;
 
-    var sb = new StringBuilder(value.Length);
+    var sb = new System.Text.StringBuilder(value.Length);
     foreach (var c in value)
     {
         if (c is ' ' or ',' or '٬') continue;
 
-        var digit = CharUnicodeInfo.GetDecimalDigitValue(c);
+        var digit = System.Globalization.CharUnicodeInfo.GetDecimalDigitValue(c);
         sb.Append(digit >= 0 ? (char)('0' + digit) : c);
     }
 

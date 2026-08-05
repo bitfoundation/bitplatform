@@ -1381,6 +1381,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         catch (JSDisconnectedException) { } // the circuit is gone, the last committed value is used
         catch (InvalidOperationException) { } // JS interop is unavailable during prerendering
+        catch (JSException) { } // the element is gone or the property read failed, the last committed value is used
 
         if (liveValue.HasValue() && string.Equals(liveValue, GetDisplayValueAsString(), StringComparison.Ordinal) is false)
         {

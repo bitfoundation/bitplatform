@@ -1788,7 +1788,7 @@ public class BitNumberFieldTests : BunitTestContext
 
     [TestMethod,
          DataRow("Enter"),
-         DataRow("NumpadEnter")
+         DataRow("Escape")
     ]
     public void BitNumberFieldOnEnterShouldOnlyFireForTheEnterKey(string key)
     {
