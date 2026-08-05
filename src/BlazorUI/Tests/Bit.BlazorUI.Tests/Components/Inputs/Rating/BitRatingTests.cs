@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -950,5 +951,317 @@ public class BitRatingTests : BunitTestContext
 
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldNameEveryItemEvenWithoutAnAriaLabelFormat()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3);
+        });
+
+        // A radio whose only content is a decorative glyph would otherwise reach a screen reader nameless.
+        var labels = component.FindAll(".bit-rtg-btn .bit-rtg-alb");
+
+        Assert.AreEqual(3, labels.Count);
+
+        for (var index = 1; index <= 3; index++)
+        {
+            Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", index, 3), labels[index - 1].TextContent.Trim());
+        }
+    }
+
+    [TestMethod]
+    public void BitRatingItemNameShouldFallBackToTheItemTitle()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ItemTitles, new List<string> { "Terrible", "Bad" });
+        });
+
+        var labels = component.FindAll(".bit-rtg-btn .bit-rtg-alb");
+
+        // A title says more about the item than its position does, so it names the item where there is one.
+        Assert.AreEqual("Terrible", labels[0].TextContent.Trim());
+        Assert.AreEqual("Bad", labels[1].TextContent.Trim());
+        Assert.AreEqual(string.Format(CultureInfo.CurrentCulture, "{0} of {1}", 3, 5), labels[2].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitRatingAriaLabelFormatShouldWinOverTheItemTitle()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabelFormat, "Select {0} of {1} stars");
+            parameters.Add(p => p.ItemTitles, new List<string> { "Terrible" });
+        });
+
+        Assert.AreEqual("Select 1 of 5 stars", component.Find(".bit-rtg-btn .bit-rtg-alb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitRatingShouldNotNameTheItemsOfAReadOnlyRating()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.AriaLabelFormat, "Select {0} of {1} stars");
+        });
+
+        // The items are aria-hidden behind the single label of the group, which leaves them nothing to name.
+        Assert.AreEqual(0, component.FindAll(".bit-rtg-alb").Count);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectValueTextFormat()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Add(p => p.DefaultValue, 3.5);
+            parameters.Add(p => p.ValueTextFormat, "{0} out of {1} stars");
+        });
+
+        Assert.AreEqual("3.5 out of 5 stars", component.Find("[aria-live]").TextContent);
+
+        // The same text is what a read-only rating falls back to when it is given no other label.
+        var readOnly = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, 3.5);
+            parameters.Add(p => p.ValueTextFormat, "{0} out of {1} stars");
+        });
+
+        Assert.AreEqual("3.5 out of 5 stars", readOnly.Find(".bit-rtg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod,
+        DataRow("4", 4d),
+        DataRow("0", 1d),
+        DataRow("9", 5d)
+    ]
+    public void BitRatingKeyboardShouldJumpToADigit(string key, double expected)
+    {
+        double value = 2;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A digit beyond the ends of the scale is held to them, so "9 of 5" lands on the max and the
+        // unreachable 0 lands on the min.
+        component.Find(".bit-rtg").KeyDown(key);
+
+        Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldJumpToANonAsciiDigit()
+    {
+        double value = 2;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The shortcut has to work on the keyboard layouts a right-to-left rating is used with, where the
+        // digit keys produce Eastern Arabic-Indic numerals rather than ASCII ones.
+        component.Find(".bit-rtg").KeyDown("۴");
+
+        Assert.AreEqual(4d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldClearWithADigitZeroWhenAllowClear()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("0");
+
+        Assert.AreEqual(0d, value);
+    }
+
+    [TestMethod,
+        DataRow("ArrowRight", true, 4d),
+        DataRow("ArrowLeft", true, 3d),
+        DataRow("PageUp", false, 4d),
+        DataRow("PageDown", false, 3d)
+    ]
+    public void BitRatingKeyboardShouldStepByAWholeItem(string key, bool shift, double expected)
+    {
+        double value = 3.4;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Precision, 0.1);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A coarse step moves to the next or previous whole item rather than adding one to a fraction,
+        // which keeps a rating split into tenths five presses wide instead of fifty.
+        component.Find(".bit-rtg").KeyDown(new KeyboardEventArgs { Key = key, ShiftKey = shift });
+
+        Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldLeaveEscapeToTheContainer()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A rating inside a modal or a panel would otherwise clear itself on the way to dismissing its
+        // container, which is one press doing two things.
+        component.Find(".bit-rtg").KeyDown("Escape");
+
+        Assert.AreEqual(3d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectVertical()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.Precision, 0.5);
+            parameters.Add(p => p.DefaultValue, 3.5);
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-rtg-vrt"));
+        Assert.AreEqual("vertical", root.GetAttribute("aria-orientation"));
+
+        // The fill of a vertical rating grows along the block axis, from the bottom edge of its item.
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "height:50%");
+
+        // ... and so do the slices that commit the fractions of the item.
+        var segment = component.FindAll(".bit-rtg-seg")[0].GetAttribute("style");
+
+        StringAssert.Contains(segment, "height:50%");
+        StringAssert.Contains(segment, "bottom:0%");
+    }
+
+    [TestMethod]
+    public void BitRatingHorizontalShouldNotClaimAnOrientation()
+    {
+        // A radiogroup is horizontal by default, so only the vertical case has anything to announce.
+        Assert.IsFalse(RenderComponent<BitRating>().Find(".bit-rtg").HasAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectPerItemIcons()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Max, 3);
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.SelectedIconName, "HeartFill");
+            parameters.Add(p => p.UnselectedIconName, "Heart");
+            parameters.Add(p => p.GetSelectedIcon, (int index) => index == 1 ? BitIconInfo.Bit("DislikeSolid") : null);
+            parameters.Add(p => p.GetUnselectedIcon, (int index) => index == 3 ? BitIconInfo.Bit("Like") : null);
+        });
+
+        var fills = component.FindAll(".bit-rtg-ifl");
+        var empties = component.FindAll(".bit-rtg-iem");
+
+        // The first item answers with its own glyph, the rest fall back to the shared pair.
+        Assert.IsTrue(fills[0].ClassList.Contains("bit-icon--DislikeSolid"));
+        Assert.IsTrue(empties[1].ClassList.Contains("bit-icon--Heart"));
+        Assert.IsTrue(empties[2].ClassList.Contains("bit-icon--Like"));
+    }
+
+    [TestMethod]
+    public void BitRatingHighlightSelectedOnlyShouldFillAFractionalItemPartially()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 3.5);
+            parameters.Add(p => p.HighlightSelectedOnly, true);
+        });
+
+        var fills = component.FindAll(".bit-rtg-ifl");
+
+        // Only the item the value ends inside is filled, and only by as much of it as the value covers.
+        StringAssert.Contains(fills[2].GetAttribute("style"), "width:0%");
+        StringAssert.Contains(fills[3].GetAttribute("style"), "width:50%");
+        StringAssert.Contains(fills[4].GetAttribute("style"), "width:0%");
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectAutoFocus()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.DefaultValue, 3);
+        });
+
+        var buttons = component.FindAll(".bit-rtg-btn");
+
+        // The attribute lands on the single tab stop, which is the item the value points at.
+        Assert.AreEqual(1, buttons.Count(b => b.HasAttribute("autofocus")));
+        Assert.IsTrue(buttons[2].HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectName()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Name, "product-rate");
+        });
+
+        Assert.AreEqual("product-rate", component.Find(".bit-input-hidden").GetAttribute("name"));
+    }
+
+    [TestMethod]
+    public void BitRatingValidationFormTest()
+    {
+        var component = RenderComponent<BitRatingValidationTest>();
+
+        Assert.AreEqual(0, component.Instance.ValidCount);
+        Assert.AreEqual(0, component.Instance.InvalidCount);
+
+        var form = component.Find("form");
+        form.Submit();
+
+        // The form starts unrated, which the Range annotation rejects.
+        Assert.AreEqual(0, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+
+        component.FindAll(".bit-rtg-btn")[3].Click();
+        form.Submit();
+
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+        Assert.AreEqual(4d, component.Instance.TestModel.Value);
+    }
+
+    [TestMethod]
+    public void BitRatingValidationShouldMarkTheInvalidValue()
+    {
+        var component = RenderComponent<BitRatingValidationTest>();
+
+        Assert.IsFalse(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
+
+        component.Find("form").Submit();
+
+        Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-rtg").GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+
+        component.FindAll(".bit-rtg-btn")[3].Click();
+
+        Assert.IsFalse(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
     }
 }

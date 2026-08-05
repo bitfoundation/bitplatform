@@ -28,13 +28,18 @@
      aria-readonly="@(ReadOnly ? "true" : null)"
      aria-invalid="@(ValueInvalid is true ? "true" : null)"
      aria-required="@(ReadOnly is false && Required ? "true" : null)"
-     aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)">
+     aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)"
+     aria-orientation="@(ReadOnly is false && Vertical ? "vertical" : null)">
 
     @for (int item = 1; item <= max; item++)
     {
         var index = item;
         var percentage = GetPercentage(index);
         var isCurrent = index == CurrentValue;
+        // A per-item icon replaces the shared pair for that position only, which is what turns a plain
+        // scale into one that changes shape as it fills - a frown at one end and a grin at the other.
+        var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
+        var itemUnselectedIcon = GetUnselectedIcon?.Invoke(index) ?? unselectedIcon;
 
         <button @ref="_itemRefs[index - 1]"
                 @onclick="() => HandleOnClick(index)"
@@ -53,7 +58,10 @@
                 disabled="@(IsEnabled is false || ReadOnly)"
                 tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
 
-            @if (AriaLabelFormat.HasValue())
+            @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
+               of an interactive rating carries one. The items of a read-only rating are aria-hidden behind
+               the single label of the group, which leaves them nothing to name. *@
+            @if (ReadOnly is false)
             {
                 <span class="bit-rtg-alb">
                     @GetItemAriaLabel(index)
@@ -71,11 +79,11 @@
                        cannot show a seam between them at 100%. *@
                     <i aria-hidden="true"
                        style="@Styles?.UnselectedIcon"
-                       class="bit-rtg-iem @(percentage == 100 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
+                       class="bit-rtg-iem @(percentage == 100 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.UnselectedIcon">
                     </i>
                     <i aria-hidden="true"
-                       style=@(FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}"))
-                       class="bit-rtg-ifl @(percentage > 0 ? selectedIcon?.GetCssClasses() : unselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
+                       style="@GetFillStyle(percentage)"
+                       class="bit-rtg-ifl @(percentage > 0 ? itemSelectedIcon?.GetCssClasses() : itemUnselectedIcon?.GetCssClasses()) @Classes?.SelectedIcon">
                     </i>
                 }
             </div>
@@ -96,7 +104,7 @@
                           @onclick:stopPropagation="true"
                           @onmouseover="() => HandleOnHover(stepValue)"
                           @onmouseover:stopPropagation="true"
-                          style=@(FormattableString.Invariant($"width:{GetStepWidth()}%; inset-inline-start:{GetStepOffset(step)}%"))>
+                          style="@GetSegmentStyle(step)">
                     </span>
                 }
             }

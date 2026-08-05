@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/rating"
             Title="Rating"
-            Description="A keyboard-accessible star rating with fractional precision down to any step, a live hover preview, clearing, per-item tooltips, custom items and read-only display." />
+            Description="A keyboard-accessible star rating with fractional precision down to any step, a live hover preview, horizontal or vertical layout, clearing, per-item icons and tooltips, custom items and read-only display." />
 
 <DemoPage Name="Rating"
-          Description="BitRating turns an opinion into a row of stars: hover to preview what a click would give, click to commit it. It is not limited to whole stars - Precision splits every item into as many selectable steps as you ask for, so halves, quarters and tenths are reachable with the pointer and, stepping by that same Precision, with the arrow keys. A bound value of any precision is always drawn exactly, which is what turns the same component into the read-only 4.3-out-of-5 summary that sits next to a review count. The whole row is a single tab stop that follows the WAI-ARIA radiogroup pattern, the items can be cleared back to unrated, carry their own tooltips, or be replaced wholesale by a template, and the icons come from the built-in set or from any external icon library."
+          Description="BitRating turns an opinion into a row of stars: hover to preview what a click would give, click to commit it. It is not limited to whole stars - Precision splits every item into as many selectable steps as you ask for, so halves, quarters and tenths are reachable with the pointer and, stepping by that same Precision, with the arrow keys. A bound value of any precision is always drawn exactly, which is what turns the same component into the read-only 4.3-out-of-5 summary that sits next to a review count. The whole row is a single tab stop that follows the WAI-ARIA radiogroup pattern and answers to the arrow, Home, End, Page and digit keys; the items can be cleared back to unrated, stacked into a column, carry their own tooltips, take a different icon at every position, or be replaced wholesale by a template, and the icons come from the built-in set or from any external icon library."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -17,9 +17,11 @@
             handler involved, and <b>DefaultValue</b> only picks where that state starts. Disabling it greys the
             items out and takes it out of the interaction entirely. <b>ReadOnly</b> is the other half of that:
             the value is still shown at full contrast, but nothing about it can be changed - which is the mode a
-            rating spends most of its life in, summarizing what other people already rated. Notice the read-only
-            one below carries a fractional value: partial fills are rendered whether or not the user could ever
-            have picked them.
+            rating spends most of its life in, summarizing what other people already rated. The difference runs
+            deeper than the styling: a read-only rating stops being a group of choices and is announced as a
+            single labelled image, while a disabled one is still a group, only an unavailable one. Notice the
+            read-only one below carries a fractional value: partial fills are rendered whether or not the user
+            could ever have picked them.
         </div>
         <br />
         <div class="example-box">
@@ -42,7 +44,8 @@
             <b>Max</b> is both the highest value the rating accepts and the number of items it renders, so it is
             the scale of the whole control. Five is the familiar default, but a coarser three-point scale or a
             much finer one are just as valid; the items wrap when the row runs out of room, which is what keeps a
-            100-point rating usable inside a narrow container.
+            100-point rating usable inside a narrow container. A value above the Max is pulled back down to it,
+            so the scale can be tightened at runtime without leaving an impossible value behind.
         </div>
         <br />
         <div class="example-box">
@@ -59,14 +62,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Precision" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <DemoExample Title="Vertical" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>Vertical</b> stacks the items into a column instead of a row, and fills it from the bottom up so
+            that "more" is up - the same direction the <b>ArrowUp</b> key already means. Everything else follows:
+            a fractional value fills its item from the bottom edge rather than the leading one, the transparent
+            slices a fine Precision lays over an item are stacked the same way, and the group announces itself as
+            vertically oriented so a screen reader describes the arrangement the user is actually facing. It is
+            the shape to reach for when the rating sits beside a vertical bar chart or in a narrow column where a
+            row of five stars would not fit.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Vertical:</div>
+            <BitRating Vertical @bind-Value="verticalValue" />
+            <BitLabel>Value: @verticalValue</BitLabel>
+            <br />
+            <div>Vertical with a half precision:</div>
+            <BitRating Vertical Precision="0.5" Size="BitSize.Large" @bind-Value="verticalPrecisionValue" />
+            <BitLabel>Value: @verticalPrecisionValue</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Precision" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>Precision</b> is the smallest change the user can make, expressed as a fraction of a single item.
             The default of 1 only allows whole items; 0.5 adds halves, 0.25 quarters, and 0.1 makes every tenth
             selectable. Below a whole item each item is covered by that many transparent slices, so the half a
             pointer lands on is the half that gets committed - and the arrow keys step by exactly the same amount,
             which keeps the fractions reachable without a pointer. A precision that does not divide an item evenly
-            is rounded to the closest number of equal steps, so the items always end on a whole value.
+            is rounded to the closest number of equal steps, so the items always end on a whole value, and an item
+            is never split into more than a hundred steps. Remember it constrains only what the user can pick: a
+            value bound from elsewhere is always drawn at its exact precision.
         </div>
         <br />
         <div class="example-box">
@@ -84,7 +111,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Clearing" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <DemoExample Title="Clearing" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
         <div>
             A rating starts at the first item unless it is told that "not rated" is a legitimate answer.
             <b>AllowZeroStars</b> says exactly that: a value of 0 is kept instead of being pulled up to 1, so the
@@ -109,12 +136,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="HighlightSelectedOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <DemoExample Title="HighlightSelectedOnly" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
         <div>
             By default a rating is cumulative: picking the fourth item fills the first four, because four stars
             means "four out of five". <b>HighlightSelectedOnly</b> switches that to a scale of standalone choices
             where only the item matching the value is filled - the right reading when the items are faces, moods
-            or grades rather than a quantity that accumulates.
+            or grades rather than a quantity that accumulates. A fractional value still fills its own item by the
+            fraction it covers, so the mode composes with <b>Precision</b> instead of rounding against it.
         </div>
         <br />
         <div class="example-box">
@@ -128,12 +156,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hover preview" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Hover preview" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             While the pointer is over the items the rating previews the value a click would commit, painting it in
             the hover shade so it reads as a proposal rather than as the committed value; leaving the rating
             restores what is actually bound. <b>OnHoverChange</b> reports that previewed value as it changes, and
-            null once the pointer leaves - which is how the familiar word-per-star caption below is built.
+            null once the pointer leaves - which is how the familiar word-per-star caption below is built. At a
+            fractional Precision the preview follows the slices too, so the caption can react to a half step.
             <b>NoHoverPreview</b> turns the whole behaviour off for the rare case where the preview competes with
             something else on the page.
         </div>
@@ -148,13 +177,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Icons" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Icons" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>SelectedIconName</b> and <b>UnselectedIconName</b> replace the pair of built-in star glyphs, which
             is what lets the same component read as a like, a heart or a checklist. The two icons are drawn on top
             of each other and the selected one is clipped to the fill percentage, so the pair works best when both
             glyphs share an outline - a hollow shape and its filled twin. For icons from an external library, see
-            the <a href="#example16"><b>External Icons</b></a> section below.
+            the <a href="#example18"><b>External Icons</b></a> section below.
         </div>
         <br />
         <div class="example-box">
@@ -169,11 +198,42 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ItemTitles" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Per-item icons" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            <b>GetSelectedIcon</b> and <b>GetUnselectedIcon</b> answer with the icon of a single position instead
+            of one pair for the whole scale, which is what turns a rating into a scale that changes shape as it
+            fills - thumbs down at the low end and thumbs up at the high end, or a different face at every step.
+            Each callback receives the one-based position of the item and may return null to fall back to
+            <b>SelectedIcon</b> / <b>SelectedIconName</b>, so only the positions that need their own glyph have to
+            be answered. This is the lightweight half of <a href="#example11"><b>ItemTemplate</b></a>: the
+            component keeps drawing the item, so the two-layer partial fill of a fractional value goes on working.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Thumbs (down for the first two, up for the rest):</div>
+            <BitRating @bind-Value="perItemIconValue"
+                       GetSelectedIcon="i => BitIconInfo.Bit(i > 2 ? BitIconName.LikeSolid : BitIconName.DislikeSolid)"
+                       GetUnselectedIcon="i => BitIconInfo.Bit(i > 2 ? BitIconName.Like : BitIconName.Dislike)" />
+            <BitLabel>Value: @perItemIconValue</BitLabel>
+            <br />
+            <div>A different face at every step (with HighlightSelectedOnly):</div>
+            <BitRating HighlightSelectedOnly
+                       Size="BitSize.Large"
+                       @bind-Value="faceValue"
+                       GetSelectedIcon="GetFaceIcon"
+                       GetUnselectedIcon="GetFaceIcon"
+                       ItemTitles="@(["Terrible", "Bad", "Normal", "Good", "Wonderful"])" />
+            <BitLabel>Value: @faceValue</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="ItemTitles" RazorCode="@example10RazorCode" Id="example10">
         <div>
             <b>ItemTitles</b> gives each item its own native tooltip, in order, so hovering an item spells out what
-            it means instead of leaving the user to count stars. A list shorter than the rating simply leaves the
-            remaining items without a tooltip.
+            it means instead of leaving the user to count stars. The same words double as the accessible name of
+            the item, which is a better answer for a screen reader than "4 of 5" - unless
+            <a href="#example15"><b>AriaLabelFormat</b></a> overrides it. A list shorter than the rating simply
+            leaves the remaining items without a tooltip, and they fall back to their position in the scale.
         </div>
         <br />
         <div class="example-box">
@@ -182,7 +242,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="ItemTemplate" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="ItemTemplate" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>ItemTemplate</b> replaces the pair of icons of every item with content of your own, while the
             BitRating keeps everything around it: the hit areas, the hover preview, the keyboard handling and the
@@ -190,7 +250,9 @@
             <b>Index</b>, the <b>Percentage</b> it is filled by, whether it <b>IsFull</b> or merely
             <b>IsSelected</b>, and both the previewed <b>DisplayValue</b> and the committed <b>Value</b> - which is
             enough to drive anything from a numbered scale to the mood faces below. Note that a template renders
-            whatever you give it as a whole, so a partial fill is yours to express if it matters.
+            whatever you give it as a whole, so a partial fill is yours to express if it matters; when all you
+            need is a different glyph per position, <a href="#example9"><b>GetSelectedIcon</b></a> keeps the
+            built-in partial fill instead.
         </div>
         <br />
         <div class="example-box">
@@ -212,7 +274,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             A one-way <b>Value</b> makes the rating a pure display of whatever the page decides - the toggle below
             drives it and clicking the stars does nothing, because there is nowhere for the new value to go.
@@ -233,7 +295,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>OnChange</b> fires after a new value lands, which is what an uncontrolled rating reports its result
             through. <b>OnChanging</b> runs first and can stop the change altogether: setting <b>Cancel</b> on the
@@ -254,14 +316,15 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Validation" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             Inside an <b>EditForm</b> the BitRating is a form field like any other: it participates in the
             EditContext, reports its changes to it, and turns red while the value is invalid. Combined with
             <b>AllowZeroStars</b>, a <b>Range</b> annotation that starts at 1 is what turns "pick a rating" into a
             required question - the form starts unrated, and stays unsubmittable until something is picked.
             <b>Required</b> announces that expectation to assistive technologies ahead of the failure, rather than
-            leaving the error message to be the first mention of it.
+            leaving the error message to be the first mention of it. The value itself travels in a hidden number
+            input, so <b>Name</b> also makes the rating readable by a plain form post.
         </div>
         <br />
         <div class="example-box">
@@ -286,30 +349,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Accessibility" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             An interactive BitRating is a WAI-ARIA radiogroup of radio items and behaves like one: the whole row is
-            a single tab stop that lands on the selected item, and from there <b>ArrowRight</b> / <b>ArrowUp</b>
-            raise the value by one Precision step, <b>ArrowLeft</b> / <b>ArrowDown</b> lower it, <b>Home</b> and
-            <b>End</b> jump to the ends, and <b>Delete</b> or <b>Backspace</b> clear it where AllowClear permits.
-            The horizontal arrows follow the reading direction, so they swap in RTL.
+            a single tab stop that lands on the selected item, and from there the keyboard covers the entire scale.
+            <b>ArrowRight</b> / <b>ArrowUp</b> raise the value by one Precision step and <b>ArrowLeft</b> /
+            <b>ArrowDown</b> lower it; holding <b>Shift</b> - or using <b>PageUp</b> / <b>PageDown</b>, which need
+            no modifier - moves a whole item at a time, so a rating split into tenths is still five presses wide
+            rather than fifty. <b>Home</b> and <b>End</b> jump to the ends, the <b>digit keys</b> jump straight to
+            that rating, and <b>Delete</b> or <b>Backspace</b> clear it where AllowClear permits. The horizontal
+            arrows follow the reading direction, so they swap in RTL, and Escape is deliberately left alone so a
+            rating inside a modal does not clear itself on the way to dismissing it.
         </div>
         <br />
         <div>
             Since a group of stars carries no visible label, name it: <b>AriaLabel</b> names the rating as a whole
             and <b>AriaLabelFormat</b> names each item, with <b>{0}</b> as the item and <b>{1}</b> as the max -
-            "Select 3 of 5 stars". <b>GetAriaLabel</b> is a callback given the current value and the max, used as
-            the name whenever AriaLabel is not set; a read-only rating, which is announced as a single image rather
-            than a group of choices, falls back to a plain "3.5 of 5" if neither is provided. <b>AutoFocus</b>
-            hands the rating the focus as the page renders.
+            "Select 3 of 5 stars". Without it an item is named by its tooltip from <b>ItemTitles</b>, and failing
+            that by its position, so no item is ever left nameless. <b>GetAriaLabel</b> is a callback given the
+            current value and the max, used as the name whenever AriaLabel is not set; a read-only rating, which is
+            announced as a single image rather than a group of choices, falls back to a plain "3.5 of 5" if
+            neither is provided. <b>ValueTextFormat</b> is what rewords that fallback - and the live announcement
+            an interactive rating makes for a fractional value, which no single radio can express - for another
+            language or for a scale whose items are not stars. <b>AutoFocus</b> hands the rating the focus as the
+            page renders.
         </div>
         <br />
         <div class="example-box">
-            <div>Tab to it, then use the arrow keys:</div>
+            <div>Tab to it, then use the arrow, Page and digit keys:</div>
             <BitRating AllowClear
                        Precision="0.5"
                        AriaLabel="Rate this product"
                        AriaLabelFormat="Select {0} of {1} stars"
+                       ValueTextFormat="{0} out of {1} stars"
                        @bind-Value="accessibilityValue" />
             <BitLabel>Value: @accessibilityValue</BitLabel>
             <br />
@@ -318,7 +390,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Visibility" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Visibility" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Visibility</b> decides how the rating disappears: <b>Hidden</b> keeps its box and only stops
             painting it, so the layout around it does not move, while <b>Collapsed</b> removes the box entirely and
@@ -332,7 +404,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Color</b> picks the theme color the filled part of the items is painted in, with <b>Primary</b> as
             the default. The unfilled part deliberately stays neutral whatever the color is, so it keeps reading as
@@ -371,13 +443,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>SelectedIcon</b> and <b>UnselectedIcon</b> take a <b>BitIconInfo</b> instead of a built-in icon
             name, which is how icons from an external library are used. <b>BitIconInfo.Fa</b> and
             <b>BitIconInfo.Bi</b> build the class names for FontAwesome and Bootstrap Icons, <b>BitIconInfo.Css</b>
             takes whatever classes you hand it, and a plain string works too. They take precedence over
-            <b>SelectedIconName</b> / <b>UnselectedIconName</b> when both are set. Remember to reference the
+            <b>SelectedIconName</b> / <b>UnselectedIconName</b> when both are set, and the same type is what the
+            per-item <a href="#example9"><b>GetSelectedIcon</b></a> callback returns. Remember to reference the
             stylesheet of the icon library itself.
         </div>
 
@@ -406,7 +479,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Size</b> scales the items, from the <b>Small</b> that fits inline next to a line of text to the
             <b>Large</b> that carries a rating asked as the main question on a page. <b>Medium</b> is the default.
@@ -425,7 +498,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element of the rating, which is enough for the framing
             around it. <b>Styles</b> and <b>Classes</b> go a level deeper and address the parts by name -
@@ -446,12 +519,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
         <div>
             Setting <b>Dir</b> to <b>Rtl</b> mirrors the whole rating: the first item moves to the right, the
-            partial fill of a fractional value grows from the right edge of its item, and the horizontal arrow keys
-            swap so that ArrowLeft still means "more". The fractional read-only rating below shows the fill
-            anchored on the correct side.
+            partial fill of a fractional value grows from the right edge of its item, the transparent slices of a
+            fine Precision are laid out from that same edge, and the horizontal arrow keys swap so that ArrowLeft
+            still means "more". The fractional read-only rating below shows the fill anchored on the correct side.
         </div>
         <br />
         <div dir="rtl" class="example-box">

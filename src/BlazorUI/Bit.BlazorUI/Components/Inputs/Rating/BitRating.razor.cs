@@ -61,6 +61,30 @@ public partial class BitRating : BitInputBase<double>
     [Parameter] public Func<double, double, string>? GetAriaLabel { get; set; }
 
     /// <summary>
+    /// Chooses the selected (filled) icon of each rating item separately, from the one-based position of
+    /// the item. Returning null falls back to <see cref="SelectedIcon"/> / <see cref="SelectedIconName"/>,
+    /// so only the positions that need their own glyph have to be answered.
+    /// </summary>
+    /// <remarks>
+    /// This is the lightweight half of <see cref="ItemTemplate"/>: it changes which glyph an item draws
+    /// while the component keeps drawing it, so the partial fill of a fractional value still works.
+    /// </remarks>
+    /// <example>
+    /// GetSelectedIcon="i => BitIconInfo.Bit(i > 3 ? "LikeSolid" : "DislikeSolid")"
+    /// </example>
+    [Parameter] public Func<int, BitIconInfo?>? GetSelectedIcon { get; set; }
+
+    /// <summary>
+    /// Chooses the unselected (empty) icon of each rating item separately, from the one-based position of
+    /// the item. Returning null falls back to <see cref="UnselectedIcon"/> / <see cref="UnselectedIconName"/>,
+    /// so only the positions that need their own glyph have to be answered.
+    /// </summary>
+    /// <example>
+    /// GetUnselectedIcon="i => BitIconInfo.Bit(i > 3 ? "Like" : "Dislike")"
+    /// </example>
+    [Parameter] public Func<int, BitIconInfo?>? GetUnselectedIcon { get; set; }
+
+    /// <summary>
     /// Highlights only the item matching the current value instead of every item up to it,
     /// turning the rating into a scale of standalone choices rather than a cumulative one.
     /// </summary>
@@ -172,6 +196,22 @@ public partial class BitRating : BitInputBase<double>
     /// </summary>
     [Parameter] public string? UnselectedIconName { get; set; }
 
+    /// <summary>
+    /// The format of the spoken form of the current value, where placeholder {0} is the value and
+    /// placeholder {1} is the max: for example "{0} out of {1} stars". It is what the live region of an
+    /// interactive rating announces for a value no radio can carry, and what a read-only rating falls back
+    /// to when it is given no other label. The default is "{0} of {1}".
+    /// </summary>
+    [Parameter] public string? ValueTextFormat { get; set; }
+
+    /// <summary>
+    /// Stacks the rating items in a column instead of a row, filling from the bottom up so that "more" is
+    /// up, the way the ArrowUp key means more. The partial fill of a fractional value grows from the bottom
+    /// edge of its item accordingly.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Vertical { get; set; }
+
 
 
     protected override async Task OnInitializedAsync()
@@ -204,6 +244,8 @@ public partial class BitRating : BitInputBase<double>
         ClassBuilder.Register(() => ReadOnly ? "bit-rtg-rdl" : string.Empty);
 
         ClassBuilder.Register(() => NoHoverPreview ? "bit-rtg-nhp" : string.Empty);
+
+        ClassBuilder.Register(() => Vertical ? "bit-rtg-vrt" : string.Empty);
 
         ClassBuilder.Register(() => Color switch
         {
@@ -257,6 +299,11 @@ public partial class BitRating : BitInputBase<double>
             _hoverValue = null;
         }
 
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
         // The value is kept inside the range the parameters describe, but it is never snapped to the
         // Precision: that constrains what the user can pick, not what the component is able to render.
         var clamped = ClampValue(CurrentValue);
@@ -270,11 +317,13 @@ public partial class BitRating : BitInputBase<double>
             }
             else
             {
-                _ = SetCurrentValueAsync(clamped);
+                // Awaited rather than fired and forgotten, so a handler that throws surfaces through the
+                // lifecycle instead of disappearing into an unobserved task.
+                await SetCurrentValueAsync(clamped);
             }
         }
 
-        base.OnParametersSet();
+        await base.OnParametersSetAsync();
     }
 
     // The value travels through a native number input, whose value attribute is only ever read and written
@@ -370,9 +419,17 @@ public partial class BitRating : BitInputBase<double>
     }
 
     /// <summary>
-    /// The spoken form of the current value.
+    /// The default format both the value text and the per-item labels fall back to.
     /// </summary>
-    private string _ValueText => string.Format(CultureInfo.CurrentCulture, "{0} of {1}", CurrentValue, _Max);
+    private const string DefaultTextFormat = "{0} of {1}";
+
+    /// <summary>
+    /// The spoken form of the current value, which the ValueTextFormat can reword for another language or
+    /// for a scale whose items are not stars.
+    /// </summary>
+    private string _ValueText => string.Format(CultureInfo.CurrentCulture,
+                                               ValueTextFormat.HasValue() ? ValueTextFormat! : DefaultTextFormat,
+                                               CurrentValue, _Max);
 
     /// <summary>
     /// What the live region of an interactive rating announces. A whole value is already carried by the
@@ -418,14 +475,39 @@ public partial class BitRating : BitInputBase<double>
     {
         var value = _DisplayValue;
 
-        if (HighlightSelectedOnly)
-        {
-            return Math.Ceiling(value) == index ? 100 : 0;
-        }
-
         // Rounded because the subtraction is where binary floating point starts showing: a value of 3.7
         // would otherwise reach the width of the fourth item as 70.00000000000002%.
-        return Math.Round(Math.Clamp(value - (index - 1), 0, 1) * 100, 2);
+        var fill = Math.Round(Math.Clamp(value - (index - 1), 0, 1) * 100, 2);
+
+        // Highlighting the selected item alone leaves every item before it empty, but the selected one is
+        // still filled by however much of it the value covers, so a fractional value stays readable.
+        if (HighlightSelectedOnly)
+        {
+            return Math.Ceiling(value) == index ? fill : 0;
+        }
+
+        return fill;
+    }
+
+    /// <summary>
+    /// The inline style of the filled layer of an item. A vertical rating grows the fill along the block
+    /// axis instead, which is what puts the partial fill of a fractional value at the bottom of its item.
+    /// </summary>
+    private string GetFillStyle(double percentage)
+    {
+        return Vertical
+            ? FormattableString.Invariant($"height:{percentage}%; {Styles?.SelectedIcon}")
+            : FormattableString.Invariant($"width:{percentage}%; {Styles?.SelectedIcon}");
+    }
+
+    /// <summary>
+    /// The inline style of a single step slice, laid along the same axis the item fills on.
+    /// </summary>
+    private string GetSegmentStyle(int step)
+    {
+        return Vertical
+            ? FormattableString.Invariant($"height:{GetStepWidth()}%; bottom:{GetStepOffset(step)}%")
+            : FormattableString.Invariant($"width:{GetStepWidth()}%; inset-inline-start:{GetStepOffset(step)}%");
     }
 
     /// <summary>
@@ -447,11 +529,19 @@ public partial class BitRating : BitInputBase<double>
     }
 
     /// <summary>
-    /// The visually hidden per-item label screen readers announce, built from the AriaLabelFormat.
+    /// The visually hidden per-item label screen readers announce. An explicit AriaLabelFormat decides it,
+    /// then the tooltip of the item - "Wonderful" says more about the item than "5 of 5" does - and finally
+    /// the position of the item in the scale, so a radio is never left without a name.
     /// </summary>
     private string GetItemAriaLabel(int index)
     {
-        return string.Format(CultureInfo.CurrentCulture, AriaLabelFormat!, index, _Max);
+        if (AriaLabelFormat.HasValue()) return string.Format(CultureInfo.CurrentCulture, AriaLabelFormat!, index, _Max);
+
+        var title = GetItemTitle(index);
+
+        if (title.HasValue()) return title!;
+
+        return string.Format(CultureInfo.CurrentCulture, DefaultTextFormat, index, _Max);
     }
 
     private string? GetItemTitle(int index)
@@ -500,27 +590,36 @@ public partial class BitRating : BitInputBase<double>
     // the keyboard exactly like it is with the pointer.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        // The arrow, Home and End keys scroll the page by default, so their default action is suppressed
-        // while the rating navigates with them. Kept key-scoped so Tab, Space and Enter still behave normally.
+        // The arrow, Home, End and Page keys scroll the page by default, so their default action is
+        // suppressed while the rating navigates with them. Kept key-scoped so Tab, Space and Enter - and the
+        // digits, which nothing else on a focused button reacts to - still behave normally.
         _preventKeyDownDefault = IsEnabled && ReadOnly is false
-                              && e.Key is "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight" or "Home" or "End";
+                              && e.Key is "ArrowUp" or "ArrowDown" or "ArrowLeft" or "ArrowRight"
+                                       or "Home" or "End" or "PageUp" or "PageDown";
 
         if (IsEnabled is false || ReadOnly) return;
 
-        var step = _Step;
         var isRtl = Dir == BitDir.Rtl;
         var value = CurrentValue;
 
+        // Holding Shift - and the Page keys, which need no modifier for it - moves by a whole item to the
+        // next or previous one, so crossing a rating split into tenths costs five presses instead of fifty.
+        var coarse = e.ShiftKey || e.Key is "PageUp" or "PageDown";
+        var up = coarse ? Math.Floor(value) + 1 : value + _Step;
+        var down = coarse ? Math.Ceiling(value) - 1 : value - _Step;
+
         double? newValue = e.Key switch
         {
-            "ArrowRight" => isRtl ? value - step : value + step,
-            "ArrowLeft" => isRtl ? value + step : value - step,
-            "ArrowUp" => value + step,
-            "ArrowDown" => value - step,
+            "ArrowRight" => isRtl ? down : up,
+            "ArrowLeft" => isRtl ? up : down,
+            "ArrowUp" or "PageUp" => up,
+            "ArrowDown" or "PageDown" => down,
             "Home" => _MinValue,
             "End" => _Max,
+            // Escape is deliberately not a clearing key: a rating inside a modal or a panel would clear
+            // itself on the way to dismissing its container, which is one press doing two things.
             "Delete" or "Backspace" => AllowClear ? 0 : null,
-            _ => null
+            _ => GetDigitValue(e.Key)
         };
 
         if (newValue is null) return;
@@ -529,6 +628,23 @@ public partial class BitRating : BitInputBase<double>
 
         // The tab stop moves with the value, so the focus follows it to the item that now holds it.
         await FocusItem(_TabbableIndex);
+    }
+
+    /// <summary>
+    /// The value a digit key jumps straight to, which is how a keyboard user reaches "4 of 5" in one press
+    /// instead of four. A digit beyond the ends of the scale is held to them like any other value.
+    /// </summary>
+    /// <remarks>
+    /// Any Unicode decimal digit counts, not only the ASCII ones, so the shortcut still works on the
+    /// keyboard layouts a right-to-left rating is most likely to be used with.
+    /// </remarks>
+    private static double? GetDigitValue(string? key)
+    {
+        if (key is null || key.Length != 1) return null;
+
+        var digit = key[0];
+
+        return char.IsDigit(digit) ? char.GetNumericValue(digit) : null;
     }
 
     private async Task ChangeValue(double value)

@@ -23,7 +23,7 @@ public partial class BitRatingDemo
             Name = "AriaLabelFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers. Placeholder {0} is the current rating and placeholder {1} is the max.",
+            Description = "Optional label format for each individual rating star (not the rating control as a whole) that will be read by screen readers. Placeholder {0} is the current rating and placeholder {1} is the max. Without it an item is named by its ItemTitles tooltip, and failing that by its position in the scale.",
         },
         new()
         {
@@ -59,10 +59,28 @@ public partial class BitRatingDemo
         },
         new()
         {
+            Name = "GetSelectedIcon",
+            Type = "Func<int, BitIconInfo?>?",
+            DefaultValue = "null",
+            Description = "Chooses the selected (filled) icon of each rating item separately, from the one-based position of the item. Returning null falls back to SelectedIcon / SelectedIconName.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "GetUnselectedIcon",
+            Type = "Func<int, BitIconInfo?>?",
+            DefaultValue = "null",
+            Description = "Chooses the unselected (empty) icon of each rating item separately, from the one-based position of the item. Returning null falls back to UnselectedIcon / UnselectedIconName.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
             Name = "HighlightSelectedOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Highlights only the item matching the current value instead of every item up to it, turning the rating into a scale of standalone choices rather than a cumulative one.",
+            Description = "Highlights only the item matching the current value instead of every item up to it, turning the rating into a scale of standalone choices rather than a cumulative one. A fractional value still fills its own item by the fraction it covers.",
         },
         new()
         {
@@ -78,7 +96,7 @@ public partial class BitRatingDemo
             Name = "ItemTitles",
             Type = "IList<string>?",
             DefaultValue = "null",
-            Description = "The native tooltips of the rating items, in order, shown when hovering over each one. Items beyond the end of the list simply get no tooltip.",
+            Description = "The native tooltips of the rating items, in order, shown when hovering over each one, and used as the accessible name of the item unless AriaLabelFormat overrides it. Items beyond the end of the list simply get no tooltip.",
         },
         new()
         {
@@ -164,6 +182,20 @@ public partial class BitRatingDemo
             Type = "string?",
             DefaultValue = "FavoriteStar",
             Description = "Custom icon name for unselected rating elements (Fluent UI). For external icon libraries, use UnselectedIcon instead.",
+        },
+        new()
+        {
+            Name = "ValueTextFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the spoken form of the current value, where placeholder {0} is the value and placeholder {1} is the max. It is what the live region of an interactive rating announces for a value no radio can carry, and what a read-only rating falls back to when it is given no other label. The default is \"{0} of {1}\".",
+        },
+        new()
+        {
+            Name = "Vertical",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stacks the rating items in a column instead of a row, filling from the bottom up so that \"more\" is up, the way the ArrowUp key means more.",
         }
     ];
 
@@ -383,6 +415,9 @@ public partial class BitRatingDemo
 
 
 
+    private double verticalValue = 3;
+    private double verticalPrecisionValue = 3.5;
+
     private double halfPrecisionValue = 2.5;
     private double quarterPrecisionValue = 3.25;
     private double exactPrecisionValue = 3.7;
@@ -396,6 +431,17 @@ public partial class BitRatingDemo
     private double hoverBoundValue = 3;
     private double? hoverPreviewValue;
     private readonly string[] hoverLabels = ["Not rated yet", "Terrible", "Bad", "Normal", "Good", "Wonderful"];
+
+    private double perItemIconValue = 4;
+    private double faceValue = 3;
+    private readonly string[] faceIcons =
+    [
+        BitIconName.EmojiDisappointed,
+        BitIconName.Sad,
+        BitIconName.EmojiNeutral,
+        BitIconName.Emoji,
+        BitIconName.Emoji2
+    ];
 
     private double templateValue = 7;
     private double moodValue = 4;
@@ -421,6 +467,8 @@ public partial class BitRatingDemo
 
         args.Cancel = changeRejected;
     }
+
+    private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 1]);
 
     private string GetRatingAriaLabel(double value, double max) => $"Rated {value} out of {max}";
 

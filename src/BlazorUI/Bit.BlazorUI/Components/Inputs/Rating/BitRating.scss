@@ -138,6 +138,39 @@
 }
 
 
+// A vertical rating stacks its items bottom-up, so that "more" is up the same way the ArrowUp key means
+// more, and the fill of a partly covered item grows from its bottom edge instead of its leading one.
+.bit-rtg-vrt {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: column-reverse;
+
+    // The generous padding that separates the items of a row belongs on the other axis once they form a
+    // column, so the rows do not end up spaced twice as far apart as the columns were.
+    .bit-rtg-btn {
+        padding: spacing(0.25) spacing(1);
+    }
+
+    // Anchored to the bottom, and the glyph inside it with them: clipping a box whose content sits at the
+    // top would reveal the top of the icon, which is the half a bottom-up fill is meant to hide.
+    .bit-rtg-ifl {
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-start;
+        transition: height $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
+    }
+
+    .bit-rtg-seg {
+        top: auto;
+        width: 100%;
+        inset-inline-start: 0;
+    }
+}
+
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-rtg-#{$role} {

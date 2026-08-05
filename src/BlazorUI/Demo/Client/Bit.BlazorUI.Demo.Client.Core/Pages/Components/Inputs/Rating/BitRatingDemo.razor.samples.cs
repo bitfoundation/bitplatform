@@ -21,6 +21,16 @@ public partial class BitRatingDemo
 </div>";
 
     private readonly string example3RazorCode = @"
+<BitRating Vertical @bind-Value=""verticalValue"" />
+<BitLabel>Value: @verticalValue</BitLabel>
+
+<BitRating Vertical Precision=""0.5"" Size=""BitSize.Large"" @bind-Value=""verticalPrecisionValue"" />
+<BitLabel>Value: @verticalPrecisionValue</BitLabel>";
+    private readonly string example3CsharpCode = @"
+private double verticalValue = 3;
+private double verticalPrecisionValue = 3.5;";
+
+    private readonly string example4RazorCode = @"
 <BitRating Precision=""0.5"" @bind-Value=""halfPrecisionValue"" />
 <BitLabel>Value: @halfPrecisionValue</BitLabel>
 
@@ -29,12 +39,12 @@ public partial class BitRatingDemo
 
 <BitRating Precision=""0.1"" Size=""BitSize.Large"" @bind-Value=""exactPrecisionValue"" />
 <BitLabel>Value: @exactPrecisionValue</BitLabel>";
-    private readonly string example3CsharpCode = @"
+    private readonly string example4CsharpCode = @"
 private double halfPrecisionValue = 2.5;
 private double quarterPrecisionValue = 3.25;
 private double exactPrecisionValue = 3.7;";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example5RazorCode = @"
 <BitRating @bind-Value=""noZeroValue"" />
 <BitLabel>Value: @noZeroValue</BitLabel>
 
@@ -43,41 +53,69 @@ private double exactPrecisionValue = 3.7;";
 
 <BitRating AllowClear @bind-Value=""allowClearValue"" />
 <BitLabel>Value: @allowClearValue</BitLabel>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private double noZeroValue;
 private double allowZeroValue;
 private double allowClearValue = 3;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitRating @bind-Value=""highlightValue"" />
 
 <BitRating HighlightSelectedOnly @bind-Value=""highlightValue"" />
 
 <BitLabel>Value: @highlightValue</BitLabel>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example6CsharpCode = @"
 private double highlightValue = 3;";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitRating @bind-Value=""hoverBoundValue"" OnHoverChange=""v => hoverPreviewValue = v"" />
 <BitLabel>@(hoverLabels[(int)(hoverPreviewValue ?? hoverBoundValue)])</BitLabel>
 
 <BitRating NoHoverPreview DefaultValue=""2"" />";
-    private readonly string example6CsharpCode = @"
+    private readonly string example7CsharpCode = @"
 private double hoverBoundValue = 3;
 private double? hoverPreviewValue;
 private readonly string[] hoverLabels = [""Not rated yet"", ""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""];";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.HeartFill"" UnselectedIconName=""@BitIconName.Heart"" />
 
 <BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.CheckboxCompositeReversed"" UnselectedIconName=""@BitIconName.Checkbox"" />
 
 <BitRating DefaultValue=""3"" SelectedIconName=""@BitIconName.LikeSolid"" UnselectedIconName=""@BitIconName.Dislike"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
+<BitRating @bind-Value=""perItemIconValue""
+           GetSelectedIcon=""i => BitIconInfo.Bit(i > 2 ? BitIconName.LikeSolid : BitIconName.DislikeSolid)""
+           GetUnselectedIcon=""i => BitIconInfo.Bit(i > 2 ? BitIconName.Like : BitIconName.Dislike)"" />
+<BitLabel>Value: @perItemIconValue</BitLabel>
+
+<BitRating HighlightSelectedOnly
+           Size=""BitSize.Large""
+           @bind-Value=""faceValue""
+           GetSelectedIcon=""GetFaceIcon""
+           GetUnselectedIcon=""GetFaceIcon""
+           ItemTitles=""@([""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""])"" />
+<BitLabel>Value: @faceValue</BitLabel>";
+    private readonly string example9CsharpCode = @"
+private double perItemIconValue = 4;
+private double faceValue = 3;
+
+private readonly string[] faceIcons =
+[
+    BitIconName.EmojiDisappointed,
+    BitIconName.Sad,
+    BitIconName.EmojiNeutral,
+    BitIconName.Emoji,
+    BitIconName.Emoji2
+];
+
+private BitIconInfo GetFaceIcon(int index) => BitIconInfo.Bit(faceIcons[index - 1]);";
+
+    private readonly string example10RazorCode = @"
 <BitRating DefaultValue=""3"" ItemTitles=""@([""Terrible"", ""Bad"", ""Normal"", ""Good"", ""Wonderful""])"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .number-item {
         width: 1.75rem;
@@ -126,28 +164,28 @@ private readonly string[] hoverLabels = [""Not rated yet"", ""Terrible"", ""Bad"
     </ItemTemplate>
 </BitRating>
 <BitLabel>Value: @moodValue</BitLabel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private double templateValue = 7;
 private double moodValue = 4;
 private readonly string[] moodFaces = [""😖"", ""😐"", ""🙂"", ""😀"", ""🤩""];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitRating AllowZeroStars Value=""oneWayBinding"" />
 <BitToggleButton OnChange=""v => oneWayBinding = v ? 5 : 0"" Text=""@(oneWayBinding == 5 ? ""Unstar All"" : ""Star All"")"" />
 
 <BitRating @bind-Value=""twoWayBinding"" />
 <BitNumberField Step=""0.5"" @bind-Value=""twoWayBinding"" />";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private double oneWayBinding = 0;
 private double twoWayBinding = 3;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitRating DefaultValue=""2"" OnChange=""v => onChangeValue = v"" />
 <BitLabel>Changed value: @onChangeValue</BitLabel>
 
 <BitRating @bind-Value=""onChangingValue"" OnChanging=""HandleOnChanging"" />
 <BitLabel>Value: @onChangingValue @(changeRejected ? ""(lowering was rejected)"" : """")</BitLabel>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private double onChangeValue;
 private double onChangingValue = 3;
 private bool changeRejected;
@@ -159,7 +197,7 @@ private void HandleOnChanging(BitRatingChangeArgs args)
     args.Cancel = changeRejected;
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -176,7 +214,7 @@ private void HandleOnChanging(BitRatingChangeArgs args)
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 public class BitRatingDemoFormModel
 {
     [Range(typeof(double), ""1"", ""5"", ErrorMessage = ""Your rate must be between {1} and {2}"")]
@@ -188,26 +226,27 @@ public BitRatingDemoFormModel ValidationModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitRating AllowClear
            Precision=""0.5""
            AriaLabel=""Rate this product""
            AriaLabelFormat=""Select {0} of {1} stars""
+           ValueTextFormat=""{0} out of {1} stars""
            @bind-Value=""accessibilityValue"" />
 <BitLabel>Value: @accessibilityValue</BitLabel>
 
 <BitRating ReadOnly DefaultValue=""4.2"" GetAriaLabel=""GetRatingAriaLabel"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private double accessibilityValue = 3;
 
 private string GetRatingAriaLabel(double value, double max) => $""Rated {value} out of {max}"";";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 Visible: [ <BitRating Visibility=""BitVisibility.Visible"" /> ]
 Hidden: [ <BitRating Visibility=""BitVisibility.Hidden"" /> ]
 Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitRating Color=""BitColor.Primary"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.Secondary"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.Tertiary"" DefaultValue=""3.5"" />
@@ -228,7 +267,7 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 <BitRating Color=""BitColor.SecondaryBorder"" DefaultValue=""3.5"" />
 <BitRating Color=""BitColor.TertiaryBorder"" DefaultValue=""3.5"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitRating DefaultValue=""3.5"" SelectedIcon=""@(""fa-solid fa-star"")"" UnselectedIcon=""@(""fa-regular fa-star"")"" />
@@ -242,14 +281,14 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
 <BitRating DefaultValue=""3.5"" SelectedIcon=""@BitIconInfo.Bi(""heart-fill"")"" UnselectedIcon=""@BitIconInfo.Bi(""heart"")"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitRating Size=""BitSize.Small"" DefaultValue=""3"" />
 
 <BitRating Size=""BitSize.Medium"" DefaultValue=""3"" />
 
 <BitRating Size=""BitSize.Large"" DefaultValue=""3"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         margin-inline: 1rem;
@@ -278,7 +317,7 @@ Collapsed: [ <BitRating Visibility=""BitVisibility.Collapsed"" /> ]";
 
 <BitRating DefaultValue=""3.5"" Classes=""@(new() { SelectedIcon = ""custom-selected"", UnselectedIcon = ""custom-unselected"" })"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitRating Dir=""BitDir.Rtl"" DefaultValue=""3"" />
 
 <BitRating Dir=""BitDir.Rtl"" Precision=""0.5"" DefaultValue=""3.5"" />";
