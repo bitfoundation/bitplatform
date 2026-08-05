@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1405,6 +1407,267 @@ public class BitDropdownTests : BunitTestContext
         var callout = component.Find(".bit-drp-cal");
 
         Assert.IsTrue(callout.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitDropdownComboTypingWhileClosedShouldOpenAndKeepFilter()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, items);
+        });
+
+        // Typing into the combo input while the callout is closed opens it, and the very term that
+        // opened it must stay as the filter (the open used to clear the search text and lose it).
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("app");
+
+        var drpItems = component.FindAll(".bit-drp-itm");
+        Assert.AreEqual(1, drpItems.Count);
+        Assert.AreEqual("Apple", drpItems[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownCtrlAShouldToggleSelectAll()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, items);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        var callout = component.Find(".bit-drp-cal");
+        callout.KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
+
+        Assert.AreEqual(items.Count, component.FindAll(".bit-drp-iwr.bit-drp-chd").Count);
+
+        // A second Ctrl+A clears the selection, since every item is selected already.
+        callout.KeyDown(new KeyboardEventArgs { Key = "a", CtrlKey = true });
+
+        Assert.AreEqual(0, component.FindAll(".bit-drp-iwr.bit-drp-chd").Count);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownUnselectItemShouldIgnoreUnselectedItems()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var values = new[] { items[0].Value };
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Values, values);
+            parameters.Add(p => p.ValuesChanged, v => values = v?.ToArray());
+        });
+
+        // Unselecting an item that is not selected must be a no-op instead of selecting it.
+        await component.InvokeAsync(() => component.Instance.UnselectItem(items[1]));
+        Assert.AreEqual(1, values!.Length);
+        Assert.AreEqual(items[0].Value, values[0]);
+
+        await component.InvokeAsync(() => component.Instance.UnselectItem(items[0]));
+        Assert.AreEqual(0, values!.Length);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownUnselectItemShouldOnlyClearTheSelectedItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var value = items[0].Value;
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+        });
+
+        // Unselecting an item other than the selected one must not clear the selection.
+        await component.InvokeAsync(() => component.Instance.UnselectItem(items[1]));
+        Assert.AreEqual(items[0].Value, value);
+
+        await component.InvokeAsync(() => component.Instance.UnselectItem(items[0]));
+        Assert.IsNull(value);
+    }
+
+    [TestMethod,
+      DataRow(null),
+      DataRow("Favorite fruit")
+    ]
+    public void BitDropdownAriaLabelShouldOverrideAriaLabelledby(string ariaLabel)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Fruits");
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+
+            if (ariaLabel is not null)
+            {
+                parameters.Add(p => p.AriaLabel, ariaLabel);
+            }
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+
+        if (ariaLabel is null)
+        {
+            Assert.IsFalse(wrapper.HasAttribute("aria-label"));
+            Assert.IsTrue(wrapper.HasAttribute("aria-labelledby"));
+        }
+        else
+        {
+            Assert.AreEqual(ariaLabel, wrapper.GetAttribute("aria-label"));
+            Assert.IsFalse(wrapper.HasAttribute("aria-labelledby"));
+        }
+    }
+
+    [TestMethod]
+    public void BitDropdownProgrammaticIsOpenShouldToggleCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var opened = false;
+        var closed = false;
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+            parameters.Add(p => p.OnOpen, () => opened = true);
+            parameters.Add(p => p.OnClose, () => closed = true);
+        });
+
+        int CountToggles() => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(0, CountToggles());
+
+        // Opening the callout from the outside through the IsOpen parameter has no internal flow that
+        // toggles the callout, so the parameter hook itself has to reach the JS side.
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.AreEqual(1, CountToggles());
+        Assert.IsTrue(opened);
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        Assert.AreEqual(2, CountToggles());
+        Assert.IsTrue(closed);
+    }
+
+    [TestMethod]
+    public void BitDropdownInitialIsOpenShouldToggleCalloutAfterRender()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // An initial IsOpen fires the parameter hook before the first render, when no callout element
+        // exists to toggle (and during prerendering no JS runtime is available at all), so the open
+        // state has to be applied after the first render instead.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
+    }
+
+    [TestMethod]
+    public void BitDropdownOneWayIsOpenShouldNotBlockSelection()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        BitDropdownItem<string>? selectedItem = null;
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            // A one-way bound IsOpen (no IsOpenChanged) keeps the callout state controlled by the
+            // parent, but must not block selecting items.
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.OnSelectItem, (BitDropdownItem<string> i) => selectedItem = i);
+        });
+
+        component.Find(".bit-drp-itm").Click();
+
+        Assert.IsNotNull(selectedItem);
+        Assert.AreEqual(items[0].Value, selectedItem.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownDynamicItemsShouldSurviveSelectionChanges()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("New Item");
+
+        var items = BitDropdownTests.GetShortDropdownItems();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.DynamicValueGenerator, (BitDropdownItem<string>? item) => item?.Text ?? string.Empty);
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("New Item");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.AreEqual(1, component.Instance.SelectedItems.Count);
+        Assert.AreEqual("New Item", component.Instance.SelectedItems[0].Text);
+
+        // Selecting a normal item afterwards rebuilds the selection from Items; the dynamic item is
+        // not part of Items but its value is still selected, so it must survive the rebuild.
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-iwr button").Click();
+
+        Assert.AreEqual(2, component.Instance.SelectedItems.Count);
+        Assert.IsTrue(component.Instance.SelectedItems.Any(i => i.Text == "New Item"));
+        Assert.IsTrue(component.Instance.SelectedItems.Any(i => i.Value == items[0].Value));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitDropdownAriaRequiredAndDisabledShouldRenderTokenValues(bool state)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Required, state);
+            parameters.Add(p => p.IsEnabled, state is false);
+            parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+
+        if (state)
+        {
+            // The ARIA state attributes take explicit true/false tokens; a bool-valued Blazor
+            // attribute would render an empty string, which assistive technologies do not honor.
+            Assert.AreEqual("true", wrapper.GetAttribute("aria-required"));
+            Assert.AreEqual("true", wrapper.GetAttribute("aria-disabled"));
+        }
+        else
+        {
+            Assert.IsFalse(wrapper.HasAttribute("aria-required"));
+            Assert.IsFalse(wrapper.HasAttribute("aria-disabled"));
+        }
     }
 
     private void HandleValueChanged(string value)

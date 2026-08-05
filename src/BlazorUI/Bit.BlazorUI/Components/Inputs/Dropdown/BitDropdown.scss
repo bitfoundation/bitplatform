@@ -747,21 +747,21 @@
     }
 }
 
-    .bit-drp-itm[disabled] {
-        cursor: default;
+.bit-drp-itm[disabled] {
+    cursor: default;
+    color: $clr-fg-dis;
+
+    // The item text carries its own color, so it has to follow the disabled state explicitly.
+    .bit-drp-itx {
         color: $clr-fg-dis;
+    }
 
-        // The item text carries its own color, so it has to follow the disabled state explicitly.
-        .bit-drp-itx {
-            color: $clr-fg-dis;
-        }
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: transparent;
-            }
+    @media (hover: hover) {
+        &:hover {
+            background-color: transparent;
         }
     }
+}
 
 // The matched part of an item text while a search is active.
 .bit-drp-hlt {

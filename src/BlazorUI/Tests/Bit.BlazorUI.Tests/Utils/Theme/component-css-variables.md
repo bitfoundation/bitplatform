@@ -10,7 +10,7 @@ internal selectors. They are **stable public API**: override them from app CSS
 (`.bit-btn { --bit-btn-clr: hotpink; }`) or per instance via the `Style` parameter
 (`Style="--bit-btn-clr: hotpink"`), and rely on this contract-tested inventory when upgrading.
 
-33 components, 281 variables.
+33 components, 286 variables.
 
 ## BitActionButton
 
@@ -149,6 +149,11 @@ internal selectors. They are **stable public API**: override them from app CSS
 - `--bit-drp-clr-focus`
 - `--bit-drp-clr-hover`
 - `--bit-drp-clr-text`
+- `--bit-drp-fs`
+- `--bit-drp-h`
+- `--bit-drp-itm-fs`
+- `--bit-drp-itm-h`
+- `--bit-drp-lh`
 
 ## BitFileInput
 

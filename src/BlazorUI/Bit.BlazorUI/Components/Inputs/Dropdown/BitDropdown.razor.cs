@@ -27,10 +27,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _displayItemsSelectionVersion = -1;
     private List<TItem>? _displayItems;
     private bool _isResponsiveMode;
+    private bool _internalIsOpenChange;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
+    private ICollection<TItem>? _lastItemsReference;
     private Virtualize<TItem>? _virtualizeElement;
     private string _scrollContainerId = string.Empty;
     private string _dropdownTextContainerId = string.Empty;
@@ -408,17 +410,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
-    /// The callback that called when an item gets selected.
+    /// The callback that is called when the search text of the search box or combo box input changes,
+    /// with the term the items are getting filtered by.
     /// </summary>
     [Parameter] public EventCallback<string?> OnSearch { get; set; }
 
     /// <summary>
-    /// The callback that called when an item gets selected.
+    /// The callback that is called when an item gets selected.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
 
     /// <summary>
-    /// The callback that called when selected items change.
+    /// The callback that is called when the selected items change.
     /// </summary>
     [Parameter] public EventCallback<IEnumerable<TValue?>> OnValuesChange { get; set; }
 
@@ -670,7 +673,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        // The JS side has already hidden this callout to make room for the other one, so the change
+        // is marked internal to keep the OnSetIsOpen hook from toggling it again.
+        if (await AssignIsOpenInternal(false) is false) return;
 
         await InvokeAsync(StateHasChanged);
     }
@@ -696,6 +701,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public async Task UnselectItem(TItem? item)
     {
         if (item is null) return;
+
+        // Unselecting an item that is not selected must be a no-op: in multi select mode the toggle
+        // below would otherwise select it, and in single select mode the clear would drop another item.
+        if (GetIsSelected(item) is false) return;
 
         if (MultiSelect)
         {
@@ -782,6 +791,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             _selectedItems = _selectedItems.FindAll(i => i != item);
             SetIsSelectedForSelectedItems();
+
+            // The has-value class of the root element follows the selected items, so the cached class
+            // list has to be rebuilt now that the removed option may have been the last selected one.
+            ClassBuilder.Reset();
         }
 
         StateHasChanged();
@@ -792,8 +805,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (GetItemType(item) != BitDropdownItemType.Normal) return;
         if (IsEnabled is false || GetIsEnabled(item) is false) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
 
+        // A one-way bound IsOpen must not block the selection itself: the selection proceeds and the
+        // close attempt inside it simply becomes a no-op (AssignIsOpen refuses the change), which is
+        // exactly the controlled behavior a one-way IsOpen asks for.
         await AddOrRemoveSelectedItem(item);
 
         if (MultiSelect is false)
@@ -1310,6 +1325,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _displayItems = null;
         _searchedItemsCache = null;
 
+        // A new Items collection has to resync the selected items, which still reference the previous
+        // collection's instances: neither the Value nor the Values hook fires for it, and this point
+        // (unlike those hooks) runs after every parameter of the batch - including a Values change
+        // that arrived in the same set but was applied before the new Items - has been applied.
+        if (ReferenceEquals(_lastItemsReference, Items) is false)
+        {
+            _lastItemsReference = Items;
+            UpdateSelectedItemsFromValues();
+        }
+
         base.OnParametersSet();
     }
 
@@ -1326,12 +1351,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             // Prevents the default behavior (scrolling) of the navigation keys handled by the
             // keydown handlers, since Blazor cannot conditionally preventDefault per key.
             await _js.BitDropdownsSetup(_Id, _calloutId);
+
+            if (Responsive)
+            {
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
+            }
+
+            // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
+            // callout element to toggle yet, so the open state is applied here instead.
+            if (IsOpen)
+            {
+                await ToggleCallout();
+            }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-
-        if (Responsive is false) return;
-
-        await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -1446,6 +1479,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         var items = ItemsProvider is null ? Items : _lastShownItems;
         if (items is null) return;
 
+        // The selection may hold items that are not part of Items at all - the ones created in the
+        // Dynamic ComboBox mode - which the rebuild below cannot find in Items. They are preserved
+        // from this snapshot as long as their values are still selected, otherwise every later
+        // selection change would silently drop them while their values stay selected.
+        List<TItem> previousSelectedItems = ItemsProvider is null ? [.. _selectedItems] : [];
+
         if (ItemsProvider is null)
         {
             _selectedItems.Clear();
@@ -1469,6 +1508,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 {
                     _selectedItems.RemoveAll(si => Values.Contains(GetValue(si)) is false);
                 }
+                else
+                {
+                    foreach (var previousItem in previousSelectedItems)
+                    {
+                        if (items.Contains(previousItem)) continue;
+
+                        var value = GetValue(previousItem);
+                        if (Values.Any(v => comparer.Equals(v, value)) is false) continue;
+                        if (_selectedItems.Exists(si => comparer.Equals(GetValue(si), value))) continue;
+
+                        _selectedItems.Add(previousItem);
+                    }
+                }
             }
             else
             {
@@ -1488,7 +1540,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
                 _selectedItems.Add(item);
             }
-            else if (ItemsProvider is not null && comparer.Equals(CurrentValue, default))
+            else if (ItemsProvider is null)
+            {
+                if (comparer.Equals(CurrentValue, default) is false)
+                {
+                    var previousItem = previousSelectedItems.Find(si => comparer.Equals(GetValue(si), CurrentValue));
+                    if (previousItem is not null)
+                    {
+                        _selectedItems.Add(previousItem);
+                    }
+                }
+            }
+            else if (comparer.Equals(CurrentValue, default))
             {
                 // With an ItemsProvider a value that matches none of the loaded items usually just means
                 // its item has not been fetched yet, so the selected item is kept. An empty value however
@@ -1502,6 +1565,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         RefreshOptions();
     }
 
+    // See OnSetIsOpen: the flows that follow AssignIsOpen with their own awaited ToggleCallout mark
+    // the change as internal, so the hook does not toggle the callout a second time.
+    private async Task<bool> AssignIsOpenInternal(bool value)
+    {
+        _internalIsOpenChange = true;
+        try
+        {
+            return await AssignIsOpen(value);
+        }
+        finally
+        {
+            _internalIsOpenChange = false;
+        }
+    }
+
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
@@ -1510,7 +1588,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _rateLimiter.Reset();
         _typeAheadBuffer = string.Empty;
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await AssignIsOpenInternal(false) is false) return;
 
         await ToggleCallout();
     }
@@ -1519,13 +1597,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(true) is false) return;
+        if (await AssignIsOpenInternal(true) is false) return;
 
         await ToggleCallout();
 
         await OnClick.InvokeAsync(e);
         await FocusOnComboBoxInput();
         await FocusOnSearchBox();
+
+        // A pointer open mirrors the keyboard open: the focus (and with it the scroll) goes to the
+        // selected item, or the first one, unless an input already claimed the focus above.
+        if (Combo is false && (ShowSearchBox && AutoFocusSearchBox) is false)
+        {
+            await FocusItem("selected");
+        }
     }
 
     // The default behavior of the navigation keys handled here is prevented by the keydown listener of
@@ -1623,9 +1708,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 await _dropdownWrapperRef.FocusAsync();
                 break;
             default:
+                // Ctrl+A (or Cmd+A) selects all the items in multi select mode - and clears them when
+                // they are all selected already - per the APG listbox pattern. Inside the search/combo
+                // inputs the shortcut keeps its native select-the-text behavior instead. Like the
+                // select all item, it is unavailable with an ItemsProvider, where only the loaded
+                // window of the items is known and "all" would silently mean an arbitrary subset.
+                if (MultiSelect && ItemsProvider is null && (e.CtrlKey || e.MetaKey) && e.Key is "a" or "A" &&
+                    _inputSearchHasFocus is false && _inputComboHasFocus is false)
+                {
+                    await HandleOnSelectAllClick();
+                }
                 // In Combo mode the combo input is the type-ahead, and printable keys
                 // typed into the search box must keep filtering instead of moving focus.
-                if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
+                else if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
                 {
                     await FocusItem("char", GetTypeAheadBuffer(e.Key!));
                 }
@@ -1740,20 +1835,41 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private void OnSetIsOpen()
     {
+        // Captured now: the lambda below runs later, so a rapid second change to IsOpen before it has
+        // run must not make both invocations act on the same (latest) state.
+        var isOpen = IsOpen;
+
+        // The internal open/close flows toggle the callout themselves right after assigning IsOpen,
+        // so they can await the toggle and order their focus work after it. The hook only toggles for
+        // a change pushed from the outside through the IsOpen parameter (or a programmatic Assign),
+        // which otherwise has no path to the JS side that actually shows and hides the callout.
+        // Before the first render there is no element to toggle (and during prerendering not even a
+        // JS runtime to call); an initial IsOpen is applied by OnAfterRenderAsync instead.
+        var toggle = _internalIsOpenChange is false && IsRendered;
+
         // The hook of a [CallOnSet] parameter is synchronous, so the work is fired and forgotten.
         // Wrapped in a local async method (instead of separate discarded tasks) so the steps run in
         // order rather than racing over _searchText, and so a throwing one surfaces through Blazor's
         // normal async error handling via the renderer dispatcher instead of on an unobserved task.
         _ = InvokeAsync(async () =>
         {
-            await ClearSearchBox();
+            // The search text is only dropped when the callout closes: a text that was typed but never
+            // committed to a selection must not survive the callout, otherwise the trigger keeps showing
+            // a filter term instead of the current selection the next time the dropdown is opened.
+            // On open there is nothing to drop - and in ComboBox mode the typing itself is what opens
+            // the callout, so clearing here would wipe the very term the items are being filtered by.
+            if (isOpen is false)
+            {
+                await ClearSearchBox();
+                await ClearComboBoxInput();
+            }
 
-            // The combo input doubles as the search input, so a text that was typed but never committed
-            // to a selection must not survive the callout, otherwise the trigger keeps showing a filter
-            // term instead of the current selection the next time the dropdown is opened.
-            await ClearComboBoxInput();
+            if (toggle)
+            {
+                await ToggleCallout();
+            }
 
-            await (IsOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
+            await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
         });
     }
 
@@ -2217,7 +2333,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsOpen) return;
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(true) is false) return;
+        if (await AssignIsOpenInternal(true) is false) return;
 
         await ToggleCallout();
     }

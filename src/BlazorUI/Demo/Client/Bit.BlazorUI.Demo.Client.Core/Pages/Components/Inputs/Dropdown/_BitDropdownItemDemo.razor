@@ -402,7 +402,7 @@
                 <BitDropdown @bind-Value="validationModel.Category"
                              Label="Select 1 item"
                              Items="GetBasicItems()"
-                             Placeholder="Select and item" />
+                             Placeholder="Select an item" />
 
                 <ValidationMessage For="@(() => validationModel.Category)" />
 
@@ -798,7 +798,11 @@
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
         first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on. Typing printable characters runs a typeahead: the accumulated characters jump to the
+        dropdown, and <b>Tab</b> closes it and moves on. Opening the callout with a mouse click focuses the selected
+        item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
+        selects every item the current search shows &mdash; or clears them when they are all selected already &mdash;
+        while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
+        Typing printable characters runs a typeahead: the accumulated characters jump to the
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
         resets after a short pause. Disabled and hidden items are skipped throughout. In virtualize mode only the
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
@@ -828,6 +832,8 @@
         search is active it selects the search result rather than the whole list, leaving selections made outside the
         result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
         come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected.
+        While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
+        from the keyboard, even when the select all item itself is not shown.
     </div>
     <br />
     <div class="example-content">
@@ -1197,8 +1203,7 @@
         <BitDropdown Label="Item icons (IconName - Fluent UI)"
                      Items="GetExternalIconItems()"
                      DefaultValue="@string.Empty"
-                     Placeholder="Select an item"
-                     TItem="BitDropdownItem<string>" TValue="string" />
+                     Placeholder="Select an item" />
 
         <br /><br />
 

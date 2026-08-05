@@ -253,7 +253,7 @@ protected override void OnInitialized()
     private readonly string example7CsharpCode = @"
 private int clearCounter;
 private string? clearValue = ""f-app"";
-private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
+private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
 
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {
@@ -761,7 +761,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example14CsharpCode = @"
 private string comboBoxValueSample1 = default!;
-private ICollection<string?> comboBoxValues1 = [];
+private IEnumerable<string> comboBoxValues1 = [];
 
 private List<BitDropdownItem<string>> comboBoxItems = new()
 {
@@ -796,7 +796,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
 <div>Values: @string.Join(',', comboBoxValues2)</div>";
     private readonly string example15CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private ICollection<string?> comboBoxValues2 = [];
+private IEnumerable<string> comboBoxValues2 = [];
 
 private List<BitDropdownItem<string>> comboBoxItems = new()
 {
@@ -916,7 +916,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     private readonly string example17CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private ICollection<string?> comboBoxValues3 = [];
+private IEnumerable<string> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(BitDropdownItem<string> item)
 {

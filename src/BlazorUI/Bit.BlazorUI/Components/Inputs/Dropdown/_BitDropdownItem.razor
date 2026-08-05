@@ -55,7 +55,7 @@
                         class="bit-drp-mcn @Dropdown.Classes?.ItemButton"
                         aria-label="@Dropdown.GetAriaLabel(Item)"
                         aria-setsize="@Dropdown.GetTotalItems()"
-                        aria-disabled="@isDisabled"
+                        aria-disabled="@(isDisabled ? "true" : null)"
                         aria-selected="@(isSelected ? "true" : "false")"
                         aria-posinset="@Dropdown.GetItemPosInSet(Item)">
                     <div style="@Dropdown.Styles?.ItemCheckBox"
@@ -106,7 +106,7 @@
                     class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
-                    aria-disabled="@isDisabled"
+                    aria-disabled="@(isDisabled ? "true" : null)"
                     aria-selected="@(isSelected ? "true" : "false")"
                     aria-posinset="@Dropdown.GetItemPosInSet(Item)">
                 @if (Dropdown.ItemTemplate is not null)

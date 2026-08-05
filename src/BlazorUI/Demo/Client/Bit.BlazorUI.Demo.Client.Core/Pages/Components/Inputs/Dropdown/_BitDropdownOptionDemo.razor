@@ -16,7 +16,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-org")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -261,13 +261,13 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-org")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
-            <BitDropdownOption Text="Broccoli" Value="@("f-bro")" />
-            <BitDropdownOption Text="Carrot" Value="@("f-car")" />
-            <BitDropdownOption Text="Lettuce" Value="@("f-let")" />
+            <BitDropdownOption Text="Broccoli" Value="@("v-bro")" />
+            <BitDropdownOption Text="Carrot" Value="@("v-car")" />
+            <BitDropdownOption Text="Lettuce" Value="@("v-let")" />
         </BitDropdown>
     </div>
 </DemoExample>
@@ -322,7 +322,6 @@
             {
                 <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
             }
-            <br />
         </BitDropdown>
         <br />
         <div>Value: @clearValue</div>
@@ -565,7 +564,7 @@
 
                 <BitDropdown @bind-Value="validationModel.Category"
                              Label="Select 1 item"
-                             Placeholder="Select and item"
+                             Placeholder="Select an item"
                              TItem="BitDropdownOption<string>" TValue="string">
                     @foreach (var item in basicItems)
                     {
@@ -753,7 +752,7 @@
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
             <BitDropdownOption Text="Apple" Value="@("f-app")" />
             <BitDropdownOption Text="Banana" Value="@("f-ban")" />
-            <BitDropdownOption Text="Orange" Value="@("f-org")" IsEnabled="false" />
+            <BitDropdownOption Text="Orange" Value="@("f-ora")" IsEnabled="false" />
             <BitDropdownOption Text="Grape" Value="@("f-gra")" />
             <BitDropdownOption ItemType="BitDropdownItemType.Divider" Value="@string.Empty" />
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Vegetables" Value="@string.Empty" />
@@ -1050,6 +1049,7 @@
     <div class="example-content">
         <BitDropdown @bind-Value="comboBoxValueSample3"
                      Combo Dynamic
+                     Responsive
                      Placeholder="Select an option"
                      Label="Single select combo box & dynamic"
                      DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
@@ -1110,7 +1110,11 @@
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
         first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on. Typing printable characters runs a typeahead: the accumulated characters jump to the
+        dropdown, and <b>Tab</b> closes it and moves on. Opening the callout with a mouse click focuses the selected
+        item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
+        selects every item the current search shows &mdash; or clears them when they are all selected already &mdash;
+        while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
+        Typing printable characters runs a typeahead: the accumulated characters jump to the
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
         resets after a short pause. Disabled and hidden items are skipped throughout. In virtualize mode only the
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
@@ -1150,6 +1154,8 @@
         search is active it selects the search result rather than the whole list, leaving selections made outside the
         result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
         come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected.
+        While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
+        from the keyboard, even when the select all item itself is not shown.
     </div>
     <br />
     <div class="example-content">
@@ -1370,6 +1376,7 @@
     <div class="example-content">
         <BitDropdown Label="Primary"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Primary"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1381,6 +1388,7 @@
         <br /><br />
         <BitDropdown Label="Secondary"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Secondary"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1392,6 +1400,7 @@
         <br /><br />
         <BitDropdown Label="Tertiary"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Tertiary"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1403,6 +1412,7 @@
         <br /><br />
         <BitDropdown Label="Info"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Info"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1414,6 +1424,7 @@
         <br /><br />
         <BitDropdown Label="Success"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Success"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1425,6 +1436,7 @@
         <br /><br />
         <BitDropdown Label="Warning"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Warning"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1436,6 +1448,7 @@
         <br /><br />
         <BitDropdown Label="SevereWarning"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.SevereWarning"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">
@@ -1447,6 +1460,7 @@
         <br /><br />
         <BitDropdown Label="Error"
                      MultiSelect
+                     ShowSearchBox
                      Color="BitColor.Error"
                      Placeholder="Select items"
                      TItem="BitDropdownOption<string>" TValue="string">

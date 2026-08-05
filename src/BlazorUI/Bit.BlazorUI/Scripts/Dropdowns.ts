@@ -43,9 +43,16 @@ namespace BitBlazorUI {
             const root = document.getElementById(id);
             if (root) {
                 const handler = (e: KeyboardEvent) => {
-                    // Buttons inside the trigger (e.g. the clear button) are activated by Space and
-                    // Enter themselves, so their keys must keep their default behavior.
-                    if ((e.target as HTMLElement)?.closest('button')) return;
+                    // Buttons inside the trigger (the clear button, the chip remove buttons) are
+                    // activated by Enter and Space themselves, so those two keys are stopped here -
+                    // before Blazor's document-level delegation sees them - to keep the activation
+                    // from also reaching the trigger's keydown handler and toggling the callout.
+                    // Every other key falls through: the arrows keep operating the dropdown (with
+                    // their scrolling default prevented below) even while such a button has the focus.
+                    if ((e.target as HTMLElement)?.closest('button') && (e.key === 'Enter' || e.key === ' ')) {
+                        e.stopPropagation();
+                        return;
+                    }
 
                     if (Dropdowns.TRIGGER_KEYS.indexOf(e.key) > -1 || (e.key === ' ' && !isTextInput(e))) {
                         e.preventDefault();
@@ -60,6 +67,15 @@ namespace BitBlazorUI {
                 const handler = (e: KeyboardEvent) => {
                     if (Dropdowns.CALLOUT_KEYS.indexOf(e.key) > -1 ||
                         (Dropdowns.CARET_KEYS.indexOf(e.key) > -1 && !isTextInput(e))) {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Ctrl/Cmd+A runs the select all of a multi select dropdown (see
+                    // HandleOnCalloutKeyDown), so the browser's select-the-page-text default has to be
+                    // prevented - except in the search/combo inputs, where it keeps selecting the text.
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A') && !isTextInput(e) &&
+                        callout.querySelector('.bit-drp-scn')?.getAttribute('aria-multiselectable') === 'true') {
                         e.preventDefault();
                         return;
                     }

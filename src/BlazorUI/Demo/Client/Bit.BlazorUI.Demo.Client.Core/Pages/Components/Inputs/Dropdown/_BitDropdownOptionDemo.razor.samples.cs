@@ -9,7 +9,7 @@ public partial class _BitDropdownOptionDemo
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" />
     <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" />
-    <BitDropdownOption Text=""Orange"" Value=""@(""f-org"")"" IsEnabled=""false"" />
+    <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" IsEnabled=""false"" />
     <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" Value=""@string.Empty"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Vegetables"" Value=""@string.Empty"" />
@@ -274,13 +274,13 @@ private readonly List<BitDropdownItem<string>> basicItems =
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" />
     <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" />
-    <BitDropdownOption Text=""Orange"" Value=""@(""f-org"")"" IsEnabled=""false"" />
+    <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" IsEnabled=""false"" />
     <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" Value=""@string.Empty"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Vegetables"" Value=""@string.Empty"" />
-    <BitDropdownOption Text=""Broccoli"" Value=""@(""f-bro"")"" />
-    <BitDropdownOption Text=""Carrot"" Value=""@(""f-car"")"" />
-    <BitDropdownOption Text=""Lettuce"" Value=""@(""f-let"")"" />
+    <BitDropdownOption Text=""Broccoli"" Value=""@(""v-bro"")"" />
+    <BitDropdownOption Text=""Carrot"" Value=""@(""v-car"")"" />
+    <BitDropdownOption Text=""Lettuce"" Value=""@(""v-let"")"" />
 </BitDropdown>";
 
     private readonly string example6RazorCode = @"
@@ -355,7 +355,7 @@ protected override void OnInitialized()
     private readonly string example7CsharpCode = @"
 private int clearCounter;
 private string? clearValue = ""f-app"";
-private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
+private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
 
 private readonly List<BitDropdownItem<string>> basicItems =
 [
@@ -613,7 +613,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 
     <BitDropdown @bind-Value=""validationModel.Category""
                  Label=""Select 1 item""
-                 Placeholder=""Select and item""
+                 Placeholder=""Select an item""
                  TItem=""BitDropdownOption<string>"" TValue=""string"">
         @foreach (var item in basicItems)
         {
@@ -838,7 +838,7 @@ private readonly List<BitDropdownItem<string>> dataItems =
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
     <BitDropdownOption Text=""Apple"" Value=""@(""f-app"")"" />
     <BitDropdownOption Text=""Banana"" Value=""@(""f-ban"")"" />
-    <BitDropdownOption Text=""Orange"" Value=""@(""f-org"")"" IsEnabled=""false"" />
+    <BitDropdownOption Text=""Orange"" Value=""@(""f-ora"")"" IsEnabled=""false"" />
     <BitDropdownOption Text=""Grape"" Value=""@(""f-gra"")"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Divider"" Value=""@string.Empty"" />
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Vegetables"" Value=""@string.Empty"" />
@@ -1011,7 +1011,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example14CsharpCode = @"
 private string comboBoxValueSample1 = default!;
-private ICollection<string> comboBoxValues1 = [];
+private IEnumerable<string> comboBoxValues1 = [];
 
 private readonly List<BitDropdownItem<string>> comboBoxItems =
 [
@@ -1056,7 +1056,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 <div>Values: @string.Join(',', comboBoxValues2)</div>";
     private readonly string example15CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private ICollection<string> comboBoxValues2 = [];
+private IEnumerable<string> comboBoxValues2 = [];
 
 private readonly List<BitDropdownItem<string>> comboBoxItems =
 [
@@ -1170,6 +1170,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example17RazorCode = @"
 <BitDropdown @bind-Value=""comboBoxValueSample3""
              Combo Dynamic
+             Responsive
              Placeholder=""Select an option""
              Label=""Single select combo box & dynamic""
              TItem=""BitDropdownOption<string>"" TValue=""string""
@@ -1215,7 +1216,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example17CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private ICollection<string> comboBoxValues3 = [];
+private IEnumerable<string> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(BitDropdownOption<string> item)
 {
@@ -1542,12 +1543,13 @@ private async Task LoadDelayedItems()
     isLoadingItems = false;
 }";
 
-    private readonly string? example23RazorCode = @"
-<div>Not applicable to option demo!</div>";
+    private readonly string example23RazorCode = @"
+<div>Virtualizing large item lists is demonstrated with the Items and ItemsProvider APIs; check the Item and Custom tabs for the examples.</div>";
 
     private readonly string example24RazorCode = @"
 <BitDropdown Label=""Primary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Primary""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1559,6 +1561,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Secondary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Secondary""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1570,6 +1573,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Tertiary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Tertiary""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1581,6 +1585,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Info""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Info""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1592,6 +1597,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Success""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Success""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1603,6 +1609,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Warning""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Warning""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1614,6 +1621,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""SevereWarning""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.SevereWarning""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
@@ -1625,6 +1633,7 @@ private async Task LoadDelayedItems()
 
 <BitDropdown Label=""Error""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Error""
              Placeholder=""Select items""
              TItem=""BitDropdownOption<string>"" TValue=""string"">

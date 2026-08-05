@@ -81,7 +81,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -161,7 +161,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -215,7 +215,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -274,7 +274,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -321,7 +321,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -352,11 +352,11 @@ private ICollection<Product>? dropDirectionCustoms;
 protected override void OnInitialized()
 {
     dropDirectionCustoms = Enumerable.Range(1, 15)
-                                     .Select(p => new ProduceModel { Text = $""Produce {p}"", Value = p.ToString() })
+                                     .Select(p => new Product { Text = $""Produce {p}"", Value = p.ToString() })
                                      .ToArray();
 }
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -397,8 +397,8 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 <div>OnClear count: @clearCounter</div>";
     private readonly string example7CsharpCode = @"
 private int clearCounter;
-private string? clearValue = ""f-app"";
-private ICollection<string?> clearValues = new[] { ""f-app"", ""f-ban"" };
+private string clearValue = ""f-app"";
+private IEnumerable<string> clearValues = [""f-app"", ""f-ban""];
 
 public class Product
 {
@@ -427,7 +427,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -507,7 +507,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -588,7 +588,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
@@ -703,7 +703,7 @@ private List<Product> comboBoxCustoms = new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -750,7 +750,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
                  Label=""Select 1 item""
                  Items=""GetBasicCustoms()""
                  NameSelectors=""nameSelectors""
-                 Placeholder=""Select and item"" />
+                 Placeholder=""Select an item"" />
     <ValidationMessage For=""@(() => validationModel.Category)"" />
 
     <BitDropdown @bind-Values=""validationModel.Products""
@@ -967,7 +967,7 @@ private List<Product> GetDataCustoms() => new()
         new() { Text = ""Item f"", Value = ""F"", Payload = new DropdownItemData { IconName = ""Running"" } }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1104,7 +1104,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1138,7 +1138,7 @@ private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example14CsharpCode = @"
 private string comboBoxValueSample1 = default!;
-private ICollection<string> comboBoxValues1 = [];
+private IEnumerable<string> comboBoxValues1 = [];
 
 public class Product
 {
@@ -1207,7 +1207,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
 <div>Values: @string.Join(',', comboBoxValues2)</div>";
     private readonly string example15CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private ICollection<string> comboBoxValues2 = [];
+private IEnumerable<string> comboBoxValues2 = [];
 
 public class Product
 {
@@ -1331,7 +1331,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1411,7 +1411,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     private readonly string example17CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private ICollection<string> comboBoxValues3 = [];
+private IEnumerable<string> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(Product item)
 {
@@ -1503,7 +1503,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1566,7 +1566,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1618,7 +1618,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1732,7 +1732,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1840,7 +1840,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -1978,7 +1978,7 @@ protected override void OnInitialized()
                                    .ToArray();
 }
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -2034,6 +2034,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
     private readonly string example24RazorCode = @"
 <BitDropdown Label=""Primary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Primary""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2041,6 +2042,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Secondary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Secondary""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2048,6 +2050,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Tertiary""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Tertiary""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2055,6 +2058,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Info""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Info""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2062,6 +2066,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Success""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Success""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2069,6 +2074,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Warning""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Warning""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2076,6 +2082,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""SevereWarning""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.SevereWarning""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2083,6 +2090,7 @@ private async ValueTask<BitDropdownItemsProviderResult<Product>> LoadItems(
 
 <BitDropdown Label=""Error""
              MultiSelect
+             ShowSearchBox
              Color=""BitColor.Error""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
@@ -2115,7 +2123,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },
@@ -2327,7 +2335,7 @@ private List<Product> GetBasicCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new()
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 {
     Text = { Selector = c => c.Text },
     Value = { Selector = c => c.Value },
@@ -2457,7 +2465,7 @@ private List<Product> GetStyleClassCustoms() => new()
     new() { Text = ""Lettuce"", Value = ""v-let"", CssClass = ""custom-veg"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Class = { Selector = c => c.CssClass },
@@ -2520,7 +2528,7 @@ private List<Product> GetRtlCustoms() => new()
     new() { Text = ""کاهو"", Value = ""v-let"" }
 };
 
-private BitDropdownNameSelectors<Product, string?> nameSelectors = new() 
+private BitDropdownNameSelectors<Product, string> nameSelectors = new() 
 {
     AriaLabel = { Selector = c => c.Label },
     Id = { Selector = c => c.Key },

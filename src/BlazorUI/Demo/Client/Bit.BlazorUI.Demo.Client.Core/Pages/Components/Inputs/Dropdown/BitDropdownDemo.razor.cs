@@ -161,7 +161,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "DefaultValues",
-            Type = "IEnumerable<string?>?",
+            Type = "IEnumerable<TValue?>?",
             DefaultValue = "null",
             Description = "The default values that will be initially used to set selected items in multi select mode if the Values parameter is not set.",
         },
@@ -210,13 +210,13 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "ExistsSelectedItemFunction",
-            Type = "Func<ICollection<TItem>, string, bool>",
+            Type = "Func<ICollection<TItem>, string, bool>?",
             Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in selected items in the ComboBox mode.",
         },
         new()
         {
             Name = "FindItemFunction",
-            Type = "Func<ICollection<TItem>, string, TItem>",
+            Type = "Func<ICollection<TItem>, string, TItem>?",
             Description = "Custom search function to be used in place of the default search algorithm for checking existing an item in items in the ComboBox mode.",
         },
         new()
@@ -440,20 +440,20 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "OnSearch",
-            Type = "EventCallback<string>",
-            Description = "The callback that is called when the search value changes.",
+            Type = "EventCallback<string?>",
+            Description = "The callback that is called when the search text of the search box or combo box input changes, with the term the items are getting filtered by.",
         },
         new()
         {
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
-            Description = "The callback that called when an item gets selected.",
+            Description = "The callback that is called when an item gets selected.",
         },
         new()
         {
             Name = "OnValuesChange",
             Type = "EventCallback<IEnumerable<TValue?>>",
-            Description = "The callback that called when selected items change.",
+            Description = "The callback that is called when the selected items change.",
         },
         new()
         {
@@ -673,7 +673,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "TextTemplate",
-            Type = "RenderFragment<<TItem, TValue>>?",
+            Type = "RenderFragment<BitDropdown<TItem, TValue>>?",
             DefaultValue = "null",
             Description = "The custom template for the text of the dropdown.",
         },
@@ -776,14 +776,14 @@ public partial class BitDropdownDemo
                {
                    Name = "IsEnabled",
                    Type = "bool",
-                   DefaultValue = "null",
+                   DefaultValue = "true",
                    Description = "Determines if the dropdown item is enabled."
                },
                new()
                {
                    Name = "IsHidden",
                    Type = "bool",
-                   DefaultValue = "null",
+                   DefaultValue = "false",
                    Description = "Determines if the dropdown item is hidden."
                },
                new()
@@ -805,8 +805,8 @@ public partial class BitDropdownDemo
                new()
                {
                    Name = "Text",
-                   Type = "string",
-                   DefaultValue = "string.Empty",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "The text to render for the dropdown item."
                },
                new()
@@ -870,22 +870,15 @@ public partial class BitDropdownDemo
                {
                    Name = "IsEnabled",
                    Type = "bool",
-                   DefaultValue = "null",
+                   DefaultValue = "true",
                    Description = "Determines if the dropdown option is enabled."
                },
                new()
                {
                    Name = "IsHidden",
                    Type = "bool",
-                   DefaultValue = "null",
+                   DefaultValue = "false",
                    Description = "Determines if the dropdown option is hidden."
-               },
-               new()
-               {
-                   Name = "IsSelected",
-                   Type = "bool",
-                   DefaultValue = "null",
-                   Description = "Determines if the dropdown option is selected."
                },
                new()
                {
@@ -922,8 +915,8 @@ public partial class BitDropdownDemo
                new()
                {
                    Name = "Text",
-                   Type = "string",
-                   DefaultValue = "string.Empty",
+                   Type = "string?",
+                   DefaultValue = "null",
                    Description = "The text to render for the dropdown option."
                },
                new()
@@ -1709,8 +1702,14 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "UnselectItem",
+            Type = "Task UnselectItem(TItem? item)",
+            Description = "Unselects the given item: removes it from the selection in multi select mode and clears the selection in single select mode. Items that are not selected are ignored.",
+        },
+        new()
+        {
             Name = "ComboInputElement",
-            Type = "ElementReference",
+            Type = "ElementReference?",
             Description = "The ElementReference to the combo input element.",
         },
         new()
@@ -1722,7 +1721,7 @@ public partial class BitDropdownDemo
         new()
         {
             Name = "SearchInputElement",
-            Type = "ElementReference",
+            Type = "ElementReference?",
             Description = "The ElementReference to the search input element.",
         },
         new()

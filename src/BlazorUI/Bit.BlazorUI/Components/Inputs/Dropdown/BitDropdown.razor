@@ -90,12 +90,13 @@
          class="bit-drp-wrp @Classes?.Container"
          tabindex=@(IsEnabled ? 0 : -1)
          aria-haspopup="listbox"
-         aria-required="@Required"
+         aria-required="@(Required ? "true" : null)"
          aria-readonly="@(ReadOnly ? "true" : null)"
          aria-invalid="@(ValueInvalid is true ? "true" : null)"
-         aria-disabled="@(IsEnabled is false)"
+         aria-disabled="@(IsEnabled is false ? "true" : null)"
          aria-expanded=@(IsOpen ? "true" : "false")
-         aria-labelledby="@GetDropdownAriaLabelledby()"
+         aria-label="@AriaLabel"
+         aria-labelledby="@(AriaLabel.HasValue() ? null : GetDropdownAriaLabelledby())"
          aria-controls="@(IsOpen? _scrollContainerId : null)">
 
         @if (PrefixTemplate is not null)
@@ -126,7 +127,10 @@
                         @GetText(item)
                         @if (IsEnabled && ReadOnly is false)
                         {
-                            @* A button so the chip can be removed with the keyboard and is announced as an action. *@
+                            @* A button so the chip can be removed with the keyboard and is announced as an action.
+                               The keydown listener of Dropdowns.ts stops Enter and Space from reaching the
+                               trigger's keydown handler, so activating the button cannot toggle the callout
+                               while the other keys keep operating the dropdown. *@
                             <button @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation
                                     type="button"
                                     style="@Styles?.ChipsRemoveButton"
@@ -192,9 +196,10 @@
 
         @if (IsEnabled && ReadOnly is false && ShowClearButton && _selectedItems.Count > 0)
         {
-            @* The keydown is stopped here so activating this button with the keyboard cannot
-               reach the trigger's keydown handler and toggle the callout as well. *@
-            <button @onclick="HandleOnClearClick" @onclick:stopPropagation @onkeydown:stopPropagation
+            @* The keydown listener of Dropdowns.ts stops Enter and Space from reaching the trigger's
+               keydown handler, so activating this button cannot toggle the callout while the other
+               keys keep operating the dropdown. *@
+            <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
                     aria-label="Clear selection"
                     style="@Styles?.ClearButton"
