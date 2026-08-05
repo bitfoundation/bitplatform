@@ -239,8 +239,9 @@
     <div>
         The <b>ShowClearButton</b> parameter adds a button that clears the current selection whenever the dropdown has
         a value, in both single and multi select modes. Clearing raises the usual value change events, plus the
-        dedicated <b>OnClear</b> callback. The button is hidden while the dropdown is read-only or disabled, so it
-        never offers an action that would be ignored.
+        dedicated <b>OnClear</b> callback. In the ComboBox mode it also empties the input, so no filter is left behind
+        by a button that says it clears what the dropdown is showing. The button is hidden while the dropdown is
+        read-only or disabled, so it never offers an action that would be ignored.
     </div>
     <br />
     <div class="example-content">
@@ -569,11 +570,15 @@
         Every piece of the dropdown's state can be bound or observed. The selection is two-way bound over <b>Value</b>
         in single select mode and <b>Values</b> in multi select mode, or left uncontrolled with <b>DefaultValue</b> and
         <b>DefaultValues</b> and observed through the <b>OnChange</b> and <b>OnValuesChange</b> events;
-        <b>OnSelectItem</b> hands over the clicked item itself rather than its value. <b>Reselectable</b> makes the
+        <b>OnSelectItem</b> hands over the clicked item itself rather than its value &mdash; in multi select mode for
+        every pick, including the one that unselects an already selected item, which <b>OnDeselectItem</b> reports on
+        its own so that an addition and a removal can be told apart. <b>Reselectable</b> makes the
         select events fire even when the already selected item is picked again, which is otherwise treated as a no-op.
         The open state of the callout is two-way bound via <b>IsOpen</b>, so it can be opened and closed from code, and
         the <b>OnOpen</b> and <b>OnClose</b> events report every change to it &mdash; a natural place to start fetching
-        the items on first open.
+        the items on first open. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
+        dropdown as a whole: they sit on the trigger and focusin/focusout bubble, so moving between the trigger and the
+        ComboBox input inside it does not report a round trip through the outside.
     </div>
     <br /><br />
     <div class="example-content">
@@ -635,6 +640,19 @@
         <br />
         <div>Selected Value: @selectedItem2?.Value</div>
         <br /><br /><br /><br />
+        <div><b>OnDeselectItem</b>:</div><br />
+        <BitDropdown Label="Multi select"
+                     MultiSelect
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app" })"
+                     OnSelectItem="(Product item) => pickedItem = item"
+                     OnDeselectItem="(Product item) => deselectedItem = item" />
+        <br />
+        <div>Last picked item: @pickedItem?.Text</div>
+        <div>Last unselected item: @deselectedItem?.Text</div>
+        <br /><br /><br /><br />
         <div><b>Reselectable</b>:</div><br />
         <BitDropdown Label="Single select"
                      Reselectable
@@ -666,6 +684,17 @@
                      OnClose="HandleOnCalloutClose" />
         <br />
         <div>The callout is @calloutState.</div>
+        <br /><br /><br /><br />
+        <div><b>OnFocusIn & OnFocusOut</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Tab into me"
+                     NameSelectors="nameSelectors"
+                     OnFocusIn="HandleOnFocusIn"
+                     OnFocusOut="HandleOnFocusOut" />
+        <br />
+        <div>The dropdown is @focusState.</div>
     </div>
 </DemoExample>
 
@@ -745,7 +774,13 @@
         by default the next item has to be found through the filter left over from the previous one. Enabling it clears
         the search text after every selection instead.
         <b>HideSelectedItems</b> goes one step further and drops the picked items out of the callout altogether, which
-        makes sense when the chips already show what is selected and the list is only about what is left to choose.
+        makes sense when the chips already show what is selected and the list is only about what is left to choose. A
+        group header whose items have all been picked goes with them, and so does a divider that lost the items on one
+        of its sides, so the list never opens with a stray rule or ends on a group name with nothing under it.
+        <br /><br />
+        Across all of them the selection is reported in the order it was made rather than in the order of the item
+        list: the chips, the joined text and the overflow summary follow the order of <b>Values</b>, which grows as the
+        user picks, so the <b>Backspace</b> of the ComboBox removes the chip that was added last.
     </div>
     <br />
     <div class="example-content">
@@ -858,7 +893,9 @@
         first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
         first and the last one, <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
         select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
-        dropdown, and <b>Tab</b> closes it and moves on. Opening the callout with a mouse click focuses the selected
+        dropdown, and <b>Tab</b> closes it and moves on. <b>Alt+ArrowDown</b> is the exception among the openers: it
+        reveals the list without moving the focus into it, so the trigger keeps it and the plain arrows can walk the
+        list afterwards. Opening the callout with a mouse click focuses the selected
         item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
         selects every item the current search shows &mdash; or clears them when they are all selected already &mdash;
         while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
@@ -871,6 +908,9 @@
         In ComboBox mode the keys that belong to the typed text &mdash; the printable characters, <b>Backspace</b>,
         <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> &mdash; return the focus to the input and act on it
         there, so arrowing into the list never strands the user away from the term they are typing.
+        However the callout is dismissed &mdash; a key, a click outside it, the close button of the responsive panel or
+        a swipe &mdash; the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
+        being dropped at the top of the page along with the element that was holding it.
     </div>
     <br />
     <div class="example-content">
@@ -1070,10 +1110,15 @@
         which keeps the callout fast with thousands of items; <b>ItemSize</b> tells it how tall an item is and
         <b>OverscanCount</b> how many extra items to keep rendered around the visible window. It works over a local
         <b>Items</b> collection, or over an <b>ItemsProvider</b> that fetches one page at a time from a server (and
-        receives the current search term, so filtering happens remotely too). Because a value can be selected before
+        receives the current search term, so filtering happens remotely too). <b>ItemsProviderDebounceTime</b> (100ms by default)
+        collapses the burst of requests that fast scrolling and typing produce into a single one, so the provider is
+        not asked once per rendered frame. Because a value can be selected before
         the page holding its item has ever been fetched, <b>InitialSelectedItems</b> supplies those items up front so
         the dropdown can show their text right away. The <b>VirtualizePlaceholder</b> template fills the rows that are
         still being fetched.
+        Each option still reports where it sits in the whole set &mdash; the provider says how many items there are
+        and which window it is handing over &mdash; so a screen reader announces "Item 4210 of 10,000" in a list that
+        has never been loaded in full.
     </div>
     <br /><br /><br />
     <div class="example-content">
@@ -1100,12 +1145,13 @@
                      Placeholder="Select an item"
                      NameSelectors="nameSelectors" />
         <br />
-        <BitDropdown Label="Multi select"
+        <BitDropdown Label="Multi select & ItemsProviderDebounceTime"
                      Virtualize
                      MultiSelect
                      ItemsProvider="LoadItems"
                      Placeholder="Select items"
-                     NameSelectors="nameSelectors" />
+                     NameSelectors="nameSelectors"
+                     ItemsProviderDebounceTime="300" />
         <br />
         <BitDropdown Label="VirtualizePlaceholder"
                      Virtualize
@@ -1191,7 +1237,77 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
+<DemoExample Title="Icons" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
+    <div>
+        Every icon the dropdown draws on its own comes from the built-in Fluent UI set and can be swapped by name:
+        <b>CaretDownIconName</b> for the chevron, <b>ClearButtonIconName</b> for the clear button,
+        <b>ItemCheckIconName</b> for the check mark of the multi select items and of the select all row,
+        <b>SearchBoxIconName</b> and <b>SearchBoxClearIconName</b> for the two icons of the search box,
+        <b>ChipsRemoveIconName</b> for the remove button of a chip, and <b>ResponsiveCloseIconName</b> and
+        <b>ComboBoxAddButtonIconName</b> for the close and add buttons that only the responsive panel shows.
+        Each of them has an <b>...Icon</b> counterpart that takes a <b>BitIconInfo</b> and wins when both are set, which
+        is how an icon from outside the Fluent set gets in &mdash; see the <b>External Icons</b> section below.
+        None of them is ever read out on its own: the icons are hidden from assistive technologies and the button
+        around them carries the accessible name, which is why those names are parameters of their own.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="CaretDownIconName"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     CaretDownIconName="@BitIconName.ChevronDownMed" />
+        <br /><br />
+        <BitDropdown Label="ClearButtonIconName"
+                     ShowClearButton
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@("f-app")"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     ClearButtonIconName="@BitIconName.ChromeClose" />
+        <br /><br />
+        <BitDropdown Label="ItemCheckIconName"
+                     MultiSelect
+                     ShowSelectAll
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app" })"
+                     ItemCheckIconName="@BitIconName.CheckMark" />
+        <br /><br />
+        <BitDropdown Label="SearchBox icons"
+                     ShowSearchBox
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     SearchBoxPlaceholder="Search item"
+                     SearchBoxIconName="@BitIconName.Filter"
+                     SearchBoxClearIconName="@BitIconName.EraseTool" />
+        <br /><br />
+        <BitDropdown Label="ChipsRemoveIconName"
+                     Chips
+                     MultiSelect
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })"
+                     ChipsRemoveIconName="@BitIconName.ChromeClose" />
+        <br /><br />
+        <BitDropdown Label="Responsive panel icons"
+                     Combo
+                     Responsive
+                     Items="comboBoxCustoms"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Resize below the small breakpoint"
+                     ResponsiveCloseIconName="@BitIconName.ChromeClose"
+                     ComboBoxAddButtonIconName="@BitIconName.CircleAddition" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
@@ -1266,7 +1382,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
+<DemoExample Title="External Icons" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1353,7 +1469,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1386,7 +1502,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29">
+<DemoExample Title="Style & Class" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30">
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1435,7 +1551,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the

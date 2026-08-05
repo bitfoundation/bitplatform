@@ -218,12 +218,15 @@ public partial class _BitDropdownCustomDemo
 
     private Product? selectedItem1;
     private Product? selectedItem2;
+    private Product? pickedItem;
+    private Product? deselectedItem;
 
     private string clearValue = "f-app";
     private IEnumerable<string> clearValues = ["f-app", "f-ban"];
     private int clearCounter;
 
     private string calloutState = "closed";
+    private string focusState = "blurred";
 
     private bool isLoadingItems;
     private ICollection<Product> delayedCustoms = [];
@@ -324,6 +327,10 @@ public partial class _BitDropdownCustomDemo
     private void HandleOnCalloutOpen() => calloutState = "opened";
 
     private void HandleOnCalloutClose() => calloutState = "closed";
+
+    private void HandleOnFocusIn() => focusState = "focused";
+
+    private void HandleOnFocusOut() => focusState = "blurred";
 
     private async Task LoadDelayedCustoms()
     {

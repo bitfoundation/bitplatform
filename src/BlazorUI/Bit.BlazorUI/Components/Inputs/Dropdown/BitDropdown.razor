@@ -100,6 +100,9 @@
          autofocus="@AutoFocus"
          tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
          aria-haspopup="listbox"
+         @* The combobox role is on this element, so the autocomplete behavior of the ComboBox mode has
+            to be reported here and not only on the input it wraps. *@
+         aria-autocomplete="@(Combo ? "list" : null)"
          aria-required="@(Required ? "true" : null)"
          aria-readonly="@(ReadOnly ? "true" : null)"
          aria-invalid="@(ValueInvalid is true ? "true" : null)"
@@ -272,7 +275,7 @@
     </select>
 </div>
 
-<div @onclick="CloseCallout"
+<div @onclick="CloseCalloutAndRestoreFocus"
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-drp-ovl @Classes?.Overlay"></div>
@@ -302,7 +305,7 @@
                 </label>
             }
 
-            <button @onclick="CloseCallout"
+            <button @onclick="CloseCalloutAndRestoreFocus"
                     type="button"
                     title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                     aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"

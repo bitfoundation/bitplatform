@@ -11,6 +11,7 @@ namespace Bit.BlazorUI;
 public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private int? _providerTotalItems;
+    private Dictionary<TItem, int>? _providerPositions;
     private string? _searchText;
     private int _optionsVersion;
     private int _searchedItemsCacheVersion = -1;
@@ -28,6 +29,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _displayItemsCacheVersion = -1;
     private int _displayItemsSelectionVersion = -1;
     private List<TItem>? _displayItems;
+    private HashSet<TItem>? _collapsedItems;
     private bool _isResponsiveMode;
     private bool _internalIsOpenChange;
     private bool _inputSearchHasFocus;
@@ -81,6 +83,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Removes the already selected items from the callout, which suits a multi select dropdown whose
     /// selection is visible as chips and whose list is therefore only about what is left to pick.
+    /// A group header left naming nothing, and a divider left without items on one of its sides, are
+    /// removed along with them.
     /// </summary>
     [Parameter] public bool HideSelectedItems { get; set; }
 
@@ -427,6 +431,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public EventCallback OnClose { get; set; }
 
     /// <summary>
+    /// The callback that is called when a selected item gets unselected in multi select mode, which
+    /// happens by picking it again in the callout, by removing its chip, or through the
+    /// <see cref="UnselectItem"/> method. Clearing the whole selection reports itself
+    /// through <see cref="OnClear"/> instead.
+    /// </summary>
+    [Parameter] public EventCallback<TItem> OnDeselectItem { get; set; }
+
+    /// <summary>
     /// The callback that is called when a new item is on added Dynamic ComboBox mode.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnDynamicAdd { get; set; }
@@ -456,7 +468,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public EventCallback<string?> OnSearch { get; set; }
 
     /// <summary>
-    /// The callback that is called when an item gets selected.
+    /// The callback that is called when an item gets picked in the callout. In multi select mode it
+    /// reports every pick, including the one that unselects an already selected item; use
+    /// <see cref="OnDeselectItem"/> to be told only about those.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnSelectItem { get; set; }
 
@@ -766,7 +780,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [JSInvokable("OnClose")]
     public async Task _OnClose()
     {
-        await CloseCallout();
+        await CloseCalloutAndRestoreFocus();
         await InvokeAsync(StateHasChanged);
     }
 
@@ -809,7 +823,22 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // cache is reset in OnParametersSet so a change to Items cannot reuse results from a previous set.
     internal bool ShouldRenderOptionItem(TItem item)
     {
-        if (HideSelectedItems && GetItemType(item) == BitDropdownItemType.Normal && GetIsSelected(item)) return false;
+        if (HideSelectedItems)
+        {
+            var itemType = GetItemType(item);
+
+            if (itemType == BitDropdownItemType.Normal && GetIsSelected(item)) return false;
+
+            // A header whose items were all hidden by the line above names nothing, and a divider that
+            // lost the items on one of its sides separates nothing, so both go with them. GetDisplayItems
+            // is what computes that set, and caches it along with its own result.
+            if (itemType is BitDropdownItemType.Header or BitDropdownItemType.Divider)
+            {
+                GetDisplayItems();
+
+                if (_collapsedItems?.Contains(item) is true) return false;
+            }
+        }
 
         if (SearchText is null) return true;
 
@@ -887,14 +916,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             // Selecting an item hides the callout along with the focused option,
             // so return the focus to the dropdown (or its combo input).
-            if (Combo)
-            {
-                await FocusComboInputAsync();
-            }
-            else
-            {
-                await InputElement.FocusAsync();
-            }
+            await FocusTrigger();
         }
 
         StateHasChanged();
@@ -1039,7 +1061,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal int? GetItemPosInSet(TItem item)
     {
-        if (ItemsProvider is not null) return null;
+        // With an ItemsProvider the position cannot be counted from the loaded window, but the provider
+        // is asked for a window starting at a known index, so the position within the whole set is that
+        // index plus the offset inside the window. Without it an item would report a set size and no
+        // place in it, which is exactly the "3 of 5000" a screen reader user needs the most in a list
+        // they can only ever see a window of.
+        if (ItemsProvider is not null)
+        {
+            return _providerPositions?.TryGetValue(item, out var providerPosition) is true ? providerPosition : null;
+        }
 
         return GetItemPositions().TryGetValue(item, out var position) ? position : null;
     }
@@ -1492,7 +1522,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             // initial document, which the trigger of an interactively rendered dropdown is not.
             if (AutoFocus && IsEnabled)
             {
-                await InputElement.FocusAsync();
+                await FocusTrigger();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1566,6 +1596,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
 
             await OnSelectItem.InvokeAsync(item);
+
+            if (isSelected is false)
+            {
+                await OnDeselectItem.InvokeAsync(item);
+            }
         }
         else
         {
@@ -1659,6 +1694,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                         _selectedItems.Add(previousItem);
                     }
                 }
+
+                SortSelectedItemsByValues();
             }
             else
             {
@@ -1703,6 +1740,50 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         RefreshOptions();
     }
 
+    // The selected items are collected by walking the item list, which would report the selection in the
+    // order of that list rather than in the order it was made. Values grows as the user picks, so
+    // following it puts the chips, the joined text, the overflow summary and the Backspace of the
+    // ComboBox (which removes the last selected item) in the order the user actually built.
+    private void SortSelectedItemsByValues()
+    {
+        if (_selectedItems.Count < 2) return;
+        if (Values is null) return;
+
+        // A single pass over Values (which may be long after a select all) instead of a lookup per
+        // selected item, so ordering the selection stays linear in the size of the selection.
+        var indexes = new Dictionary<TValue, int>();
+        var nullIndex = -1;
+        var index = 0;
+        foreach (var value in Values)
+        {
+            if (value is null)
+            {
+                if (nullIndex < 0)
+                {
+                    nullIndex = index;
+                }
+            }
+            else
+            {
+                indexes.TryAdd(value, index);
+            }
+
+            index++;
+        }
+
+        // OrderBy is stable, so the items whose value is no longer in Values (which only the
+        // ItemsProvider flow can produce, between a value change and the next window) keep their
+        // relative order at the end instead of being shuffled.
+        _selectedItems = [.. _selectedItems.OrderBy(item =>
+        {
+            var value = GetValue(item);
+
+            if (value is null) return nullIndex < 0 ? int.MaxValue : nullIndex;
+
+            return indexes.TryGetValue(value, out var i) ? i : int.MaxValue;
+        })];
+    }
+
     // See OnSetIsOpen: the flows that follow AssignIsOpen with their own awaited ToggleCallout mark
     // the change as internal, so the hook does not toggle the callout a second time.
     private async Task<bool> AssignIsOpenInternal(bool value)
@@ -1731,15 +1812,45 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await ToggleCallout();
     }
 
+    // Where the focus belongs once the callout gives it up: the ComboBox input is the editable part of
+    // the trigger, so it takes the focus in place of the trigger element itself. The responsive panel
+    // has an input of its own, but it goes away with the panel, so it only takes the focus while the
+    // panel is actually on the screen.
+    private ValueTask FocusTrigger()
+    {
+        if (Combo is false) return InputElement.FocusAsync();
+
+        return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync();
+    }
+
+    // Dismissing the callout hides whatever inside it has the focus (an option, the search box), which
+    // would otherwise drop the focus to the document body and strand a keyboard user at the top of the
+    // page. Every dismissal the user asks for by hand goes through here so the focus comes back to the
+    // dropdown, exactly where a native select leaves it.
+    private async Task CloseCalloutAndRestoreFocus()
+    {
+        if (IsOpen is false) return;
+
+        await CloseCallout();
+
+        // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
+        if (IsOpen) return;
+
+        await FocusTrigger();
+    }
+
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsEnabled is false) return;
+
+        // The callback reports the click itself, so it fires before (and independently of) the opening:
+        // a one-way bound IsOpen refuses the change, and the click still happened.
+        await OnClick.InvokeAsync(e);
 
         if (await AssignIsOpenInternal(true) is false) return;
 
         await ToggleCallout();
 
-        await OnClick.InvokeAsync(e);
         await FocusOnComboBoxInput();
         await FocusOnSearchBox();
 
@@ -1770,6 +1881,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (e.AltKey && e.Key is "ArrowUp")
         {
             await CloseCallout();
+            return;
+        }
+
+        // Alt+ArrowDown is the "reveal the popup" shortcut of the APG combobox pattern, which shows the
+        // list without moving the focus into it, so the trigger (or the combo input being typed into)
+        // keeps it and the plain arrows can still walk the list afterwards.
+        if (e.AltKey && e.Key is "ArrowDown")
+        {
+            await OpenCallout();
             return;
         }
 
@@ -1822,8 +1942,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 // Alt+ArrowUp dismisses the popup and returns to the trigger, per the APG combobox pattern.
                 if (e.AltKey)
                 {
-                    await CloseCallout();
-                    await InputElement.FocusAsync();
+                    await CloseCalloutAndRestoreFocus();
                 }
                 else
                 {
@@ -1845,14 +1964,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 }
                 break;
             case "Escape":
-                await CloseCallout();
-                await InputElement.FocusAsync();
+                await CloseCalloutAndRestoreFocus();
                 break;
             case "Tab":
                 // The callout is rendered at the end of the document, so leaving it without moving the
                 // focus back to the dropdown would continue the tab order from an unrelated place.
-                await CloseCallout();
-                await InputElement.FocusAsync();
+                await CloseCalloutAndRestoreFocus();
                 break;
             default:
                 // Ctrl+A (or Cmd+A) selects all the items in multi select mode - and clears them when
@@ -1928,7 +2045,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false) return Task.CompletedTask;
 
-        return InputElement.FocusAsync().AsTask();
+        return FocusTrigger().AsTask();
     }
 
     private void HandleSearchBoxFocusIn()
@@ -2030,6 +2147,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             // the callout, so clearing here would wipe the very term the items are being filtered by.
             if (isOpen is false)
             {
+                // A type-ahead that was left half typed must not continue into the next opening, the
+                // same way an uncommitted search term does not survive the callout.
+                _typeAheadBuffer = string.Empty;
+
                 await ClearSearchBox();
                 await ClearComboBoxInput();
             }
@@ -2176,10 +2297,84 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             _displayItemsCacheKey = SearchText;
             _displayItemsCacheVersion = _optionsVersion;
             _displayItemsSelectionVersion = _selectionVersion;
-            _displayItems = [.. items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || GetIsSelected(i) is false)];
+
+            var visible = items.Where(i => GetItemType(i) != BitDropdownItemType.Normal || GetIsSelected(i) is false).ToList();
+
+            // Removing the selected items can leave a group header naming nothing and a divider with a
+            // side missing, so the ones that no longer stand for anything go with the items they framed.
+            _collapsedItems = GetCollapsedItems(visible);
+            _displayItems = _collapsedItems.Count == 0 ? visible : visible.FindAll(i => _collapsedItems.Contains(i) is false);
         }
 
         return _displayItems;
+    }
+
+    // The headers and dividers that no longer stand for anything, found in a single pass over the list.
+    // A header stays as long as a visible normal item follows it before the next header does, and a
+    // divider stays only while it has a visible item on both of its sides - the ordinary rule for
+    // collapsing separators, which is what keeps a list whose items were removed from opening with a
+    // rule, or ending with a group name and nothing under it.
+    private HashSet<TItem> GetCollapsedItems(List<TItem> items)
+    {
+        HashSet<TItem> collapsed = [];
+
+        TItem? pendingHeader = null;
+        TItem? pendingDivider = null;
+        var hasItemSinceDivider = false;
+
+        foreach (var item in items)
+        {
+            var itemType = GetItemType(item);
+
+            if (itemType == BitDropdownItemType.Header)
+            {
+                if (pendingHeader is not null)
+                {
+                    collapsed.Add(pendingHeader);
+                }
+
+                // A hidden header names nothing to begin with, so it is not one that can be left empty.
+                pendingHeader = GetIsHidden(item) ? null : item;
+                continue;
+            }
+
+            if (itemType == BitDropdownItemType.Divider)
+            {
+                if (GetIsHidden(item)) continue;
+
+                // Nothing visible before it (the start of the list, or another divider), so it separates
+                // nothing. Otherwise it is held until a visible item proves it has a side after it too.
+                if (hasItemSinceDivider is false)
+                {
+                    collapsed.Add(item);
+                    continue;
+                }
+
+                pendingDivider = item;
+                hasItemSinceDivider = false;
+                continue;
+            }
+
+            if (itemType != BitDropdownItemType.Normal) continue;
+            if (GetIsHidden(item)) continue;
+
+            pendingHeader = null;
+            pendingDivider = null;
+            hasItemSinceDivider = true;
+        }
+
+        if (pendingHeader is not null)
+        {
+            collapsed.Add(pendingHeader);
+        }
+
+        // A divider that is still being held reached the end of the list without a side after it.
+        if (pendingDivider is not null)
+        {
+            collapsed.Add(pendingDivider);
+        }
+
+        return collapsed;
     }
 
     private string GetSearchBoxClasses()
@@ -2237,6 +2432,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
 
         UpdateSelectedItemsFromValues();
+
+        // In ComboBox mode the typed term is part of what the dropdown is showing, so a button that
+        // says it clears the selection has to leave the input empty as well instead of leaving behind
+        // a filter the user has no visible reason to expect.
+        await ClearComboBoxInput();
 
         await OnClear.InvokeAsync();
     }
@@ -2419,6 +2619,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         _lastShownItems = [.. providerResult.Items];
         _providerTotalItems = providerResult.TotalItemCount;
+
+        // Where each item of this window sits in the whole set, so an option can report its place in it
+        // (see GetItemPosInSet). A window that repeats an item keeps its first occurrence.
+        _providerPositions = [];
+        for (var i = 0; i < _lastShownItems.Count; i++)
+        {
+            _providerPositions.TryAdd(_lastShownItems[i], request.StartIndex + i + 1);
+        }
 
         // The caches below are keyed on the search text and the options version, neither of which changes
         // when the provider hands over a different window of items for the same search, so they have to be

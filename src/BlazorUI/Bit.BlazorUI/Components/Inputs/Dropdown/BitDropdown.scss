@@ -27,7 +27,7 @@
             &::after {
                 content: " *";
                 color: $clr-req;
-                padding-right: spacing(1.5);
+                padding-inline-end: spacing(1.5);
             }
         }
     }
@@ -296,7 +296,7 @@
     width: 100%;
     display: flex;
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     color: $clr-fg-pri;
     position: relative;
     align-items: center;
@@ -666,7 +666,7 @@
 .bit-drp-clr,
 .bit-drp-cai {
     display: flex;
-    right: spacing(3.5);
+    inset-inline-end: spacing(3.5);
     width: spacing(3.75);
     height: spacing(3.75);
     justify-content: center;

@@ -183,12 +183,15 @@ public partial class _BitDropdownItemDemo
 
     private BitDropdownItem<string>? selectedItem1;
     private BitDropdownItem<string>? selectedItem2;
+    private BitDropdownItem<string>? pickedItem;
+    private BitDropdownItem<string>? deselectedItem;
 
     private string? clearValue = "f-app";
     private IEnumerable<string?> clearValues = ["f-app", "f-ban"];
     private int clearCounter;
 
     private string calloutState = "closed";
+    private string focusState = "blurred";
 
     private bool isLoadingItems;
     private ICollection<BitDropdownItem<string>> delayedItems = [];
@@ -292,6 +295,10 @@ public partial class _BitDropdownItemDemo
     private void HandleOnCalloutOpen() => calloutState = "opened";
 
     private void HandleOnCalloutClose() => calloutState = "closed";
+
+    private void HandleOnFocusIn() => focusState = "focused";
+
+    private void HandleOnFocusOut() => focusState = "blurred";
 
     private async Task LoadDelayedItems()
     {

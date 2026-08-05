@@ -32,7 +32,7 @@ public partial class BitDropdownDemo
             Name = "HideSelectedItems",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the already selected items from the callout, which suits a multi select dropdown whose selection is visible as chips and whose list is therefore only about what is left to pick.",
+            Description = "Removes the already selected items from the callout, which suits a multi select dropdown whose selection is visible as chips and whose list is therefore only about what is left to pick. A group header left naming nothing, and a divider left without items on one of its sides, are removed along with them.",
         },
         new()
         {
@@ -455,6 +455,12 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnDeselectItem",
+            Type = "EventCallback<TItem>",
+            Description = "The callback that is called when a selected item gets unselected in multi select mode, by picking it again in the callout, by removing its chip, or through the UnselectItem method. Clearing the whole selection reports itself through OnClear instead.",
+        },
+        new()
+        {
             Name = "OnDynamicAdd",
             Type = "EventCallback<TItem>",
             Description = "The callback that is called when a new item is on added Dynamic ComboBox mode.",
@@ -487,7 +493,7 @@ public partial class BitDropdownDemo
         {
             Name = "OnSelectItem",
             Type = "EventCallback<TItem>",
-            Description = "The callback that is called when an item gets selected.",
+            Description = "The callback that is called when an item gets picked in the callout. In multi select mode it reports every pick, including the one that unselects an already selected item; use OnDeselectItem to be told only about those.",
         },
         new()
         {
