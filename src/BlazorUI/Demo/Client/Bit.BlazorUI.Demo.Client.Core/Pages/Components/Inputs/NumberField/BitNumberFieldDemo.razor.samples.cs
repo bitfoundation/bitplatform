@@ -344,14 +344,21 @@ private string? CustomDigitsNormalizer(string? value)
 }";
 
     private readonly string example20RazorCode = @"
-<EditForm Model=""@validationModel"">
-    <DataAnnotationsValidator />
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""@validationModel"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
+        <DataAnnotationsValidator />
 
-    <BitNumberField Label=""@($""Age: [{validationModel.Age}]"")"" @bind-Value=""validationModel.Age"" />
-    <ValidationMessage For=""@(() => validationModel.Age)"" />
-    <br />
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>
+        <BitNumberField Label=""@($""Age: [{validationModel.Age}]"")"" @bind-Value=""validationModel.Age"" />
+        <ValidationMessage For=""@(() => validationModel.Age)"" />
+        <br />
+        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}
 
 <EditForm Model=""@validationModel"">
     <DataAnnotationsValidator />
@@ -370,8 +377,22 @@ public class BitNumberFieldValidationModel
     public int? Age { get; set; }
 }
 
+private string SuccessMessage = string.Empty;
 private BitNumberFieldValidationModel validationModel = new();
-private double? parsingErrorValue;";
+private double? parsingErrorValue;
+
+private async Task HandleValidSubmit()
+{
+    SuccessMessage = ""Form Submitted Successfully!"";
+    await Task.Delay(3000);
+    SuccessMessage = string.Empty;
+    StateHasChanged();
+}
+
+private void HandleInvalidSubmit()
+{
+    SuccessMessage = string.Empty;
+}";
 
     private readonly string example21RazorCode = @"
 <BitNumberField Label=""byte"" Mode=""BitSpinButtonMode.Compact"" @bind-Value=""byteValue"" />

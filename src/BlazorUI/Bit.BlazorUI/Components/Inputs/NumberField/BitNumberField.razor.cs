@@ -879,14 +879,17 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             result = Snap(result);
 
+            // The precision rounding runs before the clamping, so that it cannot push the committed
+            // value back out of the range afterwards (with Max=1.005 and Precision=2, rounding a
+            // clamped 1.005 would commit 1.01, i.e. a value above the Max the field promises).
+            result = Normalize(result);
+
             // NoClamp lets an out-of-range typed value through so that the form validation can report
             // it. The bounds still apply to every other way of changing the value (stepping, Home/End).
             if (NoClamp is false)
             {
                 result = CheckMinAndMax(result);
             }
-
-            result = Normalize(result);
 
             // While typing in Immediate mode the value is committed on every keystroke, which would
             // otherwise reformat the input text under the caret and make intermediate states
@@ -1002,12 +1005,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private string? GetAriaValueMin()
     {
-        return _hasExplicitMin ? BindConverter.FormatValue(_min, CultureInfo.InvariantCulture)?.ToString() : null;
+        return _hasExplicitMin ? BindConverter.FormatValue(GetOrderedBounds().Min, CultureInfo.InvariantCulture)?.ToString() : null;
     }
 
     private string? GetAriaValueMax()
     {
-        return _hasExplicitMax ? BindConverter.FormatValue(_max, CultureInfo.InvariantCulture)?.ToString() : null;
+        return _hasExplicitMax ? BindConverter.FormatValue(GetOrderedBounds().Max, CultureInfo.InvariantCulture)?.ToString() : null;
     }
 
     /// <summary>
@@ -1154,7 +1157,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // The consumer callback is invoked for every key (even the ones handled below as value
         // commands) and before the internal handling, so that it observes the same key sequence a
         // plain input would report.
-        _ = OnKeyDown.InvokeAsync(e);
+        await OnKeyDown.InvokeAsync(e);
 
         // Enter is the commit gesture of a text input, and it stays one even on a read-only field
         // (where there is nothing to commit but the consumer may still want to act on it), so it is
@@ -1585,7 +1588,16 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             StateHasChanged();
 
-            await Task.Delay(Math.Max(1, ContinuousSpinInterval));
+            try
+            {
+                await Task.Delay(Math.Max(1, ContinuousSpinInterval), cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // The button was released while the next tick was pending; ending the loop here stops
+                // the spin right away instead of waiting the interval out first.
+                return;
+            }
         }
     }
 
@@ -1637,16 +1649,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         else if (_typeOfValue == typeof(decimal))
         {
             var current = Convert.ToDecimal(CurrentValue);
-            var delta = factor * Convert.ToDecimal(step);
+            var decimalStep = Convert.ToDecimal(step);
 
             decimal r;
             try
             {
-                r = current + delta;
+                // The multiplication is inside the try as well: a PageUp with an oversized PageStep
+                // can already blow the decimal range before anything is added to the current value.
+                r = current + (factor * decimalStep);
             }
             catch (OverflowException)
             {
-                r = delta > 0 ? Convert.ToDecimal(_max) : Convert.ToDecimal(_min);
+                // The delta itself is out of range, so its sign is the one of the direction the step
+                // was going in (a negative Step reverses what the increment factor means).
+                r = (factor > 0) == (decimalStep >= 0) ? Convert.ToDecimal(_max) : Convert.ToDecimal(_min);
             }
 
             var min = Convert.ToDecimal(_min);
@@ -1775,10 +1791,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // Comparer<TValue>.Default uses the numeric type's own IComparable<T> implementation, so the
         // comparison is exact for every supported type (including ulong values beyond long.MaxValue
-        // and the full decimal range). Ordering the bounds first keeps the clamping sensible even
-        // when a misconfigured Min is greater than Max (the effective range is simply swapped).
+        // and the full decimal range). The bounds come ordered, which keeps the clamping sensible
+        // even when a misconfigured Min is greater than Max (the effective range is simply swapped).
         var comparer = Comparer<TValue>.Default;
-        var (min, max) = comparer.Compare(_min, _max) <= 0 ? (_min, _max) : (_max, _min);
+        var (min, max) = GetOrderedBounds();
 
         if (comparer.Compare(result, min) < 0) return min;
         if (comparer.Compare(result, max) > 0) return max;

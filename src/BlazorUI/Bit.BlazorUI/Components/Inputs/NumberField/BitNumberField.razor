@@ -133,7 +133,7 @@
             @* Without the spinbutton input there is nothing left to announce the value: a hidden input
                is not exposed to assistive technologies. A visually hidden live region takes over, so a
                screen reader user pressing the buttons still hears what the value became. *@
-            <span class="bit-nfl-dsc" role="status" aria-live="polite" aria-atomic="true">@GetDisplayValueAsString()</span>
+            <span class="bit-nfl-dsc bit-nfl-lvr" role="status" aria-live="polite" aria-atomic="true">@GetDisplayValueAsString()</span>
         }
         else
         {

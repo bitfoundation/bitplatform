@@ -316,10 +316,16 @@ public class BitNumberFieldTests : BunitTestContext
 
         var input = component.Find("input");
 
+        // A misconfigured Min greater than Max describes the same (swapped) range to the clamping, so
+        // the announced bounds are the ordered ones - aria-valuemin above aria-valuemax would be a
+        // contradiction for assistive technologies and would not match what the field enforces.
+        var lower = min is null ? null : (max is null ? int.Parse(min) : Math.Min(int.Parse(min), int.Parse(max))).ToString();
+        var upper = max is null ? null : (min is null ? int.Parse(max) : Math.Max(int.Parse(min), int.Parse(max))).ToString();
+
         // The aria-valuemin/max attributes only render when an explicit Min/Max is provided;
         // announcing the underlying type's extremes (e.g. -2147483648) would just be noise.
-        Assert.AreEqual(min is not null ? int.Parse(min).ToString() : null, input.GetAttribute("aria-valuemin"));
-        Assert.AreEqual(max is not null ? int.Parse(max).ToString() : null, input.GetAttribute("aria-valuemax"));
+        Assert.AreEqual(lower, input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual(upper, input.GetAttribute("aria-valuemax"));
     }
 
     [TestMethod,
@@ -1439,7 +1445,10 @@ public class BitNumberFieldTests : BunitTestContext
 
         incrementButton.PointerUp();
 
-        // ... and releasing it stops the spin for good.
+        // ... and releasing it stops the spin for good. The value is read only after a first delay,
+        // so that a tick already in flight when the button came up has settled before the two reads
+        // that must agree are taken.
+        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -1467,6 +1476,7 @@ public class BitNumberFieldTests : BunitTestContext
 
         decrementButton.PointerUp();
 
+        await Task.Delay(100);
         var valueAfterRelease = component.Instance.Value;
         await Task.Delay(100);
         Assert.AreEqual(valueAfterRelease, component.Instance.Value);
@@ -2067,13 +2077,13 @@ public class BitNumberFieldTests : BunitTestContext
             parameters.Add(p => p.DefaultValue, 4);
         });
 
-        var liveRegion = component.Find("span.bit-nfl-dsc");
+        var liveRegion = component.Find("span.bit-nfl-lvr");
         Assert.AreEqual("polite", liveRegion.GetAttribute("aria-live"));
         Assert.AreEqual("4", liveRegion.TextContent.Trim());
 
         component.Find("button.bit-nfl-sbn:last-of-type").PointerDown();
 
-        Assert.AreEqual("5", component.Find("span.bit-nfl-dsc").TextContent.Trim());
+        Assert.AreEqual("5", component.Find("span.bit-nfl-lvr").TextContent.Trim());
     }
 
     [TestMethod]
@@ -2297,7 +2307,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNumberFieldWheelShouldBeIgnoredWithoutShiftOrFocusOrWhenDisabledByParameter()
+    public async Task BitNumberFieldWheelShouldBeIgnoredWithoutShiftOrFocusOrWhenDisabledByParameter()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
@@ -2311,9 +2321,10 @@ public class BitNumberFieldTests : BunitTestContext
         input.Wheel(new WheelEventArgs { DeltaY = -1, ShiftKey = false });
         Assert.AreEqual(1, component.Instance.Value);
 
-        // Shift, but the field is merely hovered rather than focused.
+        // Shift, but the field is merely hovered rather than focused. Only focusout clears the focus
+        // state the wheel handler looks at, so blurring alone would leave the field still "focused".
         input.Blur();
-        component.InvokeAsync(() => input.TriggerEventAsync("onfocusout", new FocusEventArgs()));
+        await component.InvokeAsync(() => input.TriggerEventAsync("onfocusout", new FocusEventArgs()));
         input.Wheel(new WheelEventArgs { DeltaY = -1, ShiftKey = true });
         Assert.AreEqual(1, component.Instance.Value);
 
