@@ -1,0 +1,259 @@
+@page "/media-devices"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+
+<PageTitle>MediaDevices - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="MediaDevices"
+            Lead="Enumerate cameras, microphones and speakers, then request a live stream and attach it straight to a video element - camera access without a line of JavaScript."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices"
+            InjectAs="MediaDevices mediaDevices" />
+
+<Callout Type="info" Title="Permission and secure context">
+    <code>navigator.mediaDevices</code> is only available in a secure context (HTTPS or localhost).
+    The browser prompts for camera/microphone access on the first <code>GetUserMedia</code> call,
+    and device labels from <code>EnumerateDevices</code> stay blank until permission for a matching
+    input has been granted.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.mediaDevices. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.MediaDevices mediaDevices
+
+var supported = await mediaDevices.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Enumerate devices"
+                 Api="EnumerateDevices"
+                 Description="Lists every input/output media device as a typed MediaDeviceInfo: DeviceId, Kind (audioinput, audiooutput or videoinput), Label and GroupId. Run it again after granting permission to see the labels fill in."
+                 Code=@("""
+var devices = await mediaDevices.EnumerateDevices();
+
+foreach (var device in devices)
+{
+    // device.Kind: "audioinput" | "audiooutput" | "videoinput"
+    // device.Label: blank until permission is granted
+    Console.WriteLine($"{device.Kind}: {device.Label}");
+}
+""")>
+        <div class="controls">
+            <button @onclick="Enumerate">EnumerateDevices</button>
+        </div>
+        @if (_devices.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">@_devices.Length device(s) found</span>
+                <ul style="margin:0;padding-left:1.2rem">
+                    @foreach (var device in _devices)
+                    {
+                        <li><code>@device.Kind</code> - @(string.IsNullOrEmpty(device.Label) ? "(label hidden until permission granted)" : device.Label)</li>
+                    }
+                </ul>
+            </div>
+        }
+        <DemoConsole @ref="enumerateOutput" Title="enumerate devices output" />
+    </DemoSection>
+
+    <DemoSection Title="Request a stream"
+                 Api="GetUserMedia / AttachTo / SetEnabled"
+                 Description="GetUserMedia asks the user for audio and/or video access and returns a MediaStreamHandle (null when denied or unsatisfiable). AttachTo wires the stream to a video or audio element's srcObject, SetEnabled pauses or resumes every track without dropping the stream, and disposing the handle stops the hardware."
+                 Code=@("""
+private MediaStreamHandle? _stream;
+private ElementReference _preview;
+
+_stream = await mediaDevices.GetUserMedia(audio: true, video: true);
+if (_stream is not null)
+{
+    await _stream.AttachTo(_preview);   // <video @ref="_preview" autoplay playsinline muted />
+    await _stream.SetEnabled(false);    // pause all tracks
+    await _stream.SetEnabled(true);     // resume
+    await _stream.DisposeAsync();       // stop tracks, release the camera light
+}
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_requestAudio" /> Audio</label>
+            <label><input type="checkbox" @bind="_requestVideo" /> Video</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartStream">Start stream</button>
+            <button class="secondary" @onclick="ToggleEnabled">Toggle enabled</button>
+            <button class="danger" @onclick="StopStream">Stop stream</button>
+        </div>
+        <video @ref="_preview" autoplay playsinline muted
+               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+        <DemoConsole @ref="streamOutput" Title="stream output" />
+    </DemoSection>
+
+    <DemoSection Title="Fine-grained constraints"
+                 Api="GetUserMedia"
+                 Description="The audioConstraints/videoConstraints parameters accept any MediaTrackConstraints-shaped object - anonymous C# objects serialize straight through to the browser, so you can pin a device id, request a resolution, or prefer the front camera."
+                 Code=@("""
+// prefer the front camera at 1280x720:
+var stream = await mediaDevices.GetUserMedia(
+    audio: false,
+    video: true,
+    videoConstraints: new
+    {
+        width = new { ideal = 1280 },
+        height = new { ideal = 720 },
+        facingMode = "user",
+    });
+
+// pin an exact input from EnumerateDevices:
+var mic = await mediaDevices.GetUserMedia(
+    audio: true,
+    audioConstraints: new { deviceId = new { exact = someDeviceId } });
+""") />
+</div>
+
+<Callout Type="warning" Title="Always stop what you start">
+    A live stream keeps the camera/microphone (and its indicator light) on until every track is
+    stopped. Dispose the <code>MediaStreamHandle</code> when you are done; as a safety net, the
+    <code>MediaDevices</code> service stops any leaked streams when its scope is torn down.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.mediaDevices. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="EnumerateDevices"
+               Signature="ValueTask<MediaDeviceInfo[]> EnumerateDevices()"
+               Description="Lists all input/output media devices. Labels may be empty strings until the user has granted permission to a matching input." />
+    <ApiMember Name="GetUserMedia"
+               Signature="ValueTask<MediaStreamHandle?> GetUserMedia(bool audio = true, bool video = false, object? audioConstraints = null, object? videoConstraints = null)"
+               Description="Requests audio and/or video access. Returns a handle when accepted, null when denied or unsatisfiable. Throws ArgumentException when both audio and video are false." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, stops any streams whose handle was never disposed so hardware can't stay live." />
+    <ApiMember Name="MediaStreamHandle.Id"
+               Signature="Guid Id { get; }"
+               Description="The internal stream id used to track this stream." />
+    <ApiMember Name="MediaStreamHandle.AttachTo"
+               Signature="ValueTask AttachTo(ElementReference videoOrAudioElement)"
+               Description="Attaches this stream to a video or audio element's srcObject." />
+    <ApiMember Name="MediaStreamHandle.SetEnabled"
+               Signature="ValueTask SetEnabled(bool enabled)"
+               Description="Pauses or resumes every track without dropping the stream." />
+    <ApiMember Name="MediaStreamHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops every track and drops the stream. Idempotent." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole enumerateOutput = default!;
+    private DemoConsole streamOutput = default!;
+    private ElementReference _preview;
+    private MediaDeviceInfo[] _devices = [];
+    private MediaStreamHandle? _stream;
+    private bool _requestAudio = true;
+    private bool _requestVideo = true;
+    private bool _enabled = true;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await mediaDevices.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task Enumerate()
+    {
+        try
+        {
+            _devices = await mediaDevices.EnumerateDevices();
+            if (_devices.Length == 0)
+            {
+                await enumerateOutput.Warn("No media devices reported.");
+                return;
+            }
+
+            await enumerateOutput.Success($"EnumerateDevices → {_devices.Length} device(s).");
+        }
+        catch (Exception ex)
+        {
+            await enumerateOutput.Error("EnumerateDevices failed →", ex.Message);
+        }
+    }
+
+    private async Task StartStream()
+    {
+        await StopStream();
+
+        if (!_requestAudio && !_requestVideo)
+        {
+            await streamOutput.Warn("Enable at least audio or video first.");
+            return;
+        }
+
+        try
+        {
+            _stream = await mediaDevices.GetUserMedia(_requestAudio, _requestVideo);
+            if (_stream is null)
+            {
+                await streamOutput.Warn("GetUserMedia returned null - permission denied or no matching device.");
+                return;
+            }
+
+            await _stream.AttachTo(_preview);
+            _enabled = true;
+            await streamOutput.Success("Stream started →", _stream.Id);
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("GetUserMedia failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleEnabled()
+    {
+        if (_stream is null)
+        {
+            await streamOutput.Warn("Start a stream first.");
+            return;
+        }
+
+        try
+        {
+            _enabled = !_enabled;
+            await _stream.SetEnabled(_enabled);
+            await streamOutput.Log($"Tracks enabled → {_enabled}");
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("SetEnabled failed →", ex.Message);
+        }
+    }
+
+    private async Task StopStream()
+    {
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        await streamOutput.Log("Stream stopped.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_stream is not null)
+        {
+            await _stream.DisposeAsync();
+            _stream = null;
+        }
+    }
+}

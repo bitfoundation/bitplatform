@@ -1,0 +1,339 @@
+@page "/cache-storage"
+@inject Bit.Butil.CacheStorage cacheStorage
+
+<PageTitle>CacheStorage - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="CacheStorage"
+            Lead="The service-worker Cache API from C#: store request/response pairs in named, origin-scoped caches that survive reloads. Fetch-and-store real URLs, or synthesize responses from text and bytes you build client-side."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage"
+            InjectAs="CacheStorage cacheStorage" />
+
+<div class="stack">
+    <DemoSection Title="Support and cache inventory"
+                 Api="IsSupported / Keys / Has"
+                 Description="Caches are persisted per origin and outlive the page. Keys lists every cache name the origin owns (including ones created by service workers), and Has checks for a specific cache without opening it."
+                 Code=@("""
+@inject Bit.Butil.CacheStorage cacheStorage
+
+var supported = await cacheStorage.IsSupported();
+
+var names = await cacheStorage.Keys();          // string[]
+
+var exists = await cacheStorage.Has("app-v1");  // bool
+""")>
+        <div class="field">
+            <span class="field-label">Cache name</span>
+            <input @bind="cacheName" placeholder="butil-docs-cache" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="CheckSupport">IsSupported</button>
+            <button class="secondary" @onclick="ListCaches">Keys</button>
+            <button class="secondary" @onclick="HasCache">Has</button>
+        </div>
+        <DemoConsole @ref="inventoryOutput" Title="inventory output" />
+    </DemoSection>
+
+    <DemoSection Title="Store client-side responses"
+                 Api="PutText / PutBytes"
+                 Description="Not everything worth caching comes from the network. PutText and PutBytes build a Response from data you already have - generated reports, downloaded blobs, precomputed JSON - and store it against any URL key you choose, with a configurable content type and status."
+                 Code=@("""
+await cacheStorage.PutText("butil-docs-cache", "/greetings.txt", "Hello from the cache!");
+
+await cacheStorage.PutBytes("butil-docs-cache", "/report.bin",
+    data: myBytes,
+    contentType: "application/octet-stream");
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">URL key</span>
+                <input @bind="entryUrl" placeholder="/greetings.txt" />
+            </div>
+            <div class="field">
+                <span class="field-label">Text content</span>
+                <input @bind="entryText" placeholder="Hello from the cache!" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="PutTextDemo">PutText</button>
+            <button class="secondary" @onclick="PutBytesDemo">PutBytes (UTF-8 of the text)</button>
+        </div>
+        <DemoConsole @ref="putOutput" Title="put output" />
+    </DemoSection>
+
+    <DemoSection Title="Cache from the network"
+                 Api="Add / AddAll"
+                 Description="Add fetches a URL and stores the response in one step - the cache-side equivalent of fetch followed by put. AddAll does the same for many URLs atomically: if any fetch fails, nothing is stored. Cross-origin URLs work but yield opaque responses whose bodies cannot be read back."
+                 Code=@("""
+await cacheStorage.Add("butil-docs-cache", "css/app.css");
+
+await cacheStorage.AddAll("butil-docs-cache", "css/app.css", "favicon.png");
+""")>
+        <div class="field">
+            <span class="field-label">URL to fetch and cache</span>
+            <input @bind="fetchUrl" placeholder="css/app.css" />
+        </div>
+        <div class="controls">
+            <button @onclick="AddDemo">Add</button>
+        </div>
+        <DemoConsole @ref="addOutput" Title="add output" />
+    </DemoSection>
+
+    <DemoSection Title="Look up cached entries"
+                 Api="Match / EntryKeys"
+                 Description="Match retrieves a cached response snapshot: status, headers and body bytes. Check Found before using the result - a miss is not an exception. EntryKeys lists the request URLs currently stored in a cache, which is handy for building cache inspectors."
+                 Code=@("""
+var response = await cacheStorage.Match("butil-docs-cache", "/greetings.txt");
+
+if (response.Found)
+{
+    var text = System.Text.Encoding.UTF8.GetString(response.Body);
+    // response.Status, response.StatusText, response.Url, response.Headers
+}
+
+var urls = await cacheStorage.EntryKeys("butil-docs-cache"); // string[]
+""")>
+        <div class="field">
+            <span class="field-label">URL key</span>
+            <input @bind="matchUrl" placeholder="/greetings.txt" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="MatchDemo">Match</button>
+            <button class="secondary" @onclick="EntryKeysDemo">EntryKeys</button>
+        </div>
+        <DemoConsole @ref="lookupOutput" Title="lookup output" />
+    </DemoSection>
+
+    <DemoSection Title="Evict entries and caches"
+                 Api="DeleteEntry / Delete"
+                 Description="DeleteEntry removes a single request/response pair; Delete drops the whole named cache. Both return true when something was actually removed, so you can distinguish a cleanup from a no-op."
+                 Code=@("""
+var removedEntry = await cacheStorage.DeleteEntry("butil-docs-cache", "/greetings.txt");
+
+var removedCache = await cacheStorage.Delete("butil-docs-cache");
+""")>
+        <div class="field">
+            <span class="field-label">URL key to remove</span>
+            <input @bind="deleteUrl" placeholder="/greetings.txt" />
+        </div>
+        <div class="controls">
+            <button class="danger" @onclick="DeleteEntryDemo">DeleteEntry</button>
+            <button class="danger" @onclick="DeleteCacheDemo">Delete cache</button>
+        </div>
+        <DemoConsole @ref="evictOutput" Title="evict output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Origin-scoped and persistent">
+    Caches belong to the origin and are shared with any service worker running on it. They survive
+    reloads and restarts, but the browser may evict them under storage pressure - pair this API with
+    <a href="storage-manager">StorageManager</a> to check quota and request persistence.
+</Callout>
+
+<Callout Type="warning" Title="Opaque responses">
+    Responses fetched cross-origin without CORS are stored as opaque: <code>Match</code> reports them
+    with an empty body and no useful status. The same applies to 204/304 responses, which legitimately
+    have no body. A secure context (HTTPS or localhost) is required for the whole API.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes caches." />
+    <ApiMember Name="Keys"
+               Signature="ValueTask<string[]> Keys()"
+               Description="Lists every cache name visible to the current origin." />
+    <ApiMember Name="Has"
+               Signature="ValueTask<bool> Has(string cacheName)"
+               Description="Returns true when a cache with the given name exists." />
+    <ApiMember Name="Delete"
+               Signature="ValueTask<bool> Delete(string cacheName)"
+               Description="Deletes the named cache. Returns true when something was removed." />
+    <ApiMember Name="Add"
+               Signature="ValueTask Add(string cacheName, string url)"
+               Description="Fetches the URL and stores the response in the named cache." />
+    <ApiMember Name="AddAll"
+               Signature="ValueTask AddAll(string cacheName, params string[] urls)"
+               Description="Adds many URLs to the cache atomically." />
+    <ApiMember Name="PutBytes"
+               Signature='ValueTask PutBytes(string cacheName, string url, byte[] data, string contentType = "application/octet-stream", int status = 200, string statusText = "OK")'
+               Description="Stores a response built from raw bytes against the URL - no network fetch involved." />
+    <ApiMember Name="PutText"
+               Signature='ValueTask PutText(string cacheName, string url, string text, string contentType = "text/plain;charset=utf-8", int status = 200, string statusText = "OK")'
+               Description="Stores a UTF-8 text response against the URL." />
+    <ApiMember Name="Match"
+               Signature="ValueTask<CachedResponse> Match(string cacheName, string url)"
+               Description="Looks up a cached response. CachedResponse.Found is false when nothing matched." />
+    <ApiMember Name="DeleteEntry"
+               Signature="ValueTask<bool> DeleteEntry(string cacheName, string url)"
+               Description="Removes a single entry. Returns true when something was removed." />
+    <ApiMember Name="EntryKeys"
+               Signature="ValueTask<string[]> EntryKeys(string cacheName)"
+               Description="Lists the URLs currently stored in the named cache." />
+    <ApiMember Name="CachedResponse"
+               Signature="class CachedResponse { bool Found; int Status; string StatusText; string Url; Dictionary<string, string> Headers; byte[] Body; }"
+               Description="Snapshot of a cached Response. Body is empty for 204/304 or opaque responses." />
+</ApiTable>
+
+@code {
+    private DemoConsole inventoryOutput = default!;
+    private DemoConsole putOutput = default!;
+    private DemoConsole addOutput = default!;
+    private DemoConsole lookupOutput = default!;
+    private DemoConsole evictOutput = default!;
+
+    private string cacheName = "butil-docs-cache";
+    private string entryUrl = "/greetings.txt";
+    private string entryText = "Hello from the cache!";
+    private string fetchUrl = "css/app.css";
+    private string matchUrl = "/greetings.txt";
+    private string deleteUrl = "/greetings.txt";
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await inventoryOutput.Success("IsSupported() →", await cacheStorage.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await inventoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListCaches()
+    {
+        try
+        {
+            var names = await cacheStorage.Keys();
+            if (names.Length == 0)
+            {
+                await inventoryOutput.Warn("Keys() → no caches for this origin yet.");
+                return;
+            }
+            await inventoryOutput.Success($"Keys() → [{string.Join(", ", names)}]");
+        }
+        catch (Exception ex)
+        {
+            await inventoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task HasCache()
+    {
+        try
+        {
+            await inventoryOutput.Success($"Has(\"{cacheName}\") →", await cacheStorage.Has(cacheName));
+        }
+        catch (Exception ex)
+        {
+            await inventoryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task PutTextDemo()
+    {
+        try
+        {
+            await cacheStorage.PutText(cacheName, entryUrl, entryText);
+            await putOutput.Log($"PutText(\"{cacheName}\", \"{entryUrl}\") - stored {entryText.Length} char(s).");
+        }
+        catch (Exception ex)
+        {
+            await putOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task PutBytesDemo()
+    {
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(entryText);
+            await cacheStorage.PutBytes(cacheName, entryUrl, bytes, "application/octet-stream");
+            await putOutput.Log($"PutBytes(\"{cacheName}\", \"{entryUrl}\") - stored {bytes.Length} byte(s).");
+        }
+        catch (Exception ex)
+        {
+            await putOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task AddDemo()
+    {
+        try
+        {
+            await cacheStorage.Add(cacheName, fetchUrl);
+            await addOutput.Log($"Add(\"{cacheName}\", \"{fetchUrl}\") - fetched and cached.");
+        }
+        catch (Exception ex)
+        {
+            await addOutput.Error($"Add failed (does the URL exist?): {ex.Message}");
+        }
+    }
+
+    private async Task MatchDemo()
+    {
+        try
+        {
+            var response = await cacheStorage.Match(cacheName, matchUrl);
+            if (response.Found is false)
+            {
+                await lookupOutput.Warn($"Match(\"{matchUrl}\") → no cached response.");
+                return;
+            }
+
+            var preview = response.Body.Length == 0
+                ? "(empty body)"
+                : Encoding.UTF8.GetString(response.Body, 0, Math.Min(response.Body.Length, 200));
+            await lookupOutput.Success($"Match(\"{matchUrl}\") → {response.Status} {response.StatusText}, {response.Body.Length} byte(s), {response.Headers.Count} header(s):", preview);
+        }
+        catch (Exception ex)
+        {
+            await lookupOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task EntryKeysDemo()
+    {
+        try
+        {
+            var urls = await cacheStorage.EntryKeys(cacheName);
+            if (urls.Length == 0)
+            {
+                await lookupOutput.Warn($"EntryKeys(\"{cacheName}\") → cache is empty (or missing).");
+                return;
+            }
+            await lookupOutput.Success($"EntryKeys(\"{cacheName}\") → {urls.Length} entr(ies):", string.Join(", ", urls));
+        }
+        catch (Exception ex)
+        {
+            await lookupOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteEntryDemo()
+    {
+        try
+        {
+            var removed = await cacheStorage.DeleteEntry(cacheName, deleteUrl);
+            await evictOutput.Warn($"DeleteEntry(\"{deleteUrl}\") →", removed);
+        }
+        catch (Exception ex)
+        {
+            await evictOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteCacheDemo()
+    {
+        try
+        {
+            var removed = await cacheStorage.Delete(cacheName);
+            await evictOutput.Warn($"Delete(\"{cacheName}\") →", removed);
+        }
+        catch (Exception ex)
+        {
+            await evictOutput.Error(ex.Message);
+        }
+    }
+}

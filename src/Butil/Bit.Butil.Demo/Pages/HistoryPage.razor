@@ -1,0 +1,333 @@
+@page "/history"
+@implements IAsyncDisposable
+@inject Bit.Butil.History history
+
+<PageTitle>History - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="History"
+            Lead="Drive the browser's session history from C#: move back and forward, push and replace entries with attached state, control scroll restoration and react to popstate."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/History"
+            InjectAs="History history" />
+
+<div class="stack">
+    <DemoSection Title="Navigate the stack"
+                 Api="GoBack / GoForward / Go"
+                 Description="Move through the session history exactly like the browser's Back and Forward buttons. Go accepts a relative delta; navigating past either end of the stack is a silent no-op."
+                 Code=@("""
+await history.GoBack();      // same as the Back button
+await history.GoForward();   // same as the Forward button
+
+await history.Go(-2);        // two entries back
+await history.Go();          // no delta: reloads the current page
+""")>
+        <div class="controls">
+            <button @onclick="GoBack">GoBack</button>
+            <button @onclick="GoForward">GoForward</button>
+            <button class="secondary" @onclick="GoMinusOne">Go(-1)</button>
+            <button class="secondary" @onclick="GoPlusOne">Go(1)</button>
+        </div>
+        <DemoConsole @ref="navigateOutput" Title="navigation output" />
+    </DemoSection>
+
+    <DemoSection Title="Length and state"
+                 Api="GetLength / GetState / GetState<T>"
+                 Description="GetLength reports how many entries the session history holds, including the current page. GetState returns the state object attached to the active entry, with a generic overload for strongly-typed deserialization."
+                 Code=@("""
+int length = await history.GetLength();
+
+object state = await history.GetState();
+
+var typed = await history.GetState<MyState>();
+
+public record MyState(int Step, string Name);
+""")>
+        <div class="controls">
+            <button @onclick="ReadLength">GetLength</button>
+            <button @onclick="ReadState">GetState</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="length and state output" />
+    </DemoSection>
+
+    <DemoSection Title="Push and replace entries"
+                 Api="PushState / ReplaceState"
+                 Description="PushState adds a new history entry with an optional state object and same-origin URL, without reloading the page. ReplaceState swaps the current entry in place - the standard tool for keeping the address bar in sync with client-side UI state."
+                 Code=@("""
+await history.PushState(new { step = 2 }, "history?step=2");
+
+await history.ReplaceState(new { step = 2, revised = true }, "history?step=2b");
+
+// pressing Back now raises popstate with the previous state object
+""")>
+        <div class="controls">
+            <button @onclick="PushEntry">PushState</button>
+            <button class="secondary" @onclick="ReplaceEntry">ReplaceState</button>
+        </div>
+        <p class="section-desc">Watch the address bar - both calls change the URL without a page load.</p>
+        <DemoConsole @ref="pushOutput" Title="push and replace output" />
+    </DemoSection>
+
+    <DemoSection Title="React to popstate"
+                 Api="AddPopState / SubscribePopState / RemovePopState / RemoveAllPopStates"
+                 Description="popstate fires whenever the active history entry changes through user navigation (Back, Forward or Go), delivering the state object of the entry that became active. SubscribePopState returns a disposable subscription; AddPopState returns a Guid you can pass to RemovePopState."
+                 Code=@("""
+ButilSubscription sub = await history.SubscribePopState(
+    state => Console.WriteLine($"popped: {state}"));
+
+// alternative, id-based lifecycle:
+Guid id = await history.AddPopState(state => { /* ... */ });
+await history.RemovePopState(id);
+
+// or drop everything this instance registered:
+await history.RemoveAllPopStates();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribePop" disabled="@(popStateSubscription is not null)">SubscribePopState</button>
+            <button class="secondary" @onclick="UnsubscribePop" disabled="@(popStateSubscription is null)">Unsubscribe</button>
+        </div>
+        <p class="section-desc">Subscribe, push a couple of entries above, then use the browser Back button.</p>
+        <DemoConsole @ref="popStateOutput" Title="popstate output" />
+    </DemoSection>
+
+    <DemoSection Title="Scroll restoration"
+                 Api="GetScrollRestoration / SetScrollRestoration"
+                 Description="Controls whether the browser restores the scroll position automatically when the user navigates through history. Set it to Manual when your app manages scroll itself, for example in virtualized lists."
+                 Code=@("""
+ScrollRestoration current = await history.GetScrollRestoration();
+
+await history.SetScrollRestoration(ScrollRestoration.Manual);
+await history.SetScrollRestoration(ScrollRestoration.Auto);
+""")>
+        <div class="controls">
+            <button @onclick="ReadScrollRestoration">GetScrollRestoration</button>
+            <button class="secondary" @onclick="SetScrollRestorationManual">Set Manual</button>
+            <button class="secondary" @onclick="SetScrollRestorationAuto">Set Auto</button>
+        </div>
+        <DemoConsole @ref="scrollRestorationOutput" Title="scroll restoration output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Navigation leaves this page">
+    <code>GoBack</code>, <code>GoForward</code> and <code>Go</code> perform real history navigations -
+    the demo buttons above can move you away from this page (use the browser's Forward button to return).
+    <code>Go(0)</code> or <code>Go()</code> reloads the current page entirely.
+</Callout>
+
+<Callout Type="info" Title="Same-origin URLs only">
+    The URL passed to <code>PushState</code> and <code>ReplaceState</code> must be same-origin with the
+    current page, otherwise the browser throws a security exception. The state object must be serializable.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetLength" Signature="Task<int> GetLength()" Description="Number of entries in the session history, including the current page." />
+    <ApiMember Name="GetScrollRestoration" Signature="Task<ScrollRestoration> GetScrollRestoration()" Description="Current scroll restoration behavior (Auto or Manual)." />
+    <ApiMember Name="SetScrollRestoration" Signature="Task SetScrollRestoration(ScrollRestoration value)" Description="Sets the default scroll restoration behavior for history navigation." />
+    <ApiMember Name="GetState" Signature="Task<object> GetState()" Description="The state object at the top of the history stack." />
+    <ApiMember Name="GetState<T>" Signature="Task<T?> GetState<T>()" Description="Strongly-typed accessor for the current state object." />
+    <ApiMember Name="GoBack" Signature="Task GoBack()" Description="Goes to the previous page in session history; no-op beyond the first entry." />
+    <ApiMember Name="GoForward" Signature="Task GoForward()" Description="Goes to the next page in session history; no-op beyond the most recent entry." />
+    <ApiMember Name="Go" Signature="Task Go(int? delta = null)" Description="Loads the entry at a relative offset; null or 0 reloads the current page." />
+    <ApiMember Name="PushState" Signature="Task PushState(object? state = null, string? url = null)" Description="Pushes a new entry with the given state and same-origin URL onto the stack." />
+    <ApiMember Name="ReplaceState" Signature="Task ReplaceState(object? state = null, string? url = null)" Description="Replaces the current entry's state and, optionally, its URL." />
+    <ApiMember Name="AddPopState" Signature="ValueTask<Guid> AddPopState(Action<object> handler)" Description="Registers a popstate handler; returns an id for RemovePopState." />
+    <ApiMember Name="SubscribePopState" Signature="ValueTask<ButilSubscription> SubscribePopState(Action<object> handler)" Description="popstate subscription returning a disposable handle." />
+    <ApiMember Name="RemovePopState" Signature="ValueTask RemovePopState(Guid id)" Description="Removes a popstate handler by id. An overload accepts the handler delegate and returns the removed ids (ValueTask<Guid[]>)." />
+    <ApiMember Name="RemoveAllPopStates" Signature="ValueTask RemoveAllPopStates()" Description="Removes every popstate handler registered through this instance." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all popstate handlers and releases the interop reference. InvokeHistoryPopState is the public JSInvokable dispatch bridge and is not intended for app code." />
+</ApiTable>
+
+@code {
+    private DemoConsole navigateOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private DemoConsole pushOutput = default!;
+    private DemoConsole popStateOutput = default!;
+    private DemoConsole scrollRestorationOutput = default!;
+
+    private ButilSubscription? popStateSubscription;
+    private int pushCounter;
+
+    private async Task GoBack()
+    {
+        try
+        {
+            await history.GoBack();
+            await navigateOutput.Log("GoBack called.");
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("GoBack failed:", ex.Message);
+        }
+    }
+
+    private async Task GoForward()
+    {
+        try
+        {
+            await history.GoForward();
+            await navigateOutput.Log("GoForward called.");
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("GoForward failed:", ex.Message);
+        }
+    }
+
+    private async Task GoMinusOne()
+    {
+        try
+        {
+            await history.Go(-1);
+            await navigateOutput.Log("Go(-1) called.");
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("Go failed:", ex.Message);
+        }
+    }
+
+    private async Task GoPlusOne()
+    {
+        try
+        {
+            await history.Go(1);
+            await navigateOutput.Log("Go(1) called.");
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("Go failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadLength()
+    {
+        try
+        {
+            await stateOutput.Info("History length:", await history.GetLength());
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("GetLength failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        try
+        {
+            var state = await history.GetState();
+            await stateOutput.Info("Current state:", state);
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("GetState failed:", ex.Message);
+        }
+    }
+
+    private async Task PushEntry()
+    {
+        try
+        {
+            pushCounter++;
+            await history.PushState(new { step = pushCounter }, $"history?step={pushCounter}");
+            await pushOutput.Success($"Pushed entry with state {{ step = {pushCounter} }} and url history?step={pushCounter}");
+        }
+        catch (Exception ex)
+        {
+            await pushOutput.Error("PushState failed:", ex.Message);
+        }
+    }
+
+    private async Task ReplaceEntry()
+    {
+        try
+        {
+            await history.ReplaceState(new { step = pushCounter, replaced = true }, $"history?step={pushCounter}&replaced=true");
+            await pushOutput.Success("Replaced the current entry (no new stack entry was added).");
+        }
+        catch (Exception ex)
+        {
+            await pushOutput.Error("ReplaceState failed:", ex.Message);
+        }
+    }
+
+    private async Task SubscribePop()
+    {
+        try
+        {
+            popStateSubscription = await history.SubscribePopState(
+                state => _ = popStateOutput.Info("popstate:", state));
+            await popStateOutput.Success("Subscribed to popstate - push some entries, then press Back.");
+        }
+        catch (Exception ex)
+        {
+            await popStateOutput.Error("SubscribePopState failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribePop()
+    {
+        try
+        {
+            if (popStateSubscription is not null)
+            {
+                await popStateSubscription.DisposeAsync();
+                popStateSubscription = null;
+            }
+            await popStateOutput.Log("popstate subscription disposed.");
+        }
+        catch (Exception ex)
+        {
+            await popStateOutput.Error("Unsubscribe failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadScrollRestoration()
+    {
+        try
+        {
+            await scrollRestorationOutput.Info("ScrollRestoration:", await history.GetScrollRestoration());
+        }
+        catch (Exception ex)
+        {
+            await scrollRestorationOutput.Error("GetScrollRestoration failed:", ex.Message);
+        }
+    }
+
+    private async Task SetScrollRestorationManual()
+    {
+        try
+        {
+            await history.SetScrollRestoration(ScrollRestoration.Manual);
+            await scrollRestorationOutput.Log("ScrollRestoration set to Manual.");
+        }
+        catch (Exception ex)
+        {
+            await scrollRestorationOutput.Error("SetScrollRestoration failed:", ex.Message);
+        }
+    }
+
+    private async Task SetScrollRestorationAuto()
+    {
+        try
+        {
+            await history.SetScrollRestoration(ScrollRestoration.Auto);
+            await scrollRestorationOutput.Log("ScrollRestoration set to Auto.");
+        }
+        catch (Exception ex)
+        {
+            await scrollRestorationOutput.Error("SetScrollRestoration failed:", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (popStateSubscription is not null) await popStateSubscription.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

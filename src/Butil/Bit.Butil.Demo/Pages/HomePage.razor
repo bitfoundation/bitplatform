@@ -1,0 +1,44 @@
+﻿@page "/"
+
+<PageTitle>Bit.Butil - browser APIs for Blazor, without JavaScript</PageTitle>
+
+<div class="hero">
+    <div class="hero-logo">B</div>
+    <h1>Browser APIs for Blazor,<br /><span class="grad">without writing JavaScript</span></h1>
+    <p class="lead">
+        Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media,
+        sensors and much more - in strongly-typed C# classes you simply inject and call.
+        This site documents every feature with live, interactive demos.
+    </p>
+    <div class="hero-actions">
+        <a class="primary" href="getting-started">Get started</a>
+        <a class="ghost" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+    </div>
+    <div class="stat-row">
+        <span><b>@DocsNav.AllLinks.Count()</b> documented APIs</span>
+        <span><b>0</b> lines of JS to write</span>
+        <span><b>1</b> script tag to add</span>
+    </div>
+</div>
+
+<Callout Type="info" Title="Everything on this site is live">
+    Every page pairs the documentation with interactive samples running against the real browser APIs -
+    what you click is what the library does.
+</Callout>
+
+@foreach (var group in DocsNav.Groups)
+{
+    <div class="home-group">
+        <h2>@group.Title</h2>
+        <div class="card-grid">
+            @foreach (var link in group.Links)
+            {
+                <a class="feature-card" href="@link.Url">
+                    <span class="ico">@link.Icon</span>
+                    <span class="name">@link.Title</span>
+                    <span class="desc">@link.Summary</span>
+                </a>
+            }
+        </div>
+    </div>
+}

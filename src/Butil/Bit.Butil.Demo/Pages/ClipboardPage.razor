@@ -1,0 +1,203 @@
+@page "/clipboard"
+@inject Bit.Butil.Clipboard clipboard
+
+<PageTitle>Clipboard - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="Clipboard"
+            Lead="Read from and write to the operating-system clipboard - plain strings or typed data items such as HTML and images - through the asynchronous Clipboard API, from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API"
+            InjectAs="Clipboard clipboard" />
+
+<div class="stack">
+    <DemoSection Title="Copy text"
+                 Api="WriteText"
+                 Description="WriteText places a string on the system clipboard and completes once the copy has landed. Writing generally succeeds without a prompt when triggered from a user gesture such as a button click."
+                 Code=@("""
+await clipboard.WriteText("Hello from C#!");
+""")>
+        <div class="field">
+            <span class="field-label">Text to copy</span>
+            <input @bind="_writeText" placeholder="Type something to copy..." />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteText">WriteText</button>
+        </div>
+        <DemoConsole @ref="writeTextOutput" Title="copy text output" />
+    </DemoSection>
+
+    <DemoSection Title="Paste text"
+                 Api="ReadText"
+                 Description="ReadText resolves with the clipboard's current text content. Because reading exposes potentially sensitive data, the browser shows a permission prompt the first time and may require the page to be focused."
+                 Code=@("""
+string text = await clipboard.ReadText();
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ReadText">ReadText</button>
+        </div>
+        <DemoConsole @ref="readTextOutput" Title="paste text output" />
+    </DemoSection>
+
+    <DemoSection Title="Write typed items"
+                 Api="Write"
+                 Description="Write puts one or more ClipboardItem entries - a MIME type plus raw bytes - on the clipboard in a single operation. Pasting into a rich editor picks the HTML flavor, while plain-text targets receive the text/plain flavor. This demo writes both flavors of the same message."
+                 Code=@("""
+var plain = new ClipboardItem
+{
+    MimeType = "text/plain",
+    Data = Encoding.UTF8.GetBytes("Bit.Butil"),
+};
+
+var html = new ClipboardItem
+{
+    MimeType = "text/html",
+    Data = Encoding.UTF8.GetBytes("<b>Bit.Butil</b>"),
+};
+
+await clipboard.Write([plain, html]);
+""")>
+        <div class="field">
+            <span class="field-label">Item content</span>
+            <input @bind="_richText" placeholder="Content for the clipboard item..." />
+        </div>
+        <div class="controls">
+            <button @onclick="WriteItems">Write text + HTML item</button>
+        </div>
+        <DemoConsole @ref="writeItemsOutput" Title="write items output" />
+    </DemoSection>
+
+    <DemoSection Title="Read typed items"
+                 Api="Read"
+                 Description="Read returns every representation currently on the clipboard as ClipboardItem entries. Pass a ClipboardFormats instance to request specific unsanitized formats (for example raw text/html) where the browser supports it. Copy something - text, rich text or an image - then read it back."
+                 Code=@("""
+ClipboardItem[] items = await clipboard.Read();
+
+foreach (var item in items)
+{
+    // item.MimeType, item.Data (byte[])
+}
+
+// request unsanitized HTML where supported:
+var unsanitized = await clipboard.Read(new ClipboardFormats
+{
+    Unsanitized = ["text/html"],
+});
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="ReadItems">Read items</button>
+        </div>
+        <DemoConsole @ref="readItemsOutput" Title="read items output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Secure context and permissions required">
+    The asynchronous Clipboard API is only available in secure contexts (HTTPS or localhost). Reading
+    triggers a browser permission prompt and typically must run inside a user gesture with the document
+    focused; support for typed items via Read and Write also varies between browsers. Always wrap
+    clipboard calls in try/catch and degrade gracefully when access is denied.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="WriteText" Signature="ValueTask WriteText(string text)" Description="Writes text to the system clipboard, completing once the text is fully copied." />
+    <ApiMember Name="ReadText" Signature="ValueTask<string> ReadText()" Description="Reads the clipboard's current content as a string." />
+    <ApiMember Name="Write" Signature="ValueTask Write(ClipboardItem[] items)" Description="Writes arbitrary typed data items to the system clipboard." />
+    <ApiMember Name="Read" Signature="ValueTask<ClipboardItem[]> Read(ClipboardFormats? formats = null)" Description="Reads all data items currently on the clipboard, optionally requesting specific unsanitized formats." />
+    <ApiMember Name="ClipboardItem.MimeType" Signature="string MimeType" Description="The MIME type of the item, e.g. text/plain, text/html or image/png." />
+    <ApiMember Name="ClipboardItem.Data" Signature="byte[] Data" Description="The raw bytes of the item." />
+    <ApiMember Name="ClipboardFormats.Unsanitized" Signature="string[] Unsanitized" Description="MIME types to receive unsanitized from Read, where the browser supports it." />
+</ApiTable>
+
+@code {
+    private DemoConsole writeTextOutput = default!;
+    private DemoConsole readTextOutput = default!;
+    private DemoConsole writeItemsOutput = default!;
+    private DemoConsole readItemsOutput = default!;
+
+    private string _writeText = "Hello from Bit.Butil!";
+    private string _richText = "Bit.Butil rich clipboard";
+
+    private async Task WriteText()
+    {
+        try
+        {
+            await clipboard.WriteText(_writeText ?? string.Empty);
+            await writeTextOutput.Success("WriteText →", $"\"{_writeText}\" copied to the clipboard.");
+        }
+        catch (Exception ex)
+        {
+            await writeTextOutput.Error("WriteText failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadText()
+    {
+        try
+        {
+            var text = await clipboard.ReadText();
+            await readTextOutput.Success("ReadText →", $"\"{text}\"");
+        }
+        catch (Exception ex)
+        {
+            await readTextOutput.Error("ReadText failed (permission denied or unfocused document?):", ex.Message);
+        }
+    }
+
+    private async Task WriteItems()
+    {
+        try
+        {
+            var content = string.IsNullOrEmpty(_richText) ? "Bit.Butil" : _richText;
+
+            var plain = new ClipboardItem
+            {
+                MimeType = "text/plain",
+                Data = Encoding.UTF8.GetBytes(content),
+            };
+
+            var html = new ClipboardItem
+            {
+                MimeType = "text/html",
+                Data = Encoding.UTF8.GetBytes($"<b>{content}</b>"),
+            };
+
+            await clipboard.Write([plain, html]);
+            await writeItemsOutput.Success("Write →", "text/plain + text/html items copied. Try pasting into a rich editor.");
+        }
+        catch (Exception ex)
+        {
+            await writeItemsOutput.Error("Write failed (typed items may be unsupported in this browser):", ex.Message);
+        }
+    }
+
+    private async Task ReadItems()
+    {
+        try
+        {
+            var items = await clipboard.Read();
+            if (items.Length == 0)
+            {
+                await readItemsOutput.Warn("The clipboard is empty (or nothing readable was found).");
+                return;
+            }
+
+            await readItemsOutput.Info($"Read → {items.Length} item(s)");
+            foreach (var item in items)
+            {
+                if (item.MimeType.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+                {
+                    var text = Encoding.UTF8.GetString(item.Data);
+                    var preview = text.Length > 200 ? text[..200] + "…" : text;
+                    await readItemsOutput.Success($"  {item.MimeType} →", preview);
+                }
+                else
+                {
+                    await readItemsOutput.Success($"  {item.MimeType} →", $"{item.Data.Length:N0} bytes");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await readItemsOutput.Error("Read failed (permission denied?):", ex.Message);
+        }
+    }
+}

@@ -1,0 +1,486 @@
+@page "/document"
+@implements IAsyncDisposable
+@inject Bit.Butil.Document document
+
+<PageTitle>Document - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="Document"
+            Lead="The DOM document loaded in the window: events, title and metadata, text direction, design mode, visibility, fullscreen and pointer lock - accessible from C# without any JavaScript."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Document"
+            InjectAs="Document document" />
+
+<div class="stack">
+    <DemoSection Title="Document events"
+                 Api="AddEventListener / SubscribeEvent / RemoveEventListener"
+                 Description="Attach a handler to any DOM event raised on document. The Document overloads additionally let you call preventDefault or stopPropagation on every occurrence, and SubscribeEvent returns a disposable ButilSubscription."
+                 Code=@("""
+@implements IAsyncDisposable
+@inject Bit.Butil.Document document
+
+@code {
+    private ButilSubscription? subscription;
+
+    private async Task Subscribe()
+    {
+        subscription = await document.SubscribeEvent<ButilMouseEventArgs>(
+            ButilEvents.Click,
+            args => Console.WriteLine($"clicked at ({args.ClientX}, {args.ClientY})"));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (subscription is not null) await subscription.DisposeAsync();
+    }
+}
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeClick" disabled="@(clickSubscription is not null)">Subscribe click</button>
+            <button class="secondary" @onclick="UnsubscribeClick" disabled="@(clickSubscription is null)">Unsubscribe</button>
+        </div>
+        <p class="section-desc">While subscribed, click anywhere on the page and watch the coordinates below.</p>
+        <DemoConsole @ref="eventsOutput" Title="document events output" />
+    </DemoSection>
+
+    <DemoSection Title="Title and URL"
+                 Api="GetTitle / SetTitle / GetUrl / GetDocumentURI / GetReferrer"
+                 Description="Read or change the document title shown in the browser tab, and inspect the document's URL and the page that linked to it."
+                 Code=@("""
+string title = await document.GetTitle();
+await document.SetTitle("New title from C#");
+
+string url = await document.GetUrl();
+string uri = await document.GetDocumentURI();
+string referrer = await document.GetReferrer();
+""")>
+        <div class="field">
+            <span class="field-label">New document title</span>
+            <input @bind="newTitle" placeholder="New tab title" />
+        </div>
+        <div class="controls">
+            <button @onclick="SetTitle">SetTitle</button>
+            <button class="secondary" @onclick="ReadTitleAndUrls">Read title, URL and referrer</button>
+        </div>
+        <DemoConsole @ref="titleOutput" Title="title and URL output" />
+    </DemoSection>
+
+    <DemoSection Title="Metadata"
+                 Api="GetCharacterSet / GetContentType / GetCompatMode"
+                 Description="Inspect how the browser parsed the document: its character encoding, MIME content type and whether it rendered in standards or quirks mode."
+                 Code=@("""
+string charset = await document.GetCharacterSet();   // "UTF-8"
+string contentType = await document.GetContentType(); // "text/html"
+CompatMode compatMode = await document.GetCompatMode(); // CSS1Compat | BackCompat
+""")>
+        <div class="controls">
+            <button @onclick="ReadMetadata">Read metadata</button>
+        </div>
+        <DemoConsole @ref="metadataOutput" Title="metadata output" />
+    </DemoSection>
+
+    <DemoSection Title="Text direction"
+                 Api="GetDir / SetDir"
+                 Description="Read or flip the directionality of the whole document between left-to-right and right-to-left - handy for runtime language switching."
+                 Code=@("""
+DocumentDir dir = await document.GetDir();
+
+await document.SetDir(DocumentDir.Rtl);
+await document.SetDir(DocumentDir.Ltr);
+""")>
+        <div class="controls">
+            <button @onclick="ReadDir">GetDir</button>
+            <button class="secondary" @onclick="SetRtl">SetDir(Rtl)</button>
+            <button class="secondary" @onclick="SetLtr">SetDir(Ltr)</button>
+        </div>
+        <DemoConsole @ref="dirOutput" Title="text direction output" />
+    </DemoSection>
+
+    <DemoSection Title="Design mode"
+                 Api="GetDesignMode / SetDesignMode"
+                 Description="Design mode makes the entire document editable in place, the same switch developer tools use for quick copy tweaking."
+                 Code=@("""
+DesignMode mode = await document.GetDesignMode();
+
+await document.SetDesignMode(DesignMode.On);
+await document.SetDesignMode(DesignMode.Off);
+""")>
+        <div class="controls">
+            <button @onclick="ReadDesignMode">GetDesignMode</button>
+            <button @onclick="EnableDesignMode">Turn on</button>
+            <button class="danger" @onclick="DisableDesignMode">Turn off</button>
+        </div>
+        <p class="section-desc">While on, every piece of text on this page can be edited by clicking into it.</p>
+        <DemoConsole @ref="designModeOutput" Title="design mode output" />
+    </DemoSection>
+
+    <DemoSection Title="Visibility and focus"
+                 Api="GetVisibilityState / IsHidden / HasFocus / WasDiscarded / SubscribeVisibilityChange"
+                 Description="Query whether the page is currently visible, hidden or focused, detect tabs restored after being discarded under memory pressure, and react to visibility flips - the standard trigger for pausing timers and media."
+                 Code=@("""
+VisibilityState state = await document.GetVisibilityState();
+bool hidden = await document.IsHidden();
+bool focused = await document.HasFocus();
+bool discarded = await document.WasDiscarded();
+
+ButilSubscription sub = await document.SubscribeVisibilityChange(
+    state => Console.WriteLine($"visibility: {state}"));
+""")>
+        <div class="controls">
+            <button @onclick="ReadVisibility">Read visibility and focus</button>
+            <button @onclick="SubscribeVisibility" disabled="@(visibilitySubscription is not null)">Subscribe visibilitychange</button>
+            <button class="secondary" @onclick="UnsubscribeVisibility" disabled="@(visibilitySubscription is null)">Unsubscribe</button>
+        </div>
+        <p class="section-desc">Subscribe, then switch to another tab and back to see the change events.</p>
+        <DemoConsole @ref="visibilityOutput" Title="visibility and focus output" />
+    </DemoSection>
+
+    <DemoSection Title="Fullscreen"
+                 Api="ExitFullscreen / SubscribeFullscreenChange / SubscribeFullscreenError"
+                 Description="Exit the document's fullscreen element and observe fullscreen transitions. Entering fullscreen belongs to Butil's Element API (RequestFullScreen on an ElementReference); the document side handles the exit and the notifications."
+                 Code=@("""
+ButilSubscription sub = await document.SubscribeFullscreenChange(
+    isFullscreen => Console.WriteLine($"fullscreen: {isFullscreen}"));
+
+ButilSubscription errSub = await document.SubscribeFullscreenError(
+    () => Console.WriteLine("entering fullscreen failed"));
+
+await document.ExitFullscreen();
+""")>
+        <div class="controls">
+            <button @onclick="SubscribeFullscreen" disabled="@(fullscreenSubscription is not null)">Subscribe fullscreenchange</button>
+            <button class="secondary" @onclick="UnsubscribeFullscreen" disabled="@(fullscreenSubscription is null)">Unsubscribe</button>
+            <button class="secondary" @onclick="ExitFullscreen">ExitFullscreen</button>
+        </div>
+        <DemoConsole @ref="fullscreenOutput" Title="fullscreen output" />
+    </DemoSection>
+
+    <DemoSection Title="Pointer lock"
+                 Api="ExitPointerLock / SubscribePointerLockChange / SubscribePointerLockError"
+                 Description="Pointer lock hides the cursor and streams raw movement deltas - the input model used by first-person games. The document side releases the lock and reports lock transitions and failures."
+                 Code=@("""
+ButilSubscription sub = await document.SubscribePointerLockChange(
+    isLocked => Console.WriteLine($"pointer lock: {isLocked}"));
+
+ButilSubscription errSub = await document.SubscribePointerLockError(
+    () => Console.WriteLine("acquiring pointer lock failed"));
+
+await document.ExitPointerLock();
+""") />
+
+    <DemoSection Title="DOM content loaded"
+                 Api="SubscribeDomContentLoaded"
+                 Description="Fires when the DOMContentLoaded event is raised - useful when bootstrapping post-render work after a circuit reconnect in Blazor Server."
+                 Code=@("""
+ButilSubscription sub = await document.SubscribeDomContentLoaded(
+    () => Console.WriteLine("DOM is ready"));
+""") />
+</div>
+
+<Callout Type="warning" Title="Design mode affects the whole page">
+    Turning design mode on makes every element on this site editable, including the navigation.
+    Changes are only in-memory and disappear on reload, but remember to turn it back off.
+</Callout>
+
+<Callout Type="info" Title="State read-back on change events">
+    The visibility, fullscreen and pointer-lock events carry no payload, so Butil reads the new state
+    back with a follow-up interop call. Under very rapid toggles treat the reported value as latest-known
+    rather than a strictly ordered log.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="AddEventListener" Signature="Task AddEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false, bool preventDefault = false, bool stopPropagation = false)" Description="Attaches a handler to a DOM event on document, optionally calling preventDefault/stopPropagation on each occurrence." />
+    <ApiMember Name="RemoveEventListener" Signature="Task RemoveEventListener<T>(string domEvent, Action<T> listener, bool useCapture = false)" Description="Detaches a previously added handler (matched by delegate identity)." />
+    <ApiMember Name="SubscribeEvent" Signature="Task<ButilSubscription> SubscribeEvent<T>(string domEvent, Action<T> listener, bool useCapture = false, bool preventDefault = false, bool stopPropagation = false)" Description="AddEventListener variant returning a disposable subscription. An overload accepts ButilEventListenerOptions (capture, passive, once)." />
+    <ApiMember Name="GetCharacterSet" Signature="Task<string> GetCharacterSet()" Description="The character set being used by the document." />
+    <ApiMember Name="GetCompatMode" Signature="Task<CompatMode> GetCompatMode()" Description="Whether the document rendered in standards (CSS1Compat) or quirks (BackCompat) mode." />
+    <ApiMember Name="GetContentType" Signature="Task<string> GetContentType()" Description="The Content-Type from the MIME header of the current document." />
+    <ApiMember Name="GetDocumentURI" Signature="Task<string> GetDocumentURI()" Description="The document location as a string." />
+    <ApiMember Name="GetDesignMode / SetDesignMode" Signature="Task<DesignMode> GetDesignMode() / Task SetDesignMode(DesignMode mode)" Description="Reads or toggles whole-document editability." />
+    <ApiMember Name="GetDir / SetDir" Signature="Task<DocumentDir> GetDir() / Task SetDir(DocumentDir dir)" Description="Reads or sets the document's text directionality (Ltr/Rtl)." />
+    <ApiMember Name="GetReferrer" Signature="Task<string> GetReferrer()" Description="The URI of the page that linked to this page." />
+    <ApiMember Name="GetTitle / SetTitle" Signature="Task<string> GetTitle() / Task SetTitle(string title)" Description="Reads or sets the document title." />
+    <ApiMember Name="GetUrl" Signature="Task<string> GetUrl()" Description="The document location (document.URL) as a string." />
+    <ApiMember Name="ExitFullscreen" Signature="Task ExitFullscreen()" Description="Stops the document's fullscreen element from being displayed fullscreen." />
+    <ApiMember Name="ExitPointerLock" Signature="Task ExitPointerLock()" Description="Releases the pointer lock." />
+    <ApiMember Name="GetVisibilityState" Signature="Task<VisibilityState> GetVisibilityState()" Description="Whether the document is currently Visible or Hidden." />
+    <ApiMember Name="IsHidden" Signature="Task<bool> IsHidden()" Description="True when the document is currently hidden." />
+    <ApiMember Name="HasFocus" Signature="Task<bool> HasFocus()" Description="True when the document or any element inside it has focus." />
+    <ApiMember Name="WasDiscarded" Signature="ValueTask<bool> WasDiscarded()" Description="True when the page was restored after the browser discarded it under memory pressure." />
+    <ApiMember Name="SubscribeVisibilityChange" Signature="Task<ButilSubscription> SubscribeVisibilityChange(Action<VisibilityState> handler)" Description="Fires with the new state whenever visibility flips." />
+    <ApiMember Name="SubscribeFullscreenChange" Signature="Task<ButilSubscription> SubscribeFullscreenChange(Action<bool> handler)" Description="Fires with true when the document currently has a fullscreen element." />
+    <ApiMember Name="SubscribeFullscreenError" Signature="Task<ButilSubscription> SubscribeFullscreenError(Action handler)" Description="Fires when entering fullscreen fails." />
+    <ApiMember Name="SubscribePointerLockChange" Signature="Task<ButilSubscription> SubscribePointerLockChange(Action<bool> handler)" Description="Fires with true when an element currently holds pointer lock." />
+    <ApiMember Name="SubscribePointerLockError" Signature="Task<ButilSubscription> SubscribePointerLockError(Action handler)" Description="Fires when acquiring pointer lock fails." />
+    <ApiMember Name="SubscribeDomContentLoaded" Signature="Task<ButilSubscription> SubscribeDomContentLoaded(Action handler)" Description="Fires when the DOMContentLoaded event is raised." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every event listener this instance registered." />
+</ApiTable>
+
+@code {
+    private DemoConsole eventsOutput = default!;
+    private DemoConsole titleOutput = default!;
+    private DemoConsole metadataOutput = default!;
+    private DemoConsole dirOutput = default!;
+    private DemoConsole designModeOutput = default!;
+    private DemoConsole visibilityOutput = default!;
+    private DemoConsole fullscreenOutput = default!;
+
+    private ButilSubscription? clickSubscription;
+    private ButilSubscription? visibilitySubscription;
+    private ButilSubscription? fullscreenSubscription;
+    private string newTitle = "";
+
+    private async Task SubscribeClick()
+    {
+        try
+        {
+            clickSubscription = await document.SubscribeEvent<ButilMouseEventArgs>(
+                ButilEvents.Click,
+                args => _ = eventsOutput.Info("click at:", $"({args.ClientX}, {args.ClientY}), button: {args.Button}"));
+            await eventsOutput.Success("Subscribed to document click.");
+        }
+        catch (Exception ex)
+        {
+            await eventsOutput.Error("SubscribeEvent failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeClick()
+    {
+        try
+        {
+            if (clickSubscription is not null)
+            {
+                await clickSubscription.DisposeAsync();
+                clickSubscription = null;
+            }
+            await eventsOutput.Log("Click subscription disposed.");
+        }
+        catch (Exception ex)
+        {
+            await eventsOutput.Error("Unsubscribe failed:", ex.Message);
+        }
+    }
+
+    private async Task SetTitle()
+    {
+        try
+        {
+            await document.SetTitle(newTitle);
+            await titleOutput.Success("Title set to:", newTitle);
+        }
+        catch (Exception ex)
+        {
+            await titleOutput.Error("SetTitle failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadTitleAndUrls()
+    {
+        try
+        {
+            await titleOutput.Info("Title:", await document.GetTitle());
+            await titleOutput.Info("URL:", await document.GetUrl());
+            await titleOutput.Info("DocumentURI:", await document.GetDocumentURI());
+            var referrer = await document.GetReferrer();
+            await titleOutput.Info("Referrer:", string.IsNullOrEmpty(referrer) ? "(empty)" : referrer);
+        }
+        catch (Exception ex)
+        {
+            await titleOutput.Error("Read failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadMetadata()
+    {
+        try
+        {
+            await metadataOutput.Info("CharacterSet:", await document.GetCharacterSet());
+            await metadataOutput.Info("ContentType:", await document.GetContentType());
+            await metadataOutput.Info("CompatMode:", await document.GetCompatMode());
+        }
+        catch (Exception ex)
+        {
+            await metadataOutput.Error("Read failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadDir()
+    {
+        try
+        {
+            await dirOutput.Info("Dir:", await document.GetDir());
+        }
+        catch (Exception ex)
+        {
+            await dirOutput.Error("GetDir failed:", ex.Message);
+        }
+    }
+
+    private async Task SetRtl()
+    {
+        try
+        {
+            await document.SetDir(DocumentDir.Rtl);
+            await dirOutput.Log("Document direction set to Rtl.");
+        }
+        catch (Exception ex)
+        {
+            await dirOutput.Error("SetDir failed:", ex.Message);
+        }
+    }
+
+    private async Task SetLtr()
+    {
+        try
+        {
+            await document.SetDir(DocumentDir.Ltr);
+            await dirOutput.Log("Document direction set to Ltr.");
+        }
+        catch (Exception ex)
+        {
+            await dirOutput.Error("SetDir failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadDesignMode()
+    {
+        try
+        {
+            await designModeOutput.Info("DesignMode:", await document.GetDesignMode());
+        }
+        catch (Exception ex)
+        {
+            await designModeOutput.Error("GetDesignMode failed:", ex.Message);
+        }
+    }
+
+    private async Task EnableDesignMode()
+    {
+        try
+        {
+            await document.SetDesignMode(DesignMode.On);
+            await designModeOutput.Warn("Design mode is ON - the whole page is now editable.");
+        }
+        catch (Exception ex)
+        {
+            await designModeOutput.Error("SetDesignMode failed:", ex.Message);
+        }
+    }
+
+    private async Task DisableDesignMode()
+    {
+        try
+        {
+            await document.SetDesignMode(DesignMode.Off);
+            await designModeOutput.Success("Design mode is off again.");
+        }
+        catch (Exception ex)
+        {
+            await designModeOutput.Error("SetDesignMode failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadVisibility()
+    {
+        try
+        {
+            await visibilityOutput.Info("VisibilityState:", await document.GetVisibilityState());
+            await visibilityOutput.Info("IsHidden:", await document.IsHidden());
+            await visibilityOutput.Info("HasFocus:", await document.HasFocus());
+            await visibilityOutput.Info("WasDiscarded:", await document.WasDiscarded());
+        }
+        catch (Exception ex)
+        {
+            await visibilityOutput.Error("Read failed:", ex.Message);
+        }
+    }
+
+    private async Task SubscribeVisibility()
+    {
+        try
+        {
+            visibilitySubscription = await document.SubscribeVisibilityChange(
+                state => _ = visibilityOutput.Info("Visibility changed:", state));
+            await visibilityOutput.Success("Subscribed to visibilitychange - switch tabs to test.");
+        }
+        catch (Exception ex)
+        {
+            await visibilityOutput.Error("SubscribeVisibilityChange failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeVisibility()
+    {
+        try
+        {
+            if (visibilitySubscription is not null)
+            {
+                await visibilitySubscription.DisposeAsync();
+                visibilitySubscription = null;
+            }
+            await visibilityOutput.Log("Visibility subscription disposed.");
+        }
+        catch (Exception ex)
+        {
+            await visibilityOutput.Error("Unsubscribe failed:", ex.Message);
+        }
+    }
+
+    private async Task SubscribeFullscreen()
+    {
+        try
+        {
+            fullscreenSubscription = await document.SubscribeFullscreenChange(
+                isFullscreen => _ = fullscreenOutput.Info("Fullscreen changed:", isFullscreen));
+            await fullscreenOutput.Success("Subscribed to fullscreenchange.");
+        }
+        catch (Exception ex)
+        {
+            await fullscreenOutput.Error("SubscribeFullscreenChange failed:", ex.Message);
+        }
+    }
+
+    private async Task UnsubscribeFullscreen()
+    {
+        try
+        {
+            if (fullscreenSubscription is not null)
+            {
+                await fullscreenSubscription.DisposeAsync();
+                fullscreenSubscription = null;
+            }
+            await fullscreenOutput.Log("Fullscreen subscription disposed.");
+        }
+        catch (Exception ex)
+        {
+            await fullscreenOutput.Error("Unsubscribe failed:", ex.Message);
+        }
+    }
+
+    private async Task ExitFullscreen()
+    {
+        try
+        {
+            await document.ExitFullscreen();
+            await fullscreenOutput.Log("ExitFullscreen called (no-op when not in fullscreen).");
+        }
+        catch (Exception ex)
+        {
+            await fullscreenOutput.Error("ExitFullscreen failed:", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (clickSubscription is not null) await clickSubscription.DisposeAsync();
+            if (visibilitySubscription is not null) await visibilitySubscription.DisposeAsync();
+            if (fullscreenSubscription is not null) await fullscreenSubscription.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

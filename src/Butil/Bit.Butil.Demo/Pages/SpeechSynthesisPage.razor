@@ -1,0 +1,266 @@
+@page "/speech-synthesis"
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+
+<PageTitle>SpeechSynthesis - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="SpeechSynthesis"
+            Lead="Text-to-speech from C#: enumerate the platform's voices, speak utterances with voice, rate, pitch and volume control, and pause, resume or cancel playback."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis"
+            InjectAs="SpeechSynthesis speechSynthesis" />
+
+<div class="stack">
+    <DemoSection Title="Support and voices"
+                 Api="IsSupported / GetVoices"
+                 Description="IsSupported reports whether window.speechSynthesis exists. GetVoices returns every SpeechVoice the platform offers - name, BCP-47 language tag, whether it is the default for its language and whether synthesis runs locally or via a network service."
+                 Code=@("""
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
+
+var isSupported = await speechSynthesis.IsSupported();
+
+SpeechVoice[] voices = await speechSynthesis.GetVoices();
+
+foreach (var voice in voices)
+{
+    // voice.Name, voice.Lang, voice.Default, voice.LocalService, voice.VoiceUri
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="LoadVoices">GetVoices</button>
+        </div>
+        @if (voices.Length > 0)
+        {
+            <p class="section-desc">Loaded <strong>@voices.Length</strong> voices.</p>
+        }
+        <DemoConsole @ref="voicesOutput" Title="voices output" />
+    </DemoSection>
+
+    <DemoSection Title="Speak an utterance"
+                 Api="Speak"
+                 Description="Configure a SpeechUtterance - text, an optional voice from GetVoices, rate (0.1–10), pitch (0–2) and volume (0–1) - and hand it to Speak. The call resolves once the engine accepts the utterance, not when speech finishes; utterances queue if you call Speak repeatedly. A string-only overload speaks with all defaults."
+                 Code=@("""
+await speechSynthesis.Speak(new SpeechUtterance
+{
+    Text = "Hello from Bit.Butil!",
+    VoiceName = "Microsoft Aria Online (Natural) - English (United States)",
+    Rate = 1.0,
+    Pitch = 1.0,
+    Volume = 1.0,
+});
+
+// or with defaults for everything:
+await speechSynthesis.Speak("Hello from Bit.Butil!");
+""")>
+        <div class="field">
+            <span class="field-label">Text</span>
+            <textarea @bind="speakText" rows="2"></textarea>
+        </div>
+        <div class="field">
+            <span class="field-label">Voice</span>
+            <select @bind="voiceName">
+                <option value="">Default</option>
+                @foreach (var voice in voices)
+                {
+                    <option value="@voice.Name">@voice.Name (@voice.Lang)</option>
+                }
+            </select>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Rate (@rate.ToString("0.0"))</span>
+                <input type="range" min="0.1" max="4" step="0.1" @bind="rate" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Pitch (@pitch.ToString("0.0"))</span>
+                <input type="range" min="0" max="2" step="0.1" @bind="pitch" @bind:event="oninput" />
+            </div>
+            <div class="field">
+                <span class="field-label">Volume (@volume.ToString("0.0"))</span>
+                <input type="range" min="0" max="1" step="0.1" @bind="volume" @bind:event="oninput" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="Speak">Speak</button>
+        </div>
+        <DemoConsole @ref="speakOutput" Title="speak output" />
+    </DemoSection>
+
+    <DemoSection Title="Pause, resume, cancel"
+                 Api="Pause / Resume / Cancel"
+                 Description="Pause freezes the current utterance mid-word and Resume picks it back up. Cancel flushes the whole queue and stops any current speech - the right call when the user navigates away or starts a new narration."
+                 Code=@("""
+await speechSynthesis.Pause();
+
+await speechSynthesis.Resume();
+
+await speechSynthesis.Cancel(); // flush the queue and stop
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="PauseSpeech">Pause</button>
+            <button class="secondary" @onclick="ResumeSpeech">Resume</button>
+            <button class="danger" @onclick="CancelSpeech">Cancel</button>
+        </div>
+        <DemoConsole @ref="playbackOutput" Title="playback output" />
+    </DemoSection>
+
+    <DemoSection Title="Engine state"
+                 Api="IsSpeaking / IsPending"
+                 Description="IsSpeaking is true while an utterance is being spoken (including while paused); IsPending is true while at least one utterance is still waiting in the queue. Useful for toggling a speaking indicator or debouncing repeated Speak calls."
+                 Code=@("""
+var speaking = await speechSynthesis.IsSpeaking();
+var pending = await speechSynthesis.IsPending();
+""")>
+        <div class="controls">
+            <button @onclick="CheckState">Check state</button>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="engine state output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Voices load lazily in Chromium">
+    Chromium populates the voice list asynchronously, so the very first GetVoices call after a page load can
+    return an empty array. Click GetVoices again (or re-query after the engine warms up) and the full list
+    appears. Voice availability also differs per OS - cloud voices on Windows, high-quality local voices on
+    macOS.
+</Callout>
+
+<Callout Type="info" Title="Autoplay policies apply">
+    Some browsers require a user gesture before audio output is allowed, so trigger the first Speak from a
+    click or key handler. If nothing is audible, also check the OS output device and the Volume slider above.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes window.speechSynthesis." />
+    <ApiMember Name="GetVoices" Signature="ValueTask<SpeechVoice[]> GetVoices()" Description="Returns the list of voices the platform makes available." />
+    <ApiMember Name="Speak" Signature="ValueTask Speak(SpeechUtterance utterance)" Description="Speaks the configured utterance. Resolves once the engine has accepted it (not when speech finishes)." />
+    <ApiMember Name="Speak" Signature="ValueTask Speak(string text)" Description="Quick-shorthand: speak the text with default voice and rate." />
+    <ApiMember Name="Cancel" Signature="ValueTask Cancel()" Description="Cancels all pending utterances and stops any current speech." />
+    <ApiMember Name="Pause" Signature="ValueTask Pause()" Description="Pauses the current utterance." />
+    <ApiMember Name="Resume" Signature="ValueTask Resume()" Description="Resumes a paused utterance." />
+    <ApiMember Name="IsSpeaking" Signature="ValueTask<bool> IsSpeaking()" Description="True when the engine is currently speaking (or paused)." />
+    <ApiMember Name="IsPending" Signature="ValueTask<bool> IsPending()" Description="True when an utterance is queued." />
+</ApiTable>
+
+@code {
+    private DemoConsole voicesOutput = default!;
+    private DemoConsole speakOutput = default!;
+    private DemoConsole playbackOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private SpeechVoice[] voices = [];
+    private string speakText = "Hello from Bit.Butil speech synthesis!";
+    private string voiceName = "";
+    private double rate = 1.0;
+    private double pitch = 1.0;
+    private double volume = 1.0;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await voicesOutput.Success("IsSupported →", await speechSynthesis.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await voicesOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task LoadVoices()
+    {
+        try
+        {
+            voices = await speechSynthesis.GetVoices();
+            if (voices.Length is 0)
+            {
+                await voicesOutput.Warn("GetVoices → 0 voices (Chromium loads them lazily - try again).");
+            }
+            else
+            {
+                await voicesOutput.Success("GetVoices →", voices.Length, "voices");
+            }
+        }
+        catch (Exception ex)
+        {
+            await voicesOutput.Error("GetVoices failed →", ex.Message);
+        }
+    }
+
+    private async Task Speak()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(speakText))
+            {
+                await speakOutput.Warn("Enter some text to speak.");
+                return;
+            }
+
+            await speechSynthesis.Speak(new SpeechUtterance
+            {
+                Text = speakText,
+                VoiceName = string.IsNullOrWhiteSpace(voiceName) ? null : voiceName,
+                Rate = rate,
+                Pitch = pitch,
+                Volume = volume,
+            });
+
+            await speakOutput.Log("Speak → utterance queued");
+        }
+        catch (Exception ex)
+        {
+            await speakOutput.Error("Speak failed →", ex.Message);
+        }
+    }
+
+    private async Task PauseSpeech()
+    {
+        try
+        {
+            await speechSynthesis.Pause();
+            await playbackOutput.Log("Pause → requested");
+        }
+        catch (Exception ex)
+        {
+            await playbackOutput.Error("Pause failed →", ex.Message);
+        }
+    }
+
+    private async Task ResumeSpeech()
+    {
+        try
+        {
+            await speechSynthesis.Resume();
+            await playbackOutput.Log("Resume → requested");
+        }
+        catch (Exception ex)
+        {
+            await playbackOutput.Error("Resume failed →", ex.Message);
+        }
+    }
+
+    private async Task CancelSpeech()
+    {
+        try
+        {
+            await speechSynthesis.Cancel();
+            await playbackOutput.Log("Cancel → queue flushed");
+        }
+        catch (Exception ex)
+        {
+            await playbackOutput.Error("Cancel failed →", ex.Message);
+        }
+    }
+
+    private async Task CheckState()
+    {
+        try
+        {
+            await stateOutput.Info($"IsSpeaking → {await speechSynthesis.IsSpeaking()}, IsPending → {await speechSynthesis.IsPending()}");
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("State check failed →", ex.Message);
+        }
+    }
+}

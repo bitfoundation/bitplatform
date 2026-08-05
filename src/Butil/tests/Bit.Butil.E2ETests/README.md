@@ -42,7 +42,7 @@ dotnet test .\Bit.Butil.E2ETests.csproj
 * `Infrastructure/ButilHarnessTestBase.cs` - self-managing Playwright base class (launch + context + page) that reads the env vars above.
 * `Infrastructure/ButilPageTest.cs` / `ButilObserversPageTest.cs` - thin bases pinning each harness route.
 * `*Tests.cs` - narrowly-scoped tests grouped by Butil surface.
-* `ci/bit.ci.Butil.e2e.yml` - ready-to-merge GitHub Actions workflow (copy into `.github/workflows/`).
+* CI runs this suite via `.github/workflows/bit.ci.Butil.e2e.yml` (triggered by any `src/Butil/**` change).
 
 ## Harness pages
 

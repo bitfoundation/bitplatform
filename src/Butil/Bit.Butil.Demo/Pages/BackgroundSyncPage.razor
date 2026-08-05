@@ -1,0 +1,269 @@
+@page "/background-sync"
+@inject Bit.Butil.BackgroundSync backgroundSync
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+<PageTitle>BackgroundSync - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="BackgroundSync"
+            Lead="Defer work until the user has connectivity. Wraps the Background Sync API (SyncManager) plus the related Periodic Background Sync - register tags from C# and let the service worker do the actual work when its sync event fires."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API"
+            InjectAs="BackgroundSync backgroundSync" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Chromium only">
+        Background Sync and Periodic Background Sync ship in Chromium-based browsers (Chrome, Edge, Opera)
+        and are not available in Firefox or Safari. Always feature-detect with
+        <code>IsSupported</code> / <code>IsPeriodicSupported</code> before relying on them.
+    </Callout>
+
+    <Callout Type="info" Title="A service worker registration is required">
+        Both APIs hang off an active <em>ServiceWorkerRegistration</em>. Use the prerequisite section below
+        (or the ServiceWorker page) to register the demo worker at <code>/sw.js</code> first - its
+        <code>sync</code> handler logs every fired tag to the DevTools console.
+    </Callout>
+
+    <DemoSection Title="Check support"
+                 Api="IsSupported / IsPeriodicSupported"
+                 Description="IsSupported is true when the runtime exposes ServiceWorkerRegistration.sync; IsPeriodicSupported checks for ServiceWorkerRegistration.periodicSync."
+                 Code=@("""
+var oneShot = await backgroundSync.IsSupported();
+var periodic = await backgroundSync.IsPeriodicSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Prerequisite: register the demo worker"
+                 Api="ServiceWorker.Register"
+                 Description="Background sync tags are stored on a service worker registration, so one must exist before Register or GetTags can succeed. This button registers the same minimal /sw.js used across this category."
+                 Code=@("""
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+await serviceWorker.Register("/sw.js");
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+        </div>
+        <DemoConsole @ref="workerOutput" Title="service worker output" />
+    </DemoSection>
+
+    <DemoSection Title="One-shot sync"
+                 Api="Register / GetTags"
+                 Description="Register queues a one-shot sync under a tag; the service worker's sync event fires for that tag once the device is online (immediately, if it already is). GetTags lists the tags currently registered. Registering the same tag twice coalesces into one pending sync."
+                 Code=@("""
+var ok = await backgroundSync.Register("sync-outbox");
+
+string[] tags = await backgroundSync.GetTags();
+""")>
+        <div class="field">
+            <label class="field-label">Sync tag</label>
+            <input @bind="syncTag" />
+        </div>
+        <div class="controls">
+            <button @onclick="RegisterSync">Register sync</button>
+            <button class="secondary" @onclick="ListTags">Get tags</button>
+        </div>
+        <DemoConsole @ref="oneShotOutput" Title="one-shot sync output" />
+    </DemoSection>
+
+    <DemoSection Title="Periodic sync"
+                 Api="RegisterPeriodic / GetPeriodicTags / UnregisterPeriodic"
+                 Description="Periodic sync wakes the service worker at a browser-chosen cadence, never more often than the minimum interval you pass (in milliseconds). It requires the periodic-background-sync permission, which Chromium only grants to installed web apps (PWAs) with sufficient site engagement - expect a rejection when running this demo from a plain tab."
+                 Code=@("""
+// minimum interval: 1 hour (the browser may extend it)
+var ok = await backgroundSync.RegisterPeriodic("refresh-feed", 60 * 60 * 1000);
+
+string[] tags = await backgroundSync.GetPeriodicTags();
+
+var removed = await backgroundSync.UnregisterPeriodic("refresh-feed");
+""")>
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label">Periodic tag</label>
+                <input @bind="periodicTag" />
+            </div>
+            <div class="field">
+                <label class="field-label">Minimum interval (ms)</label>
+                <input type="number" @bind="minInterval" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="RegisterPeriodicSync">Register periodic</button>
+            <button class="secondary" @onclick="ListPeriodicTags">Get periodic tags</button>
+            <button class="danger" @onclick="UnregisterPeriodicSync">Unregister periodic</button>
+        </div>
+        <DemoConsole @ref="periodicOutput" Title="periodic sync output" />
+    </DemoSection>
+
+    <Callout Type="info" Title="Where does the work happen?">
+        The page only registers tags. The actual work runs inside the service worker's
+        <code>sync</code> / <code>periodicsync</code> handlers - the demo worker simply logs the tag, so open
+        the DevTools console (and, in Chromium, DevTools, Application, Service workers, where you can also
+        dispatch a sync event manually) to observe it firing.
+    </Callout>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes ServiceWorkerRegistration.sync." />
+        <ApiMember Name="IsPeriodicSupported" Signature="ValueTask<bool> IsPeriodicSupported()" Description="True when ServiceWorkerRegistration.periodicSync is available." />
+        <ApiMember Name="Register" Signature="ValueTask<bool> Register(string tag)" Description="Registers a one-shot sync. The service worker's sync event fires once the device is online." />
+        <ApiMember Name="GetTags" Signature="ValueTask<string[]> GetTags()" Description="Lists tags currently registered for one-shot sync." />
+        <ApiMember Name="RegisterPeriodic" Signature="ValueTask<bool> RegisterPeriodic(string tag, long minInterval)" Description="Registers a periodic sync with a minimum interval in milliseconds. Requires the periodic-background-sync permission." />
+        <ApiMember Name="GetPeriodicTags" Signature="ValueTask<string[]> GetPeriodicTags()" Description="Lists tags currently registered for periodic sync." />
+        <ApiMember Name="UnregisterPeriodic" Signature="ValueTask<bool> UnregisterPeriodic(string tag)" Description="Removes a periodic sync registration. Returns true when a matching tag was unregistered." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole workerOutput = default!;
+    private DemoConsole oneShotOutput = default!;
+    private DemoConsole periodicOutput = default!;
+    private string syncTag = "butil-demo-sync";
+    private string periodicTag = "butil-demo-periodic";
+    private long minInterval = 3_600_000;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var oneShot = await backgroundSync.IsSupported();
+            var periodic = await backgroundSync.IsPeriodicSupported();
+            await supportOutput.Info("One-shot sync supported:", oneShot, "| Periodic sync supported:", periodic);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RegisterWorker()
+    {
+        try
+        {
+            var info = await serviceWorker.Register("/sw.js");
+            await workerOutput.Success($"Service worker registered. Scope: {info.Scope} | Active: {info.ActiveState ?? "-"}");
+        }
+        catch (Exception ex)
+        {
+            await workerOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RegisterSync()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(syncTag))
+            {
+                await oneShotOutput.Warn("Enter a sync tag first.");
+                return;
+            }
+
+            var ok = await backgroundSync.Register(syncTag);
+            if (ok)
+            {
+                await oneShotOutput.Success($"One-shot sync '{syncTag}' registered. Watch the DevTools console for the worker's sync event.");
+            }
+            else
+            {
+                await oneShotOutput.Warn("Registration failed - is the Background Sync API supported and a service worker registered?");
+            }
+        }
+        catch (Exception ex)
+        {
+            await oneShotOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListTags()
+    {
+        try
+        {
+            var tags = await backgroundSync.GetTags();
+            if (tags.Length == 0)
+            {
+                await oneShotOutput.Log("No one-shot sync tags registered. (Fired tags are removed automatically.)");
+            }
+            else
+            {
+                await oneShotOutput.Info($"One-shot tags ({tags.Length}):", string.Join(", ", tags));
+            }
+        }
+        catch (Exception ex)
+        {
+            await oneShotOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RegisterPeriodicSync()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(periodicTag))
+            {
+                await periodicOutput.Warn("Enter a periodic tag first.");
+                return;
+            }
+
+            var ok = await backgroundSync.RegisterPeriodic(periodicTag, minInterval);
+            if (ok)
+            {
+                await periodicOutput.Success($"Periodic sync '{periodicTag}' registered with a {minInterval} ms minimum interval.");
+            }
+            else
+            {
+                await periodicOutput.Warn("Registration failed - periodic sync needs Chromium, an installed PWA and the periodic-background-sync permission.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await periodicOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ListPeriodicTags()
+    {
+        try
+        {
+            var tags = await backgroundSync.GetPeriodicTags();
+            if (tags.Length == 0)
+            {
+                await periodicOutput.Log("No periodic sync tags registered.");
+            }
+            else
+            {
+                await periodicOutput.Info($"Periodic tags ({tags.Length}):", string.Join(", ", tags));
+            }
+        }
+        catch (Exception ex)
+        {
+            await periodicOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnregisterPeriodicSync()
+    {
+        try
+        {
+            var removed = await backgroundSync.UnregisterPeriodic(periodicTag);
+            if (removed)
+            {
+                await periodicOutput.Success($"Periodic sync '{periodicTag}' unregistered.");
+            }
+            else
+            {
+                await periodicOutput.Warn($"No periodic sync named '{periodicTag}' was registered.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await periodicOutput.Error(ex.Message);
+        }
+    }
+}

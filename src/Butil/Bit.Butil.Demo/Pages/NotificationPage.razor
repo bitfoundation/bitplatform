@@ -1,0 +1,254 @@
+@page "/notification"
+@implements IAsyncDisposable
+@inject Bit.Butil.Notification notification
+
+<PageTitle>Notification - Bit.Butil</PageTitle>
+
+<PageHeader Category="Identity & Permissions"
+            Title="Notification"
+            Lead="Request permission and display native system notifications from C# - with body, icon, tag and full lifecycle callbacks for click, show, close and error."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API"
+            InjectAs="Notification notification" />
+
+<div class="stack">
+    <DemoSection Title="Support and permission"
+                 Api="IsSupported / GetPermission / RequestPermission"
+                 Description="IsSupported reports whether the runtime implements the Notifications API at all. GetPermission reads the current decision without prompting, while RequestPermission shows the browser's permission dialog and resolves with the user's choice: Granted, Denied or Default."
+                 Code=@("""
+@inject Bit.Butil.Notification notification
+
+var isSupported = await notification.IsSupported();
+
+var current = await notification.GetPermission();
+
+var granted = await notification.RequestPermission(); // shows the browser prompt
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button @onclick="GetPermission">Get permission</button>
+            <button class="secondary" @onclick="RequestPermission">Request permission</button>
+        </div>
+        <p class="section-desc">Current permission: <strong>@permissionStatus</strong></p>
+        <DemoConsole @ref="permissionOutput" Title="permission output" />
+    </DemoSection>
+
+    <DemoSection Title="Show a notification"
+                 Api="Show"
+                 Description="Displays a fire-and-forget system notification. NotificationOptions maps the full option surface of the Notification constructor: Body, Icon, Image, Badge, Tag, Lang, Dir, Renotify, RequireInteraction, Silent, Timestamp, Vibrate and arbitrary Data. Reusing the same Tag replaces the previous toast instead of stacking a new one."
+                 Code=@("""
+await notification.Show("Deploy finished", new()
+{
+    Body = "All 12 services rolled out successfully.",
+    Icon = "https://example.com/icon.png",
+    Tag = "deploy-status",       // same tag replaces the previous toast
+    RequireInteraction = false,  // auto-dismiss per OS rules
+    Silent = false,
+});
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Title</span>
+                <input @bind="notifTitle" placeholder="Notification title" />
+            </div>
+            <div class="field">
+                <span class="field-label">Tag (optional)</span>
+                <input @bind="notifTag" placeholder="e.g. deploy-status" />
+            </div>
+        </div>
+        <div class="field">
+            <span class="field-label">Body</span>
+            <textarea @bind="notifBody" rows="2" placeholder="Notification body"></textarea>
+        </div>
+        <div class="field">
+            <span class="field-label">Icon URL (optional)</span>
+            <input @bind="notifIcon" placeholder="https://…/icon.png" />
+        </div>
+        <div class="controls">
+            <label><input type="checkbox" @bind="requireInteraction" /> RequireInteraction</label>
+            <label><input type="checkbox" @bind="silent" /> Silent</label>
+        </div>
+        <div class="controls">
+            <button @onclick="Show">Show notification</button>
+        </div>
+        <DemoConsole @ref="showOutput" Title="show output" />
+    </DemoSection>
+
+    <DemoSection Title="Tracked notifications with callbacks"
+                 Api="ShowTracked"
+                 Description="ShowTracked returns a NotificationHandle and wires C# callbacks to the notification's click, show, close and error events. The handle lets you close the toast programmatically; disposing it detaches the listeners. Tracked notifications stay on screen until dismissed or closed."
+                 Code=@("""
+var handle = await notification.ShowTracked("Incoming call",
+    new() { Body = "Click to answer." },
+    onClick: () => { /* focus the call UI */ },
+    onShow: () => { /* start the ringtone */ },
+    onClose: () => { /* stop the ringtone */ },
+    onError: () => { /* fall back to in-app banner */ });
+
+// later:
+await handle.Close();
+await handle.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="ShowTracked">Show tracked</button>
+            <button class="danger" @onclick="CloseTracked" disabled="@(trackedHandle is null)">Close it</button>
+        </div>
+        <DemoConsole @ref="trackedOutput" Title="tracked output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Permission prompts need a user gesture">
+    Browsers only show the notification permission dialog in response to a user interaction, and many deny it
+    outright in cross-origin iframes or on insecure origins. Request permission from a click handler - like
+    the button above - never on page load.
+</Callout>
+
+<Callout Type="info" Title="The OS has the final say">
+    Even with permission granted, the operating system can suppress toasts: Windows Focus Assist, macOS Focus
+    modes and Do Not Disturb all silently swallow notifications. Treat them as best-effort UX, not a delivery
+    guarantee.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="Checks if the runtime (browser or web-view) supports the Web Notification API." />
+    <ApiMember Name="GetPermission" Signature="ValueTask<NotificationPermission> GetPermission()" Description="Gets the current permission of the Notification API without prompting." />
+    <ApiMember Name="RequestPermission" Signature="ValueTask<NotificationPermission> RequestPermission()" Description="Requests permission from the user for the current origin to display notifications." />
+    <ApiMember Name="Show" Signature="ValueTask Show(string title, NotificationOptions? options = null)" Description="Requests a native notification to show to the user." />
+    <ApiMember Name="ShowTracked" Signature="ValueTask<NotificationHandle> ShowTracked(string title, NotificationOptions? options = null, Action? onClick = null, Action? onShow = null, Action? onClose = null, Action? onError = null)" Description="Shows a notification and returns a handle with click / show / close / error callbacks and programmatic close." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches all tracked notifications and releases the interop reference; called automatically when the scoped service is disposed." />
+    <ApiMember Name="NotificationHandle.Id" Signature="Guid Id" Description="The internal notification id." />
+    <ApiMember Name="NotificationHandle.Close" Signature="ValueTask Close()" Description="Closes the notification programmatically." />
+    <ApiMember Name="NotificationHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches the event listeners and closes the toast." />
+    <ApiMember Name="InvokeNotificationClick / Show / Close / Error" Signature="void InvokeNotification…(Guid id)" Description="JSInvokable interop plumbing dispatched from the Butil script - not intended for app code." />
+</ApiTable>
+
+@code {
+    private DemoConsole permissionOutput = default!;
+    private DemoConsole showOutput = default!;
+    private DemoConsole trackedOutput = default!;
+    private string notifTitle = "Hello from Bit.Butil";
+    private string notifBody = "This notification was shown from C#.";
+    private string notifTag = "";
+    private string notifIcon = "";
+    private bool requireInteraction;
+    private bool silent;
+    private string permissionStatus = "unknown";
+    private NotificationHandle? trackedHandle;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await permissionOutput.Success("IsSupported →", await notification.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task GetPermission()
+    {
+        try
+        {
+            permissionStatus = (await notification.GetPermission()).ToString();
+            await permissionOutput.Success("GetPermission →", permissionStatus);
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("GetPermission failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestPermission()
+    {
+        try
+        {
+            permissionStatus = (await notification.RequestPermission()).ToString();
+            await permissionOutput.Success("RequestPermission →", permissionStatus);
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("RequestPermission failed →", ex.Message);
+        }
+    }
+
+    private async Task Show()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(notifTitle))
+            {
+                await showOutput.Warn("Enter a title first.");
+                return;
+            }
+
+            await notification.Show(notifTitle, new()
+            {
+                Body = string.IsNullOrWhiteSpace(notifBody) ? null : notifBody,
+                Tag = string.IsNullOrWhiteSpace(notifTag) ? null : notifTag,
+                Icon = string.IsNullOrWhiteSpace(notifIcon) ? null : notifIcon,
+                RequireInteraction = requireInteraction,
+                Silent = silent ? true : null,
+            });
+
+            await showOutput.Log("Show →", $"\"{notifTitle}\"");
+        }
+        catch (Exception ex)
+        {
+            await showOutput.Error("Show failed →", ex.Message);
+        }
+    }
+
+    private async Task ShowTracked()
+    {
+        try
+        {
+            await CleanupTracked();
+
+            trackedHandle = await notification.ShowTracked("Tracked notification",
+                new() { Body = "Click me, or close me from the page." },
+                onClick: () => _ = InvokeAsync(() => trackedOutput.Info("Tracked → clicked")),
+                onShow: () => _ = InvokeAsync(() => trackedOutput.Log("Tracked → shown")),
+                onClose: () => _ = InvokeAsync(async () =>
+                {
+                    trackedHandle = null;
+                    await trackedOutput.Log("Tracked → closed");
+                }),
+                onError: () => _ = InvokeAsync(() => trackedOutput.Error("Tracked → error")));
+
+            await trackedOutput.Success("ShowTracked → handle", trackedHandle.Id);
+        }
+        catch (Exception ex)
+        {
+            await trackedOutput.Error("ShowTracked failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseTracked()
+    {
+        try
+        {
+            if (trackedHandle is null) return;
+
+            await trackedHandle.Close();
+            await trackedOutput.Log("Close → requested");
+        }
+        catch (Exception ex)
+        {
+            await trackedOutput.Error("Close failed →", ex.Message);
+        }
+    }
+
+    private async Task CleanupTracked()
+    {
+        if (trackedHandle is null) return;
+
+        await trackedHandle.DisposeAsync();
+        trackedHandle = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await CleanupTracked();
+    }
+}

@@ -1,0 +1,221 @@
+@page "/location"
+@inject Bit.Butil.Location location
+
+<PageTitle>Location - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="Location"
+            Lead="The URL of the current document, split into typed parts: read protocol, host, path, query and hash, or navigate by assigning to them - every setter triggers a real navigation."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Location"
+            InjectAs="Location location" />
+
+<div class="stack">
+    <DemoSection Title="Read the URL parts"
+                 Api="GetHref / GetProtocol / GetHost / GetHostname / GetPort / GetPathname / GetSearch / GetHash / GetOrigin"
+                 Description="Each component of the current URL has its own getter, so there is no string parsing on your side - the browser does the splitting."
+                 Code=@("""
+string href = await location.GetHref();         // full URL
+string protocol = await location.GetProtocol(); // "https:"
+string host = await location.GetHost();         // "example.com:5001"
+string hostname = await location.GetHostname(); // "example.com"
+string port = await location.GetPort();         // "5001"
+string pathname = await location.GetPathname(); // "/location"
+string search = await location.GetSearch();     // "?q=butil"
+string hash = await location.GetHash();         // "#section"
+string origin = await location.GetOrigin();     // "https://example.com:5001"
+""")>
+        <div class="controls">
+            <button @onclick="ReadAllParts">Read all parts</button>
+        </div>
+        <DemoConsole @ref="partsOutput" Title="URL parts output" />
+    </DemoSection>
+
+    <DemoSection Title="Change the hash"
+                 Api="GetHash / SetHash"
+                 Description="The fragment is the one URL part you can write without causing a page load, which makes it a handy slot for lightweight client state such as the active section."
+                 Code=@("""
+await location.SetHash("demo-section");
+
+string hash = await location.GetHash();   // "#demo-section"
+""")>
+        <div class="field">
+            <span class="field-label">New hash</span>
+            <input @bind="newHash" placeholder="e.g. my-section" />
+        </div>
+        <div class="controls">
+            <button @onclick="SetHash">SetHash</button>
+            <button class="secondary" @onclick="ReadHash">GetHash</button>
+        </div>
+        <DemoConsole @ref="hashOutput" Title="hash output" />
+    </DemoSection>
+
+    <DemoSection Title="Navigate"
+                 Api="SetHref / Assign / Replace"
+                 Description="SetHref and Assign both load a new URL and add a history entry, so the Back button returns here. Replace swaps the current entry instead - use it for redirects the user should not be able to go back to."
+                 Code=@("""
+await location.SetHref("https://bitplatform.dev");
+
+await location.Assign("https://bitplatform.dev");   // Back button returns
+
+await location.Replace("https://bitplatform.dev");  // current entry is replaced
+""")>
+        <div class="field">
+            <span class="field-label">Target URL</span>
+            <input @bind="targetUrl" />
+        </div>
+        <div class="controls">
+            <button @onclick="AssignUrl">Assign</button>
+            <button class="danger" @onclick="ReplaceUrl">Replace</button>
+        </div>
+        <p class="section-desc">Both buttons navigate away from this app immediately.</p>
+        <DemoConsole @ref="navigateOutput" Title="navigate output" />
+    </DemoSection>
+
+    <DemoSection Title="Reload"
+                 Api="Reload"
+                 Description="Reloads the current URL, exactly like the browser's Refresh button. In Blazor WebAssembly this restarts the whole application, so unsaved in-memory state is lost."
+                 Code=@("""
+await location.Reload();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="ReloadPage">Reload this page</button>
+        </div>
+        <DemoConsole @ref="reloadOutput" Title="reload output" />
+    </DemoSection>
+
+    <DemoSection Title="Rewrite individual parts"
+                 Api="SetProtocol / SetHost / SetHostname / SetPort / SetPathname / SetSearch"
+                 Description="Every non-hash setter navigates to the URL produced by swapping just that component - a concise way to hop between ports, subdomains or query strings while keeping the rest of the address intact."
+                 Code=@("""
+await location.SetPathname("/window");     // same site, different page
+
+await location.SetSearch("?theme=dark");   // same page, new query string
+
+await location.SetPort("5001");            // same URL, different port
+await location.SetHostname("staging.example.com");
+await location.SetHost("staging.example.com:5001");
+await location.SetProtocol("https");       // upgrade to https
+""") />
+</div>
+
+<Callout Type="warning" Title="Setters navigate immediately">
+    Except for <code>SetHash</code>, every setter on this page (and <code>Assign</code>, <code>Replace</code>,
+    <code>Reload</code>, <code>SetHref</code>) triggers a full document navigation that tears down the running
+    Blazor application. Persist anything important before calling them.
+</Callout>
+
+<Callout Type="info" Title="Location vs NavigationManager">
+    For in-app route changes, Blazor's own <code>NavigationManager</code> is usually the better fit - it keeps
+    the SPA alive. Reach for <code>Location</code> when you need the parsed URL parts or a real full-page
+    navigation, such as leaving to an external site or forcing a clean reload.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="GetHref / SetHref" Signature="Task<string> GetHref() / Task SetHref(string value)" Description="The entire URL; setting it navigates to the new page." />
+    <ApiMember Name="GetProtocol / SetProtocol" Signature="Task<string> GetProtocol() / Task SetProtocol(string value)" Description="The protocol scheme including the final ':'; setting it navigates." />
+    <ApiMember Name="GetHost / SetHost" Signature="Task<string> GetHost() / Task SetHost(string value)" Description="The hostname plus ':' and port; setting it navigates." />
+    <ApiMember Name="GetHostname / SetHostname" Signature="Task<string> GetHostname() / Task SetHostname(string value)" Description="The domain of the URL; setting it navigates." />
+    <ApiMember Name="GetPort / SetPort" Signature="Task<string> GetPort() / Task SetPort(string value)" Description="The port number of the URL; setting it navigates." />
+    <ApiMember Name="GetPathname / SetPathname" Signature="Task<string> GetPathname() / Task SetPathname(string value)" Description="The path beginning with '/'; setting it navigates." />
+    <ApiMember Name="GetSearch / SetSearch" Signature="Task<string> GetSearch() / Task SetSearch(string value)" Description="The query string beginning with '?'; setting it navigates." />
+    <ApiMember Name="GetHash / SetHash" Signature="Task<string> GetHash() / Task SetHash(string value)" Description="The fragment beginning with '#'; the only setter that does not reload the page." />
+    <ApiMember Name="GetOrigin" Signature="Task<string> GetOrigin()" Description="The canonical origin of the location (read-only)." />
+    <ApiMember Name="Assign" Signature="Task Assign(string url)" Description="Loads the resource at the given URL, adding a history entry." />
+    <ApiMember Name="Reload" Signature="Task Reload()" Description="Reloads the current URL, like the Refresh button." />
+    <ApiMember Name="Replace" Signature="Task Replace(string url)" Description="Navigates to the given URL, replacing the current history entry." />
+</ApiTable>
+
+@code {
+    private DemoConsole partsOutput = default!;
+    private DemoConsole hashOutput = default!;
+    private DemoConsole navigateOutput = default!;
+    private DemoConsole reloadOutput = default!;
+
+    private string newHash = "demo-section";
+    private string targetUrl = "https://bitplatform.dev";
+
+    private async Task ReadAllParts()
+    {
+        try
+        {
+            await partsOutput.Info("Href:", await location.GetHref());
+            await partsOutput.Info("Protocol:", await location.GetProtocol());
+            await partsOutput.Info("Host:", await location.GetHost());
+            await partsOutput.Info("Hostname:", await location.GetHostname());
+            var port = await location.GetPort();
+            await partsOutput.Info("Port:", string.IsNullOrEmpty(port) ? "(default)" : port);
+            await partsOutput.Info("Pathname:", await location.GetPathname());
+            var search = await location.GetSearch();
+            await partsOutput.Info("Search:", string.IsNullOrEmpty(search) ? "(empty)" : search);
+            var hash = await location.GetHash();
+            await partsOutput.Info("Hash:", string.IsNullOrEmpty(hash) ? "(empty)" : hash);
+            await partsOutput.Info("Origin:", await location.GetOrigin());
+        }
+        catch (Exception ex)
+        {
+            await partsOutput.Error("Reading URL parts failed:", ex.Message);
+        }
+    }
+
+    private async Task SetHash()
+    {
+        try
+        {
+            await location.SetHash(newHash);
+            await hashOutput.Success("Hash set - check the address bar.");
+        }
+        catch (Exception ex)
+        {
+            await hashOutput.Error("SetHash failed:", ex.Message);
+        }
+    }
+
+    private async Task ReadHash()
+    {
+        try
+        {
+            var hash = await location.GetHash();
+            await hashOutput.Info("Hash:", string.IsNullOrEmpty(hash) ? "(empty)" : hash);
+        }
+        catch (Exception ex)
+        {
+            await hashOutput.Error("GetHash failed:", ex.Message);
+        }
+    }
+
+    private async Task AssignUrl()
+    {
+        try
+        {
+            await location.Assign(targetUrl);
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("Assign failed:", ex.Message);
+        }
+    }
+
+    private async Task ReplaceUrl()
+    {
+        try
+        {
+            await location.Replace(targetUrl);
+        }
+        catch (Exception ex)
+        {
+            await navigateOutput.Error("Replace failed:", ex.Message);
+        }
+    }
+
+    private async Task ReloadPage()
+    {
+        try
+        {
+            await location.Reload();
+        }
+        catch (Exception ex)
+        {
+            await reloadOutput.Error("Reload failed:", ex.Message);
+        }
+    }
+}

@@ -1,0 +1,229 @@
+@page "/push"
+@inject Bit.Butil.Push push
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+<PageTitle>Push - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="Push"
+            Lead="Subscribe the current service worker to web push messages, inspect the existing subscription and unsubscribe - the client half of the Web Push protocol, fully typed."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Push_API"
+            InjectAs="Push push" />
+
+<div class="stack">
+
+    <Callout Type="warning" Title="Permission prompt and prerequisites">
+        Subscribing requires a secure context, an <em>active service worker registration</em> and the user
+        granting the notification permission - the browser shows its permission prompt on the first
+        Subscribe call. If the permission is denied, Subscribe rejects with a NotAllowedError.
+    </Callout>
+
+    <Callout Type="info" Title="You also need a server">
+        The browser only hands you a subscription (endpoint plus encryption keys). Actually delivering a
+        push requires an application server that holds the matching VAPID <em>private</em> key and POSTs
+        encrypted payloads to the endpoint - for example via the <code>web-push</code> npm package or
+        <code>WebPush</code> NuGet package. This page demonstrates the client side only.
+    </Callout>
+
+    <DemoSection Title="Check support"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes ServiceWorkerRegistration.pushManager. Chromium and Firefox support push broadly; Safari supports it from 16.1 on macOS, and on iOS only for web apps added to the Home Screen."
+                 Code=@("""
+var supported = await push.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupport">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Prerequisite: register the demo worker"
+                 Api="ServiceWorker.Register"
+                 Description="Push subscriptions belong to a service worker registration. This button registers the demo /sw.js, whose push handler shows a notification with the received payload."
+                 Code=@("""
+@inject Bit.Butil.ServiceWorker serviceWorker
+
+await serviceWorker.Register("/sw.js");
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="RegisterWorker">Register /sw.js</button>
+        </div>
+        <DemoConsole @ref="workerOutput" Title="service worker output" />
+    </DemoSection>
+
+    <DemoSection Title="Subscribe"
+                 Api="Subscribe"
+                 Description="Creates a push subscription for the active service worker. The applicationServerKey is your VAPID public key (base64-url encoded); generate a key pair once on your machine and keep the private key on your server. userVisibleOnly defaults to true because Chromium requires every push to result in a user-visible notification."
+                 Code=@("""
+// Generate a VAPID key pair once (keep the private key server-side):
+//   npx web-push generate-vapid-keys
+
+var sub = await push.Subscribe(applicationServerKey: "<your VAPID public key>");
+
+// sub.IsActive, sub.Endpoint, sub.ExpirationTime, sub.P256dh, sub.Auth
+""")>
+        <div class="field">
+            <label class="field-label">VAPID public key (base64-url) - generate with: npx web-push generate-vapid-keys</label>
+            <input @bind="vapidKey" placeholder="BPk3...your public key..." />
+        </div>
+        <div class="controls">
+            <button @onclick="SubscribePush">Subscribe</button>
+        </div>
+        <DemoConsole @ref="subscribeOutput" Title="subscribe output" />
+    </DemoSection>
+
+    <DemoSection Title="Inspect the existing subscription"
+                 Api="GetSubscription"
+                 Description="Returns the current subscription for the active service worker, or a payload with IsActive set to false when none exists. Send the Endpoint, P256dh and Auth values to your application server - that is everything it needs to push to this browser."
+                 Code=@("""
+var sub = await push.GetSubscription();
+
+if (sub.IsActive)
+{
+    // persist sub.Endpoint, sub.P256dh and sub.Auth on your server
+}
+""")>
+        <div class="controls">
+            <button @onclick="InspectSubscription">Get subscription</button>
+        </div>
+        <DemoConsole @ref="inspectOutput" Title="subscription output" />
+    </DemoSection>
+
+    <DemoSection Title="Unsubscribe"
+                 Api="Unsubscribe"
+                 Description="Deactivates the active subscription and returns true when one was removed. Remember to also delete the subscription record from your application server, or it will keep pushing into the void."
+                 Code=@("""
+var removed = await push.Unsubscribe();
+""")>
+        <div class="controls">
+            <button class="danger" @onclick="UnsubscribePush">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="unsubscribeOutput" Title="unsubscribe output" />
+    </DemoSection>
+
+    <ApiTable Title="API reference">
+        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes ServiceWorkerRegistration.pushManager." />
+        <ApiMember Name="GetSubscription" Signature="ValueTask<PushSubscriptionInfo> GetSubscription()" Description="Returns the existing subscription for the active service worker, or an inactive payload when none exists." />
+        <ApiMember Name="Subscribe" Signature="ValueTask<PushSubscriptionInfo> Subscribe(string applicationServerKey, bool userVisibleOnly = true)" Description="Subscribes the current service worker to push messages using the given VAPID public key." />
+        <ApiMember Name="Unsubscribe" Signature="ValueTask<bool> Unsubscribe()" Description="Unsubscribes the active subscription. Returns true if a subscription was removed." />
+        <ApiMember Name="PushSubscriptionInfo.IsActive" Signature="bool IsActive { get; set; }" Description="True when a subscription was found or created." />
+        <ApiMember Name="PushSubscriptionInfo.Endpoint" Signature="string Endpoint { get; set; }" Description="The endpoint URL the push service expects POSTs at." />
+        <ApiMember Name="PushSubscriptionInfo.ExpirationTime" Signature="long? ExpirationTime { get; set; }" Description="Unix-epoch milliseconds expiration time, or null when the subscription doesn't expire." />
+        <ApiMember Name="PushSubscriptionInfo.P256dh" Signature="string P256dh { get; set; }" Description="Base64URL-encoded P-256 ECDH public key for payload encryption." />
+        <ApiMember Name="PushSubscriptionInfo.Auth" Signature="string Auth { get; set; }" Description="Base64URL-encoded auth secret used by the Web Push protocol." />
+    </ApiTable>
+
+</div>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole workerOutput = default!;
+    private DemoConsole subscribeOutput = default!;
+    private DemoConsole inspectOutput = default!;
+    private DemoConsole unsubscribeOutput = default!;
+    private string vapidKey = string.Empty;
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            var supported = await push.IsSupported();
+            await supportOutput.Info("Push supported:", supported);
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task RegisterWorker()
+    {
+        try
+        {
+            var info = await serviceWorker.Register("/sw.js");
+            await workerOutput.Success($"Service worker registered. Scope: {info.Scope} | Active: {info.ActiveState ?? "-"}");
+        }
+        catch (Exception ex)
+        {
+            await workerOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task SubscribePush()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(vapidKey))
+            {
+                await subscribeOutput.Warn("Paste a VAPID public key first (generate one with: npx web-push generate-vapid-keys).");
+                return;
+            }
+
+            await subscribeOutput.Log("Subscribing - the browser may show a notification permission prompt...");
+            var sub = await push.Subscribe(vapidKey.Trim());
+            if (sub.IsActive)
+            {
+                await subscribeOutput.Success("Subscribed.");
+                await LogSubscription(subscribeOutput, sub);
+            }
+            else
+            {
+                await subscribeOutput.Warn("Subscribe returned no active subscription.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await subscribeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task InspectSubscription()
+    {
+        try
+        {
+            var sub = await push.GetSubscription();
+            if (sub.IsActive)
+            {
+                await inspectOutput.Info("An active subscription exists:");
+                await LogSubscription(inspectOutput, sub);
+            }
+            else
+            {
+                await inspectOutput.Log("No active subscription for this service worker.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await inspectOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnsubscribePush()
+    {
+        try
+        {
+            var removed = await push.Unsubscribe();
+            if (removed)
+            {
+                await unsubscribeOutput.Success("Unsubscribed. Remember to remove the subscription from your server too.");
+            }
+            else
+            {
+                await unsubscribeOutput.Warn("There was no active subscription to remove.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await unsubscribeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task LogSubscription(DemoConsole output, PushSubscriptionInfo sub)
+    {
+        await output.Log($"Endpoint: {sub.Endpoint}");
+        await output.Log($"P256dh: {sub.P256dh}");
+        await output.Log($"Auth: {sub.Auth}");
+        await output.Log($"ExpirationTime: {(sub.ExpirationTime.HasValue ? sub.ExpirationTime.Value.ToString() : "never")}");
+    }
+}
