@@ -266,7 +266,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         }
 
         var isPrivileged = hasUnlimitedPrivilegedSessions ||
-            userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted.
+            userSession.Privileged is true || // Once session gets privileged, it stays privileged until gets deleted (but see Refresh: switching tenant clears it, so it is re-earned under the new tenant's claims).
             await DbContext.UserSessions.CountAsync(us => us.UserId == userSession.UserId && us.Privileged == true, cancellationToken) < maxPrivilegedSessionsCount;
 
         userClaimsPrincipalFactory.SessionClaims.Add(new(AppClaimTypes.PRIVILEGED_SESSION, isPrivileged ? "true" : "false"));
@@ -376,6 +376,15 @@ public partial class IdentityController : AppControllerBase, IIdentityController
                 tenantId = requestedTenantId;
 
                 userSession.TenantId = tenantId;
+
+                // The privileged flag is earned against the claims of ONE tenant: MAX_PRIVILEGED_SESSIONS lives on a
+                // role, and roles are tenant scoped (See UserClaimsService.GetClaims). It is also sticky, so without
+                // clearing it here a session that became privileged under one tenant's claims keeps it under every
+                // other tenant's - and since creating a tenant is self service and makes the creator its t-admin with
+                // an unlimited claim, that turns "mint a tenant, switch in, switch back" into a way for any account to
+                // lift its own session cap, once per device. Cleared so it is re-earned below against the tenant the
+                // session is actually moving into (See UpdateUserSessionPrivilegeStatus).
+                userSession.Privileged = false;
             }
 
             if (tenantId is not null)

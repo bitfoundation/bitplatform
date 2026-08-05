@@ -204,7 +204,10 @@ public partial class TenantInvitationUITests : AppPageTest
         await page.GotoAsync(new Uri(serverAddress, PageUrls.Dashboard).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await Expect(page).ToHaveTitleAsync(accessible ? AppStrings.Dashboard : AppStrings.NotAuthorizedPageTitle);
+        // DashboardPage passes PageTitle="DashboardPageTitle" and Title="Dashboard" separately, and AppPageData renders
+        // `PageTitle ?? Title`, so the document title is the former. They happen to carry the same text in every shipped
+        // locale, which is what makes asserting the wrong one look like it works.
+        await Expect(page).ToHaveTitleAsync(accessible ? AppStrings.DashboardPageTitle : AppStrings.NotAuthorizedPageTitle);
     }
     //#endif
 

@@ -1,18 +1,25 @@
 //+:cnd:noEmit
+using Microsoft.Extensions.Time.Testing;
 using Boilerplate.Shared.Features.PushNotification;
 using Boilerplate.Server.Api.Features.PushNotification;
 
 namespace Boilerplate.Tests.Features.PushNotification;
 
 /// <summary>
-/// <c>POST /api/v1/PushNotification/Subscribe</c> is <c>[AllowAnonymous]</c> by design - an anonymous visitor's
-/// own device has no <c>UserSession</c> to authenticate with. What it must NOT do is let an anonymous caller
-/// mutate a subscription row that already belongs to somebody's session, because the row carries the push
-/// endpoint the server sends OTP, two-factor and reset-password notifications to. Detaching it from its session
-/// silently stops every one of those, with no error anywhere.
+/// <c>POST /api/v1/PushNotification/Subscribe</c> is <c>[AllowAnonymous]</c> by design - an anonymous visitor's own
+/// device has no <c>UserSession</c> to authenticate with - and it deliberately performs no ownership check: the
+/// <c>DeviceId</c> is the device's credential, so whoever presents one gets that device's row. The reasoning, and why
+/// an ownership check breaks more than it protects, is written out at the check's absence in
+/// <c>PushNotificationService.Subscribe</c>.
 /// <para>
-/// This ships in the DEFAULT configuration (<c>notification == true</c>), which is why it is worth an
-/// integration test rather than a note.
+/// What this file pins is the invariant that replaces it: <b>one row per device, one row per session, and the device's
+/// row always follows whoever is using the device.</b> Every test here drives a flow that an ownership check would have
+/// broken - clearing tokens without signing out, signing in again, handing the device to somebody else - because those
+/// are the flows that were found to break, not hypotheticals.
+/// </para>
+/// <para>
+/// This ships in the DEFAULT configuration (<c>notification == true</c>), which is why it is worth an integration test
+/// rather than a note.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
@@ -20,51 +27,60 @@ public partial class PushSubscriptionOwnershipTests
 {
     public TestContext TestContext { get; set; } = default!;
 
+    /// <summary>
+    /// A device is shared, or handed over, or simply used by somebody else next. When it is, its push subscription
+    /// belongs to whoever is signed in on it now - the previous user's row has to be taken over rather than defended.
+    /// <para>
+    /// The previous user's <c>UserSession</c> is deliberately left alive here (nobody signs out), because that is the
+    /// state an ownership check would trip over: sign out is not guaranteed to happen, and until
+    /// <c>UserSessionsCleanupJobRunner</c> removes it the row still points at a session nobody is using.
+    /// </para>
+    /// </summary>
     [TestMethod]
-    public async Task AnonymousSubscribe_Should_NotTakeOverAnotherSessionsDevice()
+    public async Task AnotherUserOnTheSameDevice_Should_TakeOverItsSubscription()
     {
         await using var server = new AppTestServer();
 
         await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
 
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-
-        var (email, userId) = await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
-
         // A per-run device id, so anything this test leaves behind is an inert orphan rather than a collision with
         // the shared development database.
         var deviceId = $"push-ownership-{Guid.NewGuid():N}";
-        const string legitimatePushChannel = "legitimate-push-channel";
 
         try
         {
-            await scope.ServiceProvider.GetRequiredService<IPushNotificationController>()
-                .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = legitimatePushChannel }, TestContext.CancellationToken);
+            Guid firstSessionId;
 
-            var ownedSubscription = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(ownedSubscription, "The authenticated subscribe should have created the row this test is about.");
-            Assert.IsNotNull(ownedSubscription.UserSessionId, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
+            await using (var firstUserScope = server.WebApp.Services.CreateAsyncScope())
+            {
+                await TestAccountUtils.CreateAndSignIn(server, firstUserScope, TestContext.CancellationToken);
 
-            var sessionIdBefore = ownedSubscription.UserSessionId;
+                await firstUserScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                    .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "first-user-channel" }, TestContext.CancellationToken);
+            }
 
-            // A raw HttpClient rather than the DI one or the typed proxy on purpose: both attach the caller's
-            // bearer token through AuthDelegatingHandler, and the whole point here is a request with NO identity.
-            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+            var afterFirstUser = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(afterFirstUser?.UserSessionId, "A subscribe made by a signed-in caller must bind the row to that caller's session, otherwise the rest of this test proves nothing.");
+            firstSessionId = afterFirstUser.UserSessionId!.Value;
 
-            var takeoverAttempt = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
-                new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "attacker-push-channel" },
-                TestContext.CancellationToken);
+            // A different account entirely, on the same device. IStorageService is registered per scope, so this scope
+            // carries its own bearer token.
+            await using (var secondUserScope = server.WebApp.Services.CreateAsyncScope())
+            {
+                await TestAccountUtils.CreateAndSignIn(server, secondUserScope, TestContext.CancellationToken);
 
-            takeoverAttempt.EnsureSuccessStatusCode(); // The endpoint is anonymous, so this legitimately succeeds - it just must not touch the owned row.
+                await secondUserScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                    .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "second-user-channel" }, TestContext.CancellationToken);
+            }
 
-            var afterTakeoverAttempt = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
-            Assert.IsNotNull(afterTakeoverAttempt, "The owned row must still exist.");
+            var afterSecondUser = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(afterSecondUser?.UserSessionId);
 
-            Assert.AreEqual(sessionIdBefore, afterTakeoverAttempt.UserSessionId,
-                "An anonymous caller supplying a known DeviceId detached the row from its owner's session. Every UserRelatedPush filters on `s.UserSession.UserId == user.Id`, so this silently stops that device receiving OTP, two-factor and reset-password notifications.");
+            Assert.AreNotEqual(firstSessionId, afterSecondUser.UserSessionId,
+                "The device's subscription must follow whoever is signed in on it now. Refusing this is what an ownership check would do, and it would leave the new user permanently without push on their own device.");
 
-            Assert.AreEqual(legitimatePushChannel, afterTakeoverAttempt.PushChannel,
-                "An anonymous caller repointed an owned subscription's push channel, which aims the app's own sender at a device of the caller's choosing.");
+            Assert.AreEqual("second-user-channel", afterSecondUser.PushChannel,
+                "Taking the row over must update the push channel too, otherwise the app keeps sending to a channel the device no longer listens on.");
 
             await using (var countScope = server.WebApp.Services.CreateAsyncScope())
             {
@@ -72,7 +88,7 @@ public partial class PushSubscriptionOwnershipTests
                 var rowCount = await dbContext.PushNotificationSubscriptions.CountAsync(s => s.DeviceId == deviceId, TestContext.CancellationToken);
 
                 Assert.AreEqual(1, rowCount,
-                    "Refusing the takeover must not fall through to an INSERT either: that would turn the same unauthenticated request into a way to grow the table one row at a time.");
+                    "One device, one row: DeviceId is unique, so a hand-over must re-point the existing row rather than insert a second one.");
             }
         }
         finally
@@ -81,6 +97,131 @@ public partial class PushSubscriptionOwnershipTests
             var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
         }
+    }
+
+
+    /// <summary>
+    /// The ownership rule is about the <b>user</b>, not about the session, and this is the flow that proves it: sign in,
+    /// subscribe, drop the tokens from local storage / the cookie without signing out, then sign in again on the same
+    /// device.
+    /// <para>
+    /// Clearing the tokens tells the server nothing, so the previous <c>UserSession</c> row is still there and the
+    /// device's subscription is still pointing at it - for up to <c>Identity:RefreshTokenExpiration</c>, until
+    /// <c>UserSessionsCleanupJobRunner</c> removes it. The new session then finds its own device's row owned by a
+    /// session id it does not recognise. Refusing that would break an ordinary sign-in on the shipped clients (the
+    /// same shape as a session that expired, or tokens cleared by the browser), which is why the check compares the
+    /// owning session's <c>UserId</c> rather than its <c>Id</c>.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public async Task SigningInAgainOnTheSameDevice_Should_RebindTheSubscriptionToTheNewSession()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-resignin-{Guid.NewGuid():N}";
+
+        try
+        {
+            string email;
+            Guid firstSessionId;
+
+            await using (var firstScope = server.WebApp.Services.CreateAsyncScope())
+            {
+                (email, _) = await TestAccountUtils.CreateAndSignIn(server, firstScope, TestContext.CancellationToken);
+
+                await firstScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                    .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-before" }, TestContext.CancellationToken);
+            }
+
+            var afterFirstSignIn = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(afterFirstSignIn?.UserSessionId, "The first subscribe should have bound the row to the first session.");
+            firstSessionId = afterFirstSignIn.UserSessionId!.Value;
+
+            // Step one of the real sequence, and the one that fails first: the tokens are gone, so the app reloads
+            // ANONYMOUS and AppClientCoordinator propagates that state before anything else - which calls Subscribe
+            // with no identity at all, for a device whose row is still bound to the surviving first session. A raw
+            // HttpClient because the DI one and the typed proxy both attach a bearer token through
+            // AuthDelegatingHandler, and the whole point here is a request carrying none.
+            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            {
+                var anonymousPropagation = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
+                    new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-anonymous" },
+                    TestContext.CancellationToken);
+
+                anonymousPropagation.EnsureSuccessStatusCode();
+            }
+
+            var afterAnonymousPropagation = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNull(afterAnonymousPropagation?.UserSessionId,
+                "The device is no longer signed in, so its own anonymous re-subscribe has to detach the row from the session whose tokens are gone. Refusing it - which an ownership check does - leaves the row pointing at a dead session and the device without push.");
+
+            // A brand-new scope is a brand-new (empty) token store - exactly what clearing local storage and the cookie
+            // leaves behind. Nothing signs the first session out, so its UserSession row survives on the server.
+            await using (var secondScope = server.WebApp.Services.CreateAsyncScope())
+            {
+                var identityController = secondScope.ServiceProvider.GetRequiredService<IIdentityController>();
+
+                await identityController.SendOtp(new() { Email = email }, null, TestContext.CancellationToken);
+
+                var captured = await server.WaitForCapturedEmail(email,
+                    capturedEmail => capturedEmail.Kind is CapturedEmailKind.Otp, TestContext.CancellationToken);
+
+                var tokens = await identityController.SignIn(new() { Email = email, Otp = captured.Token }, TestContext.CancellationToken);
+                await secondScope.ServiceProvider.GetRequiredService<AuthManager>().StoreTokens(tokens);
+
+                // This is the call the shipped client makes on the very first auth-state propagation after signing in.
+                await secondScope.ServiceProvider.GetRequiredService<IPushNotificationController>()
+                    .Subscribe(new() { DeviceId = deviceId, Platform = "fcmV1", PushChannel = "channel-after" }, TestContext.CancellationToken);
+            }
+
+            var afterSecondSignIn = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+
+            Assert.IsNotNull(afterSecondSignIn?.UserSessionId);
+            Assert.AreNotEqual(firstSessionId, afterSecondSignIn.UserSessionId,
+                "Signing in again on the same device must re-point that device's subscription at the new session, otherwise push keeps being addressed to a session whose tokens the user no longer has.");
+            Assert.AreEqual("channel-after", afterSecondSignIn.PushChannel, "The re-subscribe must update the push channel too.");
+
+            await using var countScope = server.WebApp.Services.CreateAsyncScope();
+            var dbContext = countScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            Assert.AreEqual(1, await dbContext.PushNotificationSubscriptions.CountAsync(s => s.DeviceId == deviceId, TestContext.CancellationToken),
+                "One device, one row - re-signing in must not accumulate a second one.");
+        }
+        finally
+        {
+            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// <c>PushChannel</c> is <c>[Required]</c> on the entity (a NOT NULL column) but optional on the DTO, and browsers
+    /// legitimately send the web push triple instead of a channel. So the platform decides which field is mandatory, and
+    /// the check has to live on the server: without it a body missing its own platform's field reaches SaveChanges and
+    /// comes back as a 500 logged at Critical - from an endpoint that is anonymous and, per BP-160, unthrottled. The
+    /// iOS / MacCatalyst clients produce exactly this body when the APNs token never arrives (they log and carry on).
+    /// </summary>
+    [TestMethod]
+    public async Task Subscribe_Should_RejectASubscriptionMissingItsPushChannel()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
+
+        // A device token platform with no token at all.
+        await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
+            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "apns" }, TestContext.CancellationToken));
+
+        // The browser derives its channel from Endpoint + P256dh + Auth, and VapidSubscription.FromParameters accepts
+        // nulls without complaining, so a partial triple would otherwise be stored as an undeliverable subscription.
+        await Assert.ThrowsExactlyAsync<BadRequestException>(() => pushNotificationController.Subscribe(
+            new() { DeviceId = $"push-nochannel-{Guid.NewGuid():N}", Platform = "browser", Endpoint = "https://push.example/endpoint" }, TestContext.CancellationToken));
     }
 
     /// <summary>
@@ -151,6 +292,92 @@ public partial class PushSubscriptionOwnershipTests
 
         Assert.IsTrue(deviceIdIndex.IsUnique,
             "Without uniqueness the same device can end up with several subscription rows, and every by-device lookup then picks an arbitrary one.");
+    }
+
+    /// <summary>
+    /// <c>Subscribe</c> runs on every auth-state propagation, i.e. on every page refresh, and the overwhelmingly common
+    /// call changes nothing at all - yet <c>RenewedOn</c> and <c>ExpirationTime</c> are assigned unconditionally, so
+    /// every one of those calls issues an UPDATE. Every visitor, every refresh, forever.
+    /// <para>
+    /// <b>Ignored on purpose.</b> The renewal throttle this pins was written and then removed by the maintainer
+    /// (2026-08-05, BP-252), so the test currently fails - and it is kept rather than deleted because it is the
+    /// executable form of the open finding. <b>What would unblock it:</b> deciding that an unchanged Subscribe need not
+    /// renew the window, i.e. letting the change tracker gate the write
+    /// (<c>if (dbContext.Entry(subscription).State is not EntityState.Unchanged || RenewedOn is older than N)</c>).
+    /// With no modified property left, <c>SaveChangesAsync</c> issues no command at all. Both windows this feeds are
+    /// measured in days - <c>RenewedOn</c> against <c>Identity:RefreshTokenExpiration</c> (14) and
+    /// <c>ExpirationTime</c> a month out - so an hour of staleness moves nothing. Verified failing for exactly that
+    /// reason, and passing with the throttle in place, before it was ignored.
+    /// </para>
+    /// <para>
+    /// It doubles as a guard on everything else the method assigns: <c>Tags</c> is rebuilt from the current culture on
+    /// every call and <c>dto.Patch</c> rewrites every mapped member, so if any of them ever started registering as
+    /// modified when the values are identical (an EF value-comparer change on the <c>string[]</c> primitive collection
+    /// would do it), that would show up here too.
+    /// </para>
+    /// </summary>
+    [TestMethod, Ignore("BP-252 is open: the renewal throttle was removed by the maintainer, so an unchanged Subscribe still writes a row on every page refresh. Un-ignore when the write is gated on the change tracker - see the remarks above.")]
+    public async Task RepeatingAnIdenticalSubscribe_Should_NotWriteToTheDatabase()
+    {
+        // RenewedOn is unix SECONDS, and two back-to-back calls land in the same second on the wall clock - so left on
+        // it, this test would pass whether or not the throttle exists. The fake clock is moved forward between calls by
+        // less than the renewal interval, which is the only way "it did not renew" means anything. It is seeded from
+        // now so bearer-token validation stays free of skew.
+        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
+
+        await using var server = new AppTestServer();
+
+        await server.Build(services =>
+        {
+            services.AddIntegrationApiOnlyTestsServices();
+            services.Replace(ServiceDescriptor.Singleton<TimeProvider>(fakeTimeProvider));
+        }).Start(TestContext.CancellationToken);
+
+        var deviceId = $"push-renewal-{Guid.NewGuid():N}";
+
+        try
+        {
+            using var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+            async Task Subscribe(string pushChannel)
+            {
+                var response = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
+                    new PushNotificationSubscriptionDto { DeviceId = deviceId, Platform = "fcmV1", PushChannel = pushChannel },
+                    TestContext.CancellationToken);
+
+                response.EnsureSuccessStatusCode();
+            }
+
+            await Subscribe("channel-1");
+            var afterFirst = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(afterFirst);
+
+            // Far enough for a wall-clock write to be visible in unix seconds, well inside MinimumRenewalInterval.
+            fakeTimeProvider.Advance(TimeSpan.FromMinutes(10));
+
+            await Subscribe("channel-1");
+            var afterIdenticalCall = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+
+            Assert.AreEqual(afterFirst.RenewedOn, afterIdenticalCall!.RenewedOn,
+                "A Subscribe call that changes nothing must not renew the window either, otherwise every page refresh of every visitor writes a row.");
+
+            // Non-vacuity: a call that DOES change something has to renew in the same write, or a device whose push
+            // channel rotates would sit with a stale window until it expires.
+            fakeTimeProvider.Advance(TimeSpan.FromMinutes(10));
+
+            await Subscribe("channel-2");
+            var afterRealChange = await ReadSubscription(server, deviceId, TestContext.CancellationToken);
+
+            Assert.AreEqual("channel-2", afterRealChange!.PushChannel, "The renewal must still update a changed push channel.");
+            Assert.IsGreaterThan(afterFirst.RenewedOn, afterRealChange.RenewedOn,
+                "A Subscribe call that changed the push channel must renew the window in the same write.");
+        }
+        finally
+        {
+            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
     }
 
     private static async Task<PushNotificationSubscription?> ReadSubscription(AppTestServer server, string deviceId, CancellationToken cancellationToken)
