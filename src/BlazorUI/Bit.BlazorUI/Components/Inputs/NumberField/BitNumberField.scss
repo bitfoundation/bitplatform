@@ -4,9 +4,9 @@
     display: flex;
     font-weight: 400;
     align-items: center;
-    font-size: spacing(5.125);
-    font-family: $tg-font-family;
+    font-size: spacing(1.5);
     column-gap: spacing(1.25);
+    font-family: $tg-font-family;
 
     &.bit-dis {
         .bit-nfl-lct {
