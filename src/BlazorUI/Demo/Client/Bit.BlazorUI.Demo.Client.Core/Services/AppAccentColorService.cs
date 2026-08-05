@@ -117,18 +117,23 @@ public partial class AppAccentColorService : IDisposable
 
         // The overlay is applied even when the prerender seed already put us on this accent: the
         // server painted it through a stylesheet rule, which the WebAssembly and Hybrid clients never
-        // receive - and which is about to be dropped below in any case.
-        if (stored is not null)
+        // receive - and which is about to be dropped below in any case. That last part is also why it
+        // is applied when neither store answered: the seed then stands on its own, and dropping the
+        // rule without replacing it would leave the page on the packaged palette while the swatches
+        // still mark the seeded color as active.
+        var accent = stored ?? ActiveAccent;
+
+        // Only a store can report a change here - matching the seed, or falling back to it, is what
+        // the swatches already rendered.
+        var changed = stored is not null && stored != ActiveAccent;
+
+        ActiveAccent = accent;
+
+        await ApplyToCurrentThemeAsync(accent);
+
+        if (changed)
         {
-            var changed = stored != ActiveAccent;
-            ActiveAccent = stored;
-
-            await ApplyToCurrentThemeAsync(stored);
-
-            if (changed)
-            {
-                AccentChanged?.Invoke(this, EventArgs.Empty);
-            }
+            AccentChanged?.Invoke(this, EventArgs.Empty);
         }
 
         // The server's first-paint copy has done its job, and the overlay just applied covers the
