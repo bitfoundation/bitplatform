@@ -81,6 +81,46 @@ public static class BitThemeSsr
     /// </remarks>
     public static string BuildRootThemeAttributes(string? persistedPreference, string? defaultTheme = null)
     {
+        return string.Join(' ', BuildRootThemeAttributePairs(persistedPreference, defaultTheme).Select(pair =>
+            // A bool marker carries no value (bit-theme-system), a token is emitted as name="value".
+            pair.Value is bool ? pair.Key : $"{pair.Key}=\"{pair.Value}\""));
+    }
+
+    /// <summary>
+    /// <see cref="BuildRootThemeAttributes(string?, string?)"/> as an attribute map, for splatting
+    /// onto the root element of a Razor host page: <c>&lt;html lang="en" @attributes="…"&gt;</c>.
+    /// </summary>
+    /// <remarks>
+    /// The string overload can only be interpolated into raw markup, which a <c>.razor</c> host
+    /// (<c>App.razor</c> in a Blazor Web App) cannot do for a tag it also has to close - emitting the
+    /// opening <c>&lt;html&gt;</c> as a <c>MarkupString</c> leaves the literal <c>&lt;/html&gt;</c>
+    /// unbalanced and fails to compile. Both overloads are built from the same resolution, so they
+    /// cannot drift apart.
+    /// <para>
+    /// Marker attributes carry <see langword="true"/> rather than a string, which is how Blazor
+    /// renders a valueless attribute; theme names are already normalized and validated (see the
+    /// remarks on <see cref="BuildRootThemeAttributes(string?, string?)"/>).
+    /// </para>
+    /// </remarks>
+    public static IReadOnlyDictionary<string, object> BuildRootThemeAttributeMap(string? persistedPreference, string? defaultTheme = null)
+    {
+        var pairs = BuildRootThemeAttributePairs(persistedPreference, defaultTheme);
+
+        var map = new Dictionary<string, object>(pairs.Count, StringComparer.Ordinal);
+        foreach (var (key, value) in pairs)
+        {
+            map[key] = value;
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// The single resolution both public overloads format: an ordered list so the string form keeps
+    /// emitting <c>bit-theme-system bit-theme-default="…"</c> in that order.
+    /// </summary>
+    private static List<KeyValuePair<string, object>> BuildRootThemeAttributePairs(string? persistedPreference, string? defaultTheme)
+    {
         var preference = NormalizeThemeToken(persistedPreference);
         var fallback = NormalizeThemeToken(defaultTheme);
 
@@ -89,23 +129,23 @@ public static class BitThemeSsr
         if (preference == BitThemePresets.System)
         {
             return fallback is null || fallback == BitThemePresets.System
-                ? BitThemeAttributeNames.ThemeSystem
-                : $"{BitThemeAttributeNames.ThemeSystem} {BitThemeAttributeNames.ThemeDefault}=\"{fallback}\"";
+                ? [new(BitThemeAttributeNames.ThemeSystem, true)]
+                : [new(BitThemeAttributeNames.ThemeSystem, true), new(BitThemeAttributeNames.ThemeDefault, fallback)];
         }
 
         // Concrete persisted preference → paint it directly (no flash).
         if (preference is not null)
         {
-            return $"{BitThemeAttributeNames.Theme}=\"{preference}\"";
+            return [new(BitThemeAttributeNames.Theme, preference)];
         }
 
         // No stored preference: use the configured default theme, or follow the OS if none.
         if (fallback is not null && fallback != BitThemePresets.System)
         {
-            return $"{BitThemeAttributeNames.Theme}=\"{fallback}\"";
+            return [new(BitThemeAttributeNames.Theme, fallback)];
         }
 
-        return BitThemeAttributeNames.ThemeSystem;
+        return [new(BitThemeAttributeNames.ThemeSystem, true)];
     }
 
     /// <summary>

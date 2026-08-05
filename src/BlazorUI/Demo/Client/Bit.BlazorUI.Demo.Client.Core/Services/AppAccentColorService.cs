@@ -4,7 +4,8 @@ namespace Bit.BlazorUI.Demo.Client.Core.Services;
 
 /// <summary>
 /// Owns the accent color the home page's "Make it yours" swatches pick: the applied theme overlay,
-/// the localStorage copy that survives a refresh, and the re-derivation a dark/light switch needs.
+/// the localStorage + cookie copies that survive a refresh, and the re-derivation a dark/light
+/// switch needs.
 /// </summary>
 /// <remarks>
 /// This lives above the home page because the accent applies to the whole app. A component that only
@@ -17,6 +18,24 @@ public partial class AppAccentColorService : IDisposable
 {
     // Prefixed so it cannot collide with the library's own bit-current-theme key.
     private const string StorageKey = "bit-blazorui-demo-accent";
+
+    /// <summary>
+    /// The cookie mirroring <see cref="StorageKey"/>. localStorage is unreachable while the server
+    /// prerenders, so the accent is written to a cookie as well and the server paints the accented
+    /// palette into the first response - see <see cref="BuildPrerenderCss"/>. Named after the
+    /// storage key so the two stores are recognizably one preference.
+    /// </summary>
+    public const string CookieName = StorageKey;
+
+    // ~400 days, the upper bound modern browsers clamp persistent cookies to. Matches what the
+    // library's own theme-preference cookie uses.
+    private const int CookieMaxAgeSeconds = 34560000;
+
+    /// <summary>
+    /// Id of the <c>&lt;style&gt;</c> element carrying <see cref="BuildPrerenderCss"/>, so
+    /// <see cref="InitializeAsync"/> can drop it once the client owns the overlay.
+    /// </summary>
+    public const string PrerenderStyleElementId = "app-prerender-accent";
 
     /// <summary>
     /// The swatches the home page offers, and the only values <see cref="ApplyAsync"/> honors: a
@@ -32,6 +51,9 @@ public partial class AppAccentColorService : IDisposable
         ("Teal", BitAccentColorPresets.Teal),
         ("Rose", BitAccentColorPresets.Rose),
     ];
+
+    /// <summary>Rendered <see cref="BuildPrerenderCss"/> output, keyed by accent hex. See its remarks.</summary>
+    private static readonly ConcurrentDictionary<string, string> _prerenderCss = new(StringComparer.Ordinal);
 
     [AutoInject] private IJSRuntime _js = default!;
     [AutoInject] private BitThemeManager _themeManager = default!;
@@ -50,8 +72,28 @@ public partial class AppAccentColorService : IDisposable
     public event EventHandler? AccentChanged;
 
     /// <summary>
+    /// Adopts the accent the server read from <see cref="CookieName"/>, so the prerendered markup
+    /// already marks the right swatch as active instead of blinking from Blue to the visitor's color
+    /// once the client comes up. Paints nothing: the matching palette is emitted into the same
+    /// response by <see cref="BuildPrerenderCss"/>. A missing or unrecognized value is ignored.
+    /// </summary>
+    public void SeedFromPrerender(string? hex)
+    {
+        // The interactive pass has already read the authoritative store; letting a (possibly stale)
+        // cascaded value overwrite it afterwards would undo a fresh pick.
+        if (_initialized) return;
+
+        var accent = NormalizeAccent(hex);
+        if (accent is null || accent == ActiveAccent) return;
+
+        ActiveAccent = accent;
+
+        AccentChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
     /// Restores the persisted accent, applies it, and starts tracking dark/light switches. Reading
-    /// localStorage needs interactivity, so callers have to wait for the first render; calling it
+    /// the stores needs interactivity, so callers have to wait for the first render; calling it
     /// during prerendering is a no-op that leaves the service ready to initialize on the retry.
     /// Safe to call repeatedly - only the first interactive call does the work.
     /// </summary>
@@ -66,15 +108,33 @@ public partial class AppAccentColorService : IDisposable
         // JS notifier registration, which can only succeed once the client is live.
         _themeNotifications.ThemeChanged += OnThemeChanged;
 
-        var stored = await _js.Invoke<string?>("localStorage.getItem", StorageKey);
-        if (stored is null || stored == ActiveAccent) return;
-        if (Presets.Any(p => p.Hex == stored) is false) return;
+        // localStorage first, cookie second: they are written together, so they only diverge when
+        // one of them is unavailable (localStorage throws in Safari private mode / blocked-storage
+        // setups, and a visitor can clear cookies alone). Either one on its own restores the accent.
+        var stored = NormalizeAccent(await _js.Invoke<string?>("localStorage.getItem", StorageKey))
+                  ?? NormalizeAccent(await _js.Invoke<string?>("getCookie", CookieName));
 
-        ActiveAccent = stored;
+        // The overlay is applied even when the prerender seed already put us on this accent: the
+        // server painted it through a stylesheet rule, which the WebAssembly and Hybrid clients never
+        // receive - and which is about to be dropped below in any case.
+        if (stored is not null)
+        {
+            var changed = stored != ActiveAccent;
+            ActiveAccent = stored;
 
-        await ApplyToCurrentThemeAsync(stored);
+            await ApplyToCurrentThemeAsync(stored);
 
-        AccentChanged?.Invoke(this, EventArgs.Empty);
+            if (changed)
+            {
+                AccentChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        // The server's first-paint copy has done its job, and the overlay just applied covers the
+        // same ground. Leaving it would make a later switch back to Blue - which only clears the
+        // overlay - look like it did nothing, because the rule would keep repainting the accent the
+        // page happened to load with. Removed after the apply so nothing paints unaccented in between.
+        await _js.InvokeVoid("removeElementById", PrerenderStyleElementId);
     }
 
     /// <summary>
@@ -89,9 +149,76 @@ public partial class AppAccentColorService : IDisposable
 
         await _js.InvokeVoid("localStorage.setItem", StorageKey, hex);
 
+        // Mirrored into a cookie so the next navigation's prerender can paint this accent server-side
+        // - localStorage is unreachable from there, which is what made the color flash on every load.
+        await _js.InvokeVoid("setCookie", CookieName, hex, CookieMaxAgeSeconds);
+
         await ApplyToCurrentThemeAsync(hex);
 
         AccentChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// The stylesheet the server emits so a prerendered page paints <paramref name="accentHex"/>
+    /// immediately, instead of the packaged palette that the client would then have to repaint.
+    /// Returns <see langword="null"/> when there is nothing to override - no stored accent, an
+    /// unrecognized one, or Blue, which is the packaged palette's own primary.
+    /// </summary>
+    /// <remarks>
+    /// Both schemes are emitted, each scoped to the <c>bit-theme</c> attribute that the library's
+    /// inline head script resolves before first paint. That keeps this independent of the theme
+    /// preference: the server does not have to know (and, while following the OS, cannot know)
+    /// whether the visitor lands on dark or light, and a later theme toggle is covered by the same
+    /// two rules.
+    /// <para>
+    /// The doubled <c>:root:root</c> is there for specificity, not for matching: the packaged
+    /// palette declares the same tokens at <c>:root[bit-theme=…]</c>, so an equal-specificity rule
+    /// would only win by coming later in the document and this would have to be emitted after every
+    /// stylesheet. Outranking it instead lets the block sit in <c>&lt;head&gt;</c>, where it is in
+    /// the CSSOM from the first byte of body.
+    /// </para>
+    /// </remarks>
+    public static string? BuildPrerenderCss(string? accentHex)
+    {
+        var hex = NormalizeAccent(accentHex);
+
+        if (hex is null || hex == BitAccentColorPresets.Blue) return null;
+
+        // Deriving a palette from a seed is real work (OKLCH conversions over ~280 tokens) and there
+        // are only six of them, so the rendered CSS is built once per accent rather than per request.
+        return _prerenderCss.GetOrAdd(hex, static hex =>
+        {
+            // The dark/light split matches the app's own [bit-theme$=dark] convention, so "fluent-dark"
+            // and any other dark preset land on the dark palette too.
+            return $":root:root[bit-theme$=dark]{{{Declarations(BitThemeFactory.CreateDarkThemeFromSeed(hex))}}}" +
+                   $":root:root:not([bit-theme$=dark]){{{Declarations(BitThemeFactory.CreateLightThemeFromSeed(hex))}}}";
+
+            static string Declarations(BitTheme theme)
+            {
+                return string.Concat(BitThemeUtilities.ToCssVariables(theme).Select(v => $"{v.Key}:{v.Value};"));
+            }
+        });
+    }
+
+    /// <summary>
+    /// Matches a value from any of the (attacker-editable) stores against <see cref="Presets"/>,
+    /// returning the canonical hex or <see langword="null"/>. Nothing outside the presets is ever
+    /// handed to <see cref="BitThemeFactory"/> or written into the document.
+    /// </summary>
+    private static string? NormalizeAccent(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+
+        var candidate = value.Trim();
+
+        foreach (var (_, hex) in Presets)
+        {
+            // Case-insensitive so a hand-edited "#8764b8" still resolves; the preset's own casing is
+            // returned, keeping ActiveAccent comparable by ordinal equality everywhere else.
+            if (string.Equals(hex, candidate, StringComparison.OrdinalIgnoreCase)) return hex;
+        }
+
+        return null;
     }
 
     private async Task ApplyToCurrentThemeAsync(string hex)

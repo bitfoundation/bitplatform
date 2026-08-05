@@ -26,18 +26,54 @@
     var renderMode = noPrerender
         ? (includeWasm ? AppRenderMode.NoPrerenderBlazorWebAssembly : AppRenderMode.NoPrerenderBlazorServer)
         : (includeWasm ? AppRenderMode.Current : AppRenderMode.BlazorServer);
+
+    // The theme the visitor picked, mirrored into a cookie by the client (bit-theme-persist-cookie
+    // below) because localStorage - where the client script keeps the same value - cannot be read
+    // from here. Without it every prerendered response painted a hardcoded dark, and anyone on light
+    // watched the whole page flip once the client came up.
+    var themePreference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
+    // Emits bit-theme="<name>" for a concrete choice, or the bit-theme-system marker when nothing is
+    // stored (or the visitor follows the OS), which the inline head script below resolves. Tampered
+    // values are rejected and treated as "nothing stored".
+    var rootThemeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(themePreference);
+    // Browser chrome color: matched to the theme when we know it, otherwise left at the dark default
+    // that app.ts corrects on boot (only a system-following visitor reaches that case). "Ends with
+    // dark" is the same rule app.ts and the app's own stylesheets use, so presets like fluent-dark
+    // are classified the same way everywhere.
+    var themeIsLight = rootThemeAttributes.TryGetValue(BitThemeAttributeNames.Theme, out var themeName)
+                       && themeName is string name
+                       && name.EndsWith("dark", StringComparison.Ordinal) is false;
+    var themeColor = themeIsLight ? "#ffffff" : "#0d1117";
+    // The accented palette, so a visitor who picked one of the "Make it yours" colors is not shown
+    // the packaged blue first. Null unless a non-default accent is stored - see BuildPrerenderCss.
+    var accentCss = AppAccentColorService.BuildPrerenderCss(HttpContext.Request.Cookies[AppAccentColorService.CookieName]);
 }
 
 <!DOCTYPE html>
-<!-- bit-theme-view-transition: theme toggles cross-fade via the View Transitions API
-     (skipped automatically on unsupported browsers / prefers-reduced-motion). -->
-<html lang="en" bit-theme="dark" bit-theme-view-transition>
+@* bit-theme-persist / bit-theme-persist-cookie: the client keeps the chosen theme in localStorage AND
+   in the cookie read above, which is what lets the server render the right theme in the first place.
+   bit-theme-view-transition: theme toggles cross-fade via the View Transitions API (skipped
+   automatically on unsupported browsers / prefers-reduced-motion). *@
+<html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
 
 <head>
+    @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie
+       before anything is painted. The attributes above are already correct for a visitor whose cookie
+       reached us, so this is what covers the rest - following the OS (which the server cannot read),
+       and a localStorage value newer than the cookie. *@
+    @((MarkupString)BitThemeSsr.InlineHeadScript)
+    @if (accentCss is not null)
+    {
+        @* Next to the theme bootstrap because it is the same job: get the palette right before the
+           first paint rather than repainting it on hydration. Outranks the packaged palette on
+           specificity, so it works from <head> regardless of where the stylesheets are (see
+           BuildPrerenderCss). The id is how the client drops it once it owns the overlay. *@
+        <style id="@AppAccentColorService.PrerenderStyleElementId">@((MarkupString)accentCss)</style>
+    }
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color" content="#0d1117" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
+    <meta name="theme-color" content="@themeColor" /><!-- Kept as a single tag: app.ts (BitTheme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- No static <title> here: the per-page title is emitted through <HeadOutlet> (PageOutlet's <PageTitle>),

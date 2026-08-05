@@ -767,6 +767,16 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <br />
 
             <BitText>
+                In a Blazor Web App the root document is <BitTag>App.razor</BitTag>, and a <BitTag>MarkupString</BitTag> cannot open a tag that the same file has to close. Use <BitTag>BuildRootThemeAttributeMap</BitTag> there and splat it &mdash; it resolves identically, marker attributes included:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="razor">&lt;html lang="en" @@attributes="BitThemeSsr.BuildRootThemeAttributeMap(preference)" bit-theme-persist bit-theme-persist-cookie&gt;</CodeBox>
+
+            <br />
+
+            <BitText>
                 With <BitTag>bit-theme-persist-cookie</BitTag> on <BitTag>&lt;html&gt;</BitTag>, the runtime script mirrors every theme change into the <BitTag>bit-theme-preference</BitTag> cookie automatically, keeping the client (<BitTag>localStorage</BitTag>) and server (cookie) stores in sync &mdash; no manual <BitTag>BitThemeNotifications.ThemeChanged</BitTag> subscription is needed for that.
             </BitText>
         </BitCard>
