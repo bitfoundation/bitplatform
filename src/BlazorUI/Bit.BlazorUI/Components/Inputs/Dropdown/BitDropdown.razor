@@ -75,20 +75,30 @@
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-drp-lbl @Classes?.Label" id="@_labelId">
+        @* A div with a combobox role is not a labelable element, so the label cannot be tied to it with
+           a for attribute; the click is forwarded by hand to keep the behavior of a native label. *@
+        <label @onclick="HandleOnLabelClick"
+               id="@_labelId"
+               style="@Styles?.Label"
+               class="bit-drp-lbl @Classes?.Label">
             @Label
         </label>
     }
 
-    <div @ref="_dropdownWrapperRef"
+    @* The combobox is the interactive element of this input, so it is the one InputElement points at:
+       the inherited FocusAsync of BitInputBase then focuses what a user would focus by hand. *@
+    <div @ref="InputElement"
          @onclick="HandleOnClick"
          @onkeydown="HandleOnTriggerKeyDown"
+         @onfocusin="HandleOnFocusIn"
+         @onfocusout="HandleOnFocusOut"
          title="@Title"
          role="combobox"
          id="@_dropdownId"
          style="@Styles?.Container"
          class="bit-drp-wrp @Classes?.Container"
-         tabindex=@(IsEnabled ? 0 : -1)
+         autofocus="@AutoFocus"
+         tabindex="@(IsEnabled ? (TabIndex ?? "0") : "-1")"
          aria-haspopup="listbox"
          aria-required="@(Required ? "true" : null)"
          aria-readonly="@(ReadOnly ? "true" : null)"
@@ -135,7 +145,7 @@
                                     type="button"
                                     style="@Styles?.ChipsRemoveButton"
                                     class="bit-drp-crb @Classes?.ChipsRemoveButton"
-                                    aria-label="@($"Remove {GetText(item)}")">
+                                    aria-label="@GetChipsRemoveButtonAriaLabel(item)">
                                 <i aria-hidden="true" style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" />
                             </button>
                         }
@@ -144,7 +154,13 @@
 
                 @if (GetOverflowItemsCount() > 0)
                 {
-                    <span style="@Styles?.OverflowChip" class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip">
+                    @* The chip only shows how many selections it stands for. The ones it hides are named
+                       in its title for the pointer, and take its place in the accessible name so that
+                       the combobox (which is named after this container) still reports them all. *@
+                    <span style="@Styles?.OverflowChip"
+                          class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
+                          title="@GetOverflowItemsText()"
+                          aria-label="@GetOverflowItemsText()">
                         @GetOverflowText()
                     </span>
                 }
@@ -201,7 +217,8 @@
                keys keep operating the dropdown. *@
             <button @onclick="HandleOnClearClick" @onclick:stopPropagation
                     type="button"
-                    aria-label="Clear selection"
+                    title="@(ClearButtonAriaLabel ?? "Clear selection")"
+                    aria-label="@(ClearButtonAriaLabel ?? "Clear selection")"
                     style="@Styles?.ClearButton"
                     class="bit-drp-icn bit-drp-clr @Classes?.ClearButton">
                 <i aria-hidden="true" class="@clearButtonIconCss" />
@@ -238,8 +255,16 @@
             </span>
         }
     </div>
-    @* Mirrors the selection into a native control so the value takes part in a plain HTML form post. *@
-    <select @attributes="InputHtmlAttributes" class="bit-input-hidden" multiple="@MultiSelect">
+    @* Mirrors the selection into a native control so the value takes part in a plain HTML form post.
+       It duplicates the whole selection, so it is kept out of the accessibility tree (and out of the
+       tab order, which aria-hidden requires) to stop a screen reader from reading it a second time. *@
+    <select @attributes="InputHtmlAttributes"
+            name="@Name"
+            tabindex="-1"
+            aria-hidden="true"
+            class="bit-input-hidden"
+            multiple="@MultiSelect"
+            disabled="@(IsEnabled is false)">
         @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
@@ -279,8 +304,8 @@
 
             <button @onclick="CloseCallout"
                     type="button"
-                    title="Close"
-                    aria-label="Close"
+                    title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                     style="@Styles?.ResponsiveCloseButton"
                     class="bit-drp-cls @Classes?.ResponsiveCloseButton">
                 <span>
@@ -293,7 +318,7 @@
 
     @if (CalloutHeaderTemplate is not null)
     {
-        <div id="@_headerId">@CalloutHeaderTemplate</div>
+        <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">@CalloutHeaderTemplate</div>
     }
 
     @if (ShowSearchBox && Combo is false)
@@ -311,7 +336,7 @@
                    type="text"
                    role="searchbox"
                    value="@_searchText"
-                   aria-label="Search text"
+                   aria-label="@(SearchBoxAriaLabel ?? "Search text")"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
                    class="bit-drp-sin @Classes?.SearchBoxInput" />
@@ -324,7 +349,8 @@
                             type="button"
                             style="@Styles?.SearchBoxClearButton"
                             class="bit-drp-sbc @Classes?.SearchBoxClearButton"
-                            aria-label="Clear text"
+                            title="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
+                            aria-label="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
                             disabled="@(_searchText.HasNoValue())">
                         <span>
                             <i aria-hidden="true"
@@ -356,7 +382,8 @@
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
-                    aria-label="Add"
+                    title="@(ComboBoxAddButtonAriaLabel ?? "Add")"
+                    aria-label="@(ComboBoxAddButtonAriaLabel ?? "Add")"
                     style="@Styles?.ResponsiveComboAddButton"
                     class="bit-drp-icn bit-drp-cai @Classes?.ResponsiveComboAddButton">
                 <i aria-hidden="true" class="@comboBoxAddButtonIconCss" />
@@ -374,9 +401,11 @@
         var selectAllAriaChecked = allSelected ? "true" : anySelected ? "mixed" : "false";
         <div style="@Styles?.SelectAllContainer"
              class="@selectAllClasses @Classes?.SelectAllContainer">
+            @* Reached with the arrow keys like the options below it, so it stays out of the tab order too. *@
             <button @onclick="HandleOnSelectAllClick"
                     type="button"
                     role="checkbox"
+                    tabindex="-1"
                     style="@Styles?.SelectAllButton"
                     class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
                     disabled="@(IsEnabled is false || ReadOnly)"
@@ -465,7 +494,7 @@
 
     @if (CalloutFooterTemplate is not null)
     {
-        <div id="@_footerId">@CalloutFooterTemplate</div>
+        <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">@CalloutFooterTemplate</div>
     }
 
     @* A search silently changes the length of a list a screen reader user cannot see, so the new

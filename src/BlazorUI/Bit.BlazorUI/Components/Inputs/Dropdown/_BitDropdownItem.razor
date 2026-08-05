@@ -5,6 +5,19 @@
 @{
     var itemType = Dropdown.GetItemType(Item);
     var id = Dropdown.GetId(Item);
+
+    // The wrapper of a header carries a class of its own because it, and not the header element inside
+    // it, is the direct child of the scroll container, which is what a sticky header has to be to stick.
+    var wrapperClass = itemType == BitDropdownItemType.Header
+                        ? $"bit-drp-ihw {Dropdown.GetClass(Item)}".TrimEnd()
+                        : Dropdown.GetClass(Item);
+
+    // A header names the items that follow it, but a flat listbox cannot nest them inside it, so the
+    // header is referenced as the description of each of its items instead: a screen reader then reads
+    // "Apple, option, 2 of 8, Fruits" rather than leaving the grouping to what is only visible. The id
+    // that makes the reference possible is generated for the headers that do not carry one themselves.
+    var headerId = itemType == BitDropdownItemType.Header ? Dropdown.GetItemHeaderId(Item) : id;
+    var groupId = itemType == BitDropdownItemType.Normal ? Dropdown.GetItemGroupId(Item) : null;
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
@@ -22,7 +35,9 @@
 
 @* The wrappers carry the per-item style and layout only; marking them presentational keeps the option
    elements as the direct children of the listbox for assistive technologies. *@
-<div role="presentation" style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
+<div role="presentation"
+     style="@Dropdown.GetStyle(Item)"
+     class="@wrapperClass">
     @if (itemType == BitDropdownItemType.Header)
     {
         @if (Dropdown.HeaderTemplate is not null)
@@ -31,7 +46,7 @@
         }
         else
         {
-            <div id="@id"
+            <div id="@headerId"
                  style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
                  class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
                 @text
@@ -45,10 +60,13 @@
             <div role="presentation"
                  style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
                  class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
+                @* The options are navigated with the arrow keys and never with Tab (which closes the
+                   callout), so they stay out of the tab order like the options of a listbox should. *@
                 <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
                         id="@id"
                         type="button"
                         role="option"
+                        tabindex="-1"
                         title="@Dropdown.GetTitle(Item)"
                         disabled=@isDisabled
                         style="@Dropdown.Styles?.ItemButton"
@@ -57,7 +75,8 @@
                         aria-setsize="@Dropdown.GetTotalItems()"
                         aria-disabled="@(isDisabled ? "true" : null)"
                         aria-selected="@(isSelected ? "true" : "false")"
-                        aria-posinset="@Dropdown.GetItemPosInSet(Item)">
+                        aria-posinset="@Dropdown.GetItemPosInSet(Item)"
+                        aria-describedby="@groupId">
                     <div style="@Dropdown.Styles?.ItemCheckBox"
                          class="bit-drp-chb @Dropdown.Classes?.ItemCheckBox">
                         <i aria-hidden="true"
@@ -100,15 +119,16 @@
                     type="button"
                     role="option"
                     title="@Dropdown.GetTitle(Item)"
+                    tabindex="-1"
                     disabled=@isDisabled
-                    tabindex="@(isDisabled ? -1 : 0)"
                     style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
                     class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
                     aria-disabled="@(isDisabled ? "true" : null)"
                     aria-selected="@(isSelected ? "true" : "false")"
-                    aria-posinset="@Dropdown.GetItemPosInSet(Item)">
+                    aria-posinset="@Dropdown.GetItemPosInSet(Item)"
+                    aria-describedby="@groupId">
                 @if (Dropdown.ItemTemplate is not null)
                 {
                     @Dropdown.ItemTemplate(Item)

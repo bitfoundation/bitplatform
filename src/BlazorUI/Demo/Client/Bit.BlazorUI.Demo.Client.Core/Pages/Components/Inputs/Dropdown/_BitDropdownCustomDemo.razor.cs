@@ -160,6 +160,50 @@ public partial class _BitDropdownCustomDemo
 
     private readonly List<Product> emptyCustoms = [];
 
+    private List<Product> GetGroupedCustoms() =>
+    [
+        new() { Text = "Fruits", Type = BitDropdownItemType.Header },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { Text = "Mango", Value = "f-man" },
+        new() { Text = "Peach", Value = "f-pea" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Vegetables", Type = BitDropdownItemType.Header },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" },
+        new() { Text = "Potato", Value = "v-pot" },
+        new() { Text = "Tomato", Value = "v-tom" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Grains", Type = BitDropdownItemType.Header },
+        new() { Text = "Barley", Value = "g-bar" },
+        new() { Text = "Oat", Value = "g-oat" },
+        new() { Text = "Rice", Value = "g-ric" },
+        new() { Text = "Wheat", Value = "g-whe" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Nuts", Type = BitDropdownItemType.Header },
+        new() { Text = "Almond", Value = "n-alm" },
+        new() { Text = "Cashew", Value = "n-cas" },
+        new() { Text = "Walnut", Value = "n-wal" }
+    ];
+
+    private List<Product> GetLocalizedCustoms() =>
+    [
+        new() { Text = "Früchte", Type = BitDropdownItemType.Header },
+        new() { Text = "Apfel", Value = "f-app" },
+        new() { Text = "Banane", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Traube", Value = "f-gra" },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Text = "Gemüse", Type = BitDropdownItemType.Header },
+        new() { Text = "Brokkoli", Value = "v-bro" },
+        new() { Text = "Karotte", Value = "v-car" }
+    ];
+
+    private IEnumerable<string?> localizationValues = ["f-app", "f-ban", "v-bro"];
+
     private IEnumerable<string> selectAllValues = [];
     private IEnumerable<string> maxSelectedValues = [];
 

@@ -702,6 +702,16 @@
     max-height: spacing(88.875);
 }
 
+// The wrapper is the direct child of the scroll container, so it is the element that can stick; the
+// header itself has a transparent background, which the wrapper has to make opaque or the items would
+// scroll through it. The stacking context keeps it above the items that pass underneath.
+.bit-drp-sth .bit-drp-ihw {
+    top: 0;
+    z-index: 1;
+    position: sticky;
+    background-color: $clr-bg-pri;
+}
+
 .bit-drp-ihd {
     width: 100%;
     color: var(--bit-drp-clr);

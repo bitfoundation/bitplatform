@@ -4,6 +4,15 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
 {
     private bool _disposed;
 
+    // The values the parent's caches were last built from. They start at the defaults of the
+    // parameters below, so the very first parameter set of an option that actually carries data
+    // still reports the change that registers it with those caches.
+    private string? _lastId;
+    private string? _lastText;
+    private TValue? _lastValue;
+    private bool _lastIsHidden;
+    private BitDropdownItemType _lastItemType = BitDropdownItemType.Normal;
+
     [CascadingParameter] protected BitDropdown<BitDropdownOption<TValue>, TValue> Parent { get; set; } = default!;
 
 
@@ -101,9 +110,25 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
 
     protected override void OnParametersSet()
     {
-        // The parent caches search results keyed on the option instances; when this option's own
-        // parameters change (e.g. Text) the parent must drop that cache so the new data is searched.
-        Parent?.NotifyOptionParametersChanged();
+        // The parent caches search results, item positions and group ids keyed on the option instances;
+        // when this option's own parameters change the parent must drop those caches so the new data is
+        // searched and counted. Only the parameters those caches are actually derived from are compared,
+        // so a parent re-render that leaves every option as it was does not throw the caches away - and
+        // with them the search, which may be a user-provided function over the whole set of options.
+        if (_lastId != Id ||
+            _lastText != Text ||
+            _lastItemType != ItemType ||
+            _lastIsHidden != IsHidden ||
+            EqualityComparer<TValue>.Default.Equals(_lastValue, Value) is false)
+        {
+            _lastId = Id;
+            _lastText = Text;
+            _lastValue = Value;
+            _lastItemType = ItemType;
+            _lastIsHidden = IsHidden;
+
+            Parent?.NotifyOptionParametersChanged();
+        }
 
         base.OnParametersSet();
     }

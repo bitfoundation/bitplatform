@@ -15,6 +15,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives the focus to the dropdown as soon as it is rendered.",
+        },
+        new()
+        {
             Name = "AutoFocusSearchBox",
             Type = "bool",
             DefaultValue = "false",
@@ -87,6 +94,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ChipsRemoveButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the accessible name of the remove button of a chip, which receives the text of the item the chip stands for, for example \"Remove {0}\". Defaults to the English message.",
+        },
+        new()
+        {
             Name = "ChipsRemoveIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -121,6 +135,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ClearButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name (and the tooltip) of the clear button of the dropdown. Defaults to the English message.",
+        },
+        new()
+        {
             Name = "ClearButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -141,6 +162,13 @@ public partial class BitDropdownDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Activates the ComboBox feature in BitDropDown component.",
+        },
+        new()
+        {
+            Name = "ComboBoxAddButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name (and the tooltip) of the add button in the responsive ComboBox mode. Defaults to the English message.",
         },
         new()
         {
@@ -298,7 +326,7 @@ public partial class BitDropdownDemo
             Name = "ItemsProvider",
             Type = "BitDropdownItemsProvider<TItem>?",
             DefaultValue = "null",
-            Description = "The function providing items to the list for virtualization.",
+            Description = "The function providing items to the list for virtualization. It loads the items on demand, in the windows the user actually scrolls to, and receives the current search text so the filtering happens at the source instead of over an already loaded list. It requires Virtualize to be enabled, which is what requests the windows.",
         },
         new()
         {
@@ -433,6 +461,18 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "The callback that is called when the dropdown (or any element inside it, like the ComboBox input) receives the focus.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "The callback that is called when the dropdown (or any element inside it, like the ComboBox input) loses the focus.",
+        },
+        new()
+        {
             Name = "OnOpen",
             Type = "EventCallback",
             Description = "The callback that is called when the callout gets opened.",
@@ -527,6 +567,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ResponsiveCloseButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name (and the tooltip) of the close button in the responsive mode callout. Defaults to the English message.",
+        },
+        new()
+        {
             Name = "ResponsiveCloseIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -540,6 +587,20 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The icon name of the close button in the responsive mode callout from the Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "SearchBoxAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the SearchBox input. Defaults to the English message.",
+        },
+        new()
+        {
+            Name = "SearchBoxClearButtonAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name (and the tooltip) of the clear button of the SearchBox. Defaults to the English message.",
         },
         new()
         {
@@ -646,6 +707,13 @@ public partial class BitDropdownDemo
             Description = "The size of the dropdown.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "StickyHeaders",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the header of a group pinned to the top of the item list while its items are scrolled past, so a long grouped list never leaves the user looking at items whose group has scrolled out of view.",
         },
         new()
         {
@@ -1198,6 +1266,20 @@ public partial class BitDropdownDemo
                },
                new()
                {
+                   Name = "CalloutHeader",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the callout header template of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "CalloutFooter",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the container of the callout footer template of the BitDropdown."
+               },
+               new()
+               {
                    Name = "ResponsiveLabelContainer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1705,6 +1787,30 @@ public partial class BitDropdownDemo
             Name = "UnselectItem",
             Type = "Task UnselectItem(TItem? item)",
             Description = "Unselects the given item: removes it from the selection in multi select mode and clears the selection in single select mode. Items that are not selected are ignored.",
+        },
+        new()
+        {
+            Name = "RefreshItemsAsync",
+            Type = "Task RefreshItemsAsync()",
+            Description = "Discards the items loaded so far and asks the ItemsProvider for them again, which is what makes a change outside of the dropdown (a filter of the page, a record added elsewhere) reach a list the dropdown only ever loads on demand. It does nothing without an ItemsProvider, where the Items collection is the source of truth and is re-read on its own.",
+        },
+        new()
+        {
+            Name = "AssignIsOpen",
+            Type = "Task<bool> AssignIsOpen(bool value)",
+            Description = "Opens or closes the callout programmatically, without having to bind the IsOpen parameter. It returns false when the change was refused, which is what a one-way bound IsOpen does.",
+        },
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference to the combobox element of the dropdown, which is the element the user focuses and operates the component with.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "ValueTask FocusAsync(bool preventScroll = false)",
+            Description = "Gives focus to the combobox element of the dropdown.",
         },
         new()
         {

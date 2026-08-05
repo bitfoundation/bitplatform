@@ -33,6 +33,48 @@ public partial class _BitDropdownItemDemo
         new() { Text = "Item f", Value = "F", Data = new DropdownItemData { IconName = "Running" } }
     ];
 
+    private List<BitDropdownItem<string>> GetGroupedItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Grape", Value = "f-gra" },
+        new() { Text = "Mango", Value = "f-man" },
+        new() { Text = "Peach", Value = "f-pea" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Broccoli", Value = "v-bro" },
+        new() { Text = "Carrot", Value = "v-car" },
+        new() { Text = "Lettuce", Value = "v-let" },
+        new() { Text = "Potato", Value = "v-pot" },
+        new() { Text = "Tomato", Value = "v-tom" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Grains" },
+        new() { Text = "Barley", Value = "g-bar" },
+        new() { Text = "Oat", Value = "g-oat" },
+        new() { Text = "Rice", Value = "g-ric" },
+        new() { Text = "Wheat", Value = "g-whe" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Nuts" },
+        new() { Text = "Almond", Value = "n-alm" },
+        new() { Text = "Cashew", Value = "n-cas" },
+        new() { Text = "Walnut", Value = "n-wal" }
+    ];
+
+    private List<BitDropdownItem<string>> GetLocalizedItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Früchte" },
+        new() { Text = "Apfel", Value = "f-app" },
+        new() { Text = "Banane", Value = "f-ban" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Traube", Value = "f-gra" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Gemüse" },
+        new() { Text = "Brokkoli", Value = "v-bro" },
+        new() { Text = "Karotte", Value = "v-car" }
+    ];
+
     private ICollection<BitDropdownItem<string>>? virtualizeItems1;
     private ICollection<BitDropdownItem<string>>? virtualizeItems2;
 
@@ -124,6 +166,8 @@ public partial class _BitDropdownItemDemo
 
 
     private readonly List<BitDropdownItem<string>> emptyItems = [];
+
+    private IEnumerable<string?> localizationValues = ["f-app", "f-ban", "v-bro"];
 
     private IEnumerable<string?> selectAllValues = [];
     private IEnumerable<string?> maxSelectedValues = [];

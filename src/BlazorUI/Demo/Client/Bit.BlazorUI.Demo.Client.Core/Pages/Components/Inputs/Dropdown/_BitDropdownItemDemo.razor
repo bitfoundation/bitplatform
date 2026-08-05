@@ -7,6 +7,8 @@
         its callout can still be browsed &mdash; only changing the selection is blocked, and every control that would
         change it (the clear button, the chip remove buttons) is hidden accordingly.
         The <b>Title</b> parameter adds the tooltip shown while the pointer rests on the dropdown.
+        Clicking the <b>Label</b> moves the focus to the dropdown, and the <b>Name</b> parameter names the
+        hidden native select that mirrors the selection, so the value also travels in a plain HTML form post.
     </div>
     <br /><br />
     <div class="example-content">
@@ -59,7 +61,35 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Prefix & Suffix" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+<DemoExample Title="Grouping" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+    <div>
+        The <b>ItemType</b> of an item decides what it is in the list: a <b>Normal</b> item is a selectable option, a
+        <b>Header</b> item names the items that follow it, and a <b>Divider</b> item draws a line between them without
+        ending the group. Headers and dividers are not options, so they are skipped by the keyboard navigation and the
+        typeahead, they are never matched by a search, and the select all item ignores them. The grouping is not only
+        visual: every option points at the header that names it, so a screen reader reads
+        "Broccoli, option, 5 of 7, Vegetables" instead of leaving the user to infer the group from a heading they
+        cannot see. Headers without an <b>Id</b> of their own are given a generated one for that purpose.
+        The <b>StickyHeaders</b> parameter pins the header of a group to the top of the list while its items are
+        scrolled past, so a long grouped list never leaves the user looking at items whose group has scrolled away.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Grouped items"
+                     Items="GetGroupedItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
+        <br /><br />
+        <BitDropdown Label="StickyHeaders"
+                     StickyHeaders
+                     MultiSelect
+                     Items="GetGroupedItems()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select items" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Prefix & Suffix" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
     <div>
         The <b>Prefix</b> and <b>Suffix</b> parameters put fixed text before and after the selected value &mdash; a
         unit, a currency, a category &mdash; and <b>PrefixTemplate</b> and <b>SuffixTemplate</b> replace them with any
@@ -114,7 +144,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+<DemoExample Title="FitWidth" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
     <div>
         The <b>FitWidth</b> parameter makes the dropdown only as wide as its content instead of stretching to the full
         width of its container, which suits toolbars and inline filters where a full-width control would look out of
@@ -135,7 +165,7 @@
                  DefaultValue="@string.Empty" />
 </DemoExample>
 
-<DemoExample Title="NoBorder & Transparent" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+<DemoExample Title="NoBorder & Transparent" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
     <div>
         The <b>NoBorder</b> parameter removes the border of the dropdown and <b>Transparent</b> removes its background,
         so the control can sit on a colored or image surface without cutting a box out of it. They are independent and
@@ -163,7 +193,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Responsive" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
     <div>
         When the <b>Responsive</b> parameter is true, the callout turns into a side panel on small screens instead of a
         floating list, making long item lists easier to use on mobile devices. The panel carries the label of the
@@ -180,7 +210,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Drop direction" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+<DemoExample Title="Drop direction" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
     <div>
         The <b>DropDirection</b> parameter determines which directions the callout is allowed to open in. <b>All</b>
         picks whichever side fits best in the viewport, while <b>TopAndBottom</b> (the default) restricts it to opening
@@ -204,7 +234,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Clear button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+<DemoExample Title="Clear button" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
     <div>
         The <b>ShowClearButton</b> parameter adds a button that clears the current selection whenever the dropdown has
         a value, in both single and multi select modes. Clearing raises the usual value change events, plus the
@@ -242,7 +272,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="SearchBox" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+<DemoExample Title="SearchBox" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
     <div>
         The <b>ShowSearchBox</b> parameter adds a search input at the top of the callout to filter the items, and
         <b>SearchBoxPlaceholder</b> sets its placeholder. By default an item matches when its text contains the typed
@@ -294,7 +324,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Search options" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Search options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
         Three parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
         is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
@@ -343,7 +373,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Immediate search" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
+<DemoExample Title="Immediate search" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
         By default the search box raises its search when the input is committed (on the change event). Enabling
         <b>Immediate</b> makes it search as you type (on the input event) instead. Because that can mean a request per
@@ -385,7 +415,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Validation" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
     <div>
         BitDropdown is a regular form input: inside an <b>EditForm</b> it takes part in data annotations validation,
         turns red and reports itself as invalid to assistive technologies when its field has an error, and renders a
@@ -428,7 +458,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Customization" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
+<DemoExample Title="Customization" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
     <div>
         Nearly every part of the dropdown can be replaced with your own content. <b>ItemTemplate</b> and
         <b>HeaderTemplate</b> render the normal items and the group headers of the callout, <b>TextTemplate</b> renders
@@ -524,7 +554,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Binding" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
         Every piece of the dropdown's state can be bound or observed. The selection is two-way bound over <b>Value</b>
         in single select mode and <b>Values</b> in multi select mode, or left uncontrolled with <b>DefaultValue</b> and
@@ -620,7 +650,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="ComboBox" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
     <div>
         The <b>Combo</b> parameter turns the dropdown into a ComboBox: an editable input renders in place of the selected
         text and filters the items as you type, so the trigger doubles as the search box. <b>Enter</b> selects the item
@@ -651,7 +681,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Chips" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Chips" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
         When the <b>Chips</b> parameter is true, the selected items render as chips inside the dropdown instead of one
         joined text, each with its own remove button that is reachable with the keyboard and announced with the text of
@@ -680,7 +710,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Selection display" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Selection display" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div>
         A multi select dropdown that lists every selected item quickly runs out of room. <b>MaxDisplayedItems</b> caps
         how many of them the closed dropdown shows: with <b>Chips</b> the extra ones collapse into an overflow chip
@@ -739,7 +769,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic ComboBox" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+<DemoExample Title="Dynamic ComboBox" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
     <div>
         When the <b>Dynamic</b> parameter is true, a text typed into the ComboBox that matches no existing item can be
         added as a new one, which is what makes free-form values (tags, e-mail recipients, ad-hoc categories) possible.
@@ -791,7 +821,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Keyboard navigation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="Keyboard navigation" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div>
         The dropdown is fully operable with the keyboard, following the ARIA authoring practices for a combobox:
         <b>Enter</b>, <b>Space</b> and the arrow keys open the callout and put the focus on the selected item (or the
@@ -806,7 +836,11 @@
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
         resets after a short pause. Disabled and hidden items are skipped throughout. In virtualize mode only the
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
-        match against.
+        match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
+        reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
+        In ComboBox mode the keys that belong to the typed text &mdash; the printable characters, <b>Backspace</b>,
+        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> &mdash; return the focus to the input and act on it
+        there, so arrowing into the list never strands the user away from the term they are typing.
     </div>
     <br />
     <div class="example-content">
@@ -823,7 +857,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Select all" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Select all" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
     <div>
         When the <b>ShowSelectAll</b> parameter is true, a select all item renders above the item list of a multi select
         dropdown. It selects everything with one click and clears everything with the next, and its check box shows an
@@ -858,7 +892,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Selection limit" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+<DemoExample Title="Selection limit" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
     <div>
         The <b>MaxSelectedItems</b> parameter limits how many items can be selected in the multi select dropdown. Once
         the limit is reached the unselected items are disabled rather than silently refusing the click, so the boundary
@@ -878,7 +912,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Empty state" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="Empty state" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
     <div>
         When there is no item to show, the callout renders a message instead of an empty list. There are two distinct
         cases and each gets its own text: <b>EmptyText</b> and <b>EmptyTemplate</b> cover a list that has nothing in it
@@ -943,7 +977,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Loading" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="Loading" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
     <div>
         The <b>IsLoading</b> parameter reports that the items are still on their way: a spinner replaces the caret
         down element and the callout shows a loading indicator in place of the item list, while the dropdown itself
@@ -990,7 +1024,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Virtualization" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="Virtualization" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
     <div>
         The <b>Virtualize</b> parameter renders only the items that are currently visible instead of the whole list,
         which keeps the callout fast with thousands of items; <b>ItemSize</b> tells it how tall an item is and
@@ -1061,7 +1095,59 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Localization" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+    <div>
+        Every piece of text the dropdown produces on its own is a parameter, so nothing has to stay in English in a
+        localized app. <b>Placeholder</b>, <b>Label</b> and <b>SearchBoxPlaceholder</b> cover what is always visible;
+        <b>SelectAllText</b>, <b>EmptyText</b>, <b>NoResultsText</b> and <b>LoadingText</b> cover the states of the
+        callout; and the composite formats <b>SelectedItemsTextFormat</b>, <b>OverflowTextFormat</b> and
+        <b>SearchResultsText</b> cover the texts built from a count, each receiving that count as <b>{0}</b>.
+        The strings only a screen reader ever reads are parameters too, so a localized dropdown does not fall back to
+        English the moment it is used without sight: <b>ChipsRemoveButtonAriaLabel</b> (a composite format that
+        receives the text of the item its chip stands for), <b>ClearButtonAriaLabel</b>, <b>SearchBoxAriaLabel</b>,
+        <b>SearchBoxClearButtonAriaLabel</b>, <b>ResponsiveCloseButtonAriaLabel</b> and
+        <b>ComboBoxAddButtonAriaLabel</b>.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="localizationValues"
+                     Chips
+                     MultiSelect
+                     ShowSelectAll
+                     ShowSearchBox
+                     ShowClearButton
+                     MaxDisplayedItems="2"
+                     Label="Zutaten"
+                     Items="GetLocalizedItems()"
+                     Placeholder="Zutaten auswählen"
+                     SearchBoxPlaceholder="Suchen"
+                     SelectAllText="Alle auswählen"
+                     NoResultsText="Keine Treffer gefunden"
+                     OverflowTextFormat="und {0} weitere"
+                     SearchResultsText="{0} Treffer verfügbar"
+                     ClearButtonAriaLabel="Auswahl löschen"
+                     SearchBoxAriaLabel="Suchtext"
+                     SearchBoxClearButtonAriaLabel="Text löschen"
+                     ChipsRemoveButtonAriaLabel="{0} entfernen" />
+        <br />
+        <div>Values: @string.Join(',', localizationValues)</div>
+        <br /><br />
+        <BitDropdown Label="Leere Liste"
+                     Items="emptyItems"
+                     Placeholder="Zutat auswählen"
+                     EmptyText="Es gibt hier nichts"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+        <br /><br />
+        <BitDropdown IsLoading
+                     Label="Wird geladen"
+                     Items="emptyItems"
+                     LoadingText="Wird geladen..."
+                     Placeholder="Zutat auswählen"
+                     TItem="BitDropdownItem<string>" TValue="string" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
     <div>
         The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
         underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
@@ -1136,7 +1222,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
     <div>
         Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
         <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
@@ -1221,7 +1307,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
     <div>
         The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
         and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
@@ -1251,7 +1337,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
     <div>
         The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
         carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
@@ -1300,7 +1386,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
     <div>
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the

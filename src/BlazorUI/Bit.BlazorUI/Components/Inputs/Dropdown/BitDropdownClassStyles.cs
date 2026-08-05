@@ -43,6 +43,16 @@ public class BitDropdownClassStyles
     public string? Callout { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the container of the callout header template of the BitDropdown.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the container of the callout footer template of the BitDropdown.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the responsive panel's label container of the BitDropdown.
     /// </summary>
     public string? ResponsiveLabelContainer { get; set; }

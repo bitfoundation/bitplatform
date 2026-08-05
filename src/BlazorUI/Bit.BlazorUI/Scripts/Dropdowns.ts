@@ -27,6 +27,11 @@ namespace BitBlazorUI {
         // their caret behavior.
         private static readonly CARET_KEYS = ['Home', 'End'];
 
+        // The keys that edit the text of the ComboBox input rather than navigate the list, so they
+        // belong to the input even while the focus sits on an option. They are not in CALLOUT_KEYS,
+        // so their default is not prevented and they still act on the input once it has the focus.
+        private static readonly TEXT_KEYS = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'];
+
         // Attaches keydown listeners that only prevent the default behavior (e.g. page scrolling)
         // of the navigation keys. The actual keyboard logic runs in the Blazor keydown handlers,
         // which cannot conditionally preventDefault per key.
@@ -81,9 +86,10 @@ namespace BitBlazorUI {
                     }
 
                     // In ComboBox mode the input is the type-ahead, so the arrow keys having moved the
-                    // focus to an option must not stop the filtering: a printable key returns the focus
-                    // to the input, and since its default is not prevented the character lands there.
-                    if (!isTextInput(e) && isPrintable(e)) {
+                    // focus to an option must not stop the editing of the term: the keys that belong to
+                    // the text return the focus to the input, and since their default is not prevented
+                    // they act on it there - a character is typed, a Backspace deletes, a caret moves.
+                    if (!isTextInput(e) && (isPrintable(e) || Dropdowns.TEXT_KEYS.indexOf(e.key) > -1)) {
                         const combo = (callout.querySelector('.bit-drp-icb') ??
                                        root?.querySelector('.bit-drp-inp')) as HTMLElement | null;
                         combo?.focus();
