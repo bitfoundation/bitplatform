@@ -46,7 +46,7 @@ public static partial class Program
 
         //-:cnd:noEmit
 #if Development
-        FileWatcherService.Start(app);
+        await FileWatcherService.StartAsync(app);
 #endif
         //+:cnd:noEmit
 

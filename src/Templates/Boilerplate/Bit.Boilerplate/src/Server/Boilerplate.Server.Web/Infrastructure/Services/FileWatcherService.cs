@@ -34,7 +34,7 @@ public sealed class FileWatcherService : IDisposable
     /// </summary>
     private static readonly TimeSpan debounceDelay = TimeSpan.FromMilliseconds(250);
 
-    internal static void Start(WebApplication app)
+    internal static async Task StartAsync(WebApplication app)
     {
         if (app.Environment.IsDevelopment() is false)
             return;
@@ -55,7 +55,7 @@ public sealed class FileWatcherService : IDisposable
             if (IsIgnored(srcDirectory, projectPath))
                 continue;
 
-            var projectContent = File.ReadAllText(projectPath);
+            var projectContent = await File.ReadAllTextAsync(projectPath);
 
             var watchList = targetsByFilePattern
                 .Select(item => (Pattern: item.Key, Targets: item.Value.Where(target => projectContent.Contains(target, StringComparison.Ordinal)).ToArray()))
