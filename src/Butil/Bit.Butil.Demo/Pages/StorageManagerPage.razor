@@ -21,7 +21,9 @@ if (await storageManager.IsSupported())
     // safe to query estimates and persistence
 }
 """)>
-        <button @onclick="CheckSupport">IsSupported</button>
+        <div class="controls">
+            <button @onclick="CheckSupport">IsSupported</button>
+        </div>
         <DemoConsole @ref="supportOutput" Title="support output" />
     </DemoSection>
 
@@ -40,7 +42,9 @@ if (usage is not null && quota is not null)
     var percent = (double)usage.Value / quota.Value * 100;
 }
 """)>
-        <button class="secondary" @onclick="GetEstimate">Estimate</button>
+        <div class="controls">
+            <button class="secondary" @onclick="GetEstimate">Estimate</button>
+        </div>
         <DemoConsole @ref="estimateOutput" Title="estimate output" />
     </DemoSection>
 
@@ -51,7 +55,9 @@ if (usage is not null && quota is not null)
 var persisted = await storageManager.Persisted();
 // false → best-effort storage, evictable under pressure
 """)>
-        <button class="secondary" @onclick="CheckPersisted">Persisted</button>
+        <div class="controls">
+            <button class="secondary" @onclick="CheckPersisted">Persisted</button>
+        </div>
         <DemoConsole @ref="persistedOutput" Title="persisted output" />
     </DemoSection>
 
@@ -66,7 +72,9 @@ if (granted)
     // storage will not be evicted under pressure
 }
 """)>
-        <button @onclick="RequestPersist">Persist</button>
+        <div class="controls">
+            <button @onclick="RequestPersist">Persist</button>
+        </div>
         <DemoConsole @ref="persistOutput" Title="persist output" />
     </DemoSection>
 </div>
@@ -126,7 +134,7 @@ if (granted)
         try
         {
             var estimate = await storageManager.Estimate();
-            if (estimate.Usage is null || estimate.Quota is null)
+            if (estimate.Usage is null || estimate.Quota is null or 0)
             {
                 await estimateOutput.Warn($"Estimate() → usage: {FormatBytes(estimate.Usage)}, quota: {FormatBytes(estimate.Quota)}");
                 return;

@@ -198,6 +198,7 @@ await webAudio.SetMasterGain(0);   // mute
     {
         try
         {
+            await webAudio.Resume(); // the click that got us here is the gesture the autoplay policy wants
             await webAudio.PlayTone(frequency, durationMs: 600, waveform: waveform, startGain: toneGain);
             await toneOutput.Log($"PlayTone → {frequency} Hz {waveform}, 600 ms");
         }
@@ -212,6 +213,7 @@ await webAudio.SetMasterGain(0);   // mute
         try
         {
             await StopToneInternal();
+            await webAudio.Resume();
             toneHandle = await webAudio.PlayTone(frequency, durationMs: 0, waveform: waveform, startGain: toneGain);
             await toneOutput.Log($"PlayTone → open-ended {frequency} Hz {waveform} (handle {toneHandle.Id})");
         }
@@ -239,6 +241,7 @@ await webAudio.SetMasterGain(0);   // mute
         try
         {
             await StopBufferInternal();
+            await webAudio.Resume();
 
             chimeWav ??= GenerateChimeWav();
             bufferHandle = await webAudio.PlayBuffer(chimeWav, startGain: bufferGain, loop: loopBuffer);
@@ -347,7 +350,14 @@ await webAudio.SetMasterGain(0);   // mute
 
     public async ValueTask DisposeAsync()
     {
-        await StopToneInternal();
-        await StopBufferInternal();
+        try
+        {
+            await StopToneInternal();
+            await StopBufferInternal();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
     }
 }

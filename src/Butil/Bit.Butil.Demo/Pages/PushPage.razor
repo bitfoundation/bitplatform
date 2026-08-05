@@ -102,19 +102,19 @@ var removed = await push.Unsubscribe();
         <DemoConsole @ref="unsubscribeOutput" Title="unsubscribe output" />
     </DemoSection>
 
-    <ApiTable Title="API reference">
-        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes ServiceWorkerRegistration.pushManager." />
-        <ApiMember Name="GetSubscription" Signature="ValueTask<PushSubscriptionInfo> GetSubscription()" Description="Returns the existing subscription for the active service worker, or an inactive payload when none exists." />
-        <ApiMember Name="Subscribe" Signature="ValueTask<PushSubscriptionInfo> Subscribe(string applicationServerKey, bool userVisibleOnly = true)" Description="Subscribes the current service worker to push messages using the given VAPID public key." />
-        <ApiMember Name="Unsubscribe" Signature="ValueTask<bool> Unsubscribe()" Description="Unsubscribes the active subscription. Returns true if a subscription was removed." />
-        <ApiMember Name="PushSubscriptionInfo.IsActive" Signature="bool IsActive { get; set; }" Description="True when a subscription was found or created." />
-        <ApiMember Name="PushSubscriptionInfo.Endpoint" Signature="string Endpoint { get; set; }" Description="The endpoint URL the push service expects POSTs at." />
-        <ApiMember Name="PushSubscriptionInfo.ExpirationTime" Signature="long? ExpirationTime { get; set; }" Description="Unix-epoch milliseconds expiration time, or null when the subscription doesn't expire." />
-        <ApiMember Name="PushSubscriptionInfo.P256dh" Signature="string P256dh { get; set; }" Description="Base64URL-encoded P-256 ECDH public key for payload encryption." />
-        <ApiMember Name="PushSubscriptionInfo.Auth" Signature="string Auth { get; set; }" Description="Base64URL-encoded auth secret used by the Web Push protocol." />
-    </ApiTable>
-
 </div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes ServiceWorkerRegistration.pushManager." />
+    <ApiMember Name="GetSubscription" Signature="ValueTask<PushSubscriptionInfo> GetSubscription()" Description="Returns the existing subscription for the active service worker, or an inactive payload when none exists." />
+    <ApiMember Name="Subscribe" Signature="ValueTask<PushSubscriptionInfo> Subscribe(string applicationServerKey, bool userVisibleOnly = true)" Description="Subscribes the current service worker to push messages using the given VAPID public key." />
+    <ApiMember Name="Unsubscribe" Signature="ValueTask<bool> Unsubscribe()" Description="Unsubscribes the active subscription. Returns true if a subscription was removed." />
+    <ApiMember Name="PushSubscriptionInfo.IsActive" Signature="bool IsActive { get; set; }" Description="True when a subscription was found or created." />
+    <ApiMember Name="PushSubscriptionInfo.Endpoint" Signature="string Endpoint { get; set; }" Description="The endpoint URL the push service expects POSTs at." />
+    <ApiMember Name="PushSubscriptionInfo.ExpirationTime" Signature="long? ExpirationTime { get; set; }" Description="Unix-epoch milliseconds expiration time, or null when the subscription doesn't expire." />
+    <ApiMember Name="PushSubscriptionInfo.P256dh" Signature="string P256dh { get; set; }" Description="Base64URL-encoded P-256 ECDH public key for payload encryption." />
+    <ApiMember Name="PushSubscriptionInfo.Auth" Signature="string Auth { get; set; }" Description="Base64URL-encoded auth secret used by the Web Push protocol." />
+</ApiTable>
 
 @code {
     private DemoConsole supportOutput = default!;

@@ -178,8 +178,8 @@ var ok = await nfc.WriteUrl("https://bitplatform.dev");
             }
 
             _scan = await nfc.Scan(
-                onReading: message => _ = LogMessage(message),
-                onError: error => _ = scanOutput.Error("Scan error →", error));
+                onReading: message => _ = InvokeAsync(() => LogMessage(message)),
+                onError: error => _ = InvokeAsync(() => scanOutput.Error("Scan error →", error)));
 
             await scanOutput.Log("Scan started - tap a tag against the device.");
         }
@@ -239,11 +239,18 @@ var ok = await nfc.WriteUrl("https://bitplatform.dev");
 
     private async Task LogMessage(NdefMessage message)
     {
-        await scanOutput.Success("Tag read →", $"serial={message.SerialNumber}, records={message.Records.Length}");
-        foreach (var record in message.Records)
+        try
         {
-            await scanOutput.Log($"  [{record.RecordType}]",
-                record.Text ?? record.MediaType ?? (record.Data is null ? "(empty)" : $"{record.Data.Length} byte(s)"));
+            await scanOutput.Success("Tag read →", $"serial={message.SerialNumber}, records={message.Records.Length}");
+            foreach (var record in message.Records)
+            {
+                await scanOutput.Log($"  [{record.RecordType}]",
+                    record.Text ?? record.MediaType ?? (record.Data is null ? "(empty)" : $"{record.Data.Length} byte(s)"));
+            }
+        }
+        catch (Exception ex)
+        {
+            await scanOutput.Error("Tag read failed →", ex.Message);
         }
     }
 

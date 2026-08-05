@@ -209,6 +209,8 @@ public async ValueTask DisposeAsync()
                     latestRecord = record;
                     _ = childListOutput.Log($"childList → +{record.AddedCount} / -{record.RemovedCount} in <{record.TargetTagName}>");
                 }
+
+                _ = InvokeAsync(StateHasChanged);
             });
 
             await childListOutput.Log("Observing child-list changes (default options) - add or remove items");
@@ -259,6 +261,8 @@ public async ValueTask DisposeAsync()
                     latestRecord = record;
                     _ = attributesOutput.Log($"attributes → {record.AttributeName} changed (was: {record.OldValue ?? "null"})");
                 }
+
+                _ = InvokeAsync(StateHasChanged);
             }, new MutationObserverOptions
             {
                 Attributes = true,
@@ -326,6 +330,8 @@ public async ValueTask DisposeAsync()
                     latestRecord = record;
                     _ = textOutput.Log($"characterData → text changed (was: {record.OldValue ?? "null"})");
                 }
+
+                _ = InvokeAsync(StateHasChanged);
             }, new MutationObserverOptions
             {
                 CharacterData = true,

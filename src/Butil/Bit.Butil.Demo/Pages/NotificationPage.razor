@@ -211,7 +211,8 @@ await handle.DisposeAsync();
                 onShow: () => _ = InvokeAsync(() => trackedOutput.Log("Tracked → shown")),
                 onClose: () => _ = InvokeAsync(async () =>
                 {
-                    trackedHandle = null;
+                    await CleanupTracked();
+                    StateHasChanged();
                     await trackedOutput.Log("Tracked → closed");
                 }),
                 onError: () => _ = InvokeAsync(() => trackedOutput.Error("Tracked → error")));

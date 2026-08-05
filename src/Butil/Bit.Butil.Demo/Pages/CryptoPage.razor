@@ -398,7 +398,7 @@ bool ecOk = await crypto.VerifyEcdsa(ec.PublicKey, ecSig, data, "P-256");
         try
         {
             var key = await crypto.GenerateAesKey(256);
-            await keyGenOutput.Success("GenerateAesKey →", $"{key.Length * 8}-bit key: {Convert.ToHexString(key)}");
+            await keyGenOutput.Success("GenerateAesKey →", $"{key.Length * 8}-bit key, first 8 bytes: {Convert.ToHexString(key.AsSpan(0, 8))}...");
         }
         catch (Exception ex)
         {

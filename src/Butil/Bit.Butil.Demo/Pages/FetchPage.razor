@@ -205,7 +205,7 @@ await handle.Abort();
         _busy = true;
         try
         {
-            var payload = JsonSerializer.Serialize(new { title = "Bit.Butil", body = "Hello from C#", userId = 1 });
+            var payload = JsonSerializer.Serialize(new NewPost("Bit.Butil", "Hello from C#", 1));
 
             var response = await fetch.Send(new FetchRequest
             {
@@ -342,4 +342,9 @@ await handle.Abort();
         var text = Encoding.UTF8.GetString(body);
         return text.Length > 400 ? text[..400] + "…" : text;
     }
+
+    private record NewPost(
+        [property: System.Text.Json.Serialization.JsonPropertyName("title")] string Title,
+        [property: System.Text.Json.Serialization.JsonPropertyName("body")] string Body,
+        [property: System.Text.Json.Serialization.JsonPropertyName("userId")] int UserId);
 }

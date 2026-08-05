@@ -4,7 +4,7 @@
     <div class="code-block-head">
         <span class="lang">@Language</span>
         <button class="copy-btn @(_copied ? "copied" : "")" title="Copy to clipboard" @onclick="Copy">
-            @(_copied ? "Copied ✓" : "Copy")
+            @(_failed ? "Copy failed" : _copied ? "Copied ✓" : "Copy")
         </button>
     </div>
     <pre><code>@Code.Trim('\r', '\n')</code></pre>
@@ -15,10 +15,24 @@
     [Parameter] public string Language { get; set; } = "csharp";
 
     private bool _copied;
+    private bool _failed;
 
     private async Task Copy()
     {
-        await clipboard.WriteText(Code.Trim('\r', '\n'));
+        try
+        {
+            await clipboard.WriteText(Code.Trim('\r', '\n'));
+        }
+        catch (JSException)
+        {
+            // no clipboard permission, or an insecure context - not worth tearing the page down over
+            _failed = true;
+            StateHasChanged();
+            await Task.Delay(1500);
+            _failed = false;
+            return;
+        }
+
         _copied = true;
         StateHasChanged();
         await Task.Delay(1500);

@@ -210,14 +210,14 @@ var removed = await serviceWorker.Unregister();
     {
         try
         {
-            if (messageSub is not null)
+            if (messageSub is not null && controllerSub is not null)
             {
                 await messagingOutput.Warn("Already subscribed.");
                 return;
             }
 
-            messageSub = await serviceWorker.SubscribeMessage(data => _ = messagingOutput.Log("Worker message:", data));
-            controllerSub = await serviceWorker.SubscribeControllerChange(() => _ = messagingOutput.Info("controllerchange - a (new) worker now controls this page."));
+            messageSub ??= await serviceWorker.SubscribeMessage(data => _ = messagingOutput.Log("Worker message:", data));
+            controllerSub ??= await serviceWorker.SubscribeControllerChange(() => _ = messagingOutput.Info("controllerchange - a (new) worker now controls this page."));
             await messagingOutput.Success("Subscribed to worker messages and controllerchange. Now register the worker to see the controller change.");
         }
         catch (Exception ex)

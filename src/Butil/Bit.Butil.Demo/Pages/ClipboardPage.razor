@@ -157,7 +157,7 @@ var unsanitized = await clipboard.Read(new ClipboardFormats
             var html = new ClipboardItem
             {
                 MimeType = "text/html",
-                Data = Encoding.UTF8.GetBytes($"<b>{content}</b>"),
+                Data = Encoding.UTF8.GetBytes($"<b>{System.Net.WebUtility.HtmlEncode(content)}</b>"),
             };
 
             await clipboard.Write([plain, html]);

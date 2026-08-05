@@ -59,8 +59,8 @@ if (maybe is null)
             </div>
         </div>
         <div class="controls">
-            <button @onclick="() => Acquire(false)">Acquire (waits)</button>
-            <button class="secondary" @onclick="() => Acquire(true)">Acquire if available</button>
+            <button @onclick="() => Acquire(false)" disabled="@acquiring">Acquire (waits)</button>
+            <button class="secondary" @onclick="() => Acquire(true)" disabled="@acquiring">Acquire if available</button>
             <button class="danger" @onclick="Release">Release</button>
         </div>
         <DemoConsole @ref="acquireOutput" Title="acquire output" />
@@ -78,7 +78,7 @@ await webLocks.Run("my-resource", async () =>
 // released automatically
 """)>
         <div class="controls">
-            <button @onclick="RunGuarded">Run 3-second callback</button>
+            <button @onclick="RunGuarded" disabled="@running">Run 3-second callback</button>
         </div>
         <DemoConsole @ref="runOutput" Title="run output" />
     </DemoSection>
@@ -134,6 +134,8 @@ foreach (var pending in snapshot.Pending)
     private string lockName = "butil-demo-lock";
     private bool sharedMode;
     private IAsyncDisposable? heldLock;
+    private bool acquiring;
+    private bool running;
 
     private async Task CheckSupport()
     {
@@ -150,6 +152,10 @@ foreach (var pending in snapshot.Pending)
 
     private async Task Acquire(bool ifAvailable)
     {
+        // set before the first await so the disabled binding is in place on the very first re-render
+        if (acquiring) return;
+        acquiring = true;
+
         try
         {
             if (string.IsNullOrWhiteSpace(lockName))
@@ -187,6 +193,10 @@ foreach (var pending in snapshot.Pending)
         {
             await acquireOutput.Error(ex.Message);
         }
+        finally
+        {
+            acquiring = false;
+        }
     }
 
     private async Task Release()
@@ -211,6 +221,10 @@ foreach (var pending in snapshot.Pending)
 
     private async Task RunGuarded()
     {
+        // set before the first await so the disabled binding is in place on the very first re-render
+        if (running) return;
+        running = true;
+
         try
         {
             if (string.IsNullOrWhiteSpace(lockName))
@@ -232,6 +246,10 @@ foreach (var pending in snapshot.Pending)
         catch (Exception ex)
         {
             await runOutput.Error(ex.Message);
+        }
+        finally
+        {
+            running = false;
         }
     }
 
@@ -260,9 +278,17 @@ foreach (var pending in snapshot.Pending)
 
     public async ValueTask DisposeAsync()
     {
-        if (heldLock is not null)
+        try
         {
-            await heldLock.DisposeAsync();
+            if (heldLock is not null)
+            {
+                await heldLock.DisposeAsync();
+                heldLock = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

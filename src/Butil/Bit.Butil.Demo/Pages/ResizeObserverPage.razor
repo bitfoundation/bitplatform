@@ -188,6 +188,7 @@ public async ValueTask DisposeAsync()
                 latestEntry = entries[^1];
                 _ = output.Log($"{box} → {latestEntry.InlineSize:F0} x {latestEntry.BlockSize:F0} " +
                     $"(device px: {latestEntry.DevicePixelInlineSize:F0} x {latestEntry.DevicePixelBlockSize:F0})");
+                _ = InvokeAsync(StateHasChanged);
             }, box);
 
             await output.Log($"Observing with {box} - drag the corner of the box");

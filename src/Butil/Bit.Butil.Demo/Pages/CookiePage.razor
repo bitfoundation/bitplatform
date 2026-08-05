@@ -287,6 +287,12 @@ await cookie.Remove(new ButilCookie { Name = "session-hint", Path = "/" });
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(removeName))
+            {
+                await removeOutput.Warn("Enter a cookie name to remove.");
+                return;
+            }
+
             await cookie.Remove(removeName);
             await removeOutput.Warn($"Remove(\"{removeName}\") - cookie expired.");
         }

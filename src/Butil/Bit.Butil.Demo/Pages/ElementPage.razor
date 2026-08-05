@@ -655,6 +655,12 @@ await box.Remove(); // detaches the element from the DOM
 
     private Task SubscribeKeyDownOnce() => Run(eventsOutput, async () =>
     {
+        if (keydownOnceSub is not null)
+        {
+            await eventsOutput.Warn("Keydown listener is already attached");
+            return;
+        }
+
         keydownOnceSub = await eventsInputRef.SubscribeEvent<ButilKeyboardEventArgs>(js, ButilEvents.KeyDown,
             args => _ = eventsOutput.Log($"keydown (once) → key={args.Key}, code={args.Code}"),
             new ButilEventListenerOptions { Once = true });

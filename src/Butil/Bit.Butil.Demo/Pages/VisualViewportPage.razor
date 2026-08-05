@@ -339,16 +339,23 @@ await visualViewport.RemoveAllEventHandlers();
 
     public async ValueTask DisposeAsync()
     {
-        if (resizeSub is not null)
+        try
         {
-            await resizeSub.DisposeAsync();
-            resizeSub = null;
-        }
+            if (resizeSub is not null)
+            {
+                await resizeSub.DisposeAsync();
+                resizeSub = null;
+            }
 
-        if (scrollSub is not null)
+            if (scrollSub is not null)
+            {
+                await scrollSub.DisposeAsync();
+                scrollSub = null;
+            }
+        }
+        catch
         {
-            await scrollSub.DisposeAsync();
-            scrollSub = null;
+            // best-effort cleanup during teardown
         }
     }
 }

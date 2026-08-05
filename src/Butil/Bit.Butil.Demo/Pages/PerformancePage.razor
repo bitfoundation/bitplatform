@@ -286,7 +286,7 @@ await performance.ClearResourceTimings();
                 return;
             }
 
-            observerSub = await performance.SubscribeObserver(["mark", "measure"], entries => _ = OnEntries(entries));
+            observerSub = await performance.SubscribeObserver(["mark", "measure"], entries => _ = InvokeAsync(() => OnEntries(entries)));
             await observerOutput.Log("Observer subscribed to mark + measure - use the mark/measure buttons above.");
         }
         catch (Exception ex)

@@ -67,7 +67,7 @@ await cacheStorage.PutBytes("butil-docs-cache", "/report.bin",
                  Code=@("""
 await cacheStorage.Add("butil-docs-cache", "css/app.css");
 
-await cacheStorage.AddAll("butil-docs-cache", "css/app.css", "favicon.png");
+await cacheStorage.AddAll("butil-docs-cache", "css/app.css", "favicon.svg");
 """)>
         <div class="field">
             <span class="field-label">URL to fetch and cache</span>
@@ -75,6 +75,7 @@ await cacheStorage.AddAll("butil-docs-cache", "css/app.css", "favicon.png");
         </div>
         <div class="controls">
             <button @onclick="AddDemo">Add</button>
+            <button class="secondary" @onclick="AddAllDemo">AddAll (that URL + favicon.svg)</button>
         </div>
         <DemoConsole @ref="addOutput" Title="add output" />
     </DemoSection>
@@ -268,6 +269,19 @@ var removedCache = await cacheStorage.Delete("butil-docs-cache");
         catch (Exception ex)
         {
             await addOutput.Error($"Add failed (does the URL exist?): {ex.Message}");
+        }
+    }
+
+    private async Task AddAllDemo()
+    {
+        try
+        {
+            await cacheStorage.AddAll(cacheName, fetchUrl, "favicon.svg");
+            await addOutput.Log($"AddAll(\"{cacheName}\", \"{fetchUrl}\", \"favicon.svg\") - both fetched and cached.");
+        }
+        catch (Exception ex)
+        {
+            await addOutput.Error($"AddAll failed (all-or-nothing - do both URLs exist?): {ex.Message}");
         }
     }
 

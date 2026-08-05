@@ -1,4 +1,5 @@
 @page "/speech-synthesis"
+@implements IAsyncDisposable
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
 
 <PageTitle>SpeechSynthesis - Bit.Butil</PageTitle>
@@ -38,7 +39,7 @@ foreach (var voice in voices)
 
     <DemoSection Title="Speak an utterance"
                  Api="Speak"
-                 Description="Configure a SpeechUtterance - text, an optional voice from GetVoices, rate (0.1–10), pitch (0–2) and volume (0–1) - and hand it to Speak. The call resolves once the engine accepts the utterance, not when speech finishes; utterances queue if you call Speak repeatedly. A string-only overload speaks with all defaults."
+                 Description="Configure a SpeechUtterance - text, an optional voice from GetVoices, rate (0.1–10; the slider below covers a practical 0.1–4), pitch (0–2) and volume (0–1) - and hand it to Speak. The call resolves once the engine accepts the utterance, not when speech finishes; utterances queue if you call Speak repeatedly. A string-only overload speaks with all defaults."
                  Code=@("""
 await speechSynthesis.Speak(new SpeechUtterance
 {
@@ -261,6 +262,18 @@ var pending = await speechSynthesis.IsPending();
         catch (Exception ex)
         {
             await stateOutput.Error("State check failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await speechSynthesis.Cancel(); // speech outlives the page otherwise
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

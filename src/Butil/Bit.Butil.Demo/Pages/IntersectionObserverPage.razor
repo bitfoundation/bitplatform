@@ -180,6 +180,7 @@ public async ValueTask DisposeAsync()
 
                 latestEntry = entries[^1];
                 _ = basicOutput.Log($"default → visible={latestEntry.IsIntersecting}, ratio={latestEntry.IntersectionRatio:F2}");
+                _ = InvokeAsync(StateHasChanged);
             });
 
             await basicOutput.Log("Observing with default options - scroll the box");
@@ -216,6 +217,7 @@ public async ValueTask DisposeAsync()
 
                 latestEntry = entries[^1];
                 _ = thresholdsOutput.Info($"thresholds → ratio={latestEntry.IntersectionRatio:P0}");
+                _ = InvokeAsync(StateHasChanged);
             }, new IntersectionObserverOptions
             {
                 Thresholds = [0, 0.25, 0.5, 0.75, 1],
@@ -255,6 +257,7 @@ public async ValueTask DisposeAsync()
 
                 latestEntry = entries[^1];
                 _ = rootMarginOutput.Info($"rootMargin → visible={latestEntry.IsIntersecting} (with -80px margins)");
+                _ = InvokeAsync(StateHasChanged);
             }, new IntersectionObserverOptions
             {
                 RootMargin = "-80px 0px -80px 0px",

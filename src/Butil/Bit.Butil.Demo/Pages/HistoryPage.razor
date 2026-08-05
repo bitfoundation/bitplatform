@@ -228,7 +228,7 @@ await history.SetScrollRestoration(ScrollRestoration.Auto);
         try
         {
             pushCounter++;
-            await history.PushState(new { step = pushCounter }, $"history?step={pushCounter}");
+            await history.PushState(new DemoHistoryState(pushCounter), $"history?step={pushCounter}");
             await pushOutput.Success($"Pushed entry with state {{ step = {pushCounter} }} and url history?step={pushCounter}");
         }
         catch (Exception ex)
@@ -241,7 +241,7 @@ await history.SetScrollRestoration(ScrollRestoration.Auto);
     {
         try
         {
-            await history.ReplaceState(new { step = pushCounter, replaced = true }, $"history?step={pushCounter}&replaced=true");
+            await history.ReplaceState(new DemoHistoryState(pushCounter, true), $"history?step={pushCounter}&replaced=true");
             await pushOutput.Success("Replaced the current entry (no new stack entry was added).");
         }
         catch (Exception ex)
@@ -330,4 +330,8 @@ await history.SetScrollRestoration(ScrollRestoration.Auto);
             // best-effort cleanup during teardown
         }
     }
+
+    private record DemoHistoryState(
+        [property: System.Text.Json.Serialization.JsonPropertyName("step")] int Step,
+        [property: System.Text.Json.Serialization.JsonPropertyName("replaced")] bool Replaced = false);
 }
