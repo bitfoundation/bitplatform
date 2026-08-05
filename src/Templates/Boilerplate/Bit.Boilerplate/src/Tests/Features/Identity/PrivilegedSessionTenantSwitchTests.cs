@@ -5,20 +5,16 @@ using Boilerplate.Server.Api.Features.Tenants;
 namespace Boilerplate.Tests.Features.Identity;
 
 /// <summary>
-/// Whether creating a throwaway tenant lets a user carry privilege back into a tenant that caps them - the question
-/// BP-244 turns on. Written because reading the code answers it and a test proves it.
+/// A privileged session must not carry its privilege from one tenant into another.
 /// <para>
-/// <c>UpdateUserSessionPrivilegeStatus</c> compares a <b>tenant-scoped limit</b> (the
-/// <c>MAX_PRIVILEGED_SESSIONS</c> claim resolves only inside the tenant whose role carries it - See
-/// <c>UserClaimsService.GetClaims</c>, which filters <c>role.TenantId == null || role.TenantId == tenantId</c>)
-/// against a <b>global count</b> and a <b>global sticky flag</b>. <c>UserSession.Privileged</c> is written in exactly
-/// one place and the expression that writes it short-circuits on its own previous value, so it can only ever go from
-/// false to true - never back, and never per tenant.
-/// </para>
-/// <para>
-/// The sticky clause is not there to be generous. The count it guards includes the very session being evaluated
-/// (there is no <c>us.Id != userSession.Id</c>), so at the cap an already-privileged session would otherwise lose its
-/// own privilege on every refresh. That accidental compensation is what crosses the tenant boundary.
+/// <c>UpdateUserSessionPrivilegeStatus</c> weighs a <b>tenant-scoped limit</b> - the <c>MAX_PRIVILEGED_SESSIONS</c>
+/// claim lives on a role, and roles resolve only inside their own tenant (See <c>UserClaimsService.GetClaims</c>,
+/// which filters <c>role.TenantId == null || role.TenantId == tenantId</c>) - and the flag it produces is sticky, so
+/// that once-privileged sessions do not lose their slot on every refresh. Those two together are why
+/// <c>IdentityController.Refresh</c> clears <c>userSession.Privileged</c> when the session changes tenant: without
+/// that, a privilege earned under one tenant's claims would be kept under every other tenant's, and since creating a
+/// tenant is self-service and makes the creator its t-admin with an unlimited claim, any account could lift its own
+/// session cap once per device.
 /// </para>
 /// </summary>
 [TestClass, TestCategory("IntegrationTest")]
@@ -27,13 +23,13 @@ public partial class PrivilegedSessionTenantSwitchTests
     public TestContext TestContext { get; set; } = default!;
 
     /// <summary>
-    /// The bypass, end to end: fill the cap, get refused, mint your own tenant, and come back.
+    /// The regression guard for that clearing: fill the cap, get refused, mint your own tenant, and come back.
     /// <para>
-    /// <b>Ignored because it fails today</b> - which is the finding. BP-244 is open, so this is the executable form of
-    /// it rather than a passing assertion. <b>What would un-ignore it:</b> making the privilege decision tenant-aware,
-    /// i.e. excluding the current session from the count (<c>us.Id != userSession.Id</c>) and scoping that count to
-    /// <c>userSession.TenantId</c>, after which the sticky <c>userSession.Privileged is true</c> clause has no job left
-    /// and comes out. Verified failing on the final assertion for exactly that reason.
+    /// <c>IdentityController.Refresh</c> sets <c>userSession.Privileged = false</c> whenever the session actually
+    /// changes tenant, so the flag is re-earned below against the claims of the tenant being entered. This test drives
+    /// the round trip that the clearing exists for - into a self-created tenant carrying an unlimited claim and back
+    /// into one that caps her at three - and requires the privileged-session claim to come back <c>false</c>. Remove
+    /// that one line and the final assertion fails; verified.
     /// </para>
     /// </summary>
     [TestMethod]

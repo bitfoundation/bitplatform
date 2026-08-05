@@ -101,16 +101,15 @@ public partial class PushSubscriptionOwnershipTests
 
 
     /// <summary>
-    /// The ownership rule is about the <b>user</b>, not about the session, and this is the flow that proves it: sign in,
-    /// subscribe, drop the tokens from local storage / the cookie without signing out, then sign in again on the same
-    /// device.
+    /// The flow that shows why <c>Subscribe</c> performs no ownership check at all: sign in, subscribe, drop the tokens
+    /// from local storage / the cookie without signing out, then sign in again on the same device.
     /// <para>
     /// Clearing the tokens tells the server nothing, so the previous <c>UserSession</c> row is still there and the
     /// device's subscription is still pointing at it - for up to <c>Identity:RefreshTokenExpiration</c>, until
-    /// <c>UserSessionsCleanupJobRunner</c> removes it. The new session then finds its own device's row owned by a
-    /// session id it does not recognise. Refusing that would break an ordinary sign-in on the shipped clients (the
-    /// same shape as a session that expired, or tokens cleared by the browser), which is why the check compares the
-    /// owning session's <c>UserId</c> rather than its <c>Id</c>.
+    /// <c>UserSessionsCleanupJobRunner</c> removes it. Both the anonymous propagation that runs first and the
+    /// authenticated one that follows therefore present a DeviceId whose row belongs to a session neither of them owns.
+    /// Any ownership check refuses both and leaves that device without push for good, which is why the rule is simply
+    /// that whoever presents the DeviceId gets the row (See <c>PushNotificationService.Subscribe</c>).
     /// </para>
     /// </summary>
     [TestMethod]
@@ -377,6 +376,74 @@ public partial class PushSubscriptionOwnershipTests
             await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
             var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
             await dbContext.PushNotificationSubscriptions.Where(s => s.DeviceId == deviceId).ExecuteDeleteAsync(TestContext.CancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// The only case where two rows match at once: this session already holds one device's row, and the device it now
+    /// reports already has a row of its own. <c>UserSessionId</c> is unique, so the session has to be released from the
+    /// first row before it can be written onto the second - and in a separate <c>SaveChanges</c>, because EF gives no
+    /// ordering guarantee between two independent UPDATEs in one batch and an acquire-before-release ordering violates
+    /// the index. Rare, which is exactly why it is worth pinning: it would surface as an intermittent 500 on an
+    /// anonymous endpoint.
+    /// </summary>
+    [TestMethod]
+    public async Task ASessionMovingToADeviceThatAlreadyHasARow_Should_ReleaseItsPreviousOne()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(services => services.AddIntegrationApiOnlyTestsServices()).Start(TestContext.CancellationToken);
+
+        var firstDeviceId = $"push-two-rows-a-{Guid.NewGuid():N}";
+        var secondDeviceId = $"push-two-rows-b-{Guid.NewGuid():N}";
+
+        try
+        {
+            // An unowned row for the second device, the way an anonymous visit leaves one behind.
+            using (var anonymousClient = new HttpClient { BaseAddress = server.WebAppServerAddress })
+            {
+                var response = await anonymousClient.PostAsJsonAsync("api/v1/PushNotification/Subscribe",
+                    new PushNotificationSubscriptionDto { DeviceId = secondDeviceId, Platform = "fcmV1", PushChannel = "anonymous-channel" },
+                    TestContext.CancellationToken);
+
+                response.EnsureSuccessStatusCode();
+            }
+
+            await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+            await TestAccountUtils.CreateAndSignIn(server, scope, TestContext.CancellationToken);
+
+            var pushNotificationController = scope.ServiceProvider.GetRequiredService<IPushNotificationController>();
+
+            // This session takes the first device...
+            await pushNotificationController.Subscribe(
+                new() { DeviceId = firstDeviceId, Platform = "fcmV1", PushChannel = "first-channel" }, TestContext.CancellationToken);
+
+            var firstRow = await ReadSubscription(server, firstDeviceId, TestContext.CancellationToken);
+            Assert.IsNotNull(firstRow?.UserSessionId, "The session has to own the first device's row, otherwise only one row matches below and the case under test never arises.");
+
+            // ...and now reports the second, whose row already exists. Both rows match the lookup.
+            await pushNotificationController.Subscribe(
+                new() { DeviceId = secondDeviceId, Platform = "fcmV1", PushChannel = "second-channel" }, TestContext.CancellationToken);
+
+            var secondRow = await ReadSubscription(server, secondDeviceId, TestContext.CancellationToken);
+            var firstRowAfterwards = await ReadSubscription(server, firstDeviceId, TestContext.CancellationToken);
+
+            Assert.AreEqual(firstRow.UserSessionId, secondRow?.UserSessionId,
+                "The device the session now reports must end up owning it.");
+
+            Assert.IsNull(firstRowAfterwards?.UserSessionId,
+                "The row the session held before must have let go of it. UserSessionId is unique, so leaving both set is a constraint violation rather than a stale row.");
+
+            Assert.AreEqual("second-channel", secondRow!.PushChannel, "The second device's channel must be the one that got written.");
+        }
+        finally
+        {
+            await using var cleanupScope = server.WebApp.Services.CreateAsyncScope();
+            var dbContext = cleanupScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await dbContext.PushNotificationSubscriptions
+                .Where(s => s.DeviceId == firstDeviceId || s.DeviceId == secondDeviceId)
+                .ExecuteDeleteAsync(TestContext.CancellationToken);
         }
     }
 

@@ -193,14 +193,7 @@ public partial class AppClientCoordinator : AppComponentBase
             //#endif
 
             //#if (notification == true)
-            try
-            {
-                await pushNotificationService.Subscribe(CurrentCancellationToken);
-            }
-            catch (Exception exp)
-            {
-                ExceptionHandler.Handle(exp, ExceptionDisplayKind.NonInterrupting);
-            }
+            await pushNotificationService.Subscribe(CurrentCancellationToken);
             //#endif
 
             if (isAuthenticated)

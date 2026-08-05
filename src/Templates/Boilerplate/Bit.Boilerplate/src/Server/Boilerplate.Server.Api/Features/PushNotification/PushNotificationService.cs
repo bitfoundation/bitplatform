@@ -68,10 +68,10 @@ public partial class PushNotificationService
         // ────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
         // UserSessionId is unique too, so the row this session held before its device reported a new DeviceId has to
-        // let go of it first. At most one row can be in this position.
-        foreach (var previouslyOwned in matches.Where(s => ReferenceEquals(s, subscription) is false))
+        // let go of it first.
+        foreach (var staleSubscription in matches.Where(s => ReferenceEquals(s, subscription) is false))
         {
-            previouslyOwned.UserSessionId = null;
+            staleSubscription.UserSessionId = null;
         }
 
         subscription ??= (await dbContext.PushNotificationSubscriptions.AddAsync(new()
