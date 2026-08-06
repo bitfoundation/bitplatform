@@ -337,6 +337,18 @@ button.bit-dtg-htext {
 }
 
 /* ---------------------------------------------------------- Detail rows */
+/* The whole row toggles its detail content, so it gets the affordance of a control.
+   The reorder/select/command cells keep the default cursor: they stop the click. */
+.bit-dtg-row-expandable {
+    cursor: pointer;
+}
+
+.bit-dtg-row-expandable .bit-dtg-cell-reorder,
+.bit-dtg-row-expandable .bit-dtg-cell-select,
+.bit-dtg-row-expandable .bit-dtg-cell-command {
+    cursor: auto;
+}
+
 .bit-dtg-detail-row {
     border-bottom: 1px solid $clr-brd-ter;
 }

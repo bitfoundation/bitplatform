@@ -1069,4 +1069,49 @@ private List<Product> products = SampleData.Generate(30);
 // In the Excel export this span becomes a merged cell (the covered Category cell stays empty);
 // the CSV export has no merge concept and writes every column's own value.
 private int? NameSpan(Product p) => p.Discontinued ? 2 : null;" + ProductModelCode + SampleDataCode;
+
+    private readonly string example34RazorCode = @"
+<BitButton OnClick=""ExpandAllDetails"">Expand all</BitButton>
+<BitButton OnClick=""CollapseAllDetails"">Collapse all</BitButton>
+<BitButton OnClick=""ToggleFirstDetail"">Toggle the first row</BitButton>
+
+<BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
+             ShowDetailToggle=""false""
+             ExpandDetailOnRowClick=""true""
+             OnDetailToggle=""OnDetailToggled""
+             SelectionMode=""BitDataGridSelectionMode.Single""
+             KeyField=""p => p.Id"">
+    <DetailTemplate Context=""p"">
+        <BitStack Horizontal Wrap Gap=""2rem"">
+            <div><strong>Supplier</strong><br />@p.Supplier</div>
+            <div><strong>Released</strong><br />@p.ReleaseDate.ToString(""D"")</div>
+            <div><strong>Inventory value</strong><br />@((p.Price * p.Stock).ToString(""C2""))</div>
+            <div><strong>Status</strong><br />@(p.Discontinued ? ""Discontinued"" : ""Active"")</div>
+        </BitStack>
+    </DetailTemplate>
+    <Columns>
+        <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" />
+        <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+        <BitDataGridColumn Property=""p => p.Category"" />
+        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" />
+        <BitDataGridColumn Property=""p => p.Stock"" />
+    </Columns>
+</BitDataGrid>
+
+<BitText>@status</BitText>";
+    private readonly string example34CsharpCode = @"
+private List<Product> products = SampleData.Generate(20);
+private BitDataGrid<Product>? grid;
+private string status = ""Click any row to reveal its details."";
+
+private void OnDetailToggled(BitDataGridDetailEventArgs<Product> args)
+    => status = $""{args.Item.Name} (#{args.Item.Id}) {(args.Expanded ? ""expanded"" : ""collapsed"")}."";
+
+private async Task ExpandAllDetails() => await grid!.ExpandAllDetailsAsync();
+private async Task CollapseAllDetails() => await grid!.CollapseAllDetailsAsync();
+private async Task ToggleFirstDetail() => await grid!.ToggleDetailAsync(products[0]);
+
+// Also available: ExpandDetailAsync(item), CollapseDetailAsync(item), SetDetailExpandedAsync(item, expanded)
+// and IsDetailExpanded(item) - or bind @bind-ExpandedDetailItems to own the expanded rows yourself.
+" + ProductModelCode + SampleDataCode;
 }

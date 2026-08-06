@@ -66,6 +66,11 @@ public partial class BitDataGridDemo
         new() { Name = "EmptyTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content rendered when there is no data." },
         new() { Name = "ToolbarTemplate", Type = "RenderFragment?", DefaultValue = "null", Description = "Custom content rendered in the toolbar's start area." },
         new() { Name = "DetailTemplate", Type = "RenderFragment<TItem>?", DefaultValue = "null", Description = "Expandable master-detail content rendered under a row." },
+        new() { Name = "ShowDetailToggle", Type = "bool", DefaultValue = "true", Description = "Renders the built-in expand/collapse toggle column while a DetailTemplate is set. Turn it off to drive the detail rows from row clicks (ExpandDetailOnRowClick) or from code; only the toggle column disappears, the detail rows still render." },
+        new() { Name = "ExpandDetailOnRowClick", Type = "bool", DefaultValue = "false", Description = "Expands (and collapses) a row's detail content when the row itself is clicked. Combines with SelectionMode: a click both selects the row and toggles its detail. Clicks inside the reorder/select/command cells are excluded." },
+        new() { Name = "ExpandedDetailItems", Type = "IReadOnlyList<TItem>?", DefaultValue = "null", Description = "Rows whose detail content is expanded, as a two-way bindable list. Binding it takes control of the expanded state, letting a parent expand or collapse details declaratively." },
+        new() { Name = "ExpandedDetailItemsChanged", Type = "EventCallback<IReadOnlyList<TItem>>", DefaultValue = "", Description = "Raised with the new set of expanded rows whenever a detail row is expanded or collapsed." },
+        new() { Name = "OnDetailToggle", Type = "EventCallback<BitDataGridDetailEventArgs<TItem>>", DefaultValue = "", Description = "Raised when a single row's detail content is expanded or collapsed.", LinkType = LinkType.Link, Href = "#BitDataGridDetailEventArgs" },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -96,6 +101,13 @@ public partial class BitDataGridDemo
         new() { Name = "CurrentPage", Type = "int", DefaultValue = "1", Description = "The 1-based current page." },
         new() { Name = "ExpandAllAsync", Type = "Task", DefaultValue = "", Description = "Expands every node in the tree. No-op outside tree mode." },
         new() { Name = "CollapseAllAsync", Type = "Task", DefaultValue = "", Description = "Collapses every node in the tree. No-op outside tree mode." },
+        new() { Name = "IsDetailExpanded", Type = "bool", DefaultValue = "", Description = "IsDetailExpanded(item) - true when the given row's DetailTemplate content is currently expanded." },
+        new() { Name = "ExpandDetailAsync", Type = "Task", DefaultValue = "", Description = "ExpandDetailAsync(item) - expands the given row's detail content. No-op without a DetailTemplate." },
+        new() { Name = "CollapseDetailAsync", Type = "Task", DefaultValue = "", Description = "CollapseDetailAsync(item) - collapses the given row's detail content." },
+        new() { Name = "ToggleDetailAsync", Type = "Task", DefaultValue = "", Description = "ToggleDetailAsync(item) - expands the given row's detail content when collapsed, and collapses it otherwise." },
+        new() { Name = "SetDetailExpandedAsync", Type = "Task", DefaultValue = "", Description = "SetDetailExpandedAsync(item, expanded) - expands or collapses a row's detail content." },
+        new() { Name = "ExpandAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Expands the detail content of every row of the current view (all rows matching the active filters, not only the rendered page)." },
+        new() { Name = "CollapseAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Collapses every expanded detail row." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -183,6 +195,17 @@ public partial class BitDataGridDemo
                 new() { Name = "ColumnTitle", Type = "string", DefaultValue = "", Description = "The column's display title." },
                 new() { Name = "Value", Type = "object?", DefaultValue = "null", Description = "The raw value of the cell." },
                 new() { Name = "Mouse", Type = "MouseEventArgs", DefaultValue = "", Description = "The underlying browser mouse event." },
+            ],
+        },
+        new()
+        {
+            Id = "BitDataGridDetailEventArgs",
+            Title = "BitDataGridDetailEventArgs<TItem>",
+            Description = "Arguments raised when a row's master-detail content is expanded or collapsed.",
+            Parameters =
+            [
+                new() { Name = "Item", Type = "TItem", DefaultValue = "", Description = "The row whose detail content was toggled." },
+                new() { Name = "Expanded", Type = "bool", DefaultValue = "", Description = "True when the detail content was expanded, false when it was collapsed." },
             ],
         },
         new()

@@ -214,6 +214,38 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
     [Parameter] public RenderFragment<TItem>? DetailTemplate { get; set; }
 
+    // -------------------------------------------------------- Master detail
+    /// <summary>
+    /// Renders the expand/collapse toggle column on the inline-start edge of every row while a
+    /// <see cref="DetailTemplate"/> is set. Default: <c>true</c>. Turn it off to drive the detail
+    /// rows purely from the row itself (<see cref="ExpandDetailOnRowClick"/>) or from code
+    /// (<see cref="ToggleDetailAsync"/> and friends); the detail rows still render, only the toggle
+    /// column disappears.
+    /// </summary>
+    [Parameter] public bool ShowDetailToggle { get; set; } = true;
+
+    /// <summary>
+    /// Expands (and collapses) a row's detail content when the row itself is clicked, so the toggle
+    /// button is no longer the only way in. Combines with <see cref="SelectionMode"/>: a click both
+    /// selects the row and toggles its detail. Clicks inside the reorder/select/command cells are
+    /// excluded, since those cells own their own interaction.
+    /// </summary>
+    [Parameter] public bool ExpandDetailOnRowClick { get; set; }
+
+    /// <summary>
+    /// Rows whose detail content is expanded, as a two-way bindable list. Binding it takes control of
+    /// the expanded state (the grid then only reports changes back through it), which is what lets a
+    /// parent expand or collapse details declaratively. Leave it unset to let the grid keep the state
+    /// itself and use <see cref="ExpandDetailAsync"/>/<see cref="CollapseDetailAsync"/> instead.
+    /// </summary>
+    [Parameter] public IReadOnlyList<TItem>? ExpandedDetailItems { get; set; }
+
+    /// <summary>Raised with the new set of expanded rows whenever a detail row is expanded or collapsed.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<TItem>> ExpandedDetailItemsChanged { get; set; }
+
+    /// <summary>Raised when a single row's detail content is expanded or collapsed.</summary>
+    [Parameter] public EventCallback<BitDataGridDetailEventArgs<TItem>> OnDetailToggle { get; set; }
+
     // ---------------------------------------------------------- Localization
     /// <summary>All user-visible strings rendered by the grid. Assign a customized
     /// <see cref="BitDataGridStrings"/> to localize the UI; defaults to English.</summary>
@@ -233,7 +265,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     // selection survives data refreshes that produce new TItem instances with the same key.
     private HashSet<TItem>? _selectedSet;
     private HashSet<TItem> _selected => _selectedSet ??= new HashSet<TItem>(new KeySelectionComparer(GetKey));
-    private readonly HashSet<object> _expandedDetails = new();
+    // Expanded detail rows, keyed the same way as the selection so an expanded row survives a data
+    // refresh that produces a new TItem instance with the same key.
+    private HashSet<TItem>? _expandedDetailsSet;
+    private HashSet<TItem> _expandedDetails => _expandedDetailsSet ??= new HashSet<TItem>(new KeySelectionComparer(GetKey));
     private readonly HashSet<object> _collapsedGroups = new();
 
     // tree mode
@@ -686,6 +721,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             ApplyControlledSelection();
         }
         _lastSelectionMode = SelectionMode;
+
+        // Expanded detail rows are controlled the same way as the selection: while the parent binds
+        // ExpandedDetailItems it owns the state, so it is re-applied on every parameter set.
+        if (ExpandedDetailItems is not null) ApplyControlledExpandedDetails();
 
         // Only (re)load data when an external input that affects it actually changes.
         // Refreshing on every parameter set would cause an infinite loop in server mode:
@@ -1685,8 +1724,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// Removes selection and expanded-detail entries whose rows are no longer present in the (replaced)
     /// client-side data source. A null source counts as empty (all row state is dropped); otherwise only
     /// materialized sources (<see cref="ICollection{T}"/>) are pruned so a lazy
-    /// <see cref="IEnumerable{T}"/> isn't enumerated an extra time. Controlled selection is skipped
-    /// (<see cref="SelectedItems"/> is authoritative there and is re-applied on every parameter set).
+    /// <see cref="IEnumerable{T}"/> isn't enumerated an extra time. Controlled state is skipped
+    /// (<see cref="SelectedItems"/>/<see cref="ExpandedDetailItems"/> are authoritative there and are
+    /// re-applied on every parameter set).
     /// </summary>
     private async Task PruneStaleRowStateAsync()
     {
@@ -1694,7 +1734,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         // returning early here would leave removed rows selected/expanded (and strongly referenced).
         if (Items is null)
         {
-            _expandedDetails.Clear();
+            if (ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 })
+            {
+                _expandedDetailsSet.Clear();
+                await NotifyDetailsAsync();
+            }
             if (SelectedItems is null && _selectedSet is { Count: > 0 })
             {
                 _selectedSet.Clear();
@@ -1708,7 +1752,11 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var keys = new HashSet<object>();
         foreach (var item in source) keys.Add(GetKey(item));
 
-        _expandedDetails.RemoveWhere(k => !keys.Contains(k));
+        if (ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 })
+        {
+            var collapsed = _expandedDetailsSet.RemoveWhere(i => !keys.Contains(GetKey(i)));
+            if (collapsed > 0) await NotifyDetailsAsync();
+        }
 
         if (SelectedItems is null && _selectedSet is { Count: > 0 })
         {
@@ -1731,17 +1779,86 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     internal async Task HandleRowClickAsync(TItem item)
     {
         if (OnRowClick.HasDelegate) await OnRowClick.InvokeAsync(item);
-        if (SelectionMode == BitDataGridSelectionMode.Single && _editItem is null)
+
+        // While a row is being edited, clicks must not disturb the edit: moving the single-selection or
+        // expanding a detail row would shift the editors out from under the pointer mid-edit.
+        if (_editItem is not null) return;
+
+        if (SelectionMode == BitDataGridSelectionMode.Single)
             await ToggleRowSelectionAsync(item, true);
+
+        if (ExpandDetailOnRowClick)
+            await ToggleDetailAsync(item);
     }
 
     // ------------------------------------------------------ Detail rows
-    internal bool IsDetailExpanded(TItem item) => _expandedDetails.Contains(GetKey(item));
-    internal void ToggleDetail(TItem item)
+    /// <summary>True when the given row's <see cref="DetailTemplate"/> content is currently expanded.</summary>
+    public bool IsDetailExpanded(TItem item) => _expandedDetails.Contains(item);
+
+    /// <summary>Expands the given row's detail content. No-op without a <see cref="DetailTemplate"/>,
+    /// or when the row is already expanded.</summary>
+    public Task ExpandDetailAsync(TItem item) => SetDetailExpandedAsync(item, true);
+
+    /// <summary>Collapses the given row's detail content.</summary>
+    public Task CollapseDetailAsync(TItem item) => SetDetailExpandedAsync(item, false);
+
+    /// <summary>Expands the given row's detail content when it is collapsed, and collapses it otherwise.</summary>
+    public Task ToggleDetailAsync(TItem item) => SetDetailExpandedAsync(item, !IsDetailExpanded(item));
+
+    /// <summary>Expands or collapses a row's detail content. No-op without a <see cref="DetailTemplate"/>
+    /// or when the row is already in the requested state.</summary>
+    public async Task SetDetailExpandedAsync(TItem item, bool expanded)
     {
-        var key = GetKey(item);
-        if (!_expandedDetails.Add(key)) _expandedDetails.Remove(key);
+        if (!HasDetailTemplate) return;
+
+        var changed = expanded ? _expandedDetails.Add(item) : _expandedDetails.Remove(item);
+        if (!changed) return;
+
+        if (OnDetailToggle.HasDelegate)
+            await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = expanded });
+
+        await NotifyDetailsAsync();
+    }
+
+    /// <summary>Expands the detail content of every row of the current view (all rows matching the
+    /// active filters, not only the rendered page). No-op without a <see cref="DetailTemplate"/>.</summary>
+    public async Task ExpandAllDetailsAsync()
+    {
+        if (!HasDetailTemplate) return;
+
+        var changed = false;
+        foreach (var item in _view) changed |= _expandedDetails.Add(item);
+        if (!changed) return;
+
+        await NotifyDetailsAsync();
+    }
+
+    /// <summary>Collapses every expanded detail row.</summary>
+    public async Task CollapseAllDetailsAsync()
+    {
+        if (_expandedDetailsSet is not { Count: > 0 }) return;
+
+        _expandedDetailsSet.Clear();
+        await NotifyDetailsAsync();
+    }
+
+    private async Task NotifyDetailsAsync()
+    {
+        if (ExpandedDetailItemsChanged.HasDelegate)
+            await ExpandedDetailItemsChanged.InvokeAsync(_expandedDetails.ToList());
+
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Applies the parent-controlled <see cref="ExpandedDetailItems"/> into the internal set. Does not
+    /// notify the parent, since the state is incoming rather than changed here.
+    /// </summary>
+    private void ApplyControlledExpandedDetails()
+    {
+        _expandedDetails.Clear();
+        if (ExpandedDetailItems is null) return;
+        foreach (var item in ExpandedDetailItems) _expandedDetails.Add(item);
     }
 
     // ---------------------------------------------------------- Editing
@@ -2237,6 +2354,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
             case "F2":
                 var ec = VisibleColumns[Math.Clamp(col, 0, colCount - 1)];
                 if (ColumnEditable(ec)) BeginEdit(item);
+                // Keyboard parity with the row click: when the cell has no editor to open and rows
+                // expand on click, Enter toggles the detail - otherwise a grid whose toggle column is
+                // hidden would be unreachable without a pointer.
+                else if (e.Key == "Enter" && ExpandDetailOnRowClick) await ToggleDetailAsync(item);
                 return;
             case "Escape":
                 if (_editItem is not null) await CancelEditAsync();
@@ -2873,7 +2994,13 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
     // ----------------------------------------------------- Layout helpers
     internal bool HasSelectColumn => SelectionMode == BitDataGridSelectionMode.Multiple;
-    internal bool HasDetailColumn => DetailTemplate is not null;
+
+    /// <summary>True when rows can render expandable detail content.</summary>
+    internal bool HasDetailTemplate => DetailTemplate is not null;
+
+    /// <summary>True when the detail rows also get the built-in toggle column. Detail content can be
+    /// expanded without it (row clicks or code), so this only governs the extra leading column.</summary>
+    internal bool HasDetailColumn => HasDetailTemplate && ShowDetailToggle;
     internal bool HasCommandColumn => Editable;
     internal bool HasReorderColumn => RowReorderEnabled;
 

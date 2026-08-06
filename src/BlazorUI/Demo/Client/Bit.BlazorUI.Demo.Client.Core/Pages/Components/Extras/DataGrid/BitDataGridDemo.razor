@@ -840,6 +840,50 @@
             </BitDataGrid>
         </DemoExample>
 
+        <DemoExample Title="Detail rows from the row &amp; from code" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34">
+            <div>
+                The ▸ toggle column is not the only way into a detail row: <code>ExpandDetailOnRowClick</code>
+                expands the <code>DetailTemplate</code> from a click anywhere on the row (and
+                <kbd>Enter</kbd> on a focused cell), so <code>ShowDetailToggle="false"</code> can hide the
+                column altogether. It combines with selection - the click below both selects the row and
+                expands it. The same state is reachable from code with <code>ExpandDetailAsync</code>,
+                <code>CollapseDetailAsync</code>, <code>ToggleDetailAsync</code>,
+                <code>ExpandAllDetailsAsync</code> and <code>CollapseAllDetailsAsync</code>, or declaratively
+                by binding <code>ExpandedDetailItems</code>. Every change raises <code>OnDetailToggle</code>.
+            </div>
+            <br />
+            <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center">
+                <BitButton OnClick="ExpandAllDetails">Expand all</BitButton>
+                <BitButton OnClick="CollapseAllDetails" Variant="BitVariant.Outline">Collapse all</BitButton>
+                <BitButton OnClick="ToggleFirstDetail" Variant="BitVariant.Outline">Toggle the first row</BitButton>
+            </BitStack>
+            <br />
+            <BitDataGrid @ref="detailGrid" TItem="Product" Items="@detailProducts" Height="430px"
+                         ShowDetailToggle="false"
+                         ExpandDetailOnRowClick="true"
+                         OnDetailToggle="OnDetailToggled"
+                         SelectionMode="BitDataGridSelectionMode.Single"
+                         KeyField="p => p.Id">
+                <DetailTemplate Context="p">
+                    <BitStack Horizontal Wrap Gap="2rem">
+                        <div><strong>Supplier</strong><br />@p.Supplier</div>
+                        <div><strong>Released</strong><br />@p.ReleaseDate.ToString("D")</div>
+                        <div><strong>Inventory value</strong><br />@((p.Price * p.Stock).ToString("C2"))</div>
+                        <div><strong>Status</strong><br />@(p.Discontinued ? "Discontinued" : "Active")</div>
+                    </BitStack>
+                </DetailTemplate>
+                <Columns>
+                    <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Name" Width="220px" />
+                    <BitDataGridColumn Property="p => p.Category" />
+                    <BitDataGridColumn Property="p => p.Price" Format="C2" Align="BitDataGridColumnAlign.Right" />
+                    <BitDataGridColumn Property="p => p.Stock" Align="BitDataGridColumnAlign.Right" />
+                </Columns>
+            </BitDataGrid>
+            <br />
+            <BitText>@detailStatus</BitText>
+        </DemoExample>
+
     </Examples>
 </DemoPage>
 

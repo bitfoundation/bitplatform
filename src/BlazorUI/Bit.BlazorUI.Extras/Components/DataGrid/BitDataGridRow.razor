@@ -5,6 +5,7 @@
      aria-rowindex="@Grid.AriaRowIndex(Item)"
      data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
      aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
+     aria-expanded="@(RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false") : null)"
      @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 
@@ -27,7 +28,7 @@
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
-            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetail(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
+            <button type="button" class="bit-dtg-icon-btn" @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
                 @(Grid.IsDetailExpanded(Item) ? "▾" : "▸")
             </button>
         </div>
@@ -83,11 +84,11 @@
     }
 </div>
 
-@if (Grid.HasDetailColumn && Grid.IsDetailExpanded(Item) && Grid.DetailTemplate is not null)
+@if (Grid.HasDetailTemplate && Grid.IsDetailExpanded(Item))
 {
     <div class="bit-dtg-detail-row" role="row">
         <div class="bit-dtg-detail-content" role="gridcell">
-            @Grid.DetailTemplate(Item)
+            @Grid.DetailTemplate?.Invoke(Item)
         </div>
     </div>
 }
@@ -98,6 +99,10 @@
 
     private bool Selected => Grid.IsRowSelected(Item);
     private bool Editing => Grid.IsEditing(Item);
+
+    // The row itself acts as the detail toggle, so it carries the expanded state (and the pointer
+    // affordance) that would otherwise live on the toggle button alone.
+    private bool RowExpandable => Grid.HasDetailTemplate && Grid.ExpandDetailOnRowClick;
 
     // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
     // being selected. Uses the first visible column's value as row-specific context when available.
@@ -159,6 +164,7 @@
             var c = "bit-dtg-row";
             if (Selected) c += " bit-dtg-selected";
             if (Editing) c += " bit-dtg-editing";
+            if (RowExpandable && !Editing) c += " bit-dtg-row-expandable";
             return c;
         }
     }

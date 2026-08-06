@@ -1144,6 +1144,118 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task DetailsStayExpandableWhileTheToggleColumnIsHidden()
+    {
+        var rows = CreateRows();
+        var component = RenderGrid(rows, parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ShowDetailToggle, false);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-cell-detail").Count, "the toggle column must not render");
+
+        await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(rows[1]));
+
+        Assert.AreEqual("DETAIL-2", component.Find(".bit-dtg-detail-content").TextContent.Trim());
+        Assert.IsTrue(component.Instance.IsDetailExpanded(rows[1]));
+
+        await component.InvokeAsync(() => component.Instance.CollapseDetailAsync(rows[1]));
+
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+    }
+
+    [TestMethod]
+    public void RowClickTogglesDetailOnlyWhenEnabled()
+    {
+        var toggles = new List<BitDataGridDetailEventArgs<TestRow>>();
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+        });
+
+        // Without ExpandDetailOnRowClick the row click is inert: only the toggle button expands.
+        component.Find(".bit-dtg-body > .bit-dtg-row").Click();
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+            parameters.Add(p => p.OnDetailToggle, EventCallback.Factory.Create<BitDataGridDetailEventArgs<TestRow>>(this, toggles.Add));
+        });
+
+        component.Find(".bit-dtg-body > .bit-dtg-row").Click();
+        Assert.AreEqual("DETAIL-1", component.Find(".bit-dtg-detail-content").TextContent.Trim());
+
+        component.Find(".bit-dtg-body > .bit-dtg-row").Click();
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+
+        CollectionAssert.AreEqual(new[] { true, false }, toggles.Select(t => t.Expanded).ToArray());
+        Assert.IsTrue(toggles.All(t => t.Item.Id == 1));
+    }
+
+    [TestMethod]
+    public void RowClickDoesNotToggleDetailWhileARowIsEdited()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+        });
+
+        // Entering edit mode and then clicking the row must leave the editors where they are.
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+        component.Find(".bit-dtg-body > .bit-dtg-row").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+    }
+
+    [TestMethod]
+    public async Task ExpandAllDetailsCoversTheWholeViewAndCollapseAllClearsIt()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.Pageable, true);
+            parameters.Add(p => p.PageSize, 2);
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandAllDetailsAsync());
+
+        // Only the current page is rendered, but every row of the view is expanded - paging to the
+        // next page shows its details already open.
+        Assert.AreEqual(2, component.FindAll(".bit-dtg-detail-row").Count);
+        await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
+        Assert.AreEqual(2, component.FindAll(".bit-dtg-detail-row").Count);
+
+        await component.InvokeAsync(() => component.Instance.CollapseAllDetailsAsync());
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+    }
+
+    [TestMethod]
+    public void ExpandedDetailItemsBindingDrivesTheDetailRows()
+    {
+        var rows = CreateRows();
+        IReadOnlyList<TestRow> expanded = new List<TestRow>();
+        var component = RenderGrid(rows, parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+            parameters.Add(p => p.ExpandedDetailItems, expanded);
+            parameters.Add(p => p.ExpandedDetailItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => expanded = v));
+        });
+
+        // Incoming state expands rows without any user interaction.
+        component.Render(parameters => parameters.Add(p => p.ExpandedDetailItems, new List<TestRow> { rows[2] }));
+        Assert.AreEqual("DETAIL-3", component.Find(".bit-dtg-detail-content").TextContent.Trim());
+
+        // Outgoing changes are reported back through the binding.
+        component.FindAll(".bit-dtg-body > .bit-dtg-row")[0].Click();
+        CollectionAssert.AreEquivalent(new[] { 3, 1 }, expanded.Select(r => r.Id).ToArray());
+    }
+
+    [TestMethod]
     public void ColumnsParameterAliasesChildContent()
     {
         var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
