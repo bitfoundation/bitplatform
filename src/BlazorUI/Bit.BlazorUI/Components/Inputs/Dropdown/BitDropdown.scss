@@ -711,6 +711,7 @@
 .bit-drp-cai {
     display: flex;
     width: spacing(3.75);
+
     // Follows the height of the dropdown like Prefix/Suffix do, so the button fills the trigger
     // in every size instead of only in the medium one.
     height: var(--bit-drp-h);

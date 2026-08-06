@@ -1411,6 +1411,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
     private readonly string example24CsharpCode = @"
 private ICollection<BitDropdownItem<string>>? virtualizeItems1;
 private ICollection<BitDropdownItem<string>>? virtualizeItems2;
+private ICollection<BitDropdownItem<string>>? virtualizeItems3;
 
 private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
     new()
@@ -1464,6 +1465,10 @@ protected override void OnInitialized()
                                  .ToArray();
 
     virtualizeItems2 = Enumerable.Range(1, 10_000)
+                                 .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
+                                 .ToArray();
+
+    virtualizeItems3 = Enumerable.Range(1, 10_000)
                                  .Select(c => new BitDropdownItem<string> { Text = $""Category {c}"", Value = c.ToString() })
                                  .ToArray();
 }

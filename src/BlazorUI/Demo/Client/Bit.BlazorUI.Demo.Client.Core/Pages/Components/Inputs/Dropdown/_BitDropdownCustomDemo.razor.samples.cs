@@ -2129,6 +2129,7 @@ public class Product
 
 private ICollection<Product>? virtualizeCustoms1;
 private ICollection<Product>? virtualizeCustoms2;
+private ICollection<Product>? virtualizeCustoms3;
 
 private IEnumerable<Product> initialSelectedItem = [
     new()
@@ -2179,6 +2180,10 @@ protected override void OnInitialized()
                                    .ToArray();
 
     virtualizeCustoms2 = Enumerable.Range(1, 10_000)
+                                   .Select(p => new Product { Text = $""Produce {p}"", Value = p.ToString() })
+                                   .ToArray();
+
+    virtualizeCustoms3 = Enumerable.Range(1, 10_000)
                                    .Select(p => new Product { Text = $""Produce {p}"", Value = p.ToString() })
                                    .ToArray();
 }

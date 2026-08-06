@@ -1793,7 +1793,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
             else
             {
-                tempValue.Remove(GetValue(item));
+                // Not List.Remove: it compares with the default equality of TValue, which would leave the
+                // value in place whenever a custom ValueComparer is what makes it equal to the picked one.
+                var value = GetValue(item);
+                var index = tempValue.FindIndex(v => Comparer.Equals(v, value));
+                if (index > -1)
+                {
+                    tempValue.RemoveAt(index);
+                }
             }
 
             await AssignValues(tempValue);

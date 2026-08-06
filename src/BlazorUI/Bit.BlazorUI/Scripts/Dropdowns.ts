@@ -143,6 +143,10 @@ namespace BitBlazorUI {
                     items = scrolled.items;
                     current = scrolled.items.indexOf(document.activeElement as HTMLElement);
                     mode = scrolled.mode;
+
+                    // The new window can come back empty (the scroll landed on a range that renders
+                    // nothing), and every mode resolves to an index in a list that has no items.
+                    if (items.length === 0) return;
                 }
             }
 
