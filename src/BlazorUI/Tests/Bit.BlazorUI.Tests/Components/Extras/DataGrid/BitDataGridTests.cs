@@ -1286,8 +1286,14 @@ public class BitDataGridTests : BunitTestContext
         });
 
         component.FindAll(".bit-dtg-cell-command button")[0].Click();
-        component.Find(".bit-dtg-body > .bit-dtg-row").KeyDown("Enter");
 
+        // The edited row must not advertise a toggle it refuses to perform.
+        var editedRow = component.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsNull(editedRow.GetAttribute("tabindex"));
+        Assert.IsNull(editedRow.GetAttribute("aria-expanded"));
+        Assert.IsFalse(editedRow.ClassList.Contains("bit-dtg-row-expandable"));
+
+        editedRow.KeyDown("Enter");
         Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count, "expanding would shift the editors mid-edit");
     }
 

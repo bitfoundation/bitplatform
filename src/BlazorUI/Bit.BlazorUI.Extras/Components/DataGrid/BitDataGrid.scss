@@ -357,6 +357,12 @@ button.bit-dtg-htext {
     z-index: 1;
 }
 
+/* The inset ring is drawn over cells that a selected row paints with the primary color, so it would
+   blend into them. Switch to the selected foreground color, exactly as the focused cell does. */
+.bit-dtg-row.bit-dtg-selected[tabindex]:focus-visible {
+    outline-color: $clr-pri-text;
+}
+
 .bit-dtg-detail-row {
     border-bottom: 1px solid $clr-brd-ter;
 }

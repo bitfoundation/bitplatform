@@ -103,8 +103,11 @@
     private bool Editing => Grid.IsEditing(Item);
 
     // The row itself acts as the detail toggle, so it carries the expanded state (and the pointer
-    // affordance) that would otherwise live on the toggle button alone.
-    private bool RowExpandable => Grid.HasDetailTemplate && Grid.ExpandDetailOnRowClick;
+    // affordance) that would otherwise live on the toggle button alone. An edited row is excluded:
+    // HandleRowClickAsync refuses to toggle while an edit is open (expanding would shift the editors
+    // out from under the pointer), so advertising aria-expanded, the pointer cursor or a tab stop
+    // there would promise an interaction that cannot happen.
+    private bool RowExpandable => Grid.HasDetailTemplate && Grid.ExpandDetailOnRowClick && !Editing;
 
     // With the toggle column hidden and cell navigation off, the row is the only detail affordance and
     // nothing inside it is focusable, so an expansion that announces itself through aria-expanded would
@@ -172,7 +175,7 @@
             var c = "bit-dtg-row";
             if (Selected) c += " bit-dtg-selected";
             if (Editing) c += " bit-dtg-editing";
-            if (RowExpandable && !Editing) c += " bit-dtg-row-expandable";
+            if (RowExpandable) c += " bit-dtg-row-expandable";
             return c;
         }
     }
