@@ -1,0 +1,8 @@
+@* Pass-through wrapper: one opaque component layer between the router and its routes, adding one
+   registration-silent render wave the boot sentinel must tolerate. *@
+
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
