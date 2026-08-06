@@ -1,3 +1,6 @@
+// [mirror] IStorageService semantics - persistent vs temp storage - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
+
 using System.IO.IsolatedStorage;
 
 namespace Boilerplate.Client.Windows.Infrastructure.Services;

@@ -101,6 +101,7 @@ Example 2: `OnClick="WrapHandled(async () => await MyMethod())"` instead of `OnC
 -   **Use OData Query Options**: Leverage `[EnableQuery]` and `ODataQueryOptions` for efficient data filtering and pagination.
 -   **Follow Mapperly Conventions**: Use **partial static classes and extension methods** with Mapperly for high-performance object mapping.
 -   **Handle Concurrency**: Always use `long Version` for optimistic concurrency control in update and delete operations.
+-   **Respect `[mirror]` Comments**: Some files carry (near) identical logic under different extensions or projects. Each of them starts with a `[mirror]` comment listing its counterparts. Whenever you change such a file you **MUST** open every file that comment names and apply the same change there, or state explicitly why it does not apply. Run `Grep` for `[mirror]` to see the full set.
 
 ## 6. Behavioral Directives
 
