@@ -1732,7 +1732,8 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
     /// materialized sources (<see cref="ICollection{T}"/>) are pruned so a lazy
     /// <see cref="IEnumerable{T}"/> isn't enumerated an extra time. Controlled state is skipped
     /// (<see cref="SelectedItems"/>/<see cref="ExpandedDetailItems"/> are authoritative there and are
-    /// re-applied on every parameter set).
+    /// re-applied on every parameter set). A pruned row goes from expanded to collapsed like any other
+    /// collapse, so it is reported through <see cref="OnDetailToggle"/> too.
     /// </summary>
     private async Task PruneStaleRowStateAsync()
     {
@@ -1742,8 +1743,9 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         {
             if (ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 })
             {
+                var collapsed = _expandedDetailsSet.ToList();
                 _expandedDetailsSet.Clear();
-                await NotifyDetailsAsync();
+                await NotifyDetailsChangedAsync(collapsed, false);
             }
             if (SelectedItems is null && _selectedSet is { Count: > 0 })
             {
@@ -1760,8 +1762,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
 
         if (ExpandedDetailItems is null && _expandedDetailsSet is { Count: > 0 })
         {
-            var collapsed = _expandedDetailsSet.RemoveWhere(i => !keys.Contains(GetKey(i)));
-            if (collapsed > 0) await NotifyDetailsAsync();
+            var collapsed = _expandedDetailsSet.Where(i => !keys.Contains(GetKey(i))).ToList();
+            if (collapsed.Count > 0)
+            {
+                foreach (var item in collapsed) _expandedDetailsSet.Remove(item);
+                await NotifyDetailsChangedAsync(collapsed, false);
+            }
         }
 
         if (SelectedItems is null && _selectedSet is { Count: > 0 })
@@ -1842,13 +1848,7 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         }
         if (changed.Count == 0) return;
 
-        if (OnDetailToggle.HasDelegate)
-        {
-            foreach (var item in changed)
-                await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = true });
-        }
-
-        await NotifyDetailsAsync();
+        await NotifyDetailsChangedAsync(changed, true);
     }
 
     /// <summary>Collapses every expanded detail row, raising <see cref="OnDetailToggle"/> once per row.</summary>
@@ -1859,10 +1859,20 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         var changed = _expandedDetailsSet.ToList();
         _expandedDetailsSet.Clear();
 
+        await NotifyDetailsChangedAsync(changed, false);
+    }
+
+    /// <summary>
+    /// Reports a batch of rows whose expanded state just changed: <see cref="OnDetailToggle"/> once per
+    /// row (so a per-row listener sees the same events it would for one-at-a-time toggling), then the
+    /// new set through <see cref="ExpandedDetailItemsChanged"/>.
+    /// </summary>
+    private async Task NotifyDetailsChangedAsync(List<TItem> changed, bool expanded)
+    {
         if (OnDetailToggle.HasDelegate)
         {
             foreach (var item in changed)
-                await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = false });
+                await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = expanded });
         }
 
         await NotifyDetailsAsync();

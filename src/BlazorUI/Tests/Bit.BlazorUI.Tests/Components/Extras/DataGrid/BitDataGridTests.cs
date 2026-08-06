@@ -1122,6 +1122,42 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task PrunedRowsReportTheirCollapseThroughOnDetailToggle()
+    {
+        var toggles = new List<BitDataGridDetailEventArgs<TestRow>>();
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.OnDetailToggle, EventCallback.Factory.Create<BitDataGridDetailEventArgs<TestRow>>(this, toggles.Add));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[0]));
+        await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[1]));
+        toggles.Clear();
+
+        // Path 1: a replaced materialized source prunes only the rows that left it.
+        component.Render(parameters => parameters.Add(p => p.Items, CreateRows().Where(r => r.Id != 1).ToList()));
+
+        CollectionAssert.AreEqual(new[] { 1 }, toggles.Select(t => t.Item.Id).ToArray(),
+            "only the removed row collapsed");
+        Assert.IsTrue(toggles.All(t => t.Expanded == false));
+
+        // Path 2: a cleared source drops every row, so everything still expanded collapses.
+        toggles.Clear();
+        component.Render(parameters => parameters.Add(p => p.Items, (IEnumerable<TestRow>?)null));
+
+        CollectionAssert.AreEqual(new[] { 2 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.IsTrue(toggles.All(t => t.Expanded == false));
+
+        // Nothing is left expanded, so a further prune stays silent.
+        toggles.Clear();
+        component.Render(parameters => parameters.Add(p => p.Items, CreateRows()));
+        Assert.AreEqual(0, toggles.Count);
+    }
+
+    [TestMethod]
     public async Task PropertyExpressionBindsColumnLikeField()
     {
         RenderFragment columns = builder =>
