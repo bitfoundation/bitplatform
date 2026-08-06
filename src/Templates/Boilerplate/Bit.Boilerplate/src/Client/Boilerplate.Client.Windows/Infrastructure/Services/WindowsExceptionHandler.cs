@@ -1,3 +1,6 @@
+// [mirror] blazor hybrid exception handling - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiExceptionHandler.cs
+
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsExceptionHandler : ClientExceptionHandlerBase

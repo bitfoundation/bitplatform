@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+// [mirror] push notification and notificationclick handlers - keep in sync with:
+// - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.published.js
+
 // In development, always fetch from the network and do not enable offline support.
 // This is because caching would make development more difficult (changes would not
 // be reflected on the first load after each change).

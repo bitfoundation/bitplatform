@@ -1,3 +1,7 @@
+// [mirror] IPushNotificationService - subscription and permission flow - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/Android/Services/AndroidPushNotificationService.cs
+// - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/MacCatalystPushNotificationService.cs
+
 using UIKit;
 using UserNotifications;
 

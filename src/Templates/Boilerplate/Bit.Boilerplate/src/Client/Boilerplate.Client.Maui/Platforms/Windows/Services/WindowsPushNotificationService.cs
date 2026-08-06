@@ -1,3 +1,6 @@
+// [mirror] not implemented push notification service of the windows targets - keep in sync with:
+// - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsPushNotificationService.cs
+
 using Boilerplate.Shared.Features.PushNotification;
 
 namespace Boilerplate.Client.Maui.Platforms.Windows.Services;

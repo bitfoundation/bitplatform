@@ -1,3 +1,6 @@
+// [mirror] UNUserNotificationCenter delegate - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Services/AppUNUserNotificationCenterDelegate.cs
+
 using Foundation;
 using UserNotifications;
 

@@ -1,3 +1,6 @@
+// [mirror] NSData extensions - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Platforms/MacCatalyst/Extensions/NSDataExtensions.cs
+
 using System.Text;
 
 namespace Foundation;
