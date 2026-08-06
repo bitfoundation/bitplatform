@@ -1221,6 +1221,77 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow("Enter")]
+    [DataRow(" ")]
+    public void RowIsKeyboardOperableWhenItIsTheOnlyDetailToggle(string key)
+    {
+        // Hidden toggle column + no cell navigation leaves the row as the only detail affordance, so it
+        // has to be focusable and activate on Enter/Space - otherwise the expansion is pointer-only.
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ShowDetailToggle, false);
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+
+        var row = component.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.AreEqual("0", row.GetAttribute("tabindex"), "the row must be reachable by Tab");
+        Assert.AreEqual("false", row.GetAttribute("aria-expanded"));
+
+        row.KeyDown(key);
+        Assert.AreEqual("DETAIL-1", component.Find(".bit-dtg-detail-content").TextContent.Trim());
+        Assert.AreEqual("true", component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-expanded"));
+
+        component.Find(".bit-dtg-body > .bit-dtg-row").KeyDown(key);
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+        Assert.AreEqual("false", component.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void RowIsNotAKeyboardToggleWhenAnotherOneExists()
+    {
+        // The toggle column is a button of its own, so the row must not double as a tab stop.
+        var withToggle = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+        Assert.IsNull(withToggle.Find(".bit-dtg-body > .bit-dtg-row").GetAttribute("tabindex"));
+
+        // Cell navigation already routes Enter through the focused cell (HandleCellKeyDownAsync).
+        var withCellNav = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ShowDetailToggle, false);
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+            parameters.Add(p => p.CellNavigation, true);
+        });
+        var navRow = withCellNav.Find(".bit-dtg-body > .bit-dtg-row");
+        Assert.IsNull(navRow.GetAttribute("tabindex"));
+
+        // ...and the row keydown stays inert there, so the cell's Enter can't toggle twice.
+        navRow.KeyDown("Enter");
+        Assert.AreEqual(0, withCellNav.FindAll(".bit-dtg-detail-row").Count);
+    }
+
+    [TestMethod]
+    public void RowKeyboardToggleDoesNotFireWhileARowIsEdited()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ShowDetailToggle, false);
+            parameters.Add(p => p.ExpandDetailOnRowClick, true);
+        });
+
+        component.FindAll(".bit-dtg-cell-command button")[0].Click();
+        component.Find(".bit-dtg-body > .bit-dtg-row").KeyDown("Enter");
+
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count, "expanding would shift the editors mid-edit");
+    }
+
+    [TestMethod]
     public void RowClickDoesNotToggleDetailWhileARowIsEdited()
     {
         var component = RenderGrid(configure: parameters =>

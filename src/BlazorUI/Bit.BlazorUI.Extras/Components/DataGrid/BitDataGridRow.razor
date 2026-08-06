@@ -6,6 +6,8 @@
      data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
      aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
      aria-expanded="@(RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false") : null)"
+     tabindex="@(RowKeyboardToggle ? 0 : (int?)null)"
+     @onkeydown="HandleRowKeyDown"
      @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
      @ondrop="() => Grid.DropRowAsync(Item)">
 
@@ -104,6 +106,12 @@
     // affordance) that would otherwise live on the toggle button alone.
     private bool RowExpandable => Grid.HasDetailTemplate && Grid.ExpandDetailOnRowClick;
 
+    // With the toggle column hidden and cell navigation off, the row is the only detail affordance and
+    // nothing inside it is focusable, so an expansion that announces itself through aria-expanded would
+    // be reachable by pointer only. Make the row the keyboard control in exactly that case: the toggle
+    // column is already a button, and cell navigation already routes Enter through the focused cell.
+    private bool RowKeyboardToggle => RowExpandable && !Grid.HasDetailColumn && !Grid.CellNavigation;
+
     // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
     // being selected. Uses the first visible column's value as row-specific context when available.
     private string SelectRowLabel
@@ -181,6 +189,19 @@
     }
 
     private Task OnRowClick() => Grid.HandleRowClickAsync(Item);
+
+    // Keyboard activation of the row-as-toggle: Enter and Space do exactly what a click does (so the
+    // edit guard, the single-selection and the expansion all stay in one place, and aria-expanded keeps
+    // tracking the same state). Inert unless the row is the keyboard control - otherwise the focused
+    // cell or the toggle button owns these keys and would fire twice. Space's page-scroll default is
+    // cancelled by the capture-phase guard in BitDataGrid.ts, which (unlike
+    // @onkeydown:preventDefault, evaluated at render time) can decide on the key actually pressed.
+    private async Task HandleRowKeyDown(KeyboardEventArgs e)
+    {
+        if (!RowKeyboardToggle) return;
+        if (e.Key != "Enter" && e.Key != " ") return;
+        await Grid.HandleRowClickAsync(Item);
+    }
 
     // Lets keyboard users reorder rows without drag-and-drop: ArrowUp/ArrowDown move the focused row
     // one position toward the start/end, reusing the same reorder pipeline as the pointer drag path.

@@ -349,6 +349,14 @@ button.bit-dtg-htext {
     cursor: auto;
 }
 
+/* The row is focusable when it is the only detail toggle (hidden toggle column, no cell
+   navigation), so it needs the same visible focus ring the navigable cells get. */
+.bit-dtg-row[tabindex]:focus-visible {
+    outline: 2px solid $clr-pri;
+    outline-offset: -2px;
+    z-index: 1;
+}
+
 .bit-dtg-detail-row {
     border-bottom: 1px solid $clr-brd-ter;
 }
