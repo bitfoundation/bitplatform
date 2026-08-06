@@ -337,6 +337,32 @@ button.bit-dtg-htext {
 }
 
 /* ---------------------------------------------------------- Detail rows */
+/* The whole row toggles its detail content, so it gets the affordance of a control.
+   The reorder/select/command cells keep the default cursor: they stop the click. */
+.bit-dtg-row-expandable {
+    cursor: pointer;
+}
+
+.bit-dtg-row-expandable .bit-dtg-cell-reorder,
+.bit-dtg-row-expandable .bit-dtg-cell-select,
+.bit-dtg-row-expandable .bit-dtg-cell-command {
+    cursor: auto;
+}
+
+/* The row is focusable when it is the only detail toggle (hidden toggle column, no cell
+   navigation), so it needs the same visible focus ring the navigable cells get. */
+.bit-dtg-row[tabindex]:focus-visible {
+    outline: 2px solid $clr-pri;
+    outline-offset: -2px;
+    z-index: 1;
+}
+
+/* The inset ring is drawn over cells that a selected row paints with the primary color, so it would
+   blend into them. Switch to the selected foreground color, exactly as the focused cell does. */
+.bit-dtg-row.bit-dtg-selected[tabindex]:focus-visible {
+    outline-color: $clr-pri-text;
+}
+
 .bit-dtg-detail-row {
     border-bottom: 1px solid $clr-brd-ter;
 }
