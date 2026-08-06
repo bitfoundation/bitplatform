@@ -106,8 +106,8 @@ public partial class BitDataGridDemo
         new() { Name = "CollapseDetailAsync", Type = "Task", DefaultValue = "", Description = "CollapseDetailAsync(item) - collapses the given row's detail content." },
         new() { Name = "ToggleDetailAsync", Type = "Task", DefaultValue = "", Description = "ToggleDetailAsync(item) - expands the given row's detail content when collapsed, and collapses it otherwise." },
         new() { Name = "SetDetailExpandedAsync", Type = "Task", DefaultValue = "", Description = "SetDetailExpandedAsync(item, expanded) - expands or collapses a row's detail content." },
-        new() { Name = "ExpandAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Expands the detail content of every row of the current view (all rows matching the active filters, not only the rendered page)." },
-        new() { Name = "CollapseAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Collapses every expanded detail row." },
+        new() { Name = "ExpandAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Expands the detail content of every row of the current view - in local mode every row matching the active filters, not only the rendered page; in server, queryable and infinite modes only the rows loaded so far. Raises OnDetailToggle once per newly expanded row." },
+        new() { Name = "CollapseAllDetailsAsync", Type = "Task", DefaultValue = "", Description = "Collapses every expanded detail row, raising OnDetailToggle once per row." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

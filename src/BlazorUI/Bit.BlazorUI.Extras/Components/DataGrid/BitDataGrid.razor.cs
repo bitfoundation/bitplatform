@@ -1820,25 +1820,45 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         await NotifyDetailsAsync();
     }
 
-    /// <summary>Expands the detail content of every row of the current view (all rows matching the
-    /// active filters, not only the rendered page). No-op without a <see cref="DetailTemplate"/>.</summary>
+    /// <summary>Expands the detail content of every row of the current view. In local mode that is
+    /// every row matching the active filters, not only the rendered page; in server, queryable and
+    /// infinite modes the grid only holds the rows fetched so far, so only those are expanded.
+    /// Raises <see cref="OnDetailToggle"/> once per newly expanded row.
+    /// No-op without a <see cref="DetailTemplate"/>.</summary>
     public async Task ExpandAllDetailsAsync()
     {
         if (!HasDetailTemplate) return;
 
-        var changed = false;
-        foreach (var item in _view) changed |= _expandedDetails.Add(item);
-        if (!changed) return;
+        var changed = new List<TItem>();
+        foreach (var item in _view)
+        {
+            if (_expandedDetails.Add(item)) changed.Add(item);
+        }
+        if (changed.Count == 0) return;
+
+        if (OnDetailToggle.HasDelegate)
+        {
+            foreach (var item in changed)
+                await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = true });
+        }
 
         await NotifyDetailsAsync();
     }
 
-    /// <summary>Collapses every expanded detail row.</summary>
+    /// <summary>Collapses every expanded detail row, raising <see cref="OnDetailToggle"/> once per row.</summary>
     public async Task CollapseAllDetailsAsync()
     {
         if (_expandedDetailsSet is not { Count: > 0 }) return;
 
+        var changed = _expandedDetailsSet.ToList();
         _expandedDetailsSet.Clear();
+
+        if (OnDetailToggle.HasDelegate)
+        {
+            foreach (var item in changed)
+                await OnDetailToggle.InvokeAsync(new BitDataGridDetailEventArgs<TItem> { Item = item, Expanded = false });
+        }
+
         await NotifyDetailsAsync();
     }
 

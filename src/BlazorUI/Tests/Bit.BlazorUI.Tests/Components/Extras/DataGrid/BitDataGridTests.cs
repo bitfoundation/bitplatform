@@ -1214,9 +1214,11 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public async Task ExpandAllDetailsCoversTheWholeViewAndCollapseAllClearsIt()
     {
+        var toggles = new List<BitDataGridDetailEventArgs<TestRow>>();
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.OnDetailToggle, EventCallback.Factory.Create<BitDataGridDetailEventArgs<TestRow>>(this, toggles.Add));
             parameters.Add(p => p.Pageable, true);
             parameters.Add(p => p.PageSize, 2);
         });
@@ -1229,8 +1231,21 @@ public class BitDataGridTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.GoToPageAsync(2));
         Assert.AreEqual(2, component.FindAll(".bit-dtg-detail-row").Count);
 
+        // The bulk operation reports each row it expanded, not just the rendered page.
+        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.IsTrue(toggles.All(t => t.Expanded));
+
+        toggles.Clear();
         await component.InvokeAsync(() => component.Instance.CollapseAllDetailsAsync());
         Assert.AreEqual(0, component.FindAll(".bit-dtg-detail-row").Count);
+
+        CollectionAssert.AreEquivalent(new[] { 1, 2, 3, 4, 5 }, toggles.Select(t => t.Item.Id).ToArray());
+        Assert.IsTrue(toggles.All(t => t.Expanded == false));
+
+        // Nothing left to change: a second bulk call is a no-op and raises no callback.
+        toggles.Clear();
+        await component.InvokeAsync(() => component.Instance.CollapseAllDetailsAsync());
+        Assert.AreEqual(0, toggles.Count);
     }
 
     [TestMethod]
