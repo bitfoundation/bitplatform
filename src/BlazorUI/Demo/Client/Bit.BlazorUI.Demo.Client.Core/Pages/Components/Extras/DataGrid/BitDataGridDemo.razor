@@ -861,6 +861,7 @@
             <BitDataGrid @ref="detailGrid" TItem="Product" Items="@detailProducts" Height="430px"
                          ShowDetailToggle="false"
                          ExpandDetailOnRowClick="true"
+                         CellNavigation="true"
                          OnDetailToggle="OnDetailToggled"
                          SelectionMode="BitDataGridSelectionMode.Single"
                          KeyField="p => p.Id">

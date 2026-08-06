@@ -1096,6 +1096,32 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task InPlaceItemRemovalPrunesStaleExpandedDetailsOnRefresh()
+    {
+        IReadOnlyList<TestRow>? expanded = null;
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.KeyField, (Func<TestRow, object>)(r => r.Id));
+            parameters.Add(p => p.DetailTemplate, (RenderFragment<TestRow>)(r => b => b.AddContent(0, $"DETAIL-{r.Id}")));
+            parameters.Add(p => p.ExpandedDetailItemsChanged, EventCallback.Factory.Create<IReadOnlyList<TestRow>>(this, v => expanded = v));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[0]));
+        await component.InvokeAsync(() => component.Instance.ExpandDetailAsync(items[1]));
+        CollectionAssert.AreEquivalent(new[] { 1, 2 }, expanded!.Select(r => r.Id).ToArray());
+
+        // The row leaves through the same list instance, so the Items reference never changes and only
+        // the explicit refresh can notice it.
+        items.RemoveAt(0);
+        await component.InvokeAsync(() => component.Instance.RefreshAsync());
+
+        CollectionAssert.AreEquivalent(new[] { 2 }, expanded!.Select(r => r.Id).ToArray(),
+            "a row removed in place must not stay expanded");
+        Assert.IsFalse(component.Instance.IsDetailExpanded(new TestRow { Id = 1 }));
+    }
+
+    [TestMethod]
     public async Task PropertyExpressionBindsColumnLikeField()
     {
         RenderFragment columns = builder =>

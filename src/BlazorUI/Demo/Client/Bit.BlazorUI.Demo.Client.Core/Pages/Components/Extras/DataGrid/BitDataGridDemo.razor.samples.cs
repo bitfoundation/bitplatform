@@ -1078,6 +1078,7 @@ private int? NameSpan(Product p) => p.Discontinued ? 2 : null;" + ProductModelCo
 <BitDataGrid @ref=""grid"" TItem=""Product"" Items=""@products"" Height=""430px""
              ShowDetailToggle=""false""
              ExpandDetailOnRowClick=""true""
+             CellNavigation=""true""
              OnDetailToggle=""OnDetailToggled""
              SelectionMode=""BitDataGridSelectionMode.Single""
              KeyField=""p => p.Id"">

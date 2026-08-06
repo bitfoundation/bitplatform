@@ -796,6 +796,12 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
         else
         {
             ProcessClientData();
+
+            // The parent may drop rows by mutating the same Items instance in place, which leaves the
+            // reference unchanged - so OnParametersSetAsync's replaced-source prune never fires for it
+            // and the removed rows would stay selected/expanded (and strongly referenced). Pruning here
+            // covers that path too; tree sources keep their own expand state and are left alone.
+            if (!IsTreeMode) await PruneStaleRowStateAsync();
         }
         StateHasChanged();
     }
@@ -2376,8 +2382,10 @@ public partial class BitDataGrid<TItem> : ComponentBase, IAsyncDisposable
                 if (ColumnEditable(ec)) BeginEdit(item);
                 // Keyboard parity with the row click: when the cell has no editor to open and rows
                 // expand on click, Enter toggles the detail - otherwise a grid whose toggle column is
-                // hidden would be unreachable without a pointer.
-                else if (e.Key == "Enter" && ExpandDetailOnRowClick) await ToggleDetailAsync(item);
+                // hidden would be unreachable without a pointer. Gated on no edit being active for the
+                // same reason as HandleRowClickAsync: another row's cells still route here while an
+                // edit is open, and expanding a detail would shift the editors mid-edit.
+                else if (e.Key == "Enter" && ExpandDetailOnRowClick && _editItem is null) await ToggleDetailAsync(item);
                 return;
             case "Escape":
                 if (_editItem is not null) await CancelEditAsync();
