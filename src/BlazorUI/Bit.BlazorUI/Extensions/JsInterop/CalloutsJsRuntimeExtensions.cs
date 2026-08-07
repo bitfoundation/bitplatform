@@ -50,6 +50,13 @@ internal static class CalloutsJsRuntimeExtensions
             maxHeight);
     }
 
+    // Re-applies the space the scrollable content of the open callout cannot use, for the parts above
+    // it that come and go while it stays open. It does nothing when the given callout is not the open one.
+    internal static ValueTask BitCalloutUpdateScrollOffset(this IJSRuntime jsRuntime, string calloutId, int scrollOffset)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.updateScrollOffset", calloutId, scrollOffset);
+    }
+
     internal static ValueTask BitCalloutClearCallout(this IJSRuntime jsRuntime, string calloutId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.clear", calloutId);

@@ -312,6 +312,21 @@ namespace BitBlazorUI {
                 params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false, params.maxHeight);
         }
 
+        // Re-applies the space the scrollable content of an open callout cannot use. The parts that sit
+        // above that content can come and go while the callout stays open (a dropdown's select all row
+        // disappears as soon as a search matches nothing), and the callout is otherwise only laid out
+        // when it is toggled, which would leave the list measured against a header that is no longer there.
+        public static updateScrollOffset(calloutId: string, scrollOffset: number) {
+            const params = Callouts._currentParams;
+            if (params == null) return;
+            if (params.calloutId !== calloutId) return;
+            if (params.scrollOffset === scrollOffset) return;
+
+            params.scrollOffset = scrollOffset;
+
+            Callouts.reposition();
+        }
+
         public static reset() {
             Callouts.current = Callouts.DEFAULT_CALLOUT;
             Callouts._currentParams = null;

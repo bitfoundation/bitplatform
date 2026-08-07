@@ -11,6 +11,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     private string? _lastText;
     private TValue? _lastValue;
     private bool _lastIsHidden;
+    private bool _lastIsEnabled = true;
     private BitDropdownItemType _lastItemType = BitDropdownItemType.Normal;
 
     [CascadingParameter] protected BitDropdown<BitDropdownOption<TValue>, TValue> Parent { get; set; } = default!;
@@ -119,6 +120,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
             _lastText != Text ||
             _lastItemType != ItemType ||
             _lastIsHidden != IsHidden ||
+            _lastIsEnabled != IsEnabled ||
             EqualityComparer<TValue>.Default.Equals(_lastValue, Value) is false)
         {
             _lastId = Id;
@@ -126,6 +128,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
             _lastValue = Value;
             _lastItemType = ItemType;
             _lastIsHidden = IsHidden;
+            _lastIsEnabled = IsEnabled;
 
             Parent?.NotifyOptionParametersChanged();
         }

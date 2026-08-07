@@ -43,6 +43,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private List<TItem>? _displayItems;
     private HashSet<TItem>? _collapsedItems;
     private bool _isResponsiveMode;
+    private int _calloutScrollOffset = -1;
     private bool _internalIsOpenChange;
     private bool _suppressOpenOnFocus;
     private bool _inputSearchHasFocus;
@@ -818,6 +819,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [CallOnSet(nameof(OnSetValues))]
     public IEnumerable<TValue?>? Values { get; set; }
 
+    /// <summary>
+    /// The expression that identifies the bound <see cref="Values"/>, which is what ties the multi
+    /// select mode to an EditContext: it is what a validation message for the field is looked up by.
+    /// It is supplied by the compiler for a <c>@bind-Values</c> binding, so it only has to be set by
+    /// hand when the values are bound in some other way.
+    /// </summary>
     [Parameter] public Expression<Func<IEnumerable<TValue?>?>>? ValuesExpression { get; set; }
 
     /// <summary>
@@ -861,14 +868,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                                                 : ValueTask.CompletedTask;
 
     /// <summary>
-    /// The ElementReference to the search input element.
+    /// The ElementReference to the search input element, which is null while the search box is not
+    /// rendered - it needs <see cref="ShowSearchBox"/>, and it is replaced by the input of the
+    /// dropdown itself in the ComboBox mode.
     /// </summary>
-    public ElementReference? SearchInputElement => _searchInputRef;
+    public ElementReference? SearchInputElement => HasSearchBox ? _searchInputRef : null;
 
     /// <summary>
-    /// Gives focus to the search input element.
+    /// Gives focus to the search input element. It does nothing while the search box is not rendered,
+    /// which is what <see cref="SearchInputElement"/> reports.
     /// </summary>
-    public ValueTask FocusSearchInputAsync() => _searchInputRef.FocusAsync();
+    public ValueTask FocusSearchInputAsync() => HasSearchBox ? _searchInputRef.FocusAsync() : ValueTask.CompletedTask;
 
     /// <summary>
     /// Discards the items loaded so far and asks the <see cref="ItemsProvider"/> for them again, which
@@ -1077,8 +1087,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // chip) must not have the focus pulled to the dropdown at all.
         if (wasOpen && IsOpen is false)
         {
-            _suppressOpenOnFocus = true;
-            await FocusTrigger();
+            await RestoreFocusToTrigger();
         }
 
         StateHasChanged();
@@ -1718,7 +1727,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
+        if (firstRender is false)
+        {
+            await RefreshCalloutScrollOffset();
+
+            return;
+        }
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
@@ -2067,6 +2081,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return (IsOpen && _isResponsiveMode ? _comboBoxInputResponsiveRef : _comboBoxInputRef).FocusAsync();
     }
 
+    // Moves the focus back to the trigger after the component itself dismissed whatever had it, without
+    // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
+    // move produces; a move that never happens (a disconnected circuit, an element that is no longer on
+    // the page) clears it here instead, so it cannot go on to swallow the next focus the user gives.
+    private async Task RestoreFocusToTrigger()
+    {
+        _suppressOpenOnFocus = true;
+
+        try
+        {
+            await FocusTrigger();
+        }
+        catch
+        {
+            _suppressOpenOnFocus = false;
+
+            throw;
+        }
+    }
+
     // Dismissing the callout hides whatever inside it has the focus (an option, the search box), which
     // would otherwise drop the focus to the document body and strand a keyboard user at the top of the
     // page. Every dismissal the user asks for by hand goes through here so the focus comes back to the
@@ -2080,8 +2114,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
         if (IsOpen) return;
 
-        _suppressOpenOnFocus = true;
-        await FocusTrigger();
+        await RestoreFocusToTrigger();
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -2101,9 +2134,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // A pointer open mirrors the keyboard open: the focus (and with it the scroll) goes to the
         // selected item, or the first one, unless an input already claimed the focus above.
-        if (Combo is false && (ShowSearchBox && AutoFocusSearchBox) is false)
+        if (Combo is false && (HasSearchBox && AutoFocusSearchBox) is false)
         {
-            await FocusItem("selected");
+            await FocusItem(BitDropdownFocusMode.Selected);
         }
     }
 
@@ -2154,7 +2187,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (e.Key is "ArrowDown" or "ArrowUp")
             {
                 await OpenCallout();
-                await FocusItem("selected");
+                await FocusItem(BitDropdownFocusMode.Selected);
             }
             return;
         }
@@ -2172,20 +2205,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 // A keyboard open mirrors the pointer open: a search-first dropdown (AutoFocusSearchBox)
                 // hands the focus to the search box instead of the selected item. The arrow keys below
                 // keep focusing the items either way, since pressing them is asking to walk the list.
-                if (ShowSearchBox && AutoFocusSearchBox)
+                if (HasSearchBox && AutoFocusSearchBox)
                 {
                     await FocusOnSearchBox();
                 }
                 else
                 {
-                    await FocusItem("selected");
+                    await FocusItem(BitDropdownFocusMode.Selected);
                 }
             }
         }
         else if (e.Key is "ArrowDown" or "ArrowUp")
         {
             await OpenCallout();
-            await FocusItem("selected");
+            await FocusItem(BitDropdownFocusMode.Selected);
         }
         // Home and End jump to the ends of the list from the closed dropdown as well, so reaching the
         // last of a long list does not require opening it first and then pressing a second key. There is
@@ -2193,12 +2226,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         else if (e.Key is "Home" or "End")
         {
             await OpenCallout();
-            await FocusItem(e.Key is "Home" ? "first" : "last");
+            await FocusItem(e.Key is "Home" ? BitDropdownFocusMode.First : BitDropdownFocusMode.Last);
         }
         else if (IsPrintableKey(e))
         {
             await OpenCallout();
-            await FocusItem("char", GetTypeAheadBuffer(e.Key!));
+            await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
         }
     }
 
@@ -2210,7 +2243,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         switch (e.Key)
         {
             case "ArrowDown":
-                await FocusItem("next");
+                await FocusItem(BitDropdownFocusMode.Next);
                 break;
             case "ArrowUp":
                 // Alt+ArrowUp dismisses the popup and returns to the trigger, per the APG combobox pattern.
@@ -2220,21 +2253,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 }
                 else
                 {
-                    await FocusItem("prev");
+                    await FocusItem(BitDropdownFocusMode.Prev);
                 }
                 break;
             case "PageDown":
-                await FocusItem("nextPage");
+                await FocusItem(BitDropdownFocusMode.NextPage);
                 break;
             case "PageUp":
-                await FocusItem("prevPage");
+                await FocusItem(BitDropdownFocusMode.PrevPage);
                 break;
             case "Home":
             case "End":
                 // Home/End keep their caret behavior while typing in the search/combo inputs.
                 if (_inputSearchHasFocus is false && _inputComboHasFocus is false)
                 {
-                    await FocusItem(e.Key is "Home" ? "first" : "last");
+                    await FocusItem(e.Key is "Home" ? BitDropdownFocusMode.First : BitDropdownFocusMode.Last);
                 }
                 break;
             case "Escape":
@@ -2260,7 +2293,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 // typed into the search box must keep filtering instead of moving focus.
                 else if (Combo is false && _inputSearchHasFocus is false && IsPrintableKey(e))
                 {
-                    await FocusItem("char", GetTypeAheadBuffer(e.Key!));
+                    await FocusItem(BitDropdownFocusMode.Char, GetTypeAheadBuffer(e.Key!));
                 }
                 break;
         }
@@ -2289,7 +2322,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return _typeAheadBuffer;
     }
 
-    private ValueTask FocusItem(string mode, string? character = null)
+    private ValueTask FocusItem(BitDropdownFocusMode mode, string? character = null)
     {
         return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize, GetSelectedItemIndex(mode), ItemSize);
     }
@@ -2300,9 +2333,9 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // long list would show its top rather than what is currently selected.
     // It is only knowable over a local collection; with an ItemsProvider the loaded window is all the
     // component has, and the item of a value whose page was never fetched has no index to scroll to.
-    private int GetSelectedItemIndex(string mode)
+    private int GetSelectedItemIndex(BitDropdownFocusMode mode)
     {
-        if (mode != "selected") return -1;
+        if (mode != BitDropdownFocusMode.Selected) return -1;
         if (Virtualize is false || ItemsProvider is not null) return -1;
 
         var selected = _selectedItems.FirstOrDefault();
@@ -2390,7 +2423,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ShowSearchBox is false) return;
+        if (HasSearchBox is false) return;
 
         if (Immediate is false) return;
 
@@ -2401,7 +2434,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task HandleOnSearchBoxChange(ChangeEventArgs e)
     {
         if (IsEnabled is false) return;
-        if (ShowSearchBox is false) return;
+        if (HasSearchBox is false) return;
 
         if (Immediate) return;
 
@@ -2421,7 +2454,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task ClearSearchBox()
     {
         if (IsEnabled is false) return;
-        if (ShowSearchBox is false) return;
+        // Not ShowSearchBox: in the ComboBox mode the search text belongs to the combo input, and
+        // clearing it from here would leave ClearComboBoxInput with nothing to do and the input
+        // holding the term it was supposed to empty.
+        if (HasSearchBox is false) return;
         if (_searchText.HasNoValue()) return;
 
         _rateLimiter.Reset();
@@ -2478,10 +2514,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         });
     }
 
+    // Whether the search box element (and with it the reference to its input) actually exists. The
+    // ComboBox mode filters through the input of the dropdown itself, so the search box is not
+    // rendered there however ShowSearchBox is set - and focusing a reference that was never assigned
+    // throws rather than doing nothing.
+    private bool HasSearchBox => ShowSearchBox && Combo is false;
+
     private async ValueTask FocusOnSearchBox()
     {
         if (IsEnabled is false) return;
-        if (ShowSearchBox is false) return;
+        if (HasSearchBox is false) return;
         if (AutoFocusSearchBox is false) return;
         if (IsOpen is false) return;
 
@@ -2502,6 +2544,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _searchText = null;
         _comboInputText = null;
 
+        // The rendered value attribute alone cannot always empty the input: when the text was set and
+        // cleared within the same event - a pasted list of terms committed through TokenSeparators, for
+        // instance - the value the renderer holds never changes, so it emits no edit and the input keeps
+        // what was typed into it. The element is emptied directly, which is what this method promises.
+        await ClearComboInputValue();
+
         RefreshOptions();
 
         await OnSearch.InvokeAsync(_searchText);
@@ -2509,6 +2557,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // The items of a virtualized combo box come from the ItemsProvider filtered by the search
         // text, so dropping the text has to re-request them just like clearing the search box does.
         await SearchVirtualized();
+    }
+
+    private async ValueTask ClearComboInputValue()
+    {
+        if (Combo is false || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsSetProperty(_comboBoxInputRef, "value", string.Empty);
+
+            // The responsive panel has an input of its own, and it only exists while the panel is on
+            // the screen. Its reference is assigned a render later than the flag, so a clear that lands
+            // in between finds nothing to empty - which the catch below turns into a no-op.
+            if (_isResponsiveMode && IsOpen)
+            {
+                await _js.BitUtilsSetProperty(_comboBoxInputResponsiveRef, "value", string.Empty);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (InvalidOperationException) { } // an input that is not on the page has no value to clear
     }
 
     private async ValueTask FocusOnComboBoxInput()
@@ -3010,7 +3078,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var offset = 0;
 
-        if (ShowSearchBox && Combo is false)
+        if (HasSearchBox)
         {
             offset += Size switch { BitSize.Small => 26, BitSize.Large => 40, _ => 32 };
         }
@@ -3023,9 +3091,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return offset;
     }
 
+    // The height available to the item list is only computed when the callout is laid out, which happens
+    // when it is toggled. The parts above that list can come and go while it stays open - a search that
+    // matches nothing takes the select all row with it - so a change to the offset is pushed to the
+    // already positioned callout instead of waiting for the next open.
+    private async Task RefreshCalloutScrollOffset()
+    {
+        if (IsOpen is false || IsDisposed || IsEnabled is false) return;
+
+        var scrollOffset = GetCalloutScrollOffset();
+        if (scrollOffset == _calloutScrollOffset) return;
+
+        _calloutScrollOffset = scrollOffset;
+
+        try
+        {
+            await _js.BitCalloutUpdateScrollOffset(_calloutId, scrollOffset);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task ToggleCallout()
     {
         if (IsEnabled is false || IsDisposed) return;
+
+        _calloutScrollOffset = GetCalloutScrollOffset();
 
         _isResponsiveMode = await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
@@ -3039,7 +3129,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: _scrollContainerId,
-            scrollOffset: GetCalloutScrollOffset(),
+            scrollOffset: _calloutScrollOffset,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: PreserveCalloutWidth is false,
@@ -3135,8 +3225,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // refused removal (a one-way binding) keeps the chip, and the focus with it.
         if (item is not null && GetIsSelected(item) is false)
         {
-            _suppressOpenOnFocus = true;
-            await FocusTrigger();
+            await RestoreFocusToTrigger();
         }
     }
 
@@ -3149,8 +3238,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // the document body. A refused clear (a one-way binding) keeps the button, and the focus.
         if (_selectedItems.Count == 0)
         {
-            _suppressOpenOnFocus = true;
-            await FocusTrigger();
+            await RestoreFocusToTrigger();
         }
     }
 

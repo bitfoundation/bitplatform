@@ -132,67 +132,86 @@
             </span>
         }
 
-        @* No live region here: this element names the combobox through aria-labelledby, so a screen
-           reader reads the new selection when the focus returns to the trigger. Announcing it on every
-           render would repeat the whole selection after each keystroke typed into the combo input. *@
-        <span id="@_dropdownTextContainerId"
-              style="@Styles?.TextContainer"
+        <span style="@Styles?.TextContainer"
               class="bit-drp-tcn @Classes?.TextContainer">
 
-            @if (Chips)
-            {
-                @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
+            @* No live region here: this element names the combobox through aria-labelledby, so a screen
+               reader reads the new selection when the focus returns to the trigger. Announcing it on every
+               render would repeat the whole selection after each keystroke typed into the combo input.
+               It wraps the selection display only, and not the ComboBox input beside it: an input inside
+               the element that names the combobox would contribute its value to that name, which would
+               make the trigger report back whatever is currently being typed into it. The wrapper takes
+               no part in the layout (display:contents), so the chips stay the direct flex items they were. *@
+            <span id="@_dropdownTextContainerId" class="bit-drp-tdp">
+                @if (Chips)
                 {
-                    <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
-                        @if (ChipTemplate is not null)
-                        {
-                            @ChipTemplate(item)
-                        }
-                        else
-                        {
-                            @GetText(item)
-                        }
-                        @if (IsEnabled && ReadOnly is false)
-                        {
-                            @* A button so the chip can be removed with the keyboard and is announced as an action.
-                               The keydown listener of Dropdowns.ts stops Enter and Space from reaching the
-                               trigger's keydown handler, so activating the button cannot toggle the callout
-                               while the other keys keep operating the dropdown. *@
-                            <button @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation
-                                    type="button"
-                                    style="@Styles?.ChipsRemoveButton"
-                                    class="bit-drp-crb @Classes?.ChipsRemoveButton"
-                                    aria-label="@GetChipsRemoveButtonAriaLabel(item)">
-                                <i aria-hidden="true" style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" />
-                            </button>
-                        }
-                    </span>
+                    @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
+                    {
+                        <span style="@Styles?.Chips" class="bit-drp-chp @Classes?.Chips">
+                            @if (ChipTemplate is not null)
+                            {
+                                @ChipTemplate(item)
+                            }
+                            else
+                            {
+                                @GetText(item)
+                            }
+                            @if (IsEnabled && ReadOnly is false)
+                            {
+                                @* A button so the chip can be removed with the keyboard and is announced as an action.
+                                   The keydown listener of Dropdowns.ts stops Enter and Space from reaching the
+                                   trigger's keydown handler, so activating the button cannot toggle the callout
+                                   while the other keys keep operating the dropdown. *@
+                                <button @onclick="() => HandleOnClickUnselectItem(item)" @onclick:stopPropagation
+                                        type="button"
+                                        style="@Styles?.ChipsRemoveButton"
+                                        class="bit-drp-crb @Classes?.ChipsRemoveButton"
+                                        aria-label="@GetChipsRemoveButtonAriaLabel(item)">
+                                    <i aria-hidden="true" style="@Styles?.ChipsRemoveIcon" class="@chipsRemoveIconCss @Classes?.ChipsRemoveIcon" />
+                                </button>
+                            }
+                        </span>
+                    }
+
+                    @if (GetOverflowItemsCount() > 0)
+                    {
+                        @* The chip only shows how many selections it stands for. The ones it hides are named
+                           in its title for the pointer, and take its place in the accessible name so that
+                           the combobox (which is named after this container) still reports them all. *@
+                        <span style="@Styles?.OverflowChip"
+                              class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
+                              title="@GetOverflowItemsText()"
+                              aria-label="@GetOverflowItemsText()">
+                            @GetOverflowText()
+                        </span>
+                    }
+                }
+                else if (_selectedItems.Count > 0)
+                {
+                    @if (TextTemplate is not null)
+                    {
+                        @TextTemplate(this)
+                    }
+                    else
+                    {
+                        @GetText()
+                    }
                 }
 
-                @if (GetOverflowItemsCount() > 0)
+                @* The placeholder stands in for the selection, so it belongs to the named wrapper along with
+                   it. In the ComboBox mode it belongs to the editable input below instead. *@
+                @if (Combo is false && _selectedItems.Count == 0)
                 {
-                    @* The chip only shows how many selections it stands for. The ones it hides are named
-                       in its title for the pointer, and take its place in the accessible name so that
-                       the combobox (which is named after this container) still reports them all. *@
-                    <span style="@Styles?.OverflowChip"
-                          class="bit-drp-chp bit-drp-ovf @Classes?.OverflowChip"
-                          title="@GetOverflowItemsText()"
-                          aria-label="@GetOverflowItemsText()">
-                        @GetOverflowText()
-                    </span>
+                    @if (PlaceholderTemplate is not null)
+                    {
+                        @PlaceholderTemplate(this)
+                    }
+                    else
+                    {
+                        @Placeholder
+                    }
                 }
-            }
-            else if (_selectedItems.Count > 0)
-            {
-                @if (TextTemplate is not null)
-                {
-                    @TextTemplate(this)
-                }
-                else
-                {
-                    @GetText()
-                }
-            }
+            </span>
 
             @if (Combo)
             {
@@ -218,17 +237,6 @@
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
                        disabled="@(IsEnabled is false)" />
-            }
-            else if (_selectedItems.Count == 0)
-            {
-                @if (PlaceholderTemplate is not null)
-                {
-                    @PlaceholderTemplate(this)
-                }
-                else
-                {
-                    @Placeholder
-                }
             }
         </span>
 
@@ -306,12 +314,41 @@
             }
             else
             {
-                <span style="@Styles?.Description" class="@Classes?.Description">
+                <span style="@Styles?.Description" class="bit-drp-dtx @Classes?.Description">
                     @Description
                 </span>
             }
         </span>
     }
+
+    @* A search silently changes the length of a list a screen reader user cannot see, so the new
+       result count is announced. The container is always rendered because a live region has to be in
+       the accessibility tree before its text changes for the change to be announced; only the text
+       comes and goes, so the region stays quiet while there is nothing to announce.
+       It lives here and not in the callout because the callout is hidden while it is closed, and a
+       live region inside a hidden element announces nothing - which the loading state, the one state
+       that changes while the callout may well be closed, depends on. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
+        @if (IsLoading)
+        {
+            @if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                @(LoadingText ?? "Loading...")
+            }
+        }
+        else if (IsMaxSelectedItemsReached)
+        {
+            @GetMaxSelectedItemsText()
+        }
+        else if (HasSearchText)
+        {
+            @GetSearchResultsText()
+        }
+    </div>
 </div>
 
 <div @onclick="CloseCalloutAndRestoreFocus"
@@ -363,7 +400,7 @@
         <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">@CalloutHeaderTemplate</div>
     }
 
-    @if (ShowSearchBox && Combo is false)
+    @if (HasSearchBox)
     {
         <div style="@Styles?.SearchBoxContainer"
              class="@GetSearchBoxClasses() @Classes?.SearchBoxContainer">
@@ -550,32 +587,6 @@
     {
         <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">@CalloutFooterTemplate</div>
     }
-
-    @* A search silently changes the length of a list a screen reader user cannot see, so the new
-       result count is announced. The container is always rendered because a live region has to be in
-       the accessibility tree before its text changes for the change to be announced; only the text
-       comes and goes, so the region stays quiet while there is nothing to announce. *@
-    <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
-        @if (IsLoading)
-        {
-            @if (LoadingTemplate is not null)
-            {
-                @LoadingTemplate
-            }
-            else
-            {
-                @(LoadingText ?? "Loading...")
-            }
-        }
-        else if (IsMaxSelectedItemsReached)
-        {
-            @GetMaxSelectedItemsText()
-        }
-        else if (HasSearchText)
-        {
-            @GetSearchResultsText()
-        }
-    </div>
 
 </div>
 

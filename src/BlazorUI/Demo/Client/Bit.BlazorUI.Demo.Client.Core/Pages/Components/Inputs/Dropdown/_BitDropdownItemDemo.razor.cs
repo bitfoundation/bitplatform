@@ -280,7 +280,17 @@ public partial class _BitDropdownItemDemo
 
     protected override void OnInitialized()
     {
-        virtualizeItems1 = virtualizeItems2 = virtualizeItems3 = Enumerable.Range(1, 10_000)
+        // A list of its own per example: the items carry the selected state the dropdown writes back to
+        // them, so sharing one list would let each of these dropdowns overwrite the state of the others.
+        virtualizeItems1 = Enumerable.Range(1, 10_000)
+                                     .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
+                                     .ToArray();
+
+        virtualizeItems2 = Enumerable.Range(1, 10_000)
+                                     .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
+                                     .ToArray();
+
+        virtualizeItems3 = Enumerable.Range(1, 10_000)
                                      .Select(c => new BitDropdownItem<string> { Text = $"Category {c}", Value = c.ToString() })
                                      .ToArray();
 

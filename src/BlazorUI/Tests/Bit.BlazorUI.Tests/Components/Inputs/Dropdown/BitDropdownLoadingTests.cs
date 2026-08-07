@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -27,7 +28,13 @@ public class BitDropdownLoadingTests : BunitTestContext
     // displayed selection text is found the same way a screen reader would resolve it.
     private static string GetTriggerText(IRenderedComponent<BitDropdownLoadingTest> component)
     {
-        var labelledBy = component.Find("[role=combobox]").GetAttribute("aria-labelledby");
-        return component.Find($"#{labelledBy}").TextContent.Trim();
+        // aria-labelledby is a list of ids, and the trigger appends the one of the element holding the
+        // displayed selection to the one of the label, so the last of them is the one to read.
+        var labelledBy = component.Find("[role=combobox]").GetAttribute("aria-labelledby") ?? string.Empty;
+        var textId = labelledBy.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+
+        Assert.IsNotNull(textId, "The trigger names itself with no id at all.");
+
+        return component.Find($"#{textId}").TextContent.Trim();
     }
 }

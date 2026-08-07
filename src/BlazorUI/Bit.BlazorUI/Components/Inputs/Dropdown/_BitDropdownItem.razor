@@ -57,7 +57,10 @@
     // the click handler of the button that contains it.
     var highlightIndex = itemType == BitDropdownItemType.Normal ? Dropdown.GetHighlightIndex(text) : -1;
     var highlightLength = Dropdown.GetHighlightLength();
-    var highlighted = highlightIndex >= 0 && highlightLength > 0 && text is not null;
+    // The index and the length come from two separate calls, so the span they describe is checked
+    // against the text before it is cut rather than assumed to fit inside it.
+    var highlighted = highlightIndex >= 0 && highlightLength > 0
+                   && text is not null && highlightIndex + highlightLength <= text.Length;
 }
 
 @* The wrappers carry the per-item style and layout only; marking them presentational keeps the option
