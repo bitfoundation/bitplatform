@@ -37,13 +37,13 @@
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
     var isDisabled = itemType == BitDropdownItemType.Normal && Dropdown.GetIsItemDisabled(Item);
 
-    // The separator matters: without it a hidden item that also carries a custom style would produce
-    // "display:none color:red", which the browser reads as one invalid declaration instead of two, and
-    // the item that was meant to be hidden stays on the screen.
     var itemButtonClass = "bit-drp-itm" +
                           (isSelected ? " bit-drp-sel" : string.Empty) +
                           (isCommitTarget ? " bit-drp-ctg" : string.Empty);
 
+    // The separator matters: without it a hidden item that also carries a custom style would produce
+    // "display:none color:red", which the browser reads as one invalid declaration instead of two, and
+    // the item that was meant to be hidden stays on the screen.
     var hiddenStyle = isHidden ? "display:none;" : string.Empty;
     var headerStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemHeader}";
     var itemWrapperStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemWrapper}";

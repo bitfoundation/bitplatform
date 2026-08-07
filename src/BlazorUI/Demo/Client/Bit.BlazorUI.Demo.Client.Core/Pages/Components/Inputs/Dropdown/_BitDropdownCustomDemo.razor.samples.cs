@@ -1451,6 +1451,19 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     Value = { Selector = c => c.Value },
     ValueSetter = (Product item, string value) => item.Value = value,
     TextSetter = (string text, Product item) => item.Text = text
+};
+
+private BitDropdownNameSelectors<Product, string> nameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
 };";
 
     private readonly string example17RazorCode = @"
@@ -2648,7 +2661,29 @@ private List<Product> GetBasicCustoms() =>
     new() { Text = ""Broccoli"", Value = ""v-bro"" },
     new() { Text = ""Carrot"", Value = ""v-car"" },
     new() { Text = ""Lettuce"", Value = ""v-let"" }
-];";
+];
+
+private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
+{
+    Text = { Selector = c => c.Text },
+    Value = { Selector = c => c.Value },
+    ItemType = { Selector = c => c.Type },
+    IsEnabled = { Selector = c => c.Disabled is false },
+};
+
+private List<Product> comboBoxCustoms = new()
+{
+    new() { Text = ""Fruits"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", Disabled = true },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { Type = BitDropdownItemType.Divider },
+    new() { Text = ""Vegetables"", Type = BitDropdownItemType.Header },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
+};";
 
     private readonly string example31RazorCode = @"
 <BitDropdown Label=""Primary""

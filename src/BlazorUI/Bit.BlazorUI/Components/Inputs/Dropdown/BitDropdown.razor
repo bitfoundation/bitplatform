@@ -39,7 +39,10 @@
         </div>;
 
     RenderFragment loadingContent =
-        @<div style="@Styles?.LoadingContainer" class="bit-drp-ldc @Classes?.LoadingContainer" role="status" aria-live="polite">
+        @* Presentational because it renders inside the listbox, whose only valid children are options,
+           groups and presentational elements; the loading state is announced through the live region
+           below instead of a role="status" here. *@
+        @<div role="presentation" style="@Styles?.LoadingContainer" class="bit-drp-ldc @Classes?.LoadingContainer">
             @if (LoadingTemplate is not null)
             {
                 @LoadingTemplate
@@ -553,11 +556,22 @@
        the accessibility tree before its text changes for the change to be announced; only the text
        comes and goes, so the region stays quiet while there is nothing to announce. *@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
-        @if (IsMaxSelectedItemsReached)
+        @if (IsLoading)
+        {
+            @if (LoadingTemplate is not null)
+            {
+                @LoadingTemplate
+            }
+            else
+            {
+                @(LoadingText ?? "Loading...")
+            }
+        }
+        else if (IsMaxSelectedItemsReached)
         {
             @GetMaxSelectedItemsText()
         }
-        else if (HasSearchText && IsLoading is false)
+        else if (HasSearchText)
         {
             @GetSearchResultsText()
         }

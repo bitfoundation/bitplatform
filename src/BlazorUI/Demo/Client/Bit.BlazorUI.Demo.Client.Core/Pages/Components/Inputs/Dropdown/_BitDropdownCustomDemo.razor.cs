@@ -312,15 +312,7 @@ public partial class _BitDropdownCustomDemo
 
     protected override void OnInitialized()
     {
-        virtualizeCustoms1 = Enumerable.Range(1, 10_000)
-                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
-                                       .ToArray();
-
-        virtualizeCustoms2 = Enumerable.Range(1, 10_000)
-                                       .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
-                                       .ToArray();
-
-        virtualizeCustoms3 = Enumerable.Range(1, 10_000)
+        virtualizeCustoms1 = virtualizeCustoms2 = virtualizeCustoms3 = Enumerable.Range(1, 10_000)
                                        .Select(p => new Product { Text = $"Produce {p}", Value = p.ToString() })
                                        .ToArray();
 
