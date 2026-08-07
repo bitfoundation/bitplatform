@@ -4,6 +4,7 @@ public partial class _BitDropdownItemDemo
 {
     private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
+             Name=""single-select""
              Items=""GetBasicItems()""
              Placeholder=""Select an item""
              TItem=""BitDropdownItem<string>"" TValue=""string"" />
@@ -936,7 +937,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              Placeholder=""Select items""
              DefaultValues=""@(new[] { ""A"", ""D"" })"">
     <ChipTemplate Context=""item"">
-        <span class=""custom-chip"">
+        <span class=""custom-drp custom-drp-chip"">
             <BitIcon IconName=""@((item.Data as DropdownItemData)?.IconName)"" />
             <span>@item.Text</span>
         </span>
@@ -1050,7 +1051,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              Items=""comboBoxItems""
              Placeholder=""Select an option""
              Label=""Single select combo box & dynamic""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <div>Value: @comboBoxValueSample3</div>
 
@@ -1060,7 +1061,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              Items=""comboBoxItems""
              Placeholder=""Select an option""
              Label=""Single select combo box, chips & dynamic""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <div>Value: @comboBoxValueSample4</div>
 
@@ -1071,7 +1072,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              Items=""comboBoxItems""
              Placeholder=""Select options""
              Label=""Multi select combo box, chips & dynamic""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <div>Values: @string.Join(',', comboBoxValues3)</div>";
     private readonly string example18CsharpCode = @"
@@ -1680,7 +1681,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              TokenSeparators=""tokenSeparators""
              Label=""Multi select combo box with token separators""
              Placeholder=""Type or paste options separated by , or ;""
-             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownItem<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)"" />
 <div>Values: @string.Join(',', tokenSeparatorValues)</div>";
     private readonly string example28CsharpCode = @"
@@ -1749,7 +1750,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
     <DescriptionTemplate>
-        <div class=""custom-description"">
+        <div class=""custom-drp custom-drp-des"">
             <BitIcon IconName=""@BitIconName.Info"" />
             <span>Nothing here is final &mdash; you can change it later.</span>
         </div>

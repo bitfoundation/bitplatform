@@ -13,6 +13,7 @@
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Single select"
+                     Name="single-select"
                      Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
             <BitDropdownOption ItemType="BitDropdownItemType.Header" Text="Fruits" Value="@string.Empty" />
@@ -1301,7 +1302,7 @@
                      Responsive
                      Placeholder="Select an option"
                      Label="Single select combo box & dynamic"
-                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in comboBoxItems)
@@ -1323,7 +1324,7 @@
                      Placeholder="Select an option"
                      Label="Single select combo box, chips & dynamic"
                      TItem="BitDropdownOption<string>" TValue="string"
-                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
@@ -1340,7 +1341,7 @@
                      Placeholder="Select options"
                      Label="Multi select combo box, chips & dynamic"
                      TItem="BitDropdownOption<string>" TValue="string"
-                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {
@@ -1850,7 +1851,7 @@
                      Label="Multi select combo box with token separators"
                      Placeholder="Type or paste options separated by , or ;"
                      TItem="BitDropdownOption<string>" TValue="string"
-                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownOption<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)">
             @foreach (var item in comboBoxItems)
             {

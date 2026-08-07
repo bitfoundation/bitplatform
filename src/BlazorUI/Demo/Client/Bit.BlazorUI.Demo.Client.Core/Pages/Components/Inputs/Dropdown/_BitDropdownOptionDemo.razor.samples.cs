@@ -4,6 +4,7 @@ public partial class _BitDropdownOptionDemo
 {
     private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
+             Name=""single-select""
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <BitDropdownOption ItemType=""BitDropdownItemType.Header"" Text=""Fruits"" Value=""@string.Empty"" />
@@ -1260,7 +1261,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              DefaultValues=""@(new[] { ""A"", ""D"" })""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <ChipTemplate Context=""option"">
-        <span class=""custom-chip"">
+        <span class=""custom-drp custom-drp-chip"">
             <BitIcon IconName=""@((option.Data as DropdownItemData)?.IconName)"" />
             <span>@option.Text</span>
         </span>
@@ -1405,7 +1406,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              Placeholder=""Select an option""
              Label=""Single select combo box & dynamic""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
@@ -1420,7 +1421,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              Placeholder=""Select an option""
              Label=""Single select combo box, chips & dynamic""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
@@ -1436,7 +1437,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              Placeholder=""Select options""
              Label=""Multi select combo box, chips & dynamic""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
@@ -1986,7 +1987,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              Label=""Multi select combo box with token separators""
              Placeholder=""Type or paste options separated by , or ;""
              TItem=""BitDropdownOption<string>"" TValue=""string""
-             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text ?? string.Empty""
              OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
     @foreach (var item in comboBoxItems)
     {
@@ -2075,7 +2076,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     <DescriptionTemplate>
-        <div class=""custom-description"">
+        <div class=""custom-drp custom-drp-des"">
             <BitIcon IconName=""@BitIconName.Info"" />
             <span>Nothing here is final &mdash; you can change it later.</span>
         </div>

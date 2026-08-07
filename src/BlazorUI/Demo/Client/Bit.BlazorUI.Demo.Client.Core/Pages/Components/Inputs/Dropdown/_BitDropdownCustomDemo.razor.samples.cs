@@ -4,6 +4,7 @@ public partial class _BitDropdownCustomDemo
 {
     private readonly string example1RazorCode = @"
 <BitDropdown Label=""Single select""
+             Name=""single-select""
              Items=""GetBasicCustoms()""
              NameSelectors=""nameSelectors""
              Placeholder=""Select an item"" />
@@ -1383,7 +1384,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
              NameSelectors=""nameSelectors""
              DefaultValues=""@(new[] { ""A"", ""D"" })"">
     <ChipTemplate Context=""item"">
-        <span class=""custom-chip"">
+        <span class=""custom-drp custom-drp-chip"">
             <BitIcon IconName=""@((item.Payload as DropdownItemData)?.IconName)"" />
             <span>@item.Text</span>
         </span>
@@ -2612,7 +2613,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item"">
     <DescriptionTemplate>
-        <div class=""custom-description"">
+        <div class=""custom-drp custom-drp-des"">
             <BitIcon IconName=""@BitIconName.Info"" />
             <span>Nothing here is final &mdash; you can change it later.</span>
         </div>

@@ -13,6 +13,7 @@
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Single select"
+                     Name="single-select"
                      Items="GetBasicItems()"
                      Placeholder="Select an item"
                      TItem="BitDropdownItem<string>" TValue="string" />
@@ -941,7 +942,7 @@
                      Items="comboBoxItems"
                      Placeholder="Select an option"
                      Label="Single select combo box & dynamic"
-                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Value: @comboBoxValueSample3</div>
@@ -957,7 +958,7 @@
                      Items="comboBoxItems"
                      Placeholder="Select an option"
                      Label="Single select combo box, chips & dynamic"
-                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Value: @comboBoxValueSample4</div>
@@ -969,7 +970,7 @@
                      Items="comboBoxItems"
                      Placeholder="Select options"
                      Label="Multi select combo box, chips & dynamic"
-                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Values: @string.Join(',', comboBoxValues3)</div>
@@ -1454,7 +1455,7 @@
                      TokenSeparators="tokenSeparators"
                      Label="Multi select combo box with token separators"
                      Placeholder="Type or paste options separated by , or ;"
-                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text ?? string.Empty"
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Values: @string.Join(',', tokenSeparatorValues)</div>

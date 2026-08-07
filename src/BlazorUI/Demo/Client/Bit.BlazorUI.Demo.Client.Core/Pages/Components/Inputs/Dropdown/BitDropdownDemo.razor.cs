@@ -409,13 +409,6 @@ public partial class BitDropdownDemo
         },
         new()
         {
-            Name = "MaxSelectedItemsText",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The composite format of the message announced to screen readers once MaxSelectedItems is reached, which receives that limit, for example \"Maximum of {0} items selected\". Defaults to the English message.",
-        },
-        new()
-        {
             Name = "MaxDisplayedItems",
             Type = "int?",
             DefaultValue = "null",
@@ -434,6 +427,13 @@ public partial class BitDropdownDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "The maximum number of items that can be selected in multi select mode. A value that is not greater than zero (and null) means no limit.",
+        },
+        new()
+        {
+            Name = "MaxSelectedItemsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the message announced to screen readers once MaxSelectedItems is reached, which receives that limit, for example \"Maximum of {0} items selected\". Defaults to the English message.",
         },
         new()
         {
