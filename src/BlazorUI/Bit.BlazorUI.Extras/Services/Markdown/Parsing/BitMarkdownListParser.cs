@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
@@ -33,7 +34,14 @@ public sealed class BitMarkdownListParser : BitMarkdownBlockParser
         if (ordered)
         {
             var fm = BitMarkdownBlockGrammar.Ordered().Match(first);
-            startNum = int.Parse(fm.Groups[1].Value);
+            // The grammar guarantees 1-9 ASCII digits here; parse defensively (and
+            // culture-independently) so a malformed marker degrades to a "1." list
+            // instead of throwing out of the component's parse.
+            if (int.TryParse(fm.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture, out var parsed) is false)
+            {
+                parsed = 1;
+            }
+            startNum = parsed;
             markerChar = fm.Groups[2].Value[0];
         }
         else
