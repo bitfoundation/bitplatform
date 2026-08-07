@@ -50,6 +50,21 @@
         background-color: whitesmoke;
     }
 
+    .custom-callout {
+        border-radius: 0.5rem;
+        border: 1px solid #13a3a375;
+    }
+
+    .custom-suggest-item {
+        font-style: italic;
+    }
+
+    .custom-highlight {
+        color: tomato;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
     .validation-message {
         font-size: rem2(12px);
         color: $bit-color-error;

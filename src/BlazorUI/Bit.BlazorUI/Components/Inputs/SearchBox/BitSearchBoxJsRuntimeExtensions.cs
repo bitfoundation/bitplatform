@@ -1,9 +1,14 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 internal static class BitSearchBoxJsRuntimeExtensions
 {
     internal static ValueTask BitSearchBoxMoveCursorToEnd(this IJSRuntime jsRuntime, ElementReference input)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.moveCursorToEnd", input);
+    }
+
+    internal static ValueTask BitSearchBoxScrollItemIntoView(this IJSRuntime jsRuntime, string containerId, string itemId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.SearchBox.scrollItemIntoView", containerId, itemId);
     }
 }

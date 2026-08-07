@@ -13,6 +13,16 @@ public class BitSearchBoxClassStyles
     public string? Focused { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the search box's label.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the wrapper of the input container and the search button of the search box.
+    /// </summary>
+    public string? Wrapper { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's input container.
     /// </summary>
     public string? InputContainer { get; set; }
@@ -83,6 +93,26 @@ public class BitSearchBoxClassStyles
     public string? Callout { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header of the search box's callout.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer of the search box's callout.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading container of the search box's callout.
+    /// </summary>
+    public string? Loading { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the no-results container of the search box's callout.
+    /// </summary>
+    public string? NoResults { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the search box's scroll container.
     /// </summary>
     public string? ScrollContainer { get; set; }
@@ -101,4 +131,9 @@ public class BitSearchBoxClassStyles
     /// Custom CSS classes/styles for the search box's suggest item text.
     /// </summary>
     public string? SuggestItemText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the highlighted part of the search box's suggest item text.
+    /// </summary>
+    public string? SuggestItemHighlight { get; set; }
 }

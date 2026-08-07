@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
 
@@ -6,6 +6,13 @@ public partial class BitSearchBoxDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AutoSelectSuggestItem",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Automatically highlights the first suggest item as soon as the suggest list opens, so pressing enter selects it without pressing the arrow keys first.",
+        },
         new()
         {
             Name = "Background",
@@ -17,12 +24,33 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template rendered at the bottom of the suggest items callout.",
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template rendered at the top of the suggest items callout.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS classes for different parts of the search box.",
             LinkType = LinkType.Link,
             Href = "#searchbox-class-styles",
+        },
+        new()
+        {
+            Name = "ClearButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "Clear",
+            Description = "The accessible label (aria-label) of the clear button.",
         },
         new()
         {
@@ -79,6 +107,20 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the search box to fill the available width of its container.",
+        },
+        new()
+        {
+            Name = "HighlightSuggestItems",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Highlights the part of each suggest item that matches the current search term.",
+        },
+        new()
+        {
             Name = "HideIcon",
             Type = "bool",
             DefaultValue = "false",
@@ -120,17 +162,52 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text of the label of the search box, rendered as a real label element tied to the input.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template for the label of the search box.",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template rendered in place of the default spinner while the SuggestItemsProvider is resolving the suggest items.",
+        },
+        new()
+        {
+            Name = "LoadingText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text rendered next to the loading indicator while the SuggestItemsProvider is resolving the suggest items.",
+        },
+        new()
+        {
+            Name = "MaxLength",
+            Type = "int",
+            DefaultValue = "-1",
+            Description = "Sets the maxlength html attribute of the input element. A negative value means no limit.",
+        },
+        new()
+        {
             Name = "MaxSuggestCount",
             Type = "int",
             DefaultValue = "5",
-            Description = "The maximum number of items or suggestions that will be displayed.",
+            Description = "The maximum number of items or suggestions that will be displayed. A value of zero or less means no limit.",
         },
         new()
         {
             Name = "MinSuggestTriggerChars",
             Type = "int",
             DefaultValue = "3",
-            Description = "The minimum character requirement for doing a search in suggested items.",
+            Description = "The minimum character requirement for doing a search in suggest items. Setting it to zero also enables searching with an empty search term which is useful for showing default or recent items.",
         },
         new()
         {
@@ -148,9 +225,36 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "NoClearOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Prevents clearing the value of the search box when the user presses the escape key.",
+        },
+        new()
+        {
+            Name = "NoResultsTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template rendered in the callout when the search finds no suggest item.",
+        },
+        new()
+        {
+            Name = "NoResultsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text rendered in the callout when the search finds no suggest item.",
+        },
+        new()
+        {
             Name = "OnClear",
             Type = "EventCallback",
             Description = "Callback executed when the user clears the search box by either clicking 'X' or hitting escape.",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            Description = "Callback executed when the user clicks on the input of the search box.",
         },
         new()
         {
@@ -160,9 +264,45 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback executed when the input of the search box gets focused.",
+        },
+        new()
+        {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback executed when the input of the search box gets focused in.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback executed when the input of the search box loses focus.",
+        },
+        new()
+        {
+            Name = "OnKeyDown",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback executed on each key down of the input of the search box.",
+        },
+        new()
+        {
+            Name = "OnKeyUp",
+            Type = "EventCallback<KeyboardEventArgs>",
+            Description = "Callback executed on each key up of the input of the search box.",
+        },
+        new()
+        {
             Name = "OnSearch",
             Type = "EventCallback<string?>",
-            Description = "Callback executed when the user presses enter in the search box.",
+            Description = "Callback executed when the user presses enter in the search box, clicks the search button, or picks one of the suggest items.",
+        },
+        new()
+        {
+            Name = "OnSuggestItemSelect",
+            Type = "EventCallback<string>",
+            Description = "Callback executed when the user selects one of the suggest items either by clicking on it or by pressing enter while it is highlighted.",
         },
         new()
         {
@@ -184,6 +324,13 @@ public partial class BitSearchBoxDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom template for the prefix of the search box.",
+        },
+        new()
+        {
+            Name = "SearchButtonAriaLabel",
+            Type = "string",
+            DefaultValue = "Search",
+            Description = "The accessible label (aria-label) of the search button.",
         },
         new()
         {
@@ -217,6 +364,22 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "ShowSuggestItemsOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Opens the suggest items callout as soon as the input gets focused, without waiting for the user to type. Combine it with a zero MinSuggestTriggerChars to implement default or recent search items.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the search box.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitSearchBoxClassStyles?",
             DefaultValue = "null",
@@ -243,14 +406,21 @@ public partial class BitSearchBoxDemo
             Name = "SuggestFilterFunction",
             Type = "Func<string?, string?, bool>?",
             DefaultValue = "null",
-            Description = "Custom search function to be used in place of the default search algorithm.",
+            Description = "Custom search function to be used in place of the default search algorithm. The first argument is the current search term and the second one is the suggest item to examine.",
         },
         new()
         {
             Name = "SuggestItems",
-            Type = "ICollection<string>?",
+            Type = "IEnumerable<string>?",
             DefaultValue = "null",
             Description = "The list of suggest items to display in the callout."
+        },
+        new()
+        {
+            Name = "SuggestItemsAriaLabel",
+            Type = "string",
+            DefaultValue = "Suggestions",
+            Description = "The accessible label (aria-label) of the suggest items list.",
         },
         new()
         {
@@ -258,6 +428,8 @@ public partial class BitSearchBoxDemo
             Type = "BitSearchBoxSuggestItemsProvider?",
             DefaultValue = "null",
             Description = "The item provider function providing suggest items.",
+            LinkType = LinkType.Link,
+            Href = "#suggest-items-provider-request",
         },
         new()
         {
@@ -265,6 +437,13 @@ public partial class BitSearchBoxDemo
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
             Description = "The custom template for rendering the suggest items of the search box.",
+        },
+        new()
+        {
+            Name = "Trim",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Trims the leading and trailing white-spaces of the value of the search box.",
         },
         new()
         {
@@ -297,6 +476,20 @@ public partial class BitSearchBoxDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the focus state of the search box.",
+                },
+                new()
+                {
+                    Name = "Label",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the search box's label.",
+                },
+                new()
+                {
+                    Name = "Wrapper",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the wrapper of the input container and the search button of the search box.",
                 },
                 new()
                 {
@@ -398,6 +591,34 @@ public partial class BitSearchBoxDemo
                 },
                 new()
                 {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header of the search box's callout.",
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer of the search box's callout.",
+                },
+                new()
+                {
+                    Name = "Loading",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the loading container of the search box's callout.",
+                },
+                new()
+                {
+                    Name = "NoResults",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the no-results container of the search box's callout.",
+                },
+                new()
+                {
                     Name = "ScrollContainer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -423,6 +644,43 @@ public partial class BitSearchBoxDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the search box's suggest item text.",
+                },
+                new()
+                {
+                    Name = "SuggestItemHighlight",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the highlighted part of the search box's suggest item text.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "suggest-items-provider-request",
+            Title = "BitSearchBoxSuggestItemsProviderRequest",
+            Description = "The context passed to the SuggestItemsProvider delegate on every search.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "SearchTerm",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The current value of the search box that the suggest items must be resolved for.",
+                },
+                new()
+                {
+                    Name = "Take",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The value of the MaxSuggestCount parameter, so the provider can only fetch as many items as will be rendered.",
+                },
+                new()
+                {
+                    Name = "CancellationToken",
+                    Type = "CancellationToken",
+                    DefaultValue = "",
+                    Description = "A token that is cancelled as soon as a newer search starts, so an outdated request can be aborted and can never overwrite a newer result.",
                 },
             ]
         },
@@ -605,6 +863,33 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
             Id = "input-mode",
             Name = "BitInputMode",
             Description = "This allows a browser to display an appropriate virtual keyboard.",
@@ -675,6 +960,24 @@ public partial class BitSearchBoxDemo
             Name = "FocusAsync",
             Type = "ValueTask",
             Description = "Gives focus to the input element of the BitSearchBox.",
+        },
+        new()
+        {
+            Name = "Clear",
+            Type = "Task",
+            Description = "Clears the value of the BitSearchBox and invokes the OnClear callback.",
+        },
+        new()
+        {
+            Name = "ShowSuggestItems",
+            Type = "Task",
+            Description = "Runs the suggest items search of the current value and opens the callout of the suggest items.",
+        },
+        new()
+        {
+            Name = "HideSuggestItems",
+            Type = "Task",
+            Description = "Closes the callout of the suggest items.",
         }
     ];
 
@@ -683,10 +986,16 @@ public partial class BitSearchBoxDemo
     [Inject] private HttpClient HttpClient { get; set; } = default!;
     [Inject] private NavigationManager NavManager { get; set; } = default!;
 
+    private string? maxLengthValue;
+    private string? trimmedValue;
+
     private string? twoWaySearchValue;
     private string? immediateTwoWaySearchValue;
     private string? onChangeSearchValue;
     private string? onSearchValue;
+    private string? uncontrolledValue;
+
+    private readonly List<string> eventLogs = [];
 
     private string? searchValue;
     private string? searchValueWithSuggestFilterFunction;
@@ -694,8 +1003,27 @@ public partial class BitSearchBoxDemo
     private string? searchValueWithMinSearchLength;
     private string? searchValueWithMaxSuggestedItems;
     private string? searchValueWithItemsProvider;
+    private string? selectedSuggestItem;
 
     private readonly ValidationSearchBoxModel validationModel = new();
+
+    private void Log(string message)
+    {
+        eventLogs.Insert(0, message);
+
+        if (eventLogs.Count > 20)
+        {
+            eventLogs.RemoveAt(eventLogs.Count - 1);
+        }
+    }
+
+    private void HandleOnClick() => Log("OnClick");
+    private void HandleOnFocusIn() => Log("OnFocusIn");
+    private void HandleOnFocusOut() => Log("OnFocusOut");
+    private void HandleOnEscape() => Log("OnEscape");
+    private void HandleOnClear() => Log("OnClear");
+    private void HandleOnSearch(string? value) => Log($"OnSearch: {value}");
+    private void HandleOnKeyDown(KeyboardEventArgs args) => Log($"OnKeyDown: {args.Key}");
 
     private List<string> GetSuggestedItems() =>
     [
@@ -709,6 +1037,24 @@ public partial class BitSearchBoxDemo
          "Broccoli",
          "Carrot",
          "Lettuce"
+    ];
+
+    private List<string> GetRecentSearches() =>
+    [
+        "Wireless keyboard",
+        "Noise cancelling headphones",
+        "Mechanical switches",
+        "USB-C hub"
+    ];
+
+    private List<string> GetPersianSuggestedItems() =>
+    [
+        "سیب",
+        "سیب قرمز",
+        "سیب سبز",
+        "موز",
+        "پرتقال",
+        "انگور"
     ];
 
     private List<string> GetLongSuggestedItems() =>
@@ -725,12 +1071,20 @@ public partial class BitSearchBoxDemo
         "Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce Lettuce"
     ];
 
-    private Func<string, string, bool> SearchFunc = (string searchText, string itemText) =>
+    private Func<string?, string?, bool> SearchFunc = (string? searchText, string? itemText) =>
     {
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrEmpty(itemText)) return false;
 
         return itemText.StartsWith(searchText, StringComparison.OrdinalIgnoreCase);
     };
+
+    private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggestItemsProviderRequest request)
+    {
+        // an artificial delay to make the loading indicator of the callout observable.
+        await Task.Delay(1500, request.CancellationToken);
+
+        return await LoadItems(request);
+    }
 
     private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
     {
