@@ -31,6 +31,12 @@ namespace BitBlazorUI {
                 inputElement.addEventListener('input', e => {
                     TextField.resize(inputElement, TextField._maxRows[id]);
                 }, { signal });
+            } else {
+                // The heights the auto growing left behind are inline styles, so they would keep the
+                // element at the size of its content long after the feature was turned off. Clearing them
+                // hands the sizing back to the Rows attribute and to the stylesheet.
+                inputElement.style.height = '';
+                inputElement.style.overflowY = '';
             }
 
             if (preventEnter) {

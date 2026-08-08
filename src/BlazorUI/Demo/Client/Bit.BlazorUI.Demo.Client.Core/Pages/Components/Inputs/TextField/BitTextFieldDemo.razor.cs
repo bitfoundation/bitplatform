@@ -310,13 +310,13 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "OnFocus",
             Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when focus moves into the input.",
+            Description = "Callback for when the input receives focus. Unlike OnFocusIn it does not bubble, so it is the one to use when only the input itself receiving focus is of interest.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when focus moves into the input.",
+            Description = "Callback for when focus moves into the input or any of its descendants, since unlike OnFocus it bubbles.",
         },
         new()
         {

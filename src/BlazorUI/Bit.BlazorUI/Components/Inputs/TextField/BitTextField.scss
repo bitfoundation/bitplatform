@@ -202,7 +202,6 @@
     overflow: hidden;
     position: absolute;
     white-space: nowrap;
-    clip: rect(0, 0, 0, 0);
     clip-path: inset(50%);
 }
 
@@ -441,6 +440,7 @@
     .bit-tfl-lbl {
         height: var(--bit-tfl-min-height);
         margin-inline-end: spacing(1);
+
         // The label fills the height of the field minus its own padding, so its text stays centered
         // against the input at every size instead of only at the medium one.
         line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});

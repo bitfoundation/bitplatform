@@ -816,12 +816,12 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(false, "hello", " world"),
         DataRow(true, "hello", " world"),
     ]
-    public void BitTextFieldGhostTextAcceptCommitsTheNewValue(bool multiline, string value, string ghostText)
+    public void BitTextFieldChangeEventWhileGhostTextIsShownCommitsTheNewValue(bool multiline, string value, string ghostText)
     {
         // Accepting a ghost suggestion is done in JS: it writes the text into the element and then
-        // dispatches both an input and a change event. Only the second half of that is reachable from
-        // bUnit, so the change event is what is raised here, and the value has to end up bound even
-        // though Immediate is off.
+        // dispatches both an input and a change event. Neither the acceptance nor the overlay it clears
+        // is reachable from bUnit, so what is covered here is the half that is: the change event of a
+        // field that is showing a suggestion has to end up bound even though Immediate is off.
         var boundValue = value;
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -841,17 +841,20 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(false, " world"),
         DataRow(true, " world"),
     ]
-    public void BitTextFieldGhostTextAcceptWithNullCurrentValue(bool multiline, string ghostText)
+    public void BitTextFieldChangeEventWhileGhostTextIsShownCommitsWithNullCurrentValue(bool multiline, string ghostText)
     {
+        string? boundValue = null;
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Multiline, multiline);
+            parameters.Bind(p => p.Value, boundValue, v => boundValue = v);
             parameters.Add(p => p.GhostText, ghostText);
         });
 
         var input = component.Find(".bit-tfl-inp");
         input.Change(ghostText);
 
+        Assert.AreEqual(ghostText, boundValue);
         Assert.AreEqual(ghostText, component.Instance.Value);
     }
 
@@ -925,7 +928,7 @@ public class BitTextFieldTests : BunitTestContext
         DataRow(false),
         DataRow(true),
     ]
-    public void BitTextFieldRendersNoMaxLengthAttributeByDefault(bool multiline)
+    public void BitTextFieldRendersNoLengthAttributesByDefault(bool multiline)
     {
         // A maxlength of -1 is not a valid html attribute value, so nothing should be rendered for it.
         var component = RenderComponent<BitTextField>(parameters =>
@@ -2304,8 +2307,8 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(true, setup.Arguments[3]);   // preventEnter
         Assert.AreEqual(5, setup.Arguments[4]);      // maxRows
 
-        // A field rendered with a value already in it has to be measured once, otherwise it stays one row
-        // tall until the first keystroke.
+        // Setting the feature up measures the element once, so a field that is rendered with a value
+        // already in it does not stay one row tall until the first keystroke.
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
     }
 
