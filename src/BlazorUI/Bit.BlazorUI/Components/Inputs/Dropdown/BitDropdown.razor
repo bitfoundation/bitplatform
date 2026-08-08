@@ -13,6 +13,13 @@
     var comboBoxAddButtonIconCss = BitIconInfo.From(ComboBoxAddButtonIcon, ComboBoxAddButtonIconName ?? "Add")?.GetCssClasses();
     var itemCheckIconCss = GetItemCheckIconCss();
 
+    // The accessible name of an element named through aria-labelledby is computed from the whole subtree
+    // of the element it points at, and the chip remove buttons sit inside the selection display, so the
+    // combobox named after that display would report a "Remove ..." after every chip. While there are
+    // chips to remove the name comes from a hidden element carrying the selection text alone; with
+    // nothing to remove the visible display keeps the id and names the trigger the way it did.
+    var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false && _selectedItems.Count > 0;
+
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
            options of the listbox it is rendered in; its text stays exposed either way. *@
@@ -142,7 +149,7 @@
                the element that names the combobox would contribute its value to that name, which would
                make the trigger report back whatever is currently being typed into it. The wrapper takes
                no part in the layout (display:contents), so the chips stay the direct flex items they were. *@
-            <span id="@_dropdownTextContainerId" class="bit-drp-tdp">
+            <span id="@(hasChipRemoveButtons ? null : _dropdownTextContainerId)" class="bit-drp-tdp">
                 @if (Chips)
                 {
                     @foreach (var item in _selectedItems.Take(GetDisplayedItemsCount()))
@@ -212,6 +219,15 @@
                     }
                 }
             </span>
+
+            @if (hasChipRemoveButtons)
+            {
+                @* Hidden rather than only visually hidden: the text of an element referenced by
+                   aria-labelledby is read whatever its hidden state, so it names the combobox while
+                   staying out of the content a screen reader walks through - where the chips already
+                   carry the same text. *@
+                <span id="@_dropdownTextContainerId" style="display:none" hidden>@GetChipsAriaText()</span>
+            }
 
             @if (Combo)
             {

@@ -3557,6 +3557,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         return string.Join(MultiSelectDelimiter, _selectedItems.Skip(GetDisplayedItemsCount()).Select(GetText));
     }
 
+    // The whole selection as one piece of text, which is what the chips and the overflow indicator show
+    // between them, so the combobox can be named after it instead of after the display that also holds
+    // the remove button of every chip.
+    private string GetChipsAriaText()
+    {
+        return string.Join(MultiSelectDelimiter, _selectedItems.Select(GetText));
+    }
+
     private string GetChipsRemoveButtonAriaLabel(TItem item)
     {
         var text = GetText(item);

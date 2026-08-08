@@ -25,7 +25,8 @@ internal static class DropdownsJsRuntimeExtensions
             BitDropdownFocusMode.Prev => "prev",
             BitDropdownFocusMode.NextPage => "nextPage",
             BitDropdownFocusMode.PrevPage => "prevPage",
-            _ => "char"
+            BitDropdownFocusMode.Char => "char",
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
         return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, modeValue, character, virtualize, selectedIndex, itemSize);
