@@ -1,50 +1,106 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitInputBase<bool>
 
+@{
+    var icon = GetStateIcon();
+    var content = CurrentValue ? OnContent : OffContent;
+}
+
+@* stopping propagation on the root covers both the button click and the click a label forwards to it *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
+    @* the label carries an id rather than only a for, since a button takes its accessible name from
+       aria-labelledby and never from an associated label element *@
     @if (LabelTemplate is not null)
     {
-        <label for="@_buttonId" @onclick="HandleOnClick">
+        <label id="@_labelId" for="@_buttonId" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label for="@_buttonId" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
+        <label id="@_labelId" for="@_buttonId" style="@Styles?.Label" class="bit-tgl-lbl @Classes?.Label">
             @Label
         </label>
     }
 
     <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
-        <button @onclick="HandleOnClick"
+        <button @ref="_buttonRef"
+                @onclick="HandleOnClick"
                 role="@Role"
                 type="button"
                 id="@_buttonId"
+                title="@Title"
                 style="@Styles?.Button"
                 class="bit-tgl-btn @Classes?.Button"
+                autofocus="@AutoFocus"
+                tabindex="@TabIndex"
                 data-ktp-target="true"
                 data-is-focusable="true"
+                disabled="@(IsEnabled is false)"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
-                aria-labelledby="@_labelledById">
-            <span style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb"></span>
+                aria-busy="@(Loading ? "true" : null)"
+                aria-readonly="@(ReadOnly ? "true" : null)"
+                aria-required="@(Required ? "true" : null)"
+                aria-labelledby="@(_labelledById.HasValue() ? _labelledById : null)"
+                aria-describedby="@(_describedById.HasValue() ? _describedById : null)"
+                aria-invalid="@(ValueInvalid is true ? "true" : null)"
+                aria-disabled="@(IsEnabled is false ? "true" : null)">
+
+            @* The knob is taken out of the flow and slid between the two ends of the track, while the lane it
+               would have taken is held open by the padding of the track, which swaps sides with the state. *@
+            <span style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb">
+                @if (Loading)
+                {
+                    <span style="@Styles?.Spinner" class="bit-tgl-spn @Classes?.Spinner"></span>
+                }
+                else if (icon is not null)
+                {
+                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-tgl-ico @icon.GetCssClasses() @Classes?.Icon"></i>
+                }
+            </span>
+
+            @* the track content is decorative next to aria-checked, so it is hidden from the accessible
+               name of the switch that would otherwise change along with the state *@
+            @if (content is not null)
+            {
+                <span aria-hidden="true" style="@Styles?.Content" class="bit-tgl-cnn @Classes?.Content">
+                    @content
+                </span>
+            }
         </button>
+
         @if (_stateText.HasValue())
         {
-            <label style="@Styles?.Text" class="bit-tgl-stx @Classes?.Text" for="@_buttonId">
+            <label id="@_stateTextId" style="@Styles?.Text" class="bit-tgl-stx @Classes?.Text" for="@_buttonId">
                 @_stateText
             </label>
         }
     </div>
 
-    <input @ref="InputElement" @attributes="InputHtmlAttributes"
+    @* rendered outside the button so the description drives aria-describedby without leaking into the accessible name *@
+    @if (AriaDescription.HasValue())
+    {
+        <span id="@_descriptionId" class="bit-tgl-dsc">@AriaDescription</span>
+    }
+
+    @* The form value carrier: hidden from both the tab order and assistive technologies, which the switch
+       button in front of it already covers. Required deliberately stays off it: the native attribute on a
+       zero-sized control makes browsers block the submit over a message they cannot show anywhere, so being
+       required is expressed through aria-required and the validation rules of the model instead. *@
+    <input @attributes="InputHtmlAttributes"
            name="@Name"
            type="checkbox"
+           tabindex="-1"
+           aria-hidden="true"
            class="bit-input-hidden"
-           value="@CurrentValueAsString" />
+           checked="@CurrentValue"
+           value="@CurrentValueAsString"
+           disabled="@(IsEnabled is false)" />
 </div>

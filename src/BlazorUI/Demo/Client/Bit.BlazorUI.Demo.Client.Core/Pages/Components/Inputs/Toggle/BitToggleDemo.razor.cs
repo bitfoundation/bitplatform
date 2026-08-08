@@ -1,9 +1,30 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
 
 public partial class BitToggleDemo
 {
     private readonly List<ComponentParameter> componentParameters =
     [
+        new()
+        {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the toggle for the benefit of screen readers, rendered as a visually hidden element that the switch points to via aria-describedby.",
+        },
+        new()
+        {
+            Name = "AriaLabelledby",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of an existing element that labels the toggle, rendered as aria-labelledby on the switch. Takes precedence over the label of the toggle and over AriaLabel.",
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the toggle automatically receives focus when the page renders (rendered as the autofocus attribute).",
+        },
         new()
         {
             Name = "Classes",
@@ -12,6 +33,15 @@ public partial class BitToggleDemo
             Description = "Custom CSS classes for different parts of the toggle.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the toggle, applied to the track of the checked state.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -36,10 +66,47 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the label in regards to the knob of the toggle. Takes precedence over Inline and Reversed when set.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
+        },
+        new()
+        {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom label of the toggle.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a spinner in place of the knob's icon and suspends the toggle until the pending work behind the change is done.",
+        },
+        new()
+        {
+            Name = "OffContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Content rendered inside the track of the toggle while it is OFF, next to the knob.",
+        },
+        new()
+        {
+            Name = "OffIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon rendered inside the knob while the toggle is OFF, using custom CSS classes for external icon libraries. Takes precedence over OffIconName when both are set.",
+        },
+        new()
+        {
+            Name = "OffIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in icon rendered inside the knob while the toggle is OFF.",
         },
         new()
         {
@@ -50,6 +117,27 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "OnContent",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Content rendered inside the track of the toggle while it is ON, next to the knob.",
+        },
+        new()
+        {
+            Name = "OnIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon rendered inside the knob while the toggle is ON, using custom CSS classes for external icon libraries. Takes precedence over OnIconName when both are set.",
+        },
+        new()
+        {
+            Name = "OnIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in icon rendered inside the knob while the toggle is ON.",
+        },
+        new()
+        {
             Name = "OnText",
             Type = "string?",
             DefaultValue = "null",
@@ -57,10 +145,49 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "OnChanging",
+            Type = "EventCallback<BitToggleChangeArgs>",
+            DefaultValue = "",
+            Description = "Callback invoked before the state of the toggle changes, letting the change be cancelled by setting Cancel on the provided arguments.",
+            LinkType = LinkType.Link,
+            Href = "#change-args",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the toggle is clicked, invoked before the state changes.",
+        },
+        new()
+        {
+            Name = "Reversed",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the positions of the label and input of the toggle.",
+        },
+        new()
+        {
             Name = "Role",
-            Type = "string",
+            Type = "string?",
             DefaultValue = "switch",
             Description = "Denotes role of the toggle, default is switch.",
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the toggle.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "StopPropagation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, stops the click event from bubbling up to the parent elements.",
         },
         new()
         {
@@ -76,7 +203,42 @@ public partial class BitToggleDemo
             Name = "Text",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Default text used when the On or Off texts are null.",
+            Description = "The default text used when the On or Off texts are null.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The native tooltip of the knob of the toggle, shown on hover.",
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputElement",
+            Type = "ElementReference",
+            Description = "The ElementReference of the switch button of the BitToggle - the element that holds the tab stop, not the hidden checkbox that carries the value into a form.",
+        },
+        new()
+        {
+            Name = "FocusAsync",
+            Type = "(bool preventScroll = false) => ValueTask",
+            Description = "Gives focus to the switch button of the BitToggle. Pass true to keep the browser from scrolling the toggle into view along the way.",
+        },
+        new()
+        {
+            Name = "ToggleAsync",
+            Type = "() => Task",
+            Description = "Flips the state of the BitToggle from code, as a click would: OnChanging still gets to cancel the change and OnChange still reports it. Unlike a click it is not blocked by the read-only or loading states, which only close the toggle to the user; a disabled toggle changes through neither.",
+        },
+        new()
+        {
+            Name = "ToggleAsync",
+            Type = "(bool value) => Task",
+            Description = "Moves the BitToggle to a specific state from code, doing nothing when it is already in it. Otherwise identical to the parameterless overload.",
         },
     ];
 
@@ -125,10 +287,31 @@ public partial class BitToggleDemo
                 },
                 new()
                 {
+                    Name = "Content",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the content rendered inside the track of the BitToggle."
+                },
+                new()
+                {
                     Name = "Thumb",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the thumb of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Icon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the icon rendered inside the thumb of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the loading spinner of the BitToggle."
                 },
                 new()
                 {
@@ -138,16 +321,273 @@ public partial class BitToggleDemo
                     Description = "Custom CSS classes/styles for the text of the BitToggle."
                 }
             ]
+        },
+        new()
+        {
+            Id = "change-args",
+            Title = "BitToggleChangeArgs",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Value",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "The state the toggle is about to move to."
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the change and keep the current state of the toggle."
+                }
+            ]
+        }
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Primary",
+                    Description="Primary general color.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Secondary",
+                    Description="Secondary general color.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Tertiary",
+                    Description="Tertiary general color.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Info",
+                    Description="Info general color.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Success",
+                    Description="Success general color.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Warning",
+                    Description="Warning general color.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "SevereWarning",
+                    Description="SevereWarning general color.",
+                    Value="6",
+                },
+                new()
+                {
+                    Name= "Error",
+                    Description="Error general color.",
+                    Value="7",
+                },
+                new()
+                {
+                    Name= "PrimaryBackground",
+                    Description="Primary background color.",
+                    Value="8",
+                },
+                new()
+                {
+                    Name= "SecondaryBackground",
+                    Description="Secondary background color.",
+                    Value="9",
+                },
+                new()
+                {
+                    Name= "TertiaryBackground",
+                    Description="Tertiary background color.",
+                    Value="10",
+                },
+                new()
+                {
+                    Name= "PrimaryForeground",
+                    Description="Primary foreground color.",
+                    Value="11",
+                },
+                new()
+                {
+                    Name= "SecondaryForeground",
+                    Description="Secondary foreground color.",
+                    Value="12",
+                },
+                new()
+                {
+                    Name= "TertiaryForeground",
+                    Description="Tertiary foreground color.",
+                    Value="13",
+                },
+                new()
+                {
+                    Name= "PrimaryBorder",
+                    Description="Primary border color.",
+                    Value="14",
+                },
+                new()
+                {
+                    Name= "SecondaryBorder",
+                    Description="Secondary border color.",
+                    Value="15",
+                },
+                new()
+                {
+                    Name= "TertiaryBorder",
+                    Description="Tertiary border color.",
+                    Value="16",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "The position of the label in regards to the knob of the toggle.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Top",
+                    Description="The label shows on the top of the toggle.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "End",
+                    Description="The label shows on the end of the toggle.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Bottom",
+                    Description="The label shows on the bottom of the toggle.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Start",
+                    Description="The label shows on the start of the toggle.",
+                    Value="3",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Small",
+                    Description="The small size toggle.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Medium",
+                    Description="The medium size toggle.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Large",
+                    Description="The large size toggle.",
+                    Value="2",
+                }
+            ]
         }
     ];
 
 
 
+    private bool isSaving;
+    private bool savedValue;
+
+    private bool readOnlyValue;
+
     private bool oneWayValue;
     private bool twoWayValue;
 
-    public BitToggleValidationModel validationModel { get; set; } = new();
+    private string methodChangeLog = string.Empty;
+    private BitToggle methodToggleRef = default!;
+
+    private string eventsLog = string.Empty;
+    private int cancelledCounter;
+    private int containerClickCounter;
+    private bool allowChange;
+
+    private BitToggle toggleRef = default!;
+
     private string SuccessMessage = string.Empty;
+    public BitToggleValidationModel validationModel { get; set; } = new();
+
+
+
+    private async Task HandleSaveToggle(bool value)
+    {
+        isSaving = true;
+
+        await Task.Delay(1000);
+
+        savedValue = value;
+        isSaving = false;
+    }
+
+    private void LogMethodChange(bool value)
+    {
+        methodChangeLog = $"OnChange fired with {value}";
+    }
+
+    private void LogOnClick()
+    {
+        eventsLog = "OnClick";
+    }
+
+    private void LogOnChanging(BitToggleChangeArgs args)
+    {
+        eventsLog += $" → OnChanging (to {args.Value})";
+    }
+
+    private void LogOnChange(bool value)
+    {
+        eventsLog += $" → OnChange ({value})";
+    }
+
+    private void HandleOnChanging(BitToggleChangeArgs args)
+    {
+        if (allowChange) return;
+
+        args.Cancel = true;
+        cancelledCounter++;
+    }
+
+    private async Task FocusTheToggle()
+    {
+        await toggleRef.FocusAsync();
+    }
 
     private async Task HandleValidSubmit()
     {
@@ -161,121 +601,4 @@ public partial class BitToggleDemo
     {
         SuccessMessage = string.Empty;
     }
-
-
-
-    private readonly string example1RazorCode = @"
-<BitToggle Label=""Basic"" />
-<BitToggle Label=""Disabled"" IsEnabled=""false"" />";
-
-    private readonly string example2RazorCode = @"
-<BitToggle Label=""Text"" Text=""This is a toggle!"" />
-<BitToggle Label=""OnText & OffText"" OnText=""Toggle is On"" OffText=""Toggle is Off"" />";
-
-    private readonly string example3RazorCode = @"
-<BitToggle Label=""This is an inline label"" Inline />
-
-<BitToggle>
-    <LabelTemplate>
-        <div style=""display:flex;align-items:center;gap:10px"">
-            <BitLabel Style=""color:green"">This is custom Label</BitLabel>
-            <BitIcon IconName=""@BitIconName.Filter"" />
-        </div>
-    </LabelTemplate>
-</BitToggle>";
-
-    private readonly string example4RazorCode = @"
-<BitToggle Label=""This is a reversed label"" Reversed />
-
-<BitToggle Label=""This is a reversed inline label"" Reversed Inline />";
-
-    private readonly string example5RazorCode = @"
-<BitToggle Label=""This is a full-width toggle"" FullWidth Inline />
-
-<BitToggle Label=""This is a reversed full-width toggle"" Reversed FullWidth Inline />";
-
-    private readonly string example6RazorCode = @"
-<BitToggle Label=""One-way"" Value=""oneWayValue"" />
-<BitToggleButton @bind-IsChecked=""oneWayValue"" OnText=""On"" OffText=""Off"" />
-
-<BitToggle Label=""Two-way"" @bind-Value=""twoWayValue"" />
-<BitToggleButton @bind-IsChecked=""twoWayValue"" OnText=""On"" OffText=""Off"" />";
-    private readonly string example6CsharpCode = @"
-private bool oneWayValue;
-private bool twoWayValue;";
-
-    private readonly string example7RazorCode = @"
-<style>
-    .custom-thumb {
-        background: #fff;
-        width: 30px;
-        height: 30px;
-    }
-
-    .custom-button {
-        padding: 0;
-        width: 52px;
-        height: 22px;
-        border: none;
-        background: #ccc;
-        border-radius: 11px;
-    }
-
-    .custom-check .custom-thumb {
-        background: #ff6868;
-    }
-
-    .custom-check .custom-button {
-        background: #ffcece;
-    }
-
-    .custom-check .custom-button:hover .custom-thumb {
-        background: #ff6868;
-    }
-</style>
-
-
-<BitToggle Label=""Styles""
-           Styles=""@(new() { Root = ""--toggle-background: lightgray;"", Checked = ""--toggle-background: #2ecc71;"",
-                             Thumb = ""background: whitesmoke; height: 28px; width: 28px;"",
-                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;"" } )"" />
-
-<BitToggle Label=""Classes""
-           Classes=""@(new() { Thumb = ""custom-thumb"",
-                              Button = ""custom-button"",
-                              Checked = ""custom-check"" } )"" />";
-
-    private readonly string example8RazorCode = @"
-<style>
-    .validation-message {
-        color: red;
-    }
-</style>
-
-<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
-    <DataAnnotationsValidator />
-
-    <BitToggle Label=""Terms and conditions"" Text=""I agree."" @bind-Value=""validationModel.TermsAgreement"" />
-    <ValidationMessage For=""@(() => validationModel.TermsAgreement)"" />
-
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
-    private readonly string example8CsharpCode = @"
-public class BitToggleValidationModel
-{
-    [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
-    public bool TermsAgreement { get; set; } = true;
-}
-
-public BitToggleValidationModel validationModel { get; set; } = new();
-
-private async Task HandleValidSubmit() { }
-private void HandleInvalidSubmit() { }";
-
-    private readonly string example9RazorCode = @"
-<BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />
-
-<BitToggle Label=""این یک تاگل خطی است"" Dir=""BitDir.Rtl"" Inline />
-
-<BitToggle Label=""این یک تاگل خطی برعکس است"" Dir=""BitDir.Rtl"" Reversed Inline />";
 }

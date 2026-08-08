@@ -1,12 +1,33 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_media-queries.scss';
 
 .example-box {
+    gap: 1rem;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: flex-start;
+
+    @include sm {
+        flex-direction: column;
+    }
+}
+
+.clickable-box {
+    padding: 1rem;
+    cursor: pointer;
+    width: fit-content;
+    border-radius: 0.25rem;
+    border: 1px dashed gray;
 }
 
 ::deep {
+    .custom-class {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        background-color: #d3d3d347;
+        border: 1px solid dodgerblue;
+    }
+
     .custom-thumb {
         background: #fff;
         width: rem2(30px);
