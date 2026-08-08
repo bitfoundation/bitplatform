@@ -458,6 +458,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "MinSearchLengthText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the hint the callout shows while the typed text is still shorter than MinSearchLength, which receives the number of characters that are still missing, for example \"Type {0} more characters to search\". It is what tells the user that the list they are looking at is the full one rather than the result of what they typed, and it is announced to screen readers as well. Defaults to the English message; the hint is not shown at all while nothing has been typed, where the full list needs no explaining.",
+        },
+        new()
+        {
             Name = "MultiSelect",
             Type = "bool",
             DefaultValue = "false",
@@ -506,6 +513,13 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text to render in the callout when the current search has no result. Falls back to the EmptyText when not set.",
+        },
+        new()
+        {
+            Name = "NoWrapNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the arrow keys at the ends of the item list instead of letting them wrap around from the last item to the first one and back, which suits a long list where the wrap is more likely to read as the focus having been lost than as a deliberate jump. The type-ahead still wraps, since it looks for the item that matches rather than for the one that comes next. It has no effect in virtualize mode, where the ends of the rendered window are not the ends of the list and the focus stops at them either way.",
         },
         new()
         {
@@ -1516,6 +1530,13 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the search box's clear icon of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "SearchHint",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the hint the callout shows while the typed text is still shorter than the MinSearchLength of the BitDropdown."
                },
                new()
                {

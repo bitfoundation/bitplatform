@@ -567,6 +567,7 @@ private readonly List<BitDropdownItem<string>> basicItems =
              ShowSearchBox
              AutoFocusSearchBox
              MinSearchLength=""3""
+             MinSearchLengthText=""Please type {0} more character(s)""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
              SearchBoxPlaceholder=""Type at least 3 characters""
@@ -1501,6 +1502,17 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
              MultiSelect
              Placeholder=""Select items""
              DefaultValues=""@(Array.Empty<string>())""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+
+<BitDropdown Label=""NoWrapNavigation""
+             NoWrapNavigation
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item""
              TItem=""BitDropdownOption<string>"" TValue=""string"">
     @foreach (var item in basicItems)
     {

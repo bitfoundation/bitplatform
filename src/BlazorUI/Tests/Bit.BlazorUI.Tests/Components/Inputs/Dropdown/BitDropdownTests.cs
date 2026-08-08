@@ -2381,6 +2381,44 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownOpenOnFocusShouldNotSwallowTheFocusWorkOfTheClickBesideIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.OpenOnFocus, true);
+            parameters.Add(p => p.DefaultValue, "f-ban");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+
+        // Clicking the dropdown focuses it first, so with OpenOnFocus the callout is already open by the
+        // time the click itself is handled - which used to end the click there and leave the focus at the
+        // top of the page instead of on the selected item.
+        wrapper.FocusIn();
+        wrapper.Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual("selected", invocations[^1].Arguments[1]);
+
+        // The callout is only toggled once for the two events: a second toggle would hide what the
+        // focus just opened.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"].Count);
+
+        // A click that comes long after the focus (with the callout dismissed in between) opens the
+        // callout itself again, so the note the focus left cannot outlive the interaction it belongs to.
+        component.Find(".bit-drp-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        wrapper.Click();
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
     public void BitDropdownCloseOnSelectShouldOverrideTheDefaultOfEachMode()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -3561,6 +3599,281 @@ public class BitDropdownTests : BunitTestContext
 
         await component.InvokeAsync(async () => await component.Instance.FocusSearchInputAsync());
         await component.InvokeAsync(async () => await component.Instance.FocusComboInputAsync());
+    }
+
+    [TestMethod]
+    public void BitDropdownNoWrapNavigationShouldReachTheFocusHelper()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // Whether the arrow keys wrap around is decided where the focus is actually moved, which is the
+        // JS side, so the parameter has to be part of every call that moves it.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
+        Assert.AreEqual(false, invocations[^1].Arguments[6]);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoWrapNavigation, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        invocations = Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.focusItem"];
+        Assert.AreEqual(true, invocations[^1].Arguments[6]);
+    }
+
+    [TestMethod]
+    public void BitDropdownMinSearchLengthShouldSayHowManyCharactersAreMissing()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.MinSearchLength, 3);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // Nothing typed yet, so the full list under the search box needs no explaining.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+
+        component.Find(".bit-drp-sin").Input("a");
+
+        // The list is still the whole list, which is the one state where what is on the screen has
+        // nothing to do with what was typed - so it is said, on the screen and to a screen reader alike.
+        Assert.AreEqual("Type 2 more characters to search", component.Find(".bit-drp-shn").TextContent.Trim());
+        Assert.AreEqual("Type 2 more characters to search", component.Find(".bit-drp-lvr").TextContent.Trim());
+        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
+
+        component.Find(".bit-drp-sin").Input("ap");
+
+        Assert.AreEqual("Type 1 more character to search", component.Find(".bit-drp-shn").TextContent.Trim());
+
+        component.Find(".bit-drp-sin").Input("app");
+
+        // The term filters the list now, so the hint gives way to the result count.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+        Assert.AreEqual("1 result available", component.Find(".bit-drp-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownMinSearchLengthTextShouldBeLocalizable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.MinSearchLength, 4);
+            parameters.Add(p => p.MinSearchLengthText, "Noch {0} Zeichen");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("ap");
+
+        Assert.AreEqual("Noch 2 Zeichen", component.Find(".bit-drp-shn").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownMinSearchLengthHintShouldFollowTheComboInput()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.MinSearchLength, 3);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // The ComboBox mode has no search box: the input of the dropdown itself is what the items are
+        // filtered by, so it is the text the hint has to be measured against.
+        component.Find(".bit-drp-inp").Input("a");
+
+        Assert.AreEqual("Type 2 more characters to search", component.Find(".bit-drp-shn").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchResultCountShouldFollowTheRenderedList()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.HideSelectedItems, true);
+            parameters.Add(p => p.Values, new[] { "f-app" });
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Input("a");
+
+        // Apple, Orange and Banana match, but Apple is already selected and HideSelectedItems takes it
+        // out of the list - so counting it would announce a result nobody can reach.
+        Assert.AreEqual(2, component.FindAll("[role=option]").Count);
+        Assert.AreEqual("2 results available", component.Find(".bit-drp-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownListboxShouldBeNamedByTheAriaLabelWithoutALabel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Fruits");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // Without a label element there is nothing for the listbox to point at, so the name given to the
+        // dropdown stands in - a listbox that reports no name at all leaves its options unattributed.
+        var listbox = component.Find(".bit-drp-scn");
+        Assert.AreEqual("Fruits", listbox.GetAttribute("aria-label"));
+        Assert.IsFalse(listbox.HasAttribute("aria-labelledby"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Label, "Fruit");
+            parameters.Add(p => p.AriaLabel, "Fruits");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        listbox = component.Find(".bit-drp-scn");
+        Assert.IsFalse(listbox.HasAttribute("aria-label"));
+        Assert.IsTrue(listbox.HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitDropdownCalloutShouldCarryTheDirectionOfTheDropdown()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // The callout is rendered outside the root element (and reparented to the body while open), so
+        // it never inherits the direction the root declares - an RTL dropdown on an LTR page would
+        // otherwise open a list whose text starts against the wrong edge.
+        Assert.AreEqual("rtl", component.Find(".bit-drp-cal").GetAttribute("dir"));
+
+        var undirected = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // Without a direction of its own the callout follows the page, like every other element.
+        Assert.IsFalse(undirected.Find(".bit-drp-cal").HasAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxClearButtonShouldFollowTheTypedTextWithoutImmediate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.MinSearchLength, 3);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
+
+        component.Find(".bit-drp-sin").Input("ap");
+
+        // The search itself waits for the input to be committed here, but the parts that describe the
+        // field - the clear button and the too-short hint - are about what is in it, so they follow the
+        // typing. The list is untouched, since no term has been applied yet.
+        Assert.AreEqual(1, component.FindAll(".bit-drp-sbc").Count);
+        Assert.AreEqual("Type 1 more character to search", component.Find(".bit-drp-shn").TextContent.Trim());
+        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
+
+        component.Find(".bit-drp-sbc").Click();
+
+        // Clearing an uncommitted term only empties the input: there is no search behind it to re-run.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-sbc").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-drp-shn").Count);
+        Assert.IsNull(component.Find(".bit-drp-sin").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDropdownSearchBoxShouldStillClearACommittedTerm()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var searches = new List<string?>();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnSearch, (string? text) => searches.Add(text));
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-sin").Change("app");
+
+        Assert.AreEqual(1, component.FindAll("[role=option]").Count);
+        CollectionAssert.AreEqual(new[] { "app" }, searches);
+
+        component.Find(".bit-drp-sbc").Click();
+
+        // A term that was applied is a search to take back, so the list comes back and the callback is
+        // told about it - which is what tells an ItemsProvider to stop serving the abandoned term.
+        Assert.AreEqual(4, component.FindAll("[role=option]").Count);
+        CollectionAssert.AreEqual(new string?[] { "app", null }, searches);
+    }
+
+    [TestMethod]
+    public void BitDropdownItemsProviderShouldNotKeepTheItemOfAReplacedValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        static ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> provider(BitDropdownItemsProviderRequest<BitDropdownItem<string>> _)
+            => ValueTask.FromResult(BitDropdownItemsProviderResult.From<BitDropdownItem<string>>([], 0));
+
+        var initial = new List<BitDropdownItem<string>> { new() { Text = "Apple", Value = "f-app" } };
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.ItemsProvider, provider);
+            parameters.Add(p => p.InitialSelectedItems, initial);
+        });
+
+        Assert.AreEqual("Apple", component.Find(".bit-drp-tdp").TextContent.Trim());
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.ItemsProvider, provider);
+            parameters.Add(p => p.InitialSelectedItems, initial);
+            parameters.Add(p => p.Value, "f-ban");
+        });
+
+        // The item of a value the provider has not handed over yet is kept, since it usually only means
+        // the window it lives in was never fetched - but only while it still stands for the value the
+        // dropdown holds, or the trigger goes on naming the selection before it.
+        Assert.AreEqual(string.Empty, component.Find(".bit-drp-tdp").TextContent.Trim());
     }
 
     private static List<BitDropdownItem<string>> GetDropdownItems() => new()

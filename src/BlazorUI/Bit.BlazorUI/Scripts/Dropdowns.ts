@@ -118,7 +118,7 @@ namespace BitBlazorUI {
         }
 
         public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,
-                                      selectedIndex: number = -1, itemSize: number = 0) {
+                                      selectedIndex: number = -1, itemSize: number = 0, noWrap: boolean = false) {
             const callout = document.getElementById(calloutId);
             if (!callout) return;
 
@@ -152,7 +152,7 @@ namespace BitBlazorUI {
                 }
             }
 
-            const index = Dropdowns._resolveIndex(items, current, mode, char, virtualize);
+            const index = Dropdowns._resolveIndex(items, current, mode, char, virtualize, noWrap);
 
             if (index > -1) {
                 items[index].focus();
@@ -233,10 +233,12 @@ namespace BitBlazorUI {
             return { items: Dropdowns._getItems(callout), mode: nextMode };
         }
 
-        private static _resolveIndex(items: HTMLElement[], current: number, mode: string, char: string | null, virtualize: boolean) {
+        private static _resolveIndex(items: HTMLElement[], current: number, mode: string, char: string | null,
+                                    virtualize: boolean, noWrap: boolean = false) {
             // Wrapping around is only correct when every item is rendered; in virtualize mode the ends
-            // of the rendered window are not the ends of the list, so the focus stops there instead.
-            const wrap = (index: number) => virtualize
+            // of the rendered window are not the ends of the list, so the focus stops there instead -
+            // and so it does when the dropdown was asked to stop there (noWrap).
+            const wrap = (index: number) => (virtualize || noWrap)
                 ? Math.max(0, Math.min(items.length - 1, index))
                 : (index + items.length) % items.length;
 
@@ -244,6 +246,9 @@ namespace BitBlazorUI {
 
             if (mode === 'last') return items.length - 1;
 
+            // The very first arrow press has no item to move from, so it starts at the end it is
+            // heading away from: ArrowDown at the first item and ArrowUp at the last one - which
+            // stopping at the ends does not change, since neither of them steps over one.
             if (mode === 'next') return current < 0 ? 0 : wrap(current + 1);
 
             if (mode === 'prev') return current < 0 ? items.length - 1 : wrap(current - 1);

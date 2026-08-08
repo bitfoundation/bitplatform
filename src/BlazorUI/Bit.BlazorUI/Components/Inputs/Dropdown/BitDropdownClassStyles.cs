@@ -143,6 +143,12 @@ public class BitDropdownClassStyles
     public string? SearchBoxClearIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the hint the callout shows while the typed text is still shorter
+    /// than the MinSearchLength of the BitDropdown.
+    /// </summary>
+    public string? SearchHint { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the select all item container of the multi-select BitDropdown.
     /// </summary>
     public string? SelectAllContainer { get; set; }

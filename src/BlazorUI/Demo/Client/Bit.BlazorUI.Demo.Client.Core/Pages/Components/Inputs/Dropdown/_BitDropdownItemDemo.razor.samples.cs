@@ -410,6 +410,7 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
              ShowSearchBox
              AutoFocusSearchBox
              MinSearchLength=""3""
+             MinSearchLengthText=""Please type {0} more character(s)""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""
              Placeholder=""Select an item""
@@ -1135,7 +1136,13 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
              MultiSelect
              Items=""GetBasicItems()""
              Placeholder=""Select items""
-             DefaultValues=""@(Array.Empty<string>())"" />";
+             DefaultValues=""@(Array.Empty<string>())"" />
+
+<BitDropdown Label=""NoWrapNavigation""
+             NoWrapNavigation
+             Items=""GetBasicItems()""
+             DefaultValue=""@string.Empty""
+             Placeholder=""Select an item"" />";
     private readonly string example19CsharpCode = @"
 private List<BitDropdownItem<string>> GetBasicItems() => new()
 {

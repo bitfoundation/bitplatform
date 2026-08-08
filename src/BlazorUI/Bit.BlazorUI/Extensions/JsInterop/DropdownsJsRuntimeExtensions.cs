@@ -12,7 +12,7 @@ internal static class DropdownsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.dispose", id);
     }
 
-    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize)
+    internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize, bool noWrap)
     {
         // Mapped by hand rather than by name: these are the exact strings Dropdowns.ts branches on, so
         // renaming a member of the enum must not silently change what is sent over the wire.
@@ -29,6 +29,6 @@ internal static class DropdownsJsRuntimeExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
-        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, modeValue, character, virtualize, selectedIndex, itemSize);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusItem", calloutId, modeValue, character, virtualize, selectedIndex, itemSize, noWrap);
     }
 }

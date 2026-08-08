@@ -276,7 +276,10 @@
         flex-wrap: wrap;
         gap: spacing(0.5);
         min-height: var(--bit-drp-h);
-        padding: spacing(1) spacing(3.5) spacing(1) spacing(1);
+        // Logical, not physical: the room left at the end is for the icons of the trigger, which sit
+        // where the text ends - on the left of an RTL dropdown.
+        padding-block: spacing(1);
+        padding-inline: spacing(1) spacing(3.5);
     }
 }
 
@@ -519,7 +522,10 @@
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
     background-color: $clr-bg-pri;
-    padding: spacing(0.125) 0 spacing(0.125) spacing(1);
+    // The same logical padding the search box beside it uses, so the text of an RTL panel starts
+    // where its input does rather than against the opposite edge.
+    padding-block: spacing(0.125);
+    padding-inline-start: spacing(1);
 
     @media (hover: hover) {
         &:hover {
@@ -683,7 +689,10 @@
     color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
-    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+    // Only the corners at the end of the search box are rounded, so they are named logically: in an
+    // RTL callout the button sits at the other end and it is the other two corners that are its own.
+    border-start-end-radius: spacing(0.125);
+    border-end-end-radius: spacing(0.125);
 
     span {
         height: 100%;
@@ -841,6 +850,16 @@
     box-shadow: inset spacing(0.25) 0 0 0 var(--bit-drp-clr);
 }
 
+// A box-shadow has no logical form, so the bar marking the commit target has to be moved to the
+// other edge by hand for the callout to keep pointing at the items from the side the text starts on.
+.bit-drp-rtl {
+    .bit-drp-itm.bit-drp-ctg,
+    .bit-drp-dyn.bit-drp-ctg,
+    .bit-drp-iwr.bit-drp-ctg {
+        box-shadow: inset spacing(-0.25) 0 0 0 var(--bit-drp-clr);
+    }
+}
+
 // The matched part of an item text while a search is active.
 .bit-drp-hlt {
     font-weight: 600;
@@ -877,6 +896,20 @@
     width: 100%;
     height: spacing(0.125);
     background-color: $clr-bg-sec;
+}
+
+// The hint that the typed text is still too short to filter by, which sits above the (unfiltered)
+// items rather than in place of them, so it is set apart from them instead of looking like one.
+.bit-drp-shn {
+    cursor: default;
+    user-select: none;
+    text-align: start;
+    font-style: italic;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(1) spacing(1.5);
+    font-size: calc(var(--bit-drp-fs) - #{spacing(0.25)});
 }
 
 .bit-drp-emp {

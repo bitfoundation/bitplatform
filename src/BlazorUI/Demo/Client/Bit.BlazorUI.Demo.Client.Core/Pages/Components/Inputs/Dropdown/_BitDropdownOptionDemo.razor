@@ -476,7 +476,9 @@
         term, ignoring case; <b>SearchFunction</b> replaces that algorithm with any predicate of your own (the examples
         below switch it to a starts-with and an ends-with match). <b>AutoFocusSearchBox</b> puts the caret in the search
         input as soon as the callout opens - with the pointer and with Enter or Space on the keyboard alike - so
-        typing filters right away. The search term is discarded whenever the
+        typing filters right away. A clear button appears in the search input as soon as there is something to clear,
+        which follows the text being typed rather than the term that has been applied: a search waiting to be committed
+        (or held back by a debounce) can be taken back the moment it is typed. The search term is discarded whenever the
         callout closes, so the next opening always starts from the full list.
     </div>
     <br /><br />
@@ -540,18 +542,24 @@
 
 <DemoExample Title="Search options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        Four parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
+        A handful of parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
         is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
         <b>ExactMatch</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
         given number of characters, which keeps a one-letter term from being treated as a real query (and, with an
-        <b>ItemsProvider</b>, from turning every first keystroke into a request). <b>SearchIgnoreDiacritics</b> matches
+        <b>ItemsProvider</b>, from turning every first keystroke into a request). While the term is still
+        too short the callout shows a hint above the items saying how many characters are missing, so the untouched
+        list under it reads as the full list instead of as a search that matched everything;
+        <b>MinSearchLengthText</b> is the composite format of that hint, which receives the number of characters that
+        are still needed and is announced to screen readers along with it. <b>SearchIgnoreDiacritics</b> matches
         the term against the item texts with the diacritics of both folded away, so <b>Jose</b> finds <b>José</b> and
         <b>Muller</b> finds <b>Müller</b> &mdash; which is what makes the search usable to anyone typing on a keyboard
         that has no accented keys. <b>HighlightSearch</b> emphasizes the matched part of each item text so the reason an
         item is in the result is visible at a glance, and it keeps lining up with the accented text because the folding
         replaces each character with exactly one character. Whenever a search is active the number of results is also
-        announced to screen readers, with a message you can localize through the <b>SearchResultsText</b> parameter.
-        All four configure the built-in algorithm only; a <b>SearchFunction</b> replaces it outright and does its own
+        announced to screen readers, with a message you can localize through the <b>SearchResultsText</b> parameter; that
+        count follows the list as it is actually rendered, so the items <b>HideSelectedItems</b> takes out of it are
+        not offered as results nobody can reach.
+        All of them configure the built-in algorithm only; a <b>SearchFunction</b> replaces it outright and does its own
         matching.
     </div>
     <br />
@@ -574,6 +582,7 @@
                      ShowSearchBox
                      AutoFocusSearchBox
                      MinSearchLength="3"
+                     MinSearchLengthText="Please type {0} more character(s)"
                      DefaultValue="@string.Empty"
                      Placeholder="Select an item"
                      SearchBoxPlaceholder="Type at least 3 characters"
@@ -1402,7 +1411,11 @@
         while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
         Typing printable characters runs a typeahead: the accumulated characters jump to the
         item starting with them, repeating one character cycles through the items starting with it, and the buffer
-        resets after a short pause. Disabled and hidden items are skipped throughout. In virtualize mode only the
+        resets after a short pause. The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
+        back to the first one; <b>NoWrapNavigation</b> stops them at the ends instead, which suits a long list where
+        the jump from one end to the other is more likely to read as the focus having been lost than as a move that
+        was asked for &mdash; the typeahead keeps wrapping either way, since it looks for the item that matches rather
+        than for the one that comes next. Disabled and hidden items are skipped throughout. In virtualize mode only the
         rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
         match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
         reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
@@ -1429,6 +1442,17 @@
                      MultiSelect
                      Placeholder="Select items"
                      DefaultValues="@(Array.Empty<string>())"
+                     TItem="BitDropdownOption<string>" TValue="string">
+            @foreach (var item in basicItems)
+            {
+                <BitDropdownOption ItemType="item.ItemType" Text="@item.Text" Value="item.Value" IsEnabled="item.IsEnabled" />
+            }
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="NoWrapNavigation"
+                     NoWrapNavigation
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
                      TItem="BitDropdownOption<string>" TValue="string">
             @foreach (var item in basicItems)
             {
@@ -2338,7 +2362,9 @@
         Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
         Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the
         callout aligns to the right edge of the dropdown, and the responsive panel slides in from the left and is
-        swiped away in the opposite direction.
+        swiped away in the opposite direction. The callout is rendered outside the dropdown so that it can escape any
+        clipping ancestor around it, which also puts it out of the reach of the direction the dropdown declares, so it
+        carries that direction itself &mdash; the list of an RTL dropdown reads right-to-left even on a page that does not.
     </div>
     <br />
     <dir dir="rtl" style="padding:0">

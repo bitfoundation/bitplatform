@@ -14,6 +14,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int? _providerTotalItems;
     private Dictionary<TItem, int>? _providerPositions;
     private string? _searchText;
+    private string? _searchInputText;
     private string? _comboInputText;
     private string? _foldedSearchTextKey;
     private string? _foldedSearchText;
@@ -50,6 +51,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _calloutScrollOffset = -1;
     private bool _internalIsOpenChange;
     private bool _suppressOpenOnFocus;
+    private bool _openedOnFocus;
     private bool _inputSearchHasFocus;
     private bool _inputComboHasFocus;
     private List<TItem> _selectedItems = [];
@@ -481,6 +483,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public int MinSearchLength { get; set; }
 
     /// <summary>
+    /// The composite format of the hint the callout shows while the typed text is still shorter than
+    /// <see cref="MinSearchLength"/>, which receives the number of characters that are still missing,
+    /// for example "Type {0} more characters to search". It is what tells the user that the list they
+    /// are looking at is the full one rather than the result of what they typed, and it is announced
+    /// to screen readers as well. Defaults to the English message; the hint is not shown at all while
+    /// nothing has been typed, where the full list needs no explaining.
+    /// </summary>
+    [Parameter] public string? MinSearchLengthText { get; set; }
+
+    /// <summary>
     /// Enables the multi select mode.
     /// </summary>
     [Parameter] public bool MultiSelect { get; set; }
@@ -512,6 +524,16 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Falls back to the <see cref="EmptyTemplate"/> when not set.
     /// </summary>
     [Parameter] public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// Stops the arrow keys at the ends of the item list instead of letting them wrap around from the
+    /// last item to the first one and back, which suits a long list where the wrap is more likely to
+    /// read as the focus having been lost than as a deliberate jump. The type-ahead still wraps, since
+    /// it looks for the item that matches rather than for the one that comes next.
+    /// It has no effect in virtualize mode, where the ends of the rendered window are not the ends of
+    /// the list and the focus stops at them either way.
+    /// </summary>
+    [Parameter] public bool NoWrapNavigation { get; set; }
 
     /// <summary>
     /// The text to render in the callout when the current search has no result.
@@ -2014,6 +2036,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                 // is a real deselection and has to drop the item the trigger is still showing.
                 _selectedItems.Clear();
             }
+            else
+            {
+                // The item is kept only while it still stands for the current value: a value replaced by
+                // another one whose item has not been fetched yet would otherwise leave the trigger
+                // naming the selection before it.
+                _selectedItems.RemoveAll(si => comparer.Equals(GetValue(si), CurrentValue) is false);
+            }
         }
 
         ClassBuilder.Reset();
@@ -2148,9 +2177,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // a one-way bound IsOpen refuses the change, and the click still happened.
         await OnClick.InvokeAsync(e);
 
-        if (await AssignIsOpenInternal(true) is false) return;
+        // The focus this very click gave the dropdown may have opened the callout already (OpenOnFocus),
+        // which leaves the open below with nothing to do - but the focus work after it, which is the
+        // rest of what opening the list by pointer means, still has to run.
+        var openedOnFocus = _openedOnFocus;
+        _openedOnFocus = false;
 
-        await ToggleCallout();
+        if (openedOnFocus is false)
+        {
+            if (await AssignIsOpenInternal(true) is false) return;
+
+            await ToggleCallout();
+        }
 
         await FocusOnComboBoxInput();
         await FocusOnSearchBox();
@@ -2347,7 +2385,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private ValueTask FocusItem(BitDropdownFocusMode mode, string? character = null)
     {
-        return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize, GetSelectedItemIndex(mode), ItemSize);
+        return _js.BitDropdownsFocusItem(_calloutId, mode, character, Virtualize, GetSelectedItemIndex(mode), ItemSize, NoWrapNavigation);
     }
 
     // Where the selected item sits in the rendered list, which virtualization needs in order to reach it:
@@ -2394,7 +2432,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (OpenOnFocus && suppressed is false)
         {
+            var wasOpen = IsOpen;
+
             await OpenCallout();
+
+            // Remembered for the click this focus may be the first half of, so that the click does not
+            // read an already open callout as one it has nothing left to do about. It is cleared by the
+            // next toggle of the callout, so a click that comes long after the focus (and after the
+            // callout was dismissed in between) opens the callout itself as it always did.
+            _openedOnFocus = IsOpen && wasOpen is false;
         }
 
         await OnFocusIn.InvokeAsync(e);
@@ -2448,6 +2494,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (IsEnabled is false) return;
         if (HasSearchBox is false) return;
 
+        // What the input actually holds, which is what the dropdown renders back into it and what the
+        // parts that describe the field rather than the result - the clear button, the too-short hint -
+        // follow. It is kept apart from the search term because that term deliberately lags behind the
+        // typing: by a debounce, or (without Immediate) until the input is committed.
+        _searchInputText = e.Value?.ToString();
+
         if (Immediate is false) return;
 
         await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
@@ -2458,6 +2510,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         if (IsEnabled is false) return;
         if (HasSearchBox is false) return;
+
+        _searchInputText = e.Value?.ToString();
 
         if (Immediate) return;
 
@@ -2481,11 +2535,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // clearing it from here would leave ClearComboBoxInput with nothing to do and the input
         // holding the term it was supposed to empty.
         if (HasSearchBox is false) return;
-        if (_searchText.HasNoValue()) return;
+        // Both are checked: without Immediate a term that was typed but never committed is only in the
+        // input, and the input is exactly what this has to leave empty.
+        if (_searchText.HasNoValue() && _searchInputText.HasNoValue()) return;
 
         _rateLimiter.Reset();
 
+        var hadSearchText = _searchText.HasValue();
+
         _searchText = null;
+        _searchInputText = null;
+
+        // The term was never applied, so there is no search to re-run and nothing to report: only the
+        // text the user abandoned in the input is gone, which the render that follows takes care of.
+        if (hadSearchText is false) return;
 
         RefreshOptions();
 
@@ -2875,7 +2938,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var className = new StringBuilder("bit-drp-sb");
 
-        if (_searchText.HasValue())
+        if (_searchInputText.HasValue())
         {
             className.Append(" bit-drp-shv");
         }
@@ -2961,13 +3024,36 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         // With an ItemsProvider only a window of the results is loaded, so the number of results is
         // the one the provider reported rather than the size of that window.
+        // Otherwise it is the list as it is actually rendered that is counted, and not the raw search
+        // result: HideSelectedItems takes the items that are already selected out of it, and a number
+        // that counted them would tell a screen reader user about results they cannot reach.
         var count = ItemsProvider is not null
             ? _providerTotalItems ?? _lastShownItems.Count
-            : GetSearchedItems().Count(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false);
+            : GetDisplayItems().Count(i => GetItemType(i) == BitDropdownItemType.Normal && GetIsHidden(i) is false);
 
         return SearchResultsText is not null
                 ? string.Format(SearchResultsText, count)
                 : count == 1 ? "1 result available" : $"{count} results available";
+    }
+
+    // The hint the callout shows while the typed text is still too short to filter by, so the full list
+    // under it is explained instead of looking like a search that matched everything. It is null while
+    // there is nothing to explain: without a MinSearchLength, and before anything has been typed.
+    private string? GetMinSearchLengthText()
+    {
+        if (MinSearchLength <= 0) return null;
+
+        // The text of the input rather than the applied term: the hint explains what is being typed,
+        // so it has to follow the typing and not the (debounced, or uncommitted) search behind it.
+        var text = Combo ? _comboInputText : _searchInputText;
+        if (text.HasNoValue()) return null;
+
+        var remaining = MinSearchLength - text!.Length;
+        if (remaining <= 0) return null;
+
+        return MinSearchLengthText is not null
+                ? string.Format(MinSearchLengthText, remaining)
+                : remaining == 1 ? "Type 1 more character to search" : $"Type {remaining} more characters to search";
     }
 
     private bool HasNoVisibleItems()
@@ -3155,6 +3241,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private async Task ToggleCallout()
     {
         if (IsEnabled is false || IsDisposed) return;
+
+        // Every open and close of the callout goes through here, which is where the note the focus
+        // handler left for the click it may be paired with stops being about the current state.
+        _openedOnFocus = false;
 
         _calloutScrollOffset = GetCalloutScrollOffset();
 

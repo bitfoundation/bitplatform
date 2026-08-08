@@ -364,6 +364,12 @@
         {
             @GetSearchResultsText()
         }
+        else if (IsOpen)
+        {
+            @* Why the list did not change with what was typed, which is otherwise only visible in the
+               callout - and only to someone who can see that the items under the field are all of them. *@
+            @GetMinSearchLengthText()
+        }
     </div>
 </div>
 
@@ -375,9 +381,14 @@
 @* The listbox role lives on the scroll container, not here: the search box, the select all row, the
    responsive panel header and the header/footer templates are not options and must not be children
    of the listbox. *@
+@* The callout is rendered outside the root element (and reparented to the body while it is open) so
+   that it can escape any clipping ancestor, which also takes it out of the reach of the direction
+   the root declares - so it carries that direction itself. Without it the items of an RTL dropdown
+   would start their text against the wrong edge whenever the page around it is not RTL as well. *@
 <div @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"
      tabindex="0"
+     dir="@Dir?.ToString().ToLower()"
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()">
 
@@ -430,13 +441,15 @@
             <input @ref="_searchInputRef" @onfocusin="HandleSearchBoxFocusIn" @onfocusout="HandleSearchBoxFocusOut" @oninput="@HandleOnSearchBoxInput" @onchange="@HandleOnSearchBoxChange"
                    type="text"
                    role="searchbox"
-                   value="@_searchText"
+                   value="@_searchInputText"
                    aria-label="@(SearchBoxAriaLabel ?? "Search text")"
                    placeholder="@SearchBoxPlaceholder"
                    style="@Styles?.SearchBoxInput"
                    class="bit-drp-sin @Classes?.SearchBoxInput" />
 
-            @if (_searchText.HasValue())
+            @* Follows the text of the input rather than the applied term, so a search that is still
+               waiting to be committed (or debounced) can be taken back the moment it is typed. *@
+            @if (_searchInputText.HasValue())
             {
                 <div style="@Styles?.SearchBoxClearButtonContainer"
                      class="bit-drp-sbcc @Classes?.SearchBoxClearButtonContainer">
@@ -446,7 +459,7 @@
                             class="bit-drp-sbc @Classes?.SearchBoxClearButton"
                             title="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
                             aria-label="@(SearchBoxClearButtonAriaLabel ?? "Clear text")"
-                            disabled="@(_searchText.HasNoValue())">
+                            disabled="@(_searchInputText.HasNoValue())">
                         <span>
                             <i aria-hidden="true"
                                style="@Styles?.SearchBoxClearIcon"
@@ -536,15 +549,34 @@
         // has. It stands in for the empty state while it is there: a list that says "no results" while
         // offering to create the very thing that was searched for contradicts itself.
         var dynamicItemText = IsLoading ? null : GetDynamicItemText();
+
+        // The hint that the list below is still the full one because what was typed is too short to
+        // filter by, which is the one state where the items on the screen have nothing to do with the
+        // text in the search field.
+        var minSearchLengthText = IsLoading ? null : GetMinSearchLengthText();
     }
 
+    @* The listbox is named after the label of the dropdown, so its options are read as part of the
+       field they belong to; without a label the accessible name given to the dropdown stands in. *@
     <div id="@_scrollContainerId"
          role="listbox"
          style="@Styles?.ScrollContainer"
          class="bit-drp-scn @Classes?.ScrollContainer"
          aria-busy="@(IsLoading ? "true" : null)"
+         aria-label="@(HasLabel ? null : AriaLabel)"
          aria-labelledby="@(HasLabel ? _labelId : null)"
          aria-multiselectable="@(MultiSelect ? "true" : null)">
+        @if (minSearchLengthText is not null)
+        {
+            @* Not an option, so it is marked presentational to stay out of the list it explains; it is
+               announced through the live region of the dropdown instead. *@
+            <div role="presentation"
+                 style="@Styles?.SearchHint"
+                 class="bit-drp-shn @Classes?.SearchHint">
+                @minSearchLengthText
+            </div>
+        }
+
         @if (dynamicItemText is not null)
         {
             @* An option like the ones below it, so the arrow keys reach it and a screen reader reads it

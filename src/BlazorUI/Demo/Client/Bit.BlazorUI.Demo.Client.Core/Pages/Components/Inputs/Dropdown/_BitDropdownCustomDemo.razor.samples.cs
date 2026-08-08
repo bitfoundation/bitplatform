@@ -638,6 +638,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              ShowSearchBox
              AutoFocusSearchBox
              MinSearchLength=""3""
+             MinSearchLengthText=""Please type {0} more character(s)""
              Items=""GetBasicCustoms()""
              DefaultValue=""@string.Empty""
              NameSelectors=""nameSelectors""
@@ -1698,7 +1699,13 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
              MultiSelect
              Items=""GetBasicCustoms()""
              Placeholder=""Select items""
-             NameSelectors=""nameSelectors"" />";
+             NameSelectors=""nameSelectors"" />
+
+<BitDropdown Label=""NoWrapNavigation""
+             NoWrapNavigation
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Placeholder=""Select an item"" />";
     private readonly string example19CsharpCode = @"
 public class Product
 {
