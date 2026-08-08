@@ -18,7 +18,7 @@ public partial class BitTagsInputDemo
             Name = "AllowReorder",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a tag be moved within the list from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt with Home or End sends it to either end.",
+            Description = "Lets a tag be moved within the list, either by dragging it onto the position it should take or from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt with Home or End sends it to either end.",
         },
         new()
         {
@@ -72,6 +72,20 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "Clear",
             Description = "Gets or sets the name of the icon of the clear button from the built-in Fluent UI icons.",
+        },
+        new()
+        {
+            Name = "ClearButtonTitle",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip of the clear button, which is what the pointer reads rather than the screen reader. It falls back to the ClearButtonAriaLabel and then to \"Clear all tags\".",
+        },
+        new()
+        {
+            Name = "ClearedAnnouncementFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the message announced by screen readers when every tag is removed at once, where {0} is how many of them there were. The default is \"{0} tags removed.\". An empty string keeps the clearing from being announced.",
         },
         new()
         {
@@ -175,6 +189,20 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "LessTagsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The label of the chip that folds the tags back once MaxDisplayedTags unfolded them. The default is \"Show less\".",
+        },
+        new()
+        {
+            Name = "MaxDisplayedTags",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The number of tags drawn before the rest of them are folded away behind a chip that says how many are left, which unfolds the list and folds it back. Only how much of the value is drawn changes, never the value itself. 0 means all of them.",
+        },
+        new()
+        {
             Name = "MaxLength",
             Type = "int",
             DefaultValue = "0",
@@ -193,6 +221,20 @@ public partial class BitTagsInputDemo
             Type = "int",
             DefaultValue = "0",
             Description = "The minimum number of characters a tag has to hold to be accepted. Shorter ones are rejected with the MinLength reason. 0 means no limit.",
+        },
+        new()
+        {
+            Name = "MoreTagsFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the label of the chip that stands for the tags MaxDisplayedTags folded away, where {0} is how many of them there are. The default is \"+{0}\".",
+        },
+        new()
+        {
+            Name = "MoreTagsAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the accessible label of that same chip, where {0} is how many tags are folded away. The default is \"Show {0} more tags\", since \"+3\" read out on its own says nothing about what pressing it would do.",
         },
         new()
         {
@@ -339,10 +381,17 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "RestrictToSuggestions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the Suggestions into the whole of what the field accepts: a tag that is not one of them is rejected with the NotSuggested reason, which is what a datalist on its own cannot do since it suggests rather than restricts.",
+        },
+        new()
+        {
             Name = "Separators",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "The character(s) used to separate tags when typing. Also used to split pasted text into multiple tags. Defaults to Enter key only.",
+            Description = "The character(s) that turn the typed text into a tag on top of the Enter key, which is the only one there is by default. The very same separators split a pasted list into a tag each, and a pasted text holding line breaks is joined over the first of them before it is split.",
         },
         new()
         {
@@ -372,7 +421,7 @@ public partial class BitTagsInputDemo
             Name = "Suggestions",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "The values offered to the user while typing, through the suggestion list the browser itself renders for a datalist. Picking one fills the input; the usual Enter (or a separator) turns it into a tag, so every validation rule still applies. Values already in the list are left out unless Duplicates allows them back in.",
+            Description = "The values offered to the user while typing, through the suggestion list the browser itself renders for a datalist. Picking one fills the input; the usual Enter (or a separator) turns it into a tag, so every validation rule still applies. Values already in the list are left out unless Duplicates allows them back in, and all of them are once the MaxTags ceiling is reached. See RestrictToSuggestions to make them the only accepted values.",
         },
         new()
         {
@@ -389,6 +438,13 @@ public partial class BitTagsInputDemo
             Type = "RenderFragment<string>?",
             DefaultValue = "null",
             Description = "A custom template for rendering each tag.",
+        },
+        new()
+        {
+            Name = "TagAriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The sentence announced after each tag, telling what the keyboard can do with the one that has just been reached. It defaults to a sentence built from what the component was actually given (the inline edit, the reordering), and is left out entirely when neither is on. An empty string keeps it from being rendered at all.",
         },
         new()
         {
@@ -588,6 +644,13 @@ public partial class BitTagsInputDemo
                 },
                 new()
                 {
+                    Name = "ToggleButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the chip that stands for the tags MaxDisplayedTags folded away, which unfolds the list and folds it back.",
+                },
+                new()
+                {
                     Name = "Input",
                     Type = "string?",
                     DefaultValue = "null",
@@ -699,6 +762,12 @@ public partial class BitTagsInputDemo
                     Name = "Validator",
                     Description = "The tag was rejected by the custom validator.",
                     Value = "4",
+                },
+                new()
+                {
+                    Name = "NotSuggested",
+                    Description = "The tag is not one of the suggestions, which RestrictToSuggestions made the only accepted values.",
+                    Value = "5",
                 },
             ]
         },
@@ -836,6 +905,7 @@ public partial class BitTagsInputDemo
     private string? maxTagsMessage;
 
     private readonly string[] frameworkSuggestions = ["blazor", "react", "vue", "angular", "svelte"];
+    private string? suggestionMessage;
 
     private const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
     private string? patternMessage;
@@ -870,6 +940,13 @@ public partial class BitTagsInputDemo
     private void HandlePatternInvalid(BitTagsInputInvalidArgs args)
     {
         patternMessage = $"'{args.Tag}' is not a valid email address.";
+    }
+
+    private void HandleSuggestionInvalid(BitTagsInputInvalidArgs args)
+    {
+        suggestionMessage = args.Reason == BitTagsInputInvalidReason.NotSuggested
+            ? $"'{args.Tag}' is not one of the suggested values."
+            : $"'{args.Tag}' was refused ({args.Reason}).";
     }
 
     private static bool ValidateFramework(string tag)

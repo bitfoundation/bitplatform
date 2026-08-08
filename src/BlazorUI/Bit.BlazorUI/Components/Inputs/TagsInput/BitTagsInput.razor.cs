@@ -25,11 +25,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _listId = string.Empty;
+    private string _tagsId = string.Empty;
+    private string _hintId = string.Empty;
     private string _descriptionId = string.Empty;
+    private bool _tagsExpanded;
     private string? _separatorsJson;
     private string[] _separators = _emptySeparators;
     private Regex? _patternRegex;
     private string? _announcement;
+
+    // A screen reader only re-reads a live region that actually changed, so the very same message said
+    // twice in a row (the same tag rejected again, the same one added twice) would go unheard. The id
+    // keys the element the message sits in, which makes every announcement replace an element rather
+    // than only rewrite a text that may not have changed.
+    private int _announcementId;
 
     // The tag that currently owns the single tab stop of the list (roving tabindex), and the one the
     // focus has to be moved to after the next render, once the element it belongs to exists again.
@@ -44,6 +53,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private bool _pendingFocusEdit;
     private ElementReference _editInputRef;
 
+    // The tag being dragged and the one it is currently hovering over, which is what the pointer
+    // equivalent of the Alt+arrow reordering is drawn and carried out with.
+    private int _draggingTagIndex = -1;
+    private int _dragOverTagIndex = -1;
+
 
 
     /// <summary>
@@ -54,10 +68,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     public BitColor? Accent { get; set; }
 
     /// <summary>
-    /// Lets a tag be moved within the list from the keyboard: Alt with the arrow keys walks the focused
-    /// tag one position at a time, and Alt with Home or End sends it to either end. It is the pointer
-    /// free equivalent of dragging a chip into place, and it keeps the focus on the tag that moved so
-    /// that several steps can be taken in a row.
+    /// Lets a tag be moved within the list, either by dragging it onto the position it should take or
+    /// from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt
+    /// with Home or End sends it to either end. The keyboard is not a fallback of the drag but its equal,
+    /// which is what keeps the reordering usable where a drag is not (a touch screen, a screen reader),
+    /// and the focus stays on the tag that moved so that several steps can be taken in a row.
     /// </summary>
     [Parameter] public bool AllowReorder { get; set; }
 
@@ -84,6 +99,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public BitTagsInputClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The format of the message announced by screen readers when every tag is removed at once, where
+    /// {0} is how many of them there were. The default is "{0} tags removed." - a count rather than the
+    /// tags themselves, since reading fifty names out is not a confirmation but a wall. Set it to an
+    /// empty string to keep the clearing from being announced.
+    /// </summary>
+    [Parameter] public string? ClearedAnnouncementFormat { get; set; }
+
+    /// <summary>
     /// Accessible label of the clear button, for the benefit of screen readers and of localization.
     /// The default is "Clear all tags".
     /// </summary>
@@ -100,6 +123,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// Defaults to Clear when not set.
     /// </summary>
     [Parameter] public string? ClearButtonIconName { get; set; }
+
+    /// <summary>
+    /// The tooltip of the clear button, which is what the pointer reads rather than the screen reader.
+    /// It falls back to the <see cref="ClearButtonAriaLabel"/> and then to "Clear all tags".
+    /// </summary>
+    [Parameter] public string? ClearButtonTitle { get; set; }
 
     /// <summary>
     /// The string comparison used to tell one tag from another, which is what decides whether a tag is a
@@ -191,6 +220,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// The number of tags drawn before the rest of them are folded away behind a chip that says how
+    /// many are left, which is what keeps a field holding dozens of them from growing into a wall of
+    /// chips. The chip unfolds the list and folds it back, so nothing is ever out of reach; the value
+    /// itself is untouched, only how much of it is drawn. 0 means all of them.
+    /// </summary>
+    [Parameter] public int MaxDisplayedTags { get; set; }
+
+    /// <summary>
     /// The maximum number of characters allowed for each individual tag. Text beyond it is truncated
     /// rather than rejected, both while typing and while pasting. 0 means no limit.
     /// </summary>
@@ -207,6 +244,25 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// the <see cref="BitTagsInputInvalidReason.MinLength"/> reason. 0 means no limit.
     /// </summary>
     [Parameter] public int MinLength { get; set; }
+
+    /// <summary>
+    /// The label of the chip that folds the tags back once <see cref="MaxDisplayedTags"/> unfolded them.
+    /// The default is "Show less".
+    /// </summary>
+    [Parameter] public string? LessTagsText { get; set; }
+
+    /// <summary>
+    /// The format of the label of the chip that stands for the tags <see cref="MaxDisplayedTags"/> folded
+    /// away, where {0} is how many of them there are. The default is "+{0}".
+    /// </summary>
+    [Parameter] public string? MoreTagsFormat { get; set; }
+
+    /// <summary>
+    /// The format of the accessible label of that same chip, where {0} is how many tags are folded away.
+    /// The default is "Show {0} more tags", since "+3" read out on its own says nothing about what
+    /// pressing it would do.
+    /// </summary>
+    [Parameter] public string? MoreTagsAriaLabelFormat { get; set; }
 
     /// <summary>
     /// Stops the text left in the input from being committed as a tag when the field loses the focus,
@@ -333,8 +389,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? RemovedAnnouncementFormat { get; set; }
 
     /// <summary>
-    /// The character(s) used to separate tags when typing. Defaults to Enter key only.
-    /// Also used to split pasted text into multiple tags.
+    /// Turns the <see cref="Suggestions"/> from a convenience into the whole of what the field accepts:
+    /// a tag that is not one of them is rejected with the
+    /// <see cref="BitTagsInputInvalidReason.NotSuggested"/> reason, which is what a datalist on its own
+    /// cannot do, since it suggests rather than restricts. The <see cref="Comparison"/> decides what
+    /// counts as one of the suggestions, and no suggestions at all means nothing is accepted.
+    /// </summary>
+    [Parameter] public bool RestrictToSuggestions { get; set; }
+
+    /// <summary>
+    /// The character(s) that turn the typed text into a tag on top of the Enter key, which is the only
+    /// one there is by default. Typing one of them commits whatever stands before it and the character
+    /// itself never reaches the input, and the very same separators split a pasted list into a tag each.
+    /// A pasted text holding line breaks is joined over the first separator before it is split, so a
+    /// column copied out of a spreadsheet arrives as a row of tags rather than as a single run-on one.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetSeparators))]
@@ -364,7 +432,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// The values offered to the user while typing, through the suggestion list the browser itself
     /// renders for a datalist. Picking one fills the input with it, from where the usual Enter (or a
     /// separator) turns it into a tag, so every validation rule still applies to it. The values already
-    /// in the list are left out of the suggestions unless <see cref="Duplicates"/> allows them back in.
+    /// in the list are left out of the suggestions unless <see cref="Duplicates"/> allows them back in,
+    /// and so are all of them once the <see cref="MaxTags"/> ceiling leaves nothing to add. A datalist
+    /// suggests rather than restricts; <see cref="RestrictToSuggestions"/> is what makes these values
+    /// the only ones the field accepts.
     /// </summary>
     [Parameter] public IEnumerable<string>? Suggestions { get; set; }
 
@@ -378,6 +449,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// walking through them ("Tags, list, 3 items"). The default is "Tags".
     /// </summary>
     [Parameter] public string? TagsAriaLabel { get; set; }
+
+    /// <summary>
+    /// The sentence announced after each tag, telling what the keyboard can do with the one that has
+    /// just been reached - which is the only way those gestures are ever discovered, a chip looking
+    /// like nothing but a word. It defaults to a sentence built from what the component was actually
+    /// given (the inline edit, the reordering), and is left out entirely when neither is on, so that a
+    /// plain list of chips is not read out with instructions it has no use for. An empty string keeps
+    /// it from being rendered at all.
+    /// </summary>
+    [Parameter] public string? TagAriaDescription { get; set; }
 
     /// <summary>
     /// A custom template for rendering each tag.
@@ -494,6 +575,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _inputText = string.Empty;
         _syncInputValue = true;
         _focusedTagIndex = -1;
+        _tagsExpanded = false;
 
         await SetCurrentValueAsync(null);
 
@@ -501,7 +583,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (removed.Count > 0)
         {
-            Announce(RemovedAnnouncementFormat ?? "{0} removed.", string.Join(", ", removed));
+            Announce(ClearedAnnouncementFormat ?? "{0} tags removed.", removed.Count);
 
             await OnClear.InvokeAsync(removed);
         }
@@ -571,6 +653,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         _inputId = $"BitTagsInput-{UniqueId}-input";
         _labelId = $"BitTagsInput-{UniqueId}-label";
         _listId = $"BitTagsInput-{UniqueId}-list";
+        _tagsId = $"BitTagsInput-{UniqueId}-tags";
+        _hintId = $"BitTagsInput-{UniqueId}-hint";
         _descriptionId = $"BitTagsInput-{UniqueId}-description";
 
         SetDefaultValue();
@@ -667,7 +751,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private void OnSetSeparators()
     {
-        _separators = Separators is null ? _emptySeparators : [.. Separators.Where(s => s.HasValue())];
+        // Only the empty string is dropped, not the whitespace: a single space is a perfectly ordinary
+        // separator (a field of words), and so is a tab or a comma followed by one.
+        _separators = Separators is null ? _emptySeparators : [.. Separators.Where(s => string.IsNullOrEmpty(s) is false)];
 
         // Hand-written rather than serialized: the payload is a flat array of strings, and the reflection
         // based serializer would otherwise drag a trimming and an AOT warning into the whole library.
@@ -740,25 +826,72 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// The values the datalist offers: the <see cref="Suggestions"/> minus the ones that are already in
-    /// the list, since offering a value that would only be refused as a duplicate is a dead end.
+    /// the list, since offering a value that would only be refused as a duplicate is a dead end - and
+    /// none at all once the ceiling is reached, where every one of them would be refused.
     /// </summary>
     private List<string> GetSuggestions()
     {
         if (Suggestions is null) return [];
 
+        if (MaxTags > 0 && (CurrentValue?.Count ?? 0) >= MaxTags) return [];
+
         var suggestions = Suggestions.Where(s => s.HasValue());
 
         if (Duplicates is false && CurrentValue is not null && CurrentValue.Count > 0)
         {
-            var tags = GetTags();
+            // A set rather than a scan of the list per suggestion: both of them are drawn on every
+            // render, and the product of the two is what a long list of either would otherwise cost.
+            var tags = new HashSet<string>(GetTags(), StringComparer.FromComparison(Comparison));
 
-            suggestions = suggestions.Where(s => tags.Any(t => string.Equals(t, s, Comparison)) is false);
+            suggestions = suggestions.Where(s => tags.Contains(s) is false);
         }
 
         return [.. suggestions];
     }
 
     private bool IsRtl => Dir == BitDir.Rtl;
+
+    /// <summary>
+    /// How many of the tags are actually drawn: all of them unless <see cref="MaxDisplayedTags"/> folded
+    /// the rest away and the chip standing for them has not been used to unfold the list.
+    /// </summary>
+    private int GetDisplayedTagCount()
+    {
+        var count = CurrentValue?.Count ?? 0;
+
+        if (MaxDisplayedTags <= 0 || _tagsExpanded || count <= MaxDisplayedTags) return count;
+
+        return MaxDisplayedTags;
+    }
+
+    /// <summary>
+    /// The sentence announced after each tag: the one the consumer gave, or one built from the gestures
+    /// the component was actually given, since instructions for something that is off would be noise.
+    /// </summary>
+    private string? GetTagAriaDescription()
+    {
+        if (TagAriaDescription is not null) return TagAriaDescription.HasValue() ? TagAriaDescription : null;
+
+        if (IsEnabled is false || ReadOnly) return null;
+
+        return (EditableTags, AllowReorder) switch
+        {
+            (true, true) => "Press Enter to edit, Delete to remove, or Alt with the arrow keys to move.",
+            (true, false) => "Press Enter to edit, or Delete to remove.",
+            (false, true) => "Press Alt with the arrow keys to move, or Delete to remove.",
+            _ => null
+        };
+    }
+
+    private string GetMoreTagsText(int hidden)
+    {
+        return Format(MoreTagsFormat ?? "+{0}", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
+    }
+
+    private string GetMoreTagsAriaLabel(int hidden)
+    {
+        return Format(MoreTagsAriaLabelFormat ?? "Show {0} more tags", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
+    }
 
     private string? GetPlaceholder()
     {
@@ -804,12 +937,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return $"{Styles.Tag!.TrimEnd().TrimEnd(';')};{Styles.FocusedTag}";
     }
 
-    private string GetTagClass(bool focused)
+    private string GetTagClass(int index, bool focused)
     {
         var custom = Classes?.Tag;
         var focusedClass = focused ? Classes?.FocusedTag : null;
 
-        return $"bit-tgi-tag {custom} {focusedClass}".TrimEnd();
+        // The tag being dragged is faded out and the one it hovers over is marked, which is what tells
+        // the pointer where the chip would land before it is let go of.
+        var dragClass = _draggingTagIndex < 0
+            ? null
+            : index == _draggingTagIndex
+                ? "bit-tgi-tag-drg"
+                : index == _dragOverTagIndex ? "bit-tgi-tag-dro" : null;
+
+        return $"bit-tgi-tag {custom} {focusedClass} {dragClass}".TrimEnd();
     }
 
     private string GetTagTabIndex(int index, int count)
@@ -831,6 +972,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         try
         {
             _announcement = string.Format(System.Globalization.CultureInfo.CurrentCulture, format!, args);
+            _announcementId++;
         }
         catch (FormatException)
         {
@@ -918,6 +1060,17 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             }
         }
 
+        if (RestrictToSuggestions)
+        {
+            var suggested = Suggestions is not null && Suggestions.Any(s => string.Equals(s, text, Comparison));
+
+            if (suggested is false)
+            {
+                reason = BitTagsInputInvalidReason.NotSuggested;
+                return false;
+            }
+        }
+
         if (Validator is not null)
         {
             var valid = false;
@@ -978,7 +1131,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        if (NoAddOnBlur is false)
+        if (NoAddOnBlur is false && ReadOnly is false)
         {
             await TryAddTag();
         }
@@ -1054,7 +1207,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
             await RemoveLastTag();
         }
-        else if (e.Key == "Tab" && e.ShiftKey is false && NoAddOnTab is false && _inputText.Trim().Length > 0)
+        else if (e.Key == "Tab" && e.ShiftKey is false && NoAddOnTab is false && _inputText.Length > 0)
         {
             // JS already prevented focus move in capture phase; add the tag.
             await TryAddTag();
@@ -1067,15 +1220,31 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
         else if ((e.Key == (IsRtl ? "ArrowRight" : "ArrowLeft")) && _inputText.Length == 0 && CurrentValue?.Count > 0)
         {
-            // Walking backwards out of an empty input lands on the last tag, from where the arrow keys
-            // keep moving between the tags.
-            FocusTag(CurrentValue.Count - 1);
+            // Walking backwards out of an empty input lands on the last tag that is drawn, from where
+            // the arrow keys keep moving between the tags.
+            FocusTag(GetDisplayedTagCount() - 1);
         }
         else if (_separators.Length > 0 && e.Key.Length == 1 && _separators.Any(s => s == e.Key))
         {
             // JS already prevented the separator char from being typed in capture phase;
             // add the current input text as a tag.
             await TryAddTag();
+        }
+    }
+
+    /// <summary>
+    /// The chip standing for the tags folded away unfolds the list and folds it back, which is what
+    /// keeps a tag that is not drawn from being a tag that cannot be reached.
+    /// </summary>
+    private void HandleOnToggleTags()
+    {
+        _tagsExpanded = _tagsExpanded is false;
+
+        // Folding the list back would otherwise leave the roving tab stop on a tag that is no longer
+        // drawn, which is a list nothing in it can be tabbed to.
+        if (_tagsExpanded is false && _focusedTagIndex >= GetDisplayedTagCount())
+        {
+            _focusedTagIndex = -1;
         }
     }
 
@@ -1095,8 +1264,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (IsEnabled is false) return;
 
-        // A click landing while another tag is being edited commits that edit rather than dropping it,
-        // which is what leaving the little input does everywhere else.
+        // A click landing on another tag while one is being edited is ignored here: the edit input is
+        // losing its focus at the very same moment, and HandleOnEditFocusOut is what commits it.
         if (_editingTagIndex >= 0 && _editingTagIndex != index) return;
 
         FocusTag(index);
@@ -1117,6 +1286,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         var count = CurrentValue?.Count ?? 0;
         if (count == 0) return;
+
+        // The navigation walks the tags that are drawn, while a move addresses the list as it really is:
+        // sending a tag past the fold is a change to the value, not to where the focus may travel.
+        var displayed = GetDisplayedTagCount();
 
         var previousKey = IsRtl ? "ArrowRight" : "ArrowLeft";
         var nextKey = IsRtl ? "ArrowLeft" : "ArrowRight";
@@ -1160,7 +1333,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         else if (e.Key == nextKey)
         {
             // Moving past the last tag lands back in the input, which is where the next tag is typed.
-            if (index >= count - 1)
+            if (index >= displayed - 1)
             {
                 FocusInput();
             }
@@ -1175,7 +1348,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
         else if (e.Key == "End")
         {
-            FocusTag(count - 1);
+            FocusTag(displayed - 1);
         }
         else if (e.Key is "Delete" or "Backspace")
         {
@@ -1184,7 +1357,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             var removed = await RemoveTagAt(index);
             if (removed is false) return;
 
-            var remaining = CurrentValue?.Count ?? 0;
+            var remaining = GetDisplayedTagCount();
             if (remaining == 0)
             {
                 FocusInput();
@@ -1235,11 +1408,64 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         list.RemoveAt(from);
         list.Insert(to, tag);
 
+        // A tag sent past the fold would otherwise vanish along with the focus that follows it, so the
+        // list is unfolded to show where it landed.
+        if (to >= GetDisplayedTagCount())
+        {
+            _tagsExpanded = true;
+        }
+
         FocusTag(to);
 
         Announce(MovedAnnouncementFormat ?? "{0} moved to position {1} of {2}.", tag, to + 1, list.Count);
 
         await SetCurrentValueAsync(list);
+    }
+
+    /// <summary>
+    /// Whether the tag at <paramref name="index"/> can be picked up with the pointer, which the tag
+    /// being corrected in place is not: its little input needs the drag to select text instead.
+    /// </summary>
+    private bool CanDragTag(int index)
+    {
+        return AllowReorder && IsEnabled && ReadOnly is false && _editingTagIndex != index;
+    }
+
+    private void HandleOnTagDragStart(int index)
+    {
+        if (CanDragTag(index) is false) return;
+
+        _draggingTagIndex = index;
+        _dragOverTagIndex = index;
+    }
+
+    /// <summary>
+    /// The tag the pointer is currently over, which is the position the dragged one would take. It is
+    /// only remembered rather than acted upon, so that a drag that is called off leaves the list alone.
+    /// </summary>
+    private void HandleOnTagDragEnter(int index)
+    {
+        if (_draggingTagIndex < 0) return;
+
+        _dragOverTagIndex = index;
+    }
+
+    private void HandleOnTagDragEnd()
+    {
+        _draggingTagIndex = -1;
+        _dragOverTagIndex = -1;
+    }
+
+    private async Task HandleOnTagDrop(int index)
+    {
+        var from = _draggingTagIndex;
+
+        HandleOnTagDragEnd();
+
+        if (from < 0 || from == index) return;
+        if (AllowReorder is false || IsEnabled is false || ReadOnly) return;
+
+        await MoveTag(from, index);
     }
 
 

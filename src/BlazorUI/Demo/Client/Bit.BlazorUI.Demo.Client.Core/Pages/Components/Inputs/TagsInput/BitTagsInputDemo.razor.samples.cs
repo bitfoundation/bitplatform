@@ -50,7 +50,7 @@ public partial class BitTagsInputDemo
 <BitTagsInput Label=""Comma or semicolon""
               Separators=""@(["","", "";""])""
               Placeholder=""a, b; c""
-              Description=""Try pasting: red,green;blue"" />
+              Description=""Try pasting: red,green;blue - or a column copied out of a spreadsheet."" />
 
 <BitTagsInput Label=""Space separated""
               Separators=""@(["" ""])""
@@ -64,15 +64,23 @@ public partial class BitTagsInputDemo
 
 <BitTagsInput Label=""Suggestions as the only accepted values""
               Suggestions=""frameworkSuggestions""
-              Validator=""ValidateFramework""
+              RestrictToSuggestions
               Placeholder=""Only a suggested value is accepted""
-              Description=""Anything that is not one of the suggestions is refused."" />";
+              Description=""Anything that is not one of the suggestions is refused.""
+              OnInvalid=""HandleSuggestionInvalid"" />
+@if (suggestionMessage.HasValue())
+{
+    <div class=""invalid-message"">@suggestionMessage</div>
+}";
     private readonly string example6CsharpCode = @"
 private readonly string[] frameworkSuggestions = [""blazor"", ""react"", ""vue"", ""angular"", ""svelte""];
+private string? suggestionMessage;
 
-private static bool ValidateFramework(string tag)
+private void HandleSuggestionInvalid(BitTagsInputInvalidArgs args)
 {
-    return tag is ""blazor"" or ""react"" or ""vue"" or ""angular"";
+    suggestionMessage = args.Reason == BitTagsInputInvalidReason.NotSuggested
+        ? $""'{args.Tag}' is not one of the suggested values.""
+        : $""'{args.Tag}' was refused ({args.Reason})."";
 }";
 
     private readonly string example7RazorCode = @"
@@ -217,15 +225,13 @@ private void HandleEdit(BitTagsInputEditArgs args)
 @if (clearedMessage.HasValue())
 {
     <div>@clearedMessage</div>
-}
+}";
+    private readonly string example13CsharpCode = @"
+private string? clearedMessage;
 
-@code {
-    private string? clearedMessage;
-
-    private void HandleClear(IReadOnlyList<string> tags)
-    {
-        clearedMessage = $""Cleared {tags.Count} tag(s)."";
-    }
+private void HandleClear(IReadOnlyList<string> tags)
+{
+    clearedMessage = $""Cleared {tags.Count} tag(s)."";
 }";
 
     private readonly string example14RazorCode = @"
@@ -254,10 +260,10 @@ private void HandleEdit(BitTagsInputEditArgs args)
               DefaultValue=""@(new List<string> { ""one"", ""two"" })"" />";
 
     private readonly string example16RazorCode = @"
-<BitTagsInput Label=""Alt + arrows move the focused tag""
+<BitTagsInput Label=""Drag a tag, or move it with Alt + arrows""
               AllowReorder
               Placeholder=""Add tag...""
-              Description=""Focus a tag with Tab, then hold Alt and press the arrow keys.""
+              Description=""Drag a chip onto another one, or focus one with Tab and hold Alt while pressing the arrow keys.""
               DefaultValue=""@(new List<string> { ""first"", ""second"", ""third"", ""fourth"" })"" />";
 
     private readonly string example17RazorCode = @"
@@ -405,6 +411,48 @@ public class ValidationTagsInputModel
 <BitTagsInput Label=""NoBorder"" NoBorder DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />";
 
     private readonly string example24RazorCode = @"
+<BitTagsInput Label=""Three at a time""
+              MaxDisplayedTags=""3""
+              ShowCounter
+              Placeholder=""Add tag...""
+              Description=""The rest of the tags are one click away.""
+              DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"", ""web"", ""ui"", ""wasm"", ""razor"" })"" />
+
+<BitTagsInput Label=""Custom labels""
+              MaxDisplayedTags=""2""
+              MoreTagsFormat=""{0} more...""
+              LessTagsText=""Fold back""
+              Placeholder=""Add tag...""
+              DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"", ""web"", ""ui"" })"" />";
+
+    private readonly string example25RazorCode = @"
+<BitTagsInput Label=""Announcements of your own""
+              EditableTags
+              AllowReorder
+              ShowClearButton
+              Placeholder=""Add tag...""
+              AddedAnnouncementFormat=""{0} was added to the list.""
+              RemovedAnnouncementFormat=""{0} was taken off the list.""
+              ClearedAnnouncementFormat=""The list of {0} tags was emptied.""
+              EditedAnnouncementFormat=""{0} is the new text of the tag.""
+              MovedAnnouncementFormat=""{0} is now number {1} out of {2}.""
+              InvalidAnnouncementFormat=""{0} was refused.""
+              MinLength=""3""
+              DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />
+
+<BitTagsInput Label=""Names of your own""
+              EditableTags
+              ShowClearButton
+              Placeholder=""Add tag...""
+              TagsAriaLabel=""Selected skills""
+              TagAriaDescription=""Press Enter to rename this skill, or Delete to drop it.""
+              DismissAriaLabelFormat=""Drop {0}""
+              DismissTitle=""Drop""
+              EditAriaLabelFormat=""Rename {0}""
+              ClearButtonAriaLabel=""Drop every skill""
+              DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />";
+
+    private readonly string example26RazorCode = @"
 <BitTagsInput Label=""Primary"" Accent=""BitColor.Primary"" DefaultValue=""@(new List<string> { ""tag"" })"" />
 <BitTagsInput Label=""Secondary"" Accent=""BitColor.Secondary"" DefaultValue=""@(new List<string> { ""tag"" })"" />
 <BitTagsInput Label=""Tertiary"" Accent=""BitColor.Tertiary"" DefaultValue=""@(new List<string> { ""tag"" })"" />
@@ -414,7 +462,7 @@ public class ValidationTagsInputModel
 <BitTagsInput Label=""SevereWarning"" Accent=""BitColor.SevereWarning"" DefaultValue=""@(new List<string> { ""tag"" })"" />
 <BitTagsInput Label=""Error"" Accent=""BitColor.Error"" DefaultValue=""@(new List<string> { ""tag"" })"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example27RazorCode = @"
 <BitTagsInput Label=""Built-in icon names""
               ShowClearButton
               DismissIconName=""@BitIconName.ChromeClose""
@@ -433,14 +481,14 @@ public class ValidationTagsInputModel
               ClearButtonIcon=""@BitIconInfo.Bi(""trash"")""
               DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example28RazorCode = @"
 <BitTagsInput Label=""Small"" Size=""BitSize.Small"" ShowClearButton DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />
 
 <BitTagsInput Label=""Medium"" Size=""BitSize.Medium"" ShowClearButton DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />
 
 <BitTagsInput Label=""Large"" Size=""BitSize.Large"" ShowClearButton DefaultValue=""@(new List<string> { ""blazor"", ""dotnet"" })"" />";
 
-    private readonly string example27RazorCode = @"
+    private readonly string example29RazorCode = @"
 <BitTagsInput Style=""box-shadow: aqua 0 0 0.5rem;"" DefaultValue=""@(new List<string> { ""blazor"" })"" />
 
 <BitTagsInput Class=""custom-class"" DefaultValue=""@(new List<string> { ""blazor"" })"" />
@@ -470,7 +518,7 @@ public class ValidationTagsInputModel
                                  Input = ""custom-input"",
                                  ClearButton = ""custom-clear"" })"" />";
 
-    private readonly string example28RazorCode = @"
+    private readonly string example30RazorCode = @"
 <div dir=""rtl"">
     <BitTagsInput Dir=""BitDir.Rtl""
                   Label=""برچسب‌ها""

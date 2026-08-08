@@ -55,8 +55,10 @@
     font-size: calc(var(--bit-tgi-fontsize) - #{spacing(0.25)});
 }
 
-//the announcement of an added, removed or rejected tag: read out by screen readers, never drawn.
-.bit-tgi-lvr {
+//the announcement of an added, removed or rejected tag, and the sentence telling what the keyboard can
+//do with a tag: read out by screen readers, never drawn.
+.bit-tgi-lvr,
+.bit-tgi-vsh {
     border: 0;
     padding: 0;
     width: 1px;
@@ -113,6 +115,27 @@
     }
 }
 
+//a chip that can be picked up says so under the pointer, and the one being dragged is faded out so that
+//the row reads as a gap waiting to be filled rather than as a chip in two places at once.
+.bit-tgi-tag[draggable="true"] {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.bit-tgi-tag-drg {
+    opacity: 0.4;
+}
+
+//the chip the dragged one would land on: an inset outline rather than a border, so that nothing in the
+//row moves by a pixel while the drag is hovering over it.
+.bit-tgi-tag-dro {
+    outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+}
+
 .bit-tgi-ttx {
     overflow: hidden;
     white-space: nowrap;
@@ -137,6 +160,35 @@
     field-sizing: content;
     min-width: spacing(4);
     line-height: spacing(2.25);
+}
+
+//the chip standing for the tags folded away: it is drawn as one of them rather than as a button, since
+//that is what it takes the place of, but it is a real tab stop of its own.
+.bit-tgi-tgl {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: none;
+    color: $clr-fg-sec;
+    font: inherit;
+    line-height: spacing(2.25);
+    padding: spacing(0.125) spacing(0.5);
+    border-radius: $shp-border-radius;
+    background-color: $clr-bg-sec;
+    font-size: var(--bit-tgi-tagfontsize);
+    white-space: nowrap;
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri;
+        }
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 .bit-tgi-dbt,
@@ -227,7 +279,8 @@
 
     //the tags would otherwise be painted with the very same surface as the field they sit in, which
     //would leave nothing to tell one from the other.
-    .bit-tgi-tag {
+    .bit-tgi-tag,
+    .bit-tgi-tgl {
         background-color: $clr-bg-pri;
     }
 
@@ -310,7 +363,8 @@
 
     //the tags are the content of a disabled field, so they are dimmed along with it instead of staying
     //the one part of it that still reads as enabled.
-    .bit-tgi-tag {
+    .bit-tgi-tag,
+    .bit-tgi-tgl {
         color: $clr-fg-dis;
         background-color: $clr-bg-dis;
     }
@@ -360,7 +414,8 @@
 //a rule that is invisible on purpose. Both are re-established with the system colors here.
 @media (forced-colors: active) {
     .bit-tgi-fil .bit-tgi-cnt,
-    .bit-tgi-tag {
+    .bit-tgi-tag,
+    .bit-tgi-tgl {
         border: $shp-border-width $shp-border-style ButtonText;
     }
 
@@ -369,12 +424,14 @@
         .bit-tgi-dsc,
         .bit-tgi-cnr,
         .bit-tgi-inp,
-        .bit-tgi-tag {
+        .bit-tgi-tag,
+        .bit-tgi-tgl {
             color: GrayText;
         }
 
         .bit-tgi-cnt,
-        .bit-tgi-tag {
+        .bit-tgi-tag,
+        .bit-tgi-tgl {
             border-color: GrayText;
         }
     }

@@ -7,20 +7,29 @@
     var tags = CurrentValue is null ? null : CurrentValue as IList<string> ?? [.. CurrentValue];
     var tagCount = tags?.Count ?? 0;
 
-    // The element references are what the arrow key navigation moves the focus with; the array is
-    // rebuilt whenever the number of tags changes so that a stale reference is never focused.
-    if (_tagRefs.Length != tagCount)
-    {
-        _tagRefs = new ElementReference[tagCount];
-    }
-
     var hasLabel = LabelTemplate is not null || Label.HasValue();
     var hasDescription = DescriptionTemplate is not null || Description.HasValue();
     var isInteractive = IsEnabled && ReadOnly is false;
     var showClearButton = ShowClearButton && isInteractive && (tagCount > 0 || _inputText.Length > 0);
 
-    // An edit that was open on a tag the parent has since taken away has nothing left to commit.
-    if (_editingTagIndex >= tagCount)
+    // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
+    // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
+    var displayedTagCount = GetDisplayedTagCount();
+    var hiddenTagCount = tagCount - displayedTagCount;
+    var showToggle = MaxDisplayedTags > 0 && tagCount > MaxDisplayedTags;
+
+    var tagHint = GetTagAriaDescription();
+
+    // The element references are what the arrow key navigation moves the focus with; the array is
+    // rebuilt whenever the number of drawn tags changes so that a stale reference is never focused.
+    if (_tagRefs.Length != displayedTagCount)
+    {
+        _tagRefs = new ElementReference[displayedTagCount];
+    }
+
+    // An edit that was open on a tag the parent has since taken away - or that the fold has since
+    // closed over - has nothing left to commit.
+    if (_editingTagIndex >= displayedTagCount)
     {
         _editingTagIndex = -1;
     }
@@ -62,10 +71,11 @@
                so that the tags and the input keep sharing the same wrapping line. The role is written
                out explicitly because display:contents strips the implicit one in several engines. *@
             <div role="list"
+                 id="@_tagsId"
                  aria-label="@(TagsAriaLabel ?? "Tags")"
                  style="@Styles?.TagsContainer"
                  class="bit-tgi-tgs @Classes?.TagsContainer">
-                @for (var i = 0; i < tagCount; i++)
+                @for (var i = 0; i < displayedTagCount; i++)
                 {
                     var index = i;
                     var tag = tags![index];
@@ -75,6 +85,8 @@
                     @* The tag itself is the focusable element rather than its dismiss button: a single
                        roving tab stop covers the whole list, which the arrow keys then walk through,
                        instead of putting one Tab press per tag between the user and the input. *@
+                    @* Dragging a chip onto another one is the pointer equivalent of the Alt+arrow move;
+                       the dragover default has to be prevented for the drop to be allowed at all. *@
                     <div @ref="_tagRefs[index]"
                          @onclick="() => HandleOnTagClick(index)"
                          @onclick:stopPropagation="true"
@@ -82,10 +94,18 @@
                          @ondblclick:stopPropagation="true"
                          @onkeydown="e => HandleOnTagKeyDown(e, index)"
                          @onfocusin="() => HandleOnTagFocusIn(index)"
+                         @ondragstart="() => HandleOnTagDragStart(index)"
+                         @ondragenter="() => HandleOnTagDragEnter(index)"
+                         @ondragover:preventDefault="true"
+                         @ondragend="HandleOnTagDragEnd"
+                         @ondrop="() => HandleOnTagDrop(index)"
+                         @ondrop:preventDefault="true"
                          role="listitem"
-                         tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, tagCount))"
+                         draggable="@(CanDragTag(index) ? "true" : null)"
+                         aria-describedby="@(tagHint is null ? null : _hintId)"
+                         tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
                          style="@GetTagStyle(isTagFocused)"
-                         class="@GetTagClass(isTagFocused)">
+                         class="@GetTagClass(index, isTagFocused)">
                         @if (isTagEditing)
                         {
                             @* The little input that replaces the tag while it is being corrected in
@@ -141,6 +161,24 @@
             </div>
         }
 
+        @if (showToggle)
+        {
+            @* The chip that stands for the tags folded away. It is a real tab stop rather than a part of
+               the roving one the list is: it is the only way to a tag that is not drawn, so it has to be
+               reachable even from a list whose own tab stop sits on a chip that is currently folded. *@
+            <button @onclick="HandleOnToggleTags"
+                    @onclick:stopPropagation="true"
+                    type="button"
+                    disabled="@(IsEnabled is false)"
+                    aria-controls="@_tagsId"
+                    aria-expanded="@(_tagsExpanded ? "true" : "false")"
+                    aria-label="@(_tagsExpanded ? null : GetMoreTagsAriaLabel(hiddenTagCount))"
+                    style="@Styles?.ToggleButton"
+                    class="bit-tgi-tgl @Classes?.ToggleButton">
+                @(_tagsExpanded ? (LessTagsText ?? "Show less") : GetMoreTagsText(hiddenTagCount))
+            </button>
+        }
+
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
@@ -174,7 +212,7 @@
                     @onclick:stopPropagation="true"
                     type="button"
                     tabindex="-1"
-                    title="@(ClearButtonAriaLabel ?? "Clear all tags")"
+                    title="@(ClearButtonTitle ?? ClearButtonAriaLabel ?? "Clear all tags")"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear all tags")"
                     style="@Styles?.ClearButton"
                     class="bit-tgi-cbt @Classes?.ClearButton">
@@ -213,6 +251,14 @@
         </div>
     }
 
+    @if (tagHint is not null)
+    {
+        @* What the keyboard can do with the tag that has just been reached, announced after it: a chip
+           looks like nothing but a word, so the gestures it answers to are otherwise never discovered.
+           It is referenced rather than drawn, the same sentence serving every tag. *@
+        <div id="@_hintId" class="bit-tgi-vsh">@tagHint</div>
+    }
+
     @if (suggestions.Count > 0)
     {
         @* The suggestion list is the browser's own, which is what keeps it reachable, positioned and
@@ -228,11 +274,14 @@
 
     @* Adding and removing a tag are changes to a list that sits away from the caret, so nothing about
        them reaches a screen reader on its own; this is what says them out loud. It is a status rather
-       than an alert, so it never interrupts what is already being read. *@
+       than an alert, so it never interrupts what is already being read.
+       The message sits in a keyed element so that every announcement replaces the element rather than
+       only rewriting its text: the same message said twice in a row would otherwise change nothing in
+       the DOM, and a live region that did not change is a live region nothing is read out of. *@
     <div role="status"
          aria-live="polite"
          aria-atomic="true"
-         class="bit-tgi-lvr">@_announcement</div>
+         class="bit-tgi-lvr"><span @key="_announcementId">@_announcement</span></div>
 
     @if (Name.HasValue())
     {

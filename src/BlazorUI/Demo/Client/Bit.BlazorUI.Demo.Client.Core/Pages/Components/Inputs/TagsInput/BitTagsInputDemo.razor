@@ -3,10 +3,10 @@
 
 <PageOutlet Url="components/tagsinput"
             Title="TagsInput"
-            Description="A tags (chips/tokens) input for Blazor: type a tag and confirm it with Enter or a separator of your own, pick one from a suggestion list, paste a whole separated list at once, cap the number of tags and the length of each of them, reject the ones that fail a pattern or a validator and hear why, normalize them through a transformer, correct a chip in place, walk the chips with the arrow keys, reorder and remove them from the keyboard, and bind the whole list to an EditForm like any other input." />
+            Description="A tags (chips/tokens) input for Blazor: type a tag and confirm it with Enter or a separator of your own, pick one from a suggestion list or restrict the field to those suggestions alone, paste a whole separated list (even one spread over several lines) at once, cap the number of tags and the length of each of them, reject the ones that fail a pattern or a validator and hear why, normalize them through a transformer, correct a chip in place, walk the chips with the arrow keys, reorder them by dragging or from the keyboard, remove them with a key or a button, and bind the whole list to an EditForm like any other input." />
 
 <DemoPage Name="TagsInput"
-          Description="The TagsInput turns free text into a list of short values: the user types a tag, confirms it with the Enter key (or with a separator character of your own), and it becomes a removable chip sitting in front of the input. It binds to a collection of strings, offers the known values through the browser's own suggestion list, splits pasted text over its separators so a comma separated list arrives as a whole row of tags, and keeps the entries in shape on the way in: trimming them, running them through a transformer of yours, capping their length and their number, and rejecting the ones that repeat, that are too short, that do not match a pattern or that a validator of yours turns down - every rejection reported with the rule that caused it, rather than being swallowed. The chips form a proper accessible list: a single stop of the tab order that the arrow keys walk through, each of them removable with Delete or Backspace as well as with its dismiss button, correctable in place with a double click or the F2 key, and movable within the list with Alt and the arrow keys - with every addition, removal, edit, move and rejection announced to screen readers. It comes in three sizes, three variants and the whole accent palette, carries a label, a described helper text, a tag counter and a clear button, posts its value as a single field in a plain HTML form, and takes part in an EditForm validation like any other input."
+          Description="The TagsInput turns free text into a list of short values: the user types a tag, confirms it with the Enter key (or with a separator character of your own), and it becomes a removable chip sitting in front of the input. It binds to a collection of strings, offers the known values through the browser's own suggestion list (and can be restricted to those values alone), splits pasted text over its separators so a comma separated list - or a column copied out of a spreadsheet - arrives as a whole row of tags, and keeps the entries in shape on the way in: trimming them, running them through a transformer of yours, capping their length and their number, and rejecting the ones that repeat, that are too short, that do not match a pattern or that a validator of yours turns down - every rejection reported with the rule that caused it, rather than being swallowed. The chips form a proper accessible list: a single stop of the tab order that the arrow keys walk through, each of them removable with Delete or Backspace as well as with its dismiss button, correctable in place with a double click or the F2 key, and movable within the list by dragging it or with Alt and the arrow keys - with every addition, removal, edit, move and rejection announced to screen readers. It comes in three sizes, three variants and the whole accent palette, carries a label, a described helper text, a tag counter and a clear button, posts its value as a single field in a plain HTML form, and takes part in an EditForm validation like any other input."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -96,17 +96,20 @@
         <div>
             By default the Enter key is the only thing that turns the typed text into a tag. <b>Separators</b>
             adds characters that do the same: typing one of them commits whatever stands before it, and the
-            character itself never reaches the input. The very same separators split a paste, so a comma
-            separated list copied out of a spreadsheet or a mail client arrives as a whole row of tags in one
-            go - each piece of it going through the same validation, so the ones that are refused are reported
-            while the rest are still added.
+            character itself never reaches the input. A separator is any string at all - a single character
+            such as a comma or a space, or a longer one such as <code>", "</code>. The very same separators
+            split a paste, so a comma separated list copied out of a spreadsheet or a mail client arrives as a
+            whole row of tags in one go - each piece of it going through the same validation, so the ones that
+            are refused are reported while the rest are still added. A pasted text spread over several lines is
+            joined over the first separator on its way in, since a single line field would otherwise drop the
+            line breaks and leave one run-on tag behind.
         </div>
         <br />
         <div class="example-box">
             <BitTagsInput Label="Comma or semicolon"
                           Separators="@([",", ";"])"
                           Placeholder="a, b; c"
-                          Description="Try pasting: red,green;blue" />
+                          Description="Try pasting: red,green;blue - or a column copied out of a spreadsheet." />
             <BitTagsInput Label="Space separated"
                           Separators="@([" "])"
                           Placeholder="Type words separated by spaces" />
@@ -120,8 +123,10 @@
             positioned and announced on every platform without a popup of our own. Picking one only fills the
             input; it is the usual <b>Enter</b> (or a separator) that turns it into a tag, so every rule of the
             field still applies to it. The values already in the list are left out of the suggestions, unless
-            <b>Duplicates</b> allows them back in. Pair it with a <b>Validator</b> when the suggestions are
-            meant to be the only accepted values, since a datalist suggests rather than restricts.
+            <b>Duplicates</b> allows them back in, and so are all of them once the <b>MaxTags</b> ceiling
+            leaves nothing to add. A datalist suggests rather than restricts, so free text is still accepted
+            next to it; <b>RestrictToSuggestions</b> is what turns the suggestions into the whole of what the
+            field accepts, rejecting anything else with the <b>NotSuggested</b> reason.
         </div>
         <br />
         <div class="example-box">
@@ -131,9 +136,14 @@
                           Description="Type a letter or two to see the list." />
             <BitTagsInput Label="Suggestions as the only accepted values"
                           Suggestions="frameworkSuggestions"
-                          Validator="ValidateFramework"
+                          RestrictToSuggestions
                           Placeholder="Only a suggested value is accepted"
-                          Description="Anything that is not one of the suggestions is refused." />
+                          Description="Anything that is not one of the suggestions is refused."
+                          OnInvalid="HandleSuggestionInvalid" />
+            @if (suggestionMessage.HasValue())
+            {
+                <div class="invalid-message">@suggestionMessage</div>
+            }
         </div>
     </DemoExample>
 
@@ -288,7 +298,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Clear button" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Clear button" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>ShowClearButton</b> renders a button at the end of the field that empties the whole list along
             with the text left in the input, and raises <b>OnClear</b> with the tags it removed. It is not
@@ -344,6 +354,12 @@
             left in the input instead of leaving it behind - unless <b>NoAddOnTab</b> is set - while
             <b>Shift+Tab</b> always walks straight out, so the field is never a trap. Losing the focus commits
             the text as well, which <b>NoAddOnBlur</b> turns off.
+            <br /><br />
+            None of that is visible on a chip that looks like nothing but a word, so once the inline edit or
+            the reordering is on, each tag is announced with a sentence saying which keys it answers to -
+            <b>TagAriaDescription</b> being what replaces, localizes or silences it. And while an input method
+            is composing a character (Chinese, Japanese, Korean), the Enter that picks a candidate out of the
+            suggestion window is not treated as a confirmation, so a tag is never cut in half by it.
         </div>
         <br />
         <div class="example-box">
@@ -361,18 +377,22 @@
 
     <DemoExample Title="Reordering" RazorCode="@example16RazorCode" Id="example16">
         <div>
-            <b>AllowReorder</b> lets a tag be moved within the list without a pointer: focus a chip, then hold
-            <b>Alt</b> and press the left or right arrow to walk it one position at a time, or <b>Alt+Home</b>
-            and <b>Alt+End</b> to send it to either end. The focus travels with the tag, so several steps can be
-            taken in a row, and each move is announced along with the position the tag landed on. In a
-            right-to-left direction the arrows are mirrored, exactly as they are for the plain navigation.
+            <b>AllowReorder</b> lets a tag be moved within the list two equal ways. With a pointer, a chip can
+            be picked up and dropped onto the one whose position it should take: the chip being carried is
+            faded out and the one under the pointer is outlined, so the landing place is visible before the
+            button is let go of. Without a pointer, focus a chip and hold <b>Alt</b> while pressing the left or
+            right arrow to walk it one position at a time, or <b>Alt+Home</b> and <b>Alt+End</b> to send it to
+            either end - which is what keeps the reordering usable on a touch screen and with a screen reader,
+            where a drag is not. Either way the focus travels with the tag, so several steps can be taken in a
+            row, and each move is announced along with the position the tag landed on. In a right-to-left
+            direction the arrows are mirrored, exactly as they are for the plain navigation.
         </div>
         <br />
         <div class="example-box">
-            <BitTagsInput Label="Alt + arrows move the focused tag"
+            <BitTagsInput Label="Drag a tag, or move it with Alt + arrows"
                           AllowReorder
                           Placeholder="Add tag..."
-                          Description="Focus a tag with Tab, then hold Alt and press the arrow keys."
+                          Description="Drag a chip onto another one, or focus one with Tab and hold Alt while pressing the arrow keys."
                           DefaultValue="@(new List<string> { "first", "second", "third", "fourth" })" />
         </div>
     </DemoExample>
@@ -530,7 +550,84 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="Folding the tags away" RazorCode="@example24RazorCode" Id="example24">
+        <div>
+            A field that collects dozens of tags grows into a wall of chips that pushes everything below it
+            off the screen. <b>MaxDisplayedTags</b> draws only the first few of them and folds the rest away
+            behind a chip that says how many are left, which unfolds the list and folds it back again - so a
+            tag that is not drawn is never a tag that cannot be reached, neither with the pointer nor with the
+            keyboard, where the chip is a tab stop of its own. Only how much of the list is drawn changes:
+            the value keeps every one of its tags, the counter keeps counting all of them, and the form keeps
+            posting them. <b>MoreTagsFormat</b> and <b>LessTagsText</b> are what the two labels of the chip
+            are written and localized with, and <b>MoreTagsAriaLabelFormat</b> what it is announced as -
+            since <b>"+3"</b> read out on its own says nothing about what pressing it would do.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Three at a time"
+                          MaxDisplayedTags="3"
+                          ShowCounter
+                          Placeholder="Add tag..."
+                          Description="The rest of the tags are one click away."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui", "wasm", "razor" })" />
+            <BitTagsInput Label="Custom labels"
+                          MaxDisplayedTags="2"
+                          MoreTagsFormat="{0} more..."
+                          LessTagsText="Fold back"
+                          Placeholder="Add tag..."
+                          DefaultValue="@(new List<string> { "blazor", "dotnet", "web", "ui" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility & localization" RazorCode="@example25RazorCode" Id="example25">
+        <div>
+            Nothing about a chip appearing, disappearing or changing place reaches a screen reader on its
+            own - the list sits away from the caret the user is typing at - so the component says every one
+            of those out loud through a polite live region: <b>AddedAnnouncementFormat</b>,
+            <b>RemovedAnnouncementFormat</b>, <b>ClearedAnnouncementFormat</b> (which counts the tags rather
+            than reading fifty names out), <b>EditedAnnouncementFormat</b>, <b>MovedAnnouncementFormat</b>
+            and <b>InvalidAnnouncementFormat</b>. Each of them takes <code>{0}</code> for the tag it is
+            about - the move also taking <code>{1}</code> for the position it landed on and <code>{2}</code>
+            for how many tags there are - and an empty string keeps that particular event silent.
+            <br /><br />
+            The names of the parts follow the same idea: <b>TagsAriaLabel</b> names the list the chips form,
+            <b>TagAriaDescription</b> is the sentence telling what the keyboard can do with the one just
+            reached, <b>DismissAriaLabelFormat</b> and <b>DismissTitle</b> name the dismiss button of each
+            tag, <b>EditAriaLabelFormat</b> the little input that replaces a tag while it is corrected, and
+            <b>ClearButtonAriaLabel</b> the button that empties the whole field. Every one of them is a
+            plain string, which is what makes the component translatable without a single line of CSS or
+            markup of your own.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Announcements of your own"
+                          EditableTags
+                          AllowReorder
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          AddedAnnouncementFormat="{0} was added to the list."
+                          RemovedAnnouncementFormat="{0} was taken off the list."
+                          ClearedAnnouncementFormat="The list of {0} tags was emptied."
+                          EditedAnnouncementFormat="{0} is the new text of the tag."
+                          MovedAnnouncementFormat="{0} is now number {1} out of {2}."
+                          InvalidAnnouncementFormat="{0} was refused."
+                          MinLength="3"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Names of your own"
+                          EditableTags
+                          ShowClearButton
+                          Placeholder="Add tag..."
+                          TagsAriaLabel="Selected skills"
+                          TagAriaDescription="Press Enter to rename this skill, or Delete to drop it."
+                          DismissAriaLabelFormat="Drop {0}"
+                          DismissTitle="Drop"
+                          EditAriaLabelFormat="Rename {0}"
+                          ClearButtonAriaLabel="Drop every skill"
+                          DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example26RazorCode" Id="example26">
         <div>
             <b>Accent</b> picks the color role the focused field carries, on both its border and its focus
             ring, so the component follows the accent of the form it sits in. The error state of a failing
@@ -549,7 +646,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="External Icons" RazorCode="@example27RazorCode" Id="example27">
         <div>
             The dismiss button of each tag and the clear button of the field both take their icon either from
             the built-in Fluent UI set, through <b>DismissIconName</b> and <b>ClearButtonIconName</b>, or from
@@ -578,7 +675,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
+    <DemoExample Title="Size" RazorCode="@example28RazorCode" Id="example28">
         <div>
             <b>Size</b> scales the field, the chips and the text inside them together, so the whole thing stays
             proportionate at every size. Pick the one that matches the density of the surrounding form: the
@@ -592,7 +689,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" Id="example27">
+    <DemoExample Title="Style & Class" RazorCode="@example29RazorCode" Id="example29">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b>
             reach every part of the component by name: the root, the label, the description, the input
@@ -633,7 +730,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
+    <DemoExample Title="RTL" RazorCode="@example30RazorCode" Id="example30">
         <div>
             In a right-to-left direction the chips are laid out from right to left and the arrow keys swap
             along with them, so the key pointing at the visual left still walks towards the tag drawn there.

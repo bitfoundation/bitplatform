@@ -53,6 +53,12 @@ public class BitTagsInputClassStyles
     public string? DismissIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the chip that stands for the tags MaxDisplayedTags folded away,
+    /// which unfolds the list and folds it back.
+    /// </summary>
+    public string? ToggleButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the text input element.
     /// </summary>
     public string? Input { get; set; }

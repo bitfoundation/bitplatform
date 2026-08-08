@@ -29,4 +29,9 @@ public enum BitTagsInputInvalidReason
     /// The tag was rejected by the custom validator.
     /// </summary>
     Validator,
+
+    /// <summary>
+    /// The tag is not one of the suggestions, which RestrictToSuggestions made the only accepted values.
+    /// </summary>
+    NotSuggested,
 }
