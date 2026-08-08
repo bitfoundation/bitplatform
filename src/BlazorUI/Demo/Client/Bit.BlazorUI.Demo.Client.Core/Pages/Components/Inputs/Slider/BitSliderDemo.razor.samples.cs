@@ -147,9 +147,15 @@ private static string GetVolumeIcon(double value) => value switch
 
 <BitSlider IsRanged MaxRange=""30"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
 
-<BitSlider IsRanged MinRange=""10"" MaxRange=""40"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />";
+<BitSlider IsRanged MinRange=""10"" MaxRange=""40"" Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""50"" />
+
+<BitSlider IsRanged Pushable MinRange=""20"" Max=""100"" Step=""5"" @bind-RangeValue=""pushableRange"" />
+<BitLabel>@pushableRange.Lower - @pushableRange.Upper (@pushableRange.Length wide)</BitLabel>
+
+<BitSlider IsRanged Pushable NoSwap Max=""100"" Step=""5"" DefaultLowerValue=""30"" DefaultUpperValue=""70"" />";
     private readonly string example7CsharpCode = @"
-private BitSliderRangeValue freeRange = new(30, 70);";
+private BitSliderRangeValue freeRange = new(30, 70);
+private BitSliderRangeValue pushableRange = new(20, 40);";
 
     private readonly string example8RazorCode = @"
 <BitSlider Label=""Currency"" Min=""0"" Max=""1000"" Step=""50"" ValueFormat=""C0"" DefaultValue=""450"" />

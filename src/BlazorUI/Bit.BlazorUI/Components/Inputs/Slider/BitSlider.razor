@@ -29,6 +29,44 @@
     var lowerInputMax = interactive ? _LowerInputMax : _thumbA;
     var upperInputMin = interactive ? _UpperInputMin : _thumbB;
     var upperInputMax = interactive ? _UpperInputMax : _thumbB;
+
+    @* The point the hit areas of the two inputs are cut at, so that a press anywhere on the rail reaches the
+       input whose thumb is nearest to it. It is the midpoint between the thumbs, which is what "nearest"
+       means once the two of them are the only candidates. *@
+    var midPercent = (fillStart + fillEnd) / 2;
+
+    @* Whether the two inputs have traded ends - which they may, since an unconstrained pair is allowed to
+       cross. Everything that depends on where a thumb is rather than on which input drives it has to follow
+       that: the half of the rail each input takes the pointer on, the thumb the focus ring is drawn around,
+       and the value and the name each end announces. *@
+    var crossed = _thumbA > _thumbB;
+    var lowerPlace = crossed ? "bit-sld-inp-far" : "bit-sld-inp-near";
+    var upperPlace = crossed ? "bit-sld-inp-near" : "bit-sld-inp-far";
+    var lowerThumbAriaLabel = crossed ? UpperAriaLabel : LowerAriaLabel;
+    var upperThumbAriaLabel = crossed ? LowerAriaLabel : UpperAriaLabel;
+
+    @* The two ends of a range are two form fields rather than one, so the upper end carries a suffix on the
+       name the slider was given - posted under the same name twice, the two would be indistinguishable. The
+       bare name follows the lower value rather than the lower input, so a crossed pair still posts the end a
+       form written against that name is asking for. *@
+    var upperName = Name.HasValue() ? $"{Name}-upper" : null;
+    var lowerInputName = crossed ? upperName : Name;
+    var upperInputName = crossed ? Name : upperName;
+
+    @* The bounds each end announces: the ones its own input actually holds it inside of, which the WAI-ARIA
+       multi-thumb pattern asks for and which are narrower than the scale as soon as a constraint is in play.
+       A pinned input - a read-only or a disabled one - is the exception: its bounds are a way of refusing the
+       change rather than a description of the value, so the true ends of the scale are announced instead. *@
+    var lowerAriaMin = interactive ? lowerInputMin : min;
+    var lowerAriaMax = interactive ? lowerInputMax : max;
+    var upperAriaMin = interactive ? upperInputMin : min;
+    var upperAriaMax = interactive ? upperInputMax : max;
+
+    @* The value each input is rendered with. It is the value the component holds, except for the single pass
+       ResyncInputAsync spends on the one the browser is holding - see there for why that pass exists. *@
+    var valueAttr = _rawValue.HasValue ? ToInvariant(_rawValue.Value) : CurrentValueAsString;
+    var lowerValueAttr = ToInvariant(_rawA ?? _thumbA);
+    var upperValueAttr = ToInvariant(_rawB ?? _thumbB);
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -178,56 +216,58 @@
                     <input @ref="_lowerInputRef"
                            @attributes="InputHtmlAttributes"
                            @oninput="@(e => HandleOnRangeInput(e, true))"
-                           @onchange="HandleOnRangeChange"
+                           @onchange="@(e => HandleOnRangeChange(e, true))"
+                           @onkeydown="_onKeyDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"
-                           name="@Name"
+                           name="@lowerInputName"
                            type="range"
                            autofocus="@AutoFocus"
-                           style="@GetInputStyle(lowerInputMin, lowerInputMax);@Styles?.LowerValueInput"
-                           class="bit-sld-inp bit-sld-inp-lwr @Classes?.LowerValueInput"
+                           style="@GetInputStyle(lowerInputMin, lowerInputMax, midPercent);@Styles?.LowerValueInput"
+                           class="bit-sld-inp bit-sld-inp-lwr @lowerPlace @Classes?.LowerValueInput"
                            tabindex="@(TabIndex ?? "0")"
                            disabled="@(IsEnabled is false)"
-                           aria-label="@GetThumbAriaLabel(LowerAriaLabel)"
-                           aria-labelledby="@GetThumbAriaLabelledBy(LowerAriaLabel)"
+                           aria-label="@GetThumbAriaLabel(lowerThumbAriaLabel)"
+                           aria-labelledby="@GetThumbAriaLabelledBy(lowerThumbAriaLabel)"
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
-                           aria-valuemin="@ToInvariant(min)"
-                           aria-valuemax="@ToInvariant(max)"
-                           aria-valuenow="@ToInvariant(lower)"
-                           aria-valuetext="@GetAriaValueText(lower)"
+                           aria-valuemin="@ToInvariant(lowerAriaMin)"
+                           aria-valuemax="@ToInvariant(lowerAriaMax)"
+                           aria-valuenow="@ToInvariant(_thumbA)"
+                           aria-valuetext="@GetAriaValueText(_thumbA)"
                            min="@ToInvariant(lowerInputMin)"
                            max="@ToInvariant(lowerInputMax)"
                            step="@ToInvariant(step)"
-                           value="@ToInvariant(_thumbA)" />
+                           value="@lowerValueAttr" />
 
                     <input @oninput="@(e => HandleOnRangeInput(e, false))"
-                           @onchange="HandleOnRangeChange"
+                           @onchange="@(e => HandleOnRangeChange(e, false))"
+                           @onkeydown="_onKeyDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
-                           name="@Name"
+                           name="@upperInputName"
                            type="range"
-                           style="@GetInputStyle(upperInputMin, upperInputMax);@Styles?.UpperValueInput"
-                           class="bit-sld-inp bit-sld-inp-upr @Classes?.UpperValueInput"
+                           style="@GetInputStyle(upperInputMin, upperInputMax, midPercent);@Styles?.UpperValueInput"
+                           class="bit-sld-inp bit-sld-inp-upr @upperPlace @Classes?.UpperValueInput"
                            tabindex="@(TabIndex ?? "0")"
                            disabled="@(IsEnabled is false)"
-                           aria-label="@GetThumbAriaLabel(UpperAriaLabel)"
-                           aria-labelledby="@GetThumbAriaLabelledBy(UpperAriaLabel)"
+                           aria-label="@GetThumbAriaLabel(upperThumbAriaLabel)"
+                           aria-labelledby="@GetThumbAriaLabelledBy(upperThumbAriaLabel)"
                            aria-required="@(Required ? "true" : null)"
                            aria-readonly="@(ReadOnly ? "true" : null)"
                            aria-invalid="@(ValueInvalid is true ? "true" : null)"
                            aria-orientation="@(IsVertical ? "vertical" : null)"
-                           aria-valuemin="@ToInvariant(min)"
-                           aria-valuemax="@ToInvariant(max)"
-                           aria-valuenow="@ToInvariant(upper)"
-                           aria-valuetext="@GetAriaValueText(upper)"
+                           aria-valuemin="@ToInvariant(upperAriaMin)"
+                           aria-valuemax="@ToInvariant(upperAriaMax)"
+                           aria-valuenow="@ToInvariant(_thumbB)"
+                           aria-valuetext="@GetAriaValueText(_thumbB)"
                            min="@ToInvariant(upperInputMin)"
                            max="@ToInvariant(upperInputMax)"
                            step="@ToInvariant(step)"
-                           value="@ToInvariant(_thumbB)" />
+                           value="@upperValueAttr" />
                 }
                 else
                 {
@@ -235,6 +275,7 @@
                            @attributes="InputHtmlAttributes"
                            @oninput="HandleOnInput"
                            @onchange="HandleOnChange"
+                           @onkeydown="_onKeyDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"
@@ -258,7 +299,7 @@
                            min="@ToInvariant(valueInputMin)"
                            max="@ToInvariant(valueInputMax)"
                            step="@ToInvariant(step)"
-                           value="@CurrentValueAsString" />
+                           value="@valueAttr" />
                 }
             </div>
 

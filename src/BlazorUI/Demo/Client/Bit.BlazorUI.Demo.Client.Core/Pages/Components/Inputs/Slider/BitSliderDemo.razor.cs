@@ -236,6 +236,13 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "Pushable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a thumb of a ranged slider push the other one along instead of stopping against it. It has nothing to do without a MinRange to keep or a NoSwap ordering to hold, and it keeps the thumbs on their own sides since pushing and crossing are opposites.",
+        },
+        new()
+        {
             Name = "RangeValue",
             Type = "BitSliderRangeValue?",
             DefaultValue = "null",
@@ -654,6 +661,7 @@ public partial class BitSliderDemo
     private double storageValue = 256;
 
     private BitSliderRangeValue freeRange = new(30, 70);
+    private BitSliderRangeValue pushableRange = new(20, 40);
 
     private double oneWayBinding = 3;
     private double twoWayBinding = 5;

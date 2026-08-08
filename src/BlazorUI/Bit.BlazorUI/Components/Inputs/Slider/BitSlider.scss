@@ -116,6 +116,9 @@
     }
 }
 
+// The geometry is eased as well as the color, so that a value which arrives in one jump - a key, a press on
+// the rail, a change made somewhere else on the page - is followed rather than teleported to. The easing is
+// taken back out again for the duration of a drag, further down.
 .bit-sld-fil {
     top: 50%;
     position: absolute;
@@ -123,7 +126,11 @@
     border-radius: var(--bit-sld-rail);
     background-color: var(--bit-sld-clr);
     transform: translateY(calc(var(--bit-sld-rail) / -2));
-    transition: background-color $mot-duration-short $mot-easing;
+    transition: background-color $mot-duration-short $mot-easing,
+                inset-inline-start $mot-duration-short $mot-easing,
+                width $mot-duration-short $mot-easing,
+                bottom $mot-duration-short $mot-easing,
+                height $mot-duration-short $mot-easing;
 }
 
 // inset-inline-start places the thumb from whichever end the direction starts at, and the negative
@@ -140,7 +147,20 @@
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
     border: spacing(0.25) $shp-border-style var(--bit-sld-clr);
-    transition: border-color $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
+    transition: border-color $mot-duration-short $mot-easing,
+                box-shadow $mot-duration-short $mot-easing,
+                inset-inline-start $mot-duration-short $mot-easing,
+                bottom $mot-duration-short $mot-easing;
+}
+
+// While a thumb is under the pointer it has to follow it exactly, so the easing that smooths a jump is taken
+// back out for as long as the press lasts - a thumb that lags behind the pointer dragging it is worse than
+// one that never eases at all.
+.bit-sld-box:has(> .bit-sld-inp:active) {
+    .bit-sld-fil,
+    .bit-sld-thb {
+        transition: none;
+    }
 }
 
 @media (hover: hover) {
@@ -163,8 +183,11 @@
     @include focus-ring(var(--bit-sld-clr-focus));
 }
 
-.bit-sld-box:has(> .bit-sld-inp-lwr:focus-visible) > .bit-sld-trk > .bit-sld-thb-upr,
-.bit-sld-box:has(> .bit-sld-inp-upr:focus-visible) > .bit-sld-trk > .bit-sld-thb-lwr {
+// Only the thumb the focus is actually on keeps the ring. Which drawn thumb that is depends on where the two
+// inputs currently stand rather than on which of them is named for which end, since an unconstrained pair is
+// allowed to cross - hence the near/far classes, which follow the thumbs rather than the parameters.
+.bit-sld-box:has(> .bit-sld-inp-near:focus-visible) > .bit-sld-trk > .bit-sld-thb-upr,
+.bit-sld-box:has(> .bit-sld-inp-far:focus-visible) > .bit-sld-trk > .bit-sld-thb-lwr {
     box-shadow: none;
 }
 
@@ -224,19 +247,52 @@
     }
 }
 
-// The two inputs of a ranged slider cover each other completely, so only their thumbs are allowed to take
-// the pointer - otherwise the one drawn last would swallow every grab meant for the other.
+// The two inputs of a ranged slider cover each other completely, so each one is cut down to its own side of
+// the midpoint between the thumbs. Every point of the rail then belongs to the input whose thumb is nearest
+// to it, which does two things at once: it stops the input drawn last from swallowing every grab meant for
+// the other, and it makes a press on the bare rail move the near thumb - a native range input jumps to where
+// it is pressed and carries on dragging from there, which is exactly the tap-to-move the rail was missing.
+//
+// The cut is measured inside the input's own box, in the same fractions its width is built from, and the drag
+// that follows is not bound by it: the pointer stays with the input it was pressed on, so a thumb dragged
+// past the other still crosses. Which side each input keeps is therefore decided by where its thumb actually
+// stands - the near/far classes - and not by which end of the range it is named for: a crossed pair that kept
+// its named sides would have each input clipped away from its own thumb, leaving neither one grabbable.
 .bit-sld-rgd {
-    .bit-sld-inp {
-        pointer-events: none;
+    --bit-sld-inp-cut: calc(var(--bit-sld-thumb) / 2 + var(--bit-sld-inp-mid, 0.5) * (100% - var(--bit-sld-thumb)));
+
+    .bit-sld-inp-near {
+        clip-path: inset(0 calc(100% - var(--bit-sld-inp-cut)) 0 0);
     }
 
-    .bit-sld-inp::-webkit-slider-thumb {
-        pointer-events: auto;
+    .bit-sld-inp-far {
+        clip-path: inset(0 0 0 var(--bit-sld-inp-cut));
+    }
+}
+
+// A horizontal RTL slider mirrors the scale, so the low end of it is the physical right of each input and the
+// two cuts change sides. A vertical one is left alone: its input is pinned to ltr and then turned, so its own
+// axis runs the same way whichever direction the page is read in.
+//
+// The two selectors are kept apart rather than listed together, so that a browser without :dir() drops only
+// the rule it cannot parse and still gets the mirroring from the class the component sets itself.
+.bit-rtl.bit-sld-rgd:not(.bit-sld-vrt) {
+    .bit-sld-inp-near {
+        clip-path: inset(0 0 0 calc(100% - var(--bit-sld-inp-cut)));
     }
 
-    .bit-sld-inp::-moz-range-thumb {
-        pointer-events: auto;
+    .bit-sld-inp-far {
+        clip-path: inset(0 var(--bit-sld-inp-cut) 0 0);
+    }
+}
+
+.bit-sld-rgd:not(.bit-sld-vrt):dir(rtl) {
+    .bit-sld-inp-near {
+        clip-path: inset(0 0 0 calc(100% - var(--bit-sld-inp-cut)));
+    }
+
+    .bit-sld-inp-far {
+        clip-path: inset(0 var(--bit-sld-inp-cut) 0 0);
     }
 }
 

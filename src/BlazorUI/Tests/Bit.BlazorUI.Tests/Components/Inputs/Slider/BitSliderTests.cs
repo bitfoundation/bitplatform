@@ -1272,6 +1272,238 @@ public class BitSliderTests : BunitTestContext
 
     #endregion
 
+    #region Pushable
+
+    [TestMethod]
+    public void BitSliderShouldFreeTheInputsOfEachOtherWhenPushable()
+    {
+        // A thumb that pushes the other is no longer bounded by it: it is bounded by the end of the scale,
+        // less the room the pushed thumb needs to keep there.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-sld-inp-lwr").GetAttribute("min"));
+        Assert.AreEqual("80", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("20", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+        Assert.AreEqual("100", com.Find(".bit-sld-inp-upr").GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPushTheUpperEndAlongWithTheLowerOne()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("70");
+
+        Assert.AreEqual(70, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPushTheLowerEndAlongWithTheUpperOne()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-upr").Input("30");
+
+        Assert.AreEqual(10, com.Instance.LowerValue);
+        Assert.AreEqual(30, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStopThePushedEndAtTheEndOfTheScale()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("95");
+
+        // The pushed thumb runs out of room at the far end, and the pushing one comes to rest beside it
+        // rather than through it.
+        Assert.AreEqual(80, com.Instance.LowerValue);
+        Assert.AreEqual(100, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPushWithoutADistanceWhenOnlyOrdered()
+    {
+        // NoSwap alone asks for the ordering and nothing else, so the thumbs may meet - and a pushable pair
+        // that meets travels on together.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("90");
+
+        Assert.AreEqual(90, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldIgnorePushableWithNothingToPushAgainst()
+    {
+        // Without a distance to keep or an ordering to hold, the thumbs simply trade places the way they
+        // always did, and there is nothing for a push to mean.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("9");
+
+        Assert.AreEqual(5, com.Instance.LowerValue);
+        Assert.AreEqual(9, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepThePushedPairInOrderOnTheInputs()
+    {
+        // Pushing and crossing are opposites, so the two inputs keep their sides and the values they carry
+        // stay in order however far a thumb is taken.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("70");
+
+        Assert.AreEqual("70", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
+        Assert.AreEqual("90", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
+    }
+
+    #endregion
+
+    #region Hit areas
+
+    [TestMethod]
+    public void BitSliderShouldCutTheHitAreasOfARangeAtTheMidpointBetweenTheThumbs()
+    {
+        // The two inputs cover each other completely, so each one is cut down to its own side of the
+        // midpoint: every point of the rail then belongs to the input whose thumb is nearest to it, which is
+        // what lets a press on the bare rail move the near thumb instead of nothing at all.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 20D);
+            parameters.Add(p => p.UpperValue, 60D);
+        });
+
+        // Both inputs run across the whole scale here, so the cut sits at the midpoint of each of them.
+        StringAssert.Contains(com.Find(".bit-sld-inp-lwr").GetAttribute("style"), "--bit-sld-inp-mid:0.4");
+        StringAssert.Contains(com.Find(".bit-sld-inp-upr").GetAttribute("style"), "--bit-sld-inp-mid:0.4");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMeasureTheCutInsideTheSpanOfAConstrainedInput()
+    {
+        // A constrained input covers only part of the track, and the cut is a fraction of its own box rather
+        // than of the whole scale - so the same midpoint comes out as two different fractions.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        // The lower input runs from 0 to 70 and the upper from 30 to 100, and the midpoint of the pair is 50.
+        StringAssert.Contains(com.Find(".bit-sld-inp-lwr").GetAttribute("style"), "--bit-sld-inp-mid:0.7143");
+        StringAssert.Contains(com.Find(".bit-sld-inp-upr").GetAttribute("style"), "--bit-sld-inp-mid:0.2857");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPlaceTheInputsByWhereTheirThumbsStand()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld-inp-lwr").ClassList.Contains("bit-sld-inp-near"));
+        Assert.IsTrue(com.Find(".bit-sld-inp-upr").ClassList.Contains("bit-sld-inp-far"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFollowTheInputsWhenTheyCross()
+    {
+        // The half of the rail an input takes the pointer on has to follow its thumb rather than the end it
+        // is named for: a crossed pair that kept its named sides would have each input cut away from its own
+        // thumb, and neither one could be grabbed at all.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("9");
+
+        Assert.IsTrue(com.Find(".bit-sld-inp-lwr").ClassList.Contains("bit-sld-inp-far"));
+        Assert.IsTrue(com.Find(".bit-sld-inp-upr").ClassList.Contains("bit-sld-inp-near"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCutTheHitAreaOfASingleValue()
+    {
+        // There is nothing to share a single-value slider's track with.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 4D);
+        });
+
+        Assert.IsFalse((com.Find(".bit-sld-inp").GetAttribute("style") ?? string.Empty).Contains("--bit-sld-inp-mid"));
+    }
+
+    #endregion
+
     #region Fill, origin and inversion
 
     [TestMethod]
@@ -1570,7 +1802,8 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ShowMarks, true);
         });
 
-        Assert.IsTrue(com.FindAll(".bit-sld-mrk").Count <= 201);
+        // The cap widens the step until the series fits, which is the cap itself plus the mark on the far end.
+        Assert.AreEqual(201, com.FindAll(".bit-sld-mrk").Count);
     }
 
     [TestMethod]
@@ -1755,7 +1988,9 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, (double v) => bound = v);
         });
 
-        com.Find(".bit-sld-inp").Input("26");
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown("ArrowRight");
+        input.Input("26");
 
         Assert.AreEqual(80, bound);
     }
@@ -1773,9 +2008,91 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.ValueChanged, (double v) => bound = v);
         });
 
-        com.Find(".bit-sld-inp").Input("24");
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown("ArrowLeft");
+        input.Input("24");
 
         Assert.AreEqual(0, bound);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryAPointerMoveOnToTheNextMark()
+    {
+        // A pointer lands where it is pointing. Carrying its move on the way a key's is carried would send
+        // the thumb a whole mark further than the pointer ever went - and, since the next move would then
+        // round back the other way, would turn a drag into a thumb that flicks between two marks.
+        var changed = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 25D);
+            parameters.Add(p => p.OnChange, (double _) => changed++);
+        });
+
+        com.Find(".bit-sld-inp").Input("26");
+
+        Assert.AreEqual(25, com.Instance.Value);
+        Assert.AreEqual(0, changed);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStillSnapAPointerMoveToTheNearestMark()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 25D);
+        });
+
+        // Past the halfway point between the two marks, so the nearest one is a different one.
+        com.Find(".bit-sld-inp").Input("60");
+
+        Assert.AreEqual(80, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotTreatANonMovingKeyAsAKeyboardChange()
+    {
+        // A key that never moves a range input - tabbing out of the slider - must not leave the drag that
+        // follows it looking like a keystroke.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 25D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown("Tab");
+        input.Input("26");
+
+        Assert.AreEqual(25, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCarryAKeyboardStepOnToTheNextMarkOnARange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 25D);
+        });
+
+        var upper = com.Find(".bit-sld-inp-upr");
+        upper.KeyDown("ArrowRight");
+        upper.Input("26");
+
+        Assert.AreEqual(0, com.Instance.LowerValue);
+        Assert.AreEqual(80, com.Instance.UpperValue);
     }
 
     [TestMethod]
@@ -1944,6 +2261,94 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldAnnounceTheValueEachInputActuallyHolds()
+    {
+        // The keyboard moves an input from the value the input itself is holding, so that is the value it has
+        // to announce. After a cross the input named for the lower end is holding the upper one, and saying
+        // otherwise would leave a screen reader reading out a number the arrow keys do not move from.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("9");
+
+        Assert.AreEqual("9", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("9", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-valuetext"));
+        Assert.AreEqual("5", com.Find(".bit-sld-inp-upr").GetAttribute("aria-valuenow"));
+        Assert.AreEqual("5", com.Find(".bit-sld-inp-upr").GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldSwapTheThumbNamesWhenTheThumbsCross()
+    {
+        // The name has to describe what the thumb now is rather than what it was named for, since the value
+        // beside it has already changed ends.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerAriaLabel, "Minimum price");
+            parameters.Add(p => p.UpperAriaLabel, "Maximum price");
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        Assert.AreEqual("Minimum price", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-label"));
+
+        com.Find(".bit-sld-inp-lwr").Input("9");
+
+        Assert.AreEqual("Maximum price", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-label"));
+        Assert.AreEqual("Minimum price", com.Find(".bit-sld-inp-upr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldAnnounceTheBoundsEachEndIsHeldInside()
+    {
+        // The WAI-ARIA multi-thumb pattern asks each thumb for the bounds it can actually reach, which a
+        // constraint narrows to the thumb beside it rather than leaving at the ends of the scale.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-valuemin"));
+        Assert.AreEqual("70", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-valuemax"));
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-upr").GetAttribute("aria-valuemin"));
+        Assert.AreEqual("100", com.Find(".bit-sld-inp-upr").GetAttribute("aria-valuemax"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldAnnounceTheWholeScaleOnAPinnedRange()
+    {
+        // A read-only slider's bounds are a way of refusing the change rather than a description of the
+        // value, so the true ends of the scale are what it announces.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            Assert.AreEqual("0", input.GetAttribute("aria-valuemin"));
+            Assert.AreEqual("100", input.GetAttribute("aria-valuemax"));
+        }
+
+        // And the bounds that pin it are still its own value.
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-lwr").GetAttribute("min"));
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+    }
+
+    [TestMethod]
     public void BitSliderShouldFallBackToTheSharedNameOnBothEnds()
     {
         var com = RenderComponent<BitSlider>(parameters =>
@@ -2034,6 +2439,22 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.AreEqual("volume", com.Find(".bit-sld-inp").GetAttribute("name"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGiveTheTwoEndsOfARangeDistinctFormNames()
+    {
+        // Posted under one name twice, the two ends of a range would be indistinguishable to a plain form.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Name, "budget");
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 6D);
+        });
+
+        Assert.AreEqual("budget", com.Find(".bit-sld-inp-lwr").GetAttribute("name"));
+        Assert.AreEqual("budget-upper", com.Find(".bit-sld-inp-upr").GetAttribute("name"));
     }
 
     [TestMethod,
@@ -2290,13 +2711,18 @@ public class BitSliderTests : BunitTestContext
     [TestMethod]
     public void BitSliderShouldNotValidateWhenNoValidateIsSet()
     {
-        var com = RenderComponent<BitSlider>(parameters =>
+        // The value of the fixture starts outside the range its model asks for, so the submit below leaves an
+        // error on the field - which a slider that was told not to validate must not paint itself with.
+        var com = RenderComponent<BitSliderValidationTest>(parameters =>
         {
             parameters.Add(p => p.NoValidate, true);
-            parameters.Add(p => p.DefaultValue, 3D);
         });
 
+        com.Find("form").Submit();
+
+        Assert.AreEqual(1, com.Instance.InvalidCount);
         Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+        Assert.IsNull(com.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
     }
 
     #endregion

@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/slider"
             Title="Slider"
-            Description="A single-value or ranged slider with marks and mark-restricted values, floating thumb labels, an adjustable or removable fill, horizontal and vertical layouts, range constraints, form validation and full keyboard support." />
+            Description="A single-value or ranged slider with marks and mark-restricted values, floating thumb labels, an adjustable or removable fill, horizontal and vertical layouts, range constraints with pushable thumbs, form validation and full keyboard support." />
 
 <DemoPage Name="Slider"
           SecondaryNames="@(["Range"])"
-          Description="BitSlider turns a number into a distance you can point at: drag the thumb, or step it with the keyboard, and watch the fill follow. Give it two thumbs and it selects a range instead, with a minimum and a maximum distance to keep them apart and an option to stop them crossing. The fill does not have to start at the near end - attach it to zero, to any origin you like, invert it so that it highlights what lies beyond the value, or drop it altogether when the value is a position rather than a quantity. Marks can be drawn at every step or at values you choose, with labels under them, and can be made the only values the user is allowed to land on. A floating label can ride along with the thumb, on hover or always, carrying your own markup if plain text is not enough. It runs horizontally or vertically, takes any theme color and three sizes, and - because it is built on native range inputs - it comes with the whole slider keyboard, touch dragging, form submission and EditForm validation already working."
+          Description="BitSlider turns a number into a distance you can point at: drag the thumb, press the rail to send it there, or step it with the keyboard, and watch the fill follow. Give it two thumbs and it selects a range instead, with a minimum and a maximum distance to keep them apart, an option to stop them crossing, and another to let one push the other along. The fill does not have to start at the near end - attach it to zero, to any origin you like, invert it so that it highlights what lies beyond the value, or drop it altogether when the value is a position rather than a quantity. Marks can be drawn at every step or at values you choose, with labels under them, and can be made the only values the user is allowed to land on. A floating label can ride along with the thumb, on hover or always, carrying your own markup if plain text is not enough. It runs horizontally or vertically, takes any theme color and three sizes, and - because it is built on native range inputs - it comes with the whole slider keyboard, touch dragging, form submission and EditForm validation already working."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -22,6 +22,13 @@
             control out and takes it out of the tab order, while <b>ReadOnly</b> keeps it at full contrast and in
             the tab order but refuses every change: the value is still there to be read and announced, just not to
             be moved. Notice the last one still shows its value even though nothing can reach it.
+        </div>
+        <div>
+            The thumb answers the pointer three ways: drag it, press the rail anywhere to send it there and carry
+            straight on dragging, or step it with the keyboard. A move that arrives in one jump - a press on the
+            rail, a key, a value changed somewhere else on the page - is eased into rather than teleported to,
+            while a thumb held under the pointer follows it exactly, since a thumb that lags behind the finger
+            dragging it is worse than one that never eases at all.
         </div>
         <br />
         <div class="example-box">
@@ -51,6 +58,12 @@
             unbound counterparts. By default the thumbs may cross - drag the lower one past the upper and they
             simply trade places - which the
             <a href="components/slider#example7"><b>Range constraints</b></a> section below shows how to prevent.
+        </div>
+        <div>
+            Both thumbs are grabbed and dragged the way a single one is, and the rail between them is divided
+            between the two at their midpoint: press it anywhere and the nearer thumb comes to meet you, then
+            keeps following the pointer as if you had grabbed it. The keyboard reaches them as two tab stops, in
+            a fixed order regardless of which thumb is visually where.
         </div>
         <br />
         <div class="example-box">
@@ -90,6 +103,13 @@
             scale - a set of named tiers, or a series that grows by tens and then by hundreds - into something the
             pointer and the keyboard can both land on exactly. It constrains only what the user can pick: a value
             bound from elsewhere is still drawn where it actually is.
+        </div>
+        <div>
+            The pointer and the keyboard are treated as the different things they are. A drag lands on the mark
+            nearest to where the pointer actually is, so the thumb follows the hand and settles as it passes each
+            halfway point. An arrow key is a request to move on, so it always reaches the next mark along, however
+            short a <b>Step</b> is against the gap between them - without that, a Step of 1 on a scale marked
+            every 64 would round straight back and the arrow keys would do nothing at all.
         </div>
         <br />
         <div class="example-box">
@@ -267,9 +287,21 @@
             and a MaxRange below the MinRange is held up to it.
         </div>
         <div>
-            All three are enforced by the browser rather than corrected afterwards - the constraint is pushed into
-            the bounds of the underlying input - so a thumb never moves somewhere it will be pulled back from, on
-            the pointer or on the keyboard.
+            <b>Pushable</b> changes what happens at the moment the two thumbs meet: instead of the moving one
+            stopping against the other, it carries the other along. That is what turns a constrained range into
+            something you can slide bodily across the scale from either end - a fixed-width window over a
+            timeline, a band that keeps its shape while it moves - rather than a pair you have to drag one thumb
+            at a time. The pushed thumb stops at the end of the scale and the pushing one comes to rest beside
+            it, so a range can be pushed all the way into a corner and pulled back out again. Pushing and
+            crossing are opposites, so a pushable slider keeps its thumbs on their own sides, and it has nothing
+            to do until there is a MinRange to keep or a NoSwap ordering to hold.
+        </div>
+        <div>
+            All of them are enforced by the browser rather than corrected afterwards - the constraint is pushed
+            into the bounds of the underlying input - so a thumb never moves somewhere it will be pulled back
+            from, on the pointer or on the keyboard. And whatever the constraints are, a press on the bare rail
+            still moves the thumb nearest to it: the rail is divided between the two thumbs at their midpoint,
+            so every point of it belongs to the one you would expect it to.
         </div>
         <br />
         <div class="example-box">
@@ -288,6 +320,14 @@
             <br />
             <div>MinRange of 10 and MaxRange of 40 together:</div>
             <BitSlider IsRanged MinRange="10" MaxRange="40" Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="50" />
+            <br />
+            <div>Pushable, on a range 20 wide (drag either thumb into the other):</div>
+            <BitSlider IsRanged Pushable MinRange="20" Max="100" Step="5"
+                       @bind-RangeValue="pushableRange" />
+            <BitLabel>@pushableRange.Lower - @pushableRange.Upper (@pushableRange.Length wide)</BitLabel>
+            <br />
+            <div>Pushable with NoSwap alone, so the thumbs may meet before they push:</div>
+            <BitSlider IsRanged Pushable NoSwap Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70" />
         </div>
     </DemoExample>
 
@@ -467,13 +507,19 @@
             <b>ArrowRight</b> / <b>ArrowUp</b> raise the value by one Step and <b>ArrowLeft</b> / <b>ArrowDown</b>
             lower it, <b>PageUp</b> / <b>PageDown</b> move in larger jumps, and <b>Home</b> / <b>End</b> go to the
             ends of the scale. A ranged slider is two tab stops, in a fixed order regardless of which thumb is
-            visually where, exactly as the WAI-ARIA multi-thumb pattern prescribes.
+            visually where, exactly as the WAI-ARIA multi-thumb pattern prescribes. Each thumb announces the
+            bounds it can actually reach rather than the ends of the scale, so a constrained range tells a
+            screen reader user where the thumb beside it has stopped them - while a read-only slider, whose
+            bounds are a way of refusing the change rather than a description of the value, still announces the
+            whole scale.
         </div>
         <div>
             Give the slider a name: <b>Label</b> is used as one when nothing else is set, <b>AriaLabel</b> overrides
             it, and <b>LowerAriaLabel</b> / <b>UpperAriaLabel</b> name the two ends of a range apart from each other
             - without them a screen reader announces the same name twice and the user cannot tell which thumb they
-            are on. <b>AriaValueText</b> is what a thumb announces in place of its number, for the many scales whose
+            are on. Where the thumbs are free to cross, the two names travel with the values rather than staying
+            on the thumbs they started on, so the one announced as the minimum is always the one that actually
+            holds it. <b>AriaValueText</b> is what a thumb announces in place of its number, for the many scales whose
             numbers are not what they mean: it turns 2 into "Medium" or 750 into "12:30". It is the spoken
             counterpart of <a href="components/slider#example8"><b>GetValueText</b></a>, and falls back to it when
             only the visible form is given - so a slider that already shows "12:30" announces "12:30" without being
