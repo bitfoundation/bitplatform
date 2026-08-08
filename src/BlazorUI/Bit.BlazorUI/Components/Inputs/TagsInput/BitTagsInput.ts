@@ -60,8 +60,19 @@ namespace BitBlazorUI {
                 const value = text.replace(/(\r\n|[\r\n])+/g, separators[0]);
 
                 // insertText keeps the caret, the selection it replaces and the undo stack of the field
-                // intact, and raises the input event that the component listens to.
-                if (!document.execCommand('insertText', false, value)) {
+                // intact, and raises the input event that the component listens to. It is a deprecated
+                // command that an engine may refuse by returning false or by throwing outright, and both
+                // of them mean the same thing here: the text has to be put in by hand, or the paste that
+                // was just prevented would be lost altogether.
+                let inserted = false;
+
+                try {
+                    inserted = document.execCommand('insertText', false, value);
+                } catch {
+                    inserted = false;
+                }
+
+                if (!inserted) {
                     const start = input.selectionStart ?? input.value.length;
                     const end = input.selectionEnd ?? input.value.length;
 
