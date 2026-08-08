@@ -508,9 +508,9 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
 <div>Value: @clearOnEscapeValue</div>";
     private readonly string example8CsharpCode = @"
 private int clearCounter;
-private string clearValue = ""f-app"";
+private string? clearValue = ""f-app"";
 private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
-private string clearOnEscapeValue = ""f-app"";
+private string? clearOnEscapeValue = ""f-app"";
 
 public class Product
 {

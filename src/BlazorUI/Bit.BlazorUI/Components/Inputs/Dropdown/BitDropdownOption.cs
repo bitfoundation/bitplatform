@@ -9,6 +9,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     // still reports the change that registers it with those caches.
     private string? _lastId;
     private string? _lastText;
+    private object? _lastData;
     private TValue? _lastValue;
     private bool _lastIsHidden;
     private bool _lastIsEnabled = true;
@@ -116,15 +117,18 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
         // searched and counted. Only the parameters those caches are actually derived from are compared,
         // so a parent re-render that leaves every option as it was does not throw the caches away - and
         // with them the search, which may be a user-provided function over the whole set of options.
+        // Data is among them because that search sees the whole option and may well match on it.
         if (_lastId != Id ||
             _lastText != Text ||
             _lastItemType != ItemType ||
             _lastIsHidden != IsHidden ||
             _lastIsEnabled != IsEnabled ||
+            Equals(_lastData, Data) is false ||
             EqualityComparer<TValue>.Default.Equals(_lastValue, Value) is false)
         {
             _lastId = Id;
             _lastText = Text;
+            _lastData = Data;
             _lastValue = Value;
             _lastItemType = ItemType;
             _lastIsHidden = IsHidden;
