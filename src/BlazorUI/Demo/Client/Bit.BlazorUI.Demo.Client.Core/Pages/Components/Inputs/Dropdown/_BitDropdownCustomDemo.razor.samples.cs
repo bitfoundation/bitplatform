@@ -497,11 +497,20 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Label=""Single select dropdown""
              Placeholder=""Select an option""
              OnClear=""() => clearCounter++"" />
-<div>OnClear count: @clearCounter</div>";
+<div>OnClear count: @clearCounter</div>
+
+<BitDropdown @bind-Value=""clearOnEscapeValue""
+             ClearOnEscape
+             Items=""GetBasicCustoms()""
+             NameSelectors=""nameSelectors""
+             Label=""Single select dropdown""
+             Placeholder=""Select an option"" />
+<div>Value: @clearOnEscapeValue</div>";
     private readonly string example8CsharpCode = @"
 private int clearCounter;
 private string clearValue = ""f-app"";
 private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
+private string clearOnEscapeValue = ""f-app"";
 
 public class Product
 {
@@ -1288,6 +1297,16 @@ private string? comparerValue = ""F-APP"";";
              Placeholder=""Type a few letters and press Enter"" />
 <div>Value: @autoSelectValue</div>
 
+<BitDropdown @bind-Value=""selectTextOnFocusValue""
+             Combo
+             Immediate
+             SelectTextOnFocus
+             Items=""comboBoxCustoms""
+             Label=""SelectTextOnFocus""
+             NameSelectors=""comboBoxNameSelectors""
+             Placeholder=""Type, click away, then come back"" />
+<div>Value: @selectTextOnFocusValue</div>
+
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
              Responsive
@@ -1308,6 +1327,7 @@ private string? comparerValue = ""F-APP"";";
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example15CsharpCode = @"
 private string? autoSelectValue;
+private string? selectTextOnFocusValue;
 private string comboBoxValueSample1 = default!;
 private IEnumerable<string?> comboBoxValues1 = [];
 

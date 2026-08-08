@@ -3876,6 +3876,279 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(string.Empty, component.Find(".bit-drp-tdp").TextContent.Trim());
     }
 
+    [TestMethod]
+    public void BitDropdownComboShouldNotCommitADisabledItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("Orange");
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, GetDropdownItemsWithDisabled());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("Orange");
+
+        // The item the list shows as unavailable is not one a commit may take, so it is not marked as
+        // the one Enter is about to select either.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-ctg").Count);
+        Assert.IsNull(comboInput.GetAttribute("aria-activedescendant"));
+
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // Typing the exact text of a disabled item must not select what clicking it would refuse.
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboShouldNotCommitAGroupHeader()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("Fruits");
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, GetDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("Fruits");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // A header names the items under it and is not one of them, so its text cannot be committed.
+        Assert.IsNull(component.Instance.Value);
+        Assert.IsNull(component.Instance.SelectedItem);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboShouldNotCommitAHiddenItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true).SetResult("Banana");
+
+        var items = GetShortDropdownItems();
+        items[2].IsHidden = true;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, items);
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("Banana");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        // An item that is not on the screen cannot be clicked, so it cannot be typed into either.
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldResyncTheSelectionWhenItemsAreMutatedInPlace()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var items = new List<BitDropdownItem<string>> { new() { Text = "Apple", Value = "f-app" } };
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Value, "f-ban");
+        });
+
+        // The value names an item the list does not hold yet, so the trigger has nothing to show.
+        Assert.AreEqual(string.Empty, component.Find(".bit-drp-tdp").TextContent.Trim());
+
+        items.Add(new() { Text = "Banana", Value = "f-ban" });
+        component.Render();
+
+        // A list the consumer adds to in place keeps its reference, so the item of an already selected
+        // value would otherwise never reach the trigger.
+        Assert.AreEqual("Banana", component.Find(".bit-drp-tdp").TextContent.Trim());
+        Assert.AreEqual(2, component.FindAll("[role=option]").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownClearOnEscapeShouldOnlyClearWithNothingLeftToDismiss()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var clearCount = 0;
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "f-app");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // The callout is what the first press dismisses; the selection is left alone.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual("f-app", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // With nothing left to dismiss the press reaches the selection, through the very same clear the
+        // clear button goes through - so it reports itself the same way.
+        Assert.IsNull(component.Instance.Value);
+        Assert.AreEqual(1, clearCount);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldKeepTheSelectionOnEscapeWithoutClearOnEscape()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "f-app");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("f-app", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboClearOnEscapeShouldDropTheTypedTermFirst()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "f-app");
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.FocusIn();
+        comboInput.Input("ban");
+        comboInput.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        // The typed term (and the callout it revealed) is what this press takes back. The keydown of
+        // the input bubbles through the trigger, which must not act on the same press a second time.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual("f-app", component.Instance.Value);
+
+        component.Find(".bit-drp-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDropdownSelectTextOnFocusShouldSelectTheComboInputText()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.SelectTextOnFocus, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.FocusIn();
+
+        // An empty input has nothing to select.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+
+        comboInput.Input("ban");
+        component.Find(".bit-drp-inp").FocusIn();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldNotSelectTheComboInputTextWithoutTheParameter()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var comboInput = component.Find(".bit-drp-inp");
+        comboInput.Input("ban");
+        component.Find(".bit-drp-inp").FocusIn();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboEscapeOnTheTriggerShouldStillCloseTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        // The trigger around the ComboBox input answers the keys the input did not: the focus never
+        // reached it here, so nothing else is going to dismiss the callout.
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitDropdownShouldSurviveAnItemsProviderReturningTheDefaultResult()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        static ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> provider(BitDropdownItemsProviderRequest<BitDropdownItem<string>> _)
+            => ValueTask.FromResult(default(BitDropdownItemsProviderResult<BitDropdownItem<string>>));
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Virtualize, true);
+            parameters.Add(p => p.ItemsProvider, provider);
+            parameters.Add(p => p.ItemsProviderDebounceTime, 0);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // The result is a struct, so a provider that hands back the default one carries no Items
+        // collection at all - which must be an empty window rather than a crash.
+        await component.InvokeAsync(() => component.Instance.RefreshItemsAsync());
+
+        Assert.AreEqual(0, component.FindAll("[role=option]").Count);
+    }
+
+    private static List<BitDropdownItem<string>> GetDropdownItemsWithDisabled() => new()
+    {
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Orange", Value = "f-ora", IsEnabled = false },
+        new() { Text = "Banana", Value = "f-ban" }
+    };
+
     private static List<BitDropdownItem<string>> GetDropdownItems() => new()
     {
         new() { Text = "Fruits", ItemType = BitDropdownItemType.Header },

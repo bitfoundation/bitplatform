@@ -18,7 +18,10 @@
     // combobox named after that display would report a "Remove ..." after every chip. While there are
     // chips to remove the name comes from a hidden element carrying the selection text alone; with
     // nothing to remove the visible display keeps the id and names the trigger the way it did.
-    var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false && _selectedItems.Count > 0;
+    @* A disabled item is one the callout refuses to unselect, so its chip carries no remove button and
+       cannot be the reason the hidden name element is rendered either. *@
+    var hasChipRemoveButtons = Chips && IsEnabled && ReadOnly is false &&
+                               _selectedItems.Take(GetDisplayedItemsCount()).Any(GetIsEnabled);
 
     RenderFragment emptyContent =
         @* The empty state is not an option, so it is marked presentational to keep it out of the
@@ -163,7 +166,9 @@
                             {
                                 @GetText(item)
                             }
-                            @if (IsEnabled && ReadOnly is false)
+                            @* A disabled item cannot be unselected by picking it in the callout, so it must not
+                               offer a remove button that would silently do nothing when it is activated. *@
+                            @if (IsEnabled && ReadOnly is false && GetIsEnabled(item))
                             {
                                 @* A button so the chip can be removed with the keyboard and is announced as an action.
                                    The keydown listener of Dropdowns.ts stops Enter and Space from reaching the

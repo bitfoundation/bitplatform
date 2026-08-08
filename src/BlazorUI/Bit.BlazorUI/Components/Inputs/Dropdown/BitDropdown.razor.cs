@@ -57,6 +57,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private List<TItem> _selectedItems = [];
     private List<TItem> _lastShownItems = [];
     private ICollection<TItem>? _lastItemsReference;
+    private int _lastItemsCount = -1;
     private IEqualityComparer<TValue>? _lastValueComparer;
     private Virtualize<TItem>? _virtualizeElement;
     private string _scrollContainerId = string.Empty;
@@ -226,6 +227,15 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// Defaults to the English message.
     /// </summary>
     [Parameter] public string? ClearButtonAriaLabel { get; set; }
+
+    /// <summary>
+    /// Makes the Escape key take back the whole selection once there is nothing left for it to dismiss:
+    /// the first press closes the callout (and, in the ComboBox mode, drops the text that was typed into
+    /// it), and only a press with the callout already closed and nothing typed clears what is selected.
+    /// It reports itself through <see cref="OnClear"/> exactly as the clear button does, and it is
+    /// refused in the same places that button is - a read-only dropdown, a one-way binding.
+    /// </summary>
+    [Parameter] public bool ClearOnEscape { get; set; }
 
     /// <summary>
     /// The icon of the clear button of the dropdown.
@@ -761,6 +771,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <see cref="MaxDisplayedItems"/> items are selected, for example "{0} items selected".
     /// </summary>
     [Parameter] public string? SelectedItemsTextFormat { get; set; }
+
+    /// <summary>
+    /// Selects the text already in the ComboBox input whenever it takes the focus, so that typing
+    /// replaces the term that is there instead of appending to it - which is what a field the user
+    /// comes back to in order to search for something else needs. It has no effect outside of the
+    /// ComboBox mode, and none while the input is empty, where there is nothing to select.
+    /// </summary>
+    [Parameter] public bool SelectTextOnFocus { get; set; }
 
     /// <summary>
     /// Shows the clear button when an item is selected.
@@ -1755,12 +1773,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // collection's instances: neither the Value nor the Values hook fires for it, and this point
         // (unlike those hooks) runs after every parameter of the batch - including a Values change
         // that arrived in the same set but was applied before the new Items - has been applied.
+        // The same collection with a different number of items in it is the same story: a list the
+        // consumer adds to (or removes from) in place keeps its reference, so without this the item of
+        // a value that was selected before its item existed would never reach the trigger.
         // A new ValueComparer is the same story from the other side: the values did not change, but
         // which item each of them names did.
+        var itemsCount = Items?.Count ?? -1;
         if (ReferenceEquals(_lastItemsReference, Items) is false ||
+            _lastItemsCount != itemsCount ||
             ReferenceEquals(_lastValueComparer, ValueComparer) is false)
         {
             _lastItemsReference = Items;
+            _lastItemsCount = itemsCount;
             _lastValueComparer = ValueComparer;
             UpdateSelectedItemsFromValues();
         }
@@ -2210,7 +2234,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (e.Key is "Escape")
         {
-            await CloseCallout();
+            // The ComboBox input handles its own Escape (it has a typed term to drop first) and its
+            // keydown bubbles through here, so acting on it a second time would let the very press
+            // that closed the callout go on to clear the selection as well. Only a press the input
+            // did not already answer - the focus sits on the trigger around it - is handled here.
+            if (Combo && _inputComboHasFocus) return;
+
+            if (IsOpen)
+            {
+                await CloseCallout();
+            }
+            else
+            {
+                await ClearOnEscapeKey();
+            }
+
             return;
         }
 
@@ -2470,9 +2508,33 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _inputSearchHasFocus = false;
     }
 
-    private void HandleComboInputFocusIn()
+    private async Task HandleComboInputFocusIn()
     {
         _inputComboHasFocus = true;
+
+        await SelectComboInputText();
+    }
+
+    // The term already in the input is selected when it takes the focus, so that typing replaces it
+    // instead of appending to it - which is what the user coming back to search for something else is
+    // about to do. An empty input has nothing to select, and neither has a read-only one, where the
+    // selection would only be a highlight over text the user cannot change.
+    private async ValueTask SelectComboInputText()
+    {
+        if (SelectTextOnFocus is false) return;
+        if (Combo is false || IsEnabled is false || ReadOnly) return;
+        if (_comboInputText.HasNoValue()) return;
+        if (IsRendered is false || IsDisposed) return;
+
+        var element = ComboInputElement;
+        if (element is null) return;
+
+        try
+        {
+            await _js.BitUtilsSelectText(element.Value);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (InvalidOperationException) { } // an input that is not on the page has no text to select
     }
 
     private void HandleComboInputFocusOut()
@@ -3291,7 +3353,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (request.CancellationToken.IsCancellationRequested) return new ItemsProviderResult<TItem>([], 0);
 
-        _lastShownItems = [.. providerResult.Items];
+        // The result is a struct, so a provider that hands back the default one - a guard clause, a
+        // caught exception, a request it decided not to answer - carries no Items collection at all,
+        // which every read of it below would otherwise dereference.
+        ICollection<TItem> providerItems = providerResult.Items ?? [];
+
+        _lastShownItems = [.. providerItems];
         _providerTotalItems = providerResult.TotalItemCount;
 
         // Where each item of this window sits in the whole set, so an option can report its place in it
@@ -3310,7 +3377,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         UpdateSelectedItemsFromValues();
         await InvokeAsync(StateHasChanged);
 
-        return new ItemsProviderResult<TItem>(providerResult.Items, providerResult.TotalItemCount);
+        return new ItemsProviderResult<TItem>(providerItems, providerResult.TotalItemCount);
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs eventArgs)
@@ -3319,11 +3386,20 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (eventArgs.Key == "Escape")
         {
+            // What this press has to take back before it can reach the selection: a callout on the
+            // screen, and a term the user typed into the input. Both are read before they are dropped.
+            var hadSomethingToDismiss = IsOpen || _comboInputText.HasValue();
+
             // Dropping the text through ClearComboBoxInput (rather than by assigning it here) is what
             // re-runs the search: an ItemsProvider would otherwise keep serving the abandoned term.
             await ClearComboBoxInput();
 
             await CloseCallout();
+
+            if (hadSomethingToDismiss is false)
+            {
+                await ClearOnEscapeKey();
+            }
         }
         else if (eventArgs.Key == "Enter")
         {
@@ -3358,6 +3434,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             await RestoreFocusToTrigger();
         }
+    }
+
+    // Escape with nothing left to dismiss takes back the selection, which is what a keyboard user
+    // otherwise has to reach the clear button for. It goes through the very same clear, so it reports
+    // itself through OnClear and is refused wherever that button would be.
+    private Task ClearOnEscapeKey()
+    {
+        if (ClearOnEscape is false) return Task.CompletedTask;
+        if (_selectedItems.Count == 0) return Task.CompletedTask;
+
+        return HandleOnClearClick();
     }
 
     private async Task HandleOnClearButtonClick()
@@ -3620,20 +3707,29 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         {
             var item = FindItemFunction is not null ?
                        FindItemFunction.Invoke(searchItems, text) :
-                       searchItems.FirstOrDefault(i => GetText(i).HasValue() && text.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+                       searchItems.FirstOrDefault(i => IsCommitCandidate(i) && GetText(i).HasValue() && text.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
 
-            if (item is not null && GetIsSelected(item) is false) return item;
+            // The item a custom FindItemFunction picked is checked as well: what it returns is committed
+            // exactly as a click on the item would be, and a click cannot take a group header, an item
+            // that is not on the screen or one the list shows as unavailable either.
+            if (item is not null && IsCommitCandidate(item) && GetIsSelected(item) is false) return item;
         }
 
         if (AutoSelectFirstMatch && HasSearchText)
         {
-            return GetDisplayItems().FirstOrDefault(i => GetItemType(i) == BitDropdownItemType.Normal &&
-                                                         GetIsHidden(i) is false &&
-                                                         GetIsEnabled(i) &&
-                                                         GetIsSelected(i) is false);
+            return GetDisplayItems().FirstOrDefault(i => IsCommitCandidate(i) && GetIsSelected(i) is false);
         }
 
         return null;
+    }
+
+    // Whether an item is one a commit of the typed text may take. It is the same set of conditions
+    // HandleOnItemClick enforces for a click, so typing the exact text of a group header, of an item
+    // that is hidden, or of a disabled one cannot select what clicking it would refuse - and the cue
+    // the list shows (and reports through aria-activedescendant) cannot point at such an item either.
+    private bool IsCommitCandidate(TItem item)
+    {
+        return GetItemType(item) == BitDropdownItemType.Normal && GetIsHidden(item) is false && GetIsEnabled(item);
     }
 
     // The id the commit target is referenced by from the ComboBox input, for the items that carry no id

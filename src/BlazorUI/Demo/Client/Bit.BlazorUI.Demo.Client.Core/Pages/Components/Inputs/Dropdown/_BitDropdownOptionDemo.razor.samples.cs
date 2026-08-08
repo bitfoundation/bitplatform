@@ -457,11 +457,24 @@ protected override void OnInitialized()
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>OnClear count: @clearCounter</div>";
+<div>OnClear count: @clearCounter</div>
+
+<BitDropdown @bind-Value=""clearOnEscapeValue""
+             ClearOnEscape
+             Label=""Single select dropdown""
+             Placeholder=""Select an option""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in basicItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<div>Value: @clearOnEscapeValue</div>";
     private readonly string example8CsharpCode = @"
 private int clearCounter;
 private string? clearValue = ""f-app"";
 private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
+private string? clearOnEscapeValue = ""f-app"";
 
 private readonly List<BitDropdownItem<string>> basicItems =
 [
@@ -1181,6 +1194,21 @@ private string? comparerValue = ""F-APP"";";
 <br />
 <div>Value: @autoSelectValue</div>
 
+<BitDropdown @bind-Value=""selectTextOnFocusValue""
+             Combo
+             Immediate
+             SelectTextOnFocus
+             Label=""SelectTextOnFocus""
+             Placeholder=""Type, click away, then come back""
+             TItem=""BitDropdownOption<string>"" TValue=""string"">
+    @foreach (var item in comboBoxItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<br />
+<div>Value: @selectTextOnFocusValue</div>
+
 <BitDropdown @bind-Value=""comboBoxValueSample1""
              Combo
              Responsive
@@ -1210,6 +1238,7 @@ private string? comparerValue = ""F-APP"";";
 <div>Values: @string.Join(',', comboBoxValues1)</div>";
     private readonly string example15CsharpCode = @"
 private string? autoSelectValue;
+private string? selectTextOnFocusValue;
 private string comboBoxValueSample1 = default!;
 private IEnumerable<string?> comboBoxValues1 = [];
 

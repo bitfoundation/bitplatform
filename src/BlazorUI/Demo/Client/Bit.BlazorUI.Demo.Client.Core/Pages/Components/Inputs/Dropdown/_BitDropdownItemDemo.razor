@@ -289,6 +289,13 @@
         dedicated <b>OnClear</b> callback. In the ComboBox mode it also empties the input, so no filter is left behind
         by a button that says it clears what the dropdown is showing. The button is hidden while the dropdown is
         read-only or disabled, so it never offers an action that would be ignored.
+        <br /><br />
+        <b>ClearOnEscape</b> gives the same clear to the keyboard, so taking back a selection does not require
+        finding a button with the mouse. Escape stays a dismiss key first: it closes the callout, and in the
+        ComboBox mode it drops the text that was typed into it, and only a press with nothing left to dismiss
+        reaches the selection. It goes through the very same clear as the button, so it raises <b>OnClear</b> and
+        is refused wherever the button would be &mdash; and it needs no <b>ShowClearButton</b>, so a dropdown that
+        shows no clear button can still be cleared this way.
     </div>
     <br />
     <div class="example-content">
@@ -318,6 +325,15 @@
                      OnClear="() => clearCounter++" />
         <br />
         <div>OnClear count: @clearCounter</div>
+        <br /><br /><br /><br />
+        <div><b>ClearOnEscape</b>:</div><br />
+        <BitDropdown @bind-Value="clearOnEscapeValue"
+                     ClearOnEscape
+                     Items="GetBasicItems()"
+                     Label="Single select dropdown"
+                     Placeholder="Select an option" />
+        <br />
+        <div>Value: @clearOnEscapeValue</div>
     </div>
 </DemoExample>
 
@@ -788,6 +804,11 @@
         about to select is visible before it is pressed rather than only afterwards. The same item is named to a screen
         reader through the <b>aria-activedescendant</b> of the input, so the cue is not a visual-only one. When nothing
         is marked, <b>Enter</b> either creates a new item (with <b>Dynamic</b>) or does nothing at all.
+        <br /><br />
+        <b>SelectTextOnFocus</b> selects whatever is already in the input when it takes the focus, so coming back to a
+        combo box that holds a term and typing replaces that term instead of appending to it &mdash; which is what a
+        field the user returns to in order to look for something else needs. An empty input has nothing to select, and
+        neither has a read-only one, where the selection would only be a highlight over text that cannot be changed.
     </div>
     <br />
     <div class="example-content">
@@ -800,6 +821,16 @@
                      Placeholder="Type a few letters and press Enter" />
         <br />
         <div>Value: @autoSelectValue</div>
+        <br /><br />
+        <BitDropdown @bind-Value="selectTextOnFocusValue"
+                     Combo
+                     Immediate
+                     SelectTextOnFocus
+                     Items="comboBoxItems"
+                     Label="SelectTextOnFocus"
+                     Placeholder="Type, click away, then come back" />
+        <br />
+        <div>Value: @selectTextOnFocusValue</div>
         <br /><br />
         <BitDropdown @bind-Value="comboBoxValueSample1"
                      Combo
@@ -1045,6 +1076,10 @@
         However the callout is dismissed &mdash; a key, a click outside it, the close button of the responsive panel or
         a swipe &mdash; the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
         being dropped at the top of the page along with the element that was holding it.
+        <b>ClearOnEscape</b> gives <b>Escape</b> one more job once it has nothing left to dismiss: a press with the
+        callout already closed (and, in the ComboBox mode, with nothing typed) clears the selection, which is what a
+        keyboard user otherwise has to reach the clear button for. See the <BitLink Href="#example8">Clear button</BitLink>
+        section.
     </div>
     <br />
     <div class="example-content">

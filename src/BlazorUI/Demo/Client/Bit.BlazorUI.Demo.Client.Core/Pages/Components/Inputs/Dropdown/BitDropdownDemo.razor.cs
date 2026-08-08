@@ -149,6 +149,13 @@ public partial class BitDropdownDemo
         },
         new()
         {
+            Name = "ClearOnEscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the Escape key take back the whole selection once there is nothing left for it to dismiss: the first press closes the callout (and, in the ComboBox mode, drops the text that was typed into it), and only a press with the callout already closed and nothing typed clears what is selected. It reports itself through OnClear exactly as the clear button does, and it is refused in the same places that button is - a read-only dropdown, a one-way binding.",
+        },
+        new()
+        {
             Name = "CloseOnSelect",
             Type = "bool?",
             DefaultValue = "null",
@@ -783,6 +790,13 @@ public partial class BitDropdownDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The composite format that replaces the joined item texts in the dropdown once more than MaxDisplayedItems items are selected, for example \"{0} items selected\".",
+        },
+        new()
+        {
+            Name = "SelectTextOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Selects the text already in the ComboBox input whenever it takes the focus, so that typing replaces the term that is there instead of appending to it - which is what a field the user comes back to in order to search for something else needs. It has no effect outside of the ComboBox mode, and none while the input is empty, where there is nothing to select.",
         },
         new()
         {

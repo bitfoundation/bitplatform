@@ -200,6 +200,7 @@ public partial class _BitDropdownItemDemo
     private string? clearValue = "f-app";
     private IEnumerable<string?> clearValues = ["f-app", "f-ban"];
     private int clearCounter;
+    private string? clearOnEscapeValue = "f-app";
 
     private string calloutState = "closed";
     private string focusState = "blurred";
@@ -224,6 +225,7 @@ public partial class _BitDropdownItemDemo
     private string? openOnFocusValue;
 
     private string? autoSelectValue;
+    private string? selectTextOnFocusValue;
 
     private string comboBoxValueSample1 = default!;
     private string comboBoxValueSample2 = default!;
