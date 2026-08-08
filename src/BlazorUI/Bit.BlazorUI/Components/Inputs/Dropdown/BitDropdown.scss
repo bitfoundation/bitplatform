@@ -276,6 +276,7 @@
         flex-wrap: wrap;
         gap: spacing(0.5);
         min-height: var(--bit-drp-h);
+
         // Logical, not physical: the room left at the end is for the icons of the trigger, which sit
         // where the text ends - on the left of an RTL dropdown.
         padding-block: spacing(1);
@@ -522,6 +523,7 @@
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
     background-color: $clr-bg-pri;
+
     // The same logical padding the search box beside it uses, so the text of an RTL panel starts
     // where its input does rather than against the opposite edge.
     padding-block: spacing(0.125);
@@ -689,6 +691,7 @@
     color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
+
     // Only the corners at the end of the search box are rounded, so they are named logically: in an
     // RTL callout the button sits at the other end and it is the other two corners that are its own.
     border-start-end-radius: spacing(0.125);

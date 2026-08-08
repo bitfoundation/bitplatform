@@ -347,14 +347,11 @@
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-drp-lvr">
         @if (IsLoading)
         {
-            @if (LoadingTemplate is not null)
-            {
-                @LoadingTemplate
-            }
-            else
-            {
-                @(LoadingText ?? "Loading...")
-            }
+            @* Text only, never LoadingTemplate: the template is arbitrary markup meant to be seen -
+               a spinner, an image, something interactive - and rendering it a second time here would
+               duplicate its ids and its handlers and hand the screen reader whatever it happens to
+               contain instead of an announcement. *@
+            @(LoadingText ?? "Loading...")
         }
         else if (IsMaxSelectedItemsReached)
         {

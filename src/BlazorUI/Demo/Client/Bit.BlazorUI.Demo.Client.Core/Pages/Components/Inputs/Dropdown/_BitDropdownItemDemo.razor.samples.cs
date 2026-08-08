@@ -928,6 +928,21 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
 };";
 
     private readonly string example16RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-chip {
+        gap: 4px;
+        color: mediumvioletred;
+    }
+</style>
+
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips
              Responsive
@@ -1765,6 +1780,21 @@ private List<BitDropdownItem<string>> GetBasicItems() => new()
 };";
 
     private readonly string example30RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-des {
+        gap: 4px;
+        color: dodgerblue;
+    }
+</style>
+
 <BitDropdown Label=""Category""
              Items=""GetBasicItems()""
              DefaultValue=""@string.Empty""

@@ -1228,6 +1228,21 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 ];";
 
     private readonly string example16RazorCode = @"
+<style>
+    .custom-drp {
+        gap: 10px;
+        display: flex;
+        align-items: center;
+        flex-flow: row nowrap;
+        justify-content: flex-start;
+    }
+
+    .custom-drp.custom-drp-chip {
+        gap: 4px;
+        color: mediumvioletred;
+    }
+</style>
+
 <BitDropdown @bind-Value=""comboBoxValueSample2""
              Combo Chips Responsive
              Label=""Single select combo box & chips""
