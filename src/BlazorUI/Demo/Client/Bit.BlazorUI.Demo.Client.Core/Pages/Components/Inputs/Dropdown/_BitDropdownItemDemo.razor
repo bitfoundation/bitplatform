@@ -446,6 +446,9 @@
         the typing pauses for the given number of milliseconds and then searches once, while <b>ThrottleTime</b> lets
         at most one search through per interval while the typing continues. The <b>OnSearch</b> event reports every
         search term that gets through.
+        The ComboBox input is a different story: it is a text field whose whole purpose is to filter the list as it is
+        typed, so it always searches on every keystroke and <b>Immediate</b> only decides there whether the two rate
+        limits apply to it.
     </div>
     <br /><br />
     <div class="example-content">
@@ -763,7 +766,7 @@
         The <b>Combo</b> parameter turns the dropdown into a ComboBox: an editable input renders in place of the selected
         text and filters the items as you type, so the trigger doubles as the search box. <b>Enter</b> selects the item
         whose text matches what was typed, <b>Backspace</b> on an empty input removes the last selected item, the arrow
-        keys open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
+        keys &mdash; and typing itself, which reveals the list it filters &mdash; open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
         selection is discarded when the callout closes, so the input goes back to showing the current selection.
         <br /><br />
         Requiring the typed text to match an item exactly makes Enter a dead key for anyone who only typed the beginning
@@ -933,6 +936,10 @@
         <b>ExistsSelectedItemFunction</b> replace the default case-insensitive text comparison used for those two
         lookups, and <b>AutoSelectFirstMatch</b> gets its turn between them and the creation, so a partially typed term
         that names an existing item selects it instead of creating a near-duplicate.
+        While the typed text names nothing the list offers to create an item out of it as its first row, so adding one
+        is something to see and click rather than a shortcut to know about; the row is what the enter key would take,
+        it is reached with the arrow keys like any other option, and it disappears the moment the text names something
+        the list already holds.
     </div>
     <br />
     <div class="example-content">
@@ -974,6 +981,26 @@
                      OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
         <br />
         <div>Values: @string.Join(',', comboBoxValues3)</div>
+    </div>
+    <br /><br /><br /><br />
+    <div>
+        <b>DynamicItemTextFormat</b> is the wording of that offer, which receives the text the item would be created
+        from, and <b>DynamicItemTemplate</b> replaces it with markup of your own when a plain sentence is not enough.
+        Type a name no fruit or vegetable has and the list says so in its own words.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="comboBoxValues4"
+                     MultiSelect
+                     Combo Chips Dynamic
+                     Items="comboBoxItems"
+                     Placeholder="Select options"
+                     Label="Multi select combo box with a custom add row"
+                     DynamicItemTextFormat="Create the new tag '{0}'"
+                     DynamicValueGenerator="(BitDropdownItem<string> item) => item.Text ?? string.Empty"
+                     OnDynamicAdd="(BitDropdownItem<string> item) => HandleOnDynamicAdd(item)" />
+        <br />
+        <div>Values: @string.Join(',', comboBoxValues4)</div>
     </div>
 </DemoExample>
 

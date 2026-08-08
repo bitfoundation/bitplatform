@@ -781,7 +781,10 @@
     background: none transparent;
 }
 
-.bit-drp-itm {
+// The row that offers to create an item out of the typed text is one of the list to look at and to
+// reach, so it takes the layout of an item; only the styling of the commit target sets it apart.
+.bit-drp-itm,
+.bit-drp-dyn {
     width: 100%;
     display: flex;
     gap: spacing(1);
@@ -832,6 +835,7 @@
 // would, plus a rule down its leading edge, so that what Enter is about to select can be seen before it
 // is pressed instead of only afterwards.
 .bit-drp-itm.bit-drp-ctg,
+.bit-drp-dyn.bit-drp-ctg,
 .bit-drp-iwr.bit-drp-ctg {
     background-color: $clr-bg-pri-hover;
     box-shadow: inset spacing(0.25) 0 0 0 var(--bit-drp-clr);

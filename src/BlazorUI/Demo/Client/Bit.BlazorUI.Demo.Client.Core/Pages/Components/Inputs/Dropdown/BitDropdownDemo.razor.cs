@@ -233,7 +233,21 @@ public partial class BitDropdownDemo
             Name = "Dynamic",
             Type = "bool",
             DefaultValue = "false",
-            Description = "It is allowed to add a new item in the ComboBox mode.",
+            Description = "It is allowed to add a new item in the ComboBox mode. While the typed text names no item the list offers to create one out of it.",
+        },
+        new()
+        {
+            Name = "DynamicItemTemplate",
+            Type = "RenderFragment<string>?",
+            DefaultValue = "null",
+            Description = "The custom template for the row the callout offers to create a new item with in the Dynamic ComboBox mode, which receives the text the item would be created from.",
+        },
+        new()
+        {
+            Name = "DynamicItemTextFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the row the callout offers to create a new item with in the Dynamic ComboBox mode, which receives the text the item would be created from, for example \"Add \\\"{0}\\\"\".",
         },
         new()
         {
@@ -310,7 +324,7 @@ public partial class BitDropdownDemo
             Name = "Immediate",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Searches the items immediately as the user types in the search box or combo box input (based on the 'oninput' HTML event).",
+            Description = "Searches the items as the user types in the search box (based on the 'oninput' HTML event) instead of waiting for the search box to be committed. The ComboBox input always searches as it is typed, so there it only decides whether DebounceTime and ThrottleTime apply.",
         },
         new()
         {
@@ -1607,6 +1621,13 @@ public partial class BitDropdownDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item divider of the BitDropdown."
+               },
+               new()
+               {
+                   Name = "DynamicItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the row that offers to create a new item out of the typed text in the Dynamic ComboBox mode of the BitDropdown."
                },
                new()
                {

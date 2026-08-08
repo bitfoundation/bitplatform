@@ -232,6 +232,7 @@ public partial class _BitDropdownItemDemo
     private IEnumerable<string?> comboBoxValues1 = [];
     private IEnumerable<string?> comboBoxValues2 = [];
     private IEnumerable<string?> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues4 = [];
 
     private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
         new()

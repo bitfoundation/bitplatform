@@ -1444,11 +1444,28 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
         <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
     }
 </BitDropdown>
-<div>Values: @string.Join(',', comboBoxValues3)</div>";
+<div>Values: @string.Join(',', comboBoxValues3)</div>
+
+<BitDropdown @bind-Values=""comboBoxValues4""
+             MultiSelect
+             Combo Chips Dynamic
+             Placeholder=""Select options""
+             Label=""Multi select combo box with a custom add row""
+             TItem=""BitDropdownOption<string>"" TValue=""string""
+             DynamicItemTextFormat=""Create the new tag '{0}'""
+             DynamicValueGenerator=""(BitDropdownOption<string> item) => item.Text ?? string.Empty""
+             OnDynamicAdd=""(BitDropdownOption<string> item) => HandleOnDynamicAdd(item)"">
+    @foreach (var item in comboBoxItems)
+    {
+        <BitDropdownOption ItemType=""item.ItemType"" Text=""@item.Text"" Value=""item.Value"" IsEnabled=""item.IsEnabled"" />
+    }
+</BitDropdown>
+<div>Values: @string.Join(',', comboBoxValues4)</div>";
     private readonly string example18CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
 private IEnumerable<string?> comboBoxValues3 = [];
+private IEnumerable<string?> comboBoxValues4 = [];
 
 private void HandleOnDynamicAdd(BitDropdownOption<string> item)
 {

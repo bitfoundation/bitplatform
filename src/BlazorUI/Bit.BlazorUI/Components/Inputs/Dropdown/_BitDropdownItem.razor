@@ -190,8 +190,12 @@
     }
     else if (itemType == BitDropdownItemType.Divider)
     {
+        @* A rule between two groups of items carries nothing a screen reader has to hear, and the only
+           children a listbox may have are its options and their groups, so the divider is drawn for the
+           eye alone rather than announced as a separator that divides nothing nameable. *@
         <div id="@id"
-             role="separator"
+             role="presentation"
+             aria-hidden="true"
              style="@dividerStyle"
              class="bit-drp-sep @Dropdown.Classes?.ItemDivider">
         </div>

@@ -94,7 +94,9 @@ namespace BitBlazorUI {
                     // focus to an option must not stop the editing of the term: the keys that belong to
                     // the text return the focus to the input, and since their default is not prevented
                     // they act on it there - a character is typed, a Backspace deletes, a caret moves.
-                    if (!isTextInput(e) && (isPrintable(e) || Dropdowns.TEXT_KEYS.indexOf(e.key) > -1)) {
+                    // The space bar is one of those characters: it is only the toggle of the focused
+                    // option where there is no text being typed, which the combo lookup below decides.
+                    if (!isTextInput(e) && (isPrintable(e) || e.key === ' ' || Dropdowns.TEXT_KEYS.indexOf(e.key) > -1)) {
                         const combo = (callout.querySelector('.bit-drp-icb') ??
                                        root?.querySelector('.bit-drp-inp')) as HTMLElement | null;
                         combo?.focus();

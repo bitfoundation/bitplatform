@@ -218,6 +218,12 @@ public class BitDropdownClassStyles
     public string? ItemDivider { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the row that offers to create a new item out of the typed text in
+    /// the Dynamic ComboBox mode of the BitDropdown.
+    /// </summary>
+    public string? DynamicItem { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the empty state content of the BitDropdown.
     /// </summary>
     public string? EmptyContent { get; set; }

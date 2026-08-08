@@ -531,12 +531,46 @@
         }
     }
 
+    @{
+        // The text the list offers to create an item out of, which only the Dynamic ComboBox mode ever
+        // has. It stands in for the empty state while it is there: a list that says "no results" while
+        // offering to create the very thing that was searched for contradicts itself.
+        var dynamicItemText = IsLoading ? null : GetDynamicItemText();
+    }
+
     <div id="@_scrollContainerId"
          role="listbox"
          style="@Styles?.ScrollContainer"
          class="bit-drp-scn @Classes?.ScrollContainer"
+         aria-busy="@(IsLoading ? "true" : null)"
          aria-labelledby="@(HasLabel ? _labelId : null)"
          aria-multiselectable="@(MultiSelect ? "true" : null)">
+        @if (dynamicItemText is not null)
+        {
+            @* An option like the ones below it, so the arrow keys reach it and a screen reader reads it
+               as part of the list; it is always what a commit would take while it is on the screen,
+               which is why it carries the commit target styling as well. *@
+            <button @onclick="HandleOnDynamicItemClick"
+                    type="button"
+                    role="option"
+                    tabindex="-1"
+                    id="@DynamicItemId"
+                    aria-selected="false"
+                    style="@Styles?.DynamicItem"
+                    class="bit-drp-dyn bit-drp-ctg @Classes?.DynamicItem">
+                @if (DynamicItemTemplate is not null)
+                {
+                    @DynamicItemTemplate(dynamicItemText)
+                }
+                else
+                {
+                    <span style="@Styles?.ItemText" class="bit-drp-itx @Classes?.ItemText">
+                        @GetDynamicItemDisplayText(dynamicItemText)
+                    </span>
+                }
+            </button>
+        }
+
         @if (IsLoading)
         {
             @loadingContent
@@ -578,14 +612,14 @@
                 @(Options ?? ChildContent)
             </CascadingValue>
 
-            @if (HasNoVisibleItems())
+            @if (dynamicItemText is null && HasNoVisibleItems())
             {
                 @emptyContent
             }
         }
         else
         {
-            @if (HasNoVisibleItems())
+            @if (dynamicItemText is null && HasNoVisibleItems())
             {
                 @emptyContent
             }

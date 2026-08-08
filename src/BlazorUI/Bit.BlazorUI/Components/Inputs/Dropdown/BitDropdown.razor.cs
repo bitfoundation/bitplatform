@@ -42,6 +42,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     private int _displayItemsSelectionVersion = -1;
     private List<TItem>? _displayItems;
     private HashSet<TItem>? _collapsedItems;
+    private string? _selectAllStateCacheKey;
+    private int _selectAllStateCacheVersion = -1;
+    private int _selectAllStateSelectionVersion = -1;
+    private (bool HasCandidates, bool AllSelected, bool AnySelected)? _selectAllState;
     private bool _isResponsiveMode;
     private int _calloutScrollOffset = -1;
     private bool _internalIsOpenChange;
@@ -289,9 +293,25 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
-    /// It is allowed to add a new item in the ComboBox mode.
+    /// It is allowed to add a new item in the ComboBox mode. While the typed text names no item the list
+    /// offers to create one out of it, so that adding an item is something the user can see and click
+    /// rather than a shortcut they have to know about (see <see cref="DynamicItemTextFormat"/>).
     /// </summary>
     [Parameter] public bool Dynamic { get; set; }
+
+    /// <summary>
+    /// The custom template for the row the callout offers to create a new item with in the
+    /// <see cref="Dynamic"/> ComboBox mode, which receives the text the item would be created from.
+    /// It replaces <see cref="DynamicItemTextFormat"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<string>? DynamicItemTemplate { get; set; }
+
+    /// <summary>
+    /// The composite format of the row the callout offers to create a new item with in the
+    /// <see cref="Dynamic"/> ComboBox mode, which receives the text the item would be created from,
+    /// for example "Add \"{0}\"". Defaults to the English message.
+    /// </summary>
+    [Parameter] public string? DynamicItemTextFormat { get; set; }
 
     /// <summary>
     /// The function for generating value in a custom item when a new item is on added Dynamic ComboBox mode.
@@ -341,7 +361,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     [Parameter] public IEnumerable<TItem>? InitialSelectedItems { get; set; }
 
     /// <summary>
-    /// Searches the items immediately as the user types in the search box or combo box input (based on the 'oninput' HTML event).
+    /// Searches the items as the user types in the search box (based on the 'oninput' HTML event)
+    /// instead of waiting for the search box to be committed.
+    /// The ComboBox input always searches as it is typed - that is what a combo box is - so there it
+    /// only decides whether <see cref="DebounceTime"/> and <see cref="ThrottleTime"/> apply.
     /// </summary>
     [Parameter] public bool Immediate { get; set; }
 
@@ -850,35 +873,34 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     public TItem? SelectedItem => MultiSelect ? default : _selectedItems.FirstOrDefault();
 
     /// <summary>
-    /// The ElementReference to the combo input element.
+    /// The ElementReference to the combo input element, which is null outside of the ComboBox mode.
+    /// The responsive panel brings an input of its own, which only exists while the panel is on the
+    /// screen, so it is only reported while the callout is actually open.
     /// </summary>
     public ElementReference? ComboInputElement => Combo
-                                                    ? _isResponsiveMode
+                                                    ? IsOpen && _isResponsiveMode
                                                         ? _comboBoxInputResponsiveRef
                                                         : _comboBoxInputRef
                                                     : null;
 
     /// <summary>
-    /// Gives focus to the combo input element.
+    /// Gives focus to the combo input element. It does nothing outside of the ComboBox mode, which is
+    /// what <see cref="ComboInputElement"/> reports.
     /// </summary>
-    public ValueTask FocusComboInputAsync() => Combo
-                                                ? (_isResponsiveMode
-                                                    ? _comboBoxInputResponsiveRef
-                                                    : _comboBoxInputRef).FocusAsync()
-                                                : ValueTask.CompletedTask;
+    public ValueTask FocusComboInputAsync() => Combo ? FocusTrigger() : ValueTask.CompletedTask;
 
     /// <summary>
     /// The ElementReference to the search input element, which is null while the search box is not
-    /// rendered - it needs <see cref="ShowSearchBox"/>, and it is replaced by the input of the
-    /// dropdown itself in the ComboBox mode.
+    /// rendered - it needs <see cref="ShowSearchBox"/> and an open callout to live in, and it is
+    /// replaced by the input of the dropdown itself in the ComboBox mode.
     /// </summary>
-    public ElementReference? SearchInputElement => HasSearchBox ? _searchInputRef : null;
+    public ElementReference? SearchInputElement => HasSearchBox && IsOpen ? _searchInputRef : null;
 
     /// <summary>
     /// Gives focus to the search input element. It does nothing while the search box is not rendered,
     /// which is what <see cref="SearchInputElement"/> reports.
     /// </summary>
-    public ValueTask FocusSearchInputAsync() => HasSearchBox ? _searchInputRef.FocusAsync() : ValueTask.CompletedTask;
+    public ValueTask FocusSearchInputAsync() => HasSearchBox && IsOpen ? _searchInputRef.FocusAsync() : ValueTask.CompletedTask;
 
     /// <summary>
     /// Discards the items loaded so far and asks the <see cref="ItemsProvider"/> for them again, which
@@ -1024,6 +1046,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _displayItems = null;
         _searchedItemsCache = null;
         _commitTargetCacheKey = null;
+        _selectAllState = null;
     }
 
     private void RefreshOptions()
@@ -2956,8 +2979,26 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // a list first - the state only needs the counts, not the items themselves. HasCandidates comes out
     // of the same pass because the item is only rendered when there is something for it to select: an
     // empty list (or a search that matched nothing) would otherwise be topped by a control that cannot do
-    // anything at all.
+    // anything at all. The result is cached like the search it is computed from, because it is asked for
+    // twice per render - once by the item itself and once by the height the item takes from the list -
+    // and each answer is a full pass over the search results.
     private (bool HasCandidates, bool AllSelected, bool AnySelected) GetSelectAllState()
+    {
+        if (_selectAllState is not null &&
+            _selectAllStateCacheKey == SearchText &&
+            _selectAllStateCacheVersion == _optionsVersion &&
+            _selectAllStateSelectionVersion == _selectionVersion) return _selectAllState.Value;
+
+        _selectAllStateCacheKey = SearchText;
+        _selectAllStateCacheVersion = _optionsVersion;
+        _selectAllStateSelectionVersion = _selectionVersion;
+
+        _selectAllState = ComputeSelectAllState();
+
+        return _selectAllState.Value;
+    }
+
+    private (bool HasCandidates, bool AllSelected, bool AnySelected) ComputeSelectAllState()
     {
         var count = 0;
         var selectedCount = 0;
@@ -3261,20 +3302,25 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             return;
         }
 
-        // A combo box filters as it is typed, so the term is applied right away - except when a debounce
-        // or a throttle is configured, where applying it here would filter the list on every keystroke
-        // and leave the rate limit governing nothing but the OnSearch callback and the ItemsProvider.
-        if (Immediate is false || (DebounceTime <= 0 && ThrottleTime <= 0))
+        // A rate limit only has something to govern when it actually delays the search, so it is the
+        // configured debounce or throttle - and not Immediate on its own - that defers the term. The
+        // list is still revealed at once: the user is typing into it, and waiting out a debounce before
+        // showing anything at all would leave them typing at a closed dropdown.
+        if (Immediate && (DebounceTime > 0 || ThrottleTime > 0))
         {
-            _searchText = _comboInputText;
+            await OpenCallout();
 
-            RefreshOptions();
+            await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
+                await InvokeAsync(async () => await SearchComboItems(args)));
+
+            return;
         }
 
-        if (Immediate is false) return;
-
-        await _rateLimiter.Run(e, DebounceTime, ThrottleTime, async args =>
-            await InvokeAsync(async () => await SearchComboItems(args)));
+        // Otherwise the term is applied as it is typed, all of it: the local filtering, the OnSearch
+        // callback and the ItemsProvider request. Filtering the list while leaving the two of them for
+        // the change event used to make a locally filtered combo box and a server filtered one behave
+        // like two different components.
+        await SearchComboItems(e);
     }
 
     // Commits each separated term like Enter would: through AddDynamicItem, so an existing item gets
@@ -3303,6 +3349,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         _comboInputText = e.Value?.ToString();
 
         if (Immediate) return;
+
+        // The input handler has already searched for exactly this term, so the commit of the same text
+        // has nothing left to do - and running it again would report the search twice. An emptied input
+        // and a term that was never typed are the same nothing here, whichever of the two the browser
+        // reports.
+        if (string.Equals(_searchText ?? string.Empty, _comboInputText ?? string.Empty, StringComparison.Ordinal)) return;
 
         // The change event of an input is the commit of what was typed, which the browser raises when the
         // input loses the focus (and when Enter is pressed). Both of those are moments the dropdown has
@@ -3363,14 +3415,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // typed and is looking at.
         if (_comboInputText.HasNoValue()) return;
 
-        if (_selectedItems.Count > 0)
-        {
-            var hasItem = ExistsSelectedItemFunction is not null ?
-                          ExistsSelectedItemFunction.Invoke(_selectedItems, _comboInputText!) :
-                          _selectedItems.Exists(i => GetText(i).HasValue() && _comboInputText!.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
-
-            if (hasItem) return;
-        }
+        if (IsTextAlreadySelected(_comboInputText!)) return;
 
         var target = FindCommitTarget(_comboInputText!);
         if (target is not null)
@@ -3455,6 +3500,19 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // Whether the given text already stands for one of the selected items, which is what stops the same
+    // item from being selected (or created) twice under a name the data considers equivalent. Both the
+    // commit itself and the row that offers to create an item go through here, so the row cannot offer
+    // something the commit would refuse.
+    private bool IsTextAlreadySelected(string text)
+    {
+        if (_selectedItems.Count == 0) return false;
+
+        return ExistsSelectedItemFunction is not null
+                ? ExistsSelectedItemFunction.Invoke(_selectedItems, text)
+                : _selectedItems.Exists(i => GetText(i).HasValue() && text.Equals(GetText(i)!, StringComparison.OrdinalIgnoreCase));
+    }
+
     // The existing item a commit of the given text would select, or null when the commit would create a
     // new item (or do nothing at all). A term that names an item exactly takes that item; failing that,
     // AutoSelectFirstMatch lets a partially typed term stand for the first item it still matches, which
@@ -3509,9 +3567,65 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         var target = GetCommitTarget();
 
-        if (target is null) return null;
+        if (target is not null) return GetId(target) ?? CommitTargetId;
 
-        return GetId(target) ?? CommitTargetId;
+        // Nothing existing is the target, but the typed text may still be about to become an item of
+        // its own, and the row offering to create it is what Enter would then take.
+        return GetDynamicItemText() is not null ? DynamicItemId : null;
+    }
+
+    // The id of the row that offers to create an item out of the typed text, which the ComboBox input
+    // points at with aria-activedescendant while the row is what a commit would take.
+    internal string DynamicItemId => $"{_dropdownId}-dyn";
+
+    // The text the callout offers to create a new item out of, or null when there is nothing to offer:
+    // outside of the Dynamic ComboBox mode, with nothing typed, while the typed text names an item the
+    // commit would take instead, while it names one of the selections already, and once the selection
+    // limit leaves no room for another item at all. It mirrors AddDynamicItem exactly, so the row can
+    // never offer something pressing Enter would refuse.
+    private string? GetDynamicItemText()
+    {
+        if (Combo is false || Dynamic is false) return null;
+        if (ReadOnly || IsEnabled is false) return null;
+        if (_comboInputText.HasNoValue()) return null;
+        if (IsMaxSelectedItemsReached) return null;
+        if (IsTextAlreadySelected(_comboInputText!)) return null;
+        if (GetCommitTarget() is not null) return null;
+
+        return _comboInputText;
+    }
+
+    private string GetDynamicItemDisplayText(string text)
+    {
+        return DynamicItemTextFormat is not null ? string.Format(DynamicItemTextFormat, text) : $"Add \"{text}\"";
+    }
+
+    // Picking the row is the pointer equivalent of pressing Enter in the input, so it goes through the
+    // very same commit and follows the close behavior of the mode the dropdown is in.
+    private async Task HandleOnDynamicItemClick()
+    {
+        if (ReadOnly) return;
+        if (IsEnabled is false || InvalidValueBinding()) return;
+
+        var wasOpen = IsOpen;
+
+        await AddDynamicItem();
+
+        await ClearComboBoxInput();
+
+        // A multi select callout stays open so the next item can be typed right away, exactly as it
+        // does after an item is picked from the list.
+        if (MultiSelect && CloseOnSelect is true)
+        {
+            await CloseCallout();
+        }
+
+        // The row goes away with the text it stood for either way, so the focus never stays on it: it
+        // returns to the combo input, which is where the next term is typed.
+        if (wasOpen)
+        {
+            await RestoreFocusToTrigger();
+        }
     }
 
     private TItem? GetCommitTarget()

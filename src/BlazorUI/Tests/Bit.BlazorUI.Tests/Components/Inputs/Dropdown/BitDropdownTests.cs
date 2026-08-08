@@ -3335,6 +3335,234 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual("Apple", component.Find(".bit-drp-tdp").TextContent.Trim());
     }
 
+    [TestMethod]
+    public void BitDropdownDynamicShouldOfferToCreateTheTypedTextAsAnItem()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        // Nothing is typed, so there is nothing to create out of.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+
+        component.Find(".bit-drp-inp").Input("Kiwi");
+
+        // A term that names no item is one the list offers to create, and the ComboBox input points at
+        // that offer, because it is exactly what Enter would take.
+        var dynamicItem = component.Find(".bit-drp-dyn");
+        Assert.AreEqual("Add \"Kiwi\"", dynamicItem.TextContent.Trim());
+        Assert.AreEqual("option", dynamicItem.GetAttribute("role"));
+        Assert.AreEqual(dynamicItem.GetAttribute("id"), component.Find(".bit-drp-inp").GetAttribute("aria-activedescendant"));
+
+        // The empty state is not shown beside it: a list that says "no results" while offering to create
+        // the very thing that was searched for contradicts itself.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-emp").Count);
+
+        // A term that names an existing item is a selection rather than a creation, so the offer goes.
+        component.Find(".bit-drp-inp").Input("Apple");
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownDynamicItemShouldCommitTheTypedTextWhenItIsClicked()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        BitDropdownItem<string>? added = null;
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnDynamicAdd, item => added = item);
+            parameters.Add(p => p.DynamicValueGenerator, (BitDropdownItem<string>? item) => item?.Text ?? string.Empty);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-inp").Input("Kiwi");
+
+        component.Find(".bit-drp-dyn").Click();
+
+        // Picking the row is the pointer equivalent of pressing Enter: the item is created, reported and
+        // selected, and the term it was created from is gone from the input along with the row itself.
+        Assert.IsNotNull(added);
+        Assert.AreEqual("Kiwi", added!.Text);
+        CollectionAssert.AreEqual(new[] { "Kiwi" }, component.Instance.Values!.ToArray());
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+
+        // A multi select callout stays open so the next term can be typed right away.
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitDropdownDynamicItemTextFormatShouldBeCustomizable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.DynamicItemTextFormat, "Create the new tag '{0}'");
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-inp").Input("Kiwi");
+
+        Assert.AreEqual("Create the new tag 'Kiwi'", component.Find(".bit-drp-dyn").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDropdownDynamicItemShouldNotOfferWhatTheCommitWouldRefuse()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.MaxSelectedItems, 1);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Values, new[] { "f-app" });
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-inp").Input("Kiwi");
+
+        // The selection limit leaves no room for another item, so the row would offer an addition the
+        // commit refuses.
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+
+        // A term that names one of the selections already is the same story from the other side.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.MultiSelect, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Values, new[] { "f-app" });
+        });
+
+        component.Find(".bit-drp-inp").Input("apple");
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownDynamicItemShouldNotBeOfferedInAReadOnlyDropdown()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Dynamic, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        component.Find(".bit-drp-inp").Input("Kiwi");
+
+        Assert.AreEqual(0, component.FindAll(".bit-drp-dyn").Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboTypingShouldRevealTheCalloutWithoutImmediate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var searches = new List<string?>();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnSearch, v => searches.Add(v));
+        });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        // A combo box filters as it is typed whatever Immediate says, so the list it filters has to be
+        // on the screen: typing at a closed dropdown filtered a list nobody could see.
+        component.Find(".bit-drp-inp").Input("app");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, component.FindAll(".bit-drp-itm").Count);
+        CollectionAssert.AreEqual(new[] { "app" }, searches);
+
+        // The commit of the very term the input handler already searched for reports nothing new.
+        component.Find(".bit-drp-inp").Change("app");
+        CollectionAssert.AreEqual(new[] { "app" }, searches);
+    }
+
+    [TestMethod]
+    public void BitDropdownDividerShouldNotBeExposedAsAListboxChild()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetDropdownItems());
+        });
+
+        // The only children a listbox may have are its options and their groups, and a rule between two
+        // groups carries nothing a screen reader has to hear, so it is drawn for the eye alone.
+        var divider = component.Find(".bit-drp-sep");
+        Assert.AreEqual("presentation", divider.GetAttribute("role"));
+        Assert.AreEqual("true", divider.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitDropdownLoadingShouldMarkTheListboxAsBusy()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-drp-scn").GetAttribute("aria-busy"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, false);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        Assert.IsFalse(component.Find(".bit-drp-scn").HasAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public async Task BitDropdownFocusHelpersShouldDoNothingWithoutTheirElement()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        // The search box lives in the callout, so while the callout is closed there is no element to
+        // report - and none to focus either, which used to throw on a reference that was never assigned.
+        Assert.IsNull(component.Instance.SearchInputElement);
+        Assert.IsNull(component.Instance.ComboInputElement);
+
+        await component.InvokeAsync(async () => await component.Instance.FocusSearchInputAsync());
+        await component.InvokeAsync(async () => await component.Instance.FocusComboInputAsync());
+    }
+
     private static List<BitDropdownItem<string>> GetDropdownItems() => new()
     {
         new() { Text = "Fruits", ItemType = BitDropdownItemType.Header },
