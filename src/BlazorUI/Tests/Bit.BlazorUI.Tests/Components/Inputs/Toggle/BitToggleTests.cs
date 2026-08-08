@@ -799,11 +799,11 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(true, false, true),
-        DataRow(false, true, true),
-        DataRow(false, false, true)
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(false, false)
     ]
-    public async Task BitToggleToggleAsyncShouldOnlyBeStoppedByDisabling(bool readOnly, bool loading, bool expected)
+    public async Task BitToggleToggleAsyncShouldOnlyBeStoppedByDisabling(bool readOnly, bool loading)
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
@@ -815,7 +815,7 @@ public class BitToggleTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.ToggleAsync());
 
         // read-only and loading close the toggle to the user, not to the code behind it
-        Assert.AreEqual(expected, com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
     }
 
     [TestMethod]
