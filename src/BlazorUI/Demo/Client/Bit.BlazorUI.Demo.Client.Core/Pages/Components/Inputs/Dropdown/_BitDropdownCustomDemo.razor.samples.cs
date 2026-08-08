@@ -2411,7 +2411,7 @@ private IEnumerable<string?> localizationValues = [""f-app"", ""f-ban"", ""v-bro
              Responsive
              Items=""comboBoxCustoms""
              DefaultValue=""@string.Empty""
-             NameSelectors=""nameSelectors""
+             NameSelectors=""comboBoxNameSelectors""
              Placeholder=""Resize below the small breakpoint""
              ResponsiveCloseIconName=""@BitIconName.ChromeClose""
              ComboBoxAddButtonIconName=""@BitIconName.CircleAddition"" />";
@@ -2463,6 +2463,21 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     Text = { Selector = c => c.Text },
     Title = { Selector = c => c.Title },
     Value = { Selector = c => c.Value },
+};
+
+private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
+{
+    AriaLabel = { Selector = c => c.Label },
+    Id = { Selector = c => c.Key },
+    Data = { Selector = c => c.Payload },
+    IsEnabled = { Selector = c => c.Disabled is false },
+    IsHidden = { Selector = c => c.Visible is false },
+    ItemType = { Selector = c => c.Type },
+    Text = { Selector = c => c.Text },
+    Title = { Selector = c => c.Title },
+    Value = { Selector = c => c.Value },
+    ValueSetter = (Product item, string value) => item.Value = value,
+    TextSetter = (string text, Product item) => item.Text = text
 };";
 
     private readonly string example27RazorCode = @"

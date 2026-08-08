@@ -484,8 +484,8 @@
                    aria-labelledby="@(AriaLabel.HasNoValue() && HasLabel ? _labelId : null)"
                    aria-describedby="@(HasDescription ? _descriptionId : null)"
                    aria-autocomplete="list"
-                   aria-activedescendant="@GetCommitTargetId()"
-                   aria-controls="@_scrollContainerId"
+                   aria-activedescendant="@(IsOpen ? GetCommitTargetId() : null)"
+                   aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
                    disabled="@(IsEnabled is false)" />
