@@ -3,64 +3,69 @@
 .bit-tgi {
     font-weight: 400;
     position: relative;
-    font-size: spacing(1.75);
+    box-sizing: border-box;
     font-family: $tg-font-family;
-
-    &.bit-dis {
-        .bit-tgi-lbl {
-            color: $clr-fg-dis;
-        }
-
-        .bit-tgi-cnt {
-            cursor: default;
-            color: $clr-fg-dis;
-            border-color: $clr-brd-dis;
-            background-color: $clr-bg-dis;
-        }
-    }
-
-    &.bit-inv {
-        .bit-tgi-cnt {
-            border-color: $clr-err;
-        }
-
-        &.bit-tgi-fcs .bit-tgi-cnt {
-            @include focus-ring($clr-err-focus);
-
-            border-color: $clr-err-focus;
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover:not(.bit-dis) {
-            .bit-tgi-cnt {
-                border-color: $clr-brd-pri-hover;
-            }
-        }
-    }
-}
-
-.bit-tgi-nbd {
-    .bit-tgi-cnt {
-        border-color: transparent;
-    }
-}
-
-.bit-tgi-fcs {
-    .bit-tgi-cnt {
-        @include focus-ring;
-
-        border-color: $clr-pri-focus;
-    }
+    font-size: var(--bit-tgi-fontsize);
 }
 
 .bit-tgi-lbl {
     display: block;
     font-weight: 600;
-    font-size: spacing(1.75);
+    font-size: inherit;
     line-height: spacing(2.5);
     padding: spacing(0.625) 0;
     color: $clr-fg-pri;
+    overflow-wrap: break-word;
+}
+
+//the helper text and the counter share a line under the field, the count sitting at its end whether or
+//not there is a sentence to sit next to.
+.bit-tgi-dsr {
+    gap: spacing(1);
+    display: flex;
+    align-items: baseline;
+    box-sizing: border-box;
+    justify-content: space-between;
+}
+
+//the helper text under the field, a touch smaller than the field itself so that the sentence explaining
+//the tags never outweighs the tags it explains.
+.bit-tgi-dsc {
+    margin: 0;
+    display: block;
+    max-width: 100%;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding: spacing(0.625) 0 0;
+    font-size: calc(var(--bit-tgi-fontsize) - #{spacing(0.25)});
+}
+
+//the count of the tags: the same size as the helper text, never wrapping, and pushed to the end of the
+//line when it stands on its own.
+.bit-tgi-cnr {
+    margin: 0;
+    flex-shrink: 0;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    margin-inline-start: auto;
+    box-sizing: border-box;
+    padding: spacing(0.625) 0 0;
+    font-variant-numeric: tabular-nums;
+    font-size: calc(var(--bit-tgi-fontsize) - #{spacing(0.25)});
+}
+
+//the announcement of an added, removed or rejected tag: read out by screen readers, never drawn.
+.bit-tgi-lvr {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tgi-cnt {
@@ -69,26 +74,43 @@
     cursor: text;
     position: relative;
     align-items: center;
-    gap: spacing(0.375);
-    min-height: spacing(4.5);
-    padding: spacing(0.375) spacing(0.5);
+    gap: var(--bit-tgi-gap);
+    box-sizing: border-box;
+    min-height: var(--bit-tgi-minheight);
+    padding: var(--bit-tgi-padding);
     border-radius: $shp-border-radius;
-    background-color: $clr-bg-pri;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+}
+
+//the tags share the wrapping line of the container above rather than forming a box of their own, while
+//still carrying the list semantics that the role restores after display:contents strips it.
+.bit-tgi-tgs {
+    display: contents;
 }
 
 .bit-tgi-tag {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
+    box-sizing: border-box;
     gap: spacing(0.375);
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
     border-radius: $shp-border-radius;
     background-color: $clr-bg-sec;
     color: $clr-fg-pri;
-    font-size: spacing(1.5);
+    font-size: var(--bit-tgi-tagfontsize);
     max-width: 100%;
     overflow: hidden;
+
+    //an inset outline rather than the shared focus ring: the field around the tag is already wearing
+    //that ring (it holds the focus too, through :focus-within), and two of them drawn one inside the
+    //other read as noise. Drawing it inside the chip also keeps it off the tags standing next to it.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
 }
 
 .bit-tgi-ttx {
@@ -98,7 +120,27 @@
     line-height: spacing(2.25);
 }
 
-.bit-tgi-dbt {
+//the little input that replaces a tag while it is being corrected in place: it borrows the type and the
+//colors of the chip around it, so the tag does not visibly change into something else while it is edited.
+//It sizes itself to the text it holds through a field-sizing where that is supported, and falls back to a
+//width wide enough for a short tag everywhere else.
+.bit-tgi-eip {
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    box-sizing: content-box;
+    background: none transparent;
+    width: spacing(8);
+    field-sizing: content;
+    min-width: spacing(4);
+    line-height: spacing(2.25);
+}
+
+.bit-tgi-dbt,
+.bit-tgi-cbt {
     padding: 0;
     border: none;
     display: flex;
@@ -108,7 +150,7 @@
     flex-shrink: 0;
     color: inherit;
     background-color: transparent;
-    font-size: spacing(1.25);
+    font-size: var(--bit-tgi-iconsize);
     line-height: 1;
 
     @media (hover: hover) {
@@ -116,9 +158,30 @@
             color: $clr-fg-sec;
         }
     }
+
+    //the same inset outline as the tag, and for the same reason: the field is already ringed.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline-offset: 0;
+    }
 }
 
-.bit-tgi-dsi {
+//the clear button sits at the end of the field rather than inside a tag, so it keeps a little room
+//around itself and follows the secondary foreground until it is pointed at.
+.bit-tgi-cbt {
+    margin-inline-start: auto;
+    color: $clr-fg-sec;
+    padding-inline: spacing(0.25);
+
+    @media (hover: hover) {
+        &:hover {
+            color: $clr-fg-pri;
+        }
+    }
+}
+
+.bit-tgi-dsi,
+.bit-tgi-cli {
     font-size: inherit;
 }
 
@@ -129,9 +192,227 @@
     outline: none;
     padding: spacing(0.125) spacing(0.25);
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: inherit;
+    font-family: inherit;
     line-height: spacing(2.25);
     background: none transparent;
     color: $clr-fg-pri;
-    font-family: $tg-font-family;
+
+    &::placeholder {
+        color: $clr-fg-ter;
+    }
+}
+
+
+//Outline - the default: a full rule around the field, filled with the page surface.
+.bit-tgi-otl {
+    .bit-tgi-cnt {
+        border-color: $clr-brd-pri;
+        background-color: $clr-bg-pri;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+}
+
+//Fill: the field is painted with the secondary surface and carries no rule of its own.
+.bit-tgi-fil {
+    .bit-tgi-cnt {
+        border-color: transparent;
+        background-color: $clr-bg-sec;
+    }
+
+    //the tags would otherwise be painted with the very same surface as the field they sit in, which
+    //would leave nothing to tell one from the other.
+    .bit-tgi-tag {
+        background-color: $clr-bg-pri;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            background-color: $clr-bg-sec-hover;
+        }
+    }
+}
+
+//Text: only an underline is painted, for a tags field that should not outweigh the content around it.
+.bit-tgi-txt {
+    .bit-tgi-cnt {
+        border-radius: 0;
+        border-color: $clr-brd-pri;
+        background-color: transparent;
+        border-width: 0 0 $shp-border-width 0;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-brd-pri-hover;
+        }
+    }
+}
+
+.bit-tgi-nbd {
+    .bit-tgi-cnt {
+        border-color: transparent;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: transparent;
+        }
+    }
+}
+
+.bit-tgi-req {
+    .bit-tgi-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+
+//the focus ring is declared after the variants on purpose: it is as specific as they are, so only the
+//source order keeps a focused field from being painted over by its variant colors. It follows the whole
+//field rather than the input alone, so that a tag reached with the arrow keys lights it up as well.
+.bit-tgi .bit-tgi-cnt:focus-within {
+    @include focus-ring(var(--bit-tgi-clr-focus));
+
+    border-color: var(--bit-tgi-clr);
+}
+
+.bit-tgi-txt .bit-tgi-cnt:focus-within {
+    @include focus-underline-ring(var(--bit-tgi-clr-focus));
+
+    border-color: var(--bit-tgi-clr);
+}
+
+.bit-tgi-nbd .bit-tgi-cnt:focus-within {
+    border-color: transparent;
+}
+
+.bit-tgi.bit-dis {
+    .bit-tgi-lbl,
+    .bit-tgi-dsc,
+    .bit-tgi-cnr {
+        color: $clr-fg-dis;
+    }
+
+    .bit-tgi-cnt {
+        cursor: default;
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+        background-color: $clr-bg-dis;
+    }
+
+    //the tags are the content of a disabled field, so they are dimmed along with it instead of staying
+    //the one part of it that still reads as enabled.
+    .bit-tgi-tag {
+        color: $clr-fg-dis;
+        background-color: $clr-bg-dis;
+    }
+
+    .bit-tgi-inp {
+        color: $clr-fg-dis;
+
+        &::placeholder {
+            color: $clr-fg-dis;
+        }
+    }
+}
+
+.bit-tgi.bit-inv {
+    //the helper text is what says why the tags were refused, so it reads as the message of the error
+    //state rather than as a hint standing next to it, and the failure is not carried by a color alone.
+    .bit-tgi-dsc {
+        color: $clr-err;
+    }
+
+    .bit-tgi-cnt {
+        border-color: $clr-err;
+
+        &:focus-within {
+            @include focus-ring($clr-err-focus);
+
+            border-color: $clr-err-focus;
+        }
+    }
+
+    &.bit-tgi-txt .bit-tgi-cnt:focus-within {
+        @include focus-underline-ring($clr-err-focus);
+
+        border-color: $clr-err-focus;
+    }
+
+    @media (hover: hover) {
+        &:hover:not(.bit-dis) .bit-tgi-cnt {
+            border-color: $clr-err;
+        }
+    }
+}
+
+
+//Windows High Contrast strips the background and the border colors an author paints with, which takes
+//the tags of every variant down with them: they are drawn with a surface color and, in the Fill variant,
+//a rule that is invisible on purpose. Both are re-established with the system colors here.
+@media (forced-colors: active) {
+    .bit-tgi-fil .bit-tgi-cnt,
+    .bit-tgi-tag {
+        border: $shp-border-width $shp-border-style ButtonText;
+    }
+
+    .bit-tgi.bit-dis {
+        .bit-tgi-lbl,
+        .bit-tgi-dsc,
+        .bit-tgi-cnr,
+        .bit-tgi-inp,
+        .bit-tgi-tag {
+            color: GrayText;
+        }
+
+        .bit-tgi-cnt,
+        .bit-tgi-tag {
+            border-color: GrayText;
+        }
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tgi-#{$role} {
+        --bit-tgi-clr: #{role($tokens, main)};
+        --bit-tgi-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+.bit-tgi-sm {
+    --bit-tgi-gap: #{spacing(0.25)};
+    --bit-tgi-fontsize: #{spacing(1.5)};
+    --bit-tgi-iconsize: #{spacing(1.125)};
+    --bit-tgi-tagfontsize: #{spacing(1.375)};
+    --bit-tgi-minheight: #{spacing(3.5)};
+    --bit-tgi-padding: #{spacing(0.25)} #{spacing(0.375)};
+}
+
+.bit-tgi-md {
+    --bit-tgi-gap: #{spacing(0.375)};
+    --bit-tgi-fontsize: #{spacing(1.75)};
+    --bit-tgi-iconsize: #{spacing(1.25)};
+    --bit-tgi-tagfontsize: #{spacing(1.5)};
+    --bit-tgi-minheight: #{spacing(4.5)};
+    --bit-tgi-padding: #{spacing(0.375)} #{spacing(0.5)};
+}
+
+.bit-tgi-lg {
+    --bit-tgi-gap: #{spacing(0.5)};
+    --bit-tgi-fontsize: #{spacing(2)};
+    --bit-tgi-iconsize: #{spacing(1.5)};
+    --bit-tgi-tagfontsize: #{spacing(1.75)};
+    --bit-tgi-minheight: #{spacing(5.5)};
+    --bit-tgi-padding: #{spacing(0.5)} #{spacing(0.625)};
 }

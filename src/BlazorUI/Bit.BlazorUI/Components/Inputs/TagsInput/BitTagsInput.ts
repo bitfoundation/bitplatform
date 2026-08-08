@@ -14,9 +14,14 @@ namespace BitBlazorUI {
                     return;
                 }
 
-                // Tab: prevent focus loss when the input has uncommitted text
-                if (e.key === 'Tab' && hasText) {
-                    e.preventDefault();
+                // Tab: keep the focus in the input so that the uncommitted text becomes a tag instead of
+                // being left behind. Shift+Tab is never held back, and neither is Tab when the component
+                // was asked not to commit on it: a field the keyboard cannot leave is a focus trap.
+                if (e.key === 'Tab') {
+                    const noAddOnTab = input.dataset.noAddOnTab === 'true';
+                    if (hasText && !e.shiftKey && !noAddOnTab) {
+                        e.preventDefault();
+                    }
                     return;
                 }
 
