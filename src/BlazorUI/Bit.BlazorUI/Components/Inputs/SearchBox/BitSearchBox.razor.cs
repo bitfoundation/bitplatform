@@ -672,7 +672,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     /// <summary>
     /// Runs a search that nobody awaits, so that a circuit torn down while it is still running
-    /// cannot surface as an unobserved task exception.
+    /// cannot surface as an unobserved task exception, and so that everything else it may throw
+    /// still reaches the error handling of Blazor instead of vanishing with the discarded task.
     /// </summary>
     private async Task SearchItemsAndObserveFailures()
     {
@@ -682,6 +683,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
         catch (ObjectDisposedException) { } // we can ignore this exception here
+        catch (Exception ex)
+        {
+            // Every other caller awaits SearchItems, so a throwing user callback (an
+            // AnnouncementProvider, a SuggestFilterFunction, an OnSuggestItemsToggle handler)
+            // surfaces there. Handing it to the renderer keeps this path just as loud.
+            await DispatchExceptionAsync(ex);
+        }
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -1201,7 +1209,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task CloseCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        // Deliberately not gated on IsEnabled: a component disabled while its callout was open would
+        // otherwise be stuck with it, and with the full screen overlay that swallows every click,
+        // since dismissing the list is exactly what the overlay click is supposed to do. Opening is
+        // still blocked upstream in OpenOrCloseCallout.
+        if (IsDisposed) return;
 
         var wasOpen = _isOpen;
 
@@ -1230,7 +1242,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        // Same reasoning as CloseCallout: this is what actually hides the callout in the DOM, so it
+        // has to keep working for a component that was disabled while its list was open.
+        if (IsDisposed) return;
 
         try
         {

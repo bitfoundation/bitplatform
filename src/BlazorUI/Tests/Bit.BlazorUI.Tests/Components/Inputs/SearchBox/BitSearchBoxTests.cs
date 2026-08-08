@@ -974,7 +974,7 @@ public class BitSearchBoxTests : BunitTestContext
 
         component.Find(".bit-srb-inp").Input("apple");
 
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[0].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 0);
     }
 
     [TestMethod]
