@@ -132,10 +132,10 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "HighlightSuggestItems",
+            Name = "HideClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Highlights the part of each suggest item that matches the current search term.",
+            Description = "Whether to hide the clear button when the search box has value.",
         },
         new()
         {
@@ -146,10 +146,10 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
-            Name = "HideClearButton",
+            Name = "HighlightSuggestItems",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to hide the clear button when the search box has value.",
+            Description = "Highlights the part of each suggest item that matches the current search term.",
         },
         new()
         {
@@ -1156,6 +1156,10 @@ public partial class BitSearchBoxDemo
             { SuggestItems.Count: 1 } => $"One match for '{args.SearchTerm}': {args.SuggestItems[0]}. Press enter to pick it.",
             _ => $"{args.SuggestItems.Count} matches for '{args.SearchTerm}', from {args.SuggestItems[0]} to {args.SuggestItems[^1]}."
         };
+
+        // The provider is called by the search box while it renders itself, which never re-renders
+        // this page, so the announced text below the field has to ask for a render of its own.
+        _ = InvokeAsync(StateHasChanged);
 
         return announcedText;
     }

@@ -504,19 +504,21 @@
     }
 }
 
-.bit-srb-sm {
+// These override the tokens that .bit-srb sets on the very same element, so they are qualified
+// with it to win on specificity rather than on where they happen to sit in the stylesheet.
+.bit-srb.bit-srb-sm {
     --bit-srb-height: #{spacing(3)};
     --bit-srb-fontsize: #{spacing(1.5)};
     --bit-srb-iconsize: #{spacing(1.75)};
 }
 
-.bit-srb-md {
+.bit-srb.bit-srb-md {
     --bit-srb-height: #{spacing(4)};
     --bit-srb-fontsize: #{spacing(1.75)};
     --bit-srb-iconsize: #{spacing(2)};
 }
 
-.bit-srb-lg {
+.bit-srb.bit-srb-lg {
     --bit-srb-height: #{spacing(5)};
     --bit-srb-fontsize: #{spacing(2)};
     --bit-srb-iconsize: #{spacing(2.5)};
@@ -648,6 +650,7 @@
     box-sizing: border-box;
     border: spacing(0.25) $shp-border-style $clr-brd-pri;
     border-block-start-color: $clr-pri;
+
     // The spinner tokens rather than a literal duration: a looping animation must slow down
     // under prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
     animation: bit-srb-spin $mot-duration-spinner $mot-easing-spinner infinite;

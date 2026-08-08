@@ -403,7 +403,6 @@ private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggest
 <BitSearchBox Immediate
               MinSuggestTriggerChars=""2""
               Placeholder=""e.g. app""
-              MaxSuggestCount=""0""
               SuggestItems=""GetSuggestedItems()""
               AnnouncementProvider=""AnnounceSuggestItems"" />
 <div>Announced: @announcedText</div>";
@@ -421,6 +420,10 @@ private string? AnnounceSuggestItems(BitSearchBoxAnnouncementArgs args)
         { SuggestItems.Count: 1 } => $""One match for '{args.SearchTerm}': {args.SuggestItems[0]}. Press enter to pick it."",
         _ => $""{args.SuggestItems.Count} matches for '{args.SearchTerm}', from {args.SuggestItems[0]} to {args.SuggestItems[^1]}.""
     };
+
+    // The provider is called by the search box while it renders itself, which never re-renders
+    // this page, so the announced text below the field has to ask for a render of its own.
+    _ = InvokeAsync(StateHasChanged);
 
     return announcedText;
 }";

@@ -106,9 +106,12 @@
 
             @if (HideClearButton is false && ReadOnly is false && HasValue)
             {
+                @* Normally kept out of the tab order because escape already clears the field, which is
+                   the faster way to do it from the keyboard. NoClearOnEscape takes that away, so the
+                   button becomes the only way left and has to be reachable. *@
                 <button @onclick="HandleOnClearButtonClick"
                         type="button"
-                        tabindex="-1"
+                        tabindex="@(NoClearOnEscape ? null : "-1")"
                         title="@ClearButtonAriaLabel"
                         style="@Styles?.ClearButton"
                         aria-label="@ClearButtonAriaLabel"

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.SearchBox;
 [TestClass]
 public class BitSearchBoxTests : BunitTestContext
 {
-    private static readonly List<string> Fruits =
+    private static readonly IReadOnlyList<string> Fruits =
     [
         "Apple", "Red Apple", "Blue Apple", "Green Apple", "Banana", "Orange", "Grape"
     ];
@@ -342,7 +342,9 @@ public class BitSearchBoxTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSearchBoxRequiredShouldRenderTheHtmlAttributeAndTheLabelMarker(bool required)
+    // The asterisk of a required label is a ::after pseudo-element driven by the bit-srb-req class,
+    // so the class on the root is as far as this can assert; the marker itself is not in the DOM.
+    public void BitSearchBoxRequiredShouldRenderTheHtmlAttributeAndTheRootClass(bool required)
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
@@ -916,21 +918,21 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-srb-sel").Count);
 
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[0].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 0);
 
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[1].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 1);
 
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[0].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 0);
 
         // wraps around to the last item
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[3].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 3);
 
         // wraps around to the first item
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        Assert.AreEqual("true", component.FindAll(".bit-srb-itm")[0].GetAttribute("aria-selected"));
+        WaitForSelectedItem(component, 0);
     }
 
     [TestMethod]
@@ -951,6 +953,8 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
         input.Input("apple");
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        WaitForSelectedItem(component, 0);
+
         input.KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.AreEqual("Apple", value);
@@ -1370,7 +1374,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxReadOnlyShouldNotAllowPickingASuggestItem()
+    public async Task BitSearchBoxReadOnlyShouldNotAllowPickingASuggestItem()
     {
         string? value = "apple";
 
@@ -1383,7 +1387,7 @@ public class BitSearchBoxTests : BunitTestContext
         });
 
         // read-only blocks editing, not browsing, so the suggestions are rendered as usual.
-        component.InvokeAsync(() => component.Instance.ShowSuggestItems());
+        await component.InvokeAsync(() => component.Instance.ShowSuggestItems());
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 4);
 
         component.FindAll(".bit-srb-itm")[0].Click();
@@ -1404,7 +1408,10 @@ public class BitSearchBoxTests : BunitTestContext
         var input = component.Find(".bit-srb-inp");
         input.Input("apple");
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        WaitForSelectedItem(component, 0);
+
         input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        WaitForSelectedItem(component, 1);
 
         var items = component.FindAll(".bit-srb-itm");
 
@@ -1651,7 +1658,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxLoadingTemplateAndTextShouldRenderWhileTheProviderIsRunning()
+    public async Task BitSearchBoxLoadingTemplateAndTextShouldRenderWhileTheProviderIsRunning()
     {
         var tcs = new TaskCompletionSource<IEnumerable<string>>();
 
@@ -1673,7 +1680,7 @@ public class BitSearchBoxTests : BunitTestContext
         Assert.AreEqual("true", component.Find(".bit-srb-lod").GetAttribute("aria-hidden"));
         Assert.AreEqual("Searching...", GetAnnouncement(component));
 
-        component.InvokeAsync(() => tcs.SetResult(["Apple"]));
+        await component.InvokeAsync(() => tcs.SetResult(["Apple"]));
 
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 1);
 

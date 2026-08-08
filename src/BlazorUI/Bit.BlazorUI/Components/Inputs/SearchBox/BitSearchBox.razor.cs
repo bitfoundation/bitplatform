@@ -998,6 +998,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         var term = CurrentValueAsString;
 
+        // Every search invalidates the one before it, whichever branch it ends up taking: a term that
+        // became too short, or a switch to an in-memory list, must abandon an in-flight provider call
+        // just as a newer provider call does, otherwise its late result would repopulate the callout.
+        // The superseded source is only cancelled here, never disposed: the search that owns it may
+        // still be sitting inside the provider with its token, and pulling the source out from under
+        // that call would turn any use of the token into an ObjectDisposedException. Every search
+        // disposes its own source in its own finally block instead.
+        _cancellationTokenSource?.Cancel();
+
         if (CanSearch(term) is false)
         {
             _isLoading = false;
@@ -1008,11 +1017,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             _searchTriggered = true;
 
-            // The superseded source is only cancelled here, never disposed: the search that owns it
-            // may still be sitting inside the provider with its token, and pulling the source out
-            // from under that call would turn any use of the token into an ObjectDisposedException.
-            // Every search disposes its own source in the finally block below instead.
-            _cancellationTokenSource?.Cancel();
             var cts = _cancellationTokenSource = new();
 
             _isLoading = true;

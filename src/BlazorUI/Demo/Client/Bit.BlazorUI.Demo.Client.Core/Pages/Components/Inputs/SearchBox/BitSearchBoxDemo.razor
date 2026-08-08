@@ -5,8 +5,9 @@
             Title="SearchBox"
             Description="A search box (SearchBox) provides an accessible input field with optional suggestions (auto-complete), a clear button and a search button, for searching content within a site or app." />
 
-@* Sections 1 to 16 cover what the search box does; the last five (Color, External Icons, Size,
-   Style & Class and RTL) are the look-and-feel sections shared by every component of the library. *@
+@* Sections 1 to 17 cover what the search box does, up to and including Validation; the last five
+   (Color, External Icons, Size, Style & Class and RTL) are the look-and-feel sections shared by
+   every component of the library. *@
 
 <div>
     <DemoPage Name="SearchBox"
@@ -544,7 +545,6 @@
                 <BitSearchBox Immediate
                               MinSuggestTriggerChars="2"
                               Placeholder="e.g. app"
-                              MaxSuggestCount="0"
                               SuggestItems="GetSuggestedItems()"
                               AnnouncementProvider="AnnounceSuggestItems" />
                 <br />
