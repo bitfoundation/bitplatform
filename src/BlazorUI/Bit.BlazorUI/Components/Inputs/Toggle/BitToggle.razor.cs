@@ -335,16 +335,31 @@ public partial class BitToggle : BitInputBase<bool>
     /// <remarks>
     /// The change runs through the same path a click takes, so <see cref="OnChanging"/> still gets to cancel it
     /// and <c>OnChange</c> still reports it. Unlike a click it is not blocked by the read-only or loading states,
-    /// which only close the toggle to the user; a disabled toggle changes through neither.
+    /// which only close the toggle to the user; a disabled toggle changes through neither. A change that is
+    /// already in flight does block it, the same way it blocks a click, so the two cannot compete.
     /// </remarks>
-    public Task ToggleAsync() => ChangeValueAsync(CurrentValue is false);
+    public Task ToggleAsync() => ToggleAsync(CurrentValue is false);
 
     /// <summary>
     /// Moves the toggle to a specific state from code, doing nothing when it is already in it.
     /// </summary>
     /// <param name="value">The state to move the toggle to.</param>
     /// <inheritdoc cref="ToggleAsync()" path="/remarks"/>
-    public Task ToggleAsync(bool value) => ChangeValueAsync(value);
+    public async Task ToggleAsync(bool value)
+    {
+        if (_isChanging) return;
+
+        _isChanging = true;
+
+        try
+        {
+            await ChangeValueAsync(value);
+        }
+        finally
+        {
+            _isChanging = false;
+        }
+    }
 
 
     // The value travels through the value attribute of a native checkbox, which is read back as plain text,

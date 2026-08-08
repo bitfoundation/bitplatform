@@ -8,6 +8,7 @@
     font-weight: inherit;
     flex-direction: column;
     font-family: $tg-font-family;
+
     // The unchecked track stays neutral whatever the Color is, so it keeps reading as "off" instead of
     // as a second, dimmer accent.
     --bit-tgl-trk-clr-bg: #{$clr-bg-pri};
@@ -21,6 +22,7 @@
         --bit-tgl-trk-clr-brd: #{$clr-brd-dis};
         --bit-tgl-thb-clr: #{$clr-fg-dis};
         --bit-tgl-ico-clr: #{$clr-bg-dis};
+        --bit-tgl-cnn-clr: #{$clr-fg-dis};
 
         .bit-tgl-lbl {
             cursor: default;
@@ -35,6 +37,7 @@
             --bit-tgl-trk-clr-bg: #{$clr-bg-dis};
             --bit-tgl-trk-clr-brd: transparent;
             --bit-tgl-thb-clr: #{$clr-fg-dis};
+            --bit-tgl-cnn-clr: #{$clr-fg-dis};
         }
     }
 
@@ -96,10 +99,11 @@
     }
 }
 
-// The label position classes come after the inline and reversed ones, so an explicit LabelPosition wins
-// over either of them whichever way they were combined.
+// The label position classes come after the inline and reversed ones and carry the root class along, so an
+// explicit LabelPosition wins over either of them whichever way they were combined - including over the two
+// of them together, which on its own would outweigh a single class.
 
-.bit-tgl-ltp {
+.bit-tgl.bit-tgl-ltp {
     align-items: stretch;
     flex-direction: column;
 
@@ -108,7 +112,7 @@
     }
 }
 
-.bit-tgl-lbt {
+.bit-tgl.bit-tgl-lbt {
     align-items: stretch;
     flex-direction: column-reverse;
 
@@ -117,7 +121,7 @@
     }
 }
 
-.bit-tgl-lst {
+.bit-tgl.bit-tgl-lst {
     align-items: center;
     flex-direction: row;
 
@@ -126,7 +130,7 @@
     }
 }
 
-.bit-tgl-lnd {
+.bit-tgl.bit-tgl-lnd {
     align-items: center;
     flex-direction: row-reverse;
 
@@ -351,14 +355,6 @@
     }
 }
 
-// A knob holding a glyph or a spinner needs room for it, so the whole toggle steps up to the geometry of
-// its size token's icon variant - the same step every size takes, so the sizes stay in proportion.
-.bit-tgl-tic {
-    --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);
-    --bit-tgl-trk-h: var(--bit-tgl-trk-h-ico);
-    --bit-tgl-thb-size: var(--bit-tgl-thb-size-ico);
-}
-
 .bit-tgl-sm {
     --bit-tgl-gap: #{spacing(0.25)};
     --bit-tgl-pad: #{spacing(0.375)};
@@ -411,6 +407,15 @@
     --bit-tgl-cnn-pad: #{spacing(0.5)};
     --bit-tgl-lbl-fontsize: #{spacing(2)};
     --bit-tgl-stx-fontsize: #{spacing(2)};
+}
+
+// A knob holding a glyph or a spinner needs room for it, so the whole toggle steps up to the geometry of
+// its size token's icon variant - the same step every size takes, so the sizes stay in proportion.
+// It comes after the size classes, which sit on the same element and would otherwise win the tie by order.
+.bit-tgl-tic {
+    --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);
+    --bit-tgl-trk-h: var(--bit-tgl-trk-h-ico);
+    --bit-tgl-thb-size: var(--bit-tgl-thb-size-ico);
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
@@ -478,8 +483,16 @@
             background-color: GrayText;
         }
 
-        .bit-tgl-lbl, .bit-tgl-stx {
+        .bit-tgl-lbl, .bit-tgl-stx, .bit-tgl-cnn {
             color: GrayText;
+        }
+
+        // The track goes back to Canvas when disabled, so the knob's glyph and its spinner go back to the
+        // color of that surface too - the checked block above would otherwise leave them Highlight on Canvas.
+        .bit-tgl-ico, .bit-tgl-spn {
+            color: Canvas;
+            border-color: translucent(Canvas, 30%);
+            border-top-color: Canvas;
         }
     }
 }

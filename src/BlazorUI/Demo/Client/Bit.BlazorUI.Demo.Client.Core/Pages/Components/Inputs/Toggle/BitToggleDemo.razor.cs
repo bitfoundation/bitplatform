@@ -117,6 +117,22 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "OnChanging",
+            Type = "EventCallback<BitToggleChangeArgs>",
+            DefaultValue = "",
+            Description = "Callback invoked before the state of the toggle changes, letting the change be cancelled by setting Cancel on the provided arguments.",
+            LinkType = LinkType.Link,
+            Href = "#change-args",
+        },
+        new()
+        {
+            Name = "OnClick",
+            Type = "EventCallback<MouseEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the toggle is clicked, invoked before the state changes.",
+        },
+        new()
+        {
             Name = "OnContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -142,22 +158,6 @@ public partial class BitToggleDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Text to display when toggle is ON.",
-        },
-        new()
-        {
-            Name = "OnChanging",
-            Type = "EventCallback<BitToggleChangeArgs>",
-            DefaultValue = "",
-            Description = "Callback invoked before the state of the toggle changes, letting the change be cancelled by setting Cancel on the provided arguments.",
-            LinkType = LinkType.Link,
-            Href = "#change-args",
-        },
-        new()
-        {
-            Name = "OnClick",
-            Type = "EventCallback<MouseEventArgs>",
-            DefaultValue = "",
-            Description = "Callback for when the toggle is clicked, invoked before the state changes.",
         },
         new()
         {
@@ -541,8 +541,8 @@ public partial class BitToggleDemo
 
     private BitToggle toggleRef = default!;
 
-    private string SuccessMessage = string.Empty;
-    public BitToggleValidationModel validationModel { get; set; } = new();
+    private string successMessage = string.Empty;
+    private BitToggleValidationModel validationModel = new();
 
 
 
@@ -591,14 +591,14 @@ public partial class BitToggleDemo
 
     private async Task HandleValidSubmit()
     {
-        SuccessMessage = "Form Submitted Successfully!";
+        successMessage = "Form Submitted Successfully!";
         await Task.Delay(3000);
-        SuccessMessage = string.Empty;
+        successMessage = string.Empty;
         StateHasChanged();
     }
 
     private void HandleInvalidSubmit()
     {
-        SuccessMessage = string.Empty;
+        successMessage = string.Empty;
     }
 }

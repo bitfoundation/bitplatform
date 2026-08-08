@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -83,12 +84,14 @@ public class BitToggleTests : BunitTestContext
         var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.AriaLabel, ariaLabel);
+            parameters.Add(p => p.Label, "A label");
         });
 
         var bitToggleButton = com.Find("button");
         Assert.AreEqual(ariaLabel, bitToggleButton.GetAttribute("aria-label"));
 
-        // an explicit label wins outright, so nothing else is left pointing at the switch
+        // an explicit label wins outright over the label of the toggle, so nothing else is left pointing at
+        // the switch even though there is a label element on the page that could have named it
         Assert.IsFalse(bitToggleButton.HasAttribute("aria-labelledby"));
     }
 
@@ -115,8 +118,8 @@ public class BitToggleTests : BunitTestContext
         });
 
         var button = com.Find("button");
-        var labelId = button.Id!.Replace("button", "label");
-        var stateTextId = button.Id!.Replace("button", "state-text");
+        var labelId = com.FindAll(".bit-tgl-lbl").FirstOrDefault()?.Id;
+        var stateTextId = com.FindAll(".bit-tgl-stx").FirstOrDefault()?.Id;
         var effectiveOnText = onText ?? defaultText;
         var effectiveOffText = offText ?? defaultText;
         var stateText = value ? effectiveOnText : effectiveOffText;
@@ -689,9 +692,11 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleShouldIgnoreAClickWhileAChangeIsStillInFlight()
+    public async Task BitToggleShouldIgnoreAClickWhileAChangeIsStillInFlight()
     {
-        var gate = new TaskCompletionSource();
+        // the continuations of the gate belong to the renderer, so they are handed back to it rather than
+        // run inline on the thread that opens the gate
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var changingCount = 0;
         var changedCount = 0;
 
@@ -714,7 +719,7 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(1, changingCount);
         Assert.AreEqual(0, changedCount);
 
-        gate.SetResult();
+        await com.InvokeAsync(gate.SetResult);
 
         com.WaitForAssertion(() => Assert.AreEqual(1, changedCount));
         Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
@@ -956,6 +961,23 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-tgl-sta").ClassList.Contains("thumb-class"));
         Assert.IsTrue(com.Find(".bit-tgl-ico").ClassList.Contains("icon-class"));
         Assert.IsTrue(com.Find(".bit-tgl-stx").ClassList.Contains("text-class"));
+    }
+
+    [TestMethod]
+    public void BitToggleSpinnerStyleAndClassTest()
+    {
+        // the spinner takes the place of the icon, so it is the loading toggle that its slot is reachable on
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.Styles, new BitToggleClassStyles { Spinner = "color: red;" });
+            parameters.Add(p => p.Classes, new BitToggleClassStyles { Spinner = "spinner-class" });
+        });
+
+        var spinner = com.Find(".bit-tgl-spn");
+
+        Assert.IsTrue(spinner.ClassList.Contains("spinner-class"));
+        Assert.IsTrue(spinner.GetAttribute("style")!.Contains("color: red;"));
     }
 
     [TestMethod,

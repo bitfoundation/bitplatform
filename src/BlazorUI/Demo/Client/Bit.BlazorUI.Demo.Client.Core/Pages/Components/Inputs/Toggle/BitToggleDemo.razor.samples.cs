@@ -224,7 +224,7 @@ public class BitToggleValidationModel
 
 public BitToggleValidationModel validationModel { get; set; } = new();
 
-private async Task HandleValidSubmit() { }
+private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example14RazorCode = @"

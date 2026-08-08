@@ -304,7 +304,7 @@
         </div>
         <br />
         <div>
-            @if (string.IsNullOrEmpty(SuccessMessage))
+            @if (string.IsNullOrEmpty(successMessage))
             {
                 <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
                     <DataAnnotationsValidator />
@@ -319,7 +319,7 @@
             }
             else
             {
-                <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+                <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
             }
         </div>
     </DemoExample>
