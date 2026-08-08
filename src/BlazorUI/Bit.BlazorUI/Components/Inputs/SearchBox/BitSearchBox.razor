@@ -31,7 +31,10 @@
             @if (HideIcon is false)
             {
                 var icon = BitIconInfo.From(Icon, IconName ?? "Search");
+                @* The icon sits inside the field and advertises a text cursor, so clicking it has to
+                   put the caret in the input the same way clicking the empty space of the field does. *@
                 <div aria-hidden="true"
+                     @onclick="HandleOnIconClick"
                      style="@Styles?.IconWrapper"
                      class="bit-srb-iwp @Classes?.IconWrapper">
                     <i aria-hidden="true"
@@ -76,8 +79,10 @@
                    inputmode="@_inputMode"
                    aria-label="@AriaLabel"
                    placeholder="@Placeholder"
+                   enterkeyhint="@_enterKeyHint"
                    disabled="@(IsEnabled is false)"
                    class="bit-srb-inp @Classes?.Input"
+                   spellcheck="@(SpellCheck is null ? null : (SpellCheck.Value ? "true" : "false"))"
                    maxlength="@(MaxLength >= 0 ? MaxLength : null)"
                    aria-labelledby="@(HasLabel ? _labelId : null)"
                    role="@(_hasSuggestSource ? "combobox" : "searchbox")"
@@ -101,7 +106,7 @@
                 </div>
             }
 
-            @if (HideClearButton is false && ReadOnly is false && CurrentValue.HasValue())
+            @if (HideClearButton is false && ReadOnly is false && HasValue)
             {
                 <button @onclick="HandleOnClearButtonClick"
                         type="button"
@@ -146,6 +151,17 @@
         }
     </div>
 
+    @* The only channel a screen reader has for the outcome of a search: how many suggestions were
+       found, that there were none, or that the term is still too short to search at all. It lives
+       outside of the callout on purpose, since the content of a display:none callout is never announced. *@
+    @if (_hasSuggestSource)
+    {
+        <div role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             class="bit-srb-lvr">@_announcement</div>
+    }
+
 </div>
 
 @if (_hasSuggestSource)
@@ -158,9 +174,12 @@
              style="display:@(_isOpen ? "block" : "none");@Styles?.Overlay" />
     }
 
+    @* The callout is a sibling of the root element rather than a child of it, so it inherits neither
+       the direction nor the animation opt-out of the component and has to be given both by hand. *@
     <div id="@_calloutId"
          style="@Styles?.Callout"
-         class="bit-srb-cal @Classes?.Callout">
+         dir="@Dir?.ToString().ToLower()"
+         class="bit-srb-cal@(DisableAnimation ? " bit-srb-nan" : null) @Classes?.Callout">
 
         @if (CalloutHeaderTemplate is not null)
         {
@@ -170,9 +189,12 @@
             </div>
         }
 
+        @* These two are purely visual: the live region of the component is what actually reports
+           the loading and the empty states to the assistive technologies, so giving them a role
+           of their own here would only make a screen reader say the very same thing twice. *@
         @if (_isLoading)
         {
-            <div role="status"
+            <div aria-hidden="true"
                  style="@Styles?.Loading"
                  class="bit-srb-lod @Classes?.Loading">
                 @if (LoadingTemplate is not null)
@@ -193,7 +215,7 @@
         {
             @if (NoResultsTemplate is not null)
             {
-                <div role="status"
+                <div aria-hidden="true"
                      style="@Styles?.NoResults"
                      class="bit-srb-nrs @Classes?.NoResults">
                     @NoResultsTemplate
@@ -201,7 +223,7 @@
             }
             else if (NoResultsText.HasValue())
             {
-                <div role="status"
+                <div aria-hidden="true"
                      style="@Styles?.NoResults"
                      class="bit-srb-nrs @Classes?.NoResults">
                     @NoResultsText
@@ -212,6 +234,7 @@
         <div id="@_scrollContainerId"
              role="listbox"
              aria-label="@SuggestItemsAriaLabel"
+             aria-busy="@(_isLoading ? "true" : null)"
              style="@Styles?.ScrollContainer"
              class="bit-srb-scn @Classes?.ScrollContainer">
             @foreach (var (text, index) in _viewSuggestedItems.Select((t, i) => (t, i)))

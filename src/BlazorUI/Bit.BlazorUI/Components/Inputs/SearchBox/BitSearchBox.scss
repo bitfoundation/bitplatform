@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-srb {
     margin: 0;
@@ -467,6 +467,24 @@
     }
 }
 
+// The callout carries the class itself, since it is rendered outside of the root element.
+.bit-srb-cal.bit-srb-nan {
+    animation: none;
+}
+
+// The live region only exists for the assistive technologies, so it is removed from the
+// visual layout without ever being display:none or visibility:hidden, both of which would
+// take it out of the accessibility tree along with the announcement it carries.
+.bit-srb-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-srb-ssb {
     .bit-srb-cnt {
         border-end-end-radius: 0;
@@ -630,7 +648,9 @@
     box-sizing: border-box;
     border: spacing(0.25) $shp-border-style $clr-brd-pri;
     border-block-start-color: $clr-pri;
-    animation: bit-srb-spin 0.8s linear infinite;
+    // The spinner tokens rather than a literal duration: a looping animation must slow down
+    // under prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
+    animation: bit-srb-spin $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 @keyframes bit-srb-spin {

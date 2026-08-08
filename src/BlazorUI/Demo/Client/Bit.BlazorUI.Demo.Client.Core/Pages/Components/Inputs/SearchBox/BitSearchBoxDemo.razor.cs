@@ -8,6 +8,15 @@ public partial class BitSearchBoxDemo
     [
         new()
         {
+            Name = "AnnouncementProvider",
+            Type = "Func<BitSearchBoxAnnouncementArgs, string?>?",
+            DefaultValue = "null",
+            Description = "Builds the text that the screen reader announces through the live region of the search box whenever the suggest items change, in place of the built-in English announcements. Returning null or an empty string announces nothing.",
+            LinkType = LinkType.Link,
+            Href = "#announcement-args",
+        },
+        new()
+        {
             Name = "AutoSelectSuggestItem",
             Type = "bool",
             DefaultValue = "false",
@@ -90,6 +99,15 @@ public partial class BitSearchBoxDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not to animate the search box icon on focus.",
+        },
+        new()
+        {
+            Name = "EnterKeyHint",
+            Type = "BitEnterKeyHint?",
+            DefaultValue = "BitEnterKeyHint.Search",
+            Description = "Sets the enterkeyhint html attribute of the input element, which tells virtual keyboards which action label to render on their enter key. It defaults to Search because pressing enter always runs a search here.",
+            LinkType = LinkType.Link,
+            Href = "#enter-key-hint-enum",
         },
         new()
         {
@@ -306,6 +324,12 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "OnSuggestItemsToggle",
+            Type = "EventCallback<bool>",
+            Description = "Callback executed with true when the suggest items callout opens and with false when it closes.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -377,6 +401,13 @@ public partial class BitSearchBoxDemo
             Description = "The size of the search box.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "SpellCheck",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Sets the spellcheck html attribute of the input element. Leaving it null keeps the default behavior of the browser, setting it to false removes the red squiggles from search terms that are not real words.",
         },
         new()
         {
@@ -686,6 +717,50 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Id = "announcement-args",
+            Title = "BitSearchBoxAnnouncementArgs",
+            Description = "The state of the suggest items at the moment the screen reader announcement is built, passed to the AnnouncementProvider.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "SearchTerm",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The current value of the search box that the suggest items were resolved for.",
+                },
+                new()
+                {
+                    Name = "SuggestItems",
+                    Type = "IReadOnlyList<string>",
+                    DefaultValue = "[]",
+                    Description = "The suggest items that are about to be rendered in the callout.",
+                },
+                new()
+                {
+                    Name = "IsLoading",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether an asynchronous SuggestItemsProvider is still resolving the suggest items.",
+                },
+                new()
+                {
+                    Name = "IsSearchTermTooShort",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Whether the search term is still shorter than the MinSuggestTriggerChars, so no search was performed at all.",
+                },
+                new()
+                {
+                    Name = "MinSuggestTriggerChars",
+                    Type = "int",
+                    DefaultValue = "3",
+                    Description = "The value of the MinSuggestTriggerChars parameter.",
+                },
+            ]
+        },
+        new()
+        {
             Id = "bit-icon-info",
             Title = "BitIconInfo",
             Parameters =
@@ -890,6 +965,57 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Id = "enter-key-hint-enum",
+            Name = "BitEnterKeyHint",
+            Description = "Tells the browser which action label (or icon) to present for the enter key of a virtual keyboard.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Enter",
+                    Description="Typically inserting a new line.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Done",
+                    Description="Typically meaning there is nothing more to input and the input method editor will be closed.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Go",
+                    Description="Typically meaning to take the user to the target of the text they typed.",
+                    Value="2",
+                },
+                new()
+                {
+                    Name= "Next",
+                    Description="Typically taking the user to the next field that will accept text.",
+                    Value="3",
+                },
+                new()
+                {
+                    Name= "Previous",
+                    Description="Typically taking the user to the previous field that will accept text.",
+                    Value="4",
+                },
+                new()
+                {
+                    Name= "Search",
+                    Description="Typically taking the user to the results of searching for the text they have typed.",
+                    Value="5",
+                },
+                new()
+                {
+                    Name= "Send",
+                    Description="Typically delivering the text to its target.",
+                    Value="6",
+                }
+            ]
+        },
+        new()
+        {
             Id = "input-mode",
             Name = "BitInputMode",
             Description = "This allows a browser to display an appropriate virtual keyboard.",
@@ -963,6 +1089,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "IsSuggestItemsOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the callout of the suggest items is currently open.",
+        },
+        new()
+        {
             Name = "Clear",
             Type = "Task",
             Description = "Clears the value of the BitSearchBox and invokes the OnClear callback.",
@@ -1005,7 +1138,27 @@ public partial class BitSearchBoxDemo
     private string? searchValueWithItemsProvider;
     private string? selectedSuggestItem;
 
+    private string? announcedText;
+
+    private bool isSuggestOpen;
+    private BitSearchBox searchBoxRef = default!;
+
     private readonly ValidationSearchBoxModel validationModel = new();
+
+    private string? AnnounceSuggestItems(BitSearchBoxAnnouncementArgs args)
+    {
+        announcedText = args switch
+        {
+            { IsLoading: true } => "Looking for matches...",
+            { SearchTerm: null or "" } => null,
+            { IsSearchTermTooShort: true } => $"Keep typing, {args.MinSuggestTriggerChars} characters are needed to search.",
+            { SuggestItems.Count: 0 } => $"Nothing matches '{args.SearchTerm}'. Try another word.",
+            { SuggestItems.Count: 1 } => $"One match for '{args.SearchTerm}': {args.SuggestItems[0]}. Press enter to pick it.",
+            _ => $"{args.SuggestItems.Count} matches for '{args.SearchTerm}', from {args.SuggestItems[0]} to {args.SuggestItems[^1]}."
+        };
+
+        return announcedText;
+    }
 
     private void Log(string message)
     {

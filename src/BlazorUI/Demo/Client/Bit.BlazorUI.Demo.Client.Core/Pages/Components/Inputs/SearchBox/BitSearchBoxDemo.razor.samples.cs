@@ -97,6 +97,10 @@ public partial class BitSearchBoxDemo
 
 <BitSearchBox Placeholder=""InputMode = Search"" InputMode=""BitInputMode.Search"" />
 
+<BitSearchBox Placeholder=""EnterKeyHint = Go"" EnterKeyHint=""BitEnterKeyHint.Go"" />
+
+<BitSearchBox Placeholder=""SpellCheck = false"" SpellCheck=""false"" />
+
 <div style=""display:flex;gap:1rem;max-width:30rem"">
     <BitSearchBox FullWidth Placeholder=""FullWidth in a flex container"" />
     <BitButton>Go</BitButton>
@@ -388,6 +392,59 @@ private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggest
 }";
 
     private readonly string example15RazorCode = @"
+<BitSearchBox Immediate
+              MinSuggestTriggerChars=""2""
+              Placeholder=""e.g. app""
+              NoResultsText=""No matching item found.""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox Immediate
+              MinSuggestTriggerChars=""2""
+              Placeholder=""e.g. app""
+              MaxSuggestCount=""0""
+              SuggestItems=""GetSuggestedItems()""
+              AnnouncementProvider=""AnnounceSuggestItems"" />
+<div>Announced: @announcedText</div>";
+    private readonly string example15CsharpCode = @"
+private string? announcedText;
+
+private string? AnnounceSuggestItems(BitSearchBoxAnnouncementArgs args)
+{
+    announcedText = args switch
+    {
+        { IsLoading: true } => ""Looking for matches..."",
+        { SearchTerm: null or """" } => null,
+        { IsSearchTermTooShort: true } => $""Keep typing, {args.MinSuggestTriggerChars} characters are needed to search."",
+        { SuggestItems.Count: 0 } => $""Nothing matches '{args.SearchTerm}'. Try another word."",
+        { SuggestItems.Count: 1 } => $""One match for '{args.SearchTerm}': {args.SuggestItems[0]}. Press enter to pick it."",
+        _ => $""{args.SuggestItems.Count} matches for '{args.SearchTerm}', from {args.SuggestItems[0]} to {args.SuggestItems[^1]}.""
+    };
+
+    return announcedText;
+}";
+
+    private readonly string example16RazorCode = @"
+<BitSearchBox @ref=""searchBoxRef""
+              Immediate
+              MinSuggestTriggerChars=""0""
+              Placeholder=""Search fruits""
+              DefaultValue=""Apple""
+              SuggestItems=""GetSuggestedItems()""
+              OnSuggestItemsToggle=""v => isSuggestOpen = v"" />
+<div>The suggest callout is @(isSuggestOpen ? ""open"" : ""closed"").</div>
+
+<BitStack Horizontal Wrap Gap=""0.5rem"">
+    <BitButton OnClick=""() => searchBoxRef.FocusAsync()"">Focus</BitButton>
+    <BitButton OnClick=""() => searchBoxRef.Clear()"">Clear</BitButton>
+    <BitButton OnClick=""() => searchBoxRef.ShowSuggestItems()"">Show suggestions</BitButton>
+    <BitButton OnClick=""() => searchBoxRef.HideSuggestItems()"">Hide suggestions</BitButton>
+</BitStack>";
+    private readonly string example16CsharpCode = @"
+private bool isSuggestOpen;
+private BitSearchBox searchBoxRef = default!;";
+
+    private readonly string example17RazorCode = @"
 <EditForm Model=""validationBoxModel"">
     <DataAnnotationsValidator />
     <BitSearchBox Placeholder=""Search"" Immediate
@@ -396,7 +453,7 @@ private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggest
                   @bind-Value=""validationBoxModel.Text"" />
     <ValidationMessage For=""() => validationBoxModel.Text"" />
 </EditForm>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 public class ValidationSearchBoxModel
 {
     [StringLength(6, MinimumLength = 2, ErrorMessage = ""Text must be between 2 and 6 chars."")]
@@ -405,7 +462,7 @@ public class ValidationSearchBoxModel
 
 private ValidationSearchBoxModel validationBoxModel = new();";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" />
 <BitSearchBox Placeholder=""Primary"" ShowSearchButton Color=""BitColor.Primary"" Underlined />
 
@@ -513,7 +570,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" />
 <BitSearchBox Placeholder=""TertiaryBorder"" ShowSearchButton Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Underlined />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitSearchBox Placeholder=""Search"" Icon=""fa-solid fa-house"" />
@@ -545,7 +602,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 
 <BitSearchBox Placeholder=""Type to see clear icon"" ClearButtonIcon=""@BitIconInfo.Bi(""x-circle-fill"")"" Color=""BitColor.Secondary"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitSearchBox Placeholder=""Small"" Size=""BitSize.Small"" ShowSearchButton />
 <BitSearchBox Placeholder=""Medium"" Size=""BitSize.Medium"" ShowSearchButton />
 <BitSearchBox Placeholder=""Large"" Size=""BitSize.Large"" ShowSearchButton />
@@ -554,7 +611,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
 <BitSearchBox Label=""Medium"" Placeholder=""Underlined"" Size=""BitSize.Medium"" Underlined />
 <BitSearchBox Label=""Large"" Placeholder=""Underlined"" Size=""BitSize.Large"" Underlined />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -648,7 +705,7 @@ private ValidationSearchBoxModel validationBoxModel = new();";
                                  SuggestItemButton = ""custom-suggest-item"",
                                  SuggestItemHighlight = ""custom-highlight"" })"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" ShowSearchButton />
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" Underlined />

@@ -7,14 +7,21 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitSearchBox : BitTextInputBase<string?>
 {
+    // The number of suggest items the page up & page down keys jump over at once.
+    private const int SuggestPageSize = 5;
+
     private bool _isOpen;
     private bool _isLoading;
     private string? _inputMode;
     private bool _inputHasFocus;
+    private bool _inputHasValue;
     private bool _suppressSearch;
     private bool _searchTriggered;
     private bool _hasSuggestSource;
+    private string? _announcement;
+    private bool _announcementMarker;
     private int _selectedIndex = -1;
+    private string? _enterKeyHint = "search";
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _calloutId = string.Empty;
@@ -29,6 +36,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Builds the text that the screen reader announces through the live region of the search box
+    /// whenever the suggest items change, in place of the built-in English announcements.
+    /// Returning null or an empty string announces nothing.
+    /// </summary>
+    [Parameter] public Func<BitSearchBoxAnnouncementArgs, string?>? AnnouncementProvider { get; set; }
 
     /// <summary>
     /// Automatically highlights the first suggest item as soon as the suggest list opens,
@@ -101,6 +115,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool DisableAnimation { get; set; }
+
+    /// <summary>
+    /// Sets the enterkeyhint html attribute of the input element, which tells virtual keyboards
+    /// which action label to render on their enter key. It defaults to
+    /// <see cref="BitEnterKeyHint.Search"/> because pressing enter always runs a search here.
+    /// </summary>
+    [Parameter] public BitEnterKeyHint? EnterKeyHint { get; set; }
 
     /// <summary>
     /// Forces the suggest callout width to be always fixed at the component's width.
@@ -288,6 +309,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public EventCallback<string> OnSuggestItemSelect { get; set; }
 
     /// <summary>
+    /// Callback executed with true when the suggest items callout opens and with false when it closes.
+    /// </summary>
+    [Parameter] public EventCallback<bool> OnSuggestItemsToggle { get; set; }
+
+    /// <summary>
     /// Placeholder for the search box.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
@@ -354,6 +380,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     public BitSize? Size { get; set; }
 
     /// <summary>
+    /// Sets the spellcheck html attribute of the input element. Leaving it null keeps the
+    /// default behavior of the browser, setting it to false removes the red squiggles
+    /// from search terms that are not real words.
+    /// </summary>
+    [Parameter] public bool? SpellCheck { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the search box.
     /// </summary>
     [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
@@ -408,6 +441,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
 
     /// <summary>
+    /// Whether the callout of the suggest items is currently open.
+    /// </summary>
+    public bool IsSuggestItemsOpen => _isOpen;
+
+    /// <summary>
     /// Clears the value of the search box and invokes the <see cref="OnClear"/> callback.
     /// </summary>
     public async Task Clear()
@@ -440,13 +478,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
 
     [JSInvokable("CloseCallout")]
-    public void _CloseCalloutBeforeAnotherCalloutIsOpened()
+    public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (IsEnabled is false) return;
+        if (_isOpen is false) return;
 
         _isOpen = false;
         _selectedIndex = -1;
-        StateHasChanged();
+
+        await InvokeAsync(StateHasChanged);
+
+        await OnSuggestItemsToggle.InvokeAsync(false);
     }
 
 
@@ -459,7 +501,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => FixedIcon ? "bit-srb-fic" : string.Empty);
 
-        ClassBuilder.Register(() => CurrentValue.HasValue() ? $"bit-srb-hvl" : string.Empty);
+        ClassBuilder.Register(() => HasValue ? $"bit-srb-hvl" : string.Empty);
 
         ClassBuilder.Register(() => DisableAnimation ? "bit-srb-nan" : string.Empty);
 
@@ -545,7 +587,34 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         _hasSuggestSource = SuggestItems is not null || SuggestItemsProvider is not null;
 
+        _enterKeyHint = (EnterKeyHint ?? BitEnterKeyHint.Search) switch
+        {
+            BitEnterKeyHint.Enter => "enter",
+            BitEnterKeyHint.Done => "done",
+            BitEnterKeyHint.Go => "go",
+            BitEnterKeyHint.Next => "next",
+            BitEnterKeyHint.Previous => "previous",
+            BitEnterKeyHint.Send => "send",
+            _ => "search"
+        };
+
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender is false) return;
+
+        try
+        {
+            // The keys that drive the suggest list must not also move the caret, scroll the page or
+            // submit the surrounding form. Blazor's @onkeydown:preventDefault is evaluated at render
+            // time, so a flag set inside the handler would always be one keystroke behind.
+            await _js.BitSearchBoxSetupInput(InputElement);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -559,7 +628,34 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     private bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
+    /// <summary>
+    /// Whether the field is holding any text at all, which is not the same as having a value:
+    /// without <see cref="BitTextInputBase{TValue}.Immediate"/> the text the user is typing is not
+    /// committed to the model yet, but the clear button and the collapsing icon must still react to it.
+    /// </summary>
+    private bool HasValue => _inputHasValue || CurrentValue.HasValue();
+
     private string GetItemId(int index) => $"BitSearchBox-{UniqueId}-item-{index}";
+
+    private void SetInputHasValue(string? value)
+    {
+        var hasValue = value.HasValue();
+
+        if (_inputHasValue == hasValue) return;
+
+        _inputHasValue = hasValue;
+
+        ClassBuilder.Reset();
+    }
+
+    protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        SetInputHasValue(e.Value?.ToString());
+
+        await base.HandleOnStringValueInputAsync(e);
+    }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
     {
@@ -569,6 +665,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         _selectedIndex = -1;
 
+        // Fire and forget on purpose: the value setter is synchronous, and every path inside
+        // SearchItems already swallows the exceptions of the provider and of the JS interop.
         _ = SearchItems();
     }
 
@@ -577,6 +675,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (IsEnabled is false) return;
 
         await OnClick.InvokeAsync(e);
+    }
+
+    private async Task HandleOnIconClick()
+    {
+        if (IsEnabled is false) return;
+
+        await InputElement.FocusAsync();
     }
 
     private async Task HandleOnFocus(FocusEventArgs e)
@@ -695,6 +800,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 await MoveSelectionToEdge(first: false);
                 break;
 
+            case "PageUp":
+                await MoveSelectionByPage(up: true);
+                break;
+
+            case "PageDown":
+                await MoveSelectionByPage(up: false);
+                break;
+
             case "Tab":
                 if (_isOpen)
                 {
@@ -768,6 +881,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         await SetValueSuppressingSearch(item);
 
+        // The accepted suggestion replaces whatever was typed, so the caret belongs at its end,
+        // ready for the user to keep refining the term (see the WAI-ARIA combobox pattern).
+        await MoveCursorToEnd();
+
         await OnSuggestItemSelect.InvokeAsync(item);
 
         await OnSearch.InvokeAsync(CurrentValueAsString);
@@ -810,11 +927,24 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     private async Task SetInputElementValue(string? value)
     {
+        SetInputHasValue(value);
+
         if (IsDisposed) return;
 
         try
         {
             await _js.BitUtilsSetProperty(InputElement, "value", value);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task MoveCursorToEnd()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitSearchBoxMoveCursorToEnd(InputElement);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -865,6 +995,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             var cts = _cancellationTokenSource = new();
 
             _isLoading = true;
+
+            Announce(openCallout, force);
 
             if (openCallout)
             {
@@ -918,6 +1050,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         _selectedIndex = AutoSelectSuggestItem && _viewSuggestedItems.Count > 0 ? 0 : -1;
 
+        Announce(openCallout, force);
+
         if (openCallout)
         {
             await OpenOrCloseCallout(force);
@@ -926,6 +1060,56 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             StateHasChanged();
         }
+    }
+
+    /// <summary>
+    /// Feeds the live region of the search box so that the outcome of a search (how many suggestions
+    /// were found, that there were none, that a term is still too short, or that the provider is still
+    /// running) reaches the screen reader, which would otherwise get nothing but a silently changing list.
+    /// </summary>
+    private void Announce(bool openCallout, bool force)
+    {
+        // Announcing a list the user cannot see yet is pure noise, so this stays quiet for the
+        // searches that do not open the callout and for the ones triggered while the field is not focused.
+        if (openCallout is false || (force is false && _inputHasFocus is false)) return;
+
+        var text = GetAnnouncementText();
+
+        // Screen readers skip a live region update that repeats the previous text verbatim,
+        // so an invisible zero width space is alternated to make every update unique.
+        _announcementMarker = !_announcementMarker;
+
+        _announcement = text.HasValue() && _announcementMarker ? text + '\u200B' : text;
+    }
+
+    private string? GetAnnouncementText()
+    {
+        if (_hasSuggestSource is false) return null;
+
+        var term = CurrentValueAsString;
+        var isTermTooShort = CanSearch(term) is false;
+
+        if (AnnouncementProvider is not null)
+        {
+            return AnnouncementProvider(new(term, _viewSuggestedItems, _isLoading, isTermTooShort, MinSuggestTriggerChars));
+        }
+
+        if (_isLoading) return LoadingText.HasValue() ? LoadingText : "Loading suggestions.";
+
+        if (isTermTooShort)
+        {
+            // An empty field is the starting state rather than a failed search, so it says nothing.
+            return term.HasNoValue()
+                ? null
+                : $"Type {MinSuggestTriggerChars} or more characters for suggestions.";
+        }
+
+        var count = _viewSuggestedItems.Count;
+
+        if (count == 0) return NoResultsText.HasValue() ? NoResultsText : "No suggestion found.";
+
+        return $"{count} suggestion{(count == 1 ? string.Empty : "s")} available. " +
+               "Use the up and down arrow keys to review them and enter to select one.";
     }
 
     private IEnumerable<string> Limit(IEnumerable<string> items)
@@ -969,6 +1153,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
 
                 await ToggleCallout();
+
+                await OnSuggestItemsToggle.InvokeAsync(true);
             }
 
             StateHasChanged();
@@ -983,36 +1169,57 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (IsEnabled is false || IsDisposed) return;
 
+        var wasOpen = _isOpen;
+
         _isOpen = false;
+
+        // A dismissed list must come back without a leftover virtual focus on it, otherwise
+        // reopening it would silently highlight whatever was highlighted the previous time.
+        _selectedIndex = -1;
+
+        // The live region is deliberately left alone here: a fruitless search and a term that is
+        // still too short both end up closing the callout, and those are exactly the two outcomes
+        // a screen reader user has no other way of learning about. A live region only speaks when
+        // its text changes, so keeping the last message costs nothing.
+
         await ToggleCallout();
 
         if (IsDisposed) return;
 
         StateHasChanged();
+
+        if (wasOpen)
+        {
+            await OnSuggestItemsToggle.InvokeAsync(false);
+        }
     }
 
     private async Task ToggleCallout()
     {
         if (IsEnabled is false || IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(
-            dotnetObj: _dotnetObj,
-            componentId: _Id,
-            component: null,
-            calloutId: _calloutId,
-            callout: null,
-            overlayId: _overlayId,
-            isCalloutOpen: _isOpen,
-            responsiveMode: BitResponsiveMode.None,
-            dropDirection: BitDropDirection.TopAndBottom,
-            isRtl: Dir is BitDir.Rtl,
-            scrollContainerId: _scrollContainerId,
-            scrollOffset: 0,
-            headerId: string.Empty,
-            footerId: string.Empty,
-            setCalloutWidth: false,
-            fixedCalloutWidth: FixedCalloutWidth,
-            maxWindowWidth: 0);
+        try
+        {
+            await _js.BitCalloutToggleCallout(
+                dotnetObj: _dotnetObj,
+                componentId: _Id,
+                component: null,
+                calloutId: _calloutId,
+                callout: null,
+                overlayId: _overlayId,
+                isCalloutOpen: _isOpen,
+                responsiveMode: BitResponsiveMode.None,
+                dropDirection: BitDropDirection.TopAndBottom,
+                isRtl: Dir is BitDir.Rtl,
+                scrollContainerId: _scrollContainerId,
+                scrollOffset: 0,
+                headerId: string.Empty,
+                footerId: string.Empty,
+                setCalloutWidth: false,
+                fixedCalloutWidth: FixedCalloutWidth,
+                maxWindowWidth: 0);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task ChangeSelectedItem(bool isArrowUp)
@@ -1074,6 +1281,24 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (_isOpen is false || _selectedIndex < 0 || _viewSuggestedItems.Count == 0) return;
 
         _selectedIndex = first ? 0 : _viewSuggestedItems.Count - 1;
+
+        await ScrollSelectedItemIntoView();
+
+        StateHasChanged();
+    }
+
+    private async Task MoveSelectionByPage(bool up)
+    {
+        // Unlike Home & End, page up & page down have no meaning inside a single line text input,
+        // so they take over as soon as the list is open even if no item is highlighted yet.
+        if (_hasSuggestSource is false || _isOpen is false || _viewSuggestedItems.Count == 0) return;
+
+        var count = _viewSuggestedItems.Count;
+        var current = _selectedIndex < 0 ? (up ? count : -1) : _selectedIndex;
+
+        // A page jump clamps at the edges instead of wrapping around, so holding the key
+        // reliably walks to the first or the last item.
+        _selectedIndex = Math.Clamp(current + (up ? -SuggestPageSize : +SuggestPageSize), 0, count - 1);
 
         await ScrollSelectedItemIntoView();
 
