@@ -61,6 +61,13 @@ public partial class BitSliderDemo
         },
         new()
         {
+            Name = "DraggableTrack",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the filled band between the two thumbs of a ranged Slider be dragged bodily, so the whole range travels at once and keeps the width it had. Only the rail strictly between the thumbs takes the drag, so the thumbs themselves stay grabbable.",
+        },
+        new()
+        {
             Name = "GetValueText",
             Type = "Func<double, string>?",
             DefaultValue = "null",
@@ -107,6 +114,13 @@ public partial class BitSliderDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Replaces the plain text Label of the Slider with custom content.",
+        },
+        new()
+        {
+            Name = "LargeStep",
+            Type = "double?",
+            DefaultValue = "null",
+            Description = "The distance the larger keyboard jumps cover: Page Up and Page Down, and an arrow key held with Shift. It defaults to whatever the browser does on its own.",
         },
         new()
         {
@@ -464,6 +478,13 @@ public partial class BitSliderDemo
                 },
                 new()
                 {
+                    Name = "TrackInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the input that makes the filled band of a ranged BitSlider draggable, which is only rendered while DraggableTrack asks for it."
+                },
+                new()
+                {
                     Name = "OriginFromZero",
                     Type = "string?",
                     DefaultValue = "null",
@@ -662,6 +683,7 @@ public partial class BitSliderDemo
 
     private BitSliderRangeValue freeRange = new(30, 70);
     private BitSliderRangeValue pushableRange = new(20, 40);
+    private BitSliderRangeValue draggableRange = new(25, 55);
 
     private double oneWayBinding = 3;
     private double twoWayBinding = 5;
@@ -672,6 +694,8 @@ public partial class BitSliderDemo
     private double? onChangeEndValue;
     private int onRangeChangeCount;
     private BitSliderRangeValue? onRangeChangeEndValue;
+
+    private BitSlider? focusableSlider;
 
     private const string focusedText = "focused";
     private const string blurredText = "blurred";

@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -2162,6 +2164,49 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSliderShouldEnumerateTheMarksOncePerParameterSet()
+    {
+        // Snapping looks the marks up on every step of a drag, and the render that follows reads them again,
+        // so a series of up to two hundred of them would otherwise be rebuilt several times per drag step -
+        // and an IEnumerable handed to Marks would be walked once per reader rather than once per parameter set.
+        var counting = new CountingMarks([new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, counting);
+            parameters.Add(p => p.DefaultValue, 0D);
+        });
+
+        Assert.AreEqual(1, counting.Enumerations);
+
+        com.Find(".bit-sld-inp").Input("31");
+
+        Assert.AreEqual(25, com.Instance.Value);
+        Assert.AreEqual(1, counting.Enumerations);
+
+        // A new parameter set is what the marks are drawn from, so that - and only that - rebuilds them.
+        com.Render(parameters => parameters.Add(p => p.Max, 200D));
+
+        Assert.AreEqual(2, counting.Enumerations);
+    }
+
+    private sealed class CountingMarks(IEnumerable<BitSliderMark> marks) : IEnumerable<BitSliderMark>
+    {
+        public int Enumerations { get; private set; }
+
+        public IEnumerator<BitSliderMark> GetEnumerator()
+        {
+            Enumerations++;
+
+            return marks.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [TestMethod]
     public void BitSliderShouldIgnoreRestrictToMarksWithoutMarks()
     {
         var com = RenderComponent<BitSlider>(parameters =>
@@ -2173,6 +2218,603 @@ public class BitSliderTests : BunitTestContext
         com.Find(".bit-sld-inp").Input("7");
 
         Assert.AreEqual(7, com.Instance.Value);
+    }
+
+    #endregion
+
+    #region LargeStep
+
+    [TestMethod,
+        DataRow("PageUp"),
+        DataRow("PageDown")
+    ]
+    public void BitSliderShouldTakeAPageKeyTheDistanceOfTheLargeStep(string key)
+    {
+        // Every browser measures a Page key its own way, so a scale that wants a jump of a stated size has to
+        // name it - and the move the browser made is then re-measured against it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var up = key == "PageUp";
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = key });
+        input.Input(up ? "410" : "390");
+
+        Assert.AreEqual(up ? 500 : 300, com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow("ArrowRight", true, 500D),
+        DataRow("ArrowUp", true, 500D),
+        DataRow("ArrowLeft", false, 300D),
+        DataRow("ArrowDown", false, 300D)
+    ]
+    public void BitSliderShouldTakeAShiftedArrowTheDistanceOfTheLargeStep(string key, bool up, double expected)
+    {
+        // A browser makes nothing at all of a Shift on a range input, so the arrow moves by a single step and
+        // the jump is measured here instead.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = key, ShiftKey = true });
+        input.Input(up ? "410" : "390");
+
+        Assert.AreEqual(expected, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReadTheDirectionOfALargeStepOffTheMoveRatherThanTheKey()
+    {
+        // A horizontal RTL slider maps the arrows onto the scale the other way round, so the key that was
+        // pressed says nothing about which way the value went - only the move the browser already made does.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft", ShiftKey = true });
+        input.Input("410");
+
+        Assert.AreEqual(500, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLeaveAPlainArrowAtASingleStep()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        input.Input("410");
+
+        Assert.AreEqual(410, com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow("Home", 0D),
+        DataRow("End", 1000D)
+    ]
+    public void BitSliderShouldLeaveHomeAndEndAtTheEndsOfTheScale(string key, double expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = key });
+        input.Input(expected.ToString(CultureInfo.InvariantCulture));
+
+        Assert.AreEqual(expected, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLeaveThePageKeysToTheBrowserWithoutALargeStep()
+    {
+        // Taking the Page keys over only to hand them the very distance the browser already chose would be no
+        // change at all, so nothing is intercepted until there is a LargeStep to measure against.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.Input("500");
+
+        Assert.AreEqual(500, com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(0D),
+        DataRow(-40D)
+    ]
+    public void BitSliderShouldIgnoreALargeStepThatIsNotADistance(double largeStep)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, largeStep);
+            parameters.Add(p => p.DefaultValue, 400D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.Input("500");
+
+        Assert.AreEqual(500, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHoldALargeStepInsideTheScale()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 950D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.Input("960");
+
+        Assert.AreEqual(1000, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLandALargeStepOnAMark()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LargeStep, 30D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 0D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.Input("1");
+
+        // The jump lands on 30, which belongs to the mark at 25.
+        Assert.AreEqual(25, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTakeALargeStepOnEitherEndOfARange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 250D);
+            parameters.Add(p => p.DefaultLowerValue, 200D);
+            parameters.Add(p => p.DefaultUpperValue, 800D);
+        });
+
+        var upper = com.Find(".bit-sld-inp-upr");
+        upper.KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+        upper.Input("790");
+
+        Assert.AreEqual(200, com.Instance.LowerValue);
+        Assert.AreEqual(550, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHoldALargeStepAgainstTheOtherThumb()
+    {
+        // A jump measured here is not one the browser held inside the bounds of the input, so the constraints
+        // that were pushed into those bounds have to be applied to it directly.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 250D);
+            parameters.Add(p => p.DefaultLowerValue, 200D);
+            parameters.Add(p => p.DefaultUpperValue, 300D);
+        });
+
+        var lower = com.Find(".bit-sld-inp-lwr");
+        lower.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        lower.Input("210");
+
+        Assert.AreEqual(300, com.Instance.LowerValue);
+        Assert.AreEqual(300, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPushWithALargeStep()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LargeStep, 30D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 40D);
+        });
+
+        var lower = com.Find(".bit-sld-inp-lwr");
+        lower.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        lower.Input("21");
+
+        Assert.AreEqual(50, com.Instance.LowerValue);
+        Assert.AreEqual(70, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryADragOnAfterAKeyThatMovedNothing()
+    {
+        // A key that changes nothing - an ArrowRight already at the end of the scale - produces no input event
+        // to clear the flag on, and the drag that came next would then be carried on to the following mark as
+        // if it were a keystroke.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 25D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        input.PointerDown();
+        input.Input("26");
+
+        // A pointer lands on the mark nearest to where it actually is, which is the one it started on.
+        Assert.AreEqual(25, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotKeepAKeystrokeMadeWhileItWasNotInteractive()
+    {
+        // The flag is read and cleared before the change is refused as well as before it is taken, so a slider
+        // that becomes interactive again does not begin with a keystroke somebody made while it was not.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 25D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        input.Input("26");
+
+        Assert.AreEqual(25, com.Instance.Value);
+
+        com.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+
+        com.Find(".bit-sld-inp").Input("26");
+
+        // A pointer lands on the mark nearest to where it actually is, which is the one it started on.
+        Assert.AreEqual(25, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotTakeALargeStepAfterAPageKeyThatMovedNothing()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.LargeStep, 100D);
+            parameters.Add(p => p.DefaultValue, 1000D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+
+        input.PointerDown();
+        input.Input("400");
+
+        Assert.AreEqual(400, com.Instance.Value);
+    }
+
+    #endregion
+
+    #region DraggableTrack
+
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitSliderShouldRenderTheDraggableBandOnlyWhenARangeAsksForIt(bool ranged, bool draggable)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.DraggableTrack, draggable);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLayTheDraggableBandOverTheFillOfTheRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        // The band spans the two ends of the range, which is what its thumb is made as wide as.
+        StringAssert.Contains(bar.GetAttribute("style"), "--bit-sld-bar-start:0.2");
+        StringAssert.Contains(bar.GetAttribute("style"), "--bit-sld-bar-end:0.6");
+
+        // Its value is the lower end, and the room it has left is the room the band has left on the scale.
+        Assert.AreEqual("0", bar.GetAttribute("min"));
+        Assert.AreEqual("60", bar.GetAttribute("max"));
+        Assert.AreEqual("20", bar.GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepTheDraggableBandOutOfTheTabOrderAndOutOfTheAccessibilityTree()
+    {
+        // The band selects nothing the two thumbs do not already carry, so a third slider announcing the same
+        // lower value again would be noise rather than a way through.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        Assert.AreEqual("-1", bar.GetAttribute("tabindex"));
+        Assert.AreEqual("true", bar.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderTheDraggableBandOfACollapsedRange()
+    {
+        // A band of no width has nothing to be pressed on, and one that could be dragged while the thumbs it
+        // covers could not would be a range that can never be opened up again.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 4D);
+            parameters.Add(p => p.DefaultUpperValue, 4D);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+    }
+
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, true)
+    ]
+    public void BitSliderShouldNotRenderTheDraggableBandOfAPinnedRange(bool enabled, bool readOnly)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.IsEnabled, enabled);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-inp-bar").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMoveBothEndsWhenTheBandIsDragged()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("50");
+
+        Assert.AreEqual(50, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStopTheDraggedBandAtTheEndOfTheScale()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("95");
+
+        // The band comes to rest rather than being squashed against the end.
+        Assert.AreEqual(60, com.Instance.LowerValue);
+        Assert.AreEqual(100, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepEveryRangeConstraintWhileTheBandTravels()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.MaxRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 50D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("70");
+
+        Assert.AreEqual(70, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldSnapTheDraggedBandToTheMarks()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.ShowMarks, true);
+            parameters.Add(p => p.MarkStep, 20D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 40D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("33");
+
+        Assert.AreEqual(40, com.Instance.LowerValue);
+        Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReportADraggedBandThroughTheRangeCallbacks()
+    {
+        var stepCount = 0;
+        BitSliderRangeValue? committed = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+            parameters.Add(p => p.OnRangeChange, (BitSliderRangeValue _) => stepCount++);
+            parameters.Add(p => p.OnRangeChangeEnd, (BitSliderRangeValue v) => committed = v);
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+        bar.Input("30");
+        bar.Input("40");
+
+        Assert.AreEqual(2, stepCount);
+        Assert.IsNull(committed);
+
+        bar.Change("40");
+
+        Assert.IsNotNull(committed);
+        Assert.AreEqual(40, committed.Lower);
+        Assert.AreEqual(80, committed.Upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotifyBothEndsWhenTheBandIsDragged()
+    {
+        double? lower = null;
+        double? upper = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 20D);
+            parameters.Add(p => p.UpperValue, 60D);
+            parameters.Add(p => p.LowerValueChanged, (double v) => lower = v);
+            parameters.Add(p => p.UpperValueChanged, (double v) => upper = v);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("30");
+
+        Assert.AreEqual(30, lower);
+        Assert.AreEqual(70, upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRefuseABandDragOfAOneWayBoundRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 20D);
+            parameters.Add(p => p.UpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("50");
+
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectTheTrackInputClassAndStyle()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+            parameters.Add(p => p.Classes, new BitSliderClassStyles { TrackInput = "custom-bar" });
+            parameters.Add(p => p.Styles, new BitSliderClassStyles { TrackInput = "opacity:0.5" });
+        });
+
+        var bar = com.Find(".bit-sld-inp-bar");
+
+        Assert.IsTrue(bar.ClassList.Contains("custom-bar"));
+        StringAssert.Contains(bar.GetAttribute("style"), "opacity:0.5");
     }
 
     #endregion
@@ -2469,6 +3111,32 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.AreEqual(autoFocus, com.Find(".bit-sld-inp").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldExposeTheUpperInputOfARangeSeparately()
+    {
+        // FocusAsync is pointed at the single tab stop of a plain slider, and so at the lower thumb of a
+        // ranged one, which leaves the upper thumb with no way of being reached from code at all.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        Assert.AreNotEqual(com.Instance.SliderInputElement.Id, com.Instance.UpperSliderInputElement.Id);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPointTheUpperInputAtTheOnlyOneASingleValueSliderHas()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 4D);
+        });
+
+        Assert.AreEqual(com.Instance.SliderInputElement.Id, com.Instance.UpperSliderInputElement.Id);
     }
 
     [TestMethod]

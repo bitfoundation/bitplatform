@@ -35,12 +35,17 @@ public partial class BitSlider : BitInputBase<double>
     // where it actually is and nowhere further.
     private bool _keyboardChange;
 
+    // Whether that key was one of the larger jumps - a Page key, or an arrow held with Shift - which is
+    // re-measured against LargeStep instead of being left at whatever distance the browser chose.
+    private bool _largeStepChange;
+
     // The value a native input has been left holding while it disagrees with the value the component holds.
     // It is rendered for exactly one pass, which is what makes the pass after it a change the diff will carry
     // all the way to the element - see ResyncInputAsync.
     private double? _rawValue;
     private double? _rawA;
     private double? _rawB;
+    private double? _rawBar;
 
     // The keydown handler exists only to note where the next change is coming from, and a render per keystroke
     // for a flag nothing is drawn from would double the round trips of every arrow key. Bound to a receiver
@@ -48,12 +53,21 @@ public partial class BitSlider : BitInputBase<double>
     // event that follows is what changes the value, and it renders the way it always did.
     private EventCallback<KeyboardEventArgs> _onKeyDown;
 
-    // The values the marks sit at, sorted and deduplicated. Snapping looks them up on every step of a drag,
-    // and building a series of up to two hundred of them that many times a second is work nothing asked for.
-    // The marks are drawn from the parameters alone, so the cache lives exactly as long as a parameter set.
+    // The same for the pointer, which has to clear what a key left behind: a key that moves nothing - an
+    // ArrowRight already at the end of the scale - produces no input event to clear the flag on, and the drag
+    // that came after it would then be snapped to the marks as if it were a keystroke.
+    private EventCallback<PointerEventArgs> _onPointerDown;
+
+    // The marks themselves, and the values they sit at - sorted and deduplicated. Both are looked up several
+    // times a render and again on every step of a drag, and building a series of up to two hundred of them
+    // that many times a second is work nothing asked for. The marks are drawn from the parameters alone, so
+    // the caches live exactly as long as a parameter set does. It also means an IEnumerable handed to Marks
+    // is enumerated once per parameter set rather than once per reader.
+    private List<BitSliderMark>? _marks;
     private List<double>? _markValues;
 
     private ElementReference _lowerInputRef;
+    private ElementReference _upperInputRef;
 
 
 
@@ -77,6 +91,22 @@ public partial class BitSlider : BitInputBase<double>
     /// Custom CSS classes for different parts of the BitSlider.
     /// </summary>
     [Parameter] public BitSliderClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Lets the filled band between the two thumbs of a ranged Slider be dragged bodily, so the whole range
+    /// travels at once and keeps the width it had.
+    /// </summary>
+    /// <remarks>
+    /// It is what a window over a scale wants - a price bracket nudged up as a whole, a span of hours moved
+    /// to later in the day - where dragging one end and then the other is two moves for what the user thinks
+    /// of as one. The band takes the presses that land strictly between the two thumbs, so the thumbs
+    /// themselves stay grabbable and a band narrower than a thumb simply has nothing to take hold of; that
+    /// also means a press on the band drags the range instead of sending the nearer thumb there. The two ends
+    /// keep their distance while they travel, so every range constraint is satisfied throughout, and the band
+    /// stops when the leading end reaches the end of the scale. A slider drawing no fill still has the same
+    /// stretch of rail between its thumbs to be dragged by, where the grab cursor is what says so.
+    /// </remarks>
+    [Parameter] public bool DraggableTrack { get; set; }
 
     /// <summary>
     /// Builds the text of every label the Slider draws - the ones beside the track, the ones under the marks
@@ -148,6 +178,21 @@ public partial class BitSlider : BitInputBase<double>
     /// Replaces the plain text <see cref="Label"/> of the Slider with custom content.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// The distance the larger keyboard jumps cover: <c>Page Up</c> and <c>Page Down</c>, and an arrow key
+    /// held with <c>Shift</c>. It defaults to whatever the browser does on its own.
+    /// </summary>
+    /// <remarks>
+    /// The slider pattern asks for a jump longer than a single <see cref="Step"/>, and a native range input
+    /// does provide one on the Page keys - but each browser measures it differently and none of them makes
+    /// anything of Shift, so a scale that wants a jump of a stated size has to name it. Setting this both
+    /// pins the Page keys to that distance and gives Shift with an arrow key the same reach, without taking
+    /// anything else off the keyboard: the arrows still move by a Step and Home and End still go to the ends
+    /// of the scale. A jump is held inside the same bounds every other move is, and lands on a mark like
+    /// every other move while <see cref="RestrictToMarks"/> is on.
+    /// </remarks>
+    [Parameter] public double? LargeStep { get; set; }
 
     /// <summary>
     /// The accessible name of the lower thumb of a ranged slider. Without it both thumbs are named after
@@ -380,6 +425,20 @@ public partial class BitSlider : BitInputBase<double>
     /// </summary>
     public ElementReference SliderInputElement => _lowerInputRef;
 
+    /// <summary>
+    /// The reference to the upper input of a ranged slider. It is the reference to the single input of a
+    /// slider that is not ranged, since that slider has no upper end of its own.
+    /// </summary>
+    public ElementReference UpperSliderInputElement => IsRanged ? _upperInputRef : _lowerInputRef;
+
+    /// <summary>
+    /// Gives focus to the upper thumb of a ranged slider, which <see cref="BitInputBase{TValue}.FocusAsync()"/>
+    /// cannot reach: it is pointed at the single tab stop of a plain slider, and so at the lower thumb of a
+    /// ranged one.
+    /// </summary>
+    /// <param name="preventScroll">Whether to leave the page where it is instead of scrolling the thumb into view.</param>
+    public ValueTask FocusUpperAsync(bool preventScroll = false) => UpperSliderInputElement.FocusAsync(preventScroll);
+
 
 
     protected override string RootElementClass => "bit-sld";
@@ -446,6 +505,7 @@ public partial class BitSlider : BitInputBase<double>
     protected override void OnInitialized()
     {
         _onKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnKeyDown);
+        _onPointerDown = EventCallback.Factory.Create<PointerEventArgs>(new object(), HandleOnPointerDown);
 
         // The default of an unbound ranged slider is applied here rather than in OnParametersSet, so that a
         // later re-render with the same parameters cannot undo what the user has done since.
@@ -476,6 +536,7 @@ public partial class BitSlider : BitInputBase<double>
 
     protected override void OnParametersSet()
     {
+        _marks = null;
         _markValues = null;
 
         if (IsRanged)
@@ -676,10 +737,22 @@ public partial class BitSlider : BitInputBase<double>
     private double? _MaxRange => MaxRange.HasValue ? Math.Max(_MinRange, Math.Max(0, MaxRange.Value)) : null;
 
     /// <summary>
+    /// The distance one of the larger keyboard jumps covers, which falls back to a single step so that a
+    /// jump of nothing at all can never leave a key doing nothing.
+    /// </summary>
+    private double _LargeStep => LargeStep is > 0 ? LargeStep.Value : _Step;
+
+    /// <summary>
     /// Whether the two thumbs of a ranged slider are kept apart, which is what turns off their ability to
     /// cross: any distance to hold between them makes crossing meaningless.
     /// </summary>
     private bool _IsConstrained => NoSwap || _MinRange > 0 || _MaxRange.HasValue;
+
+    /// <summary>
+    /// Whether the filled band between the two thumbs is draggable as a whole. A band of no width has no
+    /// room to be pressed on, and one that already covers the whole scale has nowhere to travel.
+    /// </summary>
+    private bool _CanDragTrack => DraggableTrack && IsRanged && _IsInteractive && UpperValue > LowerValue;
 
     /// <summary>
     /// Whether a thumb carries the other one along when it runs into it. Pushing needs something to push
@@ -724,16 +797,15 @@ public partial class BitSlider : BitInputBase<double>
     /// a fixed interval. The generated series is capped, since a mark per step of a fine slider is thousands
     /// of elements nobody can tell apart anyway.
     /// </summary>
-    private IEnumerable<BitSliderMark> _Marks
+    private List<BitSliderMark> _Marks => _marks ??= BuildMarks();
+
+    private List<BitSliderMark> BuildMarks()
     {
-        get
-        {
-            if (Marks is not null) return Marks.Where(m => m is not null && m.Value >= _Min && m.Value <= _Max);
+        if (Marks is not null) return Marks.Where(m => m is not null && m.Value >= _Min && m.Value <= _Max).ToList();
 
-            if (ShowMarks is false) return [];
+        if (ShowMarks is false) return [];
 
-            return GenerateMarks();
-        }
+        return GenerateMarks();
     }
 
     private List<double> _MarkValues => _markValues ??= _Marks.Select(m => m.Value).Distinct().OrderBy(v => v).ToList();
@@ -904,6 +976,22 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
+    /// The two ends of the draggable band, as fractions of the whole scale.
+    /// </summary>
+    /// <remarks>
+    /// The band is a third range input laid over the whole box, whose own thumb is made as wide as the band
+    /// itself. That is what makes it drag the way a band should: a press lands on the thumb rather than
+    /// beside it, so the browser carries it along relative to the pointer instead of jumping it to where the
+    /// press was - and the distance such a thumb has left to travel is, by the very arithmetic a range input
+    /// already uses, exactly the room the band has left on the scale. Both come out of these two fractions,
+    /// which is why they are handed to the stylesheet rather than a finished length.
+    /// </remarks>
+    private static string GetTrackInputStyle(double startPercent, double endPercent)
+    {
+        return FormattableString.Invariant($"--bit-sld-bar-start:{startPercent / 100};--bit-sld-bar-end:{endPercent / 100}");
+    }
+
+    /// <summary>
     /// The inline geometry of a filled segment of the track, laid along whichever axis the slider runs on.
     /// </summary>
     private string GetSegmentStyle(double start, double end)
@@ -1006,24 +1094,68 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
-    /// Notes that the change about to arrive was produced by a key. Only the keys that actually move a range
-    /// input count, so that a key which changes nothing - a Tab out of the slider - does not leave the next
-    /// drag looking like a keystroke.
+    /// Notes that the change about to arrive was produced by a key, and whether that key was one of the
+    /// larger jumps. Only the keys that actually move a range input count, so that a key which changes
+    /// nothing - a Tab out of the slider - does not leave the next drag looking like a keystroke.
     /// </summary>
     private void HandleOnKeyDown(KeyboardEventArgs e)
     {
-        _keyboardChange = e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown"
-                                or "PageUp" or "PageDown" or "Home" or "End";
+        var isArrow = e.Key is "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown";
+        var isPage = e.Key is "PageUp" or "PageDown";
+
+        _keyboardChange = isArrow || isPage || e.Key is "Home" or "End";
+
+        // A browser measures a Page key its own way and makes nothing at all of a Shift, so both are
+        // re-measured against LargeStep - but only once there is one to measure against, since taking the
+        // Page keys over to hand them the very distance the browser already chose would be no change at all.
+        _largeStepChange = LargeStep is > 0 && (isPage || (isArrow && e.ShiftKey));
     }
+
+    /// <summary>
+    /// Clears what a key left behind. A key that moves nothing - an ArrowRight already at the end of the
+    /// scale, a Page key on a slider the constraints have pinned - produces no input event to clear the flag
+    /// on, and the drag that came next would be carried on to the following mark as if it were a keystroke.
+    /// </summary>
+    private void HandleOnPointerDown(PointerEventArgs e)
+    {
+        _keyboardChange = false;
+        _largeStepChange = false;
+    }
+
+    /// <summary>
+    /// The value a change actually lands on: the one the browser produced, except for the larger keyboard
+    /// jumps, which are taken the same way but <see cref="LargeStep"/> at a time.
+    /// </summary>
+    /// <remarks>
+    /// The direction is read off the move the browser has already made rather than off the key that caused
+    /// it, since a horizontal RTL slider maps the arrows onto the scale the other way round - and a key that
+    /// moved nothing has no direction to be taken further in.
+    /// </remarks>
+    private double ResolveIncoming(double parsed, double from, bool largeStep)
+    {
+        if (largeStep is false || parsed == from) return parsed;
+
+        return ClampValue(parsed > from ? from + _LargeStep : from - _LargeStep);
+    }
+
+    /// <summary>
+    /// Holds a value inside a pair of bounds that are not guaranteed to be in order, which is what a pair of
+    /// range constraints that contradict each other can leave behind.
+    /// </summary>
+    private static double ClampInto(double value, double min, double max) => max < min ? min : Math.Clamp(value, min, max);
 
     private async Task HandleOnInput(ChangeEventArgs e)
     {
+        // Read and cleared before the change is refused as well as before it is taken, so that a slider which
+        // is turned interactive again does not begin with a keystroke somebody made while it was not.
+        var fromKeyboard = _keyboardChange;
+        var largeStep = _largeStepChange;
+        _keyboardChange = false;
+        _largeStepChange = false;
+
         if (_IsInteractive is false) return;
 
-        var fromKeyboard = _keyboardChange;
-        _keyboardChange = false;
-
-        if (RestrictToMarks is false)
+        if (RestrictToMarks is false && largeStep is false)
         {
             await SetCurrentValueAsStringAsync(e.Value?.ToString());
             return;
@@ -1031,7 +1163,9 @@ public partial class BitSlider : BitInputBase<double>
 
         if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
 
-        var snapped = ClampValue(SnapToMark(parsed, CurrentValue, fromKeyboard));
+        var incoming = ResolveIncoming(parsed, CurrentValue, largeStep);
+
+        var snapped = ClampValue(SnapToMark(incoming, CurrentValue, fromKeyboard));
 
         if (snapped == CurrentValue) return;
 
@@ -1049,13 +1183,26 @@ public partial class BitSlider : BitInputBase<double>
 
     private async Task HandleOnRangeInput(ChangeEventArgs e, bool isLower)
     {
+        var fromKeyboard = _keyboardChange;
+        var largeStep = _largeStepChange;
+        _keyboardChange = false;
+        _largeStepChange = false;
+
         if (_IsInteractive is false) return;
         if (InvalidRangeBinding()) return;
 
-        var fromKeyboard = _keyboardChange;
-        _keyboardChange = false;
-
         if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
+
+        parsed = ResolveIncoming(parsed, isLower ? _thumbA : _thumbB, largeStep);
+
+        if (largeStep)
+        {
+            // A jump measured here is not one the browser held inside the bounds of the input, so the
+            // constraints that were pushed into those bounds are applied to it directly instead.
+            parsed = isLower
+                ? ClampInto(parsed, _LowerInputMin, _LowerInputMax)
+                : ClampInto(parsed, _UpperInputMin, _UpperInputMax);
+        }
 
         double lower;
         double upper;
@@ -1127,6 +1274,44 @@ public partial class BitSlider : BitInputBase<double>
         await (isLower
             ? ResyncInputAsync(e.Value?.ToString(), _thumbA, v => _rawA = v)
             : ResyncInputAsync(e.Value?.ToString(), _thumbB, v => _rawB = v));
+    }
+
+    /// <summary>
+    /// Moves the whole range as the band between the thumbs is dragged. The band keeps the width it had, so
+    /// the value the input carries - the lower end - is all there is to read, and every distance constraint
+    /// is satisfied throughout by construction.
+    /// </summary>
+    private async Task HandleOnTrackInput(ChangeEventArgs e)
+    {
+        if (_IsInteractive is false) return;
+        if (InvalidRangeBinding()) return;
+
+        if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
+
+        var width = UpperValue - LowerValue;
+
+        // Snapping the leading end alone is what a band on a marked scale can promise: the trailing one is
+        // held a fixed distance away, which an irregular scale has no reason to have a mark at.
+        var lower = SnapToMark(parsed, LowerValue, false);
+
+        // The band stops when its far end reaches the end of the scale rather than being squashed against it.
+        lower = ClampInto(lower, _Min, _Max - width);
+
+        var upper = lower + width;
+
+        _thumbA = lower;
+        _thumbB = upper;
+
+        await SetRangeAsync(lower, upper);
+    }
+
+    private async Task HandleOnTrackChange(ChangeEventArgs e)
+    {
+        if (_IsInteractive is false) return;
+
+        await OnRangeChangeEnd.InvokeAsync(new BitSliderRangeValue(LowerValue, UpperValue));
+
+        await ResyncInputAsync(e.Value?.ToString(), LowerValue, v => _rawBar = v);
     }
 
     /// <summary>

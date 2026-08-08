@@ -158,6 +158,26 @@ private BitSliderRangeValue freeRange = new(30, 70);
 private BitSliderRangeValue pushableRange = new(20, 40);";
 
     private readonly string example8RazorCode = @"
+<BitSlider IsRanged DraggableTrack Max=""100"" Step=""5"" @bind-RangeValue=""draggableRange"" />
+<BitLabel>@draggableRange.Lower - @draggableRange.Upper (@draggableRange.Length wide)</BitLabel>
+
+<BitSlider IsRanged DraggableTrack MinRange=""20"" MaxRange=""20"" Max=""100"" Step=""5""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""50"" />
+
+<BitSlider IsRanged DraggableTrack RestrictToMarks ShowMarks ShowMarkLabels
+           Min=""0"" Max=""24"" Step=""1"" MarkStep=""3""
+           ValueFormat=""0'h'""
+           DefaultLowerValue=""9""
+           DefaultUpperValue=""15"" />
+
+<BitSlider Label=""Band"" IsVertical IsRanged DraggableTrack Max=""100"" Step=""5""
+           DefaultLowerValue=""30""
+           DefaultUpperValue=""60"" />";
+    private readonly string example8CsharpCode = @"
+private BitSliderRangeValue draggableRange = new(25, 55);";
+
+    private readonly string example9RazorCode = @"
 <BitSlider Label=""Currency"" Min=""0"" Max=""1000"" Step=""50"" ValueFormat=""C0"" DefaultValue=""450"" />
 <BitSlider Label=""Percentage"" Max=""1"" Step=""0.01"" ValueFormat=""0 %"" DefaultValue=""0.69"" />
 <BitSlider Label=""Fixed decimals"" Max=""5"" Step=""0.1"" ValueFormat=""0.0 rem"" DefaultValue=""2.5"" />
@@ -178,13 +198,13 @@ private BitSliderRangeValue pushableRange = new(20, 40);";
         </span>
     </LabelTemplate>
 </BitSlider>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private static string GetTimeText(double minutes)
 {
     return TimeSpan.FromMinutes(minutes).ToString(@""hh\:mm"", CultureInfo.InvariantCulture);
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitSlider Label=""One-way"" Value=""oneWayBinding"" />
 <BitRating Max=""10"" @bind-Value=""oneWayBinding"" />
 
@@ -195,13 +215,13 @@ private static string GetTimeText(double minutes)
            @bind-LowerValue=""boundLower""
            @bind-UpperValue=""boundUpper"" />
 <BitLabel>LowerValue: @boundLower &nbsp; UpperValue: @boundUpper</BitLabel>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private double oneWayBinding = 3;
 private double twoWayBinding = 5;
 private double boundLower = 25;
 private double boundUpper = 75;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitSlider Label=""Drag me"" Max=""100""
            DefaultValue=""20""
            OnChange=""v => onChangeCount++""
@@ -224,7 +244,7 @@ private double boundUpper = 75;";
            OnFocusIn=""() => focusState = focusedText""
            OnFocusOut=""() => focusState = blurredText"" />
 <BitLabel>The slider is @focusState</BitLabel>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private int onChangeCount;
 private double? onChangeEndValue;
 private int onRangeChangeCount;
@@ -234,7 +254,7 @@ private const string focusedText = ""focused"";
 private const string blurredText = ""blurred"";
 private string focusState = blurredText;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 @if (string.IsNullOrEmpty(SuccessMessage))
 {
     <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
@@ -268,7 +288,7 @@ else
 {
     <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
 }";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 public class BitSliderDemoFormModel
 {
     [Range(typeof(double), ""4"", ""7"", ErrorMessage = ""Pick at least {1} days a week"")]
@@ -305,12 +325,20 @@ private void HandleInvalidSubmit()
     SuccessMessage = string.Empty;
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitSlider Label=""Quality""
            Max=""4""
            ShowMarks
            AriaValueText=""GetQualityText""
            DefaultValue=""2"" />
+
+<BitSlider Label=""Frequency"" Min=""0"" Max=""1000"" Step=""10"" LargeStep=""100"" DefaultValue=""400"" ValueFormat=""0 Hz"" />
+
+<BitSlider IsRanged NoSwap Max=""1000"" Step=""10"" LargeStep=""250""
+           LowerAriaLabel=""From""
+           UpperAriaLabel=""To""
+           DefaultLowerValue=""200""
+           DefaultUpperValue=""800"" />
 
 <BitSlider IsRanged
            AriaLabel=""Price range""
@@ -321,6 +349,16 @@ private void HandleInvalidSubmit()
            DefaultLowerValue=""150""
            DefaultUpperValue=""800"" />
 
+<BitSlider @ref=""focusableSlider"" IsRanged Max=""100"" Step=""5""
+           LowerAriaLabel=""From""
+           UpperAriaLabel=""To""
+           DefaultLowerValue=""25""
+           DefaultUpperValue=""75"" />
+<BitStack Horizontal Gap=""0.5rem"">
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => focusableSlider!.FocusAsync()"">Focus the lower thumb</BitButton>
+    <BitButton Variant=""BitVariant.Outline"" OnClick=""() => focusableSlider!.FocusUpperAsync()"">Focus the upper thumb</BitButton>
+</BitStack>
+
 <BitSlider IsRanged Max=""10"" DefaultLowerValue=""3"" DefaultUpperValue=""7"">
     <LabelTemplate>
         <span class=""template-label"">
@@ -329,7 +367,9 @@ private void HandleInvalidSubmit()
         </span>
     </LabelTemplate>
 </BitSlider>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
+private BitSlider? focusableSlider;
+
 private static readonly string[] qualityWords = [""Draft"", ""Low"", ""Medium"", ""High"", ""Lossless""];
 
 private static string GetQualityText(double value)
@@ -339,7 +379,7 @@ private static string GetQualityText(double value)
     return qualityWords[index];
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitSlider Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""6"" />
@@ -360,7 +400,7 @@ private static string GetQualityText(double value)
 <BitSlider Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""6"" />
 <BitSlider Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""6"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitSlider Size=""BitSize.Small"" ShowMarks DefaultValue=""6"" />
 
 <BitSlider Size=""BitSize.Medium"" ShowMarks DefaultValue=""6"" />
@@ -371,7 +411,7 @@ private static string GetQualityText(double value)
 <BitSlider Size=""BitSize.Medium"" IsVertical DefaultValue=""6"" />
 <BitSlider Size=""BitSize.Large"" IsVertical DefaultValue=""6"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem 1rem;
@@ -416,7 +456,7 @@ private static string GetQualityText(double value)
                              LowerThumb = ""border-color: mediumseagreen;"",
                              UpperThumb = ""border-color: orangered;"" })"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitSlider Dir=""BitDir.Rtl"" Label=""اسلایدر ساده"" DefaultValue=""4"" />
 
 <BitSlider Dir=""BitDir.Rtl"" Label=""با علامت‌ها"" ShowMarks ShowMarkLabels Max=""5"" DefaultValue=""3"" />

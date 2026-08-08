@@ -270,6 +270,38 @@
     }
 }
 
+// The draggable band. It is a third range input laid over the whole box, whose own thumb is made as wide as
+// the band itself - which is what makes it drag the way a band should. A press lands on that thumb rather
+// than beside it, so the browser carries it along with the pointer instead of jumping it to where the press
+// was; and the distance such a thumb has left to travel is, by the very arithmetic a range input already
+// uses, exactly the room the band has left on the scale. The input therefore needs no geometry of its own
+// beyond the two fractions the band spans - it is the plain full-width case of the rules above.
+//
+// Only the rail strictly between the two thumbs is left reaching it. That keeps the thumbs themselves
+// grabbable, and it means a band narrower than a thumb has nothing to take hold of at all - without which a
+// range dragged shut could be moved around but never opened up again.
+.bit-sld-inp-bar {
+    --bit-sld-bar-a: calc(var(--bit-sld-bar-start, 0) * (100% - var(--bit-sld-thumb)) + var(--bit-sld-thumb));
+    --bit-sld-bar-b: calc(var(--bit-sld-bar-end, 1) * (100% - var(--bit-sld-thumb)));
+    --bit-sld-bar-w: calc((var(--bit-sld-bar-end, 1) - var(--bit-sld-bar-start, 0)) * (100% - var(--bit-sld-thumb)) + var(--bit-sld-thumb));
+
+    z-index: 4;
+    cursor: grab;
+    clip-path: inset(0 calc(100% - var(--bit-sld-bar-b)) 0 var(--bit-sld-bar-a));
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    &::-webkit-slider-thumb {
+        width: var(--bit-sld-bar-w);
+    }
+
+    &::-moz-range-thumb {
+        width: var(--bit-sld-bar-w);
+    }
+}
+
 // A horizontal RTL slider mirrors the scale, so the low end of it is the physical right of each input and the
 // two cuts change sides. A vertical one is left alone: its input is pinned to ltr and then turned, so its own
 // axis runs the same way whichever direction the page is read in.
@@ -284,6 +316,10 @@
     .bit-sld-inp-far {
         clip-path: inset(0 var(--bit-sld-inp-cut) 0 0);
     }
+
+    .bit-sld-inp-bar {
+        clip-path: inset(0 var(--bit-sld-bar-a) 0 calc(100% - var(--bit-sld-bar-b)));
+    }
 }
 
 .bit-sld-rgd:not(.bit-sld-vrt):dir(rtl) {
@@ -293,6 +329,10 @@
 
     .bit-sld-inp-far {
         clip-path: inset(0 var(--bit-sld-inp-cut) 0 0);
+    }
+
+    .bit-sld-inp-bar {
+        clip-path: inset(0 var(--bit-sld-bar-a) 0 calc(100% - var(--bit-sld-bar-b)));
     }
 }
 

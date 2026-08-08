@@ -67,6 +67,12 @@
     var valueAttr = _rawValue.HasValue ? ToInvariant(_rawValue.Value) : CurrentValueAsString;
     var lowerValueAttr = ToInvariant(_rawA ?? _thumbA);
     var upperValueAttr = ToInvariant(_rawB ?? _thumbB);
+
+    @* The draggable band, and the room it has left to travel: its value is the lower end of the range, and
+       the highest lower end there is room for is the one that puts the upper end at the end of the scale. *@
+    var canDragTrack = _CanDragTrack;
+    var trackInputMax = max - (upper - lower);
+    var trackValueAttr = ToInvariant(_rawBar ?? lower);
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -218,6 +224,7 @@
                            @oninput="@(e => HandleOnRangeInput(e, true))"
                            @onchange="@(e => HandleOnRangeChange(e, true))"
                            @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"
@@ -243,9 +250,11 @@
                            step="@ToInvariant(step)"
                            value="@lowerValueAttr" />
 
-                    <input @oninput="@(e => HandleOnRangeInput(e, false))"
+                    <input @ref="_upperInputRef"
+                           @oninput="@(e => HandleOnRangeInput(e, false))"
                            @onchange="@(e => HandleOnRangeChange(e, false))"
                            @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            name="@upperInputName"
@@ -268,6 +277,31 @@
                            max="@ToInvariant(upperInputMax)"
                            step="@ToInvariant(step)"
                            value="@upperValueAttr" />
+
+                    @if (canDragTrack)
+                    {
+                        @* The band the whole range is dragged by. It is a third range input, laid over the
+                           box and given a thumb as wide as the band itself: a press then lands on that thumb
+                           rather than beside it, so the browser drags it along with the pointer instead of
+                           jumping it to the press, and the room such a thumb has left to travel is exactly
+                           the room the range has left on the scale. Only the rail strictly between the two
+                           thumbs reaches it, so the thumbs themselves stay grabbable.
+
+                           It is not a tab stop and announces nothing: it selects nothing the two thumbs do
+                           not already carry, and a third slider in the tab order announcing the same lower
+                           value again would be noise rather than a way through. *@
+                        <input @oninput="HandleOnTrackInput"
+                               @onchange="HandleOnTrackChange"
+                               type="range"
+                               tabindex="-1"
+                               aria-hidden="true"
+                               style="@GetTrackInputStyle(fillStart, fillEnd);@Styles?.TrackInput"
+                               class="bit-sld-inp bit-sld-inp-bar @Classes?.TrackInput"
+                               min="@ToInvariant(min)"
+                               max="@ToInvariant(trackInputMax)"
+                               step="@ToInvariant(step)"
+                               value="@trackValueAttr" />
+                    }
                 }
                 else
                 {
@@ -276,6 +310,7 @@
                            @oninput="HandleOnInput"
                            @onchange="HandleOnChange"
                            @onkeydown="_onKeyDown"
+                           @onpointerdown="_onPointerDown"
                            @onfocusin="HandleOnFocusIn"
                            @onfocusout="HandleOnFocusOut"
                            id="@inputId"

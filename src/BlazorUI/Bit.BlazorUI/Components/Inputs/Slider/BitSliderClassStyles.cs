@@ -63,6 +63,12 @@ public class BitSliderClassStyles
     public string? ValueInput { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the input that makes the filled band of a ranged BitSlider draggable,
+    /// which is only rendered while <c>DraggableTrack</c> asks for it.
+    /// </summary>
+    public string? TrackInput { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitSlider's origin tick.
     /// </summary>
     public string? OriginFromZero { get; set; }
