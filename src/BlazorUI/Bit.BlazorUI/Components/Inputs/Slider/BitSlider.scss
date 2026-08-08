@@ -1,413 +1,242 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
-$BgDefult: $clr-bg-sec;
-$BgTrack: $clr-fg-sec;
-$BgTrackHover: $clr-pri;
-$BgHover: $clr-pri-light;
-
+/*
+ * The slider draws its own track, fill and thumbs, and lays the native range inputs over them invisibly.
+ * The inputs keep everything they are good at - dragging, the whole keyboard, the touch target, the role
+ * and the announced value - while what is seen is drawn from the value the component holds, so the two can
+ * never disagree when a constraint refuses a move. It also means the appearance is ordinary CSS on ordinary
+ * elements instead of three sets of vendor pseudo-elements that only ever agreed by accident.
+ */
 .bit-sld {
+    --bit-sld-thumb: #{spacing(2)};
+    --bit-sld-rail: #{spacing(0.5)};
+    --bit-sld-length: #{spacing(24)};
+    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-clr-rail: #{$clr-bg-sec};
+
+    width: 100%;
     font-family: $tg-font-family;
-
-    input {
-        --range: calc(var(--max) - var(--min));
-        --sx: calc(.5*2rem + var(--ratio)*(100% - 2rem));
-        --ratio: calc((var(--value) - var(--min))/var(--range));
-        background: none;
-
-        &:focus {
-            outline: none; // The visible focus indicator lives on the thumb pseudo-element below.
-        }
-    }
-    /* webkit focus styles */
-    // The focus-ring mixin handles the themed two-layer shadow plus the forced-colors
-    // Highlight outline fallback; the thumb pseudo-elements take it directly.
-    input:focus-visible::-webkit-slider-thumb,
-    input:focus::-webkit-slider-thumb {
-        border-color: $clr-pri-focus;
-        @include focus-ring;
-    }
-
-    input:focus-visible::-moz-range-thumb,
-    input:focus::-moz-range-thumb {
-        border-color: $clr-pri-focus;
-        @include focus-ring;
-    }
-
-    /* webkit thumb */
-    input::-webkit-slider-thumb {
-        width: spacing(2);
-        height: spacing(2);
-        touch-action: none;
-        pointer-events: auto;
-        box-sizing: border-box;
-        -webkit-appearance: none;
-        margin-top: spacing(-0.75);
-        border-radius: spacing(1.25);
-        background-color: $clr-bg-pri;
-        border: spacing(0.25) $shp-border-style $BgTrack;
-    }
-
-    input::-webkit-slider-runnable-track {
-        box-shadow: none;
-        height: spacing(0.5);
-        border-radius: spacing(0.5);
-        background-color: $BgDefult;
-    }
-
-    input::-webkit-slider-runnable-track {
-        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-    }
-    /* mozilla */
-    input::-moz-range-thumb {
-        width: spacing(2);
-        height: spacing(2);
-        touch-action: none;
-        pointer-events: auto;
-        box-sizing: border-box;
-        border-radius: spacing(1.25);
-        background-color: $clr-bg-sec;
-        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-        border: spacing(0.25) $shp-border-style $BgTrack;
-    }
-
-    input::-moz-range-track {
-        box-shadow: none;
-        height: spacing(0.5);
-        background-color: $BgDefult;
-        border-radius: spacing(0.5);
-    }
-
-    input::-moz-range-track {
-        background: linear-gradient($BgTrack, $BgTrack) 0/var(--sx) 100% no-repeat, $BgDefult;
-    }
-    /* ms */
-    input::-ms-fill-upper {
-        background: transparent;
-        border-color: transparent;
-    }
-
-    input::-ms-fill-lower {
-        background: transparent;
-        border-color: transparent;
-    }
-
-    input::-ms-thumb {
-        width: spacing(2);
-        height: spacing(2);
-        touch-action: none;
-        pointer-events: auto;
-        box-sizing: border-box;
-        border-radius: spacing(1.25);
-        border: spacing(0.25) $shp-border-style $BgTrack;
-        margin-top: calc(max((1rem - 1px - 0px)*.5,0px) - 2rem*.5);
-    }
-
-    input::-ms-track {
-        box-shadow: none;
-        height: spacing(0.5);
-        background-color: $BgDefult;
-        border-radius: spacing(0.5);
-    }
-
-    input::-ms-fill-lower {
-        box-shadow: none;
-        height: spacing(0.5);
-        border-radius: spacing(0.5);
-        background-color: $BgDefult;
-    }
-
-    input::-webkit-slider-runnable-track,
-    input::-webkit-slider-thumb,
-    input {
-        -webkit-appearance: none;
-    }
-
-    input:hover ~ .bit-sld-ztk {
-        background-color: $clr-bg-pri-hover;
-    }
-
-    input::-webkit-slider-thumb:hover,
-    input::-webkit-slider-thumb:active,
-    input:hover::-webkit-slider-thumb,
-    input:active::-webkit-slider-thumb {
-        border-color: $BgTrackHover;
-    }
-
-    input:hover::-webkit-slider-runnable-track {
-        background-color: $BgTrackHover;
-    }
-
-    input:active::-webkit-slider-runnable-track {
-        background-color: $BgTrackHover;
-    }
-
-    input:hover::-webkit-slider-runnable-track,
-    input:active::-webkit-slider-runnable-track {
-        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
-    }
-
-    input::-moz-range-thumb:hover,
-    input:hover::-moz-range-track,
-    input::-moz-range-thumb:active,
-    input:active::-moz-range-track {
-        border-color: $BgTrackHover;
-    }
-
-    input:hover::-moz-range-track,
-    input:active::-moz-range-track {
-        background: linear-gradient($BgTrackHover, $BgTrackHover) 0/var(--sx) 100% no-repeat, $BgHover;
-    }
-
-    input::-ms-thumb:hover,
-    input:hover::-ms-thumb,
-    input::-ms-thumb:active,
-    input:active::-ms-thumb {
-        border-color: $BgTrackHover;
-    }
-
-    input:hover::-ms-fill-lower,
-    input:active::-ms-fill-lower {
-        background-color: $BgTrackHover;
-    }
 
     &.bit-dis {
         cursor: not-allowed;
-        pointer-events: none;
 
-        input {
-            opacity: 0.5;
+        .bit-sld-inp {
+            cursor: not-allowed;
+        }
+
+        // Only the accent leaves the thumb: its face keeps the page background, so a disabled slider still
+        // reads as a thumb on a track rather than as a flat grey lozenge.
+        .bit-sld-fil {
+            background-color: $clr-bg-dis;
+        }
+
+        .bit-sld-thb {
+            border-color: $clr-bg-dis;
         }
 
         .bit-sld-lbl,
-        .bit-sld-vlb {
+        .bit-sld-vlb,
+        .bit-sld-mlb {
             color: $clr-fg-dis;
         }
 
-        .bit-sld-ztk {
+        .bit-sld-ztk,
+        .bit-sld-mrk {
             background-color: $clr-bg-dis;
         }
     }
 
-    &.bit-rtl {
-        input::-webkit-slider-runnable-track {
-            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+    // A read-only slider is a picture of a value rather than a control, so the pointer says so. The value
+    // is still shown at full contrast, and the inputs stay focusable and announced.
+    &.bit-sld-rdl {
+        .bit-sld-inp {
+            cursor: default;
+        }
+    }
+
+    // An invalid value repaints the parts that carry it, so the error is visible on the slider itself and
+    // not only in the message under it.
+    &.bit-inv:not(.bit-dis) {
+        .bit-sld-fil {
+            background-color: $clr-err;
         }
 
-        input:hover::-webkit-slider-runnable-track,
-        input:active::-webkit-slider-runnable-track {
-            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
+        .bit-sld-thb {
+            border-color: $clr-err;
         }
 
-        input::-moz-range-track {
-            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
-        }
-
-        input:hover::-moz-range-track,
-        input:active::-moz-range-track {
-            background: linear-gradient(to left, $BgTrackHover var(--sx), $BgHover var(--sx));
-        }
-
-        input::-ms-track {
-            background: linear-gradient(to left, $BgTrack var(--sx), $BgDefult var(--sx));
+        .bit-sld-box:has(.bit-sld-inp:focus-visible) .bit-sld-thb {
+            @include focus-ring($clr-err-focus);
         }
     }
 }
 
-.bit-sld-hrz {
-    input {
-        width: 100%;
-        flex-grow: 1;
-    }
-
-    .bit-sld-ztk {
-        height: spacing(2);
-        width: spacing(0.125);
-    }
-}
-
-.bit-sld-vrt {
+.bit-sld-cnt {
+    padding: 0;
     display: flex;
+    position: relative;
     align-items: center;
-    flex-direction: column;
-
-    input {
-        height: spacing(7.5);
-        transform-origin: left;
-        margin: 0 spacing(3.125);
-        margin-top: spacing(1.25);
-    }
-
-    .bit-sld-vlb {
-        text-align: center;
-        box-sizing: border-box;
-        padding-top: spacing(6.25);
-    }
-
-    .bit-sld-cnt {
-        height: 100%;
-        display: block;
-        margin-inline-start: 0;
-        width: spacing(6.25);
-    }
-
-    .bit-sld-ztk {
-        width: spacing(1.75);
-        height: spacing(0.125);
-        margin-inline-start: spacing(2.25);
-    }
+    gap: #{spacing(1)};
 }
 
-.bit-sld-rgd-hrz {
-    input {
-        top: 0;
-        left: 0;
-        margin: 0;
-        z-index: 1;
-        grid-row: 3;
-        background: none;
-        grid-column: 1/span 2;
-        --col: #000; /* get rid of white Chrome background */
-    }
-
-    input::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    input::-moz-range-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    .bit-sld-box {
-        width: 100%;
-        display: grid;
-        margin: 1em auto;
-        position: relative;
-        --dif: calc(var(--max) - var(--min));
-        grid-template: repeat(2, max-content) 4px/1fr 1fr;
-        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
-        background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
-    }
-
-    .bit-sld-box::before,
-    .bit-sld-box::after {
-        content: "";
-        grid-row: 3;
-        height: spacing(0.5);
-        grid-column: 1/span 2;
-        background-color: $BgTrack;
-    }
-
-    .bit-sld-box::before {
-        width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-sld-box::after {
-        width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-sld-ztk {
-        height: spacing(2);
-        width: spacing(0.125);
-        margin-top: spacing(-0.625);
-    }
+// The wrapper is what the track and the row of mark labels share, so the labels line up with the marks
+// however the value labels beside them are sized.
+.bit-sld-wrp {
+    min-width: 0;
+    flex-grow: 1;
 }
 
-.bit-sld-rgd-vrt {
+.bit-sld-box {
     width: 100%;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+    display: block;
+    position: relative;
+    height: var(--bit-sld-thumb);
+}
 
-    input {
-        top: 0;
-        left: 0;
-        margin: 0;
-        z-index: 1;
-        --col: #000;
-        grid-row: 3;
-        background: none;
-        grid-column: 1/span 2;
-    }
+// The track is inset by half a thumb at each end, which is exactly the room a native range input keeps for
+// its own thumb. A percentage measured inside it therefore lands on the very pixel the native thumb centres
+// itself on, and the drawn thumb never drifts away from the invisible one that is being dragged.
+.bit-sld-trk {
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    inset-inline: calc(var(--bit-sld-thumb) / 2);
 
-    input::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    input::-moz-range-track {
-        width: 100%;
-        height: 100%;
-        background: none;
-    }
-
-    .bit-sld-vlb {
-        text-align: center;
-    }
-
-    .bit-sld-box {
-        display: grid;
-        margin: 1em auto;
-        position: relative;
-        --dif: calc(var(--max) - var(--min));
-        grid-template: repeat(2, max-content) 4px/1fr 1fr;
-        grid-template: repeat(2, -webkit-max-content) 4px/1fr 1fr;
-        background: linear-gradient(0deg, $BgDefult spacing(0.5), transparent 0);
-    }
-
-    .bit-sld-box::before,
-    .bit-sld-box::after {
-        grid-row: 3;
+    // The rail itself, drawn as a pseudo-element so that the track can stay a full-height positioning
+    // context for the fill, the marks and the thumbs.
+    &::before {
         content: "";
-        height: spacing(0.5);
-        grid-column: 1/span 2;
-        background-color: $BgTrack;
-    }
-
-    .bit-sld-box::before {
-        width: calc((var(--h) - var(--l))/var(--dif)*100%);
-        margin-inline-start: calc((var(--l) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-sld-box::after {
-        width: calc((var(--l) - var(--h))/var(--dif)*100%);
-        margin-inline-start: calc((var(--h) - var(--min))/var(--dif)*100%);
-    }
-
-    .bit-sld-cnt {
-        flex-grow: 1;
-        margin: 1rem 0;
-        transform: rotate(270deg);
-    }
-
-    .bit-sld-ztk {
-        width: spacing(2);
-        height: spacing(0.125);
-        transform: rotate(270deg);
-        margin-top: spacing(0.125);
-        margin-inline-start: spacing(2.25);
+        top: 50%;
+        inset-inline: 0;
+        position: absolute;
+        height: var(--bit-sld-rail);
+        border-radius: var(--bit-sld-rail);
+        background-color: var(--bit-sld-clr-rail);
+        transform: translateY(calc(var(--bit-sld-rail) / -2));
     }
 }
 
-.bit-sld-rgd-hrz,
-.bit-sld-rgd-vrt {
-    input {
+.bit-sld-fil {
+    top: 50%;
+    position: absolute;
+    height: var(--bit-sld-rail);
+    border-radius: var(--bit-sld-rail);
+    background-color: var(--bit-sld-clr);
+    transform: translateY(calc(var(--bit-sld-rail) / -2));
+    transition: background-color $mot-duration-short $mot-easing;
+}
+
+// inset-inline-start places the thumb from whichever end the direction starts at, and the negative
+// margin-inline-start centres it on that point - a transform would have to be flipped by hand in RTL.
+.bit-sld-thb {
+    top: 50%;
+    z-index: 2;
+    position: absolute;
+    box-sizing: border-box;
+    width: var(--bit-sld-thumb);
+    height: var(--bit-sld-thumb);
+    border-radius: var(--bit-sld-thumb);
+    background-color: $clr-bg-pri;
+    margin-top: calc(var(--bit-sld-thumb) / -2);
+    margin-inline-start: calc(var(--bit-sld-thumb) / -2);
+    border: spacing(0.25) $shp-border-style var(--bit-sld-clr);
+    transition: border-color $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
+}
+
+@media (hover: hover) {
+    .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
+        .bit-sld-box:hover {
+            .bit-sld-fil {
+                background-color: var(--bit-sld-clr-hover);
+            }
+
+            .bit-sld-thb {
+                border-color: var(--bit-sld-clr-hover);
+            }
+        }
+    }
+}
+
+// The focus lives on the invisible input, so the ring is put on the thumb that stands for it. :has is what
+// bridges the two, since the drawn thumb is not a descendant of the input it belongs to.
+.bit-sld-box:has(> .bit-sld-inp:focus-visible) > .bit-sld-trk > .bit-sld-thb {
+    @include focus-ring(var(--bit-sld-clr-focus));
+}
+
+.bit-sld-box:has(> .bit-sld-inp-lwr:focus-visible) > .bit-sld-trk > .bit-sld-thb-upr,
+.bit-sld-box:has(> .bit-sld-inp-upr:focus-visible) > .bit-sld-trk > .bit-sld-thb-lwr {
+    box-shadow: none;
+}
+
+// The native input, laid over the track and made invisible. Its own track and thumb are stripped of every
+// appearance they have, but the thumb keeps the exact size of the drawn one so the grab area matches what
+// the eye is aiming at.
+//
+// It covers the span of the track its own min and max describe - the whole of it unless a constraint has
+// narrowed them - because that is the span its thumb actually travels along. Half a thumb is added back at
+// each end, since that is the room the input keeps clear for its own thumb, and the native thumb then
+// centres itself on the very pixel the drawn one is at.
+.bit-sld-inp {
+    top: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 3;
+    cursor: pointer;
+    position: absolute;
+    appearance: none;
+    background: transparent;
+    -webkit-appearance: none;
+    height: var(--bit-sld-thumb);
+    inset-inline-start: calc(var(--bit-sld-inp-start, 0) * (100% - var(--bit-sld-thumb)));
+    width: calc((var(--bit-sld-inp-end, 1) - var(--bit-sld-inp-start, 0)) * (100% - var(--bit-sld-thumb)) + var(--bit-sld-thumb));
+
+    &:focus {
+        outline: none; // The visible focus indicator lives on the drawn thumb.
+    }
+
+    &::-webkit-slider-runnable-track {
+        border: none;
+        height: 100%;
+        background: transparent;
+    }
+
+    &::-moz-range-track {
+        border: none;
+        height: 100%;
+        background: transparent;
+    }
+
+    &::-webkit-slider-thumb {
+        border: none;
+        appearance: none;
+        background: transparent;
+        -webkit-appearance: none;
+        width: var(--bit-sld-thumb);
+        height: var(--bit-sld-thumb);
+    }
+
+    &::-moz-range-thumb {
+        border: none;
+        appearance: none;
+        background: transparent;
+        width: var(--bit-sld-thumb);
+        height: var(--bit-sld-thumb);
+    }
+}
+
+// The two inputs of a ranged slider cover each other completely, so only their thumbs are allowed to take
+// the pointer - otherwise the one drawn last would swallow every grab meant for the other.
+.bit-sld-rgd {
+    .bit-sld-inp {
         pointer-events: none;
     }
 
-    .bit-sld-box:hover {
-        background: linear-gradient(0deg, $BgHover spacing(0.5), transparent 0);
+    .bit-sld-inp::-webkit-slider-thumb {
+        pointer-events: auto;
     }
 
-    .bit-sld-box:hover::before,
-    .bit-sld-box:hover::after {
-        background-color: $BgTrackHover;
+    .bit-sld-inp::-moz-range-thumb {
+        pointer-events: auto;
     }
 }
 
@@ -417,35 +246,318 @@ $BgHover: $clr-pri-light;
     display: block;
     box-shadow: none;
     font-weight: 600;
-    box-sizing: border-box;
-    font-size: spacing(1.75);
-    overflow-wrap: break-word;
     color: $clr-fg-pri;
-}
-
-.bit-sld-cnt {
-    padding: 0;
-    display: flex;
-    position: relative;
-    align-items: center;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: var(--bit-sld-font-size);
 }
 
 .bit-sld-vlb {
     display: block;
     box-shadow: none;
     font-weight: 600;
-    width: spacing(5);
     white-space: nowrap;
-    margin: 0 spacing(1);
-    box-sizing: border-box;
-    font-size: spacing(1.75);
-    padding: spacing(0.625) 0;
-    overflow-wrap: break-word;
     color: $clr-fg-pri;
+    box-sizing: border-box;
+    min-width: #{spacing(4)};
+    text-align: center;
+    font-size: var(--bit-sld-font-size);
 }
 
+// A mark is a tick laid across the rail. The active ones - the ones the fill has reached - are painted in
+// the color the fill is drawn on top of, so they stay visible against it.
+.bit-sld-mrk {
+    top: 50%;
+    z-index: 1;
+    position: absolute;
+    border-radius: 50%;
+    width: var(--bit-sld-rail);
+    height: var(--bit-sld-rail);
+    background-color: $clr-fg-ter;
+    margin-top: calc(var(--bit-sld-rail) / -2);
+    margin-inline-start: calc(var(--bit-sld-rail) / -2);
+}
+
+.bit-sld-mrk-act {
+    background-color: var(--bit-sld-clr-on);
+}
+
+// A zero-width flex box centres whatever overflows it on its own position, in either direction, which is
+// what keeps the mark labels centred under their ticks without a transform that RTL would have to undo.
+.bit-sld-mks {
+    height: 1.5em;
+    position: relative;
+    margin-inline: calc(var(--bit-sld-thumb) / 2);
+}
+
+.bit-sld-mlb {
+    width: 0;
+    top: 0.25em;
+    display: flex;
+    position: absolute;
+    white-space: nowrap;
+    color: $clr-fg-sec;
+    justify-content: center;
+    font-size: calc(var(--bit-sld-font-size) * 0.85);
+}
+
+// The floating label that rides along with the thumb. It is hidden by default, shown while the slider is
+// being used when the mode is Auto, and shown outright when it is On.
+.bit-sld-tlb {
+    opacity: 0;
+    width: max-content;
+    display: flex;
+    position: absolute;
+    white-space: nowrap;
+    pointer-events: none;
+    justify-content: center;
+    color: var(--bit-sld-clr-on);
+    background-color: var(--bit-sld-clr);
+    border-radius: $shp-border-radius;
+    padding: spacing(0.25) spacing(0.75);
+    font-size: calc(var(--bit-sld-font-size) * 0.9);
+    transition: opacity $mot-duration-short $mot-easing;
+
+    // Centred over the thumb and lifted clear of it.
+    left: 50%;
+    translate: -50%;
+    bottom: calc(100% + #{spacing(0.75)});
+}
+
+.bit-sld-tlo .bit-sld-tlb {
+    opacity: 1;
+}
+
+.bit-sld-tla {
+    .bit-sld-box:hover .bit-sld-tlb,
+    .bit-sld-box:has(.bit-sld-inp:focus-visible) .bit-sld-tlb,
+    .bit-sld-box:has(.bit-sld-inp:active) .bit-sld-tlb {
+        opacity: 1;
+    }
+}
+
+// The origin tick, marking where the fill grows out of. It is only ever in the middle of the track when the
+// scale happens to be symmetric around the origin, so its position is computed rather than assumed.
 .bit-sld-ztk {
+    top: 50%;
     z-index: 2;
     position: absolute;
-    background-color: $clr-bg-sec;
+    width: spacing(0.25);
+    height: var(--bit-sld-thumb);
+    background-color: $clr-fg-sec;
+    margin-top: calc(var(--bit-sld-thumb) / -2);
+    margin-inline-start: spacing(-0.125);
+}
+
+
+/* ---------------------------------------------------------------------------------------------------
+ * Vertical
+ * ---------------------------------------------------------------------------------------------------
+ * A vertical slider has no length of its own to inherit, so it is given one through --bit-sld-length. The
+ * visible parts are laid out along the block axis directly, and only the native input is rotated - which
+ * keeps the arrow keys meaning what they look like they mean and needs no measurement from JavaScript.
+ */
+.bit-sld-vrt {
+    width: fit-content;
+
+    .bit-sld-cnt {
+        flex-direction: column;
+    }
+
+    .bit-sld-wrp {
+        display: flex;
+        flex-grow: 0;
+        align-items: stretch;
+    }
+
+    .bit-sld-box {
+        width: var(--bit-sld-thumb);
+        height: var(--bit-sld-length);
+    }
+
+    .bit-sld-trk {
+        top: unset;
+        bottom: unset;
+        inset-inline: unset;
+        left: 50%;
+        translate: -50%;
+        width: var(--bit-sld-thumb);
+        inset-block: calc(var(--bit-sld-thumb) / 2);
+
+        &::before {
+            top: unset;
+            // inset-inline is a shorthand over the same longhand left resolves to, so it has to be cleared
+            // before left is set - the other way round it would take the centring back out again.
+            inset-inline: unset;
+            left: 50%;
+            inset-block: 0;
+            transform: translateX(-50%);
+            width: var(--bit-sld-rail);
+            height: auto;
+        }
+    }
+
+    .bit-sld-fil {
+        top: unset;
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--bit-sld-rail);
+        height: auto;
+    }
+
+    .bit-sld-thb {
+        top: unset;
+        left: 50%;
+        margin-top: 0;
+        margin-inline-start: 0;
+        translate: -50% 50%;
+    }
+
+    .bit-sld-mrk {
+        top: unset;
+        left: 50%;
+        margin-top: 0;
+        margin-inline-start: 0;
+        translate: -50% 50%;
+    }
+
+    .bit-sld-ztk {
+        top: unset;
+        left: 50%;
+        margin-top: 0;
+        margin-inline-start: 0;
+        translate: -50% 50%;
+        height: spacing(0.25);
+        width: var(--bit-sld-thumb);
+    }
+
+    // The floating label moves to the side of the thumb, since above it is where the next value is.
+    .bit-sld-tlb {
+        left: unset;
+        bottom: unset;
+        top: 50%;
+        translate: 0 -50%;
+        inset-inline-start: calc(100% + #{spacing(0.75)});
+    }
+
+    // Rotating the input maps its increasing direction - to the right - onto up, so ArrowUp and ArrowRight
+    // both still raise the value and the thumb moves the way the key points. The direction is pinned to ltr
+    // because an RTL context would otherwise reverse the axis before the rotation flips it.
+    //
+    // The span its bounds describe is carried over from the horizontal case, as the length of the input
+    // before it is turned and as the height its middle is placed at afterwards - measured from the bottom,
+    // which is the end a vertical slider counts from.
+    .bit-sld-inp {
+        inset-inline: unset;
+        left: 50%;
+        direction: ltr;
+        transform: translate(-50%, -50%) rotate(-90deg);
+        width: calc((var(--bit-sld-inp-end, 1) - var(--bit-sld-inp-start, 0)) * (var(--bit-sld-length) - var(--bit-sld-thumb)) + var(--bit-sld-thumb));
+        top: calc(100% - var(--bit-sld-thumb) / 2 - (var(--bit-sld-inp-start, 0) + var(--bit-sld-inp-end, 1)) / 2 * (100% - var(--bit-sld-thumb)));
+    }
+
+    // The positioning area of the labels has to be the span the thumbs actually travel along, which is the
+    // length minus the half thumb kept clear at each end - the same inset the track itself carries.
+    .bit-sld-mks {
+        margin-inline: 0;
+        width: max-content;
+        padding-inline-start: spacing(0.5);
+        margin-block: calc(var(--bit-sld-thumb) / 2);
+        height: calc(var(--bit-sld-length) - var(--bit-sld-thumb));
+    }
+
+    // A zero-height flex box centres its overflowing content on its own line, which is what puts each label
+    // level with the mark it belongs to.
+    .bit-sld-mlb {
+        top: unset;
+        width: unset;
+        height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+}
+
+
+/* ---------------------------------------------------------------------------------------------------
+ * Sizes
+ * --------------------------------------------------------------------------------------------------- */
+.bit-sld-sm {
+    --bit-sld-thumb: #{spacing(1.5)};
+    --bit-sld-rail: #{spacing(0.375)};
+    --bit-sld-font-size: #{spacing(1.5)};
+    --bit-sld-length: #{spacing(18)};
+}
+
+.bit-sld-md {
+    --bit-sld-thumb: #{spacing(2)};
+    --bit-sld-rail: #{spacing(0.5)};
+    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-length: #{spacing(24)};
+}
+
+.bit-sld-lg {
+    --bit-sld-thumb: #{spacing(3)};
+    --bit-sld-rail: #{spacing(0.75)};
+    --bit-sld-font-size: #{spacing(2)};
+    --bit-sld-length: #{spacing(30)};
+}
+
+
+/* ---------------------------------------------------------------------------------------------------
+ * Colors - generated from the shared $bit-color-roles map (see color-role-maps.scss).
+ * --------------------------------------------------------------------------------------------------- */
+@each $role, $tokens in $bit-color-roles {
+    .bit-sld-#{$role} {
+        --bit-sld-clr: #{role($tokens, main)};
+        --bit-sld-clr-on: #{role($tokens, on)};
+        --bit-sld-clr-hover: #{role($tokens, hover)};
+        --bit-sld-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+/* ---------------------------------------------------------------------------------------------------
+ * Forced colors
+ * ---------------------------------------------------------------------------------------------------
+ * The filled and unfilled parts of the track are told apart by color alone, which forced-colors modes
+ * discard, so the distinction is re-established with the system colors.
+ */
+@media (forced-colors: active) {
+    .bit-sld-fil {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+
+    // The thumb keeps a page-colored face so that it stays a distinguishable shape where it overlaps the
+    // fill, which a solid Highlight lozenge on a Highlight bar would not be.
+    .bit-sld-thb {
+        forced-color-adjust: none;
+        background-color: Canvas;
+        border-color: Highlight;
+    }
+
+    .bit-sld-trk::before {
+        forced-color-adjust: none;
+        background-color: ButtonText;
+    }
+
+    .bit-sld-mrk {
+        forced-color-adjust: none;
+        background-color: ButtonText;
+    }
+
+    .bit-sld-mrk-act {
+        background-color: Canvas;
+    }
+
+    .bit-sld.bit-dis {
+        .bit-sld-fil {
+            background-color: GrayText;
+        }
+
+        .bit-sld-thb {
+            border-color: GrayText;
+        }
+    }
 }

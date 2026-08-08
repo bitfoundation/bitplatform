@@ -1,4 +1,7 @@
-﻿using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -13,339 +16,43 @@ public class BitSliderTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
+
+
+    #region Layout & root classes
+
     [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderVerticalTest(bool isVertical)
+    public void BitSliderShouldRespectIsVertical(bool isVertical)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsVertical, isVertical);
         });
 
-        var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains(isVertical ? "bit-sld-vrt" : "bit-sld-hrz"));
+        var slider = com.Find(".bit-sld");
+
+        Assert.IsTrue(slider.ClassList.Contains(isVertical ? "bit-sld-vrt" : "bit-sld-hrz"));
+        Assert.IsFalse(slider.ClassList.Contains(isVertical ? "bit-sld-hrz" : "bit-sld-vrt"));
     }
 
     [TestMethod,
         DataRow(false),
         DataRow(true)
     ]
-    public void BitSliderRangedVerticalTest(bool vertical)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.IsVertical, vertical);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        var bitSlider = com.Find(".bit-sld");
-        Assert.IsTrue(bitSlider.ClassList.Contains($"bit-sld-rgd-{(vertical ? "vrt" : "hrz")}"));
-    }
-
-    [TestMethod,
-        DataRow(false),
-        DataRow(true)
-    ]
-    public void BitSliderEnabledTest(bool isEnabled)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.IsEnabled, isEnabled);
-        });
-
-        var bitSlider = com.Find(".bit-sld");
-
-        if (isEnabled)
-        {
-            Assert.IsFalse(bitSlider.ClassList.Contains("bit-dis"));
-        }
-        else
-        {
-            Assert.IsTrue(bitSlider.ClassList.Contains("bit-dis"));
-        }
-
-    }
-
-    [TestMethod,
-        DataRow(false),
-        DataRow(true)
-    ]
-    public void BitSliderRangedTest(bool ranged)
+    public void BitSliderShouldRespectIsRanged(bool ranged)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsRanged, ranged);
         });
 
-        var bitSlider = com.Find(".bit-sld");
+        var slider = com.Find(".bit-sld");
 
-        Assert.IsTrue(ranged is false || bitSlider.ClassList.Contains("bit-sld-rgd-hrz"));
-        Assert.AreEqual(ranged ? 2 : 1, bitSlider.GetElementsByTagName("input").Length);
-    }
-
-    [TestMethod,
-        DataRow(-1000, 3D),
-        DataRow(2, null),
-        DataRow(2, 3D),
-        DataRow(-1000, null)
-    ]
-    public void BitSliderDefaultLowerValueTest(double lowerValue, double? defaultLowerValue)
-    {
-        var hasLowerValue = lowerValue != -1000;
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            if (hasLowerValue) parameters.Add(p => p.LowerValue, lowerValue);
-            parameters.Add(p => p.DefaultLowerValue, defaultLowerValue);
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        // Find first label with valueLabel css class
-        var label = com.Find(".bit-sld-vlb");
-
-        var expectedValue = hasLowerValue ? lowerValue : defaultLowerValue;
-
-        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(-1000, 3D),
-        DataRow(2, null),
-        DataRow(2, 3D),
-        DataRow(-1000, null)
-    ]
-    public void BitSliderDefaultUpperValueTest(double upperValue, double? defaultUpperValue)
-    {
-        var hasUpperValue = upperValue != -1000;
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            if(hasUpperValue) parameters.Add(p => p.UpperValue, upperValue);
-            parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-sld-vlb");
-
-        var expectedValue = hasUpperValue ? upperValue : defaultUpperValue;
-
-        Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(expectedValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
-    }
-
-    [TestMethod,
-        DataRow(null),
-        DataRow(2)
-    ]
-    public void BitSliderLowerValueTest(double lowerValue)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.LowerValue, lowerValue);
-            parameters.Add(p => p.UpperValue, 6);
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        var label = com.Find(".bit-sld-vlb");
-
-        Assert.AreEqual(lowerValue.ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(null),
-        DataRow(2),
-    ]
-    public void BitSliderUpperValueTest(int? defaultUpperValue)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.DefaultUpperValue, defaultUpperValue);
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-sld-vlb");
-
-        Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(defaultUpperValue.GetValueOrDefault().ToString(), labels[^1].TextContent);
-    }
-
-    [TestMethod,
-        DataRow(2, 6),
-        DataRow(0, 10)
-    ]
-    public void BitSliderLowerAndUpperValueTest(double lowerValue, double upperValue)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.RangeValue, new BitSliderRangeValue { Lower = lowerValue, Upper = upperValue });
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, true);
-        });
-
-        // Find labels with valueLabel css class
-        var labels = com.FindAll(".bit-sld-vlb");
-
-        Assert.AreEqual(2, labels.Count);
-        Assert.AreEqual(lowerValue.ToString(), labels[0].TextContent);
-        Assert.AreEqual(upperValue.ToString(), labels[^1].TextContent);
-    }
-
-    [TestMethod,
-        DataRow(null),
-        DataRow(2)
-    ]
-    public void BitSliderDefaultValueTest(int? defaultValue)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.ShowValue, true);
-        });
-
-        // Find first label with valueLabel css class
-        var label = com.Find(".bit-sld-vlb");
-
-        Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(null),
-        DataRow(2)
-    ]
-    public void BitSliderVerticalDefaultValueTest(int? defaultValue)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.DefaultValue, defaultValue);
-            parameters.Add(p => p.IsVertical, true);
-            parameters.Add(p => p.ShowValue, true);
-        });
-
-        // Find first label with valueLabel css class
-        var label = com.Find(".bit-sld-vlb");
-
-        Assert.AreEqual(defaultValue.GetValueOrDefault().ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(5),
-        DataRow(2)
-    ]
-    public void BitSliderValueTest(double value)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.Value, value);
-            parameters.Add(p => p.ShowValue, true);
-        });
-
-        // Find first label with valueLabel css class
-        var label = com.Find(".bit-sld-vlb");
-
-        Assert.AreEqual(value.ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(5),
-        DataRow(2)
-    ]
-    public void BitSliderVerticalValueTest(double value)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.Value, value);
-            parameters.Add(p => p.IsVertical, true);
-            parameters.Add(p => p.ShowValue, true);
-        });
-
-        // Find first label with valueLabel css class
-        var label = com.Find(".bit-sld-vlb");
-
-        Assert.AreEqual(value.ToString(), label.TextContent);
-    }
-
-    [TestMethod,
-        DataRow(false, null),
-        DataRow(true, null),
-        DataRow(false, 2D),
-        DataRow(true, 2D)
-    ]
-    public void BitSliderStepTest(bool ranged, double? step)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.IsRanged, ranged);
-            if (step.HasValue)
-            {
-                parameters.Add(p => p.Step, step.Value);
-            }
-        });
-
-        var inputs = com.FindAll(".bit-sld input");
-        var expected = (step ?? com.Instance.Step).ToString();
-
-        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
-
-        foreach (var input in inputs)
-        {
-            Assert.AreEqual(expected, input.GetAttribute("step"));
-        }
-    }
-
-    [TestMethod,
-        DataRow(false, 4, 8),
-        DataRow(true, 4, 8)
-    ]
-    public void BitSliderMinMaxTest(bool ranged, int min, int max)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.IsRanged, ranged);
-            parameters.Add(p => p.Min, min);
-            parameters.Add(p => p.Max, max);
-        });
-
-        var inputs = com.FindAll(".bit-sld input");
-        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
-
-        foreach (var input in inputs)
-        {
-            Assert.AreEqual(min.ToString(), input.GetAttribute("min"));
-            Assert.AreEqual(max.ToString(), input.GetAttribute("max"));
-        }
-    }
-
-    [TestMethod,
-        DataRow(null),
-        DataRow("Bit Title")
-    ]
-    public void BitSliderLabelTest(string label)
-    {
-        var com = RenderComponent<BitSlider>(parameters =>
-        {
-            parameters.Add(p => p.Label, label);
-        });
-
-        // Find all labels with title css class
-        // Method 'FindAll' is used because if the component does not have a label, the element will not be rendered. 
-        var labelElements = com.FindAll(".bit-sld-lbl");
-        var labelElement = labelElements.SingleOrDefault();
-
-        if (label.HasValue())
-        {
-            Assert.IsNotNull(labelElement);
-            Assert.AreEqual(label, labelElement.TextContent);
-        }
-        else
-        {
-            Assert.IsNull(labelElement);
-        }
+        Assert.AreEqual(ranged, slider.ClassList.Contains("bit-sld-rgd"));
+        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-inp").Count);
+        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-thb").Count);
     }
 
     [TestMethod,
@@ -354,7 +61,457 @@ public class BitSliderTests : BunitTestContext
         DataRow(false, true),
         DataRow(true, true)
     ]
-    public void BitSliderShowValueTest(bool ranged, bool showValue)
+    public void BitSliderShouldKeepTheLegacyCompositeClass(bool ranged, bool vertical)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.IsVertical, vertical);
+        });
+
+        var expected = $"bit-sld-{(ranged ? "rgd-" : null)}{(vertical ? "vrt" : "hrz")}";
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expected));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldRespectIsEnabled(bool isEnabled)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        var slider = com.Find(".bit-sld");
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.AreEqual(isEnabled is false, slider.ClassList.Contains("bit-dis"));
+        Assert.AreEqual(isEnabled is false, input.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectReadOnly()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, 4);
+        });
+
+        var slider = com.Find(".bit-sld");
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.IsTrue(slider.ClassList.Contains("bit-sld-rdl"));
+        Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+
+        // A native range input ignores the readonly attribute, so the input is pinned by giving it a min and
+        // a max that are both the current value: the browser then refuses the change itself.
+        Assert.AreEqual("4", input.GetAttribute("min"));
+        Assert.AreEqual("4", input.GetAttribute("max"));
+
+        // The true bounds are still announced.
+        Assert.AreEqual("0", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("10", input.GetAttribute("aria-valuemax"));
+
+        // And the input is still focusable, unlike a disabled one.
+        Assert.IsFalse(input.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitSliderReadOnlyShouldRefuseAChange()
+    {
+        var changed = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultValue, 4);
+            parameters.Add(p => p.OnChange, (double _) => changed++);
+        });
+
+        com.Find(".bit-sld-inp").Input("8");
+
+        Assert.AreEqual(0, changed);
+        Assert.AreEqual(4, com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitSliderShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = com.Find(".bit-sld").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden"));
+            Assert.IsFalse(style.Contains("display:none"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectDir()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        var slider = com.Find(".bit-sld");
+
+        Assert.IsTrue(slider.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", slider.GetAttribute("dir"));
+    }
+
+    #endregion
+
+    #region Color, size and thumb label classes
+
+    [TestMethod,
+        DataRow(null, "bit-sld-pri"),
+        DataRow(BitColor.Primary, "bit-sld-pri"),
+        DataRow(BitColor.Secondary, "bit-sld-sec"),
+        DataRow(BitColor.Tertiary, "bit-sld-ter"),
+        DataRow(BitColor.Info, "bit-sld-inf"),
+        DataRow(BitColor.Success, "bit-sld-suc"),
+        DataRow(BitColor.Warning, "bit-sld-wrn"),
+        DataRow(BitColor.SevereWarning, "bit-sld-swr"),
+        DataRow(BitColor.Error, "bit-sld-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-sld-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-sld-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-sld-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-sld-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-sld-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-sld-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-sld-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-sld-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-sld-tbr")
+    ]
+    public void BitSliderShouldRespectColor(BitColor? color, string expectedClass)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(null, "bit-sld-md"),
+        DataRow(BitSize.Small, "bit-sld-sm"),
+        DataRow(BitSize.Medium, "bit-sld-md"),
+        DataRow(BitSize.Large, "bit-sld-lg")
+    ]
+    public void BitSliderShouldRespectSize(BitSize? size, string expectedClass)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(null, false, null),
+        DataRow(BitSliderThumbLabel.Off, false, null),
+        DataRow(BitSliderThumbLabel.Auto, true, "bit-sld-tla"),
+        DataRow(BitSliderThumbLabel.On, true, "bit-sld-tlo")
+    ]
+    public void BitSliderShouldRespectThumbLabel(BitSliderThumbLabel? mode, bool rendered, string expectedClass)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.ThumbLabel, mode);
+            parameters.Add(p => p.DefaultValue, 3);
+        });
+
+        Assert.AreEqual(rendered ? 1 : 0, com.FindAll(".bit-sld-tlb").Count);
+
+        if (expectedClass is not null)
+        {
+            Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expectedClass));
+            Assert.AreEqual("3", com.Find(".bit-sld-tlb").TextContent.Trim());
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectThumbLabelTemplate()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.ThumbLabel, BitSliderThumbLabel.On);
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.ThumbLabelTemplate, (double v) => $"<span class='custom-thumb'>#{v}</span>");
+        });
+
+        var label = com.Find(".bit-sld-tlb .custom-thumb");
+
+        Assert.AreEqual("#3", label.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRenderTheThumbLabelTemplateOnBothEndsOfARange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.ThumbLabel, BitSliderThumbLabel.On);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 7D);
+            parameters.Add(p => p.ThumbLabelTemplate, (double v) => $"<span class='custom-thumb'>#{v}</span>");
+        });
+
+        var labels = com.FindAll(".bit-sld-tlb .custom-thumb");
+
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual("#2", labels[0].TextContent.Trim());
+        Assert.AreEqual("#7", labels[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderTheThumbLabelTemplateWhileTheThumbLabelIsOff()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.ThumbLabelTemplate, (double v) => $"<span class='custom-thumb'>#{v}</span>");
+        });
+
+        Assert.AreEqual(0, com.FindAll(".custom-thumb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRenderAThumbLabelPerThumbWhenRanged()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.ThumbLabel, BitSliderThumbLabel.On);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 7D);
+        });
+
+        var labels = com.FindAll(".bit-sld-tlb");
+
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual("2", labels[0].TextContent.Trim());
+        Assert.AreEqual("7", labels[1].TextContent.Trim());
+    }
+
+    #endregion
+
+    #region Label
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("Bit Label")
+    ]
+    public void BitSliderShouldRespectLabel(string label)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, label);
+        });
+
+        var labelElement = com.FindAll(".bit-sld-lbl").SingleOrDefault();
+
+        if (label.HasValue())
+        {
+            Assert.IsNotNull(labelElement);
+            Assert.AreEqual(label, labelElement.TextContent.Trim());
+
+            // The label is tied to the input that carries the tab stop, so clicking it lands the focus there.
+            Assert.AreEqual(com.Find(".bit-sld-inp").GetAttribute("id"), labelElement.GetAttribute("for"));
+        }
+        else
+        {
+            Assert.IsNull(labelElement);
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectLabelTemplate()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.LabelTemplate, "<span class='custom-label'>Custom</span>");
+        });
+
+        Assert.AreEqual(1, com.FindAll(".bit-sld-lbl .custom-label").Count);
+    }
+
+    #endregion
+
+    #region Value, defaults and clamping
+
+    [TestMethod,
+        DataRow(0D),
+        DataRow(2D),
+        DataRow(5D)
+    ]
+    public void BitSliderShouldRespectValue(double value)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+        });
+
+        Assert.AreEqual(value.ToString(CultureInfo.CurrentCulture), com.Find(".bit-sld-vlb").TextContent.Trim());
+        Assert.AreEqual(value.ToString(CultureInfo.InvariantCulture), com.Find(".bit-sld-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectDefaultValue()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 6D);
+        });
+
+        Assert.AreEqual(6, com.Instance.Value);
+        Assert.AreEqual("6", com.Find(".bit-sld-vlb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferTheBoundValueOverTheDefaultOne()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.DefaultValue, 6D);
+        });
+
+        Assert.AreEqual(3, com.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(-5D, 0D),
+        DataRow(99D, 10D),
+        DataRow(4D, 4D)
+    ]
+    public void BitSliderShouldClampTheValueIntoTheRange(double value, double expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+        });
+
+        Assert.AreEqual(expected, com.Instance.Value);
+        Assert.AreEqual(expected.ToString(CultureInfo.CurrentCulture), com.Find(".bit-sld-vlb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReadAnInvertedMinAndMaxInOrder()
+    {
+        // A Min above the Max would make the whole geometry run backwards - and divide by a negative range -
+        // so the pair is read in order rather than taken literally.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 10D);
+            parameters.Add(p => p.Max, 2D);
+            parameters.Add(p => p.Value, 5D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.AreEqual("2", input.GetAttribute("min"));
+        Assert.AreEqual("10", input.GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotDivideByAnEmptyRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 5D);
+            parameters.Add(p => p.Max, 5D);
+            parameters.Add(p => p.Value, 5D);
+        });
+
+        var fill = com.Find(".bit-sld-fil").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(fill.Contains("NaN"));
+        Assert.IsFalse(fill.Contains("Infinity"));
+    }
+
+    #endregion
+
+    #region Min, Max and Step attributes
+
+    [TestMethod,
+        DataRow(false, 4D, 8D),
+        DataRow(true, -3D, 12D)
+    ]
+    public void BitSliderShouldRespectMinAndMax(bool ranged, double min, double max)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Min, min);
+            parameters.Add(p => p.Max, max);
+        });
+
+        var inputs = com.FindAll(".bit-sld-inp");
+
+        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            Assert.AreEqual(min.ToString(CultureInfo.InvariantCulture), input.GetAttribute("min"));
+            Assert.AreEqual(max.ToString(CultureInfo.InvariantCulture), input.GetAttribute("max"));
+            Assert.AreEqual(min.ToString(CultureInfo.InvariantCulture), input.GetAttribute("aria-valuemin"));
+            Assert.AreEqual(max.ToString(CultureInfo.InvariantCulture), input.GetAttribute("aria-valuemax"));
+        }
+    }
+
+    [TestMethod,
+        DataRow(false, 1D, "1"),
+        DataRow(true, 2.5D, "2.5"),
+        // A step of zero or below would let the browser fall back to its own default silently,
+        // so it is brought back to the documented 1 instead.
+        DataRow(false, 0D, "1"),
+        DataRow(false, -3D, "1")
+    ]
+    public void BitSliderShouldRespectStep(bool ranged, double step, string expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Step, step);
+        });
+
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            Assert.AreEqual(expected, input.GetAttribute("step"));
+        }
+    }
+
+    #endregion
+
+    #region Value labels and formatting
+
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(true, true)
+    ]
+    public void BitSliderShouldRespectShowValue(bool ranged, bool showValue)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -364,53 +521,1783 @@ public class BitSliderTests : BunitTestContext
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        if (showValue)
-        {
-            Assert.IsTrue(labels.Any());
-            Assert.AreEqual(ranged ? 2 : 1, labels.Count);
-        }
-        else
-        {
-            Assert.IsFalse(labels.Any());
-        }
+        Assert.AreEqual(showValue ? (ranged ? 2 : 1) : 0, labels.Count);
     }
 
-    [TestMethod,
-        DataRow(false, false),
-        DataRow(true, false),
-        DataRow(false, true),
-        DataRow(true, true)
-    ]
-    public void BitSliderOriginFromZeroTest(bool ranged, bool originFromZero)
+    [TestMethod]
+    public void BitSliderShouldRespectValueFormat()
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.IsRanged, ranged);
-            parameters.Add(p => p.IsOriginFromZero, originFromZero);
+            parameters.Add(p => p.Max, 1D);
+            parameters.Add(p => p.Step, 0.01D);
+            parameters.Add(p => p.Value, 0.69D);
+            parameters.Add(p => p.ValueFormat, "0 %");
         });
 
-        var spans = com.FindAll(".bit-sld-ztk");
-
-        Assert.AreEqual(originFromZero ? 1 : 0, spans.Count);
+        Assert.AreEqual("69 %", com.Find(".bit-sld-vlb").TextContent.Trim());
     }
 
-    [TestMethod,
-        DataRow(false, null),
-        DataRow(true, null),
-        DataRow(false, "P01"),
-        DataRow(true, "P01")
-    ]
-    public void BitSliderValueFormatTest(bool ranged, string valueFormat)
+    [TestMethod]
+    public void BitSliderShouldRespectGetValueTextOverValueFormat()
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.ShowValue, true);
-            parameters.Add(p => p.IsRanged, ranged);
-            parameters.Add(p => p.ValueFormat, valueFormat);
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.ValueFormat, "0.00");
+            parameters.Add(p => p.GetValueText, (double v) => $"Step {v}");
+        });
+
+        Assert.AreEqual("Step 3", com.Find(".bit-sld-vlb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldOrderTheValueLabelsByEndWhenRanged()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 7D);
         });
 
         var labels = com.FindAll(".bit-sld-vlb");
 
-        Assert.AreEqual(ranged ? 2 : 1, labels.Count(l => l.TextContent.Contains('%') == valueFormat.HasValue()));
+        Assert.AreEqual(2, labels.Count);
+        Assert.AreEqual("2", labels[0].TextContent.Trim());
+        Assert.AreEqual("7", labels[1].TextContent.Trim());
     }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldTrailTheValueLabelOfASingleValue(bool vertical)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsVertical, vertical);
+            parameters.Add(p => p.Value, 3D);
+        });
+
+        var children = com.Find(".bit-sld-cnt").Children;
+
+        // The label follows the track in both orientations: beside it when lying down, under it when
+        // standing up, which is the end of the scale a bottom-up fill starts from.
+        Assert.IsTrue(children[^1].ClassList.Contains("bit-sld-vlb"));
+        Assert.AreEqual("3", children[^1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPutTheUpperValueOnTopWhenVerticalAndRanged()
+    {
+        // Standing upright, the labels stack instead of flanking, so the upper end belongs above the track.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 7D);
+        });
+
+        var labels = com.FindAll(".bit-sld-vlb");
+
+        Assert.AreEqual("7", labels[0].TextContent.Trim());
+        Assert.AreEqual("2", labels[1].TextContent.Trim());
+    }
+
+    #endregion
+
+    #region Ranged values
+
+    [TestMethod]
+    public void BitSliderShouldRespectDefaultLowerAndUpperValue()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 3D);
+            parameters.Add(p => p.DefaultUpperValue, 8D);
+        });
+
+        Assert.AreEqual(3, com.Instance.LowerValue);
+        Assert.AreEqual(8, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferTheBoundEndsOverTheDefaultOnes()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 1D);
+            parameters.Add(p => p.UpperValue, 4D);
+            parameters.Add(p => p.DefaultLowerValue, 3D);
+            parameters.Add(p => p.DefaultUpperValue, 8D);
+        });
+
+        Assert.AreEqual(1, com.Instance.LowerValue);
+        Assert.AreEqual(4, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectRangeValue()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 6));
+        });
+
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(6, com.Instance.UpperValue);
+        Assert.AreEqual(new BitSliderRangeValue(2, 6), com.Instance.RangeValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferRangeValueOverTheDefaultEnds()
+    {
+        // RangeValue carries both ends at once, so a slider given one is not an unbound slider looking for
+        // a default - the defaults would silently overwrite half of what it was handed.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 6));
+            parameters.Add(p => p.DefaultLowerValue, 3D);
+            parameters.Add(p => p.DefaultUpperValue, 8D);
+        });
+
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(6, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldOrderTheEndsOfAnInvertedRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 8D);
+            parameters.Add(p => p.UpperValue, 2D);
+        });
+
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(8, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldClampTheEndsOfARangeIntoTheScale()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.LowerValue, -20D);
+            parameters.Add(p => p.UpperValue, 40D);
+        });
+
+        Assert.AreEqual(0, com.Instance.LowerValue);
+        Assert.AreEqual(10, com.Instance.UpperValue);
+    }
+
+    #endregion
+
+    #region Interaction and events
+
+    [TestMethod]
+    public void BitSliderShouldChangeTheValueOnInput()
+    {
+        double? boundValue = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2D);
+            parameters.Add(p => p.ValueChanged, (double v) => boundValue = v);
+        });
+
+        com.Find(".bit-sld-inp").Input("7");
+
+        Assert.AreEqual(7, boundValue);
+        Assert.AreEqual(7, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCallOnChangeOnEveryStep()
+    {
+        var values = new List<double?>();
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (double v) => values.Add(v));
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.Input("3");
+        input.Input("4");
+
+        CollectionAssert.AreEqual(new List<double?> { 3, 4 }, values);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCallOnChangeEndOnlyWhenTheInteractionEnds()
+    {
+        var stepCount = 0;
+        double? committed = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (double _) => stepCount++);
+            parameters.Add(p => p.OnChangeEnd, (double v) => committed = v);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.Input("3");
+        input.Input("6");
+
+        Assert.AreEqual(2, stepCount);
+        Assert.IsNull(committed);
+
+        input.Change("6");
+
+        Assert.AreEqual(6, committed);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRefuseAChangeOfAOneWayBoundValue()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2D);
+        });
+
+        com.Find(".bit-sld-inp").Input("7");
+
+        Assert.AreEqual(2, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldAcceptAChangeOfAOneWayBoundValueWhenOnChangeIsHandled()
+    {
+        double? changed = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2D);
+            parameters.Add(p => p.OnChange, (double v) => changed = v);
+        });
+
+        com.Find(".bit-sld-inp").Input("7");
+
+        Assert.AreEqual(7, changed);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotChangeWhenDisabled()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.DefaultValue, 2D);
+        });
+
+        com.Find(".bit-sld-inp").Input("7");
+
+        Assert.AreEqual(2, com.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMoveTheLowerEndOnInputOfTheLowerThumb()
+    {
+        double? lower = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 8D);
+            parameters.Add(p => p.LowerValueChanged, (double v) => lower = v);
+            parameters.Add(p => p.UpperValueChanged, (double _) => { });
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("4");
+
+        Assert.AreEqual(4, lower);
+        Assert.AreEqual(4, com.Instance.LowerValue);
+        Assert.AreEqual(8, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotifyRangeValueChangedWhenAnEndMoves()
+    {
+        // The composite parameter used to be left out of the notification entirely, which made
+        // @bind-RangeValue a one-way binding in practice.
+        BitSliderRangeValue? range = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue(2, 8));
+            parameters.Add(p => p.RangeValueChanged, (BitSliderRangeValue? v) => range = v);
+        });
+
+        com.Find(".bit-sld-inp-upr").Input("5");
+
+        Assert.IsNotNull(range);
+        Assert.AreEqual(2, range.Lower);
+        Assert.AreEqual(5, range.Upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCallOnRangeChangeAndOnRangeChangeEnd()
+    {
+        var stepCount = 0;
+        BitSliderRangeValue? committed = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 8D);
+            parameters.Add(p => p.OnRangeChange, (BitSliderRangeValue _) => stepCount++);
+            parameters.Add(p => p.OnRangeChangeEnd, (BitSliderRangeValue v) => committed = v);
+        });
+
+        var upper = com.Find(".bit-sld-inp-upr");
+        upper.Input("7");
+        upper.Input("6");
+
+        Assert.AreEqual(2, stepCount);
+        Assert.IsNull(committed);
+
+        upper.Change("6");
+
+        Assert.IsNotNull(committed);
+        Assert.AreEqual(2, committed.Lower);
+        Assert.AreEqual(6, committed.Upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRefuseARangeChangeOfAOneWayBoundEnd()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 8D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("4");
+
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(8, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCallOnFocusInAndOnFocusOut()
+    {
+        var focusedIn = 0;
+        var focusedOut = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.OnFocusIn, () => focusedIn++);
+            parameters.Add(p => p.OnFocusOut, () => focusedOut++);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.FocusIn();
+        input.FocusOut();
+
+        Assert.AreEqual(1, focusedIn);
+        Assert.AreEqual(1, focusedOut);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCallTheFocusEventsFromBothThumbsOfARange()
+    {
+        var focusedIn = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.OnFocusIn, () => focusedIn++);
+        });
+
+        com.Find(".bit-sld-inp-lwr").FocusIn();
+        com.Find(".bit-sld-inp-upr").FocusIn();
+
+        Assert.AreEqual(2, focusedIn);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCallTheFocusEventsWhenDisabled()
+    {
+        var focusedIn = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.OnFocusIn, () => focusedIn++);
+        });
+
+        com.Find(".bit-sld-inp").FocusIn();
+
+        Assert.AreEqual(0, focusedIn);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLetTheThumbsCrossWhenUnconstrained()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 5D);
+        });
+
+        // Dragging the lower thumb past the upper one makes it the upper end.
+        com.Find(".bit-sld-inp-lwr").Input("9");
+
+        Assert.AreEqual(5, com.Instance.LowerValue);
+        Assert.AreEqual(9, com.Instance.UpperValue);
+
+        // And the input that overtook keeps holding the upper end, so it is not yanked back mid-drag.
+        Assert.AreEqual("9", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
+        Assert.AreEqual("5", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
+    }
+
+    #endregion
+
+    #region Range constraints
+
+    [TestMethod]
+    public void BitSliderShouldBoundTheInputsAgainstEachOtherWhenNoSwap()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        // The constraint is pushed into the bounds of the inputs, so the browser itself never produces a
+        // value the slider would have to reject.
+        Assert.AreEqual("70", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldBoundTheInputsByMinRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        Assert.AreEqual("40", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("40", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldBoundTheInputsByMaxRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MaxRange, 30D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 50D);
+        });
+
+        Assert.AreEqual("20", com.Find(".bit-sld-inp-lwr").GetAttribute("min"));
+        Assert.AreEqual("60", com.Find(".bit-sld-inp-upr").GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLayEachConstrainedInputOverTheSpanItsOwnBoundsCover()
+    {
+        // The constraints narrow the bounds of the inputs, and an input still stretched across the whole
+        // track would map its value onto the wrong span: its own thumb - the only part of it that takes the
+        // pointer - would sit well away from the drawn one, and the slider could not be grabbed where it is
+        // seen. So each input is laid over exactly the piece of the track its bounds describe.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        var lower = com.Find(".bit-sld-inp-lwr").GetAttribute("style");
+        var upper = com.Find(".bit-sld-inp-upr").GetAttribute("style");
+
+        // The lower input runs from the start of the scale to the upper value, the upper one from the lower
+        // value to the end - the very bounds each of them carries.
+        StringAssert.Contains(lower, "--bit-sld-inp-start:0;");
+        StringAssert.Contains(lower, "--bit-sld-inp-end:0.7");
+        StringAssert.Contains(upper, "--bit-sld-inp-start:0.3;");
+        StringAssert.Contains(upper, "--bit-sld-inp-end:1");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLayAnUnconstrainedInputOverTheWholeTrack()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            var style = input.GetAttribute("style");
+
+            StringAssert.Contains(style, "--bit-sld-inp-start:0;");
+            StringAssert.Contains(style, "--bit-sld-inp-end:1");
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldWidenAStartingPairThatIsCloserThanMinRange()
+    {
+        // The constraints are handed to the inputs as their own bounds, which only works while the current
+        // values already satisfy them - otherwise the browser would clamp an input somewhere the component
+        // is not drawing.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 35D);
+        });
+
+        Assert.AreEqual(30, com.Instance.LowerValue);
+        Assert.AreEqual(50, com.Instance.UpperValue);
+
+        // And the bounds that come out of it hold both inputs.
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("50", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldWidenAgainstTheFarEndWhenThereIsNoRoomAbove()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MinRange, 40D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 90D);
+            parameters.Add(p => p.DefaultUpperValue, 95D);
+        });
+
+        Assert.AreEqual(60, com.Instance.LowerValue);
+        Assert.AreEqual(100, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNarrowAStartingPairThatIsWiderThanMaxRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MaxRange, 30D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 10D);
+            parameters.Add(p => p.DefaultUpperValue, 90D);
+        });
+
+        Assert.AreEqual(10, com.Instance.LowerValue);
+        Assert.AreEqual(40, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTreatANegativeMinRangeAsNoDistance()
+    {
+        // Taken literally in the bounds of the inputs, a negative distance would be a licence to overlap -
+        // and would quietly undo the ordering NoSwap is asking for.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.MinRange, -20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        Assert.AreEqual("70", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("30", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldHoldAContradictingMaxRangeAtTheMinRange()
+    {
+        // A MaxRange under the MinRange would hand the lower input a min above its own max, which the browser
+        // resolves by pinning the input somewhere the component is not drawing.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MinRange, 30D);
+            parameters.Add(p => p.MaxRange, 10D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 50D);
+        });
+
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(50, com.Instance.UpperValue);
+
+        var lower = com.Find(".bit-sld-inp-lwr");
+        var upper = com.Find(".bit-sld-inp-upr");
+
+        Assert.AreEqual("20", lower.GetAttribute("min"));
+        Assert.AreEqual("20", lower.GetAttribute("max"));
+        Assert.AreEqual("50", upper.GetAttribute("min"));
+        Assert.AreEqual("50", upper.GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldTreatANegativeMaxRangeAsZero()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MaxRange, -30D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        // No distance at all is allowed between the thumbs, so the pair collapses onto the lower end.
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(20, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReportACorrectedRangeToItsBinding()
+    {
+        // A pair the slider has to move is a pair the parent is now holding a different value for, so the
+        // correction travels back rather than leaving the two silently disagreeing.
+        double? lower = null;
+        double? upper = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.LowerValue, -20D);
+            parameters.Add(p => p.UpperValue, 40D);
+            parameters.Add(p => p.LowerValueChanged, (double v) => lower = v);
+            parameters.Add(p => p.UpperValueChanged, (double v) => upper = v);
+        });
+
+        Assert.AreEqual(0, lower);
+        Assert.AreEqual(10, upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReportARangeWidenedByMinRange()
+    {
+        BitSliderRangeValue? range = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.MinRange, 20D);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RangeValue, new BitSliderRangeValue(30, 35));
+            parameters.Add(p => p.RangeValueChanged, (BitSliderRangeValue? v) => range = v);
+        });
+
+        Assert.IsNotNull(range);
+        Assert.AreEqual(30, range.Lower);
+        Assert.AreEqual(50, range.Upper);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotReportARangeThatNeededNoCorrection()
+    {
+        var reports = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 30D);
+            parameters.Add(p => p.UpperValue, 70D);
+            parameters.Add(p => p.LowerValueChanged, (double _) => reports++);
+        });
+
+        Assert.AreEqual(0, reports);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReportTheSameRejectedRangeOnlyOnce()
+    {
+        // A parent that does not store what it is told would otherwise hand the same rejected pair back on
+        // the render the report itself caused, and the two would keep correcting each other forever.
+        var reports = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.LowerValue, -20D);
+            parameters.Add(p => p.UpperValue, 40D);
+            parameters.Add(p => p.LowerValueChanged, (double _) => reports++);
+        });
+
+        com.Render();
+        com.Render();
+
+        Assert.AreEqual(1, reports);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotBoundTheInputsWhenUnconstrained()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.DefaultLowerValue, 30D);
+            parameters.Add(p => p.DefaultUpperValue, 70D);
+        });
+
+        Assert.AreEqual("0", com.Find(".bit-sld-inp-lwr").GetAttribute("min"));
+        Assert.AreEqual("100", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+        Assert.AreEqual("0", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+        Assert.AreEqual("100", com.Find(".bit-sld-inp-upr").GetAttribute("max"));
+    }
+
+    #endregion
+
+    #region Fill, origin and inversion
+
+    [TestMethod]
+    public void BitSliderShouldFillFromTheNearEndByDefault()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 3D);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        StringAssert.Contains(style, "inset-inline-start:0%");
+        StringAssert.Contains(style, "width:30%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillFromTheFarEndWhenInverted()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.Inverted, true);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        StringAssert.Contains(style, "inset-inline-start:30%");
+        StringAssert.Contains(style, "width:70%");
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-ivt"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillOutOfZeroWhenTheOriginIsAttachedToIt()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, -5D);
+            parameters.Add(p => p.Max, 5D);
+            parameters.Add(p => p.Value, 3D);
+            parameters.Add(p => p.IsOriginFromZero, true);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        // Zero is halfway along a -5..5 scale, and the value covers three tenths of the way to the far end.
+        StringAssert.Contains(style, "inset-inline-start:50%");
+        StringAssert.Contains(style, "width:30%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPutTheOriginTickWhereZeroActuallySits()
+    {
+        // The old implementation put the tick at the geometric middle of the track, which is only where zero
+        // is when the scale happens to be symmetric around it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, -2D);
+            parameters.Add(p => p.Max, 8D);
+            parameters.Add(p => p.Value, 4D);
+            parameters.Add(p => p.IsOriginFromZero, true);
+        });
+
+        StringAssert.Contains(com.Find(".bit-sld-ztk").GetAttribute("style"), "inset-inline-start:20%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillOutOfAnArbitraryOrigin()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Origin, 60D);
+            parameters.Add(p => p.Value, 85D);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        StringAssert.Contains(style, "inset-inline-start:60%");
+        StringAssert.Contains(style, "width:25%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillBelowAnOriginTheValueSitsUnder()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Origin, 60D);
+            parameters.Add(p => p.Value, 20D);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        StringAssert.Contains(style, "inset-inline-start:20%");
+        StringAssert.Contains(style, "width:40%");
+    }
+
+    [TestMethod,
+        DataRow(false, false, 0),
+        DataRow(true, false, 1),
+        DataRow(false, true, 1)
+    ]
+    public void BitSliderShouldRenderTheOriginTickOnlyWhenThereIsAnOrigin(bool fromZero, bool hasOrigin, int expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsOriginFromZero, fromZero);
+            if (hasOrigin) parameters.Add(p => p.Origin, 4D);
+        });
+
+        Assert.AreEqual(expected, com.FindAll(".bit-sld-ztk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillBetweenTheThumbsWhenRanged()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 20D);
+            parameters.Add(p => p.UpperValue, 60D);
+        });
+
+        var fills = com.FindAll(".bit-sld-fil");
+
+        Assert.AreEqual(1, fills.Count);
+        StringAssert.Contains(fills[0].GetAttribute("style"), "inset-inline-start:20%");
+        StringAssert.Contains(fills[0].GetAttribute("style"), "width:40%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFillTheTwoOuterSegmentsOfAnInvertedRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Inverted, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.LowerValue, 35D);
+            parameters.Add(p => p.UpperValue, 65D);
+        });
+
+        var fills = com.FindAll(".bit-sld-fil");
+
+        Assert.AreEqual(2, fills.Count);
+        StringAssert.Contains(fills[0].GetAttribute("style"), "inset-inline-start:0%");
+        StringAssert.Contains(fills[0].GetAttribute("style"), "width:35%");
+        StringAssert.Contains(fills[1].GetAttribute("style"), "inset-inline-start:65%");
+        StringAssert.Contains(fills[1].GetAttribute("style"), "width:35%");
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldDrawNoFillAtAllWhenNoFill(bool ranged)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.NoFill, true);
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 4D);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 8D);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-fil").Count);
+
+        // The rail, the thumbs and everything else that is not the fill are still there.
+        Assert.AreEqual(1, com.FindAll(".bit-sld-trk").Count);
+        Assert.AreEqual(ranged ? 2 : 1, com.FindAll(".bit-sld-thb").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotHighlightAnyMarkWhenNoFill()
+    {
+        // Nothing has been reached on a slider that draws no fill in the first place.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.NoFill, true);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 4D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        var marks = com.FindAll(".bit-sld-mrk");
+
+        Assert.AreEqual(11, marks.Count);
+        Assert.AreEqual(0, marks.Count(m => m.ClassList.Contains("bit-sld-mrk-act")));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderTheOriginTickWhenNoFill()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.NoFill, true);
+            parameters.Add(p => p.Min, -5D);
+            parameters.Add(p => p.Max, 5D);
+            parameters.Add(p => p.IsOriginFromZero, true);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-ztk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderTheOriginTickWhenRanged()
+    {
+        // A ranged slider fills between its own two ends, so an origin has nothing to anchor and its tick
+        // would only be pointing at a value that has no part in what is drawn.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Min, -5D);
+            parameters.Add(p => p.Max, 5D);
+            parameters.Add(p => p.IsOriginFromZero, true);
+            parameters.Add(p => p.Origin, 2D);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-ztk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLayTheFillAlongTheBlockAxisWhenVertical()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsVertical, true);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 3D);
+        });
+
+        var style = com.Find(".bit-sld-fil").GetAttribute("style");
+
+        // A vertical slider grows from its bottom edge upwards, so "more" is up.
+        StringAssert.Contains(style, "bottom:0%");
+        StringAssert.Contains(style, "height:30%");
+    }
+
+    #endregion
+
+    #region Marks
+
+    [TestMethod]
+    public void BitSliderShouldNotRenderMarksByDefault()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mrk").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-sld-mks").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateAMarkPerStep()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Step, 1D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        Assert.AreEqual(11, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldGenerateMarksAtTheMarkStep()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 1000D);
+            parameters.Add(p => p.Step, 10D);
+            parameters.Add(p => p.MarkStep, 200D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        Assert.AreEqual(6, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCapTheNumberOfGeneratedMarks()
+    {
+        // A mark per step of a very fine slider would be thousands of elements nobody can tell apart.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10000D);
+            parameters.Add(p => p.Step, 1D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        Assert.IsTrue(com.FindAll(".bit-sld-mrk").Count <= 201);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCapTheGeneratedMarksOfAMarkStepFarFinerThanTheScale()
+    {
+        // Counted in an int, a step this small against the range overflows on the way in, and an overflowed
+        // count produces a single mark rather than the capped series.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.MarkStep, 0.0000000001D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        var marks = com.FindAll(".bit-sld-mrk");
+
+        Assert.AreEqual(201, marks.Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldLabelTheGeneratedMarks()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarks, true);
+            parameters.Add(p => p.ShowMarkLabels, true);
+        });
+
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        Assert.AreEqual(5, labels.Count);
+        Assert.AreEqual("0", labels[0].TextContent.Trim());
+        Assert.AreEqual("4", labels[^1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFormatTheMarkLabelsLikeTheValue()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarks, true);
+            parameters.Add(p => p.ShowMarkLabels, true);
+            parameters.Add(p => p.ValueFormat, "0.0");
+        });
+
+        Assert.AreEqual("0.0", com.FindAll(".bit-sld-mlb")[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectExplicitMarks()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 4D);
+            parameters.Add(p => p.ShowMarks, true);
+            parameters.Add(p => p.Marks,
+            [
+                new BitSliderMark(0, "Low"),
+                new BitSliderMark(2, "Medium"),
+                new BitSliderMark(4, "High")
+            ]);
+        });
+
+        var marks = com.FindAll(".bit-sld-mrk");
+        var labels = com.FindAll(".bit-sld-mlb");
+
+        // Explicit marks take precedence over the generated ones.
+        Assert.AreEqual(3, marks.Count);
+        Assert.AreEqual(3, labels.Count);
+        Assert.AreEqual("Low", labels[0].TextContent.Trim());
+        Assert.AreEqual("High", labels[^1].TextContent.Trim());
+        StringAssert.Contains(marks[1].GetAttribute("style"), "inset-inline-start:50%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldSkipTheMarksOutsideTheScale()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 0D);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Marks,
+            [
+                new BitSliderMark(-4),
+                new BitSliderMark(5),
+                new BitSliderMark(40)
+            ]);
+        });
+
+        Assert.AreEqual(1, com.FindAll(".bit-sld-mrk").Count);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldMarkTheReachedMarksAsActive()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Value, 4D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        var marks = com.FindAll(".bit-sld-mrk");
+
+        // Everything up to and including the value is inside the fill.
+        Assert.AreEqual(5, marks.Count(m => m.ClassList.Contains("bit-sld-mrk-act")));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCarryTheClassAndStyleOfAMark()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(5, "Half") { Class = "custom-mark", Style = "color:red" }]);
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld-mrk").ClassList.Contains("custom-mark"));
+        StringAssert.Contains(com.Find(".bit-sld-mrk").GetAttribute("style"), "color:red");
+        Assert.IsTrue(com.Find(".bit-sld-mlb").ClassList.Contains("custom-mark"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldInvertWhichMarksCountAsReachedOnAnInvertedRange()
+    {
+        // An inverted range fills the two outer segments rather than the span between the thumbs, so what
+        // counts as reached is inverted with it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Inverted, true);
+            parameters.Add(p => p.Max, 10D);
+            parameters.Add(p => p.LowerValue, 4D);
+            parameters.Add(p => p.UpperValue, 6D);
+            parameters.Add(p => p.ShowMarks, true);
+        });
+
+        var marks = com.FindAll(".bit-sld-mrk");
+
+        // 0..3 and 7..10 are outside the thumbs, so eight of the eleven marks are on the filled segments.
+        Assert.AreEqual(8, marks.Count(m => m.ClassList.Contains("bit-sld-mrk-act")));
+    }
+
+    #endregion
+
+    #region RestrictToMarks
+
+    [TestMethod]
+    public void BitSliderShouldSnapToTheNearestMark()
+    {
+        double? bound = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.Value, 0D);
+            parameters.Add(p => p.ValueChanged, (double v) => bound = v);
+        });
+
+        com.Find(".bit-sld-inp").Input("31");
+
+        Assert.AreEqual(25, bound);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCarryAKeyboardStepOnToTheNextMark()
+    {
+        // A single Step is shorter than the gap between two marks, so rounding to the nearest one would
+        // snap the value straight back and the arrow keys would do nothing at all.
+        double? bound = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Step, 1D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.Value, 25D);
+            parameters.Add(p => p.ValueChanged, (double v) => bound = v);
+        });
+
+        com.Find(".bit-sld-inp").Input("26");
+
+        Assert.AreEqual(80, bound);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldCarryAKeyboardStepBackToThePreviousMark()
+    {
+        double? bound = null;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.Value, 25D);
+            parameters.Add(p => p.ValueChanged, (double v) => bound = v);
+        });
+
+        com.Find(".bit-sld-inp").Input("24");
+
+        Assert.AreEqual(0, bound);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStayOnTheEndMarkWhenThereIsNoNextOne()
+    {
+        var changed = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultValue, 80D);
+            parameters.Add(p => p.OnChange, (double _) => changed++);
+        });
+
+        com.Find(".bit-sld-inp").Input("81");
+
+        Assert.AreEqual(80, com.Instance.Value);
+        Assert.AreEqual(0, changed);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldSnapBothEndsOfARangeToTheMarks()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(25), new BitSliderMark(80)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 80D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("22");
+
+        Assert.AreEqual(25, com.Instance.LowerValue);
+        Assert.AreEqual(80, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPutTheNormalizedRangeBackOnTheInputs()
+    {
+        // Snapping to a mark can move a thumb past a distance constraint, and the pair that comes out of the
+        // normalization is what the inputs have to carry - otherwise an input would hold a value the thumb
+        // beside it is not drawn at, and a re-render of an unbound slider never corrects it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.MinRange, 30D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        // Snapped onto the mark at 60, which lands the lower end on top of the upper one, so the upper is
+        // pushed out to the 30 the pair has to keep apart.
+        com.Find(".bit-sld-inp-lwr").Input("55");
+
+        Assert.AreEqual(60, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
+
+        Assert.AreEqual("60", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
+        Assert.AreEqual("90", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldIgnoreRestrictToMarksWithoutMarks()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.DefaultValue, 2D);
+        });
+
+        com.Find(".bit-sld-inp").Input("7");
+
+        Assert.AreEqual(7, com.Instance.Value);
+    }
+
+    #endregion
+
+    #region Accessibility
+
+    [TestMethod]
+    public void BitSliderShouldAnnounceItsValueAndBounds()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Min, 2D);
+            parameters.Add(p => p.Max, 8D);
+            parameters.Add(p => p.Value, 5D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+
+        Assert.AreEqual("2", input.GetAttribute("aria-valuemin"));
+        Assert.AreEqual("8", input.GetAttribute("aria-valuemax"));
+        Assert.AreEqual("5", input.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("5", input.GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectAriaValueText()
+    {
+        // The old implementation ignored this parameter entirely outside of ranged mode.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2D);
+            parameters.Add(p => p.AriaValueText, (double v) => $"Level {v}");
+        });
+
+        Assert.AreEqual("Level 2", com.Find(".bit-sld-inp").GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFallBackToTheDisplayTextForAriaValueText()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 2D);
+            parameters.Add(p => p.GetValueText, (double v) => $"Step {v}");
+        });
+
+        Assert.AreEqual("Step 2", com.Find(".bit-sld-inp").GetAttribute("aria-valuetext"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNameItselfAfterItsLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Volume");
+        });
+
+        Assert.AreEqual("Volume", com.Find(".bit-sld-inp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPreferAriaLabelOverTheLabel()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Volume");
+            parameters.Add(p => p.AriaLabel, "Master volume");
+        });
+
+        Assert.AreEqual("Master volume", com.Find(".bit-sld-inp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNameTheTwoEndsOfARangeApart()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.AriaLabel, "Price range");
+            parameters.Add(p => p.LowerAriaLabel, "Minimum price");
+            parameters.Add(p => p.UpperAriaLabel, "Maximum price");
+        });
+
+        Assert.AreEqual("Minimum price", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-label"));
+        Assert.AreEqual("Maximum price", com.Find(".bit-sld-inp-upr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldFallBackToTheSharedNameOnBothEnds()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.AriaLabel, "Price range");
+        });
+
+        Assert.AreEqual("Price range", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-label"));
+        Assert.AreEqual("Price range", com.Find(".bit-sld-inp-upr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPointANamelessThumbAtItsLabelElement()
+    {
+        // A slider captioned only by a LabelTemplate has no string to put in an aria-label, and the for/id
+        // association of the label element only ever reaches one input - which would leave the upper thumb
+        // of a ranged slider nameless.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LabelTemplate, "<span>Frequency band</span>");
+        });
+
+        var labelId = com.Find(".bit-sld-lbl").GetAttribute("id");
+
+        Assert.IsNotNull(labelId);
+        Assert.AreEqual(labelId, com.Find(".bit-sld-inp-lwr").GetAttribute("aria-labelledby"));
+        Assert.AreEqual(labelId, com.Find(".bit-sld-inp-upr").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotPointAtTheLabelElementWhenTheThumbIsAlreadyNamed()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Label, "Frequency band");
+            parameters.Add(p => p.LowerAriaLabel, "Lowest frequency");
+        });
+
+        Assert.IsFalse(com.Find(".bit-sld-inp-lwr").HasAttribute("aria-labelledby"));
+        Assert.IsFalse(com.Find(".bit-sld-inp-upr").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotPointAtALabelElementThatIsNotThere()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        Assert.IsFalse(com.Find(".bit-sld-inp").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod,
+        DataRow(false, null),
+        DataRow(true, "vertical")
+    ]
+    public void BitSliderShouldAnnounceItsOrientation(bool vertical, string expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsVertical, vertical);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-sld-inp").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod,
+        DataRow(false, null),
+        DataRow(true, "true")
+    ]
+    public void BitSliderShouldAnnounceThatItIsRequired(bool required, string expected)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Required, required);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-sld-inp").GetAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectName()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Name, "volume");
+        });
+
+        Assert.AreEqual("volume", com.Find(".bit-sld-inp").GetAttribute("name"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitSliderShouldRespectAutoFocus(bool autoFocus)
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+        });
+
+        Assert.AreEqual(autoFocus, com.Find(".bit-sld-inp").HasAttribute("autofocus"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectTabIndex()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", com.Find(".bit-sld-inp").GetAttribute("tabindex"));
+    }
+
+    #endregion
+
+    #region Styles, classes and html attributes
+
+    [TestMethod]
+    public void BitSliderShouldRespectStyleAndClass()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Style, "color:red");
+            parameters.Add(p => p.Class, "custom-class");
+        });
+
+        var slider = com.Find(".bit-sld");
+
+        StringAssert.Contains(slider.GetAttribute("style"), "color:red");
+        Assert.IsTrue(slider.ClassList.Contains("custom-class"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectClassesAndStyles()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Labelled");
+            parameters.Add(p => p.ShowMarks, true);
+            parameters.Add(p => p.Classes, new BitSliderClassStyles
+            {
+                Root = "custom-root",
+                Label = "custom-label",
+                Container = "custom-container",
+                SliderBox = "custom-box",
+                Track = "custom-track",
+                Fill = "custom-fill",
+                ValueInput = "custom-input",
+                ValueLabel = "custom-value",
+                Mark = "custom-mark"
+            });
+            parameters.Add(p => p.Styles, new BitSliderClassStyles
+            {
+                Root = "font-size:2rem",
+                Fill = "opacity:0.5"
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("custom-root"));
+        Assert.IsTrue(com.Find(".bit-sld-lbl").ClassList.Contains("custom-label"));
+        Assert.IsTrue(com.Find(".bit-sld-cnt").ClassList.Contains("custom-container"));
+        Assert.IsTrue(com.Find(".bit-sld-box").ClassList.Contains("custom-box"));
+        Assert.IsTrue(com.Find(".bit-sld-trk").ClassList.Contains("custom-track"));
+        Assert.IsTrue(com.Find(".bit-sld-fil").ClassList.Contains("custom-fill"));
+        Assert.IsTrue(com.Find(".bit-sld-inp").ClassList.Contains("custom-input"));
+        Assert.IsTrue(com.Find(".bit-sld-vlb").ClassList.Contains("custom-value"));
+        Assert.IsTrue(com.Find(".bit-sld-mrk").ClassList.Contains("custom-mark"));
+
+        StringAssert.Contains(com.Find(".bit-sld").GetAttribute("style"), "font-size:2rem");
+        StringAssert.Contains(com.Find(".bit-sld-fil").GetAttribute("style"), "opacity:0.5");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectRangeSpecificClasses()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Classes, new BitSliderClassStyles
+            {
+                LowerValueInput = "custom-lower-input",
+                UpperValueInput = "custom-upper-input",
+                LowerValueLabel = "custom-lower-label",
+                UpperValueLabel = "custom-upper-label"
+            });
+        });
+
+        Assert.IsTrue(com.Find(".bit-sld-inp-lwr").ClassList.Contains("custom-lower-input"));
+        Assert.IsTrue(com.Find(".bit-sld-inp-upr").ClassList.Contains("custom-upper-input"));
+        Assert.IsTrue(com.FindAll(".bit-sld-vlb")[0].ClassList.Contains("custom-lower-label"));
+        Assert.IsTrue(com.FindAll(".bit-sld-vlb")[1].ClassList.Contains("custom-upper-label"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectTheThumbClassesAndStyles()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Value, 4D);
+            parameters.Add(p => p.Classes, new BitSliderClassStyles { Thumb = "custom-thumb" });
+            parameters.Add(p => p.Styles, new BitSliderClassStyles { Thumb = "border-radius:0.25rem" });
+        });
+
+        var thumb = com.Find(".bit-sld-thb");
+
+        Assert.IsTrue(thumb.ClassList.Contains("custom-thumb"));
+        StringAssert.Contains(thumb.GetAttribute("style"), "border-radius:0.25rem");
+
+        // The position the thumb is drawn at is still there beside the custom style.
+        StringAssert.Contains(thumb.GetAttribute("style"), "inset-inline-start:40%");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectTheEndSpecificThumbClassesAndStyles()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.LowerValue, 2D);
+            parameters.Add(p => p.UpperValue, 8D);
+            parameters.Add(p => p.Classes, new BitSliderClassStyles
+            {
+                Thumb = "custom-thumb",
+                LowerThumb = "custom-lower-thumb",
+                UpperThumb = "custom-upper-thumb"
+            });
+            parameters.Add(p => p.Styles, new BitSliderClassStyles
+            {
+                LowerThumb = "border-color:mediumseagreen",
+                UpperThumb = "border-color:orangered"
+            });
+        });
+
+        var lower = com.Find(".bit-sld-thb-lwr");
+        var upper = com.Find(".bit-sld-thb-upr");
+
+        // The shared class reaches both thumbs, and the end-specific one only its own.
+        Assert.IsTrue(lower.ClassList.Contains("custom-thumb"));
+        Assert.IsTrue(upper.ClassList.Contains("custom-thumb"));
+        Assert.IsTrue(lower.ClassList.Contains("custom-lower-thumb"));
+        Assert.IsFalse(lower.ClassList.Contains("custom-upper-thumb"));
+        Assert.IsTrue(upper.ClassList.Contains("custom-upper-thumb"));
+        Assert.IsFalse(upper.ClassList.Contains("custom-lower-thumb"));
+
+        StringAssert.Contains(lower.GetAttribute("style"), "border-color:mediumseagreen");
+        StringAssert.Contains(upper.GetAttribute("style"), "border-color:orangered");
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectSliderBoxHtmlAttributes()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.SliderBoxHtmlAttributes, new Dictionary<string, object> { { "data-test", "box" } });
+        });
+
+        Assert.AreEqual("box", com.Find(".bit-sld-box").GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRespectInputHtmlAttributes()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "data-test", "input" } });
+        });
+
+        Assert.AreEqual("input", com.Find(".bit-sld-inp").GetAttribute("data-test"));
+    }
+
+    #endregion
+
+    #region Validation
+
+    [TestMethod]
+    public void BitSliderShouldReportAnInvalidValueToTheEditContext()
+    {
+        var com = RenderComponent<BitSliderValidationTest>();
+
+        com.Find("form").Submit();
+
+        Assert.AreEqual(1, com.Instance.InvalidCount);
+        Assert.AreEqual(0, com.Instance.ValidCount);
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldClearTheInvalidStateOnceTheValueIsInRange()
+    {
+        var com = RenderComponent<BitSliderValidationTest>();
+
+        com.Find("form").Submit();
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+
+        com.Find(".bit-sld-inp").Input("5");
+        com.Find("form").Submit();
+
+        Assert.AreEqual(1, com.Instance.ValidCount);
+        Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldReportAnInvalidRangeToTheEditContext()
+    {
+        // A ranged slider selects a pair rather than a single number, so the field it reports is the pair -
+        // which is what lets it be annotated and validated like any other field of the model.
+        var com = RenderComponent<BitSliderRangeValidationTest>();
+
+        com.Find("form").Submit();
+
+        Assert.AreEqual(1, com.Instance.InvalidCount);
+        Assert.AreEqual(0, com.Instance.ValidCount);
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp-lwr").GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", com.Find(".bit-sld-inp-upr").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRevalidateARangeAsAThumbMoves()
+    {
+        var com = RenderComponent<BitSliderRangeValidationTest>();
+
+        com.Find("form").Submit();
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+
+        // Every move of a thumb is reported to the EditContext, so the error clears as soon as the pair is
+        // wide enough rather than waiting for the next submit.
+        com.Find(".bit-sld-inp-upr").Input("8");
+
+        Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+
+        com.Find("form").Submit();
+
+        Assert.AreEqual(1, com.Instance.ValidCount);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotValidateWhenNoValidateIsSet()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.NoValidate, true);
+            parameters.Add(p => p.DefaultValue, 3D);
+        });
+
+        Assert.IsFalse(com.Find(".bit-sld").ClassList.Contains("bit-inv"));
+    }
+
+    #endregion
 }
