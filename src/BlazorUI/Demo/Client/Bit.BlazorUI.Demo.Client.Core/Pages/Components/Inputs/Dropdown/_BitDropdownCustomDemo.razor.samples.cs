@@ -501,7 +501,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
     private readonly string example8CsharpCode = @"
 private int clearCounter;
 private string clearValue = ""f-app"";
-private IEnumerable<string> clearValues = [""f-app"", ""f-ban""];
+private IEnumerable<string?> clearValues = [""f-app"", ""f-ban""];
 
 public class Product
 {
@@ -1225,7 +1225,7 @@ private void HandleOnFocusIn() => focusState = ""focused"";
 private void HandleOnFocusOut() => focusState = ""blurred"";
 
 private string controlledValue = ""f-app"";
-private IEnumerable<string> controlledValues = [""f-app"", ""f-ban""];
+private IEnumerable<string?> controlledValues = [""f-app"", ""f-ban""];
 
 private string? changedValue;
 private IEnumerable<string> changedValues = [];
@@ -1308,7 +1308,7 @@ private string? comparerValue = ""F-APP"";";
     private readonly string example15CsharpCode = @"
 private string? autoSelectValue;
 private string comboBoxValueSample1 = default!;
-private IEnumerable<string> comboBoxValues1 = [];
+private IEnumerable<string?> comboBoxValues1 = [];
 
 public class Product
 {
@@ -1392,7 +1392,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
 </BitDropdown>";
     private readonly string example16CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private IEnumerable<string> comboBoxValues2 = [];
+private IEnumerable<string?> comboBoxValues2 = [];
 
 public class DropdownItemData
 {
@@ -1622,7 +1622,7 @@ private BitDropdownNameSelectors<Product, string> comboBoxNameSelectors = new()
     private readonly string example18CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private IEnumerable<string> comboBoxValues3 = [];
+private IEnumerable<string?> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(Product item)
 {
@@ -1748,7 +1748,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              SearchBoxPlaceholder=""Search items""
              Label=""Custom text & search"" />";
     private readonly string example20CsharpCode = @"
-private IEnumerable<string> selectAllValues = [];
+private IEnumerable<string?> selectAllValues = [];
 
 public class Product
 {
@@ -1800,7 +1800,7 @@ private BitDropdownNameSelectors<Product, string> nameSelectors = new()
              Label=""Max 2 items"" />
 <div>Values: @string.Join(',', maxSelectedValues)</div>";
     private readonly string example21CsharpCode = @"
-private IEnumerable<string> maxSelectedValues = [];
+private IEnumerable<string?> maxSelectedValues = [];
 
 public class Product
 {

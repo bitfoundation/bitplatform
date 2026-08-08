@@ -171,9 +171,9 @@ public partial class _BitDropdownOptionDemo
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private IEnumerable<string> comboBoxValues1 = [];
-    private IEnumerable<string> comboBoxValues2 = [];
-    private IEnumerable<string> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues1 = [];
+    private IEnumerable<string?> comboBoxValues2 = [];
+    private IEnumerable<string?> comboBoxValues3 = [];
 
 
     protected override void OnInitialized()

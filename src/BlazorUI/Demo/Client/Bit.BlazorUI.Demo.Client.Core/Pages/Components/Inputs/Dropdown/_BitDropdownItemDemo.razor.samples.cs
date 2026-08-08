@@ -731,6 +731,20 @@ private List<BitDropdownItem<string>> GetDataItems() =>  new()
     new() { Text = ""Item d"", Value = ""D"", Data = new DropdownItemData { IconName = ""Train"" } },
     new() { Text = ""Item e"", Value = ""E"", Data = new DropdownItemData { IconName = ""Repair"" } },
     new() { Text = ""Item f"", Value = ""F"", Data = new DropdownItemData { IconName = ""Running"" } }
+};
+
+private List<BitDropdownItem<string>> GetBasicItems() => new()
+{
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Fruits"" },
+    new() { Text = ""Apple"", Value = ""f-app"" },
+    new() { Text = ""Banana"", Value = ""f-ban"" },
+    new() { Text = ""Orange"", Value = ""f-ora"", IsEnabled = false },
+    new() { Text = ""Grape"", Value = ""f-gra"" },
+    new() { ItemType = BitDropdownItemType.Divider },
+    new() { ItemType = BitDropdownItemType.Header, Text = ""Vegetables"" },
+    new() { Text = ""Broccoli"", Value = ""v-bro"" },
+    new() { Text = ""Carrot"", Value = ""v-car"" },
+    new() { Text = ""Lettuce"", Value = ""v-let"" }
 };";
 
     private readonly string example14RazorCode = @"
@@ -842,7 +856,7 @@ private void HandleOnFocusIn() => focusState = ""focused"";
 private void HandleOnFocusOut() => focusState = ""blurred"";
 
 private string controlledValue = ""f-app"";
-private IEnumerable<string> controlledValues = [""f-app"", ""f-ban""];
+private IEnumerable<string?> controlledValues = [""f-app"", ""f-ban""];
 
 private string? changedValue;
 private IEnumerable<string> changedValues = [];
@@ -896,7 +910,7 @@ private string? comparerValue = ""F-APP"";";
     private readonly string example15CsharpCode = @"
 private string? autoSelectValue;
 private string comboBoxValueSample1 = default!;
-private IEnumerable<string> comboBoxValues1 = [];
+private IEnumerable<string?> comboBoxValues1 = [];
 
 private List<BitDropdownItem<string>> comboBoxItems = new()
 {
@@ -945,7 +959,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
 </BitDropdown>";
     private readonly string example16CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private IEnumerable<string> comboBoxValues2 = [];
+private IEnumerable<string?> comboBoxValues2 = [];
 
 public class DropdownItemData
 {
@@ -1078,7 +1092,7 @@ private List<BitDropdownItem<string>> comboBoxItems = new()
     private readonly string example18CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private IEnumerable<string> comboBoxValues3 = [];
+private IEnumerable<string?> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(BitDropdownItem<string> item)
 {

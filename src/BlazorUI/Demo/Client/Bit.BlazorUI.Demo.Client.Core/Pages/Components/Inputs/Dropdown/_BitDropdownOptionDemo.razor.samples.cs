@@ -1210,7 +1210,7 @@ private string? comparerValue = ""F-APP"";";
     private readonly string example15CsharpCode = @"
 private string? autoSelectValue;
 private string comboBoxValueSample1 = default!;
-private IEnumerable<string> comboBoxValues1 = [];
+private IEnumerable<string?> comboBoxValues1 = [];
 
 private readonly List<BitDropdownItem<string>> comboBoxItems =
 [
@@ -1275,7 +1275,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
 </BitDropdown>";
     private readonly string example16CsharpCode = @"
 private string comboBoxValueSample2 = default!;
-private IEnumerable<string> comboBoxValues2 = [];
+private IEnumerable<string?> comboBoxValues2 = [];
 
 public class DropdownItemData
 {
@@ -1448,7 +1448,7 @@ private readonly List<BitDropdownItem<string>> comboBoxItems =
     private readonly string example18CsharpCode = @"
 private string comboBoxValueSample3 = default!;
 private string comboBoxValueSample4 = default!;
-private IEnumerable<string> comboBoxValues3 = [];
+private IEnumerable<string?> comboBoxValues3 = [];
 
 private void HandleOnDynamicAdd(BitDropdownOption<string> item)
 {

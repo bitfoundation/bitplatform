@@ -215,14 +215,14 @@ public partial class _BitDropdownCustomDemo
 
     private IEnumerable<string?> localizationValues = ["f-app", "f-ban", "v-bro"];
 
-    private IEnumerable<string> selectAllValues = [];
-    private IEnumerable<string> maxSelectedValues = [];
+    private IEnumerable<string?> selectAllValues = [];
+    private IEnumerable<string?> maxSelectedValues = [];
 
     private bool isDropdownOpen;
     private int selectItemCounter;
 
     private string controlledValue = "f-app";
-    private IEnumerable<string> controlledValues = ["f-app", "f-ban"];
+    private IEnumerable<string?> controlledValues = ["f-app", "f-ban"];
 
     private string? changedValue;
     private IEnumerable<string> changedValues = [];
@@ -233,7 +233,7 @@ public partial class _BitDropdownCustomDemo
     private Product? deselectedItem;
 
     private string clearValue = "f-app";
-    private IEnumerable<string> clearValues = ["f-app", "f-ban"];
+    private IEnumerable<string?> clearValues = ["f-app", "f-ban"];
     private int clearCounter;
 
     private string calloutState = "closed";
@@ -264,9 +264,9 @@ public partial class _BitDropdownCustomDemo
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private IEnumerable<string> comboBoxValues1 = [];
-    private IEnumerable<string> comboBoxValues2 = [];
-    private IEnumerable<string> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues1 = [];
+    private IEnumerable<string?> comboBoxValues2 = [];
+    private IEnumerable<string?> comboBoxValues3 = [];
 
     private IEnumerable<Product> initialSelectedItem = [
         new()

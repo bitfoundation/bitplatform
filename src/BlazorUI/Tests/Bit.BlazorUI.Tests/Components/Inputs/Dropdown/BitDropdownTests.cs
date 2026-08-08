@@ -3237,17 +3237,6 @@ public class BitDropdownTests : BunitTestContext
         _bitDropdownValues = values;
     }
 
-    private static List<BitDropdownItem<string>> GetDropdownItems() => new()
-    {
-        new() { Text = "Fruits", ItemType = BitDropdownItemType.Header },
-        new() { Text = "Apple", Value = "f-app" },
-        new() { Text = "Orange", Value = "f-ora" },
-        new() { Text = "Banana", Value = "f-ban" },
-        new() { ItemType = BitDropdownItemType.Divider },
-        new() { Text = "Vegetables", ItemType = BitDropdownItemType.Header },
-        new() { Text = "Broccoli", Value = "v-bro" }
-    };
-
     // The ComboBox mode filters through the input of the dropdown itself, so the search box is not
     // rendered there and the reference to its input is never assigned. Opening the callout used to
     // focus that reference all the same, which throws rather than doing nothing.
@@ -3345,6 +3334,17 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, component.FindAll(".bit-drp-chp").Count);
         Assert.AreEqual("Apple", component.Find(".bit-drp-tdp").TextContent.Trim());
     }
+
+    private static List<BitDropdownItem<string>> GetDropdownItems() => new()
+    {
+        new() { Text = "Fruits", ItemType = BitDropdownItemType.Header },
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Orange", Value = "f-ora" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { Text = "Vegetables", ItemType = BitDropdownItemType.Header },
+        new() { Text = "Broccoli", Value = "v-bro" }
+    };
 
     private static List<BitDropdownItem<string>> GetShortDropdownItems() => new()
     {

@@ -187,7 +187,7 @@ public partial class _BitDropdownItemDemo
     private int selectItemCounter;
 
     private string controlledValue = "f-app";
-    private IEnumerable<string> controlledValues = ["f-app", "f-ban"];
+    private IEnumerable<string?> controlledValues = ["f-app", "f-ban"];
 
     private string? changedValue;
     private IEnumerable<string> changedValues = [];
@@ -229,9 +229,9 @@ public partial class _BitDropdownItemDemo
     private string comboBoxValueSample2 = default!;
     private string comboBoxValueSample3 = default!;
     private string comboBoxValueSample4 = default!;
-    private IEnumerable<string> comboBoxValues1 = [];
-    private IEnumerable<string> comboBoxValues2 = [];
-    private IEnumerable<string> comboBoxValues3 = [];
+    private IEnumerable<string?> comboBoxValues1 = [];
+    private IEnumerable<string?> comboBoxValues2 = [];
+    private IEnumerable<string?> comboBoxValues3 = [];
 
     private IEnumerable<BitDropdownItem<string>> initialSelectedItem = [
         new()

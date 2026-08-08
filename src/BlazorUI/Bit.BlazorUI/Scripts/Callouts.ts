@@ -164,7 +164,13 @@ namespace BitBlazorUI {
             const { x: componentX, y: componentY } = component.getBoundingClientRect();
 
             let calloutWidth = callout.offsetWidth;
-            const calloutHeight = callout.offsetHeight;
+            // The consumer's cap shortens the scrollable list (and only it), so the callout the placement
+            // below decides for can be shorter than the one measured here: whatever the cap takes off that
+            // list comes off this height too, or a list that fits under the component only because of the
+            // cap would still be pushed above it.
+            const calloutHeight = callout.offsetHeight - (maxHeight > 0 && scrollContainerId
+                                                            ? Math.max(0, (scrollContainer as HTMLElement).offsetHeight - maxHeight)
+                                                            : 0);
             const { x: calloutLeft } = callout.getBoundingClientRect();
 
             // Distances from the component to each edge of the visible band (getBoundingClientRect space).
