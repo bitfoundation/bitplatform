@@ -3,11 +3,11 @@
 
 <PageOutlet Url="components/textfield"
             Title="TextField"
-            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and a multiline one, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter, inline ghost suggestions and full EditForm validation." />
+            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and an auto-growing multiline one, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter, inline ghost suggestions, debounced and throttled immediate binding with input method editor support, and full EditForm validation." />
 
 <DemoPage Name="TextField"
           SecondaryNames="@(["TextInput"])"
-          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label, a description and a character counter, and plugs into an EditForm the same way the built-in Blazor inputs do."
+          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label, a visible or screen-reader-only description and a character counter, exposes every part of its chrome to templates and to the Styles and Classes parameters, and plugs into an EditForm the same way the built-in Blazor inputs do."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -112,12 +112,17 @@
     <DemoExample Title="Input type" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Type</b> maps to the html type of the input, which decides what the browser does with the value: the password
-            type masks it, the number type refuses non-numeric characters, the email and url types validate the format on
-            submit, and the search type lets the browser offer the previous searches of the same field.
+            type masks it, the number type accepts floating-point syntax - digits, a decimal separator, a sign and the
+            scientific notation - and reports anything else as invalid instead of refusing every non-digit character, the
+            email and url types validate the format on submit, and the search type lets the browser offer the previous
+            searches of the same field.
             <b>InputMode</b> is independent of it and only decides which virtual keyboard a phone brings up, so a
             <code>text</code> field asking for a PIN can still show the numeric keypad. <b>EnterKeyHint</b> relabels the return
             key of that keyboard, and <b>Pattern</b>, <b>SpellCheck</b>, <b>AutoCorrect</b> and <b>AutoCapitalize</b> pass
-            through to the matching html attributes.
+            through to the matching html attributes. The number type here is only the html one - the value is still bound as a
+            string and there is no bound, no step and no spinner: a field that really holds a number wants
+            <a href="/components/numberfield">BitNumberField</a>, which binds any .NET numeric type and brings the clamping,
+            the stepping and the spinbutton keyboard set with it.
         </div>
         <br />
         <div class="example-box">
@@ -149,9 +154,11 @@
 
     <DemoExample Title="Icon" RazorCode="@example6RazorCode" Id="example6">
         <div>
-            <b>IconName</b> renders an icon of the built-in Fluent UI set at the trailing end of the field. The icon is purely
-            decorative - it carries <code>aria-hidden</code> and is not focusable - so it should reinforce the label rather than
-            replace it. It also picks up the <b>Accent</b> color while the field has focus.
+            <b>IconName</b> renders an icon of the built-in Fluent UI set at the trailing end of the field. It is decorative by
+            default - hidden from screen readers and not focusable - so it should reinforce the label rather than replace it;
+            an icon that does carry a meaning of its own gets a name of its own through <b>IconAriaLabel</b>, shown in the
+            <a href="#example19">Accessibility</a> section. The icon picks up the <b>Accent</b> color while the field has focus,
+            and goes grey along with the rest of the field while it is disabled.
         </div>
         <br />
         <div class="example-box">
@@ -185,14 +192,22 @@
             Every piece of chrome around the input can be replaced by a template when the plain string parameters are not
             enough: <b>LabelTemplate</b>, <b>DescriptionTemplate</b>, <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take over
             from <b>Label</b>, <b>Description</b>, <b>Prefix</b> and <b>Suffix</b>, <b>ClearButtonTemplate</b> replaces the icon
-            of the clear button, <b>RevealPasswordTemplate</b> receives whether the password is currently revealed, and
-            <b>CountTemplate</b> receives the current number of characters.
+            of the clear button, <b>RevealPasswordTemplate</b> receives whether the password is currently revealed,
+            <b>CountTemplate</b> receives the current number of characters, and <b>LoadingTemplate</b> replaces the spinner of
+            the busy indicator (shown in the <a href="#example18">Loading</a> section). A field rendered through a
+            <b>LabelTemplate</b> still gets the required asterisk, so custom chrome never costs the field its markings.
         </div>
         <br />
         <div class="example-box">
             <BitTextField>
                 <LabelTemplate>
                     <BitLabel Style="color:coral">Custom Label</BitLabel>
+                </LabelTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Required>
+                <LabelTemplate>
+                    <BitLabel Style="color:coral">Custom Label of a required field</BitLabel>
                 </LabelTemplate>
             </BitTextField>
             <br />
@@ -234,14 +249,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Password" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Password" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>Type="BitInputType.Password"</b> masks the value. Adding <b>CanRevealPassword</b> renders a toggle button that
             swaps the input to plain text, which is the pattern that lets people check what they typed instead of typing the
             password twice. The button keeps one stable <b>RevealPasswordAriaLabel</b> in both states and reports the current
             state through <code>aria-pressed</code>, which is what screen readers announce reliably; the caret is handed back
             to the input after every toggle. <b>RevealPasswordIconName</b> and <b>HidePasswordIconName</b> customize the two
-            icons.
+            icons, and the native reveal affordance that Edge and Internet Explorer add to a password input is taken away so
+            that only one of them is ever shown. The <b>ToggleRevealPassword</b> method drives the same toggle from the
+            outside - from a checkbox next to the form, for instance - and is ignored unless the field is a revealable
+            password, so a revealed value can never survive the reveal being taken away.
         </div>
         <br />
         <div class="example-box">
@@ -255,16 +273,28 @@
                           RevealPasswordAriaLabel="Show the password"
                           RevealPasswordIconName="@BitIconName.RedEye"
                           HidePasswordIconName="@BitIconName.Hide" />
+            <br />
+            <BitTextField @ref="passwordRef"
+                          Label="Toggled from the outside"
+                          Type="BitInputType.Password"
+                          CanRevealPassword
+                          DefaultValue="p@ssw0rd" />
+            <BitButton Style="margin-top: 0.5rem;" OnClick="() => passwordRef?.ToggleRevealPassword()">
+                ToggleRevealPassword
+            </BitButton>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Clear button" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Clear button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>ShowClearButton</b> renders a button that empties the field, and it only appears while there is something to
             clear. Clearing sets the value to null through the normal binding, fires <b>OnClear</b> and returns the focus to the
             input so typing can continue right away. The button is a real button with an <b>ClearButtonAriaLabel</b>, so it is
             reachable by keyboard, and it is disabled in the read-only and disabled states. <b>ClearButtonIconName</b> swaps its
-            icon, and it works in the multiline mode too.
+            icon, and it works in the multiline mode too. A search input draws a clear affordance of its own in WebKit browsers,
+            which is hidden while the clear button is on so that the field never shows two of them. The <b>ClearAsync</b> method
+            does the same thing from code - without needing the button to be visible at all - and raises <b>OnClear</b> just
+            like a click on it does.
         </div>
         <br />
         <div class="example-box">
@@ -276,9 +306,18 @@
                           ClearButtonAriaLabel="Empty this field"
                           ClearButtonIconName="@BitIconName.ChromeClose" />
             <br />
+            <BitTextField Label="Search (the native clear affordance is hidden)"
+                          Type="BitInputType.Search"
+                          ShowClearButton
+                          DefaultValue="bit BlazorUI" />
+            <br />
             <BitTextField Label="Multiline" Multiline Rows="3" ShowClearButton DefaultValue="A multiline value that can be cleared." />
             <br />
             <BitTextField Label="ReadOnly (the button is disabled)" ReadOnly ShowClearButton DefaultValue="Read only value" />
+            <br />
+            <BitTextField @ref="clearRef" Label="Cleared from the outside" @bind-Value="clearApiValue" />
+            <BitButton Style="margin-top: 0.5rem;" OnClick="() => clearRef?.ClearAsync()">ClearAsync</BitButton>
+            <div>Value: [@clearApiValue]</div>
         </div>
     </DemoExample>
 
@@ -309,7 +348,9 @@
             <b>DebounceTime</b> waits until the typing pauses for that many milliseconds before committing, and
             <b>ThrottleTime</b> commits at most once per that many milliseconds - both of them are what a
             search-as-you-type field wants so it does not fire a request per character. <b>DefaultValue</b> seeds an uncontrolled
-            field that reports through <b>OnChange</b> instead of a two-way binding.
+            field that reports through <b>OnChange</b> instead of a two-way binding. An <b>Immediate</b> field also guards
+            against the input method editors used for Chinese, Japanese and Korean: the half-composed characters a candidate
+            window produces are kept out of the bound value, which only receives the text once the composition is committed.
         </div>
         <br />
         <div class="example-box">
@@ -422,8 +463,12 @@
         <div>
             Besides <b>OnChange</b>, the field forwards the raw dom events it sits on: <b>OnKeyDown</b> and <b>OnKeyUp</b> for
             every key, <b>OnEnter</b> and <b>OnEscape</b> as shortcuts for the two keys a form cares about most, <b>OnClick</b>,
-            and <b>OnFocus</b>/<b>OnFocusIn</b>/<b>OnFocusOut</b> for the focus lifecycle. All of them are skipped while the
-            field is disabled.
+            and <b>OnFocus</b>, <b>OnBlur</b>, <b>OnFocusIn</b> and <b>OnFocusOut</b> for the focus lifecycle. The difference
+            between the two pairs is bubbling: focus and blur are raised by the input alone, while focusin and focusout also
+            reach it from whatever is inside it, which is what makes them the ones to watch when a whole group of controls is
+            being tracked. All of them are skipped while the field is disabled. <b>OnEnter</b> and <b>OnEscape</b> are also
+            skipped while an input method editor is composing, where the two keys commit and cancel a candidate rather than
+            the value - so a form is never submitted in the middle of typing a Chinese or Japanese word.
         </div>
         <br />
         <div class="example-box">
@@ -431,6 +476,8 @@
                           OnEnter="HandleOnEnter"
                           OnEscape="HandleOnEscape"
                           OnKeyDown="HandleOnKeyDown"
+                          OnFocus="HandleOnFocus"
+                          OnBlur="HandleOnBlur"
                           OnFocusIn="HandleOnFocusIn"
                           OnFocusOut="HandleOnFocusOut" />
             <br />
@@ -443,7 +490,129 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Selection" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <div>
+            <b>SelectOnFocus</b> selects the whole value the moment the field receives focus, so the next keystroke replaces it
+            instead of appending to it - what a field holding a value meant to be overwritten rather than edited (a search term,
+            a quantity, a generated code) usually wants. It applies to a read-only field too, where selecting the value is
+            exactly what makes it easy to copy. The same thing is available from code through <b>SelectAsync</b>, and
+            <b>SelectRangeAsync</b> selects only a part of the value, or moves the caret when the two positions are equal. Both
+            positions are clamped to the length of the value, a null start counts from the beginning and a null end runs to the
+            very end, so a range can never fall outside the text.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="SelectOnFocus" SelectOnFocus DefaultValue="Focus me and start typing" />
+            <br />
+            <BitTextField Label="ReadOnly + SelectOnFocus" SelectOnFocus ReadOnly DefaultValue="AB12-CD34-EF56" />
+            <br />
+            <BitTextField @ref="selectionRef" Label="Driven from code" DefaultValue="bit BlazorUI components" />
+            <BitStack Horizontal Style="margin-top: 0.5rem;">
+                <BitButton OnClick="() => selectionRef?.SelectAsync()">SelectAsync</BitButton>
+                <BitButton OnClick="() => selectionRef?.SelectRangeAsync(4, 12)">SelectRangeAsync(4, 12)</BitButton>
+                <BitButton OnClick="() => selectionRef?.SelectRangeAsync(0, 0)">Caret to the start</BitButton>
+            </BitStack>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Label position" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            <b>LabelPosition</b> moves the label around the input: <b>Top</b> is the classic form layout, <b>Bottom</b> puts the
+            caption under the field, and <b>Start</b> and <b>End</b> lay the two out on one line, which is what a compact
+            settings row or a filter bar wants. The two row layouts follow the reading direction rather than the screen, so they
+            mirror themselves in a right-to-left page. Leaving the parameter unset keeps the layout each variant comes with -
+            above the input in the default one and next to it in the underlined one - so an existing field never moves on its
+            own.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Top" LabelPosition="BitLabelPosition.Top" Placeholder="Enter a text..." />
+            <br />
+            <BitTextField Label="Bottom" LabelPosition="BitLabelPosition.Bottom" Placeholder="Enter a text..." />
+            <br />
+            <BitTextField Label="Start" LabelPosition="BitLabelPosition.Start" Placeholder="Enter a text..." />
+            <br />
+            <BitTextField Label="End" LabelPosition="BitLabelPosition.End" Placeholder="Enter a text..." />
+            <br />
+            <BitTextField Label="Start + Required + a counter"
+                          Required
+                          ShowCount
+                          MaxLength="20"
+                          LabelPosition="BitLabelPosition.Start"
+                          Description="The footer keeps its own line under the whole row." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Loading" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+        <div>
+            <b>Loading</b> shows a busy indicator inside the field, which is how a field says that something is running against
+            what was typed - a suggestion being fetched, a name being checked for availability, a value being validated on the
+            server. The field stays fully editable while it is on, so the typing is never interrupted, and the indicator is
+            marked as a status rather than an alert so a screen reader can find it without being interrupted either.
+            <b>LoadingAriaLabel</b> is the name it announces, and <b>LoadingTemplate</b> replaces the default spinner with any
+            content - one of the other loading components of the library, an icon, a piece of text.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="Loading" Loading DefaultValue="Checking..." />
+            <br />
+            <BitTextField Label="Loading with a clear button and an icon"
+                          Loading
+                          ShowClearButton
+                          DefaultValue="bit"
+                          IconName="@BitIconName.Search" />
+            <br />
+            <BitTextField Label="Custom indicator" Loading LoadingAriaLabel="Checking the availability">
+                <LoadingTemplate>
+                    <BitEllipsisLoading CustomSize="24" CustomColor="currentColor" />
+                </LoadingTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Label="Availability of a user name"
+                          Immediate
+                          DebounceTime="400"
+                          Loading="@userNameLoading"
+                          Placeholder="Type a user name..."
+                          Description="@userNameStatus"
+                          @bind-Value="userName"
+                          OnChange="CheckUserNameAsync" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            A field is only usable by everyone when what it expects is exposed to assistive technologies as well as to the eye.
+            <b>Label</b> is the first tool for that and should be preferred over <b>AriaLabel</b>, which names the input for a
+            screen reader without showing anything - use it only where the surrounding layout already makes the purpose obvious.
+            <b>Description</b> is the visible hint under the field, while <b>AriaDescription</b> is a hidden one for the cases
+            where the instruction would be too long to show; both are referenced by the input through <code>aria-describedby</code>,
+            in reading order, alongside the character counter when it carries a limit. <b>Title</b> renders the html title of the
+            field, which the browser shows as a tooltip on hover. The trailing icon is decorative and hidden from screen readers
+            by default; <b>IconAriaLabel</b> turns it into an image with a name for the cases where the icon carries a meaning of
+            its own.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTextField Label="With a hidden description"
+                          AriaDescription="Use the number printed on the back of your card, without the spaces between the groups."
+                          Description="Card number"
+                          Placeholder="1234 5678 9012 3456" />
+            <br />
+            <BitTextField Label="With a tooltip" Title="The name your colleagues see next to your messages." />
+            <br />
+            <BitTextField Label="With a meaningful icon"
+                          IconName="@BitIconName.Lock"
+                          IconAriaLabel="This value is encrypted"
+                          DefaultValue="•••• •••• •••• 3456" />
+            <br />
+            <BitTextField AriaLabel="Search the documentation"
+                          Type="BitInputType.Search"
+                          Placeholder="Search..."
+                          IconName="@BitIconName.Search" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Validation" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             Inside an <b>EditForm</b> the field joins the cascading <code>EditContext</code> automatically, so the data
             annotations on the model drive it: a failing field gets the <code>bit-inv</code> class and the
@@ -486,7 +655,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Background" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Background</b> picks the fill of the field from the color kinds of the theme. <b>Transparent</b> is the one to
             use when the field sits on a colored surface and should inherit it instead of punching a light rectangle into it.
@@ -503,7 +672,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Border" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <b>Border</b> picks the color of the frame from the same color kinds, independently of the background.
             <b>Transparent</b> keeps the border box - and therefore the layout - while making the line itself invisible, which
@@ -521,7 +690,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accent" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="Accent" RazorCode="@example23RazorCode" Id="example23">
         <div>
             <b>Accent</b> is the color the field takes on while it has focus: the focus ring, the icon and the affixes all
             follow it. Primary is the default, and the remaining variants are what gives a field a meaning of its own - a
@@ -567,7 +736,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24">
         <div>
             The <b>Icon</b> parameter takes a <b>BitIconInfo</b> instead of a built-in icon name, which is what lets an icon
             come from FontAwesome, Bootstrap Icons or any other icon font: <b>BitIconInfo.Fa</b> and <b>BitIconInfo.Bi</b> build
@@ -620,7 +789,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25">
         <div>
             <b>Size</b> scales the whole field at once - its height, its font, its icons and its buttons - so a field stays
             proportional to the controls next to it. Medium is the default; Small is what a dense toolbar or a table row wants,
@@ -640,7 +809,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every inner
             part by name - the label, the field group, the input, the buttons, the footer and the counter - which is what makes
@@ -674,7 +843,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27">
         <div>
             Set <b>Dir="BitDir.Rtl"</b> to mirror the field for a right-to-left language. The label, the affixes, the buttons,
             the required asterisk and the underline all follow the direction, since the layout is written with logical

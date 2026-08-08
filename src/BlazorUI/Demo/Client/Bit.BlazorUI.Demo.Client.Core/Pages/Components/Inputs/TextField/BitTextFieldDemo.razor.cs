@@ -17,6 +17,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Detailed description of the input for the benefit of screen readers. It is rendered into a visually hidden element that the input references through its aria-describedby attribute, which is what lets a field carry an instruction that would be too long to show next to it.",
+        },
+        new()
+        {
             Name = "AutoCapitalize",
             Type = "string?",
             DefaultValue = "null",
@@ -169,6 +176,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "IconAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the icon shown at the trailing end of the text field. The icon is decorative and hidden from assistive technologies by default; setting this turns it into an image with a name, which is what an icon carrying a meaning of its own needs.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
@@ -192,10 +206,40 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "LabelPosition",
+            Type = "BitLabelPosition?",
+            DefaultValue = "null",
+            Description = "Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes with: above the input in the default one, and next to it in the Underlined one.",
+            LinkType = LinkType.Link,
+            Href = "#label-position-enum",
+        },
+        new()
+        {
             Name = "LabelTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom label for text field.",
+        },
+        new()
+        {
+            Name = "Loading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows a busy indicator inside the field, which is what tells the user that something is running against what was typed - a suggestion being fetched, a value being checked against a server. The field stays editable while it is on, so the typing is never interrupted by it.",
+        },
+        new()
+        {
+            Name = "LoadingAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible name of the busy indicator, which is what a screen reader announces for it. Defaults to \"Loading\".",
+        },
+        new()
+        {
+            Name = "LoadingTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the busy indicator, which replaces the default spinner.",
         },
         new()
         {
@@ -231,6 +275,12 @@ public partial class BitTextFieldDemo : IDisposable
             Type = "bool",
             DefaultValue = "false",
             Description = "Removes the border of the text input.",
+        },
+        new()
+        {
+            Name = "OnBlur",
+            Type = "EventCallback<FocusEventArgs>",
+            Description = "Callback for when the input loses focus. Unlike OnFocusOut it does not bubble, so it is the one to use when only the input itself losing focus is of interest.",
         },
         new()
         {
@@ -380,6 +430,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "SelectOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Selects the whole value when the input receives focus, so that the next keystroke replaces it. It is what a field holding a value the user is expected to overwrite rather than edit - a search term, a quantity, a generated code - usually wants.",
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
@@ -430,6 +487,13 @@ public partial class BitTextFieldDemo : IDisposable
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Shows the custom suffix for text field.",
+        },
+        new()
+        {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A more descriptive title of the text field, shown by the browser as its tooltip.",
         },
         new()
         {
@@ -520,6 +584,13 @@ public partial class BitTextFieldDemo : IDisposable
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's input."
+                },
+                new()
+                {
+                    Name = "Loading",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's busy indicator container."
                 },
                 new()
                 {
@@ -801,6 +872,39 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Id = "label-position-enum",
+            Name = "BitLabelPosition",
+            Description = "Defines the positions a label can take relative to the control it belongs to.",
+            Items =
+            [
+                new()
+                {
+                    Name = "Top",
+                    Description = "The label sits above the input.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "End",
+                    Description = "The label sits after the input, on the same line.",
+                    Value = "1",
+                },
+                new()
+                {
+                    Name = "Bottom",
+                    Description = "The label sits under the input.",
+                    Value = "2",
+                },
+                new()
+                {
+                    Name = "Start",
+                    Description = "The label sits before the input, on the same line.",
+                    Value = "3",
+                },
+            ]
+        },
+        new()
+        {
             Id = "size-enum",
             Name = "BitSize",
             Description = "Defines the sizes available in the bit BlazorUI.",
@@ -946,9 +1050,27 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "ClearAsync",
+            Type = "Task",
+            Description = "Empties the text field and raises OnClear, exactly as the clear button does (without requiring ShowClearButton, since there is no button involved). It does nothing while the field is disabled or read-only.",
+        },
+        new()
+        {
             Name = "FocusAsync",
             Type = "ValueTask",
-            Description = "Gives focus to the input element of the BitTextField.",
+            Description = "Gives focus to the input element of the BitTextField. The overload taking a preventScroll flag focuses it without scrolling the document to bring it into view.",
+        },
+        new()
+        {
+            Name = "SelectAsync",
+            Type = "ValueTask",
+            Description = "Selects the whole value of the input, the programmatic counterpart of SelectOnFocus.",
+        },
+        new()
+        {
+            Name = "SelectRangeAsync",
+            Type = "ValueTask",
+            Description = "Selects the text between the two given positions, or moves the caret when they are equal. A null start counts from the beginning of the value and a null end runs to its very end, and both are clamped to the length of the value.",
         },
         new()
         {
@@ -988,11 +1110,68 @@ public partial class BitTextFieldDemo : IDisposable
 
     private void HandleOnKeyDown(KeyboardEventArgs e) => lastKey = e.Key;
 
+    private void HandleOnFocus() => focusLog = "focused";
+
+    private void HandleOnBlur() => focusLog = "blurred";
+
     private void HandleOnFocusIn() => focusLog = "focused in";
 
     private void HandleOnFocusOut() => focusLog = "focused out";
 
     private void HandleOnClear() => clearLog = $"cleared ({++clearCount})";
+
+
+    private BitTextField? passwordRef;
+
+    private BitTextField? clearRef;
+    private string? clearApiValue = "Clear me from the button below";
+
+    private BitTextField? selectionRef;
+
+
+    private string? userName;
+    private bool userNameLoading;
+    private string? userNameStatus;
+    private CancellationTokenSource? _userNameCts;
+
+    private async Task CheckUserNameAsync(string? value)
+    {
+        CancelAndDispose(ref _userNameCts);
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            userNameLoading = false;
+            userNameStatus = null;
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _userNameCts = cts;
+
+        userNameLoading = true;
+        userNameStatus = null;
+
+        try
+        {
+            await Task.Delay(1500, cts.Token);
+
+            userNameStatus = value.Length < 5
+                ? $"'{value}' is already taken."
+                : $"'{value}' is available.";
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer keystroke started another check and canceled this one.
+            return;
+        }
+        finally
+        {
+            if (cts.IsCancellationRequested is false)
+            {
+                userNameLoading = false;
+            }
+        }
+    }
 
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
@@ -1124,6 +1303,7 @@ public partial class BitTextFieldDemo : IDisposable
     {
         CancelAndDispose(ref _ghostSuggestionCts);
         CancelAndDispose(ref _ghostMultilineSuggestionCts);
+        CancelAndDispose(ref _userNameCts);
     }
 
 
@@ -1200,6 +1380,12 @@ public partial class BitTextFieldDemo : IDisposable
     </LabelTemplate>
 </BitTextField>
 
+<BitTextField Required>
+    <LabelTemplate>
+        <BitLabel Style=""color:coral"">Custom Label of a required field</BitLabel>
+    </LabelTemplate>
+</BitTextField>
+
 <BitTextField Label=""Custom Description"">
     <DescriptionTemplate>
         <BitLabel Style=""color:coral"">Description</BitLabel>
@@ -1246,7 +1432,16 @@ public partial class BitTextFieldDemo : IDisposable
               CanRevealPassword
               RevealPasswordAriaLabel=""Show the password""
               RevealPasswordIconName=""@BitIconName.RedEye""
-              HidePasswordIconName=""@BitIconName.Hide"" />";
+              HidePasswordIconName=""@BitIconName.Hide"" />
+
+<BitTextField @ref=""passwordRef""
+              Label=""Toggled from the outside""
+              Type=""BitInputType.Password""
+              CanRevealPassword
+              DefaultValue=""p@ssw0rd"" />
+<BitButton OnClick=""() => passwordRef?.ToggleRevealPassword()"">ToggleRevealPassword</BitButton>";
+    private readonly string example9CsharpCode = @"
+private BitTextField? passwordRef;";
 
     private readonly string example10RazorCode = @"
 <BitTextField Label=""Email"" DefaultValue=""example@email.com"" ShowClearButton />
@@ -1257,11 +1452,23 @@ public partial class BitTextFieldDemo : IDisposable
               ClearButtonAriaLabel=""Empty this field""
               ClearButtonIconName=""@BitIconName.ChromeClose"" />
 
+<BitTextField Label=""Search (the native clear affordance is hidden)""
+              Type=""BitInputType.Search""
+              ShowClearButton
+              DefaultValue=""bit BlazorUI"" />
+
 <BitTextField Label=""Multiline"" Multiline Rows=""3"" ShowClearButton
               DefaultValue=""A multiline value that can be cleared."" />
 
 <BitTextField Label=""ReadOnly (the button is disabled)"" ReadOnly ShowClearButton
-              DefaultValue=""Read only value"" />";
+              DefaultValue=""Read only value"" />
+
+<BitTextField @ref=""clearRef"" Label=""Cleared from the outside"" @bind-Value=""clearApiValue"" />
+<BitButton OnClick=""() => clearRef?.ClearAsync()"">ClearAsync</BitButton>
+<div>Value: [@clearApiValue]</div>";
+    private readonly string example10CsharpCode = @"
+private BitTextField? clearRef;
+private string? clearApiValue = ""Clear me from the button below"";";
 
     private readonly string example11RazorCode = @"
 <BitTextField Label=""With a limit"" ShowCount MaxLength=""30"" Placeholder=""Up to 30 characters..."" />
@@ -1472,6 +1679,8 @@ private string? notTrimmedValue;";
               OnEnter=""HandleOnEnter""
               OnEscape=""HandleOnEscape""
               OnKeyDown=""HandleOnKeyDown""
+              OnFocus=""HandleOnFocus""
+              OnBlur=""HandleOnBlur""
               OnFocusIn=""HandleOnFocusIn""
               OnFocusOut=""HandleOnFocusOut"" />
 
@@ -1495,6 +1704,10 @@ private void HandleOnEscape() => eventLog = $""OnEscape ({++eventCount})"";
 
 private void HandleOnKeyDown(KeyboardEventArgs e) => lastKey = e.Key;
 
+private void HandleOnFocus() => focusLog = ""focused"";
+
+private void HandleOnBlur() => focusLog = ""blurred"";
+
 private void HandleOnFocusIn() => focusLog = ""focused in"";
 
 private void HandleOnFocusOut() => focusLog = ""focused out"";
@@ -1502,6 +1715,125 @@ private void HandleOnFocusOut() => focusLog = ""focused out"";
 private void HandleOnClear() => clearLog = $""cleared ({++clearCount})"";";
 
     private readonly string example16RazorCode = @"
+<BitTextField Label=""SelectOnFocus"" SelectOnFocus DefaultValue=""Focus me and start typing"" />
+
+<BitTextField Label=""ReadOnly + SelectOnFocus"" SelectOnFocus ReadOnly DefaultValue=""AB12-CD34-EF56"" />
+
+<BitTextField @ref=""selectionRef"" Label=""Driven from code"" DefaultValue=""bit BlazorUI components"" />
+<BitStack Horizontal>
+    <BitButton OnClick=""() => selectionRef?.SelectAsync()"">SelectAsync</BitButton>
+    <BitButton OnClick=""() => selectionRef?.SelectRangeAsync(4, 12)"">SelectRangeAsync(4, 12)</BitButton>
+    <BitButton OnClick=""() => selectionRef?.SelectRangeAsync(0, 0)"">Caret to the start</BitButton>
+</BitStack>";
+    private readonly string example16CsharpCode = @"
+private BitTextField? selectionRef;";
+
+    private readonly string example17RazorCode = @"
+<BitTextField Label=""Top"" LabelPosition=""BitLabelPosition.Top"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Bottom"" LabelPosition=""BitLabelPosition.Bottom"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""Start"" LabelPosition=""BitLabelPosition.Start"" Placeholder=""Enter a text..."" />
+<BitTextField Label=""End"" LabelPosition=""BitLabelPosition.End"" Placeholder=""Enter a text..."" />
+
+<BitTextField Label=""Start + Required + a counter""
+              Required
+              ShowCount
+              MaxLength=""20""
+              LabelPosition=""BitLabelPosition.Start""
+              Description=""The footer keeps its own line under the whole row."" />";
+
+    private readonly string example18RazorCode = @"
+<BitTextField Label=""Loading"" Loading DefaultValue=""Checking..."" />
+
+<BitTextField Label=""Loading with a clear button and an icon""
+              Loading
+              ShowClearButton
+              DefaultValue=""bit""
+              IconName=""@BitIconName.Search"" />
+
+<BitTextField Label=""Custom indicator"" Loading LoadingAriaLabel=""Checking the availability"">
+    <LoadingTemplate>
+        <BitEllipsisLoading CustomSize=""24"" CustomColor=""currentColor"" />
+    </LoadingTemplate>
+</BitTextField>
+
+<BitTextField Label=""Availability of a user name""
+              Immediate
+              DebounceTime=""400""
+              Loading=""@userNameLoading""
+              Placeholder=""Type a user name...""
+              Description=""@userNameStatus""
+              @bind-Value=""userName""
+              OnChange=""CheckUserNameAsync"" />";
+    private readonly string example18CsharpCode = @"
+private string? userName;
+private bool userNameLoading;
+private string? userNameStatus;
+private CancellationTokenSource? _userNameCts;
+
+private async Task CheckUserNameAsync(string? value)
+{
+    CancelAndDispose(ref _userNameCts);
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        userNameLoading = false;
+        userNameStatus = null;
+        return;
+    }
+
+    var cts = new CancellationTokenSource();
+    _userNameCts = cts;
+
+    userNameLoading = true;
+    userNameStatus = null;
+
+    try
+    {
+        await Task.Delay(1500, cts.Token);
+
+        userNameStatus = value.Length < 5
+            ? $""'{value}' is already taken.""
+            : $""'{value}' is available."";
+    }
+    catch (OperationCanceledException)
+    {
+        return;
+    }
+    finally
+    {
+        if (cts.IsCancellationRequested is false)
+        {
+            userNameLoading = false;
+        }
+    }
+}
+
+private static void CancelAndDispose(ref CancellationTokenSource? cts)
+{
+    cts?.Cancel();
+    cts?.Dispose();
+    cts = null;
+}";
+
+    private readonly string example19RazorCode = @"
+<BitTextField Label=""With a hidden description""
+              AriaDescription=""Use the number printed on the back of your card, without the spaces between the groups.""
+              Description=""Card number""
+              Placeholder=""1234 5678 9012 3456"" />
+
+<BitTextField Label=""With a tooltip"" Title=""The name your colleagues see next to your messages."" />
+
+<BitTextField Label=""With a meaningful icon""
+              IconName=""@BitIconName.Lock""
+              IconAriaLabel=""This value is encrypted""
+              DefaultValue=""•••• •••• •••• 3456"" />
+
+<BitTextField AriaLabel=""Search the documentation""
+              Type=""BitInputType.Search""
+              Placeholder=""Search...""
+              IconName=""@BitIconName.Search"" />";
+
+    private readonly string example20RazorCode = @"
 <style>
     .validation-message {
         color: red;
@@ -1529,7 +1861,7 @@ private void HandleOnClear() => clearLog = $""cleared ({++clearCount})"";";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example16CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required(ErrorMessage = ""This field is required."")]
@@ -1553,19 +1885,19 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Background=""BitColorKind.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Background=""BitColorKind.Tertiary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Transparent"" Background=""BitColorKind.Transparent"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitTextField Label=""Primary"" Border=""BitColorKind.Primary"" />
 <BitTextField Label=""Secondary"" Border=""BitColorKind.Secondary"" />
 <BitTextField Label=""Tertiary"" Border=""BitColorKind.Tertiary"" />
 <BitTextField Label=""Transparent"" Border=""BitColorKind.Transparent"" />";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitTextField Label=""Primary"" Accent=""BitColor.Primary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Secondary"" Accent=""BitColor.Secondary"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Tertiary"" Accent=""BitColor.Tertiary"" IconName=""@BitIconName.Calendar"" />
@@ -1588,7 +1920,7 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""SecondaryBorder"" Accent=""BitColor.SecondaryBorder"" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""TertiaryBorder"" Accent=""BitColor.TertiaryBorder"" IconName=""@BitIconName.Calendar"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example24RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTextField Label=""House"" Icon=""@(""fa-solid fa-house"")"" />
@@ -1610,7 +1942,7 @@ private void HandleInvalidSubmit() { }";
 
 <BitTextField Label=""Gear"" Icon=""@BitIconInfo.Bi(""gear-fill"")"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitTextField Label=""Small"" Size=""BitSize.Small"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Medium"" Size=""BitSize.Medium"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
 <BitTextField Label=""Large"" Size=""BitSize.Large"" Placeholder=""Enter a text..."" IconName=""@BitIconName.Calendar"" />
@@ -1621,7 +1953,7 @@ private void HandleInvalidSubmit() { }";
 <BitTextField Label=""Large with a clear button"" Size=""BitSize.Large"" ShowClearButton
               DefaultValue=""A large field."" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example26RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -1730,10 +2062,10 @@ private void HandleInvalidSubmit() { }";
                                  Focused = ""custom-focus"",
                                  Input = ""custom-input"",
                                  Label = $""custom-label{(string.IsNullOrEmpty(classesValue) ? string.Empty : "" custom-label-top"")}"" })"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 private string? classesValue;";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example27RazorCode = @"
 <BitTextField Dir=""BitDir.Rtl""
               Placeholder=""پست الکترونیکی""
               IconName=""@BitIconName.EditMail"" />

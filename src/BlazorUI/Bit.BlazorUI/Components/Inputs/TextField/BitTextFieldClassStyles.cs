@@ -43,6 +43,11 @@ public class BitTextFieldClassStyles
     public string? Input { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's busy indicator container.
+    /// </summary>
+    public string? Loading { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitTextField's reveal password.
     /// </summary>
     public string? RevealPassword { get; set; }

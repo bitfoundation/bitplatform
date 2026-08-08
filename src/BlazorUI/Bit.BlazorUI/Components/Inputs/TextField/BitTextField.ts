@@ -1,29 +1,49 @@
 namespace BitBlazorUI {
     export class TextField {
-        private static _abortControllers: { [key: string]: AbortController } = {};
+        // The three concerns of a text field (the multiline behaviors, the ghost text and the IME guard)
+        // are wired independently and can be turned on and off at any point in the life of a component,
+        // so each of them owns its AbortController instead of sharing a single one.
+        private static _abortControllers: { [key: string]: { [feature: string]: AbortController } } = {};
         private static _ghostTexts: { [key: string]: string } = {};
         private static _maxRows: { [key: string]: number | null } = {};
         private static _inputElements: { [key: string]: HTMLInputElement } = {};
 
+        private static getSignal(id: string, feature: string): AbortSignal {
+            const features = TextField._abortControllers[id] ?? (TextField._abortControllers[id] = {});
+
+            // Setting a feature up again replaces its listeners rather than adding a second copy of them,
+            // which is what makes every setup call below safe to repeat.
+            features[feature]?.abort();
+
+            const ac = new AbortController();
+            features[feature] = ac;
+
+            return ac.signal;
+        }
+
         public static setupMultilineInput(id: string, inputElement: HTMLInputElement, autoHeight: boolean, preventEnter: boolean, maxRows: number | null) {
             if (!inputElement) return;
 
-            const ac = TextField._abortControllers[id] ?? new AbortController();
-            TextField._abortControllers[id] = ac;
+            const signal = TextField.getSignal(id, 'multiline');
             TextField._maxRows[id] = maxRows ?? null;
 
             if (autoHeight) {
                 inputElement.addEventListener('input', e => {
                     TextField.resize(inputElement, TextField._maxRows[id]);
-                }, { signal: ac.signal });
+                }, { signal });
             }
 
             if (preventEnter) {
                 inputElement.addEventListener('keydown', e => {
+                    // Enter commits the candidate of an input method editor, so it must keep its meaning
+                    // while a composition session is running. The keyCode check covers the browsers that
+                    // report the legacy 229 instead of setting isComposing.
+                    if (e.isComposing || e.keyCode === 229) return;
+
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                     }
-                }, { signal: ac.signal });
+                }, { signal });
             }
         }
 
@@ -68,13 +88,90 @@ namespace BitBlazorUI {
             }
         }
 
+        // Keeps an input method editor (Pinyin, Kana, Hangul, ...) from leaking into the component while
+        // it is composing. Blazor listens for the events on the document, so stopping them here - on the
+        // element itself, before they bubble - is what hides the composition session from it.
+        public static setupComposition(id: string, inputElement: HTMLInputElement) {
+            if (!inputElement) return;
+
+            const signal = TextField.getSignal(id, 'composition');
+
+            let isComposing = false;
+
+            const composing = (e: KeyboardEvent | InputEvent) =>
+                isComposing || e.isComposing || (e as KeyboardEvent).keyCode === 229;
+
+            inputElement.addEventListener('compositionstart', () => {
+                isComposing = true;
+            }, { signal });
+
+            inputElement.addEventListener('compositionend', () => {
+                isComposing = false;
+
+                // Whether the last input event of a session arrives before or after compositionend is not
+                // the same in every engine, so one is dispatched here to make sure the committed text
+                // always reaches the binding. A repeated value is a no-op on the C# side.
+                inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+            }, { signal });
+
+            // The half-composed text never reaches the bound value; the committed text is handed over in
+            // one piece when the session ends.
+            inputElement.addEventListener('input', e => {
+                if (composing(e as InputEvent)) {
+                    e.stopPropagation();
+                }
+            }, { signal });
+
+            // Enter commits the candidate of the editor and Escape cancels it, so neither of them means
+            // what it usually does while a session is running. Most engines report those keydowns as the
+            // "Process" key, which no handler is looking for anyway, but the ones that report the real
+            // key would otherwise submit a form or close a dialog in the middle of typing a word.
+            inputElement.addEventListener('keydown', e => {
+                if (!composing(e)) return;
+
+                if (e.key === 'Enter' || e.key === 'Escape') {
+                    e.stopPropagation();
+                }
+            }, { signal });
+        }
+
+        // Selecting the value from the focus handler alone is not enough: the click that gave the input
+        // its focus ends with a mouseup that puts the caret where it landed and drops the selection
+        // again, so that one mouseup is swallowed.
+        public static setupSelectOnFocus(id: string, inputElement: HTMLInputElement) {
+            if (!inputElement) return;
+
+            const signal = TextField.getSignal(id, 'selectOnFocus');
+
+            let justFocused = false;
+
+            inputElement.addEventListener('focus', () => {
+                justFocused = true;
+
+                try {
+                    inputElement.select();
+                } catch {
+                    // Selection APIs are not available on every input type.
+                }
+            }, { signal });
+
+            inputElement.addEventListener('mouseup', e => {
+                if (!justFocused) return;
+
+                justFocused = false;
+                e.preventDefault();
+            }, { signal });
+
+            inputElement.addEventListener('blur', () => {
+                justFocused = false;
+            }, { signal });
+        }
+
         public static setupGhostText(id: string, inputElement: HTMLInputElement, dotnetObj: DotNetObject) {
             if (!inputElement) return;
 
-            const ac = TextField._abortControllers[id] ?? new AbortController();
-            TextField._abortControllers[id] = ac;
+            const signal = TextField.getSignal(id, 'ghost');
             TextField._inputElements[id] = inputElement;
-            const signal = ac.signal;
 
             const getOverlay = () => inputElement.parentElement?.querySelector<HTMLElement>('.bit-tfl-gho') ?? null;
             const hasGhost = () => (TextField._ghostTexts[id] ?? '').length > 0;
@@ -148,6 +245,10 @@ namespace BitBlazorUI {
 
             // Tab/Enter: accept the ghost suggestion.
             inputElement.addEventListener('keydown', e => {
+                // Tab and Enter belong to the input method editor while a composition session is running:
+                // they move through and commit its candidates, so the suggestion is left alone.
+                if (e.isComposing || e.keyCode === 229) return;
+
                 const isAcceptKey = e.key === 'Tab' || e.key === 'Enter';
 
                 if (isAcceptKey && hasGhost()) {
@@ -212,11 +313,38 @@ namespace BitBlazorUI {
             overlay.scrollLeft = inputElement.scrollLeft;
         }
 
-        public static dispose(id: string) {
-            const ac = TextField._abortControllers[id];
+        // Moves the caret, or selects a range of the text, of the input element. A null start selects
+        // from the beginning and a null end selects to the very end of the value.
+        public static setSelectionRange(inputElement: HTMLInputElement, start: number | null, end: number | null) {
+            if (!inputElement) return;
 
-            if (ac) {
-                ac.abort();
+            try {
+                const length = inputElement.value.length;
+                const from = Math.max(0, Math.min(start ?? 0, length));
+                const to = Math.max(from, Math.min(end ?? length, length));
+
+                inputElement.setSelectionRange(from, to);
+            } catch (e) {
+                // Selection APIs are not available on every input type (a number or an email input
+                // throws), which is not an error worth breaking the caller over.
+            }
+        }
+
+        // Tears a single feature down, which is what happens when a text field stops being multiline or
+        // stops being immediate while the rest of it stays alive.
+        public static disposeFeature(id: string, feature: string) {
+            const features = TextField._abortControllers[id];
+            if (!features) return;
+
+            features[feature]?.abort();
+            delete features[feature];
+        }
+
+        public static dispose(id: string) {
+            const features = TextField._abortControllers[id];
+
+            if (features) {
+                Object.keys(features).forEach(feature => features[feature].abort());
             }
 
             delete TextField._abortControllers[id];

@@ -11,6 +11,14 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _hasFocus;
     private bool _jsSetup;
     private bool _ghostSetup;
+    private bool _ghostSetupIsMultiline;
+    private bool _multilineSetup;
+    private bool _oldAutoHeight;
+    private bool _oldPreventEnter;
+    private bool _compositionSetup;
+    private bool _compositionSetupIsMultiline;
+    private bool _selectOnFocusSetup;
+    private bool _selectOnFocusSetupIsMultiline;
     private int? _oldMaxRows;
     private string? _oldValue;
     private string? _oldGhostText;
@@ -25,6 +33,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string _countId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
+    private string _ariaDescriptionId = string.Empty;
 
 
 
@@ -37,6 +46,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
+
+    /// <summary>
+    /// Detailed description of the input for the benefit of screen readers. It is rendered into a
+    /// visually hidden element that the input references through its aria-describedby attribute, which
+    /// is what lets a field carry an instruction that would be too long to show next to it.
+    /// </summary>
+    [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
     /// Sets the autocapitalize html attribute of the input element, which tells the on-screen keyboard of a
@@ -177,6 +193,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The accessible name of the icon shown at the trailing end of the text field. The icon is decorative
+    /// and hidden from assistive technologies by default; setting this turns it into an image with a name,
+    /// which is what an icon carrying a meaning of its own (a warning, a lock, a "saved" mark) needs.
+    /// </summary>
+    [Parameter] public string? IconAriaLabel { get; set; }
+
+    /// <summary>
     /// The icon name for the icon shown in the far right end of the text field from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
@@ -198,10 +221,34 @@ public partial class BitTextField : BitTextInputBase<string?>
     public string? Label { get; set; }
 
     /// <summary>
+    /// Where the label sits relative to the input. Leaving it unset keeps the layout each variant comes
+    /// with: above the input in the default one, and next to it in the <see cref="Underlined"/> one.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitLabelPosition? LabelPosition { get; set; }
+
+    /// <summary>
     /// Shows the custom label for text field.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Shows a busy indicator inside the field, which is what tells the user that something is running
+    /// against what was typed - a suggestion being fetched, a value being checked against a server.
+    /// The field stays editable while it is on, so the typing is never interrupted by it.
+    /// </summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>
+    /// The accessible name of the busy indicator, which is what a screen reader announces for it.
+    /// </summary>
+    [Parameter] public string? LoadingAriaLabel { get; set; }
+
+    /// <summary>
+    /// The custom content of the busy indicator, which replaces the default spinner.
+    /// </summary>
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
     /// <summary>
     /// Specifies the maximum number of characters allowed in the input.
@@ -240,6 +287,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     public bool NoBorder { get; set; }
 
     /// <summary>
+    /// Callback for when the input loses focus. Unlike <see cref="OnFocusOut"/> it does not bubble, so it
+    /// is the one to use when only the input itself losing focus is of interest.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    /// <summary>
     /// Callback executed when the user clears the text field by clicking the clear button.
     /// </summary>
     [Parameter] public EventCallback OnClear { get; set; }
@@ -250,12 +303,14 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Callback for when the Enter key is pressed while input has focus.
+    /// Callback for when the Enter key is pressed while input has focus. It is not raised while an input
+    /// method editor is composing, where Enter commits the candidate rather than the value.
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEnter { get; set; }
 
     /// <summary>
-    /// Callback for when the Escape key is pressed while input has focus.
+    /// Callback for when the Escape key is pressed while input has focus. It is not raised while an input
+    /// method editor is composing, where Escape cancels the candidate rather than the editing.
     /// </summary>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscape { get; set; }
 
@@ -360,9 +415,18 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public int? Rows { get; set; }
 
     /// <summary>
+    /// Selects the whole value when the input receives focus, so that the next keystroke replaces it.
+    /// It is what a field holding a value the user is expected to overwrite rather than edit - a search
+    /// term, a quantity, a generated code - usually wants. It covers a click as well as a tab, and a
+    /// read-only field too, where selecting the value is exactly what makes it easy to copy.
+    /// </summary>
+    [Parameter] public bool SelectOnFocus { get; set; }
+
+    /// <summary>
     /// Whether to show the clear button when the text field has a value.
     /// </summary>
-    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool ShowClearButton { get; set; }
 
     /// <summary>
     /// Shows the number of characters that were typed under the text field, followed by the
@@ -399,6 +463,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
+    /// A more descriptive title of the text field, shown by the browser as its tooltip.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
     /// Specifies whether to remove any leading or trailing whitespace from the value.
     /// The trimming happens when the input reports a change, which is what lets a space still be typed in
     /// the middle of a word while <see cref="BitTextInputBase{TValue}.Immediate"/> is enabled.
@@ -432,6 +501,38 @@ public partial class BitTextField : BitTextInputBase<string?>
     }
 
 
+
+    /// <summary>
+    /// Empties the text field and raises <see cref="OnClear"/>, exactly as the clear button does (without
+    /// requiring <see cref="ShowClearButton"/>, since there is no button involved). It does nothing while
+    /// the field is disabled or read-only.
+    /// </summary>
+    public Task ClearAsync() => InvokeAsync(async () =>
+    {
+        if (IsEnabled is false || ReadOnly) return;
+
+        await ClearValue();
+
+        // Unlike the clear button, this call does not arrive through an event handler, so nothing
+        // re-renders the component on its own.
+        StateHasChanged();
+
+        await OnClear.InvokeAsync();
+    });
+
+    /// <summary>
+    /// Selects the whole value of the input, the programmatic counterpart of <see cref="SelectOnFocus"/>.
+    /// </summary>
+    public ValueTask SelectAsync() => _js.BitUtilsSelectText(InputElement);
+
+    /// <summary>
+    /// Selects the text between the two given positions, or moves the caret when they are equal. A null
+    /// start counts from the beginning of the value and a null end runs to its very end, and both are
+    /// clamped to the length of the value.
+    /// </summary>
+    /// <param name="start">The index the selection starts at.</param>
+    /// <param name="end">The index the selection ends at.</param>
+    public ValueTask SelectRangeAsync(int? start, int? end) => _js.BitTextFieldSetSelectionRange(InputElement, start, end);
 
     /// <summary>
     /// Toggles the revealed state of the value while the type of the input is password and
@@ -472,7 +573,22 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => _hasFocus ? Classes?.Focused : string.Empty);
 
-        ClassBuilder.Register(() => Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => IsEnabled && Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
+
+        // Leaving the position unset renders no class at all, so each variant keeps the layout it comes
+        // with instead of every field suddenly being laid out by the same rule.
+        ClassBuilder.Register(() => LabelPosition switch
+        {
+            BitLabelPosition.Top => "bit-tfl-ltp",
+            BitLabelPosition.Bottom => "bit-tfl-lbt",
+            BitLabelPosition.Start => "bit-tfl-lst",
+            BitLabelPosition.End => "bit-tfl-led",
+            _ => string.Empty
+        });
+
+        // A search input of its own draws a clear affordance in WebKit browsers, which would sit right
+        // next to the one of the component; the class is what lets the stylesheet take the native one away.
+        ClassBuilder.Register(() => ShowClearButton ? "bit-tfl-clb" : string.Empty);
 
         ClassBuilder.Register(() => FullWidth ? "bit-tfl-fwd" : string.Empty);
 
@@ -540,6 +656,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         _labelId = $"BitTextField-{UniqueId}-label";
         _countId = $"BitTextField-{UniqueId}-count";
         _descriptionId = $"BitTextField-{UniqueId}-description";
+        _ariaDescriptionId = $"BitTextField-{UniqueId}-aria-description";
 
         // The CallOnSet handler of the Type parameter only runs when the parameter is actually assigned,
         // so the element type has to be resolved here as well for the default (unset) case.
@@ -572,27 +689,71 @@ public partial class BitTextField : BitTextInputBase<string?>
             _oldValue = Value;
 
             _oldMaxRows = MaxRows;
-
-            if (IsMultilineElement)
-            {
-                _jsSetup = true;
-                await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter, MaxRows);
-
-                if (AutoHeight)
-                {
-                    // An input that is rendered with a value already in it has to be measured once,
-                    // otherwise it stays one row tall until the first keystroke.
-                    await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
-                }
-            }
         }
 
+        // Every one of the JavaScript features below can be turned on and off at any point in the life of
+        // the component, and the element they attach to is swapped between an input and a textarea by the
+        // Multiline mode, so each of them is re-wired whenever what it depends on moves rather than only
+        // on the first render.
+        var isMultiline = IsMultilineElement;
+
+        await SetupMultiline(isMultiline);
+
+        await SetupGhostText(isMultiline);
+
+        await SetupComposition(isMultiline);
+
+        await SetupSelectOnFocus(isMultiline);
+
+        if (firstRender is false && isMultiline && AutoHeight && (_oldValue != Value || _oldMaxRows != MaxRows))
+        {
+            _oldMaxRows = MaxRows;
+            await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
+        }
+
+        _oldValue = Value;
+    }
+
+    private async Task SetupMultiline(bool isMultiline)
+    {
+        if (isMultiline is false)
+        {
+            if (_multilineSetup is false) return;
+
+            _multilineSetup = false;
+            await _js.BitTextFieldDisposeFeature(_Id, "multiline");
+            return;
+        }
+
+        // The two behaviors of the textarea are wired as listeners, so a change of either of them has to
+        // reach the element instead of only being read once at the setup time.
+        if (_multilineSetup && AutoHeight == _oldAutoHeight && PreventEnter == _oldPreventEnter) return;
+
+        _jsSetup = true;
+        _multilineSetup = true;
+        _oldAutoHeight = AutoHeight;
+        _oldPreventEnter = PreventEnter;
+
+        await _js.BitTextFieldSetupMultilineInput(_Id, InputElement, AutoHeight, PreventEnter, MaxRows);
+
+        if (AutoHeight)
+        {
+            // An input that is rendered with a value already in it has to be measured once, otherwise it
+            // stays one row tall until the first keystroke.
+            _oldMaxRows = MaxRows;
+            await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
+        }
+    }
+
+    private async Task SetupGhostText(bool isMultiline)
+    {
         // The ghost text machinery attaches a handful of listeners to the input, so it is only wired up
         // once a suggestion actually shows up instead of on every text field of an app.
-        if (_ghostSetup is false && GhostText.HasValue())
+        if (GhostText.HasValue() && (_ghostSetup is false || _ghostSetupIsMultiline != isMultiline))
         {
             _jsSetup = true;
             _ghostSetup = true;
+            _ghostSetupIsMultiline = isMultiline;
             _dotnetObj ??= DotNetObjectReference.Create(this);
             await _js.BitTextFieldSetupGhostText(_Id, InputElement, _dotnetObj);
             _oldGhostText = null;
@@ -603,14 +764,48 @@ public partial class BitTextField : BitTextInputBase<string?>
             _oldGhostText = GhostText;
             await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
         }
+    }
 
-        if (firstRender is false && IsMultilineElement && AutoHeight && (_oldValue != Value || _oldMaxRows != MaxRows))
+    private async Task SetupComposition(bool isMultiline)
+    {
+        // The guard only earns its listeners on a field that an input method editor can actually disturb:
+        // one that reports every keystroke, or one that gives Enter or Escape a meaning of its own.
+        if (NeedsCompositionGuard is false)
         {
-            _oldMaxRows = MaxRows;
-            await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
+            if (_compositionSetup is false) return;
+
+            _compositionSetup = false;
+            await _js.BitTextFieldDisposeFeature(_Id, "composition");
+            return;
         }
 
-        _oldValue = Value;
+        if (_compositionSetup && _compositionSetupIsMultiline == isMultiline) return;
+
+        _jsSetup = true;
+        _compositionSetup = true;
+        _compositionSetupIsMultiline = isMultiline;
+
+        await _js.BitTextFieldSetupComposition(_Id, InputElement);
+    }
+
+    private async Task SetupSelectOnFocus(bool isMultiline)
+    {
+        if (SelectOnFocus is false)
+        {
+            if (_selectOnFocusSetup is false) return;
+
+            _selectOnFocusSetup = false;
+            await _js.BitTextFieldDisposeFeature(_Id, "selectOnFocus");
+            return;
+        }
+
+        if (_selectOnFocusSetup && _selectOnFocusSetupIsMultiline == isMultiline) return;
+
+        _jsSetup = true;
+        _selectOnFocusSetup = true;
+        _selectOnFocusSetupIsMultiline = isMultiline;
+
+        await _js.BitTextFieldSetupSelectOnFocus(_Id, InputElement);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -649,23 +844,39 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private bool ShowClear => ShowClearButton && CurrentValue.HasValue();
 
+    private bool NeedsCompositionGuard => Immediate || OnEnter.HasDelegate || OnEscape.HasDelegate;
+
     private string? DescribedBy
     {
         get
         {
-            var hasDescription = HasDescription;
             // The counter is only pointed at when it carries the limit, so a screen reader learns how much
             // room is left instead of hearing a bare number on every focus.
             var hasCount = ShowCount && MaxLength >= 0;
 
-            if (hasDescription && hasCount) return $"{_descriptionId} {_countId}";
-            if (hasDescription) return _descriptionId;
-            if (hasCount) return _countId;
-            return null;
+            // The visible description and the screen-reader-only one are both legitimate, and a field can
+            // carry either or both, so every part that is present is referenced in reading order.
+            var ids = string.Join(' ', new[]
+            {
+                HasDescription ? _descriptionId : null,
+                AriaDescription.HasValue() ? _ariaDescriptionId : null,
+                hasCount ? _countId : null
+            }.Where(id => id.HasValue()));
+
+            return ids.HasValue() ? ids : null;
         }
     }
 
     private string CountText => MaxLength >= 0 ? $"{_charCount}/{MaxLength}" : _charCount.ToString();
+
+    // The busy indicator is sized in pixels rather than by its own size enum, whose smallest step is
+    // already taller than the whole field, so it follows the size of the text field instead.
+    private int LoadingSize => Size switch
+    {
+        BitSize.Small => 16,
+        BitSize.Large => 24,
+        _ => 20
+    };
 
 
     private void SetInputMode()
@@ -734,6 +945,14 @@ public partial class BitTextField : BitTextInputBase<string?>
         await OnFocus.InvokeAsync(e);
     }
 
+    private async Task HandleOnBlur(FocusEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        SetHasFocus(false);
+        await OnBlur.InvokeAsync(e);
+    }
+
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (IsEnabled is false) return;
@@ -784,13 +1003,21 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        await SetCurrentValueAsStringAsync(string.Empty, true);
-
-        _charCount = 0;
+        await ClearValue();
 
         await InputElement.FocusAsync();
 
         await OnClear.InvokeAsync();
+    }
+
+    private async Task ClearValue()
+    {
+        await SetCurrentValueAsStringAsync(string.Empty, true);
+
+        // The counter is read from whatever the value ended up being rather than assumed to be zero: a
+        // one-way bound field with no way to report a change keeps its value, and a counter saying zero
+        // next to a full input would be a lie.
+        _charCount = CurrentValue?.Length ?? 0;
     }
 
     private async Task HandleOnRevealPasswordClick()

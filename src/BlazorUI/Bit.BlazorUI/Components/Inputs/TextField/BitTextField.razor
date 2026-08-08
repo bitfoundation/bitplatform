@@ -27,7 +27,8 @@
             </label>
         }
 
-        <div style="@Styles?.FieldGroup"
+        <div title="@Title"
+             style="@Styles?.FieldGroup"
              class="bit-tfl-fgp @Classes?.FieldGroup">
             @if (PrefixTemplate is not null)
             {
@@ -47,6 +48,7 @@
                 @if (IsMultilineElement)
                 {
                     <textarea @ref="InputElement" @attributes="InputHtmlAttributes"
+                              @onblur="@HandleOnBlur"
                               @onclick="@HandleOnClick"
                               @onkeyup="@HandleOnKeyUp"
                               @onfocus="@HandleOnFocus"
@@ -82,6 +84,7 @@
                 else
                 {
                     <input @ref="@InputElement" @attributes="InputHtmlAttributes"
+                           @onblur="@HandleOnBlur"
                            @onclick="@HandleOnClick"
                            @onfocus="@HandleOnFocus"
                            @onkeyup="@HandleOnKeyUp"
@@ -123,6 +126,27 @@
                     </div>
                 }
             </div>
+
+            @if (Loading)
+            {
+                @* The indicator is a status rather than an alert: it must not steal the focus or interrupt
+                   what is being typed, only be there to be found. *@
+                <div role="status"
+                     style="@Styles?.Loading"
+                     class="bit-tfl-lod @Classes?.Loading">
+                    @if (LoadingTemplate is not null)
+                    {
+                        @LoadingTemplate
+                    }
+                    else
+                    {
+                        @* A live region announces its content, not its name, so the text of the indicator
+                           lives inside it - visually hidden, since the spinner already says it on screen. *@
+                        <span class="bit-tfl-dsc">@(LoadingAriaLabel ?? "Loading")</span>
+                        <BitSpinnerLoading CustomSize="@LoadingSize" CustomColor="currentColor" />
+                    }
+                </div>
+            }
 
             @if (ShowClear)
             {
@@ -179,9 +203,11 @@
             @if (Icon is not null || IconName.HasValue())
             {
                 var icon = BitIconInfo.From(Icon, IconName);
-                <i aria-hidden="true"
-                   style="@Styles?.Icon"
-                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon" />
+                <i style="@Styles?.Icon"
+                   class="bit-tfl-ico @icon?.GetCssClasses() @Classes?.Icon"
+                   role="@(IconAriaLabel.HasValue() ? "img" : null)"
+                   aria-label="@IconAriaLabel"
+                   aria-hidden="@(IconAriaLabel.HasValue() ? null : "true")" />
             }
 
             @if (SuffixTemplate is not null)
@@ -242,5 +268,12 @@
                 </span>
             }
         </div>
+    }
+
+    @if (AriaDescription.HasValue())
+    {
+        @* aria-describedby takes an id reference, so the description text has to live in an element of
+           its own. It is visually hidden and only exists for assistive technologies. *@
+        <span id="@_ariaDescriptionId" class="bit-tfl-dsc">@AriaDescription</span>
     }
 </div>

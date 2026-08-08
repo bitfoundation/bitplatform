@@ -9,6 +9,7 @@
     box-sizing: border-box;
     font-family: $tg-font-family;
     font-size: var(--bit-tfl-font-size);
+
     // The medium size is the default one, so its values sit on the root instead of only on .bit-tfl-md.
     --bit-tfl-font-size: #{spacing(1.75)};
     --bit-tfl-line-height: #{spacing(2.125)};
@@ -43,12 +44,26 @@
             color: $clr-fg-dis;
         }
 
+        // Everything that sits inside the frame goes grey with it: an icon or a busy indicator left at
+        // full contrast next to a greyed-out value reads as if that part of the field were still live.
+        .bit-tfl-ico,
+        .bit-tfl-lod,
+        .bit-tfl-rpi {
+            color: $clr-fg-dis;
+        }
+
         .bit-tfl-cbt {
             cursor: default;
             color: $clr-fg-dis;
             pointer-events: none;
             background: $clr-bg-dis;
             border: $shp-border-width $shp-border-style $clr-brd-dis;
+        }
+
+        .bit-tfl-rpb {
+            cursor: default;
+            color: $clr-fg-dis;
+            pointer-events: none;
         }
 
         &.bit-tfl-und {
@@ -61,7 +76,7 @@
             .bit-tfl-lbl {
                 height: var(--bit-tfl-min-height);
                 margin-inline-end: spacing(1);
-                line-height: spacing(2.75);
+                line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
                 padding-block: spacing(0.625);
                 padding-inline-start: spacing(1.5);
             }
@@ -159,6 +174,38 @@
     }
 }
 
+// A search input draws a clear affordance of its own in WebKit browsers and in Edge, which would sit
+// right next to the clear button of the component, so the native one is taken away wherever the
+// component provides its own.
+.bit-tfl-clb {
+    .bit-tfl-inp {
+        &[type="search"]::-webkit-search-cancel-button,
+        &[type="search"]::-webkit-search-decoration {
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        &::-ms-clear {
+            display: none;
+        }
+    }
+}
+
+// Visually hidden, but still read out: the element only exists to give aria-describedby something to
+// point at.
+.bit-tfl-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+}
+
 .bit-tfl-rpb {
     height: 100%;
     border: none;
@@ -237,6 +284,16 @@
     }
 }
 
+.bit-tfl-lod {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-tfl-clr);
+    padding-inline: spacing(0.5);
+    min-height: var(--bit-tfl-inp-min-height);
+}
+
 .bit-tfl-ico {
     color: $clr-fg-pri;
 }
@@ -299,9 +356,10 @@
     }
 
     // The field group stretches its children in the multiline mode, which would turn the clear and reveal
-    // buttons into full height columns, so they are pinned to the top row instead.
+    // buttons and the busy indicator into full height columns, so they are pinned to the top row instead.
     .bit-tfl-cbt,
-    .bit-tfl-rpb {
+    .bit-tfl-rpb,
+    .bit-tfl-lod {
         height: var(--bit-tfl-inp-min-height);
         align-self: flex-start;
     }
@@ -383,7 +441,9 @@
     .bit-tfl-lbl {
         height: var(--bit-tfl-min-height);
         margin-inline-end: spacing(1);
-        line-height: spacing(2.75);
+        // The label fills the height of the field minus its own padding, so its text stays centered
+        // against the input at every size instead of only at the medium one.
+        line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
         padding-block: spacing(0.625);
         padding-inline-start: spacing(1.5);
     }
@@ -395,8 +455,66 @@
     }
 }
 
+// The label positions only exist while one is asked for: without them the wrapper stays a plain block,
+// which is the layout the default variant has always had, and the underlined one keeps its own row.
+.bit-tfl-ltp,
+.bit-tfl-lbt,
+.bit-tfl-lst,
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        width: 100%;
+        display: flex;
+    }
+
+    .bit-tfl-fgp {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+.bit-tfl-ltp {
+    .bit-tfl-wrp {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.bit-tfl-lbt {
+    .bit-tfl-wrp {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+}
+
+.bit-tfl-lst,
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        gap: spacing(1);
+        align-items: center;
+    }
+
+    .bit-tfl-lbl {
+        flex: 0 0 auto;
+        padding-block: 0;
+    }
+}
+
+.bit-tfl-lst {
+    .bit-tfl-wrp {
+        flex-direction: row;
+    }
+}
+
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        flex-direction: row-reverse;
+    }
+}
+
 .bit-tfl-req {
-    .bit-tfl-lbl::after {
+    // Every label of the field is marked, not only the one built from the Label parameter: a field
+    // rendered through a LabelTemplate is just as required as any other one.
+    .bit-tfl-wrp > label::after {
         content: "*";
         color: $clr-req;
         margin-inline-start: spacing(0.625);
