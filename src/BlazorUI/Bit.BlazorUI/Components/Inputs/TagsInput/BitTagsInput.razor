@@ -14,9 +14,18 @@
 
     // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
     // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
+    var showToggle = MaxDisplayedTags > 0 && tagCount > MaxDisplayedTags;
+
+    // A list that has since shrunk back to what fits has nothing left to unfold, so it is folded back:
+    // the chip that unfolded it is gone, and an unfolded state that outlives it would silently ignore
+    // the MaxDisplayedTags the next time the list grows past it again.
+    if (showToggle is false)
+    {
+        _tagsExpanded = false;
+    }
+
     var displayedTagCount = GetDisplayedTagCount();
     var hiddenTagCount = tagCount - displayedTagCount;
-    var showToggle = MaxDisplayedTags > 0 && tagCount > MaxDisplayedTags;
 
     var tagHint = GetTagAriaDescription();
 
@@ -64,6 +73,17 @@
     <div @onclick="HandleContainerClick"
          style="@Styles?.InputContainer"
          class="bit-tgi-cnt @Classes?.InputContainer">
+        @* Drawn at the start of the field and never part of the value, which is why the label of the
+           field has to carry the meaning on its own for a screen reader. *@
+        @if (PrefixTemplate is not null)
+        {
+            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@PrefixTemplate</div>
+        }
+        else if (Prefix.HasValue())
+        {
+            <div style="@Styles?.Prefix" class="bit-tgi-pre @Classes?.Prefix">@Prefix</div>
+        }
+
         @if (tagCount > 0)
         {
             @* The wrapper carries the list semantics that a row of loose divs would not have, while
@@ -87,6 +107,9 @@
                        instead of putting one Tab press per tag between the user and the input. *@
                     @* Dragging a chip onto another one is the pointer equivalent of the Alt+arrow move;
                        the dragover default has to be prevented for the drop to be allowed at all. *@
+                    @* The position is spelled out rather than left to be counted off the elements: once
+                       MaxDisplayedTags folds the rest away, the tags that are drawn are no longer the
+                       tags there are, and "2 of 2" said over a list of six is worse than nothing. *@
                     <div @ref="_tagRefs[index]"
                          @onclick="() => HandleOnTagClick(index)"
                          @onclick:stopPropagation="true"
@@ -102,6 +125,8 @@
                          @ondrop:preventDefault="true"
                          role="listitem"
                          draggable="@(CanDragTag(index) ? "true" : null)"
+                         aria-posinset="@(index + 1)"
+                         aria-setsize="@tagCount"
                          aria-describedby="@(tagHint is null ? null : _hintId)"
                          tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
                          style="@GetTagStyle(isTagFocused)"
@@ -115,6 +140,10 @@
                                own handlers for the very same events, which would otherwise run a second
                                time on the keystroke the edit has already dealt with - Enter would commit
                                the edit and reopen it, Escape would cancel it and then walk the focus away. *@
+                            @* The MaxLength is a limit of the tag rather than of the field, so unlike the
+                               main input - which a whole separated list may be pasted into at once - this
+                               one carries it natively, and the browser stops the eleventh character
+                               instead of the component silently cutting it off when the edit is committed. *@
                             <input @ref="_editInputRef"
                                    @oninput="HandleOnEditInput"
                                    @onkeydown="HandleOnEditKeyDown"
@@ -125,11 +154,13 @@
                                    type="text"
                                    autocorrect="off"
                                    spellcheck="false"
+                                   autocomplete="off"
                                    autocapitalize="none"
                                    value="@_editText"
                                    aria-label="@GetEditAriaLabel(tag)"
                                    style="@Styles?.EditInput"
-                                   class="bit-tgi-eip @Classes?.EditInput" />
+                                   class="bit-tgi-eip @Classes?.EditInput"
+                                   maxlength="@(MaxLength > 0 ? MaxLength : (int?)null)" />
                         }
                         else if (TagTemplate is not null)
                         {
@@ -137,7 +168,10 @@
                         }
                         else
                         {
-                            <span style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
+                            @* A tag too long for the field is cut off with an ellipsis, so the whole of
+                               it is kept in the tooltip: a chip reading "verylongta..." is otherwise a
+                               value the pointer cannot read at all. *@
+                            <span title="@tag" style="@Styles?.TagText" class="bit-tgi-ttx @Classes?.TagText">@tag</span>
                         }
 
                         @if (isInteractive && isTagEditing is false)
@@ -179,6 +213,9 @@
             </button>
         }
 
+        @* autocomplete is turned off on purpose: the browser's own autofill would otherwise be offered
+           over the suggestion list of the field, and a value it saved for a single line text box is the
+           last tag that was typed rather than the list the field holds. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
@@ -199,11 +236,14 @@
                class="bit-tgi-inp @Classes?.Input"
                list="@(suggestions.Count > 0 ? _listId : null)"
                data-separators="@_separatorsJson"
+               data-no-trim="@(NoTrim ? "true" : null)"
                data-no-add-on-tab="@(NoAddOnTab ? "true" : null)"
                data-cancel-confirm-keys-on-empty="@CancelConfirmKeysOnEmpty.ToString().ToLower()"
                aria-label="@(hasLabel ? null : AriaLabel)"
+               aria-required="@(Required ? "true" : null)"
                aria-labelledby="@(hasLabel ? _labelId : null)"
-               aria-describedby="@(hasDescription ? _descriptionId : null)" />
+               aria-describedby="@(hasDescription ? _descriptionId : null)"
+               autocomplete="off" />
 
         @if (showClearButton)
         {
@@ -218,6 +258,17 @@
                     class="bit-tgi-cbt @Classes?.ClearButton">
                 <i style="@Styles?.ClearIcon" class="bit-tgi-cli @clearIcon?.GetCssClasses() @Classes?.ClearIcon" aria-hidden="true" />
             </button>
+        }
+
+        @* Drawn after everything else, the clear button included, so that it always sits at the very
+           end of the field however much of it the tags have taken. *@
+        @if (SuffixTemplate is not null)
+        {
+            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@SuffixTemplate</div>
+        }
+        else if (Suffix.HasValue())
+        {
+            <div style="@Styles?.Suffix" class="bit-tgi-suf @Classes?.Suffix">@Suffix</div>
         }
     </div>
 

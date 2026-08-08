@@ -136,6 +136,19 @@
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 }
 
+//the prefix and the suffix of the field: they sit on the line the tags and the input share rather than
+//in a box of their own, and they never shrink, a "to:" cut in half meaning nothing.
+.bit-tgi-pre,
+.bit-tgi-suf {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: border-box;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    line-height: spacing(2.25);
+}
+
 .bit-tgi-ttx {
     overflow: hidden;
     white-space: nowrap;
@@ -319,6 +332,14 @@
     }
 }
 
+//a read-only field still takes the caret (the tags are read and copied out of it), but nothing in it can
+//be picked up or dropped, so the grab cursor of a draggable chip would be a promise it does not keep.
+.bit-tgi-rdl {
+    .bit-tgi-tag {
+        cursor: default;
+    }
+}
+
 .bit-tgi-req {
     .bit-tgi-lbl::after {
         content: "*";
@@ -350,7 +371,9 @@
 .bit-tgi.bit-dis {
     .bit-tgi-lbl,
     .bit-tgi-dsc,
-    .bit-tgi-cnr {
+    .bit-tgi-cnr,
+    .bit-tgi-pre,
+    .bit-tgi-suf {
         color: $clr-fg-dis;
     }
 
@@ -425,7 +448,9 @@
         .bit-tgi-cnr,
         .bit-tgi-inp,
         .bit-tgi-tag,
-        .bit-tgi-tgl {
+        .bit-tgi-tgl,
+        .bit-tgi-pre,
+        .bit-tgi-suf {
             color: GrayText;
         }
 

@@ -29,6 +29,13 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "AddedManyAnnouncementFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The format of the message announced by screen readers when several tags are added at once (a pasted list, most of the time), where {0} is how many of them there were. The default is \"{0} tags added.\". An empty string keeps the addition from being announced. A single tag is always announced with AddedAnnouncementFormat instead.",
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -302,6 +309,14 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "OnBeforeClear",
+            Type = "EventCallback<BitTagsInputClearArgs>",
+            Description = "Callback invoked before every tag is removed at once, by the clear button, the Escape key or the Clear method, carrying the whole list that is about to go. Set args.Cancel = true to leave it as it is.",
+            LinkType = LinkType.Link,
+            Href = "#clear-args",
+        },
+        new()
+        {
             Name = "OnClear",
             Type = "EventCallback<IReadOnlyList<string>>",
             Description = "Callback for when every tag is removed at once, by the clear button or by the Clear method. It receives the tags that were removed.",
@@ -354,6 +369,14 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "OnReorder",
+            Type = "EventCallback<BitTagsInputReorderArgs>",
+            Description = "Callback for when a tag is moved within the list with AllowReorder, carrying the tag along with the positions it left and took.",
+            LinkType = LinkType.Link,
+            Href = "#reorder-args",
+        },
+        new()
+        {
             Name = "OnTagExists",
             Type = "EventCallback<string>",
             Description = "Callback fired when a duplicate tag is attempted and Duplicates is false.",
@@ -371,6 +394,34 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The placeholder text of the input, shown while there is no tag in the list.",
+        },
+        new()
+        {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A short text drawn at the start of the field, in front of the tags, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template drawn in place of the Prefix.",
+        },
+        new()
+        {
+            Name = "Prefix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A short text drawn at the start of the field, in front of the tags, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+        },
+        new()
+        {
+            Name = "PrefixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template drawn in place of the Prefix.",
         },
         new()
         {
@@ -431,6 +482,34 @@ public partial class BitTagsInputDemo
             Description = "Custom CSS styles for different parts of the tags input.",
             LinkType = LinkType.Link,
             Href = "#tagsinput-class-styles",
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A short text drawn at the end of the field, after everything else, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template drawn in place of the Suffix.",
+        },
+        new()
+        {
+            Name = "Suffix",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A short text drawn at the end of the field, after everything else, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
+        },
+        new()
+        {
+            Name = "SuffixTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "A custom template drawn in place of the Suffix.",
         },
         new()
         {
@@ -567,6 +646,59 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Id = "clear-args",
+            Title = "BitTagsInputClearArgs",
+            Description = "Arguments passed to the OnBeforeClear callback, describing the whole list that is about to be emptied.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Tags",
+                    Type = "IReadOnlyList<string>",
+                    DefaultValue = "[]",
+                    Description = "The tags that are about to be removed.",
+                },
+                new()
+                {
+                    Name = "Cancel",
+                    Type = "bool",
+                    DefaultValue = "false",
+                    Description = "Set to true to cancel the clear, leaving every tag in the list.",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "reorder-args",
+            Title = "BitTagsInputReorderArgs",
+            Description = "Arguments passed to the OnReorder callback, describing a tag that was moved within the list.",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "Tag",
+                    Type = "string",
+                    DefaultValue = "string.Empty",
+                    Description = "The tag that was moved.",
+                },
+                new()
+                {
+                    Name = "OldIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The zero based position the tag was moved from.",
+                },
+                new()
+                {
+                    Name = "NewIndex",
+                    Type = "int",
+                    DefaultValue = "0",
+                    Description = "The zero based position the tag was moved to.",
+                },
+            ]
+        },
+        new()
+        {
             Id = "tagsinput-class-styles",
             Title = "BitTagsInputClassStyles",
             Description = "",
@@ -599,6 +731,20 @@ public partial class BitTagsInputDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the input container of the tags input.",
+                },
+                new()
+                {
+                    Name = "Prefix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the prefix of the tags input.",
+                },
+                new()
+                {
+                    Name = "Suffix",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the suffix of the tags input.",
                 },
                 new()
                 {
@@ -893,6 +1039,24 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "MoveTagAsync",
+            Type = "Task",
+            Description = "Moves the tag sitting at the given index to another one, exactly as dragging it there or walking it with Alt and the arrow keys does, raising OnReorder along with it. Unlike the gestures, it does not require AllowReorder.",
+        },
+        new()
+        {
+            Name = "EditTagAsync",
+            Type = "Task",
+            Description = "Opens the inline edit of the tag sitting at the given index, exactly as double clicking it does. It requires EditableTags.",
+        },
+        new()
+        {
+            Name = "SetInputTextAsync",
+            Type = "Task",
+            Description = "Sets the text of the input, which is what fills the field from a suggestion list of your own driven by OnInput - and what empties it again once the pick has been turned into a tag. The MaxLength is applied to it and OnInput is raised with the text that was kept.",
+        },
+        new()
+        {
             Name = "Clear",
             Type = "Task",
             Description = "Removes all tags along with the text left in the input, and raises OnClear with the tags that were removed.",
@@ -914,6 +1078,8 @@ public partial class BitTagsInputDemo
     private string? duplicateMessage;
     private string? editMessage;
     private string? clearedMessage;
+    private string? beforeClearMessage;
+    private string? reorderMessage;
 
     private ICollection<string>? boundTags;
     private ICollection<string>? changedTags;
@@ -979,6 +1145,24 @@ public partial class BitTagsInputDemo
         clearedMessage = $"Cleared {tags.Count} tag(s).";
     }
 
+    private void HandleBeforeClear(BitTagsInputClearArgs args)
+    {
+        if (args.Tags.Count > 2)
+        {
+            args.Cancel = true;
+            beforeClearMessage = $"Clearing {args.Tags.Count} tags was refused. Remove a few of them first.";
+        }
+        else
+        {
+            beforeClearMessage = $"Cleared {args.Tags.Count} tag(s).";
+        }
+    }
+
+    private void HandleReorder(BitTagsInputReorderArgs args)
+    {
+        reorderMessage = $"'{args.Tag}' moved from position {args.OldIndex + 1} to {args.NewIndex + 1}.";
+    }
+
     private void HandleBeforeAdd(BitTagsInputBeforeArgs args)
     {
         if (args.Tag.Equals("block", StringComparison.OrdinalIgnoreCase))
@@ -1015,6 +1199,12 @@ public partial class BitTagsInputDemo
     private Task ApiRemoveTag() => apiTagsInput.RemoveTagAsync("dotnet");
 
     private Task ApiRemoveFirst() => apiTagsInput.RemoveTagAtAsync(0);
+
+    private Task ApiMoveFirstToEnd() => apiTagsInput.MoveTagAsync(0, (apiTagsInput.Value?.Count ?? 1) - 1);
+
+    private Task ApiEditFirst() => apiTagsInput.EditTagAsync(0);
+
+    private Task ApiSetInputText() => apiTagsInput.SetInputTextAsync("razor");
 
     private Task ApiClear() => apiTagsInput.Clear();
 

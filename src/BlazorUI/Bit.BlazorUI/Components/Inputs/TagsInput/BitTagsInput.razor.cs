@@ -10,8 +10,10 @@ namespace Bit.BlazorUI;
 /// pasted text over its separators, caps the number of tags and the length of each of them, rejects the ones
 /// that fail a pattern or a validator of yours, normalizes them through a transformer, and reports every one of
 /// those rejections. The chips form an accessible list that the arrow keys walk through, each of them removable
-/// with the keyboard as well as with its dismiss button, and the whole thing takes part in an EditForm like any
-/// other input.
+/// with the keyboard as well as with its dismiss button, correctable in place and movable within the list, with
+/// a long list folded away behind a chip rather than grown into a wall. Every change can be watched or called
+/// off before it happens, the whole component can be driven from code, and the whole thing takes part in an
+/// EditForm like any other input.
 /// </summary>
 public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 {
@@ -81,6 +83,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// The default is "{0} added.". Set it to an empty string to keep the addition from being announced.
     /// </summary>
     [Parameter] public string? AddedAnnouncementFormat { get; set; }
+
+    /// <summary>
+    /// The format of the message announced by screen readers when several tags are added at once (a
+    /// pasted list, most of the time), where {0} is how many of them there were. The default is
+    /// "{0} tags added." - a count rather than the tags themselves, since reading fifty names out is not
+    /// a confirmation but a wall. Set it to an empty string to keep the addition from being announced.
+    /// A single tag is always announced with <see cref="AddedAnnouncementFormat"/> instead.
+    /// </summary>
+    [Parameter] public string? AddedManyAnnouncementFormat { get; set; }
 
     /// <summary>
     /// Whether the input should receive focus on first render.
@@ -303,6 +314,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public EventCallback<BitTagsInputBeforeArgs> OnBeforeRemove { get; set; }
 
     /// <summary>
+    /// Callback invoked before every tag is removed at once, by the clear button, the Escape key or the
+    /// <see cref="Clear"/> method, carrying the whole list that is about to go. Set
+    /// <c>args.Cancel = true</c> to leave it as it is, which is what a confirmation is asked from.
+    /// </summary>
+    [Parameter] public EventCallback<BitTagsInputClearArgs> OnBeforeClear { get; set; }
+
+    /// <summary>
     /// Callback for when one or more tags are added. Receives the list of all newly added tags.
     /// </summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> OnAdd { get; set; }
@@ -328,6 +346,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// Callback for when a tag is removed.
     /// </summary>
     [Parameter] public EventCallback<string> OnRemove { get; set; }
+
+    /// <summary>
+    /// Callback for when a tag is moved within the list with <see cref="AllowReorder"/>, carrying the
+    /// tag along with the positions it left and took. The whole list is reported through the value as
+    /// well; this is what tells which of the tags moved and where to, without diffing two lists.
+    /// </summary>
+    [Parameter] public EventCallback<BitTagsInputReorderArgs> OnReorder { get; set; }
 
     /// <summary>
     /// Callback for when the input receives focus.
@@ -381,6 +406,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <see cref="TagsPlaceholder"/> for the hint that should be shown once there are tags.
     /// </summary>
     [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// A short text drawn at the start of the field, in front of the tags, which is not part of the
+    /// value: the "to:" of a recipients field, the "#" of a hashtag one. Since it never reaches the
+    /// value, the label of the field has to say what it means on its own for a screen reader.
+    /// </summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>
+    /// A custom template drawn in place of the <see cref="Prefix"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? PrefixTemplate { get; set; }
 
     /// <summary>
     /// The format of the message announced by screen readers when a tag is removed, where {0} is the tag.
@@ -443,6 +480,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// Custom CSS styles for different parts of the component.
     /// </summary>
     [Parameter] public BitTagsInputClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// A short text drawn at the end of the field, after everything else, which is not part of the
+    /// value. Since it never reaches the value, the label of the field has to say what it means on its
+    /// own for a screen reader.
+    /// </summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    /// <summary>
+    /// A custom template drawn in place of the <see cref="Suffix"/>.
+    /// </summary>
+    [Parameter] public RenderFragment? SuffixTemplate { get; set; }
 
     /// <summary>
     /// The accessible name of the list the tags form, which is what a screen reader announces before
@@ -563,6 +612,71 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     }
 
     /// <summary>
+    /// Moves the tag sitting at <paramref name="from"/> to <paramref name="to"/>, exactly as dragging it
+    /// there or walking it with Alt and the arrow keys does, raising <see cref="OnReorder"/> along with
+    /// it. It does nothing when either position is outside the list, when the two are the same, or while
+    /// the component is disabled or read-only. Unlike the gestures, it does not require
+    /// <see cref="AllowReorder"/>: the parameter is what offers the reordering to the user, while this
+    /// is the consumer reordering the list itself.
+    /// </summary>
+    public Task MoveTagAsync(int from, int to)
+    {
+        return InvokeAsync(async () =>
+        {
+            if (IsEnabled is false || ReadOnly) return;
+
+            await MoveTag(from, to);
+
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
+    /// Sets the text of the input, which is what fills the field from a suggestion list of your own
+    /// driven by <see cref="OnInput"/> - and what empties it again once the pick has been turned into a
+    /// tag. The <see cref="MaxLength"/> is applied to it, and <see cref="OnInput"/> is raised with the
+    /// text that was kept, exactly as typing it would. It does nothing while the component is disabled
+    /// or read-only.
+    /// </summary>
+    public Task SetInputTextAsync(string? text)
+    {
+        return InvokeAsync(async () =>
+        {
+            if (IsEnabled is false || ReadOnly) return;
+
+            _inputText = text ?? string.Empty;
+
+            if (MaxLength > 0 && _inputText.Length > MaxLength)
+            {
+                _inputText = _inputText[..MaxLength];
+            }
+
+            // The element already holds whatever the user typed, and the renderer only writes an
+            // attribute it sees changing, so the new text is pushed into it by hand.
+            _syncInputValue = true;
+
+            StateHasChanged();
+
+            await OnInput.InvokeAsync(_inputText);
+        });
+    }
+
+    /// <summary>
+    /// Opens the inline edit of the tag sitting at <paramref name="index"/>, exactly as double clicking
+    /// it does. It does nothing when there is no tag there, when <see cref="EditableTags"/> is off, or
+    /// while the component is disabled or read-only.
+    /// </summary>
+    public Task EditTagAsync(int index)
+    {
+        return InvokeAsync(() =>
+        {
+            StartEdit(index);
+
+            StateHasChanged();
+        });
+    }
+
+    /// <summary>
     /// Removes all tags along with the text left in the input, and raises <see cref="OnClear"/> with the
     /// tags that were removed. It does nothing while the component is disabled or read-only.
     /// </summary>
@@ -572,12 +686,27 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         var removed = GetTags();
 
+        if (OnBeforeClear.HasDelegate)
+        {
+            var args = new BitTagsInputClearArgs { Tags = removed };
+            await OnBeforeClear.InvokeAsync(args);
+            if (args.Cancel) return;
+        }
+
         _inputText = string.Empty;
         _syncInputValue = true;
         _focusedTagIndex = -1;
         _tagsExpanded = false;
+        _editingTagIndex = -1;
+        _draggingTagIndex = -1;
+        _dragOverTagIndex = -1;
 
-        await SetCurrentValueAsync(null);
+        // A field that is already empty has nothing to report: setting the value again would otherwise
+        // mark the form dirty and raise a change for a list that did not change.
+        if (removed.Count > 0 || CurrentValue is not null)
+        {
+            await SetCurrentValueAsync(null);
+        }
 
         StateHasChanged();
 
@@ -637,6 +766,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         ClassBuilder.Register(() => NoBorder ? "bit-tgi-nbd" : string.Empty);
 
+        ClassBuilder.Register(() => ReadOnly ? "bit-tgi-rdl" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required && (Label.HasValue() || LabelTemplate is not null) ? "bit-tgi-req" : string.Empty);
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-tgi-fcs {Classes?.Focused}" : string.Empty);
@@ -671,6 +802,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             try
             {
                 await _js.BitTagsInputSetup(InputElement);
+
+                // The chips answer to keys the browser acts on long before the .NET side is reached
+                // (Home scrolls the page, Alt with an arrow leaves it altogether), which one listener
+                // on the root holds back for all of them.
+                await _js.BitTagsInputSetupTags(RootElement);
             }
             catch { } // JS is unavailable (e.g. a prerender or a disconnected circuit); the keys still work, only with their browser default side effects.
 
@@ -711,6 +847,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             if (focusEdit)
             {
+                // The little input needs the very same Enter and IME handling as the main one: without
+                // it, confirming a correction inside an EditForm submits the form, and the Enter that
+                // picks a candidate out of an input method window commits the tag half way through a word.
+                try
+                {
+                    await _js.BitTagsInputSetup(_editInputRef, isEdit: true);
+                }
+                catch { }
+
                 await _editInputRef.FocusAsync();
 
                 // The whole text is selected so that the correction can simply be typed over, which is
@@ -895,7 +1040,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private string? GetPlaceholder()
     {
-        return CurrentValue is null || CurrentValue.Count == 0 ? Placeholder : (TagsPlaceholder ?? null);
+        return CurrentValue is null || CurrentValue.Count == 0 ? Placeholder : TagsPlaceholder;
     }
 
     private string GetDismissAriaLabel(string tag)
@@ -997,9 +1142,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// Applies the trimming, the <see cref="Transformer"/> and the <see cref="MaxLength"/> to the raw
     /// text, producing the tag that the validation rules and the list itself will see.
     /// </summary>
-    private string NormalizeTag(string raw)
+    private string NormalizeTag(string? raw)
     {
-        var text = NoTrim ? raw : raw.Trim();
+        // A null reaches this from the public API and from a collection holding one; it is the same
+        // thing as an empty entry, which the callers drop rather than add.
+        var text = raw is null ? string.Empty : NoTrim ? raw : raw.Trim();
 
         if (Transformer is not null)
         {
@@ -1018,6 +1165,23 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (MaxLength > 0 && text.Length > MaxLength)
         {
             text = text[..MaxLength];
+        }
+
+        // A field whose only accepted values are the suggestions stores the suggestion rather than the
+        // spelling it happened to be typed with: with a case insensitive Comparison, "BLAZOR" is the
+        // very same value as "blazor", and a list holding both spellings of one value is a list nothing
+        // downstream can group by.
+        if (RestrictToSuggestions && text.Length > 0 && Suggestions is not null)
+        {
+            foreach (var suggestion in Suggestions)
+            {
+                if (suggestion is null) continue;
+
+                if (string.Equals(suggestion, text, Comparison) is false) continue;
+
+                text = suggestion;
+                break;
+            }
         }
 
         return text;
@@ -1107,7 +1271,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task HandleContainerClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        // A read-only field is still focused, exactly as a read-only input is: the caret is what the
+        // tags are read and copied out of, and refusing it would only make the field unreachable.
+        if (IsEnabled is false) return;
 
         await InputElement.FocusAsync();
     }
@@ -1212,10 +1378,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             // JS already prevented focus move in capture phase; add the tag.
             await TryAddTag();
         }
-        else if (e.Key == "Escape" && ShowClearButton && (_inputText.Length > 0 || CurrentValue?.Count > 0))
+        else if (e.Key == "Escape" && _inputText.Length > 0)
+        {
+            // Escape takes back what is being typed before it takes anything else: throwing a whole
+            // list of tags away over a half typed word is not an undo but a loss.
+            _inputText = string.Empty;
+            _syncInputValue = true;
+
+            await OnInput.InvokeAsync(_inputText);
+        }
+        else if (e.Key == "Escape" && ShowClearButton && CurrentValue?.Count > 0)
         {
             // The clear button is deliberately kept out of the tab order, so Escape is its keyboard
-            // equivalent, exactly as it is in BitSearchBox and BitNumberField.
+            // equivalent, exactly as it is in BitSearchBox and BitNumberField - once there is nothing
+            // left in the input for it to take back.
             await Clear();
         }
         else if ((e.Key == (IsRtl ? "ArrowRight" : "ArrowLeft")) && _inputText.Length == 0 && CurrentValue?.Count > 0)
@@ -1415,11 +1591,24 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             _tagsExpanded = true;
         }
 
+        // The tag being corrected in place travels with the list, so the edit follows it rather than
+        // being left pointing at whatever now stands where it was.
+        if (_editingTagIndex == from)
+        {
+            _editingTagIndex = to;
+        }
+        else if (_editingTagIndex >= 0)
+        {
+            if (from < _editingTagIndex && to >= _editingTagIndex) _editingTagIndex--;
+            else if (from > _editingTagIndex && to <= _editingTagIndex) _editingTagIndex++;
+        }
+
         FocusTag(to);
 
         Announce(MovedAnnouncementFormat ?? "{0} moved to position {1} of {2}.", tag, to + 1, list.Count);
 
         await SetCurrentValueAsync(list);
+        await OnReorder.InvokeAsync(new() { Tag = tag, OldIndex = from, NewIndex = to });
     }
 
     /// <summary>
@@ -1508,9 +1697,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     /// <summary>
     /// Leaving the little input commits what it holds, exactly as leaving the main input commits the
-    /// text typed into it.
+    /// text typed into it. The focus is left wherever it went: the commit is a consequence of the user
+    /// having gone somewhere else, and pulling them back into the field would undo the very move that
+    /// caused it.
     /// </summary>
-    private Task HandleOnEditFocusOut() => CommitEdit();
+    private Task HandleOnEditFocusOut() => CommitEdit(restoreFocus: false);
 
     private void CancelEdit()
     {
@@ -1524,7 +1715,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         FocusTag(index);
     }
 
-    private async Task CommitEdit()
+    /// <summary>
+    /// Commits the inline edit. <paramref name="restoreFocus"/> tells whether the focus belongs back on
+    /// the tag: it does when the edit was confirmed from the keyboard, and it does not when the commit
+    /// only happened because the focus went somewhere else of its own accord.
+    /// </summary>
+    private async Task CommitEdit(bool restoreFocus = true)
     {
         if (_editingTagIndex < 0) return;
 
@@ -1546,6 +1742,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             var removed = await RemoveTagAt(index);
 
+            if (restoreFocus is false) return;
+
             if (removed && CurrentValue?.Count > 0)
             {
                 FocusTag(Math.Min(index, CurrentValue.Count - 1));
@@ -1560,7 +1758,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (string.Equals(text, original, StringComparison.Ordinal))
         {
-            FocusTag(index);
+            if (restoreFocus)
+            {
+                FocusTag(index);
+            }
             return;
         }
 
@@ -1568,7 +1769,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             await ReportInvalid(text, reason);
 
-            FocusTag(index);
+            if (restoreFocus)
+            {
+                FocusTag(index);
+            }
             return;
         }
 
@@ -1578,14 +1782,26 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             await OnEdit.InvokeAsync(args);
             if (args.Cancel)
             {
-                FocusTag(index);
+                if (restoreFocus)
+                {
+                    FocusTag(index);
+                }
                 return;
             }
         }
 
         list[index] = text;
 
-        FocusTag(index);
+        if (restoreFocus)
+        {
+            FocusTag(index);
+        }
+        else
+        {
+            // The tab stop of the list still belongs on the tag that was corrected, even though the
+            // focus itself has gone elsewhere.
+            _focusedTagIndex = index;
+        }
 
         Announce(EditedAnnouncementFormat ?? "{0} updated.", text);
 
@@ -1665,7 +1881,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (addedTags.Count == 0) return 0;
 
-        Announce(AddedAnnouncementFormat ?? "{0} added.", string.Join(", ", addedTags));
+        // One tag is named, a batch of them is counted: a pasted list of fifty read out name by name is
+        // not a confirmation but a wall, and the tags themselves are in the list to be walked through.
+        if (addedTags.Count == 1)
+        {
+            Announce(AddedAnnouncementFormat ?? "{0} added.", addedTags[0]);
+        }
+        else
+        {
+            Announce(AddedManyAnnouncementFormat ?? "{0} tags added.", addedTags.Count);
+        }
 
         await SetCurrentValueAsync(list);
         await OnAdd.InvokeAsync(addedTags);
@@ -1677,11 +1902,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        await RemoveTagAt(index);
+        var removed = await RemoveTagAt(index);
 
         // The dismiss button of the removed tag is gone along with it, so the focus would otherwise be
-        // dropped on the document body and the user would lose their place entirely.
-        FocusInput();
+        // dropped on the document body and the user would lose their place entirely. A removal that was
+        // called off leaves both the button and the focus exactly where they were.
+        if (removed)
+        {
+            FocusInput();
+        }
     }
 
     private async Task<bool> RemoveTagAt(int index)
@@ -1704,6 +1933,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         if (_focusedTagIndex >= list.Count)
         {
             _focusedTagIndex = list.Count - 1;
+        }
+
+        // An edit open on the tag that has just been taken away has nothing left to commit, and one
+        // open on a tag that has merely shifted has to follow it rather than the position it sat at.
+        if (_editingTagIndex == index)
+        {
+            _editingTagIndex = -1;
+            _editText = string.Empty;
+        }
+        else if (index < _editingTagIndex)
+        {
+            _editingTagIndex--;
         }
 
         Announce(RemovedAnnouncementFormat ?? "{0} removed.", tag);

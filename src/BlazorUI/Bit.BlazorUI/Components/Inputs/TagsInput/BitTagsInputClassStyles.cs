@@ -23,6 +23,16 @@ public class BitTagsInputClassStyles
     public string? InputContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the prefix of the BitTagsInput.
+    /// </summary>
+    public string? Prefix { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the suffix of the BitTagsInput.
+    /// </summary>
+    public string? Suffix { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the element that wraps the rendered tags.
     /// </summary>
     public string? TagsContainer { get; set; }
