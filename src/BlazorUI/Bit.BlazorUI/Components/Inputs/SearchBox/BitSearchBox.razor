@@ -7,22 +7,20 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
-    @if (LabelTemplate is not null)
+    @if (HasLabel)
     {
         <label id="@_labelId"
                for="@_inputId"
                style="@Styles?.Label"
                class="bit-srb-lbl @Classes?.Label">
-            @LabelTemplate
-        </label>
-    }
-    else if (Label.HasValue())
-    {
-        <label id="@_labelId"
-               for="@_inputId"
-               style="@Styles?.Label"
-               class="bit-srb-lbl @Classes?.Label">
-            @Label
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                @Label
+            }
         </label>
     }
 

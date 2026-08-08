@@ -388,6 +388,7 @@ private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggest
     // an artificial delay to make the loading indicator of the callout observable.
     await Task.Delay(1500, request.CancellationToken);
 
+    // LoadItems is the remote provider of the Suggestion (AutoComplete) example above.
     return await LoadItems(request);
 }";
 
@@ -670,7 +671,8 @@ private ValidationSearchBoxModel validationBoxModel = new();";
     }
 
     .custom-highlight {
-        color: tomato;
+        color: var(--bit-clr-pri-text);
+        background-color: var(--bit-clr-pri);
         font-weight: 700;
         text-decoration: none;
     }
@@ -704,6 +706,20 @@ private ValidationSearchBoxModel validationBoxModel = new();";
               Classes=""@(new() { Callout = ""custom-callout"",
                                  SuggestItemButton = ""custom-suggest-item"",
                                  SuggestItemHighlight = ""custom-highlight"" })"" />";
+    private readonly string example21CsharpCode = @"
+private List<string> GetSuggestedItems() =>
+[
+    ""Apple"",
+    ""Red Apple"",
+    ""Blue Apple"",
+    ""Green Apple"",
+    ""Banana"",
+    ""Orange"",
+    ""Grape"",
+    ""Broccoli"",
+    ""Carrot"",
+    ""Lettuce""
+];";
 
     private readonly string example22RazorCode = @"
 <BitSearchBox Placeholder=""جستجو"" Dir=""BitDir.Rtl"" />
@@ -718,4 +734,14 @@ private ValidationSearchBoxModel validationBoxModel = new();";
               MinSuggestTriggerChars=""1""
               NoResultsText=""موردی یافت نشد.""
               SuggestItems=""GetPersianSuggestedItems()"" />";
+    private readonly string example22CsharpCode = @"
+private List<string> GetPersianSuggestedItems() =>
+[
+    ""سیب"",
+    ""سیب قرمز"",
+    ""سیب سبز"",
+    ""موز"",
+    ""پرتقال"",
+    ""انگور""
+];";
 }

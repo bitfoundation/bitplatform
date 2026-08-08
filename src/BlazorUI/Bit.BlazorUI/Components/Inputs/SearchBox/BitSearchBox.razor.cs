@@ -665,9 +665,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         _selectedIndex = -1;
 
-        // Fire and forget on purpose: the value setter is synchronous, and every path inside
-        // SearchItems already swallows the exceptions of the provider and of the JS interop.
-        _ = SearchItems();
+        // Fire and forget on purpose: the value setter is synchronous, so the search cannot be
+        // awaited here and its failures have to be observed by the wrapper instead.
+        _ = SearchItemsAndObserveFailures();
+    }
+
+    /// <summary>
+    /// Runs a search that nobody awaits, so that a circuit torn down while it is still running
+    /// cannot surface as an unobserved task exception.
+    /// </summary>
+    private async Task SearchItemsAndObserveFailures()
+    {
+        try
+        {
+            await SearchItems();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (ObjectDisposedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
@@ -828,9 +842,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (ReadOnly is false)
         {
-            var inputValue = await _js.BitUtilsGetProperty(InputElement, "value");
+            try
+            {
+                var inputValue = await _js.BitUtilsGetProperty(InputElement, "value");
 
-            await SetCurrentValueAsStringAsync(inputValue);
+                await SetCurrentValueAsStringAsync(inputValue);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
         await CloseCallout();
@@ -990,8 +1008,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             _searchTriggered = true;
 
+            // The superseded source is only cancelled here, never disposed: the search that owns it
+            // may still be sitting inside the provider with its token, and pulling the source out
+            // from under that call would turn any use of the token into an ObjectDisposedException.
+            // Every search disposes its own source in the finally block below instead.
             _cancellationTokenSource?.Cancel();
-            _cancellationTokenSource?.Dispose();
             var cts = _cancellationTokenSource = new();
 
             _isLoading = true;
@@ -1031,6 +1052,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 {
                     _isLoading = false;
                 }
+
+                // Only clear the field when this search is still the current one, so that a newer
+                // search that already replaced it keeps its own source alive.
+                if (ReferenceEquals(_cancellationTokenSource, cts))
+                {
+                    _cancellationTokenSource = null;
+                }
+
+                cts.Dispose();
             }
         }
         else if (SuggestItems is not null)

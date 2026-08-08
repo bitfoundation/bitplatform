@@ -1382,11 +1382,11 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        var items = component.FindAll(".bit-srb-itm");
-        if (items.Count > 0)
-        {
-            items[0].Click();
-        }
+        // read-only blocks editing, not browsing, so the suggestions are rendered as usual.
+        component.InvokeAsync(() => component.Instance.ShowSuggestItems());
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 4);
+
+        component.FindAll(".bit-srb-itm")[0].Click();
 
         Assert.AreEqual("apple", value);
     }
@@ -1599,6 +1599,8 @@ public class BitSearchBoxTests : BunitTestContext
         var items = component.FindAll(".bit-srb-itm");
 
         Assert.AreEqual("app", receivedSearchTerm);
+        // the provider is handed the MaxSuggestCount of the component, which was left at its default.
+        Assert.AreEqual(5, component.Instance.MaxSuggestCount);
         Assert.AreEqual(5, receivedTake);
         Assert.AreEqual(2, items.Count);
         Assert.AreEqual("apple", items[0].TextContent.Trim());
@@ -2133,12 +2135,14 @@ public class BitSearchBoxTests : BunitTestContext
         var form = component.Find("form");
         form.Submit();
 
-        Assert.AreEqual(component.Instance.ValidCount, isValid ? 1 : 0);
-        Assert.AreEqual(component.Instance.InvalidCount, isValid ? 0 : 1);
+        Assert.AreEqual(isValid ? 1 : 0, component.Instance.ValidCount);
+        Assert.AreEqual(isValid ? 0 : 1, component.Instance.InvalidCount);
 
         var input = component.Find("input.bit-srb-inp");
         if (isValid)
         {
+            // a valid initial value is replaced by an invalid one, and the other way around,
+            // so that the second submit always lands on the opposite outcome of the first one.
             input.Input("bit.com");
         }
         else
@@ -2150,7 +2154,6 @@ public class BitSearchBoxTests : BunitTestContext
 
         Assert.AreEqual(1, component.Instance.ValidCount);
         Assert.AreEqual(1, component.Instance.InvalidCount);
-        Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
     [TestMethod,
