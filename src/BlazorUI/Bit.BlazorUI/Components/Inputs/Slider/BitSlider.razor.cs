@@ -177,8 +177,10 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// The largest distance the two thumbs of a ranged slider are allowed to be apart. A thumb dragged far
     /// enough to stretch the range past it stops there instead, and a pair that starts wider than this is
-    /// narrowed to fit. It is held at or above <see cref="MinRange"/>, so a pair of limits that contradict
-    /// each other leaves the smallest distance in charge rather than locking the slider up.
+    /// narrowed to fit. Setting it also stops the thumbs from crossing, since a largest distance between them
+    /// is only meaningful for an ordered pair. It is held at or above <see cref="MinRange"/>, so a pair of
+    /// limits that contradict each other leaves the smallest distance in charge rather than locking the
+    /// slider up.
     /// </summary>
     [Parameter] public double? MaxRange { get; set; }
 

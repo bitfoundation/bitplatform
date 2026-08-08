@@ -235,28 +235,39 @@ private const string blurredText = ""blurred"";
 private string focusState = blurredText;";
 
     private readonly string example11RazorCode = @"
-<EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+@if (string.IsNullOrEmpty(SuccessMessage))
+{
+    <EditForm Model=""ValidationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
 
-    <DataAnnotationsValidator />
+        <DataAnnotationsValidator />
 
-    <BitSlider Required
-               Name=""rate""
-               Label=""How many days a week?""
-               Max=""7""
-               ShowMarks
-               ShowMarkLabels
-               @bind-Value=""ValidationModel.Days"" />
-    <ValidationMessage For=""@(() => ValidationModel.Days)"" />
+        <BitSlider Required
+                   Name=""rate""
+                   Label=""How many days a week?""
+                   Max=""7""
+                   ShowMarks
+                   ShowMarkLabels
+                   @bind-Value=""ValidationModel.Days"" />
+        <ValidationMessage For=""@(() => ValidationModel.Days)"" />
 
-    <BitSlider IsRanged
-               Label=""Budget bracket""
-               Max=""100""
-               Step=""5""
-               @bind-RangeValue=""ValidationModel.Budget"" />
-    <ValidationMessage For=""@(() => ValidationModel.Budget)"" />
+        <br />
 
-    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
-</EditForm>";
+        <BitSlider IsRanged
+                   Label=""Budget bracket""
+                   Max=""100""
+                   Step=""5""
+                   @bind-RangeValue=""ValidationModel.Budget"" />
+        <ValidationMessage For=""@(() => ValidationModel.Budget)"" />
+
+        <br />
+
+        <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    </EditForm>
+}
+else
+{
+    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+}";
     private readonly string example11CsharpCode = @"
 public class BitSliderDemoFormModel
 {

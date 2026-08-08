@@ -157,7 +157,7 @@
                               class="bit-sld-thb bit-sld-thb-lwr @Classes?.Thumb @Classes?.LowerThumb">
                             @if (showThumbLabel)
                             {
-                                <span style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
                                     @if (ThumbLabelTemplate is not null)
                                     {
                                         @ThumbLabelTemplate(lower)
@@ -173,7 +173,7 @@
                               class="bit-sld-thb bit-sld-thb-upr @Classes?.Thumb @Classes?.UpperThumb">
                             @if (showThumbLabel)
                             {
-                                <span style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
                                     @if (ThumbLabelTemplate is not null)
                                     {
                                         @ThumbLabelTemplate(upper)
@@ -192,7 +192,7 @@
                               class="bit-sld-thb @Classes?.Thumb">
                             @if (showThumbLabel)
                             {
-                                <span style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
+                                <span aria-hidden="true" style="@Styles?.ThumbLabel" class="bit-sld-tlb @Classes?.ThumbLabel">
                                     @if (ThumbLabelTemplate is not null)
                                     {
                                         @ThumbLabelTemplate(value)
