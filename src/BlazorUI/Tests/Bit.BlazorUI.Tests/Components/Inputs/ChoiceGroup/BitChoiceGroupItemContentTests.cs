@@ -110,7 +110,7 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
         var items = new List<BitChoiceGroupItem<string>>
         {
             new() { Text = "A", Value = "A", Prefix = string.Empty },
-            new() { Text = "B", Value = "B", Prefix = "$10 — " },
+            new() { Text = "B", Value = "B", Prefix = "$10 - " },
         };
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
@@ -122,7 +122,7 @@ public class BitChoiceGroupItemContentTests : BunitTestContext
         var labels = component.FindAll(".bit-chg-itl");
 
         StringAssert.Contains(labels[0].TextContent, "[0]");
-        StringAssert.Contains(labels[1].TextContent, "$10 — ");
+        StringAssert.Contains(labels[1].TextContent, "$10 - ");
     }
 
     [TestMethod]

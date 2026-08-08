@@ -393,9 +393,9 @@ private string readOnlyValue = ""A"";";
 
     private readonly string example13RazorCode = @"
 <BitChoiceGroup Label=""Shipping method (Prefix)"" DefaultValue=""@(""Standard"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
-    <BitChoiceGroupOption Text=""Standard"" Value=""@(""Standard"")"" Prefix=""$0 — "" />
-    <BitChoiceGroupOption Text=""Express"" Value=""@(""Express"")"" Prefix=""$10 — "" />
-    <BitChoiceGroupOption Text=""Overnight"" Value=""@(""Overnight"")"" Prefix=""$25 — "" />
+    <BitChoiceGroupOption Text=""Standard"" Value=""@(""Standard"")"" Prefix=""$0 - "" />
+    <BitChoiceGroupOption Text=""Express"" Value=""@(""Express"")"" Prefix=""$10 - "" />
+    <BitChoiceGroupOption Text=""Overnight"" Value=""@(""Overnight"")"" Prefix=""$25 - "" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Shipping method (Suffix)""
