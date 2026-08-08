@@ -7,10 +7,21 @@
     font-weight: 400;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+    // The medium size is the default one, so its values sit on the root instead of only on .bit-tfl-md.
+    --bit-tfl-font-size: #{spacing(1.75)};
+    --bit-tfl-line-height: #{spacing(2.125)};
+    --bit-tfl-min-height: #{spacing(4)};
+    --bit-tfl-inp-min-height: #{spacing(3.75)};
+    --bit-tfl-icon-font-size: #{spacing(2)};
+    --bit-tfl-btn-width: #{spacing(4)};
 
     &.bit-dis {
+        .bit-tfl-cnt {
+            color: $clr-fg-dis;
+        }
+
         .bit-tfl-lbl {
             color: $clr-fg-dis;
         }
@@ -48,16 +59,17 @@
             }
 
             .bit-tfl-lbl {
-                height: spacing(4);
-                margin: 0 spacing(1) 0 0;
+                height: var(--bit-tfl-min-height);
+                margin-inline-end: spacing(1);
                 line-height: spacing(2.75);
-                padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
+                padding-block: spacing(0.625);
+                padding-inline-start: spacing(1.5);
             }
 
             .bit-tfl-fgp {
                 flex: 1 1 0;
                 border: none;
-                text-align: left;
+                text-align: start;
             }
         }
     }
@@ -100,10 +112,10 @@
     font-weight: 600;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
     overflow-wrap: break-word;
+    font-size: var(--bit-tfl-font-size);
 }
 
 .bit-tfl-fgp {
@@ -116,8 +128,8 @@
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    min-height: spacing(4);
     border-radius: $shp-border-radius;
+    min-height: var(--bit-tfl-min-height);
     background-color: var(--bit-tfl-clr-bg);
     border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
 }
@@ -136,10 +148,10 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
-    min-height: spacing(3.75);
     background: none transparent;
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+    min-height: var(--bit-tfl-inp-min-height);
 
     &[type="password"]::-ms-reveal,
     &[type="password"]::-ms-clear {
@@ -151,13 +163,17 @@
     height: 100%;
     border: none;
     cursor: pointer;
-    width: spacing(4);
     position: relative;
     outline: transparent;
     padding: 0 spacing(0.5);
-    min-height: spacing(3.75);
     color: var(--bit-tfl-clr);
     background-color: transparent;
+    width: var(--bit-tfl-btn-width);
+    min-height: var(--bit-tfl-inp-min-height);
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tfl-clr-focus));
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -169,8 +185,8 @@
 .bit-tfl-rpc {
     display: flex;
     align-items: center;
-    font-size: spacing(2);
     justify-content: center;
+    font-size: var(--bit-tfl-icon-font-size);
 }
 
 .bit-tfl-rpi {
@@ -182,7 +198,6 @@
     border: none;
     cursor: pointer;
     font-weight: 400;
-    width: spacing(4);
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
@@ -192,11 +207,13 @@
     display: inline-block;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
     background-color: transparent;
-    border-radius: 0 spacing(0.125) spacing(0.125) 0;
-    min-height: spacing(3.75);
+    width: var(--bit-tfl-btn-width);
+    font-size: var(--bit-tfl-font-size);
+    min-height: var(--bit-tfl-inp-min-height);
+    border-start-end-radius: spacing(0.125);
+    border-end-end-radius: spacing(0.125);
 
     i {
         width: unset;
@@ -206,6 +223,10 @@
         margin: 0 spacing(0.5);
         font-size: spacing(1.5);
         line-height: spacing(2);
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tfl-clr-focus));
     }
 
     @media (hover: hover) {
@@ -223,15 +244,33 @@
 .bit-tfl-rpi,
 .bit-tfl-ico {
     text-align: center;
-    font-size: spacing(2);
     min-width: spacing(3.5);
+    font-size: var(--bit-tfl-icon-font-size);
+}
+
+.bit-tfl-ftr {
+    gap: spacing(1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
 .bit-tfl-des {
+    flex: 1 1 auto;
+    min-width: 0;
+
     span {
         color: $clr-fg-pri;
         font-size: spacing(1.25);
     }
+}
+
+.bit-tfl-cnt {
+    flex: 0 0 auto;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    font-size: spacing(1.25);
+    margin-inline-start: auto;
 }
 
 .bit-tfl-pre,
@@ -244,11 +283,11 @@
     white-space: nowrap;
     background: $clr-bg-sec;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
+    min-height: var(--bit-tfl-inp-min-height);
 
     span {
-        font-size: spacing(1.75);
         padding-bottom: spacing(0.125);
+        font-size: var(--bit-tfl-font-size);
     }
 }
 
@@ -257,6 +296,14 @@
     .bit-tfl-fgp {
         height: auto;
         align-items: stretch;
+    }
+
+    // The field group stretches its children in the multiline mode, which would turn the clear and reveal
+    // buttons into full height columns, so they are pinned to the top row instead.
+    .bit-tfl-cbt,
+    .bit-tfl-rpb {
+        height: var(--bit-tfl-inp-min-height);
+        align-self: flex-start;
     }
 
     .bit-tfl-ghw {
@@ -270,8 +317,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -280,8 +327,8 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -291,8 +338,8 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -334,16 +381,17 @@
     }
 
     .bit-tfl-lbl {
-        height: spacing(4);
-        margin: 0 spacing(1) 0 0;
+        height: var(--bit-tfl-min-height);
+        margin-inline-end: spacing(1);
         line-height: spacing(2.75);
-        padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
+        padding-block: spacing(0.625);
+        padding-inline-start: spacing(1.5);
     }
 
     .bit-tfl-fgp {
         flex: 1 1 0;
         border: none;
-        text-align: left;
+        text-align: start;
     }
 }
 
@@ -351,7 +399,7 @@
     .bit-tfl-lbl::after {
         content: "*";
         color: $clr-req;
-        margin-left: spacing(0.625);
+        margin-inline-start: spacing(0.625);
     }
 }
 
@@ -361,7 +409,7 @@
         color: $clr-req;
         position: absolute;
         top: spacing(-0.625);
-        right: spacing(-1.25);
+        inset-inline-end: spacing(-1.25);
     }
 }
 
@@ -409,8 +457,36 @@
     color: $clr-fg-ter;
     padding: 0 spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+}
+
+
+.bit-tfl-sm {
+    --bit-tfl-font-size: #{spacing(1.5)};
+    --bit-tfl-line-height: #{spacing(1.875)};
+    --bit-tfl-min-height: #{spacing(3.25)};
+    --bit-tfl-inp-min-height: #{spacing(3)};
+    --bit-tfl-icon-font-size: #{spacing(1.75)};
+    --bit-tfl-btn-width: #{spacing(3.25)};
+}
+
+.bit-tfl-md {
+    --bit-tfl-font-size: #{spacing(1.75)};
+    --bit-tfl-line-height: #{spacing(2.125)};
+    --bit-tfl-min-height: #{spacing(4)};
+    --bit-tfl-inp-min-height: #{spacing(3.75)};
+    --bit-tfl-icon-font-size: #{spacing(2)};
+    --bit-tfl-btn-width: #{spacing(4)};
+}
+
+.bit-tfl-lg {
+    --bit-tfl-font-size: #{spacing(2)};
+    --bit-tfl-line-height: #{spacing(2.5)};
+    --bit-tfl-min-height: #{spacing(5)};
+    --bit-tfl-inp-min-height: #{spacing(4.75)};
+    --bit-tfl-icon-font-size: #{spacing(2.5)};
+    --bit-tfl-btn-width: #{spacing(5)};
 }
 
 

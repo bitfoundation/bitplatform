@@ -2,33 +2,20 @@ namespace BitBlazorUI {
     export class TextField {
         private static _abortControllers: { [key: string]: AbortController } = {};
         private static _ghostTexts: { [key: string]: string } = {};
+        private static _maxRows: { [key: string]: number | null } = {};
         private static _inputElements: { [key: string]: HTMLInputElement } = {};
 
-        public static setupMultilineInput(id: string, inputElement: HTMLInputElement, autoHeight: boolean, preventEnter: boolean) {
+        public static setupMultilineInput(id: string, inputElement: HTMLInputElement, autoHeight: boolean, preventEnter: boolean, maxRows: number | null) {
             if (!inputElement) return;
 
             const ac = TextField._abortControllers[id] ?? new AbortController();
             TextField._abortControllers[id] = ac;
+            TextField._maxRows[id] = maxRows ?? null;
 
             if (autoHeight) {
                 inputElement.addEventListener('input', e => {
-                    TextField.adjustHeight(inputElement);
+                    TextField.resize(inputElement, TextField._maxRows[id]);
                 }, { signal: ac.signal });
-
-                //const observer = new MutationObserver((mutations) => {
-                //    mutations.forEach((mutation) => {
-                //        console.log("Value changed programmatically:", inputElement.value, mutation);
-                //    });
-                //});
-                //observer.observe(inputElement, { attributes: true, subtree: true, attributeOldValue: true, attributeFilter: ['value'] });
-
-                //Object.defineProperty(inputElement, "value", {
-                //    set(newValue) {
-                //        console.log("Value changed programmatically:", newValue);
-                //        this.setAttribute("value", newValue); // Update the DOM attribute
-                //    },
-                //});
-
             }
 
             if (preventEnter) {
@@ -40,11 +27,45 @@ namespace BitBlazorUI {
             }
         }
 
-        public static adjustHeight(inputElement: HTMLInputElement) {
+        public static adjustHeight(id: string, inputElement: HTMLInputElement, maxRows: number | null) {
             if (!inputElement) return;
-            
+
+            TextField._maxRows[id] = maxRows ?? null;
+
+            TextField.resize(inputElement, maxRows ?? null);
+        }
+
+        // Collapses the input first so scrollHeight reports the height the content actually needs, then
+        // grows it back to that height. When a row ceiling is set the growth stops there and the content
+        // scrolls inside the input instead of pushing the rest of the page down.
+        private static resize(inputElement: HTMLInputElement, maxRows: number | null) {
             inputElement.style.height = 'auto';
-            inputElement.style.height = inputElement.scrollHeight + 'px';
+
+            const contentHeight = inputElement.scrollHeight;
+
+            if (!maxRows || maxRows <= 0) {
+                inputElement.style.height = contentHeight + 'px';
+                inputElement.style.overflowY = '';
+                return;
+            }
+
+            const styles = getComputedStyle(inputElement);
+            const fontSize = parseFloat(styles.fontSize) || 16;
+            const lineHeight = parseFloat(styles.lineHeight) || (fontSize * 1.2);
+            const paddings = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
+            const borders = styles.boxSizing === 'border-box'
+                ? (parseFloat(styles.borderTopWidth) || 0) + (parseFloat(styles.borderBottomWidth) || 0)
+                : 0;
+
+            const maxHeight = (lineHeight * maxRows) + paddings + borders;
+
+            if (contentHeight > maxHeight) {
+                inputElement.style.height = maxHeight + 'px';
+                inputElement.style.overflowY = 'auto';
+            } else {
+                inputElement.style.height = contentHeight + 'px';
+                inputElement.style.overflowY = 'hidden';
+            }
         }
 
         public static setupGhostText(id: string, inputElement: HTMLInputElement, dotnetObj: DotNetObject) {
@@ -80,6 +101,13 @@ namespace BitBlazorUI {
                 overlay.scrollLeft = inputElement.scrollLeft;
             };
 
+            const clearGhost = () => {
+                TextField._ghostTexts[id] = '';
+                const overlay = getOverlay();
+                if (overlay) overlay.textContent = inputElement.value;
+                syncScroll();
+            };
+
             // Accept the stored ghost text at the current caret position.
             const acceptGhost = () => {
                 if (inputElement.readOnly || inputElement.disabled) return;
@@ -104,23 +132,19 @@ namespace BitBlazorUI {
                 }
 
                 // Clear ghost immediately after acceptance.
-                TextField._ghostTexts[id] = '';
-                const overlay = getOverlay();
-                if (overlay) overlay.textContent = inputElement.value;
-                syncScroll();
+                clearGhost();
 
+                // Both events are dispatched: the input one feeds an Immediate binding, and the change one
+                // is what a plain (non-Immediate) binding listens to, so the accepted text reaches the
+                // bound value either way instead of waiting for the input to lose focus.
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                inputElement.dispatchEvent(new Event('change', { bubbles: true }));
                 dotnetObj.invokeMethodAsync('OnGhostTextAccepted', ghost);
             };
 
-            // On every keystroke: immediately clear the ghost suggestion (index3.html pattern).
+            // On every keystroke: immediately clear the ghost suggestion.
             // The overlay is JS-owned; Blazor never touches its content.
-            inputElement.addEventListener('input', () => {
-                TextField._ghostTexts[id] = '';
-                const overlay = getOverlay();
-                if (overlay) overlay.textContent = inputElement.value;
-                syncScroll();
-            }, { signal });
+            inputElement.addEventListener('input', clearGhost, { signal });
 
             // Tab/Enter: accept the ghost suggestion.
             inputElement.addEventListener('keydown', e => {
@@ -141,11 +165,13 @@ namespace BitBlazorUI {
 
                 if (!hasGhost()) return;
 
+                // A modifier on its own (Shift before a capital letter, Ctrl before a shortcut) does not
+                // change the value, so the suggestion survives it instead of blinking out of existence.
+                if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') return;
+
                 // Clear immediately on any other key press so stale ghost text never
                 // lingers until the later input event.
-                TextField._ghostTexts[id] = '';
-                const overlay = getOverlay();
-                if (overlay) overlay.textContent = inputElement.value;
+                clearGhost();
             }, { signal });
 
             // Click/touch accept: when there is a ghost suggestion and the caret is at
@@ -174,7 +200,7 @@ namespace BitBlazorUI {
         // Stores the new ghost text and refreshes the overlay to show value + ghost.
         public static setGhostText(id: string, ghostText: string) {
             TextField._ghostTexts[id] = ghostText ?? '';
-            
+
             const inputElement = TextField._inputElements[id];
             if (!inputElement) return;
 
@@ -188,12 +214,14 @@ namespace BitBlazorUI {
 
         public static dispose(id: string) {
             const ac = TextField._abortControllers[id];
-            if (!ac) return;
 
-            ac.abort();
+            if (ac) {
+                ac.abort();
+            }
 
             delete TextField._abortControllers[id];
             delete TextField._ghostTexts[id];
+            delete TextField._maxRows[id];
             delete TextField._inputElements[id];
         }
     }

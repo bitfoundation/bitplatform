@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -809,32 +811,33 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(value, component.Instance.Value);
     }
 
-    [Ignore]
     [TestMethod,
         DataRow(false, "hello", " world"),
         DataRow(true, "hello", " world"),
     ]
-    public void BitTextFieldGhostTextAcceptAppendsToExistingValue(bool multiline, string value, string ghostText)
+    public void BitTextFieldGhostTextAcceptCommitsTheNewValue(bool multiline, string value, string ghostText)
     {
+        // Accepting a ghost suggestion is done in JS: it writes the text into the element and then
+        // dispatches both an input and a change event. Only the second half of that is reachable from
+        // bUnit, so the change event is what is raised here, and the value has to end up bound even
+        // though Immediate is off.
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.Multiline, multiline);
-            parameters.Add(p => p.Value, value);
-            parameters.Add(p => p.OnChange, _ => { });
             parameters.Add(p => p.GhostText, ghostText);
         });
 
-        component.Instance._NotifyGhostTextAccepted(ghostText).GetAwaiter().GetResult();
+        var input = component.Find(".bit-tfl-inp");
+        input.Change(value + ghostText);
 
         Assert.AreEqual(value + ghostText, component.Instance.Value);
     }
 
-    [Ignore]
     [TestMethod,
-        DataRow(false, null, " world"),
-        DataRow(true, null, " world"),
+        DataRow(false, " world"),
+        DataRow(true, " world"),
     ]
-    public void BitTextFieldGhostTextAcceptWithNullCurrentValue(bool multiline, string? value, string ghostText)
+    public void BitTextFieldGhostTextAcceptWithNullCurrentValue(bool multiline, string ghostText)
     {
         var component = RenderComponent<BitTextField>(parameters =>
         {
@@ -842,7 +845,8 @@ public class BitTextFieldTests : BunitTestContext
             parameters.Add(p => p.GhostText, ghostText);
         });
 
-        component.Instance._NotifyGhostTextAccepted(ghostText).GetAwaiter().GetResult();
+        var input = component.Find(".bit-tfl-inp");
+        input.Change(ghostText);
 
         Assert.AreEqual(ghostText, component.Instance.Value);
     }
@@ -886,5 +890,742 @@ public class BitTextFieldTests : BunitTestContext
 
         var overlay = component.Find(".bit-tfl-gho");
         Assert.IsTrue(overlay.ClassList.Contains(overlayClass));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRendersTheTextTypeWhenTheTypeIsNotSet()
+    {
+        // The Type parameter resolves its html type through a CallOnSet handler, which only runs when the
+        // parameter is actually assigned, so the unset case has to be resolved on initialization instead.
+        var component = RenderComponent<BitTextField>();
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("text", input.GetAttribute("type"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldSearchTypeTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Search);
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("search", input.GetAttribute("type"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldRendersNoMaxLengthAttributeByDefault(bool multiline)
+    {
+        // A maxlength of -1 is not a valid html attribute value, so nothing should be rendered for it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.IsFalse(input.HasAttribute("maxlength"));
+        Assert.IsFalse(input.HasAttribute("minlength"));
+    }
+
+    [TestMethod,
+        DataRow(false, 3),
+        DataRow(true, 3),
+    ]
+    public void BitTextFieldMinLengthTest(bool multiline, int minLength)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.MinLength, minLength);
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual(minLength.ToString(), input.GetAttribute("minlength"));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-tfl-sm"),
+        DataRow(BitSize.Medium, "bit-tfl-md"),
+        DataRow(BitSize.Large, "bit-tfl-lg"),
+    ]
+    public void BitTextFieldSizeTest(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        var bitTextField = component.Find(".bit-tfl");
+
+        Assert.IsTrue(bitTextField.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRendersNoSizeClassByDefault()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        var bitTextField = component.Find(".bit-tfl");
+
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-sm"));
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-md"));
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-lg"));
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-tfl-pri"),
+        DataRow(BitColor.Success, "bit-tfl-suc"),
+        DataRow(BitColor.Error, "bit-tfl-err"),
+    ]
+    public void BitTextFieldAccentTest(BitColor accent, string expectedClass)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Accent, accent);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitTextFieldAccentIsResetWhenItChanges()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Accent, BitColor.Primary);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-pri"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Accent, BitColor.Error);
+        });
+
+        var bitTextField = component.Find(".bit-tfl");
+        Assert.IsTrue(bitTextField.ClassList.Contains("bit-tfl-err"));
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-pri"));
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-tfl-bpr"),
+        DataRow(BitColorKind.Secondary, "bit-tfl-bse"),
+        DataRow(BitColorKind.Tertiary, "bit-tfl-btr"),
+        DataRow(BitColorKind.Transparent, "bit-tfl-btn"),
+    ]
+    public void BitTextFieldBackgroundTest(BitColorKind background, string expectedClass)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Background, background);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitTextFieldBackgroundIsResetWhenItChanges()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Background, BitColorKind.Primary);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-bpr"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Background, BitColorKind.Transparent);
+        });
+
+        var bitTextField = component.Find(".bit-tfl");
+        Assert.IsTrue(bitTextField.ClassList.Contains("bit-tfl-btn"));
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-bpr"));
+    }
+
+    [TestMethod,
+        DataRow(BitColorKind.Primary, "bit-tfl-brp"),
+        DataRow(BitColorKind.Transparent, "bit-tfl-brn"),
+    ]
+    public void BitTextFieldBorderTest(BitColorKind border, string expectedClass)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Border, border);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitTextFieldFullWidthTest(bool fullWidth)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.FullWidth, fullWidth);
+        });
+
+        Assert.AreEqual(fullWidth, component.Find(".bit-tfl").ClassList.Contains("bit-tfl-fwd"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitTextFieldPermanentGhostTest(bool permanentGhost)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.PermanentGhost, permanentGhost);
+        });
+
+        Assert.AreEqual(permanentGhost, component.Find(".bit-tfl").ClassList.Contains("bit-tfl-pgt"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitTextFieldAutoHeightTest(bool autoHeight)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, autoHeight);
+        });
+
+        Assert.AreEqual(autoHeight, component.Find(".bit-tfl").ClassList.Contains("bit-tfl-mla"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRequiredWithoutALabelMarksTheFieldGroup()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-rnl"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRequiredWithALabelTemplateDoesNotMarkTheFieldGroup()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.LabelTemplate, (RenderFragment)(builder => builder.AddContent(0, "custom")));
+        });
+
+        var bitTextField = component.Find(".bit-tfl");
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-rnl"));
+        Assert.IsTrue(component.Find(".bit-tfl-inp").HasAttribute("aria-labelledby"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldShowClearButtonOnlyShowsUpWithAValue(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+
+        component.Find(".bit-tfl-inp").Change("hello");
+
+        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt").Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldClearButtonClearsTheValueAndFiresOnClear(bool multiline)
+    {
+        var clearCount = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        component.Find(".bit-tfl-cbt").Click();
+
+        Assert.IsTrue(string.IsNullOrEmpty(component.Instance.Value));
+        Assert.AreEqual(1, clearCount);
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearButtonHasADefaultAriaLabel()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        Assert.AreEqual("Clear text", component.Find(".bit-tfl-cbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearButtonAriaLabelTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.ClearButtonAriaLabel, "Empty this field");
+        });
+
+        Assert.AreEqual("Empty this field", component.Find(".bit-tfl-cbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(false, false),
+    ]
+    public void BitTextFieldClearButtonIsDisabledWhenItCannotClear(bool readOnly, bool isEnabled)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+        });
+
+        var clearButton = component.Find(".bit-tfl-cbt");
+
+        Assert.AreEqual(readOnly || isEnabled is false, clearButton.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearButtonTemplateTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.ClearButtonTemplate, (RenderFragment)(builder => builder.AddMarkupContent(0, "<span class=\"custom-clear\">x</span>")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-tfl-cbt .custom-clear").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-cbt i").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldRevealPasswordButtonHasADefaultAriaLabelAndAStableName()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Password);
+            parameters.Add(p => p.CanRevealPassword, true);
+        });
+
+        var button = component.Find(".bit-tfl-rpb");
+
+        Assert.AreEqual("Reveal password", button.GetAttribute("aria-label"));
+        Assert.AreEqual("false", button.GetAttribute("aria-pressed"));
+
+        button.Click();
+
+        // The accessible name stays put while only the pressed state flips, which is the pattern screen
+        // readers announce reliably.
+        Assert.AreEqual("Reveal password", button.GetAttribute("aria-label"));
+        Assert.AreEqual("true", button.GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRevealPasswordTemplateTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Password);
+            parameters.Add(p => p.CanRevealPassword, true);
+            parameters.Add(p => p.RevealPasswordTemplate, (RenderFragment<bool>)(revealed => builder => builder.AddMarkupContent(0, $"<span class=\"custom-reveal\">{(revealed ? "hide" : "show")}</span>")));
+        });
+
+        Assert.AreEqual("show", component.Find(".bit-tfl-rpb .custom-reveal").TextContent);
+
+        component.Find(".bit-tfl-rpb").Click();
+
+        Assert.AreEqual("hide", component.Find(".bit-tfl-rpb .custom-reveal").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldToggleRevealPasswordIsIgnoredWhenTheTypeIsNotPassword()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.CanRevealPassword, true);
+        });
+
+        component.InvokeAsync(component.Instance.ToggleRevealPassword).GetAwaiter().GetResult();
+
+        Assert.AreEqual("text", component.Find(".bit-tfl-inp").GetAttribute("type"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldShowCountRendersTheCounter(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.MaxLength, 10);
+            parameters.Add(p => p.DefaultValue, "abc");
+        });
+
+        Assert.AreEqual("3/10", component.Find(".bit-tfl-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTextFieldShowCountWithoutAMaxLengthRendersOnlyTheCount()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.DefaultValue, "abcd");
+        });
+
+        Assert.AreEqual("4", component.Find(".bit-tfl-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTextFieldCountFollowsTheKeystrokesWithoutImmediate()
+    {
+        // The counter reads the input event directly so it stays live even while the bound value is only
+        // committed on the change event.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.MaxLength, 10);
+        });
+
+        Assert.AreEqual("0/10", component.Find(".bit-tfl-cnt").TextContent.Trim());
+
+        component.Find(".bit-tfl-inp").Input("abcde");
+
+        Assert.AreEqual("5/10", component.Find(".bit-tfl-cnt").TextContent.Trim());
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitTextFieldCountIsNotRenderedByDefault()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-cnt").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-ftr").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldCountTemplateTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.DefaultValue, "abc");
+            parameters.Add(p => p.CountTemplate, (RenderFragment<int>)(count => builder => builder.AddContent(0, $"[{count}]")));
+        });
+
+        Assert.AreEqual("[3]", component.Find(".bit-tfl-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTextFieldDescribedByPointsAtTheDescriptionAndTheCounter()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.MaxLength, 10);
+            parameters.Add(p => p.Description, "a description");
+        });
+
+        var describedBy = component.Find(".bit-tfl-inp").GetAttribute("aria-describedby");
+
+        Assert.IsNotNull(describedBy);
+
+        var ids = describedBy!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        Assert.AreEqual(2, ids.Length);
+        Assert.AreEqual(ids[0], component.Find(".bit-tfl-des").Id);
+        Assert.AreEqual(ids[1], component.Find(".bit-tfl-cnt").Id);
+    }
+
+    [TestMethod]
+    public void BitTextFieldDescribedByIgnoresACounterWithoutALimit()
+    {
+        // Without a MaxLength the counter is a bare number, which adds nothing to the announcement of the
+        // field, so it is left out of the description.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("aria-describedby"));
+    }
+
+    [TestMethod,
+        DataRow("  bit  "),
+        DataRow(" bit component "),
+    ]
+    public void BitTextFieldTrimIsNotAppliedWhileTyping(string value)
+    {
+        // Trimming on every keystroke would swallow the space the moment it is typed.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Trim, true);
+            parameters.Add(p => p.Immediate, true);
+        });
+
+        component.Find(".bit-tfl-inp").Input(value);
+
+        Assert.AreEqual(value, component.Instance.Value);
+
+        component.Find(".bit-tfl-inp").Change(value);
+
+        Assert.AreEqual(value.Trim(), component.Instance.Value);
+    }
+
+    [TestMethod,
+        DataRow(true, "Enter"),
+        DataRow(false, "Enter"),
+    ]
+    public void BitTextFieldMustRespondToTheEnterKey(bool isEnabled, string key)
+    {
+        var enterCount = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnEnter, () => enterCount++);
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown(key);
+
+        Assert.AreEqual(isEnabled ? 1 : 0, enterCount);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false),
+    ]
+    public void BitTextFieldMustRespondToTheEscapeKey(bool isEnabled)
+    {
+        var escapeCount = 0;
+        var enterCount = 0;
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.OnEnter, () => enterCount++);
+            parameters.Add(p => p.OnEscape, () => escapeCount++);
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown("Escape");
+
+        Assert.AreEqual(isEnabled ? 1 : 0, escapeCount);
+        Assert.AreEqual(0, enterCount);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldHtmlInputAttributesTest(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.SpellCheck, false);
+            parameters.Add(p => p.AutoCorrect, false);
+            parameters.Add(p => p.AutoCapitalize, "none");
+            parameters.Add(p => p.EnterKeyHint, "search");
+            parameters.Add(p => p.AutoComplete, "off");
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("false", input.GetAttribute("spellcheck"));
+        Assert.AreEqual("off", input.GetAttribute("autocorrect"));
+        Assert.AreEqual("none", input.GetAttribute("autocapitalize"));
+        Assert.AreEqual("search", input.GetAttribute("enterkeyhint"));
+        // The autocomplete attribute is valid on a textarea too, so it is rendered in both modes.
+        Assert.AreEqual("off", input.GetAttribute("autocomplete"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldPatternTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Pattern, "[A-Za-z]{3}");
+        });
+
+        Assert.AreEqual("[A-Za-z]{3}", component.Find(".bit-tfl-inp").GetAttribute("pattern"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldAutoCorrectOnTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.AutoCorrect, true);
+            parameters.Add(p => p.SpellCheck, true);
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        Assert.AreEqual("on", input.GetAttribute("autocorrect"));
+        Assert.AreEqual("true", input.GetAttribute("spellcheck"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldFooterClassesAndStylesTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.Description, "a description");
+            parameters.Add(p => p.Classes, new BitTextFieldClassStyles { Footer = "custom-footer", Count = "custom-count" });
+            parameters.Add(p => p.Styles, new BitTextFieldClassStyles { Footer = "color: red;", Count = "color: blue;" });
+        });
+
+        var footer = component.Find(".bit-tfl-ftr");
+        Assert.IsTrue(footer.ClassList.Contains("custom-footer"));
+        Assert.AreEqual("color: red;", footer.GetAttribute("style"));
+
+        var count = component.Find(".bit-tfl-cnt");
+        Assert.IsTrue(count.ClassList.Contains("custom-count"));
+        Assert.AreEqual("color: blue;", count.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldFocusedClassIsAppliedWithoutATrailingSpace()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        var bitTextField = component.Find(".bit-tfl");
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-fcs"));
+
+        component.Find(".bit-tfl-inp").FocusIn();
+
+        Assert.IsTrue(bitTextField.ClassList.Contains("bit-tfl-fcs"));
+
+        component.Find(".bit-tfl-inp").FocusOut();
+
+        Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-fcs"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldFocusedCustomClassTest()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitTextFieldClassStyles { Focused = "custom-focus" });
+        });
+
+        component.Find(".bit-tfl-inp").FocusIn();
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("custom-focus"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldRevealedPasswordIsMaskedAgainWhenTheRevealIsTakenAway()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Password);
+            parameters.Add(p => p.CanRevealPassword, true);
+        });
+
+        component.Find(".bit-tfl-rpb").Click();
+
+        Assert.AreEqual("text", component.Find(".bit-tfl-inp").GetAttribute("type"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.CanRevealPassword, false);
+        });
+
+        Assert.AreEqual("password", component.Find(".bit-tfl-inp").GetAttribute("type"));
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-rpb").Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldRevealedPasswordIsResetWhenTheTypeChanges()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Password);
+            parameters.Add(p => p.CanRevealPassword, true);
+        });
+
+        component.Find(".bit-tfl-rpb").Click();
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Email);
+        });
+
+        Assert.AreEqual("email", component.Find(".bit-tfl-inp").GetAttribute("type"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Type, BitInputType.Password);
+        });
+
+        Assert.AreEqual("password", component.Find(".bit-tfl-inp").GetAttribute("type"));
+        Assert.AreEqual("false", component.Find(".bit-tfl-rpb").GetAttribute("aria-pressed"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldMultilineAutoHeightClassIsIgnoredForNonTextTypes()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, true);
+            parameters.Add(p => p.Type, BitInputType.Number);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-mla"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldMultilineIsIgnoredForNonTextTypes()
+    {
+        // A password, a number or an email needs the behavior of a real input, so the textarea is only used
+        // for the plain text types.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.Type, BitInputType.Password);
+        });
+
+        Assert.AreEqual("INPUT", component.Find(".bit-tfl-inp").TagName);
+        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-mlf"));
     }
 }

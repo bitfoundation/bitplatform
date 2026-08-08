@@ -1,15 +1,15 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 internal static class BitTextFieldJsRuntimeExtensions
 {
-    internal static ValueTask BitTextFieldSetupMultilineInput(this IJSRuntime jsRuntime, string id, ElementReference input, bool autoHeight, bool preventEnter)
+    internal static ValueTask BitTextFieldSetupMultilineInput(this IJSRuntime jsRuntime, string id, ElementReference input, bool autoHeight, bool preventEnter, int? maxRows)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupMultilineInput", id, input, autoHeight, preventEnter);
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.setupMultilineInput", id, input, autoHeight, preventEnter, maxRows);
     }
 
-    internal static ValueTask BitTextFieldAdjustHeight(this IJSRuntime jsRuntime, ElementReference input)
+    internal static ValueTask BitTextFieldAdjustHeight(this IJSRuntime jsRuntime, string id, ElementReference input, int? maxRows)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.adjustHeight", input);
+        return jsRuntime.InvokeVoid("BitBlazorUI.TextField.adjustHeight", id, input, maxRows);
     }
 
     internal static ValueTask BitTextFieldSetupGhostText(this IJSRuntime jsRuntime, string id, ElementReference input, DotNetObjectReference<BitTextField> dotnetObj)

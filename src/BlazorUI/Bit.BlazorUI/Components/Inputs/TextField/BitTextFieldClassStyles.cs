@@ -83,6 +83,11 @@ public class BitTextFieldClassStyles
     public string? Suffix { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's footer, which holds the description and the character counter.
+    /// </summary>
+    public string? Footer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the BitTextField's description container.
     /// </summary>
     public string? DescriptionContainer { get; set; }
@@ -91,6 +96,11 @@ public class BitTextFieldClassStyles
     /// Custom CSS classes/styles for the BitTextField's description.
     /// </summary>
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the BitTextField's character counter.
+    /// </summary>
+    public string? Count { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the BitTextField's ghost text wrapper element.
