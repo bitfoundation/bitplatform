@@ -6,17 +6,38 @@ public partial class BitCircularTimePickerDemo
     [
         new()
         {
+            Name = "AllowedHours",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The hours that can be selected, on top of what MinTime, MaxTime and HourStep already allow. The predicate receives an hour of the day (0-23) whichever TimeFormat the clock is in.",
+        },
+        new()
+        {
+            Name = "AllowedMinutes",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The minutes that can be selected, on top of what MinTime, MaxTime and MinuteStep already allow. The predicate receives a minute of the hour (0-59).",
+        },
+        new()
+        {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the TimePicker allows input a time string directly or not.",
+            Description = "Whether the TimePicker allows input a time string directly or not. The text is parsed with the exact ValueFormat of the picker.",
         },
         new()
         {
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If AutoClose is set to true and PickerActions are defined, the hour and the minutes can be defined without any action."
+            Description = "Closes the callout as soon as the selection is complete, without waiting for the close button or a click outside of it."
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, the input of the TimePicker automatically receives focus when the page renders."
         },
         new()
         {
@@ -29,7 +50,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "CalloutHtmlAttributes",
             Type = "Dictionary<string, object>",
-            DefaultValue = "new Dictionary<String, Object>()",
+            DefaultValue = "new Dictionary<string, object>()",
             Description = "Capture and render additional attributes in addition to the main callout's parameters."
         },
         new()
@@ -40,6 +61,13 @@ public partial class BitCircularTimePickerDemo
             Description = "Custom CSS classes for different parts of the TimePicker.",
             Href = "#timepicker-class-styles",
             LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "ClearButtonText",
+            Type = "string",
+            DefaultValue = "Clear",
+            Description = "The text of the button that clears the value of the TimePicker."
         },
         new()
         {
@@ -64,10 +92,26 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers.",
+            Href = "#color-enum",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
             Name = "Culture",
-            Type = "CultureInfo",
+            Type = "CultureInfo?",
             DefaultValue = "CultureInfo.CurrentUICulture",
             Description = "CultureInfo for the TimePicker."
+        },
+        new()
+        {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout."
         },
         new()
         {
@@ -87,12 +131,17 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
-            Name = "IconLocation",
-            Type = "BitIconLocation",
-            LinkType = LinkType.Link,
-            Href = "#icon-location-enum",
-            DefaultValue = "BitIconLocation.Right",
-            Description = "TimePicker icon location."
+            Name = "HourButtonTitle",
+            Type = "string",
+            DefaultValue = "Select hour",
+            Description = "The title (and accessible name) of the button that switches the dial to the hours."
+        },
+        new()
+        {
+            Name = "HourStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The step, in hours, the dial and the keyboard move the hour by. A step greater than 1 dims the hours in between."
         },
         new()
         {
@@ -100,6 +149,15 @@ public partial class BitCircularTimePickerDemo
             Type = "BitIconInfo?",
             DefaultValue = "null",
             Description = "The icon to display using custom CSS classes for external icon libraries (e.g., FontAwesome, Bootstrap Icons). Takes precedence over IconName when both are set."
+        },
+        new()
+        {
+            Name = "IconLocation",
+            Type = "BitIconLocation",
+            LinkType = LinkType.Link,
+            Href = "#icon-location-enum",
+            DefaultValue = "BitIconLocation.Right",
+            Description = "TimePicker icon location."
         },
         new()
         {
@@ -127,7 +185,7 @@ public partial class BitCircularTimePickerDemo
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this TimePicker is open.",
+            Description = "Whether or not this TimePicker is open. Supports two-way binding.",
         },
         new()
         {
@@ -145,9 +203,50 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "MaxTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The latest time that can be selected. Later hours, and the minutes past it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input.",
+        },
+        new()
+        {
+            Name = "MinTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The earliest time that can be selected. Earlier hours, and the minutes before it inside its own hour, are dimmed on the dial and refused by the pointer, the keyboard and the text input.",
+        },
+        new()
+        {
+            Name = "MinuteButtonTitle",
+            Type = "string",
+            DefaultValue = "Select minute",
+            Description = "The title (and accessible name) of the button that switches the dial to the minutes."
+        },
+        new()
+        {
+            Name = "MinuteStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The step, in minutes, the dial and the keyboard move the minute by. A step greater than 1 snaps the pick to the nearest multiple of it."
+        },
+        new()
+        {
+            Name = "NowButtonText",
+            Type = "string",
+            DefaultValue = "Now",
+            Description = "The text of the button that sets the TimePicker to the current time."
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback",
             Description = "Callback for when clicking on TimePicker input.",
+        },
+        new()
+        {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "Callback for when the callout of the TimePicker closes.",
         },
         new()
         {
@@ -165,20 +264,34 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            Description = "Callback for when clicking on TimePicker input.",
+            Description = "Callback for when focus moves out of the TimePicker input.",
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "Callback for when the callout of the TimePicker opens.",
         },
         new()
         {
             Name = "OnSelectTime",
             Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the on selected time changed.",
+            Description = "Callback for when the selected time changes.",
+        },
+        new()
+        {
+            Name = "OnViewChange",
+            Type = "EventCallback<BitCircularTimePickerView>",
+            Description = "Callback for when the dial switches between the hours and the minutes.",
+            Href = "#view-enum",
+            LinkType = LinkType.Link
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Placeholder text for the DatePicker.",
+            Description = "Placeholder text for the TimePicker.",
         },
         new()
         {
@@ -189,10 +302,49 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a button that clears the value of the TimePicker under the clock."
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the TimePicker's close button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowNowButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders a button that sets the TimePicker to the current time under the clock, snapped to the steps and clamped into the selectable range."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the TimePicker.",
+            Href = "#size-enum",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "Standalone",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the TimePicker is rendered standalone or with the input component and callout.",
+        },
+        new()
+        {
+            Name = "StartView",
+            Type = "BitCircularTimePickerView",
+            DefaultValue = "BitCircularTimePickerView.Hour",
+            Description = "The part of the time the clock starts on when the picker opens. The EditMode wins over it.",
+            Href = "#view-enum",
+            LinkType = LinkType.Link
         },
         new()
         {
@@ -202,13 +354,6 @@ public partial class BitCircularTimePickerDemo
             Description = "Custom CSS styles for different parts of the TimePicker.",
             Href = "#timepicker-class-styles",
             LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "Standalone",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the TimePicker is rendered standalone or with the input component and callout.",
         },
         new()
         {
@@ -295,19 +440,40 @@ public partial class BitCircularTimePickerDemo
                 new()
                 {
                     Name = "Normal",
-                    Description = "Can edit hours and minutes.",
+                    Description = "Both the hour and the minute can be edited, and picking an hour moves the dial on to the minutes.",
                     Value = "0",
                 },
                 new()
                 {
                     Name = "OnlyMinutes",
-                    Description = "Can edit only minutes.",
+                    Description = "Only the minute can be edited; the hour of the current value is kept as it is.",
                     Value = "1",
                 },
                 new()
                 {
                     Name = "OnlyHours",
-                    Description = "Can edit only hours.",
+                    Description = "Only the hour can be edited; the minute of the current value is kept as it is.",
+                    Value = "2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "view-enum",
+            Name = "BitCircularTimePickerView",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "Hour",
+                    Description = "The dial selects the hour.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "Minute",
+                    Description = "The dial selects the minute.",
                     Value = "1",
                 }
             ]
@@ -331,6 +497,44 @@ public partial class BitCircularTimePickerDemo
                     Description="Show time pickers in 12 hours format.",
                     Value="1",
                 }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" }
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
             ]
         }
     ];
@@ -453,7 +657,7 @@ public partial class BitCircularTimePickerDemo
                     Name = "HourMinuteText",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the hour/minute text of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles for the hour/minute text rendered in the single-part edit modes of the BitCircularTimePicker."
                 },
                 new()
                 {
@@ -520,6 +724,13 @@ public partial class BitCircularTimePickerDemo
                 },
                 new()
                 {
+                    Name = "ClockDisabledNumber",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for a clock number that cannot be selected, because of the time bounds, the steps or the allowed-value predicates."
+                },
+                new()
+                {
                     Name = "ClockPointer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -537,7 +748,28 @@ public partial class BitCircularTimePickerDemo
                     Name = "ClockPointerThumbMinute",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the close button of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker when it rests between two numbers."
+                },
+                new()
+                {
+                    Name = "Actions",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the row holding the \"now\" and \"clear\" buttons of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "NowButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button that sets the BitCircularTimePicker to the current time."
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the button that clears the value of the BitCircularTimePicker."
                 },
                 new()
                 {
@@ -559,13 +791,33 @@ public partial class BitCircularTimePickerDemo
 
 
 
-    private TimeSpan? selectedTime = new(5, 12, 15);
+    private TimeSpan? selectedTime = new(5, 12, 0);
+    private TimeSpan? changedTime;
     private TimeSpan? readOnlyTime = new(2, 50, 0);
+    private TimeSpan? classesValue;
+    private BitCircularTimePickerView? changedView;
     private FormValidationCircularTimePickerModel formValidationCircularTimePickerModel = new();
     private string successMessage = string.Empty;
     private BitCircularTimePicker circularTimePicker = default!;
+    private readonly List<string> eventLogs = [];
 
-    private TimeSpan? classesValue;
+    private void LogOpen() => Log("OnOpen");
+    private void LogClose() => Log("OnClose");
+    private void LogClick() => Log("OnClick");
+    private void LogFocusIn() => Log("OnFocusIn");
+    private void LogFocusOut() => Log("OnFocusOut");
+    private void LogViewChange(BitCircularTimePickerView view) => Log($"OnViewChange: {view}");
+    private void LogSelectTime(TimeSpan? time) => Log($"OnSelectTime: {time}");
+
+    private void Log(string message)
+    {
+        eventLogs.Insert(0, message);
+
+        if (eventLogs.Count > 8)
+        {
+            eventLogs.RemoveRange(8, eventLogs.Count - 8);
+        }
+    }
 
     private async Task OpenCallout()
     {
