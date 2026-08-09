@@ -3,7 +3,6 @@
 
 @{
     var icon = GetStateIcon();
-    var content = CurrentValue ? OnContent : OffContent;
 }
 
 @* stopping propagation on the root covers both the button click and the click a label forwards to it *@
@@ -32,7 +31,11 @@
 
     <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
         <button @ref="_buttonRef"
+                @onblur="HandleOnBlur"
                 @onclick="HandleOnClick"
+                @onfocus="HandleOnFocus"
+                @onfocusin="HandleOnFocusIn"
+                @onfocusout="HandleOnFocusOut"
                 role="@Role"
                 type="button"
                 id="@_buttonId"
@@ -69,10 +72,15 @@
 
             @* the track content is decorative next to aria-checked, so it is hidden from the accessible
                name of the switch that would otherwise change along with the state *@
-            @if (content is not null)
+            @if (HasContent)
             {
                 <span aria-hidden="true" style="@Styles?.Content" class="bit-tgl-cnn @Classes?.Content">
-                    @content
+                    @* Both sides are rendered and stacked in the same cell, so the track is as wide as the
+                       wider of the two and keeps that width through a flip - only the side belonging to the
+                       current state is painted. Rendering only the current side would let a toggle whose two
+                       states carry differently sized content resize itself under the pointer. *@
+                    <span style="@Styles?.OnContent" class="bit-tgl-cno @Classes?.OnContent">@OnContent</span>
+                    <span style="@Styles?.OffContent" class="bit-tgl-cnf @Classes?.OffContent">@OffContent</span>
                 </span>
             }
         </button>

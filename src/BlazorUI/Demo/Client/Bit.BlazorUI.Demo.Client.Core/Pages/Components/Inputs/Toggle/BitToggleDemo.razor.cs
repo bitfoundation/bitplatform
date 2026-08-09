@@ -13,6 +13,13 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "AriaDescribedby",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of an existing element that describes the toggle, added to the aria-describedby of the switch alongside its state text and its AriaDescription rather than replacing them.",
+        },
+        new()
+        {
             Name = "AriaLabelledby",
             Type = "string?",
             DefaultValue = "null",
@@ -117,6 +124,13 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "OnBlur",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the toggle loses focus.",
+        },
+        new()
+        {
             Name = "OnChanging",
             Type = "EventCallback<BitToggleChangeArgs>",
             DefaultValue = "",
@@ -137,6 +151,27 @@ public partial class BitToggleDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Content rendered inside the track of the toggle while it is ON, next to the knob.",
+        },
+        new()
+        {
+            Name = "OnFocus",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when the toggle receives focus.",
+        },
+        new()
+        {
+            Name = "OnFocusIn",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when focus moves into the toggle.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback<FocusEventArgs>",
+            DefaultValue = "",
+            Description = "Callback for when focus moves out of the toggle.",
         },
         new()
         {
@@ -291,6 +326,20 @@ public partial class BitToggleDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the content rendered inside the track of the BitToggle."
+                },
+                new()
+                {
+                    Name = "OnContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the ON side of the content rendered inside the track of the BitToggle."
+                },
+                new()
+                {
+                    Name = "OffContent",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the OFF side of the content rendered inside the track of the BitToggle."
                 },
                 new()
                 {
@@ -535,6 +584,7 @@ public partial class BitToggleDemo
     private BitToggle methodToggleRef = default!;
 
     private string eventsLog = string.Empty;
+    private string focusLog = string.Empty;
     private int cancelledCounter;
     private int containerClickCounter;
     private bool allowChange;
@@ -574,6 +624,26 @@ public partial class BitToggleDemo
     private void LogOnChange(bool value)
     {
         eventsLog += $" → OnChange ({value})";
+    }
+
+    private void LogOnFocus()
+    {
+        focusLog = "OnFocus";
+    }
+
+    private void LogOnFocusIn()
+    {
+        focusLog += " → OnFocusIn";
+    }
+
+    private void LogOnFocusOut()
+    {
+        focusLog = "OnFocusOut";
+    }
+
+    private void LogOnBlur()
+    {
+        focusLog += " → OnBlur";
     }
 
     private void HandleOnChanging(BitToggleChangeArgs args)

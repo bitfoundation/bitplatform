@@ -33,6 +33,16 @@ public class BitToggleClassStyles
     public string? Content { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the ON side of the content rendered inside the track of the BitToggle.
+    /// </summary>
+    public string? OnContent { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the OFF side of the content rendered inside the track of the BitToggle.
+    /// </summary>
+    public string? OffContent { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the thumb of the BitToggle.
     /// </summary>
     public string? Thumb { get; set; }

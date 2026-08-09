@@ -438,8 +438,9 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(loading ? "true" : null, button.GetAttribute("aria-busy"));
         Assert.AreEqual(loading ? 1 : 0, com.FindAll(".bit-tgl-spn").Count);
 
-        // the enlarged geometry the spinner needs is the same one the knob icons get
-        Assert.AreEqual(loading, toggle.ClassList.Contains("bit-tgl-tic"));
+        // the spinner is drawn to the size of the knob it lands in and asks for no geometry of its own, so
+        // turning the toggle busy never resizes it
+        Assert.IsFalse(toggle.ClassList.Contains("bit-tgl-tic"));
 
         button.Click();
 
@@ -617,7 +618,8 @@ public class BitToggleTests : BunitTestContext
 
         var content = com.Find(".bit-tgl-cnn");
 
-        Assert.AreEqual(value ? "ON" : "OFF", content.TextContent.Trim());
+        Assert.AreEqual("ON", com.Find(".bit-tgl-cno").TextContent.Trim());
+        Assert.AreEqual("OFF", com.Find(".bit-tgl-cnf").TextContent.Trim());
 
         // the state is already carried by aria-checked, so the track content stays out of the name
         Assert.AreEqual("true", content.GetAttribute("aria-hidden"));
@@ -641,16 +643,28 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleTrackContentShouldOnlyRenderForTheStateItBelongsTo()
+    public void BitToggleTrackContentShouldKeepBothSidesRenderedSoTheTrackKeepsItsWidth()
     {
         var com = RenderComponent<BitToggle>(parameters =>
         {
             parameters.Add(p => p.OffContent, "OFF");
         });
 
-        Assert.AreEqual("OFF", com.Find(".bit-tgl-cnn").TextContent.Trim());
+        // Both sides are rendered whichever state the toggle is in, so the side that is not showing still
+        // holds its width open and a flip cannot resize the track under the pointer.
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-cno").Count);
+        Assert.AreEqual("OFF", com.Find(".bit-tgl-cnf").TextContent.Trim());
 
         com.Render(parameters => parameters.Add(p => p.Value, true));
+
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-cno").Count);
+        Assert.AreEqual("OFF", com.Find(".bit-tgl-cnf").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleWithoutAnyTrackContentShouldNotRenderTheContentCell()
+    {
+        var com = RenderComponent<BitToggle>();
 
         Assert.AreEqual(0, com.FindAll(".bit-tgl-cnn").Count);
     }
@@ -832,6 +846,90 @@ public class BitToggleTests : BunitTestContext
         Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
     }
 
+    [TestMethod]
+    public async Task BitToggleToggleAsyncShouldDoNothingWhenTheValueBindingCannotTakeIt()
+    {
+        var changingCount = 0;
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Value, false);
+            parameters.Add(p => p.OnChanging, (BitToggleChangeArgs _) => changingCount++);
+        });
+
+        await com.InvokeAsync(() => com.Instance.ToggleAsync());
+
+        // a Value passed one way with nothing to write back through dictates the state, so the change never
+        // happens - and a veto callback is not asked about a change that cannot happen in the first place
+        Assert.AreEqual(0, changingCount);
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod]
+    public void BitToggleClickShouldNotReachOnChangingWhenTheValueBindingCannotTakeIt()
+    {
+        var clicked = false;
+        var changingCount = 0;
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Value, false);
+            parameters.Add(p => p.OnClick, () => clicked = true);
+            parameters.Add(p => p.OnChanging, (BitToggleChangeArgs _) => changingCount++);
+        });
+
+        com.Find("button").Click();
+
+        // the click itself still happened and is still reported; only the change it would have started is not
+        Assert.IsTrue(clicked);
+        Assert.AreEqual(0, changingCount);
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod]
+    public void BitToggleFocusEventsTest()
+    {
+        var log = string.Empty;
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => log += "focus;");
+            parameters.Add(p => p.OnBlur, () => log += "blur;");
+            parameters.Add(p => p.OnFocusIn, () => log += "focusin;");
+            parameters.Add(p => p.OnFocusOut, () => log += "focusout;");
+        });
+
+        var button = com.Find("button");
+
+        button.Focus();
+        button.FocusIn();
+        button.FocusOut();
+        button.Blur();
+
+        Assert.AreEqual("focus;focusin;focusout;blur;", log);
+    }
+
+    [TestMethod]
+    public void BitToggleFocusEventsShouldStillFireWhenTheToggleCannotBeChanged()
+    {
+        var log = string.Empty;
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnFocus, () => log += "focus;");
+            parameters.Add(p => p.OnBlur, () => log += "blur;");
+        });
+
+        var button = com.Find("button");
+
+        // a read-only toggle keeps its tab stop, so it keeps reporting the focus that lands on it
+        button.Focus();
+        button.Blur();
+
+        Assert.AreEqual("focus;blur;", log);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
@@ -889,6 +987,56 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual(ariaDescription, com.Find($"#{describedBy[1]}").TextContent.Trim());
     }
 
+    [TestMethod]
+    public void BitToggleLoadingShouldNotResizeAToggleThatCarriesKnobIcons()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.OnIconName, "Accept");
+            parameters.Add(p => p.OffIconName, "Cancel");
+        });
+
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+
+        com.Render(parameters => parameters.Add(p => p.Loading, true));
+
+        // the geometry is decided by the icons alone, so it is the same before, during and after the wait
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-tic"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-ico").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleAriaDescribedbyShouldBeAddedToWhatTheToggleAlreadyDescribesItselfWith()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.Text, "The state");
+            parameters.Add(p => p.AriaDescription, "A description");
+            parameters.Add(p => p.AriaDescribedby, "an-external-hint");
+        });
+
+        var describedBy = com.Find("button").GetAttribute("aria-describedby")!.Split(' ');
+
+        Assert.AreEqual(3, describedBy.Length);
+        Assert.AreEqual("The state", com.Find($"#{describedBy[0]}").TextContent.Trim());
+        Assert.AreEqual("A description", com.Find($"#{describedBy[1]}").TextContent.Trim());
+        Assert.AreEqual("an-external-hint", describedBy[2]);
+    }
+
+    [TestMethod]
+    public void BitToggleAriaDescribedbyOnItsOwnShouldBeTheWholeDescription()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.AriaDescribedby, "an-external-hint");
+        });
+
+        Assert.AreEqual("an-external-hint", com.Find("button").GetAttribute("aria-describedby"));
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)
@@ -921,6 +1069,7 @@ public class BitToggleTests : BunitTestContext
             parameters.Add(p => p.Text, "A state text");
             parameters.Add(p => p.OnIconName, "Accept");
             parameters.Add(p => p.OnContent, "ON");
+            parameters.Add(p => p.OffContent, "OFF");
             parameters.Add(p => p.Styles, new BitToggleClassStyles
             {
                 Root = "color: red;",
@@ -929,6 +1078,8 @@ public class BitToggleTests : BunitTestContext
                 Button = "color: yellow;",
                 Checked = "color: purple;",
                 Content = "color: orange;",
+                OnContent = "color: teal;",
+                OffContent = "color: olive;",
                 Thumb = "color: pink;",
                 Icon = "color: brown;",
                 Text = "color: gray;"
@@ -941,6 +1092,8 @@ public class BitToggleTests : BunitTestContext
                 Button = "button-class",
                 Checked = "checked-class",
                 Content = "content-class",
+                OnContent = "on-content-class",
+                OffContent = "off-content-class",
                 Thumb = "thumb-class",
                 Icon = "icon-class",
                 Text = "text-class"
@@ -958,6 +1111,10 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-tgl-cnt").ClassList.Contains("container-class"));
         Assert.IsTrue(com.Find(".bit-tgl-btn").ClassList.Contains("button-class"));
         Assert.IsTrue(com.Find(".bit-tgl-cnn").ClassList.Contains("content-class"));
+        Assert.IsTrue(com.Find(".bit-tgl-cno").ClassList.Contains("on-content-class"));
+        Assert.IsTrue(com.Find(".bit-tgl-cnf").ClassList.Contains("off-content-class"));
+        Assert.IsTrue(com.Find(".bit-tgl-cno").GetAttribute("style")!.Contains("color: teal;"));
+        Assert.IsTrue(com.Find(".bit-tgl-cnf").GetAttribute("style")!.Contains("color: olive;"));
         Assert.IsTrue(com.Find(".bit-tgl-sta").ClassList.Contains("thumb-class"));
         Assert.IsTrue(com.Find(".bit-tgl-ico").ClassList.Contains("icon-class"));
         Assert.IsTrue(com.Find(".bit-tgl-stx").ClassList.Contains("text-class"));

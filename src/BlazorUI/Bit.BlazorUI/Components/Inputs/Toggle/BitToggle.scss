@@ -277,7 +277,9 @@
 }
 
 // The spinner replaces the knob's glyph while a change is in flight, drawn in the same color the glyph
-// would have been so it reads as part of the knob rather than as something laid over it.
+// would have been so it reads as part of the knob rather than as something laid over it. It is sized off
+// the knob it lands in rather than off a token of its own, so it fits both the plain knob and the roomier
+// one a glyph asks for - which is what lets a toggle turn busy without resizing itself.
 .bit-tgl-spn {
     border-radius: 50%;
     box-sizing: border-box;
@@ -285,8 +287,8 @@
     border-color: translucent(var(--bit-tgl-ico-clr), 30%);
     border-top-color: var(--bit-tgl-ico-clr);
     border-width: var(--bit-tgl-spn-width);
-    width: var(--bit-tgl-spn-size);
-    height: var(--bit-tgl-spn-size);
+    width: calc(var(--bit-tgl-thb-size) * 0.8);
+    height: calc(var(--bit-tgl-thb-size) * 0.8);
     animation: bit-tgl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
@@ -301,20 +303,45 @@
 }
 
 // The track content. It never shrinks the knob and never wraps, so a long label widens the track instead
-// of deforming the toggle.
+// of deforming the toggle. Both states are stacked in a single grid cell, so the cell is as wide as the
+// wider of the two and the track keeps that width through a flip instead of resizing under the pointer.
 .bit-tgl-cnn {
-    display: flex;
+    display: grid;
     min-width: 0;
     line-height: 1;
     cursor: inherit;
     user-select: none;
     align-items: center;
     white-space: nowrap;
-    justify-content: center;
+    justify-items: center;
     color: var(--bit-tgl-cnn-clr);
     font-size: var(--bit-tgl-cnn-fontsize);
     padding-inline: var(--bit-tgl-cnn-pad);
     transition: color $mot-duration-short $mot-easing;
+}
+
+// Hidden rather than unrendered, so the side that is not showing still holds its width open. It is already
+// out of the accessible tree with the cell that carries it, and visibility keeps anything focusable in it
+// out of the tab order too.
+.bit-tgl-cno, .bit-tgl-cnf {
+    display: flex;
+    grid-area: 1 / 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-tgl-cno {
+    visibility: hidden;
+}
+
+.bit-tgl-chk {
+    .bit-tgl-cno {
+        visibility: visible;
+    }
+
+    .bit-tgl-cnf {
+        visibility: hidden;
+    }
 }
 
 .bit-tgl-stx {
@@ -365,7 +392,6 @@
     --bit-tgl-trk-h-ico: #{spacing(2.5)};
     --bit-tgl-thb-size-ico: #{spacing(1.75)};
     --bit-tgl-ico-fontsize: #{spacing(1)};
-    --bit-tgl-spn-size: #{spacing(1)};
     --bit-tgl-spn-width: #{spacing(0.1875)};
     --bit-tgl-cnn-fontsize: #{spacing(1.125)};
     --bit-tgl-cnn-pad: #{spacing(0.25)};
@@ -383,7 +409,6 @@
     --bit-tgl-trk-h-ico: #{spacing(3.5)};
     --bit-tgl-thb-size-ico: #{spacing(2.5)};
     --bit-tgl-ico-fontsize: #{spacing(1.5)};
-    --bit-tgl-spn-size: #{spacing(1.5)};
     --bit-tgl-spn-width: #{spacing(0.25)};
     --bit-tgl-cnn-fontsize: #{spacing(1.5)};
     --bit-tgl-cnn-pad: #{spacing(0.375)};
@@ -401,7 +426,6 @@
     --bit-tgl-trk-h-ico: #{spacing(4.25)};
     --bit-tgl-thb-size-ico: #{spacing(3.25)};
     --bit-tgl-ico-fontsize: #{spacing(2)};
-    --bit-tgl-spn-size: #{spacing(2)};
     --bit-tgl-spn-width: #{spacing(0.3125)};
     --bit-tgl-cnn-fontsize: #{spacing(1.75)};
     --bit-tgl-cnn-pad: #{spacing(0.5)};
@@ -409,8 +433,9 @@
     --bit-tgl-stx-fontsize: #{spacing(2)};
 }
 
-// A knob holding a glyph or a spinner needs room for it, so the whole toggle steps up to the geometry of
-// its size token's icon variant - the same step every size takes, so the sizes stay in proportion.
+// A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size
+// token's icon variant - the same step every size takes, so the sizes stay in proportion. The spinner
+// asks for no step of its own: it is drawn to the size of whichever knob it lands in.
 // It comes after the size classes, which sit on the same element and would otherwise win the tie by order.
 .bit-tgl-tic {
     --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);

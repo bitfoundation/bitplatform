@@ -30,6 +30,16 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
+    /// The id of an existing element that describes the toggle, rendered as part of <c>aria-describedby</c> on the switch.
+    /// </summary>
+    /// <remarks>
+    /// It is added to what the toggle already describes itself with - its state text and its
+    /// <see cref="AriaDescription"/> - rather than replacing either of them, so an explanation already on the
+    /// page can be announced after the name without being repeated inside the toggle.
+    /// </remarks>
+    [Parameter] public string? AriaDescribedby { get; set; }
+
+    /// <summary>
     /// The id of an existing element that labels the toggle, rendered as <c>aria-labelledby</c> on the switch.
     /// </summary>
     /// <remarks>
@@ -93,6 +103,8 @@ public partial class BitToggle : BitInputBase<bool>
     /// <remarks>
     /// A loading toggle keeps its current state and ignores clicks, but stays focusable and is
     /// announced as busy, so the change that is still in flight is not toggled a second time.
+    /// The spinner is drawn to the size of the knob it replaces the glyph of, so turning the toggle
+    /// busy never resizes it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Loading { get; set; }
@@ -146,6 +158,21 @@ public partial class BitToggle : BitInputBase<bool>
     public RenderFragment? OnContent { get; set; }
 
     /// <summary>
+    /// Callback for when the toggle receives focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves into the toggle.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
+
+    /// <summary>
+    /// Callback for when focus moves out of the toggle.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon rendered inside the knob while the toggle is ON, using custom CSS classes
     /// for external icon libraries. Takes precedence over <see cref="OnIconName"/> when both are set.
     /// </summary>
@@ -172,6 +199,11 @@ public partial class BitToggle : BitInputBase<bool>
     /// Text to display when toggle is ON.
     /// </summary>
     [Parameter] public string? OnText { get; set; }
+
+    /// <summary>
+    /// Callback for when the toggle loses focus.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnBlur { get; set; }
 
     /// <summary>
     /// Callback invoked before the state of the toggle changes, letting the change be cancelled.
@@ -377,10 +409,18 @@ public partial class BitToggle : BitInputBase<bool>
     private bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
     /// <summary>
-    /// Whether the knob has anything to hold, which is what decides its enlarged geometry.
+    /// Whether the track carries content in either state, which is what the stacked content cell is rendered for.
     /// </summary>
-    private bool HasIcon => Loading
-                         || OnIcon is not null || OnIconName.HasValue()
+    private bool HasContent => OnContent is not null || OffContent is not null;
+
+    /// <summary>
+    /// Whether the knob has a glyph to hold, which is what decides its enlarged geometry.
+    /// </summary>
+    /// <remarks>
+    /// The loading state is deliberately not part of it: a spinner is drawn to the size of whatever knob it
+    /// lands in, so that turning a toggle busy never resizes it in front of the person waiting on it.
+    /// </remarks>
+    private bool HasIcon => OnIcon is not null || OnIconName.HasValue()
                          || OffIcon is not null || OffIconName.HasValue();
 
     /// <summary>
@@ -407,6 +447,14 @@ public partial class BitToggle : BitInputBase<bool>
         StyleBuilder.Reset();
     }
 
+    private Task HandleOnBlur(FocusEventArgs e) => OnBlur.InvokeAsync(e);
+
+    private Task HandleOnFocus(FocusEventArgs e) => OnFocus.InvokeAsync(e);
+
+    private Task HandleOnFocusIn(FocusEventArgs e) => OnFocusIn.InvokeAsync(e);
+
+    private Task HandleOnFocusOut(FocusEventArgs e) => OnFocusOut.InvokeAsync(e);
+
     private async Task HandleOnClick(MouseEventArgs e)
     {
         if (IsInteractive is false) return;
@@ -419,8 +467,6 @@ public partial class BitToggle : BitInputBase<bool>
         {
             await OnClick.InvokeAsync(e);
 
-            if (InvalidValueBinding()) return;
-
             await ChangeValueAsync(CurrentValue is false);
         }
         finally
@@ -432,6 +478,11 @@ public partial class BitToggle : BitInputBase<bool>
     private async Task ChangeValueAsync(bool newValue)
     {
         if (IsEnabled is false || newValue == CurrentValue) return;
+
+        // A Value passed one way with nothing to write back through dictates the state, so the change cannot
+        // land at all. It is dropped here rather than deeper down, so a change that is going nowhere never
+        // reaches OnChanging either - a veto callback should not be asked about a change that cannot happen.
+        if (InvalidValueBinding()) return;
 
         if (OnChanging.HasDelegate)
         {
@@ -479,7 +530,8 @@ public partial class BitToggle : BitInputBase<bool>
         _describedById = string.Join(' ', new[]
         {
             _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
-            AriaDescription.HasValue() ? _descriptionId : null
+            AriaDescription.HasValue() ? _descriptionId : null,
+            AriaDescribedby.HasValue() ? AriaDescribedby : null
         }.Where(id => id.HasValue()));
     }
 

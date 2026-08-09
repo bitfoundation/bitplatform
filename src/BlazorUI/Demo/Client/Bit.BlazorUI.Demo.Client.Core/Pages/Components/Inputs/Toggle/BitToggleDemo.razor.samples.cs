@@ -170,9 +170,19 @@ private void LogMethodChange(bool value)
     <BitToggle Label=""Stops here"" StopPropagation />
 </div>
 
-<div>Container clicks: @containerClickCounter</div>";
+<div>Container clicks: @containerClickCounter</div>
+
+
+<BitToggle Label=""Focus me""
+           OnFocus=""LogOnFocus""
+           OnBlur=""LogOnBlur""
+           OnFocusIn=""LogOnFocusIn""
+           OnFocusOut=""LogOnFocusOut"" />
+
+<div>@(string.IsNullOrEmpty(focusLog) ? ""Not focused yet."" : focusLog)</div>";
     private readonly string example12CsharpCode = @"
 private string eventsLog = string.Empty;
+private string focusLog = string.Empty;
 private int cancelledCounter;
 private int containerClickCounter;
 private bool allowChange;
@@ -198,6 +208,26 @@ private void HandleOnChanging(BitToggleChangeArgs args)
 
     args.Cancel = true;
     cancelledCounter++;
+}
+
+private void LogOnFocus()
+{
+    focusLog = ""OnFocus"";
+}
+
+private void LogOnFocusIn()
+{
+    focusLog += "" → OnFocusIn"";
+}
+
+private void LogOnFocusOut()
+{
+    focusLog = ""OnFocusOut"";
+}
+
+private void LogOnBlur()
+{
+    focusLog += "" → OnBlur"";
 }";
 
     private readonly string example13RazorCode = @"
@@ -241,9 +271,9 @@ private void HandleInvalidSubmit() { }";
 
 
 <div id=""offline-mode-heading""><b>Offline mode</b></div>
-<div>Keep a copy of the last synced data on this device.</div>
+<div id=""offline-mode-hint"">Keep a copy of the last synced data on this device.</div>
 
-<BitToggle AriaLabelledby=""offline-mode-heading"" Text=""Enabled"" />
+<BitToggle AriaLabelledby=""offline-mode-heading"" AriaDescribedby=""offline-mode-hint"" Text=""Enabled"" />
 
 
 <BitToggle Text=""Dark mode"" />
@@ -351,6 +381,16 @@ private async Task FocusTheToggle()
     .custom-check .custom-button:hover .custom-thumb {
         background: #ff6868;
     }
+
+    .custom-on-content {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+
+    .custom-off-content {
+        opacity: 0.75;
+        font-style: italic;
+    }
 </style>
 
 
@@ -367,7 +407,14 @@ private async Task FocusTheToggle()
 <BitToggle Label=""Classes""
            Classes=""@(new() { Thumb = ""custom-thumb"",
                               Button = ""custom-button"",
-                              Checked = ""custom-check"" } )"" />";
+                              Checked = ""custom-check"" } )"" />
+
+<BitToggle Label=""Each side of the track content""
+           Classes=""@(new() { OnContent = ""custom-on-content"",
+                              OffContent = ""custom-off-content"" } )"">
+    <OnContent>ON</OnContent>
+    <OffContent>OFF</OffContent>
+</BitToggle>";
 
     private readonly string example19RazorCode = @"
 <BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />

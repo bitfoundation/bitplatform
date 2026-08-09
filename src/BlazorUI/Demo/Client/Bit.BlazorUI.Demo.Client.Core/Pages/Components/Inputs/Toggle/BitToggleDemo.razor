@@ -52,7 +52,10 @@
             <b>OnContent</b> and <b>OffContent</b> put arbitrary markup <i>inside</i> the track, on the side the knob
             has just left - the compact "I/O", "ON/OFF" or ✓/✗ pattern that fits where there is no room for a state
             text beside the toggle. The track widens to fit whatever is put in it instead of letting it overflow, and
-            the content is hidden from screen readers, which already learn the state from the switch itself.
+            the content is hidden from screen readers, which already learn the state from the switch itself. Both
+            sides are laid out on top of each other, so the track is as wide as the wider of the two and keeps that
+            width through a flip - the third toggle below, which only has an off side, does not shrink when it is
+            turned on.
         </div>
         <br />
         <BitToggle Label="Text content">
@@ -178,7 +181,11 @@
         <br />
         <div>Saved state: <b>@savedValue</b></div>
         <br /><br /><br />
-        <div>The spinner takes the place of the knob's icon, so it works with or without one:</div>
+        <div>
+            The spinner takes the place of the knob's icon, so it works with or without one, and it is drawn to the
+            size of whichever knob it lands in - turning a toggle busy never resizes it in front of the person
+            waiting on it:
+        </div>
         <br />
         <div class="example-box">
             <BitToggle Label="Loading" Loading />
@@ -293,6 +300,20 @@
         </div>
         <br />
         <div>Container clicks: @containerClickCounter</div>
+        <br /><br /><br />
+        <div>
+            Focus is reported as well: <b>OnFocus</b> and <b>OnBlur</b> fire as the switch gains and loses the focus,
+            and <b>OnFocusIn</b> and <b>OnFocusOut</b> are their bubbling counterparts - the pair to reach for when
+            the toggle sits inside a container that tracks whether the focus is anywhere within it. Tab into the
+            toggle below and back out again:
+        </div><br />
+        <BitToggle Label="Focus me"
+                   OnFocus="LogOnFocus"
+                   OnBlur="LogOnBlur"
+                   OnFocusIn="LogOnFocusIn"
+                   OnFocusOut="LogOnFocusOut" />
+        <br />
+        <div>@(string.IsNullOrEmpty(focusLog) ? "Not focused yet." : focusLog)</div>
     </DemoExample>
 
     <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
@@ -301,6 +322,9 @@
             property, let data annotations state the rule - here, that the terms must be agreed to - and a failed
             submit shows the message. While invalid, the BitToggle also switches to its error styling and reports
             <b>aria-invalid</b> on the switch, so the failure is both visible and announced right at the control.
+            For a plain HTML post rather than an <b>EditForm</b>, <b>Name</b> names the hidden checkbox that carries
+            the state into the form data - it submits <b>true</b> while the toggle is on and is left out of the post
+            entirely while it is off, exactly as a native checkbox would.
         </div>
         <br />
         <div>
@@ -356,13 +380,15 @@
             When the name of the switch is already written somewhere on the page - a section heading, a table
             column, the caption of the row it sits in - <b>AriaLabelledby</b> points at that element by its id
             instead of repeating its words inside the toggle. It outranks every other source of the name,
-            including the toggle's own label and <b>AriaLabel</b>.
+            including the toggle's own label and <b>AriaLabel</b>. Its counterpart <b>AriaDescribedby</b> does the
+            same for an explanation already on the page, except that it is <i>added</i> to what the toggle already
+            describes itself with - its state text and its <b>AriaDescription</b> - instead of replacing them.
         </div><br />
         <div>
             <div id="offline-mode-heading"><b>Offline mode</b></div>
-            <div>Keep a copy of the last synced data on this device.</div>
+            <div id="offline-mode-hint">Keep a copy of the last synced data on this device.</div>
             <br />
-            <BitToggle AriaLabelledby="offline-mode-heading" Text="Enabled" />
+            <BitToggle AriaLabelledby="offline-mode-heading" AriaDescribedby="offline-mode-hint" Text="Enabled" />
         </div>
         <br /><br /><br />
         <div>
@@ -494,9 +520,10 @@
         <div>
             The BitToggle can be restyled from the outside at three levels of reach. <b>Style</b> and <b>Class</b>
             apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name - the
-            root, the label, the container, the button (which is the track), the track content, the thumb, its icon,
-            the spinner and the state text - plus a <b>Checked</b> slot that is applied only while the toggle is on,
-            which is what lets the two states be painted differently without a single line of state-tracking code.
+            root, the label, the container, the button (which is the track), the track content and each of its two
+            sides on its own, the thumb, its icon, the spinner and the state text - plus a <b>Checked</b> slot that
+            is applied only while the toggle is on, which is what lets the two states be painted differently without
+            a single line of state-tracking code.
         </div>
         <br /><br />
         <div><b>Component's style &amp; class</b>:</div><br />
@@ -514,6 +541,13 @@
                    Classes="@(new() { Thumb = "custom-thumb",
                                       Button = "custom-button",
                                       Checked = "custom-check" } )" />
+        <br />
+        <BitToggle Label="Each side of the track content"
+                   Classes="@(new() { OnContent = "custom-on-content",
+                                      OffContent = "custom-off-content" } )">
+            <OnContent>ON</OnContent>
+            <OffContent>OFF</OffContent>
+        </BitToggle>
     </DemoExample>
 
     <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">

@@ -57,6 +57,16 @@
         }
     }
 
+    .custom-on-content {
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+
+    .custom-off-content {
+        opacity: 0.75;
+        font-style: italic;
+    }
+
     .validation-message {
         color: red;
     }
