@@ -71,7 +71,7 @@
     @* The draggable band, and the room it has left to travel: its value is the lower end of the range, and
        the highest lower end there is room for is the one that puts the upper end at the end of the scale. *@
     var canDragTrack = _CanDragTrack;
-    var trackInputMax = max - (upper - lower);
+    var trackInputMax = _TrackInputMax;
     var trackValueAttr = ToInvariant(_rawBar ?? lower);
 }
 

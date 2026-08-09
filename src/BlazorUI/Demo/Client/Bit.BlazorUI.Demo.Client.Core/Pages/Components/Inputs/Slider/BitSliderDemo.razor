@@ -110,7 +110,10 @@
             nearest to where the pointer actually is, so the thumb follows the hand and settles as it passes each
             halfway point. An arrow key is a request to move on, so it always reaches the next mark along, however
             short a <b>Step</b> is against the gap between them - without that, a Step of 1 on a scale marked
-            every 64 would round straight back and the arrow keys would do nothing at all.
+            every 64 would round straight back and the arrow keys would do nothing at all. On a ranged slider a
+            snapped move is still held against the thumb beside it: it lands on the outermost mark the
+            <a href="components/slider#example7"><b>range constraints</b></a> leave room for rather than stepping
+            through the other end and dragging it along.
         </div>
         <br />
         <div class="example-box">
@@ -143,6 +146,14 @@
                        ValueFormat="0'h'"
                        DefaultLowerValue="9"
                        DefaultUpperValue="17" />
+            <br />
+            <div>RestrictToMarks on a range that has to keep its ends four apart:</div>
+            <BitSlider Label="Shift" IsRanged RestrictToMarks MinRange="4"
+                       ShowMarks ShowMarkLabels
+                       Min="0" Max="24" Step="1" MarkStep="4"
+                       ValueFormat="0'h'"
+                       DefaultLowerValue="8"
+                       DefaultUpperValue="16" />
         </div>
     </DemoExample>
 
@@ -300,7 +311,9 @@
         <div>
             All of them are enforced by the browser rather than corrected afterwards - the constraint is pushed
             into the bounds of the underlying input - so a thumb never moves somewhere it will be pulled back
-            from, on the pointer or on the keyboard. And whatever the constraints are, a press on the bare rail
+            from, on the pointer or on the keyboard, and that holds for a move snapped onto a mark by
+            <a href="components/slider#example3"><b>RestrictToMarks</b></a> as much as for a plain one. And
+            whatever the constraints are, a press on the bare rail
             still moves the thumb nearest to it: the rail is divided between the two thumbs at their midpoint,
             so every point of it belongs to the one you would expect it to - unless
             <a href="components/slider#example8"><b>DraggableTrack</b></a> has given the band between them a job
@@ -340,8 +353,10 @@
             it anywhere and the whole range travels with the pointer, keeping the width it had. That is the move
             a user is usually thinking of when they nudge a price bracket upwards or push a span of hours later
             in the day - one gesture rather than dragging one end and then chasing the other with it. The band
-            comes to rest when its leading end reaches the end of the scale, and because the two thumbs never
-            change their distance while it travels, every range constraint is satisfied the whole way along.
+            comes to rest when its leading end reaches the end of the scale - or, on a scale the marks are the
+            only values of, on the outermost mark that still leaves room for its width - and because the two
+            thumbs never change their distance while it travels, every range constraint is satisfied the whole
+            way along.
         </div>
         <div>
             Only the rail strictly between the two thumbs takes the drag, so the thumbs themselves are still

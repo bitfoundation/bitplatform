@@ -765,7 +765,7 @@ public partial class BitSlider : BitInputBase<double>
     /// min/max of the inputs rather than corrected afterwards, so the browser itself never produces a value
     /// the slider would have to reject - and the thumb can never drift away from the value it draws.
     /// </summary>
-    private double _LowerInputMin => _MaxRange.HasValue ? Math.Max(_Min, UpperValue - _MaxRange.Value) : _Min;
+    private double _LowerInputMin => _MaxRange.HasValue ? Denoise(Math.Max(_Min, UpperValue - _MaxRange.Value)) : _Min;
 
     /// <summary>
     /// The highest value the lower input is allowed to reach: the upper thumb, less whatever distance has to
@@ -773,14 +773,26 @@ public partial class BitSlider : BitInputBase<double>
     /// scale less the room the pushed thumb needs there.
     /// </summary>
     private double _LowerInputMax => _CanPush
-        ? Math.Max(_Min, _Max - _MinRange)
-        : (_IsConstrained ? Math.Max(_Min, UpperValue - _MinRange) : _Max);
+        ? Denoise(Math.Max(_Min, _Max - _MinRange))
+        : (_IsConstrained ? Denoise(Math.Max(_Min, UpperValue - _MinRange)) : _Max);
 
     private double _UpperInputMin => _CanPush
-        ? Math.Min(_Max, _Min + _MinRange)
-        : (_IsConstrained ? Math.Min(_Max, LowerValue + _MinRange) : _Min);
+        ? Denoise(Math.Min(_Max, _Min + _MinRange))
+        : (_IsConstrained ? Denoise(Math.Min(_Max, LowerValue + _MinRange)) : _Min);
 
-    private double _UpperInputMax => _MaxRange.HasValue ? Math.Min(_Max, LowerValue + _MaxRange.Value) : _Max;
+    private double _UpperInputMax => _MaxRange.HasValue ? Denoise(Math.Min(_Max, LowerValue + _MaxRange.Value)) : _Max;
+
+    /// <summary>
+    /// The distance the two ends of the range currently keep between them, which is the width the draggable
+    /// band travels with.
+    /// </summary>
+    private double _RangeWidth => Denoise(UpperValue - LowerValue);
+
+    /// <summary>
+    /// The highest value the draggable band can carry: its value is the lower end of the range, and the
+    /// highest lower end there is room for is the one that puts the upper end at the end of the scale.
+    /// </summary>
+    private double _TrackInputMax => Denoise(_Max - _RangeWidth);
 
     /// <summary>
     /// The lower end of the filled part of the track, as a percentage of the whole scale.
@@ -842,7 +854,7 @@ public partial class BitSlider : BitInputBase<double>
         {
             // Rounded because repeated addition of a step is where binary floating point starts showing: a
             // series of tenths would otherwise reach 0.30000000000000004 and label itself with all of it.
-            var value = Math.Round(_Min + i * step, 10);
+            var value = Denoise(_Min + i * step);
 
             if (value > _Max) break;
 
@@ -860,16 +872,28 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
+    /// Rounds off the noise binary floating point leaves behind whenever a step or a distance is added to a
+    /// value: 0.1 + 0.2 reaches 0.30000000000000004, and a value carrying all of that is what would then be
+    /// drawn, announced, posted and handed to the browser as a min or a max. Ten decimals is far beyond any
+    /// scale a slider is asked to carry and well short of where a double runs out of precision of its own.
+    /// </summary>
+    private static double Denoise(double value) => double.IsFinite(value) ? Math.Round(value, 10) : value;
+
+    /// <summary>
     /// Where a value sits along the track, from 0 to 100. An empty scale collapses everything onto its start
-    /// rather than dividing by zero.
+    /// rather than dividing by zero, and so does one that is not a scale at all.
     /// </summary>
     private double GetPercent(double value)
     {
         var range = _Range;
 
-        if (range <= 0) return 0;
+        if (double.IsFinite(range) is false || range <= 0) return 0;
 
-        return Math.Round(Math.Clamp((value - _Min) / range, 0, 1) * 100, 4);
+        var fraction = (value - _Min) / range;
+
+        if (double.IsNaN(fraction)) return 0;
+
+        return Math.Round(Math.Clamp(fraction, 0, 1) * 100, 4);
     }
 
     private double ClampValue(double value)
@@ -897,15 +921,15 @@ public partial class BitSlider : BitInputBase<double>
         if (minRange > 0 && upper - lower < minRange)
         {
             // The far end is preferred, and the near one moved only when there is no room left above.
-            upper = Math.Min(_Max, lower + minRange);
-            lower = Math.Max(_Min, upper - minRange);
+            upper = Denoise(Math.Min(_Max, lower + minRange));
+            lower = Denoise(Math.Max(_Min, upper - minRange));
         }
 
         var maxRange = _MaxRange;
 
         if (maxRange.HasValue && upper - lower > maxRange.Value)
         {
-            upper = lower + maxRange.Value;
+            upper = Denoise(lower + maxRange.Value);
         }
 
         return (lower, upper);
@@ -1094,6 +1118,39 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
+    /// Holds a value that snapping has just moved inside the bounds the input it belongs to actually carries.
+    /// </summary>
+    /// <remarks>
+    /// Every other move is already held there by the browser, since the range constraints are pushed into the
+    /// min and the max of the inputs - but snapping happens after the browser is done with the move, and
+    /// carrying a key on to the next mark is a distance those bounds never saw. Left alone it would take a
+    /// thumb straight through the one beside it, and the normalization that follows would then drag that other
+    /// thumb along - a push on a slider nobody asked to be pushable. The mark nearest to it that does fit is
+    /// where such a move belongs instead; a scale with no mark inside the bounds at all leaves the thumb
+    /// against the bound itself, which is still the furthest it was allowed to go.
+    /// </remarks>
+    private double ConstrainSnapped(double value, double min, double max)
+    {
+        if (RestrictToMarks is false) return value;
+
+        if (value >= min && value <= max) return value;
+
+        double? nearest = null;
+
+        foreach (var mark in _MarkValues)
+        {
+            if (mark < min || mark > max) continue;
+
+            if (nearest is null || Math.Abs(mark - value) < Math.Abs(nearest.Value - value))
+            {
+                nearest = mark;
+            }
+        }
+
+        return nearest ?? ClampInto(value, min, max);
+    }
+
+    /// <summary>
     /// Notes that the change about to arrive was produced by a key, and whether that key was one of the
     /// larger jumps. Only the keys that actually move a range input count, so that a key which changes
     /// nothing - a Tab out of the slider - does not leave the next drag looking like a keystroke.
@@ -1135,7 +1192,7 @@ public partial class BitSlider : BitInputBase<double>
     {
         if (largeStep is false || parsed == from) return parsed;
 
-        return ClampValue(parsed > from ? from + _LargeStep : from - _LargeStep);
+        return ClampValue(Denoise(parsed > from ? from + _LargeStep : from - _LargeStep));
     }
 
     /// <summary>
@@ -1216,15 +1273,15 @@ public partial class BitSlider : BitInputBase<double>
             {
                 _thumbA = ClampValue(SnapToMark(parsed, _thumbA, fromKeyboard));
 
-                if (_thumbB - _thumbA < _MinRange) _thumbB = Math.Min(_Max, _thumbA + _MinRange);
-                if (_thumbB - _thumbA < _MinRange) _thumbA = Math.Max(_Min, _thumbB - _MinRange);
+                if (_thumbB - _thumbA < _MinRange) _thumbB = Denoise(Math.Min(_Max, _thumbA + _MinRange));
+                if (_thumbB - _thumbA < _MinRange) _thumbA = Denoise(Math.Max(_Min, _thumbB - _MinRange));
             }
             else
             {
                 _thumbB = ClampValue(SnapToMark(parsed, _thumbB, fromKeyboard));
 
-                if (_thumbB - _thumbA < _MinRange) _thumbA = Math.Max(_Min, _thumbB - _MinRange);
-                if (_thumbB - _thumbA < _MinRange) _thumbB = Math.Min(_Max, _thumbA + _MinRange);
+                if (_thumbB - _thumbA < _MinRange) _thumbA = Denoise(Math.Max(_Min, _thumbB - _MinRange));
+                if (_thumbB - _thumbA < _MinRange) _thumbB = Denoise(Math.Min(_Max, _thumbA + _MinRange));
             }
 
             (lower, upper) = NormalizeRange(_thumbA, _thumbB);
@@ -1234,13 +1291,15 @@ public partial class BitSlider : BitInputBase<double>
             return;
         }
 
+        // Snapping is held against the bounds the constraints gave the moving input, which the browser has
+        // already applied to the move itself but which the snap that follows it would otherwise step over.
         if (isLower)
         {
-            _thumbA = SnapToMark(parsed, _thumbA, fromKeyboard);
+            _thumbA = ConstrainSnapped(SnapToMark(parsed, _thumbA, fromKeyboard), _LowerInputMin, _LowerInputMax);
         }
         else
         {
-            _thumbB = SnapToMark(parsed, _thumbB, fromKeyboard);
+            _thumbB = ConstrainSnapped(SnapToMark(parsed, _thumbB, fromKeyboard), _UpperInputMin, _UpperInputMax);
         }
 
         // The inputs are never re-sorted, so the ends of the range are read off them instead: whichever one
@@ -1288,16 +1347,17 @@ public partial class BitSlider : BitInputBase<double>
 
         if (double.TryParse(e.Value?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsed) is false) return;
 
-        var width = UpperValue - LowerValue;
+        var width = _RangeWidth;
 
         // Snapping the leading end alone is what a band on a marked scale can promise: the trailing one is
-        // held a fixed distance away, which an irregular scale has no reason to have a mark at.
-        var lower = SnapToMark(parsed, LowerValue, false);
+        // held a fixed distance away, which an irregular scale has no reason to have a mark at. The band
+        // stops when its far end reaches the end of the scale rather than being squashed against it, and a
+        // snap that would take it past that lands on the outermost mark still leaving room for the width.
+        var lower = ConstrainSnapped(SnapToMark(parsed, LowerValue, false), _Min, _TrackInputMax);
 
-        // The band stops when its far end reaches the end of the scale rather than being squashed against it.
-        lower = ClampInto(lower, _Min, _Max - width);
+        lower = ClampInto(lower, _Min, _TrackInputMax);
 
-        var upper = lower + width;
+        var upper = ClampValue(Denoise(lower + width));
 
         _thumbA = lower;
         _thumbB = upper;
@@ -1339,6 +1399,10 @@ public partial class BitSlider : BitInputBase<double>
         // Yielding is what separates the two passes: without it both assignments would land in the same
         // render and the element would never be written to.
         await Task.Yield();
+
+        // A slider taken off the page between the two passes - the release of a pointer that closed the panel
+        // it sits in - has no second render to give, and asking a disposed component for one throws.
+        if (IsDisposed) return;
 
         hold(null);
         StateHasChanged();

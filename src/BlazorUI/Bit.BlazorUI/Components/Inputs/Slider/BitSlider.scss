@@ -14,6 +14,11 @@
     --bit-sld-font-size: #{spacing(1.75)};
     --bit-sld-clr-rail: #{$clr-bg-sec};
 
+    // The focus ring is drawn by a single rule further down, so which color it takes is carried here rather
+    // than by a second, more specific copy of that rule - one that would have outweighed the rule that takes
+    // the ring back off the thumb the focus is not on, and left an invalid range ringed at both ends.
+    --bit-sld-clr-ring: var(--bit-sld-clr-focus);
+
     width: 100%;
     font-family: $tg-font-family;
 
@@ -57,16 +62,14 @@
     // An invalid value repaints the parts that carry it, so the error is visible on the slider itself and
     // not only in the message under it.
     &.bit-inv:not(.bit-dis) {
+        --bit-sld-clr-ring: #{$clr-err-focus};
+
         .bit-sld-fil {
             background-color: $clr-err;
         }
 
         .bit-sld-thb {
             border-color: $clr-err;
-        }
-
-        .bit-sld-box:has(.bit-sld-inp:focus-visible) .bit-sld-thb {
-            @include focus-ring($clr-err-focus);
         }
     }
 }
@@ -180,7 +183,7 @@
 // The focus lives on the invisible input, so the ring is put on the thumb that stands for it. :has is what
 // bridges the two, since the drawn thumb is not a descendant of the input it belongs to.
 .bit-sld-box:has(> .bit-sld-inp:focus-visible) > .bit-sld-trk > .bit-sld-thb {
-    @include focus-ring(var(--bit-sld-clr-focus));
+    @include focus-ring(var(--bit-sld-clr-ring));
 }
 
 // Only the thumb the focus is actually on keeps the ring. Which drawn thumb that is depends on where the two
@@ -547,6 +550,12 @@
         inset-inline: unset;
         left: 50%;
         direction: ltr;
+
+        // A vertical drag is what moves this slider, and a vertical drag is also what scrolls the page, so
+        // the two have to be told apart: without this a touch that starts on the thumb scrolls past it
+        // instead of taking it along. Only the upright slider gives its own axis up that way - a horizontal
+        // one is dragged across the scroll rather than along it, and leaves the page free to scroll.
+        touch-action: none;
         transform: translate(-50%, -50%) rotate(-90deg);
         width: calc((var(--bit-sld-inp-end, 1) - var(--bit-sld-inp-start, 0)) * (var(--bit-sld-length) - var(--bit-sld-thumb)) + var(--bit-sld-thumb));
         top: calc(100% - var(--bit-sld-thumb) / 2 - (var(--bit-sld-inp-start, 0) + var(--bit-sld-inp-end, 1)) / 2 * (100% - var(--bit-sld-thumb)));

@@ -51,7 +51,14 @@ private BitSliderRangeValue ageBand = new(25, 45);";
            Min=""0"" Max=""24"" Step=""1"" MarkStep=""6""
            ValueFormat=""0'h'""
            DefaultLowerValue=""9""
-           DefaultUpperValue=""17"" />";
+           DefaultUpperValue=""17"" />
+
+<BitSlider Label=""Shift"" IsRanged RestrictToMarks MinRange=""4""
+           ShowMarks ShowMarkLabels
+           Min=""0"" Max=""24"" Step=""1"" MarkStep=""4""
+           ValueFormat=""0'h'""
+           DefaultLowerValue=""8""
+           DefaultUpperValue=""16"" />";
 
     private readonly string example3CsharpCode = @"
 private readonly List<BitSliderMark> qualityMarks =

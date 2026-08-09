@@ -2136,11 +2136,11 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSliderShouldPutTheNormalizedRangeBackOnTheInputs()
+    public void BitSliderShouldHoldASnappedThumbAgainstTheDistanceItHasToKeep()
     {
-        // Snapping to a mark can move a thumb past a distance constraint, and the pair that comes out of the
-        // normalization is what the inputs have to carry - otherwise an input would hold a value the thumb
-        // beside it is not drawn at, and a re-render of an unbound slider never corrects it.
+        // The browser holds every move inside the bounds the constraints gave the input, but the snap that
+        // follows the move is a distance those bounds never saw. Left alone it would take the thumb through
+        // the one beside it and drag that one along with it - a push on a slider nobody asked to be pushable.
         var com = RenderComponent<BitSlider>(parameters =>
         {
             parameters.Add(p => p.IsRanged, true);
@@ -2152,15 +2152,108 @@ public class BitSliderTests : BunitTestContext
             parameters.Add(p => p.DefaultUpperValue, 60D);
         });
 
-        // Snapped onto the mark at 60, which lands the lower end on top of the upper one, so the upper is
-        // pushed out to the 30 the pair has to keep apart.
+        // The mark at 60 is the nearest one, and the furthest the lower end may go is 30 - so it lands on the
+        // outermost mark that does fit, and the upper end stays exactly where it was.
+        com.Find(".bit-sld-inp-lwr").Input("55");
+
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryAKeyPastTheThumbBesideIt()
+    {
+        // Carrying a key on to the next mark is the one move the bounds of the input cannot hold, since the
+        // browser is already done with it by then - and an arrow key that pushes the other thumb three marks
+        // up the scale is not the single step it was pressed for.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.MinRange, 30D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        var lower = com.Find(".bit-sld-inp-lwr");
+        lower.KeyDown("ArrowRight");
+        lower.Input("21");
+
+        // The next mark up is 60, which the 30 the pair has to keep apart puts out of reach, so nothing moves.
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStillSnapWithinTheBoundsOfAConstrainedThumb()
+    {
+        // Holding the snap against the bounds must not stop it landing on the marks that do fit.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.NoSwap, true);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        com.Find(".bit-sld-inp-lwr").Input("25");
+
+        Assert.AreEqual(20, com.Instance.LowerValue);
+        Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldStillPushASnappedThumbWhenPushable()
+    {
+        // Pushing is the one case where a snapped thumb is meant to take the other one with it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Pushable, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.MinRange, 30D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
         com.Find(".bit-sld-inp-lwr").Input("55");
 
         Assert.AreEqual(60, com.Instance.LowerValue);
         Assert.AreEqual(90, com.Instance.UpperValue);
+    }
 
-        Assert.AreEqual("60", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
-        Assert.AreEqual("90", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
+    [TestMethod]
+    public void BitSliderShouldPutTheCrossedPairBackOnTheInputs()
+    {
+        // What comes out of a move is what the inputs have to carry, keeping whichever of them holds the
+        // upper end - otherwise an input would hold a value the thumb beside it is not drawn at, and a
+        // re-render of an unbound slider never passes through the correction that would fix it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(20), new BitSliderMark(60), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 20D);
+            parameters.Add(p => p.DefaultUpperValue, 60D);
+        });
+
+        // Snapped onto the mark at 100, which takes the lower input past the upper one and makes it the
+        // upper end of the range.
+        com.Find(".bit-sld-inp-lwr").Input("95");
+
+        Assert.AreEqual(60, com.Instance.LowerValue);
+        Assert.AreEqual(100, com.Instance.UpperValue);
+
+        Assert.AreEqual("100", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
+        Assert.AreEqual("60", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
     }
 
     [TestMethod]
@@ -2552,6 +2645,87 @@ public class BitSliderTests : BunitTestContext
 
     #endregion
 
+    #region Precision
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryTheNoiseOfAFractionalLargeStep()
+    {
+        // Adding a step to a value is where binary floating point starts showing: 0.1 + 0.2 reaches
+        // 0.30000000000000004, and the label, the announced text and the posted value would all carry it.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Max, 1D);
+            parameters.Add(p => p.Step, 0.1D);
+            parameters.Add(p => p.LargeStep, 0.2D);
+            parameters.Add(p => p.DefaultValue, 0.1D);
+        });
+
+        var input = com.Find(".bit-sld-inp");
+        input.KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+        input.Input("0.2");
+
+        Assert.AreEqual(0.3, com.Instance.Value);
+        Assert.AreEqual("0.3", com.Find(".bit-sld-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryTheNoiseOfAFractionalMinRange()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 1D);
+            parameters.Add(p => p.Step, 0.1D);
+            parameters.Add(p => p.MinRange, 0.2D);
+            parameters.Add(p => p.DefaultLowerValue, 0.1D);
+            parameters.Add(p => p.DefaultUpperValue, 0.15D);
+        });
+
+        // Widened to the distance the pair has to keep, which is 0.1 + 0.2 - and that is 0.30000000000000004
+        // until it is rounded back to the scale the slider is actually counting in.
+        Assert.AreEqual(0.3, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotHandTheInputsBoundsWithNoiseInThem()
+    {
+        // The bounds travel to the browser as the min and the max of a real range input, which steps from its
+        // own min - so noise in it would put the whole grid a fraction off the values the slider counts in.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.Max, 1D);
+            parameters.Add(p => p.Step, 0.1D);
+            parameters.Add(p => p.MinRange, 0.2D);
+            parameters.Add(p => p.DefaultLowerValue, 0.1D);
+            parameters.Add(p => p.DefaultUpperValue, 0.5D);
+        });
+
+        Assert.AreEqual("0.3", com.Find(".bit-sld-inp-upr").GetAttribute("min"));
+        Assert.AreEqual("0.3", com.Find(".bit-sld-inp-lwr").GetAttribute("max"));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldNotCarryTheNoiseOfAFractionalBandWidth()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.Max, 1D);
+            parameters.Add(p => p.Step, 0.1D);
+            parameters.Add(p => p.DefaultLowerValue, 0.1D);
+            parameters.Add(p => p.DefaultUpperValue, 0.3D);
+        });
+
+        com.Find(".bit-sld-inp-bar").Input("0.4");
+
+        Assert.AreEqual(0.4, com.Instance.LowerValue);
+        Assert.AreEqual(0.6, com.Instance.UpperValue);
+    }
+
+    #endregion
+
     #region DraggableTrack
 
     [TestMethod,
@@ -2726,6 +2900,30 @@ public class BitSliderTests : BunitTestContext
 
         Assert.AreEqual(40, com.Instance.LowerValue);
         Assert.AreEqual(60, com.Instance.UpperValue);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRestTheDraggedBandOnAMarkAtTheEndOfTheScale()
+    {
+        // Squashing the band against the end of the scale would leave its leading thumb on a value the marks
+        // do not have, which is the one thing a mark-restricted slider promises never to happen.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DraggableTrack, true);
+            parameters.Add(p => p.RestrictToMarks, true);
+            parameters.Add(p => p.Max, 100D);
+            parameters.Add(p => p.Marks, [new BitSliderMark(0), new BitSliderMark(30), new BitSliderMark(70), new BitSliderMark(100)]);
+            parameters.Add(p => p.DefaultLowerValue, 0D);
+            parameters.Add(p => p.DefaultUpperValue, 20D);
+        });
+
+        // The band is 20 wide, so the furthest its leading end may go is 80 - and the outermost mark that
+        // still leaves room for the width is 70.
+        com.Find(".bit-sld-inp-bar").Input("95");
+
+        Assert.AreEqual(70, com.Instance.LowerValue);
+        Assert.AreEqual(90, com.Instance.UpperValue);
     }
 
     [TestMethod]
