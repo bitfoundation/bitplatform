@@ -233,6 +233,10 @@
                 <b>SpellCheck</b> turns the red squiggles on or off - setting it to false is usually the right call for
                 a search field, whose terms are rarely dictionary words.
                 <br /><br />
+                <b>SelectTextOnFocus</b> selects whatever is already in the field every time it takes the focus, so that
+                typing replaces the previous term instead of appending to it - the behavior a search box the user keeps
+                coming back to needs.
+                <br /><br />
                 <b>FullWidth</b> stretches the search box to fill the width of its container, which is required when the
                 component sits inside a flex layout that would otherwise shrink it to its content.
             </div>
@@ -251,6 +255,8 @@
                 <BitSearchBox Placeholder="EnterKeyHint = Go" EnterKeyHint="BitEnterKeyHint.Go" />
                 <br />
                 <BitSearchBox Placeholder="SpellCheck = false" SpellCheck="false" />
+                <br />
+                <BitSearchBox SelectTextOnFocus Placeholder="SelectTextOnFocus" DefaultValue="Click me to select this term" />
             </div>
             <br />
             <div style="display:flex;gap:1rem;max-width:30rem">
@@ -339,6 +345,8 @@
                 react to the bound value, so the component almost always needs <b>Immediate</b> to search as the user types.
                 <br /><br />
                 <b>SuggestFilterFunction</b> replaces the default case-insensitive "contains" matching,
+                <b>SuggestIgnoreDiacritics</b> keeps that default matching but folds the accents away on both sides, so
+                that "Jose" finds "José" without the user having to reproduce the diacritics,
                 <b>MinSuggestTriggerChars</b> (3 by default) sets how many characters are needed before searching,
                 <b>MaxSuggestCount</b> (5 by default) caps the number of rendered suggestions, and <b>DebounceTime</b> avoids
                 hammering a remote provider on every keystroke. Stale provider calls are cancelled automatically through the
@@ -370,6 +378,14 @@
                               SuggestFilterFunction="@SearchFunc" />
                 <br />
                 <div>SearchValue: @searchValueWithSuggestFilterFunction</div>
+                <br /><br /><br />
+                <div><b>SuggestIgnoreDiacritics</b> (type "jose" or "muller")</div><br />
+                <BitSearchBox Immediate
+                              SuggestIgnoreDiacritics
+                              HighlightSuggestItems
+                              MinSuggestTriggerChars="2"
+                              Placeholder="e.g. jose"
+                              SuggestItems="GetAccentedSuggestedItems()" />
                 <br /><br /><br />
                 <div><b>MinSuggestTriggerChars(1)</b></div><br />
                 <BitSearchBox @bind-Value="@searchValueWithMinSearchLength"
@@ -433,13 +449,19 @@
         <DemoExample Title="Suggest Callout" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 Everything inside the suggest callout is customizable. <b>HighlightSuggestItems</b> emphasizes the matched
-                part of every suggestion so the user can see why a row was returned, <b>SuggestItemTemplate</b> takes over the
-                rendering of a whole row, and <b>CalloutHeaderTemplate</b> / <b>CalloutFooterTemplate</b> pin custom content
-                above and below the scrollable list.
+                part of every suggestion so the user can see why a row was returned (a term that does not appear as a whole
+                in the item, which is what a multi-word term or a server-side match usually produces, has each of its words
+                highlighted instead), <b>SuggestItemTemplate</b> takes over the rendering of a whole row, and
+                <b>CalloutHeaderTemplate</b> / <b>CalloutFooterTemplate</b> pin custom content above and below the
+                scrollable list.
                 <br /><br />
                 <b>NoResultsText</b> (or <b>NoResultsTemplate</b>) keeps the callout open with an explanatory message when a
-                search returns nothing, instead of silently closing it, and <b>LoadingText</b> /
-                <b>LoadingTemplate</b> show progress while an async <b>SuggestItemsProvider</b> is still running.
+                search returns nothing, instead of silently closing it, <b>LoadingText</b> /
+                <b>LoadingTemplate</b> show progress while an async <b>SuggestItemsProvider</b> is still running, and
+                <b>MinSuggestTriggerCharsText</b> explains the third silent state: a term that is still shorter than
+                <b>MinSuggestTriggerChars</b>, which otherwise looks exactly like a search that found nothing. It is a
+                composite format receiving how many characters are still missing, and it also replaces the built-in
+                sentence announced to screen readers.
                 <br /><br />
                 <b>AutoSelectSuggestItem</b> pre-highlights the first suggestion so enter picks it right away, and
                 <b>ShowSuggestItemsOnFocus</b> combined with <b>MinSuggestTriggerChars="0"</b> opens the list as soon as the
@@ -472,6 +494,14 @@
                               MinSuggestTriggerChars="1"
                               Placeholder="e.g. xyz"
                               NoResultsText="No matching item found."
+                              SuggestItems="GetSuggestedItems()" />
+                <br /><br /><br />
+                <div><b>MinSuggestTriggerCharsText</b> (type one character)</div><br />
+                <BitSearchBox Immediate
+                              MinSuggestTriggerChars="3"
+                              Placeholder="e.g. app"
+                              NoResultsText="No matching item found."
+                              MinSuggestTriggerCharsText="Type {0} more character(s) to search"
                               SuggestItems="GetSuggestedItems()" />
                 <br /><br /><br />
                 <div><b>LoadingText</b> (async provider)</div><br />
@@ -520,7 +550,11 @@
                 <b>end</b> jump straight to the first and the last suggestion, <b>enter</b> accepts the highlighted
                 one (and places the caret at the end of it), <b>tab</b> and <b>escape</b> dismiss the list, and a
                 second <b>escape</b> clears the field. While the list is open these keys no longer move the text
-                caret, scroll the page or submit the surrounding form.
+                caret, scroll the page or submit the surrounding form, and while an input method editor is
+                composing (Chinese, Japanese, Korean) none of them reach the list at all, so enter commits the
+                composition and the arrows walk the candidate window as they should.
+                <b>NoWrapNavigation</b> stops the up and down arrows from cycling between the two ends of the list,
+                which in a long list reads more like the highlight having been lost than like a deliberate jump.
                 <br /><br />
                 Screen readers never see the list appear, so the component also owns a visually hidden live region
                 that reports the outcome of every search: how many suggestions were found, that there were none, or
@@ -549,6 +583,13 @@
                               AnnouncementProvider="AnnounceSuggestItems" />
                 <br />
                 <div>Announced: @announcedText</div>
+                <br /><br /><br />
+                <div><b>NoWrapNavigation</b> (the arrows stop at both ends)</div><br />
+                <BitSearchBox Immediate
+                              NoWrapNavigation
+                              MinSuggestTriggerChars="1"
+                              Placeholder="e.g. app"
+                              SuggestItems="GetSuggestedItems()" />
             </div>
         </DemoExample>
 

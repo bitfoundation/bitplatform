@@ -1,3 +1,5 @@
+using System.Text;
+using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -19,6 +21,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool _searchTriggered;
     private bool _hasSuggestSource;
     private string? _announcement;
+    private string? _foldedTerm;
+    private string? _foldedTermKey;
     private bool _announcementMarker;
     private int _selectedIndex = -1;
     private string? _enterKeyHint = "search";
@@ -231,6 +235,16 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public int MinSuggestTriggerChars { get; set; } = 3;
 
     /// <summary>
+    /// The composite format of the hint the callout shows while the typed term is still shorter than
+    /// <see cref="MinSuggestTriggerChars"/>, which receives the number of characters that are still
+    /// missing, for example "Type {0} more characters to search". Without it a too short term simply
+    /// shows nothing, leaving the user to guess whether the search found nothing or never ran at all.
+    /// The hint is never shown while the field is empty, where there is nothing to explain, and it
+    /// replaces the built-in English sentence announced to screen readers as well.
+    /// </summary>
+    [Parameter] public string? MinSuggestTriggerCharsText { get; set; }
+
+    /// <summary>
     /// Removes the overlay of suggest items callout.
     /// </summary>
     [Parameter] public bool Modeless { get; set; }
@@ -255,6 +269,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The text rendered in the callout when the search finds no suggest item.
     /// </summary>
     [Parameter] public string? NoResultsText { get; set; }
+
+    /// <summary>
+    /// Stops the up and down arrows from cycling between the two ends of the suggest list, so that the
+    /// highlight stops at the first and the last item instead of jumping from one to the other, which
+    /// in a long list reads more like the highlight having been lost than like a deliberate move.
+    /// </summary>
+    [Parameter] public bool NoWrapNavigation { get; set; }
 
     /// <summary>
     /// Callback executed when the user clears the search box by either clicking 'X' or hitting escape.
@@ -362,6 +383,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [Parameter] public RenderFragment? SearchButtonTemplate { get; set; }
 
     /// <summary>
+    /// Selects the text already in the search box whenever the input takes the focus, so that typing
+    /// replaces the previous term instead of appending to it, which is what a field the user comes
+    /// back to in order to search for something else needs. It does nothing while the field is empty.
+    /// </summary>
+    [Parameter] public bool SelectTextOnFocus { get; set; }
+
+    /// <summary>
     /// Whether to show the search button.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -406,6 +434,15 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// The first argument is the current search term and the second one is the suggest item to examine.
     /// </summary>
     [Parameter] public Func<string?, string?, bool>? SuggestFilterFunction { get; set; }
+
+    /// <summary>
+    /// Matches the search term against the suggest items with the diacritics of both removed, so that
+    /// "Jose" finds "José" and "Muller" finds "Müller". The item text itself is left untouched, and so
+    /// is the part of it that <see cref="HighlightSuggestItems"/> emphasizes. Ignored when a
+    /// <see cref="SuggestFilterFunction"/> is provided, which does its own matching, but still applied
+    /// to the highlight so that a provider matching this way can have its results emphasized too.
+    /// </summary>
+    [Parameter] public bool SuggestIgnoreDiacritics { get; set; }
 
     /// <summary>
     /// The list of suggest items to display in the callout.
@@ -483,6 +520,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _isOpen = false;
         _selectedIndex = -1;
 
+        ClassBuilder.Reset();
+
         await InvokeAsync(StateHasChanged);
 
         await OnSuggestItemsToggle.InvokeAsync(false);
@@ -497,6 +536,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => FixedIcon ? "bit-srb-fic" : string.Empty);
+
+        // A full screen overlay sits on top of the page while the callout is open, and the search box
+        // has to stay above it, otherwise that overlay would also swallow the clicks that belong to
+        // the component itself (placing the caret, clearing the field, running the search).
+        ClassBuilder.Register(() => _isOpen ? "bit-srb-opn" : string.Empty);
 
         ClassBuilder.Register(() => HasValue ? $"bit-srb-hvl" : string.Empty);
 
@@ -596,6 +640,25 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         };
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // A suggest list replaced from the outside while the callout is open (one that has just
+        // finished loading, for instance) has to be re-filtered right away, otherwise the user
+        // keeps looking at rows that no longer exist until the next keystroke. Only the in-memory
+        // list is watched: a provider owns when it runs and is re-run by the search itself.
+        if (_isOpen is false || SuggestItemsProvider is not null || SuggestItems is null) return;
+
+        var term = CurrentValueAsString;
+
+        List<string> items = CanSearch(term) ? [.. Limit(SuggestItems.Where(i => FilterSuggestItem(term, i)))] : [];
+
+        if (items.SequenceEqual(_viewSuggestedItems)) return;
+
+        await SearchItems();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -724,6 +787,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         _inputHasFocus = true;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
+
+        if (SelectTextOnFocus && HasValue)
+        {
+            await SelectInputText();
+        }
 
         await OnFocusIn.InvokeAsync(e);
 
@@ -961,6 +1029,17 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    private async Task SelectInputText()
+    {
+        if (IsDisposed) return;
+
+        try
+        {
+            await _js.BitUtilsSelectText(InputElement);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task MoveCursorToEnd()
     {
         if (IsDisposed) return;
@@ -994,7 +1073,79 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (term.HasNoValue()) return true;
 
-        return item.Contains(term!, StringComparison.OrdinalIgnoreCase);
+        return Fold(item).Contains(FoldTerm(term!), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string Fold(string text) => SuggestIgnoreDiacritics ? RemoveDiacritics(text) : text;
+
+    /// <summary>
+    /// The folded search term, which is the same for every item of a search, so folding it once per
+    /// search instead of once per item keeps a long suggest list from paying for it over and over.
+    /// </summary>
+    private string FoldTerm(string term)
+    {
+        if (SuggestIgnoreDiacritics is false) return term;
+
+        if (_foldedTermKey != term)
+        {
+            _foldedTermKey = term;
+            _foldedTerm = RemoveDiacritics(term);
+        }
+
+        return _foldedTerm!;
+    }
+
+    /// <summary>
+    /// A copy of the text with the diacritic of each character removed. It is folded one character at a
+    /// time on purpose: the result then has exactly as many characters as the original, so an index found
+    /// in it still points at the same place in the text the highlight has to cut.
+    /// </summary>
+    private static string RemoveDiacritics(string text)
+    {
+        var builder = new StringBuilder(text.Length);
+
+        foreach (var c in text)
+        {
+            // ASCII has no diacritics to fold, and a lone surrogate half (one of the two chars an emoji
+            // is made of) is not a valid string of its own, so normalizing it would throw.
+            if (char.IsAscii(c) || char.IsSurrogate(c))
+            {
+                builder.Append(c);
+                continue;
+            }
+
+            var baseChar = c;
+
+            foreach (var decomposed in c.ToString().Normalize(NormalizationForm.FormD))
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(decomposed) == UnicodeCategory.NonSpacingMark) continue;
+
+                baseChar = decomposed;
+                break;
+            }
+
+            builder.Append(baseChar);
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// The hint that explains why nothing is being suggested yet, so that a term which is still too
+    /// short to search is not mistaken for a search that found nothing. It stays null while there is
+    /// nothing to explain: without the parameter, without a minimum, and before anything was typed.
+    /// </summary>
+    private string? GetMinSuggestTriggerCharsText()
+    {
+        if (MinSuggestTriggerCharsText is null || MinSuggestTriggerChars <= 0) return null;
+
+        var term = CurrentValueAsString;
+
+        if (term.HasNoValue()) return null;
+
+        var remaining = MinSuggestTriggerChars - term!.Length;
+
+        return remaining > 0 ? string.Format(MinSuggestTriggerCharsText, remaining) : null;
     }
 
     private async Task SearchItems(bool openCallout = true, bool force = false)
@@ -1138,9 +1289,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (isTermTooShort)
         {
             // An empty field is the starting state rather than a failed search, so it says nothing.
-            return term.HasNoValue()
-                ? null
-                : $"Type {MinSuggestTriggerChars} or more characters for suggestions.";
+            if (term.HasNoValue()) return null;
+
+            return GetMinSuggestTriggerCharsText() ?? $"Type {MinSuggestTriggerChars} or more characters for suggestions.";
         }
 
         var count = _viewSuggestedItems.Count;
@@ -1161,6 +1312,10 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (_hasSuggestSource is false) return false;
 
         if (_viewSuggestedItems.Count > 0) return true;
+
+        // A term that is still too short never searches at all, so without this the callout would
+        // simply not appear and the hint that explains why would never be seen.
+        if (GetMinSuggestTriggerCharsText() is not null) return true;
 
         if (_searchTriggered is false) return false;
 
@@ -1186,6 +1341,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             if (_isOpen is false)
             {
                 _isOpen = true;
+
+                ClassBuilder.Reset();
 
                 StateHasChanged();
 
@@ -1219,6 +1376,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         // A dismissed list must come back without a leftover virtual focus on it, otherwise
         // reopening it would silently highlight whatever was highlighted the previous time.
         _selectedIndex = -1;
+
+        ClassBuilder.Reset();
 
         // The live region is deliberately left alone here: a fruitless search and a term that is
         // still too short both end up closing the callout, and those are exactly the two outcomes
@@ -1302,17 +1461,23 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (count == 0) return;
 
-        _selectedIndex += isArrowUp ? -1 : +1;
+        var next = _selectedIndex + (isArrowUp ? -1 : +1);
 
-        if (_selectedIndex < 0)
+        // NoWrapNavigation only clamps a highlight that is already on an item: moving up from nothing
+        // highlighted still lands on the last one, which is what opening the list with the up arrow
+        // is supposed to do (see the WAI-ARIA combobox pattern).
+        if (NoWrapNavigation && _selectedIndex > -1)
         {
-            _selectedIndex = count - 1;
+            next = Math.Clamp(next, 0, count - 1);
+        }
+        else
+        {
+            if (next < 0) next = count - 1;
+
+            if (next >= count) next = 0;
         }
 
-        if (_selectedIndex >= count)
-        {
-            _selectedIndex = 0;
-        }
+        _selectedIndex = next;
 
         await ScrollSelectedItemIntoView();
 
@@ -1367,12 +1532,53 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         if (item.HasNoValue() || term.HasNoValue()) return [new(item, false)];
 
+        var segments = Highlight(item, [FoldTerm(term!)], SuggestIgnoreDiacritics);
+
+        // A single non matching segment means the term never appears as a whole in the item, which
+        // happens with a multi word term and with anything a SuggestItemsProvider or a custom
+        // SuggestFilterFunction matched its own way. Leaving the row completely unhighlighted is
+        // exactly when showing why it was returned matters most, so every word is highlighted instead.
+        if (segments is [{ IsMatch: false }])
+        {
+            var words = FoldTerm(term!).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+
+            if (words.Length > 1) return Highlight(item, words, SuggestIgnoreDiacritics);
+        }
+
+        return segments;
+    }
+
+    /// <summary>
+    /// Splits an item into its matching and non matching parts, always taking the match that starts
+    /// the earliest (and the longest one of those, so overlapping terms never cut each other short).
+    /// The terms are expected to be folded already when <paramref name="foldDiacritics"/> is on: the
+    /// item is then matched folded but always cut unfolded, which lines up because folding a string
+    /// keeps its length.
+    /// </summary>
+    private static List<BitSearchBoxHighlightSegment> Highlight(string item, string[] terms, bool foldDiacritics)
+    {
+        var haystack = foldDiacritics ? RemoveDiacritics(item) : item;
+
         var segments = new List<BitSearchBoxHighlightSegment>();
         var index = 0;
 
         while (index < item.Length)
         {
-            var found = item.IndexOf(term!, index, StringComparison.OrdinalIgnoreCase);
+            var found = -1;
+            var length = 0;
+
+            foreach (var term in terms)
+            {
+                var current = haystack.IndexOf(term, index, StringComparison.OrdinalIgnoreCase);
+
+                if (current < 0) continue;
+
+                if (found < 0 || current < found || (current == found && term.Length > length))
+                {
+                    found = current;
+                    length = term.Length;
+                }
+            }
 
             if (found < 0)
             {
@@ -1385,9 +1591,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 segments.Add(new(item[index..found], false));
             }
 
-            segments.Add(new(item.Substring(found, term!.Length), true));
+            segments.Add(new(item.Substring(found, length), true));
 
-            index = found + term.Length;
+            index = found + length;
         }
 
         return segments;

@@ -1758,6 +1758,351 @@ public class BitSearchBoxTests : BunitTestContext
         await component.Instance.DisposeAsync();
     }
 
+    [TestMethod]
+    public void BitSearchBoxSuggestItemsReplacedWhileTheCalloutIsOpenShouldBeReFiltered()
+    {
+        var items = new List<string> { "Apple", "Banana" };
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, items);
+        });
+
+        FocusAndType(component, "a");
+
+        Assert.AreEqual(2, component.FindAll(".bit-srb-itm").Count);
+
+        // The kind of list a parent hands over once it has finished loading it.
+        component.Render(parameters => parameters.Add(p => p.SuggestItems, new List<string> { "Apple", "Banana", "Avocado" }));
+
+        component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 3);
+
+        Assert.AreEqual("Avocado", component.FindAll(".bit-srb-itm")[2].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxRootShouldRiseAboveTheOverlayOnlyWhileTheCalloutIsOpen()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-opn"));
+
+        FocusAndType(component, "apple");
+
+        component.WaitForState(() => component.Find(".bit-srb").ClassList.Contains("bit-srb-opn"));
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForState(() => component.Find(".bit-srb").ClassList.Contains("bit-srb-opn") is false);
+    }
+
+    #endregion
+
+
+
+    #region diacritics & highlight
+
+    [TestMethod]
+    public void BitSearchBoxSuggestIgnoreDiacriticsShouldMatchTheFoldedText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestIgnoreDiacritics, true);
+            parameters.Add(p => p.SuggestItems, new List<string> { "José", "Jürgen", "Bob" });
+        });
+
+        component.Find(".bit-srb-inp").Input("jo");
+
+        var items = component.FindAll(".bit-srb-itm");
+
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual("José", items[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutIgnoreDiacriticsShouldNotMatchTheFoldedText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, new List<string> { "José", "Bob" });
+        });
+
+        component.Find(".bit-srb-inp").Input("jose");
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxIgnoreDiacriticsShouldHighlightTheOriginalAccentedText()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestIgnoreDiacritics, true);
+            parameters.Add(p => p.HighlightSuggestItems, true);
+            parameters.Add(p => p.SuggestItems, new List<string> { "José Álvarez" });
+        });
+
+        component.Find(".bit-srb-inp").Input("jose");
+
+        var mark = component.Find(".bit-srb-itm mark");
+
+        // The match is found in the folded copy but always cut out of the original text, so the
+        // accent the user did not type is still the one that ends up on the screen.
+        Assert.AreEqual("José", mark.TextContent);
+        Assert.AreEqual("José Álvarez", component.Find(".bit-srb-itm").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitSearchBoxHighlightShouldFallBackToTheWordsOfAMultiWordTerm()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.HighlightSuggestItems, true);
+            parameters.Add(p => p.SuggestItems, new List<string> { "Green Apple Pie" });
+            // The kind of matching a SuggestItemsProvider does on the server: every word has to be
+            // in the item, in any order, so the term never appears in it as a whole.
+            parameters.Add(p => p.SuggestFilterFunction, (string? term, string? item) =>
+                term is null || item is null ||
+                term.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .All(w => item.Contains(w, StringComparison.OrdinalIgnoreCase)));
+        });
+
+        component.Find(".bit-srb-inp").Input("pie green");
+
+        var marks = component.FindAll(".bit-srb-itm mark");
+
+        Assert.AreEqual(2, marks.Count);
+        Assert.AreEqual("Green", marks[0].TextContent);
+        Assert.AreEqual("Pie", marks[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxHighlightShouldStillPreferTheWholeTermWhenItIsThere()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.HighlightSuggestItems, true);
+            parameters.Add(p => p.SuggestItems, new List<string> { "Green Apple" });
+        });
+
+        component.Find(".bit-srb-inp").Input("green apple");
+
+        var marks = component.FindAll(".bit-srb-itm mark");
+
+        Assert.AreEqual(1, marks.Count);
+        Assert.AreEqual("Green Apple", marks[0].TextContent);
+    }
+
+    #endregion
+
+
+
+    #region navigation & focus options
+
+    [TestMethod]
+    public void BitSearchBoxNoWrapNavigationShouldStopTheHighlightAtBothEnds()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.NoWrapNavigation, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        input.Input("apple");
+
+        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        WaitForSelectedItem(component, 0);
+
+        // Would have wrapped around to the last item without NoWrapNavigation.
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        WaitForSelectedItem(component, 0);
+
+        for (var i = 0; i < 5; i++)
+        {
+            input.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        }
+
+        WaitForSelectedItem(component, 3);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxNoWrapNavigationShouldStillOpenTheListOnTheLastItemWithTheUpArrow()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.NoWrapNavigation, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        input.Input("apple");
+
+        input.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        WaitForSelectedItem(component, 3);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSelectTextOnFocusShouldSelectTheTypedTerm()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SelectTextOnFocus, true);
+            parameters.Add(p => p.DefaultValue, "Apple");
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxSelectTextOnFocusShouldDoNothingForAnEmptyField()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.SelectTextOnFocus, true);
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxWithoutSelectTextOnFocusShouldNotSelectTheTypedTerm()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "Apple");
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.selectText"].Count);
+    }
+
+    #endregion
+
+
+
+    #region min chars hint
+
+    [TestMethod]
+    public void BitSearchBoxMinSuggestTriggerCharsTextShouldOpenTheCalloutWithTheRemainingCount()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 3);
+            parameters.Add(p => p.MinSuggestTriggerCharsText, "Type {0} more");
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "a");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-hnt").Count == 1);
+
+        Assert.AreEqual("Type 2 more", component.Find(".bit-srb-hnt").TextContent.Trim());
+        Assert.AreEqual("true", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.AreEqual(0, component.FindAll(".bit-srb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxMinSuggestTriggerCharsTextShouldDisappearOnceTheTermIsLongEnough()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 3);
+            parameters.Add(p => p.MinSuggestTriggerCharsText, "Type {0} more");
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "ap");
+
+        Assert.AreEqual("Type 1 more", component.Find(".bit-srb-hnt").TextContent.Trim());
+
+        component.Find(".bit-srb-inp").Input("app");
+
+        component.WaitForState(() => component.FindAll(".bit-srb-hnt").Count == 0);
+
+        Assert.AreEqual(4, component.FindAll(".bit-srb-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitSearchBoxMinSuggestTriggerCharsTextShouldStayHiddenForAnEmptyField()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 3);
+            parameters.Add(p => p.MinSuggestTriggerCharsText, "Type {0} more");
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, string.Empty);
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-hnt").Count);
+        Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxMinSuggestTriggerCharsTextShouldReplaceTheBuiltInAnnouncement()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 3);
+            parameters.Add(p => p.MinSuggestTriggerCharsText, "Type {0} more");
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "a");
+
+        component.WaitForState(() => GetAnnouncement(component) == "Type 2 more");
+    }
+
+    [TestMethod]
+    public void BitSearchBoxMinSuggestTriggerCharsTextShouldBeIgnoredWithoutAMinimum()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 0);
+            parameters.Add(p => p.MinSuggestTriggerCharsText, "Type {0} more");
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "a");
+
+        Assert.AreEqual(0, component.FindAll(".bit-srb-hnt").Count);
+    }
+
     #endregion
 
 

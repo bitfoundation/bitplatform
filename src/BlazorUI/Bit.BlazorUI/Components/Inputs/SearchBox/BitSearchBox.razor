@@ -190,10 +190,24 @@
             </div>
         }
 
-        @* These two are purely visual: the live region of the component is what actually reports
-           the loading and the empty states to the assistive technologies, so giving them a role
-           of their own here would only make a screen reader say the very same thing twice. *@
-        @if (_isLoading)
+        @{
+            @* Why nothing is being suggested yet, which is otherwise indistinguishable from a search
+               that ran and found nothing. *@
+            var minCharsHint = GetMinSuggestTriggerCharsText();
+        }
+
+        @* These three are purely visual: the live region of the component is what actually reports
+           the loading, the empty and the too-short states to the assistive technologies, so giving
+           them a role of their own here would only make a screen reader say the very same thing twice. *@
+        @if (minCharsHint is not null)
+        {
+            <div aria-hidden="true"
+                 style="@Styles?.Hint"
+                 class="bit-srb-hnt @Classes?.Hint">
+                @minCharsHint
+            </div>
+        }
+        else if (_isLoading)
         {
             <div aria-hidden="true"
                  style="@Styles?.Loading"

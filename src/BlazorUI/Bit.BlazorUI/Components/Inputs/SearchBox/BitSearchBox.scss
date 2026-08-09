@@ -485,6 +485,14 @@
     clip-path: inset(50%);
 }
 
+// While the suggest callout is open, a transparent full screen overlay sits on top of the page to
+// catch the next outside click. The component has to stay above it (but still below the callout,
+// whose z-index is higher), otherwise that overlay would swallow the clicks that belong to the
+// search box itself: placing the caret in the input, clearing the field, running the search.
+.bit-srb-opn {
+    z-index: calc(#{$zindex-overlay} + 1);
+}
+
 .bit-srb-ssb {
     .bit-srb-cnt {
         border-end-end-radius: 0;
@@ -627,6 +635,18 @@
 
 .bit-srb-cft {
     border-block-start: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-srb-hnt {
+    cursor: default;
+    user-select: none;
+    text-align: start;
+    font-style: italic;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: spacing(1.75);
+    padding: spacing(1) spacing(1.25);
 }
 
 .bit-srb-lod,

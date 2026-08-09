@@ -229,6 +229,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "MinSuggestTriggerCharsText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The composite format of the hint the callout shows while the typed term is still shorter than MinSuggestTriggerChars, which receives the number of characters that are still missing, for example \"Type {0} more characters to search\". The hint is never shown while the field is empty, and it replaces the built-in English sentence announced to screen readers as well.",
+        },
+        new()
+        {
             Name = "Modeless",
             Type = "bool",
             DefaultValue = "false",
@@ -261,6 +268,13 @@ public partial class BitSearchBoxDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The text rendered in the callout when the search finds no suggest item.",
+        },
+        new()
+        {
+            Name = "NoWrapNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the up and down arrows from cycling between the two ends of the suggest list, so that the highlight stops at the first and the last item instead of jumping from one to the other.",
         },
         new()
         {
@@ -381,6 +395,13 @@ public partial class BitSearchBoxDemo
         },
         new()
         {
+            Name = "SelectTextOnFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Selects the text already in the search box whenever the input takes the focus, so that typing replaces the previous term instead of appending to it. It does nothing while the field is empty.",
+        },
+        new()
+        {
             Name = "ShowSearchButton",
             Type = "bool",
             DefaultValue = "false",
@@ -438,6 +459,13 @@ public partial class BitSearchBoxDemo
             Type = "Func<string?, string?, bool>?",
             DefaultValue = "null",
             Description = "Custom search function to be used in place of the default search algorithm. The first argument is the current search term and the second one is the suggest item to examine.",
+        },
+        new()
+        {
+            Name = "SuggestIgnoreDiacritics",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Matches the search term against the suggest items with the diacritics of both removed, so that \"Jose\" finds \"José\" and \"Muller\" finds \"Müller\". The item text itself is left untouched, and so is the part of it that HighlightSuggestItems emphasizes. Ignored when a SuggestFilterFunction is provided, but still applied to the highlight.",
         },
         new()
         {
@@ -647,6 +675,13 @@ public partial class BitSearchBoxDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the no-results container of the search box's callout.",
+                },
+                new()
+                {
+                    Name = "Hint",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the too-short-term hint of the search box's callout.",
                 },
                 new()
                 {
@@ -1194,6 +1229,15 @@ public partial class BitSearchBoxDemo
          "Broccoli",
          "Carrot",
          "Lettuce"
+    ];
+
+    private List<string> GetAccentedSuggestedItems() =>
+    [
+        "José Álvarez",
+        "Jürgen Müller",
+        "Renée Fauré",
+        "Zoë Brontë",
+        "Søren Kierkegaard"
     ];
 
     private List<string> GetRecentSearches() =>

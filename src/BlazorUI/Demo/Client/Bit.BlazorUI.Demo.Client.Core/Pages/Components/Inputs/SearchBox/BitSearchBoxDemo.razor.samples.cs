@@ -101,6 +101,8 @@ public partial class BitSearchBoxDemo
 
 <BitSearchBox Placeholder=""SpellCheck = false"" SpellCheck=""false"" />
 
+<BitSearchBox SelectTextOnFocus Placeholder=""SelectTextOnFocus"" DefaultValue=""Click me to select this term"" />
+
 <div style=""display:flex;gap:1rem;max-width:30rem"">
     <BitSearchBox FullWidth Placeholder=""FullWidth in a flex container"" />
     <BitButton>Go</BitButton>
@@ -193,6 +195,14 @@ private void HandleOnKeyDown(KeyboardEventArgs args) => Log($""OnKeyDown: {args.
 <div>SearchValue: @searchValueWithSuggestFilterFunction</div>
 
 
+<BitSearchBox Immediate
+              SuggestIgnoreDiacritics
+              HighlightSuggestItems
+              MinSuggestTriggerChars=""2""
+              Placeholder=""e.g. jose""
+              SuggestItems=""GetAccentedSuggestedItems()"" />
+
+
 <BitSearchBox @bind-Value=""@searchValueWithMinSearchLength""
               Immediate
               Placeholder=""e.g. app""
@@ -264,6 +274,15 @@ private List<string> GetSuggestedItems() =>
     ""Broccoli"",
     ""Carrot"",
     ""Lettuce""
+];
+
+private List<string> GetAccentedSuggestedItems() =>
+[
+    ""José Álvarez"",
+    ""Jürgen Müller"",
+    ""Renée Fauré"",
+    ""Zoë Brontë"",
+    ""Søren Kierkegaard""
 ];
 
 private List<string> GetLongSuggestedItems() =>
@@ -342,6 +361,14 @@ private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsP
 
 
 <BitSearchBox Immediate
+              MinSuggestTriggerChars=""3""
+              Placeholder=""e.g. app""
+              NoResultsText=""No matching item found.""
+              MinSuggestTriggerCharsText=""Type {0} more character(s) to search""
+              SuggestItems=""GetSuggestedItems()"" />
+
+
+<BitSearchBox Immediate
               DebounceTime=""300""
               Placeholder=""e.g. pro""
               LoadingText=""Searching...""
@@ -405,7 +432,14 @@ private async ValueTask<IEnumerable<string>> LoadItemsSlowly(BitSearchBoxSuggest
               Placeholder=""e.g. app""
               SuggestItems=""GetSuggestedItems()""
               AnnouncementProvider=""AnnounceSuggestItems"" />
-<div>Announced: @announcedText</div>";
+<div>Announced: @announcedText</div>
+
+
+<BitSearchBox Immediate
+              NoWrapNavigation
+              MinSuggestTriggerChars=""1""
+              Placeholder=""e.g. app""
+              SuggestItems=""GetSuggestedItems()"" />";
     private readonly string example15CsharpCode = @"
 private string? announcedText;
 
