@@ -749,12 +749,13 @@
         <div class="example-box">
             <div>Component's Style & Class:</div>
             <BitSlider DefaultValue="6" Label="Style" Style="padding: 0.5rem 1rem; border-radius: 0.5rem; box-shadow: tomato 0 0 1rem;" />
-            <BitSlider DefaultValue="6" Label="Class" Class="custom-class" />
             <br />
+            <BitSlider DefaultValue="6" Label="Class" Class="custom-class" />
+            <br /><br />
             <div>The CSS variables:</div>
             <BitSlider DefaultValue="6" Label="Chunky" Style="--bit-sld-thumb: 2rem; --bit-sld-rail: 1rem;" />
             <BitSlider DefaultValue="6" Label="Hairline" Style="--bit-sld-thumb: 0.75rem; --bit-sld-rail: 0.125rem;" />
-            <br />
+            <br /><br />
             <div>Styles & Classes:</div>
             <BitSlider DefaultValue="6"
                        Label="Custom styles"
@@ -765,7 +766,7 @@
                        ShowMarks
                        Label="Custom classes"
                        Classes="@(new() { Fill = "custom-fill", Mark = "custom-mark" })" />
-            <br />
+            <br /><br />
             <div>The two thumbs of a range, styled apart:</div>
             <BitSlider IsRanged
                        Label="Two-tone thumbs"
@@ -785,7 +786,7 @@
             deliberately left alone by this, since up means more in both directions of reading.
         </div>
         <br />
-        <div class="example-box" dir="rtl">
+        <div dir="rtl">
             <BitSlider Dir="BitDir.Rtl" Label="اسلایدر ساده" DefaultValue="4" />
             <br />
             <BitSlider Dir="BitDir.Rtl" Label="با علامت‌ها" ShowMarks ShowMarkLabels Max="5" DefaultValue="3" />
