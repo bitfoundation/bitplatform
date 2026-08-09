@@ -30,10 +30,11 @@
 
     .custom-thumb {
         background: #fff;
-        width: rem2(30px);
-        height: rem2(30px);
     }
 
+    // The knob is bigger than the track it rides on, so its size and the inset it rests at are set through
+    // the same custom properties the component positions it with - a width on the knob alone would leave the
+    // checked position, which is measured off that size, sliding it past the end of the track.
     .custom-button {
         padding: 0;
         border: none;
@@ -41,6 +42,8 @@
         width: rem2(52px);
         height: rem2(22px);
         border-radius: rem2(11px);
+        --bit-tgl-pad: #{rem2(-4px)};
+        --bit-tgl-thb-size: #{rem2(30px)};
     }
 
     .custom-check {

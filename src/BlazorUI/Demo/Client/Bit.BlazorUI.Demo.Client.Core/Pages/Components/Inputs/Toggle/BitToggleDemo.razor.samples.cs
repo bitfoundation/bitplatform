@@ -402,8 +402,6 @@ private async Task FocusTheToggle()
 
     .custom-thumb {
         background: #fff;
-        width: 30px;
-        height: 30px;
     }
 
     .custom-button {
@@ -413,6 +411,8 @@ private async Task FocusTheToggle()
         border: none;
         background: #ccc;
         border-radius: 11px;
+        --bit-tgl-pad: -4px;
+        --bit-tgl-thb-size: 30px;
     }
 
     .custom-check .custom-thumb {
@@ -446,8 +446,8 @@ private async Task FocusTheToggle()
 
 <BitToggle Label=""Styles""
            Styles=""@(new() { Root = ""--toggle-background: lightgray;"", Checked = ""--toggle-background: #2ecc71;"",
-                             Thumb = ""background: whitesmoke; height: 28px; width: 28px;"",
-                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px;"" } )"" />
+                             Thumb = ""background: whitesmoke;"",
+                             Button = ""background: var(--toggle-background); border: none; border-radius: 60px; padding: 0; height: 30px; width: 50px; --bit-tgl-pad: 2px; --bit-tgl-thb-size: 26px;"" } )"" />
 
 <BitToggle Label=""Classes""
            Classes=""@(new() { Thumb = ""custom-thumb"",
