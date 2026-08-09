@@ -4,14 +4,71 @@
 
 @{
     var itemType = Dropdown.GetItemType(Item);
-    var id = Dropdown.GetId(Item);
+
+    // The item a commit of the typed text would take, shown so that what Enter is about to select is
+    // visible before it is pressed. The ComboBox input names it with aria-activedescendant, which needs
+    // an id, so the ones that carry none borrow the dropdown's - only one item is the target at a time.
+    var isCommitTarget = itemType == BitDropdownItemType.Normal && Dropdown.GetIsCommitTarget(Item);
+    var id = Dropdown.GetId(Item) ?? (isCommitTarget ? Dropdown.CommitTargetId : null);
+
+    // The wrapper of a header carries a class of its own because it, and not the header element inside
+    // it, is the direct child of the scroll container, which is what a sticky header has to be to stick.
+    var wrapperClass = itemType == BitDropdownItemType.Header
+                        ? $"bit-drp-ihw {Dropdown.GetClass(Item)}".TrimEnd()
+                        : Dropdown.GetClass(Item);
+
+    // A header names the items that follow it, but a flat listbox cannot nest them inside it, so the
+    // header is referenced as the description of each of its items instead: a screen reader then reads
+    // "Apple, option, 2 of 8, Fruits" rather than leaving the grouping to what is only visible. The id
+    // that makes the reference possible is generated for the headers that do not carry one themselves.
+    var headerId = itemType == BitDropdownItemType.Header ? Dropdown.GetItemHeaderId(Item) : id;
+    var groupId = itemType == BitDropdownItemType.Normal ? Dropdown.GetItemGroupId(Item) : null;
     var text = Dropdown.GetText(Item);
     var isHidden = Dropdown.GetIsHidden(Item);
-    var isEnabled = Dropdown.GetIsEnabled(Item);
+
+    // A custom header template renders whatever it likes, so neither the id its items point at nor the
+    // hidden state can be put on an element inside it; the wrapper carries both instead. The default
+    // rendering keeps them on the header element itself, where they were.
+    var isTemplatedHeader = itemType == BitDropdownItemType.Header && Dropdown.HeaderTemplate is not null;
+    var wrapperId = isTemplatedHeader ? headerId : null;
+    var wrapperStyle = isTemplatedHeader && isHidden
+                        ? $"display:none;{Dropdown.GetStyle(Item)}"
+                        : Dropdown.GetStyle(Item);
     var isSelected = itemType == BitDropdownItemType.Normal ? Dropdown.GetIsSelected(Item) : false;
+    var isDisabled = itemType == BitDropdownItemType.Normal && Dropdown.GetIsItemDisabled(Item);
+
+    var itemButtonClass = "bit-drp-itm" +
+                          (isSelected ? " bit-drp-sel" : string.Empty) +
+                          (isCommitTarget ? " bit-drp-ctg" : string.Empty);
+
+    // The separator matters: without it a hidden item that also carries a custom style would produce
+    // "display:none color:red", which the browser reads as one invalid declaration instead of two, and
+    // the item that was meant to be hidden stays on the screen.
+    var hiddenStyle = isHidden ? "display:none;" : string.Empty;
+    var headerStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemHeader}";
+    var itemWrapperStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemWrapper}";
+    var itemButtonStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemButton}";
+    var dividerStyle = $"{hiddenStyle}{Dropdown.Styles?.ItemDivider}";
+
+    // The part of the item text that matched the search, so it can be emphasized. It is rendered as
+    // three separate pieces of text rather than as markup, so the item text is never treated as HTML.
+    // The markup below is repeated in both branches on purpose: holding it in a local RenderFragment
+    // would hand Blazor a new delegate on every render, which re-creates the item subtree and with it
+    // the click handler of the button that contains it.
+    var highlightIndex = itemType == BitDropdownItemType.Normal ? Dropdown.GetHighlightIndex(text) : -1;
+    var highlightLength = Dropdown.GetHighlightLength();
+    // The index and the length come from two separate calls, so the span they describe is checked
+    // against the text before it is cut rather than assumed to fit inside it.
+    var highlighted = highlightIndex >= 0 && highlightLength > 0
+                   && text is not null && highlightIndex + highlightLength <= text.Length;
 }
 
-<div style="@Dropdown.GetStyle(Item)" class="@Dropdown.GetClass(Item)">
+@* The wrappers carry the per-item style and layout only; marking them presentational keeps the option
+   elements as the direct children of the listbox for assistive technologies. *@
+<div role="presentation"
+     id="@wrapperId"
+     style="@wrapperStyle"
+     class="@wrapperClass">
     @if (itemType == BitDropdownItemType.Header)
     {
         @if (Dropdown.HeaderTemplate is not null)
@@ -20,8 +77,8 @@
         }
         else
         {
-            <div id="@id"
-                 style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemHeader"
+            <div id="@headerId"
+                 style="@headerStyle"
                  class="bit-drp-ihd @Dropdown.Classes?.ItemHeader">
                 @text
             </div>
@@ -31,14 +88,26 @@
     {
         @if (Dropdown.MultiSelect)
         {
-            <div style="@(isHidden ? "display: none" : "") @Dropdown.Styles?.ItemWrapper"
+            <div role="presentation"
+                 style="@itemWrapperStyle"
                  class="@Dropdown.GetItemWrapperCssClasses(Item) @Dropdown.Classes?.ItemWrapper">
+                @* The options are navigated with the arrow keys and never with Tab (which closes the
+                   callout), so they stay out of the tab order like the options of a listbox should. *@
                 <button @onclick="@(() => Dropdown.HandleOnItemClick(Item))"
                         id="@id"
                         type="button"
                         role="option"
+                        tabindex="-1"
+                        title="@Dropdown.GetTitle(Item)"
+                        disabled=@isDisabled
                         style="@Dropdown.Styles?.ItemButton"
-                        class="bit-drp-mcn @Dropdown.Classes?.ItemButton">
+                        class="bit-drp-mcn @Dropdown.Classes?.ItemButton"
+                        aria-label="@Dropdown.GetAriaLabel(Item)"
+                        aria-setsize="@Dropdown.GetTotalItems()"
+                        aria-disabled="@(isDisabled ? "true" : null)"
+                        aria-selected="@(isSelected ? "true" : "false")"
+                        aria-posinset="@Dropdown.GetItemPosInSet(Item)"
+                        aria-describedby="@groupId">
                     <div style="@Dropdown.Styles?.ItemCheckBox"
                          class="bit-drp-chb @Dropdown.Classes?.ItemCheckBox">
                         <i aria-hidden="true"
@@ -58,9 +127,17 @@
                             <i style="@Dropdown.Styles?.ItemIcon"
                                class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                         }
-                        <span style="@Dropdown.Styles?.ItemText"
-                              class="bit-drp-itx @Dropdown.Classes?.ItemText">
-                            @text
+                        <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">
+                            @if (highlighted)
+                            {
+                                @text!.Substring(0, highlightIndex)
+                                <span style="@Dropdown.Styles?.ItemHighlight" class="bit-drp-hlt @Dropdown.Classes?.ItemHighlight">@text!.Substring(highlightIndex, highlightLength)</span>
+                                @text!.Substring(highlightIndex + highlightLength)
+                            }
+                            else
+                            {
+                                @text
+                            }
                         </span>
                     }
                 </button>
@@ -73,15 +150,16 @@
                     type="button"
                     role="option"
                     title="@Dropdown.GetTitle(Item)"
-                    disabled=@(isEnabled is false)
-                    tabindex="@(isEnabled ? 0 : -1)"
-                    style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemButton"
-                    class="bit-drp-itm@(isSelected ? " bit-drp-sel" : "") @Dropdown.Classes?.ItemButton"
+                    tabindex="-1"
+                    disabled=@isDisabled
+                    style="@itemButtonStyle"
+                    class="@itemButtonClass @Dropdown.Classes?.ItemButton"
                     aria-label="@Dropdown.GetAriaLabel(Item)"
                     aria-setsize="@Dropdown.GetTotalItems()"
-                    aria-disabled="@(isEnabled is false)"
+                    aria-disabled="@(isDisabled ? "true" : null)"
                     aria-selected="@(isSelected ? "true" : "false")"
-                    aria-posinset="@Dropdown.GetItemPosInSet(Item)">
+                    aria-posinset="@Dropdown.GetItemPosInSet(Item)"
+                    aria-describedby="@groupId">
                 @if (Dropdown.ItemTemplate is not null)
                 {
                     @Dropdown.ItemTemplate(Item)
@@ -94,9 +172,17 @@
                         <i style="@Dropdown.Styles?.ItemIcon"
                            class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                     }
-                    <span style="@Dropdown.Styles?.ItemText"
-                          class="@Dropdown.Classes?.ItemText">
-                        @text
+                    <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">
+                        @if (highlighted)
+                        {
+                            @text!.Substring(0, highlightIndex)
+                            <span style="@Dropdown.Styles?.ItemHighlight" class="bit-drp-hlt @Dropdown.Classes?.ItemHighlight">@text!.Substring(highlightIndex, highlightLength)</span>
+                            @text!.Substring(highlightIndex + highlightLength)
+                        }
+                        else
+                        {
+                            @text
+                        }
                     </span>
                 }
             </button>
@@ -104,9 +190,13 @@
     }
     else if (itemType == BitDropdownItemType.Divider)
     {
+        @* A rule between two groups of items carries nothing a screen reader has to hear, and the only
+           children a listbox may have are its options and their groups, so the divider is drawn for the
+           eye alone rather than announced as a separator that divides nothing nameable. *@
         <div id="@id"
-             role="separator"
-             style="@(isHidden ? "display:none" : "") @Dropdown.Styles?.ItemDivider"
+             role="presentation"
+             aria-hidden="true"
+             style="@dividerStyle"
              class="bit-drp-sep @Dropdown.Classes?.ItemDivider">
         </div>
     }
