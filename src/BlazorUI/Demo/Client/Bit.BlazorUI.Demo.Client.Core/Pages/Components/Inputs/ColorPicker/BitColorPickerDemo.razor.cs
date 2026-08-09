@@ -25,7 +25,7 @@ public partial class BitColorPickerDemo
             Name = "Color",
             Type = "string",
             DefaultValue = "rgb(255,255,255)",
-            Description = "CSS-compatible string to describe the color. Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), hsv(), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax.",
+            Description = "String describing the color. Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax, as are hsv() and hsva(), which are not CSS notations but the model the picker itself is built on.",
         },
         new()
         {
@@ -46,7 +46,7 @@ public partial class BitColorPickerDemo
             Name = "Format",
             Type = "BitColorFormat?",
             DefaultValue = "null",
-            Description = "The CSS notation the color value is written in. When left unset the picker answers in the same notation the Color arrived in.",
+            Description = "The notation the color value is written in, CSS or the non-CSS hsv() and hsva(). When left unset the picker answers in the same notation the Color arrived in.",
             LinkType = LinkType.Link,
             Href = "#color-format-enum",
         },
@@ -228,7 +228,7 @@ public partial class BitColorPickerDemo
         {
             Id = "color-format-enum",
             Name = "BitColorFormat",
-            Description = "The CSS notation the color value is written in. Every notation has an alpha-carrying twin: the plain ones drop the alpha from the string while the twins fold it in.",
+            Description = "The notation the color value is written in: the CSS ones, plus hsv() and hsva(), which no browser understands but the picker itself is built on. Every notation has an alpha-carrying twin: the plain ones drop the alpha from the string while the twins fold it in.",
             Items =
             [
                 new() { Name = "Hex", Description = "Six-digit hexadecimal notation: #RRGGBB.", Value = "0" },

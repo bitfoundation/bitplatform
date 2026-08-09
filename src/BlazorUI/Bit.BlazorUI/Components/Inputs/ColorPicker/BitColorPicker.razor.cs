@@ -32,6 +32,7 @@ public partial class BitColorPicker : BitComponentBase
     private double _alphaParam = 1;
     private string? _colorParam;
     private string? _abortControllerId;
+    private bool _eyeDropperChecked;
     private bool _eyeDropperSupported;
     private BitColorFormat? _formatEmitted;
     private readonly BitInternalColor _color = new();
@@ -314,18 +315,24 @@ public partial class BitColorPicker : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false) return;
-
-        _dotnetObj = DotNetObjectReference.Create(this);
+        if (firstRender is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
 
         try
         {
-            _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerMove), nameof(HandlePointerUp));
-
-            if (ShowEyeDropper)
+            if (firstRender)
             {
-                // Asked once, after the first render, because the answer is a browser capability rather than
-                // a parameter: it cannot be known while prerendering, and it cannot change afterwards.
+                _dotnetObj = DotNetObjectReference.Create(this);
+
+                _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerMove), nameof(HandlePointerUp));
+            }
+
+            if (ShowEyeDropper && _eyeDropperChecked is false)
+            {
+                // Asked once, on the first render that asks for the eyedropper, because the answer is a browser
+                // capability rather than a parameter: it cannot be known while prerendering, and it cannot change
+                // afterwards. A picker that only turns the button on later still gets its answer then.
+                _eyeDropperChecked = true;
+
                 _eyeDropperSupported = await _js.BitColorPickerIsEyeDropperSupported();
 
                 if (_eyeDropperSupported)
@@ -345,7 +352,7 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     private bool _IsInteractive => IsEnabled
                                 && ReadOnly is false
-                                && (ColorHasBeenSet is false || ColorChanged.HasDelegate || OnChange.HasDelegate);
+                                && (ColorHasBeenSet is false || ColorChanged.HasDelegate || OnChange.HasDelegate || OnChangeEnd.HasDelegate);
 
     private string _TabIndex => (IsEnabled && ReadOnly is false) ? (TabIndex ?? "0") : "-1";
 
@@ -793,25 +800,22 @@ public partial class BitColorPicker : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            // The .NET reference is released by the JavaScript side, which owns the listeners that hold it.
-            // Where that call cannot be made - a torn-down circuit, or a setup that never returned an id to
-            // release - the reference is released here instead, so it is never left registered.
-            if (_abortControllerId.HasValue())
+            // The JavaScript side owns the listeners that hold the .NET reference, so it is told to drop them
+            // first. Whether that call succeeds, fails, or cannot be made at all - a torn-down circuit, or a
+            // setup that never returned an id to release - the reference itself is released here, so it is
+            // never left registered.
+            try
             {
-                try
+                if (_abortControllerId.HasValue())
                 {
                     await _js.BitColorPickerDispose(_abortControllerId);
                 }
-                catch (JSDisconnectedException)
-                {
-                    _dotnetObj.Dispose();
-                }
-                catch (ObjectDisposedException)
-                {
-                    _dotnetObj.Dispose();
-                }
             }
-            else
+            catch (JSException) { } // whatever the interop answered, the reference below is still ours to release
+            catch (JSDisconnectedException) { }
+            catch (ObjectDisposedException) { }
+            catch (OperationCanceledException) { }
+            finally
             {
                 _dotnetObj.Dispose();
             }

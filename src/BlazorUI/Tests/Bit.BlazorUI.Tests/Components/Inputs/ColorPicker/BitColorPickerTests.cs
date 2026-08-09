@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -1170,7 +1171,7 @@ public class BitColorPickerTests : BunitTestContext
         DataRow("hsl(210.588235,50%,50%)"),
         DataRow("hsv(210.588235,50%,50%)")
     ]
-    public void BitColorPickerShouldNotDriftTheHueWhileTheGradientIsDragged(string initial)
+    public async Task BitColorPickerShouldNotDriftTheHueWhileTheGradientIsDragged(string initial)
     {
         var com = RenderComponent<ColorPickerBindingHost>(parameters =>
         {
@@ -1183,9 +1184,9 @@ public class BitColorPickerTests : BunitTestContext
         // Through the dispatcher, which is where the browser's JS interop invokes it: a StateHasChanged
         // raised from there renders straight away rather than being queued, which is what puts the
         // re-render inside the callback the picker is still awaiting.
-        com.InvokeAsync(() => picker.HandlePointerMove(0.2, 0.7));
-        com.InvokeAsync(() => picker.HandlePointerMove(0.15, 0.75));
-        com.InvokeAsync(() => picker.HandlePointerMove(0.1, 0.8));
+        await com.InvokeAsync(() => picker.HandlePointerMove(0.2, 0.7));
+        await com.InvokeAsync(() => picker.HandlePointerMove(0.15, 0.75));
+        await com.InvokeAsync(() => picker.HandlePointerMove(0.1, 0.8));
 
         Assert.AreEqual(hue, picker.Hsv.Hue);
         Assert.AreEqual(0.1, Math.Round(picker.Hsv.Saturation, 10));
@@ -1212,7 +1213,7 @@ public class BitColorPickerTests : BunitTestContext
     // has pushed a color in, and the picker follows it like any other push even though it arrived in the
     // middle of the publish that provoked it.
     [TestMethod]
-    public void BitColorPickerShouldFollowAColorTheBindingRewrites()
+    public async Task BitColorPickerShouldFollowAColorTheBindingRewrites()
     {
         var com = RenderComponent<ColorPickerBindingHost>(parameters =>
         {
@@ -1222,7 +1223,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var picker = com.Instance.Picker;
 
-        com.InvokeAsync(() => picker.HandlePointerMove(0.2, 0.7));
+        await com.InvokeAsync(() => picker.HandlePointerMove(0.2, 0.7));
 
         Assert.AreEqual("#00FF00", com.Instance.Color);
         Assert.AreEqual("#00FF00", picker.Hex);
