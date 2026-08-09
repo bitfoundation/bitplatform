@@ -11,7 +11,7 @@
     var upper = UpperValue;
     var fillStart = _FillStart;
     var fillEnd = _FillEnd;
-    var marks = _Marks.ToList();
+    var marks = _Marks;
     var hasMarkLabels = marks.Exists(m => m.Label.HasValue());
     var labelId = $"{_Id}-label";
     var inputId = $"{_Id}-input";
@@ -292,6 +292,7 @@
                            value again would be noise rather than a way through. *@
                         <input @oninput="HandleOnTrackInput"
                                @onchange="HandleOnTrackChange"
+                               @onpointerdown="_onPointerDown"
                                type="range"
                                tabindex="-1"
                                aria-hidden="true"
