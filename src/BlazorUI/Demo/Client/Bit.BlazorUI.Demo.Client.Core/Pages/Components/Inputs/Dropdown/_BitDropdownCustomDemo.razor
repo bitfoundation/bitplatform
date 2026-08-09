@@ -1,8 +1,19 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-    <div>Displays basic dropdowns demonstrating single and multi-select options, including required and disabled states.</div>
+    <div>
+        BitDropdown in its simplest forms: single and multi select dropdowns, a required one (which marks its label and
+        reports itself as required to assistive technologies), one preserving its original callout width instead of
+        matching the width of the dropdown, and a custom delimiter for joining the selected values in multi select mode.
+        A <b>disabled</b> dropdown cannot be focused or opened at all, while a <b>read-only</b> one stays focusable and
+        its callout can still be browsed &mdash; only changing the selection is blocked, and every control that would
+        change it (the clear button, the chip remove buttons) is hidden accordingly.
+        The <b>Title</b> parameter adds the tooltip shown while the pointer rests on the dropdown.
+        Clicking the <b>Label</b> moves the focus to the dropdown, and the <b>Name</b> parameter names the
+        hidden native select that mirrors the selection, so the value also travels in a plain HTML form post.
+    </div>
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Single select"
+                     Name="single-select"
                      Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item" />
@@ -30,11 +41,85 @@
                      DefaultValue="@("f-ora")"
                      Placeholder="Select an item"
                      NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Label="ReadOnly"
+                     ReadOnly
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@("f-app")"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Label="Custom delimiter"
+                     MultiSelect
+                     MultiSelectDelimiter=" - "
+                     Items="GetBasicCustoms()"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Label="Title"
+                     Title="Pick your favorite fruit or vegetable"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Hover me" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Prefix & Suffix" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
-    <div>Use prefixes and suffixes in BitDropdown, including combinations and the disabled state.</div>
+<DemoExample Title="Grouping" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+    <div>
+        The <b>ItemType</b> of an item decides what it is in the list: a <b>Normal</b> item is a selectable option, a
+        <b>Header</b> item names the items that follow it, and a <b>Divider</b> item draws a line between them without
+        ending the group. Headers and dividers are not options, so they are skipped by the keyboard navigation and the
+        typeahead, they are never matched by a search, and the select all item ignores them. The grouping is not only
+        visual: every option points at the header that names it, so a screen reader reads
+        "Broccoli, option, 7 of 18, Vegetables" instead of leaving the user to infer the group from a heading they
+        cannot see. Headers without an <b>Id</b> of their own are given a generated one for that purpose.
+        The <b>StickyHeaders</b> parameter pins the header of a group to the top of the list while its items are
+        scrolled past, so a long grouped list never leaves the user looking at items whose group has scrolled away.
+        <br /><br />
+        The grouping survives a search: the headers of the groups that still have a match stay above them, and only
+        the ones left naming nothing &mdash; along with a divider that lost the items on one of its sides &mdash; go
+        with the items they framed. A result that arrived as a flat list would take the grouping away exactly when the
+        list is hardest to read, so the third example below keeps it while filtering.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Grouped items"
+                     Items="GetGroupedCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
+        <br /><br />
+        <BitDropdown Label="StickyHeaders"
+                     StickyHeaders
+                     MultiSelect
+                     Items="GetGroupedCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(Array.Empty<string>())"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Grouping while searching"
+                     Immediate
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     HighlightSearch
+                     StickyHeaders
+                     Items="GetGroupedCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Try 'a', then 'ric'" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Prefix & Suffix" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
+    <div>
+        The <b>Prefix</b> and <b>Suffix</b> parameters put fixed text before and after the selected value &mdash; a
+        unit, a currency, a category &mdash; and <b>PrefixTemplate</b> and <b>SuffixTemplate</b> replace them with any
+        content, an icon for instance. They are decoration only: they are not part of the value and are not read out
+        with it, so keep a descriptive <b>Label</b> for screen reader users.
+    </div>
     <br />
     <div class="example-content">
         <BitDropdown Label="Prefix"
@@ -56,6 +141,18 @@
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item" />
         <br /><br />
+        <BitDropdown Label="Templates"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item">
+            <PrefixTemplate>
+                <BitIcon IconName="@BitIconName.ShoppingCart" Style="padding-inline:0.5rem" />
+            </PrefixTemplate>
+            <SuffixTemplate>
+                <BitIcon IconName="@BitIconName.Info" Style="padding-inline:0.5rem" />
+            </SuffixTemplate>
+        </BitDropdown>
+        <br /><br />
         <BitDropdown Label="Disabled"
                      Prefix="Fruits:"
                      Suffix="kg"
@@ -66,8 +163,12 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3" PreventRenderForMcpClient>
-    <div>Enables fit-content width for the dropdown that sets the width of the component based on its content size.</div>
+<DemoExample Title="FitWidth" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
+    <div>
+        The <b>FitWidth</b> parameter makes the dropdown only as wide as its content instead of stretching to the full
+        width of its container, which suits toolbars and inline filters where a full-width control would look out of
+        place. The callout still matches the width of the dropdown unless <b>PreserveCalloutWidth</b> is set.
+    </div>
     <br /><br />
     <BitDropdown Label="Single select"
                  FitWidth
@@ -83,8 +184,17 @@
                  NameSelectors="nameSelectors" />
 </DemoExample>
 
-<DemoExample Title="NoBorder" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4" PreventRenderForMcpClient>
-    <div>The dropdown can be rendered without any border.</div>
+<DemoExample Title="Variants" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+    <div>
+        Three parameters change how much furniture the dropdown draws around itself. <b>NoBorder</b> removes its border
+        entirely, <b>Underlined</b> replaces the box with a single bottom border &mdash; the variant that suits a dense
+        form where a box per field would be too much &mdash; and <b>Transparent</b> removes the background, so the
+        control can sit on a colored or image surface without cutting a rectangle out of it. They are independent and
+        combine freely; the callout keeps its own surface either way, so the items stay readable. Since the two
+        borderless variants have no box to draw a focus ring around, the keyboard focus (and the invalid state) is
+        shown as an underline instead, which keeps the cue visible without inventing a border that the variant exists
+        to remove.
+    </div>
     <br /><br />
     <div style="max-width:10rem">
         <BitDropdown NoBorder
@@ -97,11 +207,36 @@
                      Items="GetBasicCustoms()"
                      Placeholder="Select items"
                      NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Underlined
+                     Label="Underlined"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Underlined
+                     MultiSelect
+                     Label="Underlined multi select"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors" />
+        <br /><br />
+        <div style="padding:0.5rem;border-radius:0.5rem;background:linear-gradient(90deg,#ff00cc7f,#3333997f)">
+            <BitDropdown Transparent
+                         Items="GetBasicCustoms()"
+                         Placeholder="Select an item"
+                         NameSelectors="nameSelectors" />
+        </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Responsive" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
-    <div>When the <b>IsResponsive</b> parameter is true, on small screens the drop down items will render in a side panel.</div>
+<DemoExample Title="Responsive" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+    <div>
+        When the <b>Responsive</b> parameter is true, the callout turns into a side panel on small screens instead of a
+        floating list, making long item lists easier to use on mobile devices. The panel carries the label of the
+        dropdown and a close button, and it can also be dismissed by swiping it away. Resize the window below the small
+        breakpoint to see it.
+    </div>
     <br />
     <div class="example-content">
         <BitDropdown Label="Responsive Dropdown"
@@ -112,8 +247,21 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Drop direction" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
-    <div>Explores different drop directions for the BitDropdown component, including automatic and explicit directions.</div>
+<DemoExample Title="Drop direction" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
+    <div>
+        The <b>DropDirection</b> parameter determines which directions the callout is allowed to open in. <b>All</b>
+        picks whichever side fits best in the viewport, while <b>TopAndBottom</b> (the default) restricts it to opening
+        above or below the dropdown. In both cases the callout flips to the opposite side when there is not enough room,
+        and its item list is capped to the space that is actually available, so it never runs past the edge of the
+        screen. Scroll the page so that these dropdowns sit near the top or the bottom of the viewport to see it.
+        <br /><br />
+        <b>MaxHeight</b> caps the scrollable item list at a height of your own, in pixels, so a long list stays a
+        modest panel instead of stretching to whatever the viewport allows. It is applied on top of that available
+        space rather than in place of it, so it can only ever make the list shorter &mdash; a dropdown near the bottom
+        of the window is still limited by the room it actually has. Note that this is the one size a stylesheet cannot
+        reach: the height is measured and written as an inline style every time the callout opens, so a CSS rule would
+        always lose to it.
+    </div>
     <br />
     <div class="example-content">
         <BitDropdown Label="All"
@@ -127,11 +275,31 @@
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item"
                      DropDirection="BitDropDirection.TopAndBottom" />
+        <br /><br />
+        <BitDropdown Label="MaxHeight (150px)"
+                     MaxHeight="150"
+                     Items="dropDirectionCustoms"
+                     NameSelectors="nameSelectors"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Clear button" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7" PreventRenderForMcpClient>
-    <div>Shows the usage of the clear button in BitDropdown, allowing users to clear selected values in single and multi-select dropdowns.</div>
+<DemoExample Title="Clear button" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+    <div>
+        The <b>ShowClearButton</b> parameter adds a button that clears the current selection whenever the dropdown has
+        a value, in both single and multi select modes. Clearing raises the usual value change events, plus the
+        dedicated <b>OnClear</b> callback. In the ComboBox mode it also empties the input, so no filter is left behind
+        by a button that says it clears what the dropdown is showing. The button is hidden while the dropdown is
+        read-only or disabled, so it never offers an action that would be ignored.
+        <br /><br />
+        <b>ClearOnEscape</b> gives the same clear to the keyboard, so taking back a selection does not require
+        finding a button with the mouse. Escape stays a dismiss key first: it closes the callout, and in the
+        ComboBox mode it drops the text that was typed into it, and only a press with nothing left to dismiss
+        reaches the selection. It goes through the very same clear as the button, so it raises <b>OnClear</b> and
+        is refused wherever the button would be &mdash; and it needs no <b>ShowClearButton</b>, so a dropdown that
+        shows no clear button can still be cleared this way.
+    </div>
     <br />
     <div class="example-content">
         <BitDropdown @bind-Value="clearValue"
@@ -152,11 +320,42 @@
                      NameSelectors="nameSelectors" />
         <br />
         <div>Values: @string.Join(',', clearValues)</div>
+        <br /><br /><br /><br />
+        <div><b>OnClear</b>:</div><br />
+        <BitDropdown ShowClearButton
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@("f-app")"
+                     NameSelectors="nameSelectors"
+                     Label="Single select dropdown"
+                     Placeholder="Select an option"
+                     OnClear="() => clearCounter++" />
+        <br />
+        <div>OnClear count: @clearCounter</div>
+        <br /><br /><br /><br />
+        <div><b>ClearOnEscape</b>:</div><br />
+        <BitDropdown @bind-Value="clearOnEscapeValue"
+                     ClearOnEscape
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Label="Single select dropdown"
+                     Placeholder="Select an option" />
+        <br />
+        <div>Value: @clearOnEscapeValue</div>
     </div>
 </DemoExample>
 
-<DemoExample Title="SearchBox" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
-    <div>Examples of dropdowns with search functionality, including default and custom search functions.</div>
+<DemoExample Title="SearchBox" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        The <b>ShowSearchBox</b> parameter adds a search input at the top of the callout to filter the items, and
+        <b>SearchBoxPlaceholder</b> sets its placeholder. By default an item matches when its text contains the typed
+        term, ignoring case; <b>SearchFunction</b> replaces that algorithm with any predicate of your own (the examples
+        below switch it to a starts-with and an ends-with match). <b>AutoFocusSearchBox</b> puts the caret in the search
+        input as soon as the callout opens - with the pointer and with Enter or Space on the keyboard alike - so
+        typing filters right away. A clear button appears in the search input as soon as there is something to clear,
+        which follows the text being typed rather than the term that has been applied: a search waiting to be committed
+        (or held back by a debounce) can be taken back the moment it is typed. The search term is discarded whenever the
+        callout closes, so the next opening always starts from the full list.
+    </div>
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Single select & auto focus"
@@ -200,11 +399,93 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Immediate search" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+<DemoExample Title="Search options" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
     <div>
-        By default, the search and combo box inputs raise their search as you commit the input (on the change event).
-        Enabling <b>Immediate</b> makes the search happen as you type (on the input event). You can also rate-limit the
-        immediate search using <b>DebounceTime</b> or <b>ThrottleTime</b> (in milliseconds).
+        A handful of parameters tune the default search without replacing it. <b>SearchMode</b> picks how the text of an item
+        is matched against the typed term &mdash; <b>Contains</b> (the default), <b>StartsWith</b>, <b>EndsWith</b> or
+        <b>ExactMatch</b>, always ignoring case. <b>MinSearchLength</b> holds the filtering back until the term reaches the
+        given number of characters, which keeps a one-letter term from being treated as a real query (and, with an
+        <b>ItemsProvider</b>, from turning every first keystroke into a request). While the term is still
+        too short the callout shows a hint above the items saying how many characters are missing, so the untouched
+        list under it reads as the full list instead of as a search that matched everything;
+        <b>MinSearchLengthText</b> is the composite format of that hint, which receives the number of characters that
+        are still needed and is announced to screen readers along with it. <b>SearchIgnoreDiacritics</b> matches
+        the term against the item texts with the diacritics of both folded away, so <b>Jose</b> finds <b>José</b> and
+        <b>Muller</b> finds <b>Müller</b> &mdash; which is what makes the search usable to anyone typing on a keyboard
+        that has no accented keys. <b>HighlightSearch</b> emphasizes the matched part of each item text so the reason an
+        item is in the result is visible at a glance, and it keeps lining up with the accented text because the folding
+        replaces each character with exactly one character. Whenever a search is active the number of results is also
+        announced to screen readers, with a message you can localize through the <b>SearchResultsText</b> parameter; that
+        count follows the list as it is actually rendered, so the items <b>HideSelectedItems</b> takes out of it are
+        not offered as results nobody can reach.
+        All of them configure the built-in algorithm only; a <b>SearchFunction</b> replaces it outright and does its own
+        matching.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="SearchMode: StartsWith"
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Type a first letter"
+                     SearchMode="BitDropdownSearchMode.StartsWith" />
+        <br /><br />
+        <BitDropdown Label="MinSearchLength: 3"
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     MinSearchLength="3"
+                     MinSearchLengthText="Please type {0} more character(s)"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Type at least 3 characters" />
+        <br /><br />
+        <BitDropdown Label="SearchIgnoreDiacritics"
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     HighlightSearch
+                     SearchIgnoreDiacritics
+                     Items="GetAccentedCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select a name"
+                     SearchBoxPlaceholder="Try jose, muller or angstrom" />
+        <br /><br />
+        <BitDropdown Label="HighlightSearch"
+                     ShowSearchBox
+                     AutoFocusSearchBox
+                     HighlightSearch
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search item" />
+        <br /><br />
+        <BitDropdown Label="Highlight in the ComboBox"
+                     Combo
+                     HighlightSearch
+                     Items="comboBoxCustoms"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="comboBoxNameSelectors"
+                     Placeholder="Type to filter" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Immediate search" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+    <div>
+        By default the search box raises its search when the input is committed (on the change event). Enabling
+        <b>Immediate</b> makes it search as you type (on the input event) instead. Because that can mean a request per
+        keystroke with a remote data source, the immediate search can be rate-limited: <b>DebounceTime</b> waits until
+        the typing pauses for the given number of milliseconds and then searches once, while <b>ThrottleTime</b> lets
+        at most one search through per interval while the typing continues. The <b>OnSearch</b> event reports every
+        search term that gets through.
+        The ComboBox input is a different story: it is a text field whose whole purpose is to filter the list as it is
+        typed, so it always searches on every keystroke and <b>Immediate</b> only decides there whether the two rate
+        limits apply to it.
     </div>
     <br /><br />
     <div class="example-content">
@@ -239,8 +520,13 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10" PreventRenderForMcpClient>
-    <div>Demonstrates how validation can be applied to BitDropdown, including required fields, numeric input, character constraints, email validation, and range validation.</div>
+<DemoExample Title="Validation" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
+    <div>
+        BitDropdown is a regular form input: inside an <b>EditForm</b> it takes part in data annotations validation,
+        turns red and reports itself as invalid to assistive technologies when its field has an error, and renders a
+        <b>ValidationMessage</b> like any other input. This example requires a value in the single select dropdown and
+        keeps the number of selected items of the multi select one within a range.
+    </div>
     <br />
     <div class="example-content">
         @if (string.IsNullOrEmpty(successMessage))
@@ -252,7 +538,7 @@
                              Label="Select 1 item"
                              Items="GetBasicCustoms()"
                              NameSelectors="nameSelectors"
-                             Placeholder="Select and item" />
+                             Placeholder="Select an item" />
 
                 <ValidationMessage For="@(() => validationModel.Category)" />
 
@@ -279,8 +565,17 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Customization" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-    <div>Shows how to customize dropdowns using templates for header, text, item, placeholder, label, and callout sections.</div>
+<DemoExample Title="Customization" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <div>
+        Nearly every part of the dropdown can be replaced with your own content. <b>ItemTemplate</b> and
+        <b>HeaderTemplate</b> render the normal items and the group headers of the callout, <b>TextTemplate</b> renders
+        the selected value shown on the closed dropdown and <b>PlaceholderTemplate</b> what is shown while nothing is
+        selected, <b>LabelTemplate</b> replaces the label, <b>CaretDownIconName</b> and <b>CaretDownTemplate</b> the
+        chevron, and <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> add fixed content above and below the
+        scrollable item list &mdash; the footer being the usual home of an "add a new item" action. The templates that
+        render an item receive the item itself, so the extra state carried in its <b>Data</b> property is available to
+        them.
+    </div>
     <br /><br />
     <div class="example-content">
         <BitDropdown Label="Header template"
@@ -343,6 +638,15 @@
                      Placeholder="Select an item"
                      CaretDownIconName="@BitIconName.ScrollUpDown" />
         <br /><br />
+        <BitDropdown Label="CaretDownTemplate"
+                     Items="GetDataCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item">
+            <CaretDownTemplate>
+                <BitIcon IconName="@BitIconName.FavoriteStar" Style="font-size:0.875rem" />
+            </CaretDownTemplate>
+        </BitDropdown>
+        <br /><br />
         <BitDropdown Label="Callout templates"
                      Items="GetDataCustoms()"
                      NameSelectors="nameSelectors"
@@ -357,11 +661,32 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-    <div>Demonstrates two-way binding and change event handling for dropdowns, showcasing single and multi-select scenarios.</div>
+<DemoExample Title="Binding" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <div>
+        Every piece of the dropdown's state can be bound or observed. The selection is two-way bound over <b>Value</b>
+        in single select mode and <b>Values</b> in multi select mode, or left uncontrolled with <b>DefaultValue</b> and
+        <b>DefaultValues</b> and observed through the <b>OnChange</b> and <b>OnValuesChange</b> events;
+        <b>OnSelectItem</b> hands over the clicked item itself rather than its value &mdash; in multi select mode for
+        every pick, including the one that unselects an already selected item, which <b>OnDeselectItem</b> reports on
+        its own so that an addition and a removal can be told apart. <b>Reselectable</b> makes the
+        select events fire even when the already selected item is picked again, which is otherwise treated as a no-op.
+        The open state of the callout is two-way bound via <b>IsOpen</b>, so it can be opened and closed from code, and
+        the <b>OnOpen</b> and <b>OnClose</b> events report every change to it &mdash; a natural place to start fetching
+        the items on first open.
+        <br /><br />
+        <b>ValueComparer</b> decides whether two values stand for the same selection, in place of the default equality
+        of the value type. That is what a value which is not its own identity needs: a record or a class used as the
+        value compares by reference by default, so a value arriving from a form, a query string or a fresh fetch would
+        never match the item it names, however equal the two look. The example below uses a case-insensitive comparer,
+        so the value <b>F-APP</b> selects the item whose value is <b>f-app</b>. The comparer governs every value
+        comparison the component makes &mdash; which item a value selects, which chip a removal takes away, whether a
+        typed term is already selected &mdash; so two values it calls equal are one and the same selection throughout. Finally, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the
+        dropdown as a whole: they sit on the trigger and focusin/focusout bubble, so moving between the trigger and the
+        ComboBox input inside it does not report a round trip through the outside.
+    </div>
     <br /><br />
     <div class="example-content">
-        <div>Two-way binding:</div><br />
+        <div><b>Two-way binding</b>:</div><br />
         <BitDropdown @bind-Value="controlledValue"
                      Label="Single select"
                      Items="GetBasicCustoms()"
@@ -379,7 +704,7 @@
         <br />
         <div>Selected Values: @string.Join(",", controlledValues)</div>
         <br /><br /><br /><br />
-        <div>OnChange:</div><br />
+        <div><b>OnChange</b>:</div><br />
         <BitDropdown Label="Single select"
                      Items="GetBasicCustoms()"
                      Placeholder="Select an item"
@@ -399,7 +724,7 @@
         <br />
         <div>Changed Values: @string.Join(",", changedValues)</div>
         <br /><br /><br /><br />
-        <div>OnSelectItem:</div><br />
+        <div><b>OnSelectItem</b>:</div><br />
         <BitDropdown Label="Single select"
                      Items="GetBasicCustoms()"
                      DefaultValue="@string.Empty"
@@ -413,18 +738,128 @@
                      MultiSelect
                      Items="GetBasicCustoms()"
                      Placeholder="Select items"
-                     DefaultValue="@string.Empty"
+                     DefaultValues="@(Array.Empty<string>())"
                      NameSelectors="nameSelectors"
                      OnSelectItem="(Product item) => selectedItem2 = item" />
         <br />
         <div>Selected Value: @selectedItem2?.Value</div>
+        <br /><br /><br /><br />
+        <div><b>OnDeselectItem</b>:</div><br />
+        <BitDropdown Label="Multi select"
+                     MultiSelect
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app" })"
+                     OnSelectItem="(Product item) => pickedItem = item"
+                     OnDeselectItem="(Product item) => deselectedItem = item" />
+        <br />
+        <div>Last picked item: @pickedItem?.Text</div>
+        <div>Last unselected item: @deselectedItem?.Text</div>
+        <br /><br /><br /><br />
+        <div><b>Reselectable</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Reselectable
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     OnSelectItem="(Product item) => selectItemCounter++" />
+        <br />
+        <div>OnSelectItem count: @selectItemCounter</div>
+        <br /><br /><br /><br />
+        <div><b>IsOpen</b>:</div><br />
+        <BitButton OnClick="() => isDropdownOpen = true">Open the dropdown</BitButton>
+        <br /><br />
+        <BitDropdown @bind-IsOpen="isDropdownOpen"
+                     Label="Single select"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br /><br /><br /><br />
+        <div><b>OnOpen & OnClose</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     OnOpen="HandleOnCalloutOpen"
+                     OnClose="HandleOnCalloutClose" />
+        <br />
+        <div>The callout is @calloutState.</div>
+        <br /><br /><br /><br />
+        <div><b>OnFocusIn & OnFocusOut</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Tab into me"
+                     NameSelectors="nameSelectors"
+                     OnFocusIn="HandleOnFocusIn"
+                     OnFocusOut="HandleOnFocusOut" />
+        <br />
+        <div>The dropdown is @focusState.</div>
+        <br /><br /><br /><br />
+        <div><b>ValueComparer</b>:</div><br />
+        <BitDropdown @bind-Value="comparerValue"
+                     Label="Case-insensitive values"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     ValueComparer="StringComparer.OrdinalIgnoreCase" />
+        <br />
+        <div>Value: @comparerValue</div>
     </div>
 </DemoExample>
 
-<DemoExample Title="ComboBox" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-    <div>When the <b>Combo</b> parameter is true, you can type in BitDropdown input and search between items.</div>
+<DemoExample Title="ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <div>
+        The <b>Combo</b> parameter turns the dropdown into a ComboBox: an editable input renders in place of the selected
+        text and filters the items as you type, so the trigger doubles as the search box. <b>Enter</b> selects the item
+        whose text matches what was typed, <b>Backspace</b> on an empty input removes the last selected item, the arrow
+        keys &mdash; and typing itself, which reveals the list it filters &mdash; open the callout, <b>Escape</b> abandons the typed term, and a term that was typed but never turned into a
+        selection is discarded when the callout closes, so the input goes back to showing the current selection.
+        <br /><br />
+        Requiring the typed text to match an item exactly makes Enter a dead key for anyone who only typed the beginning
+        of a name, so <b>AutoSelectFirstMatch</b> lets a partial term stand for the first item it matches: typing
+        <b>ban</b> and pressing Enter then selects <b>Banana</b>. It takes precedence over the <b>Dynamic</b> mode below,
+        so a term that names an item the list already has selects that item instead of creating a second one beside it.
+        <br /><br />
+        Whichever item a commit would take &mdash; the one the typed text names exactly, or the first one it still
+        matches under <b>AutoSelectFirstMatch</b> &mdash; is marked in the list as you type, so what <b>Enter</b> is
+        about to select is visible before it is pressed rather than only afterwards. The same item is named to a screen
+        reader through the <b>aria-activedescendant</b> of the input, so the cue is not a visual-only one. When nothing
+        is marked, <b>Enter</b> either creates a new item (with <b>Dynamic</b>) or does nothing at all.
+        <br /><br />
+        <b>SelectTextOnFocus</b> selects whatever is already in the input when it takes the focus, so coming back to a
+        combo box that holds a term and typing replaces that term instead of appending to it &mdash; which is what a
+        field the user returns to in order to look for something else needs. An empty input has nothing to select, and
+        neither has a read-only one, where the selection would only be a highlight over text that cannot be changed.
+    </div>
     <br />
     <div class="example-content">
+        <BitDropdown @bind-Value="autoSelectValue"
+                     Combo
+                     Immediate
+                     AutoSelectFirstMatch
+                     Items="comboBoxCustoms"
+                     Label="AutoSelectFirstMatch"
+                     NameSelectors="comboBoxNameSelectors"
+                     Placeholder="Type a few letters and press Enter" />
+        <br />
+        <div>Value: @autoSelectValue</div>
+        <br /><br />
+        <BitDropdown @bind-Value="selectTextOnFocusValue"
+                     Combo
+                     Immediate
+                     SelectTextOnFocus
+                     Items="comboBoxCustoms"
+                     Label="SelectTextOnFocus"
+                     NameSelectors="comboBoxNameSelectors"
+                     Placeholder="Type, click away, then come back" />
+        <br />
+        <div>Value: @selectTextOnFocusValue</div>
+        <br /><br />
         <BitDropdown @bind-Value="comboBoxValueSample1"
                      Combo
                      Responsive
@@ -448,8 +883,16 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Chips" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-    <div>When the <b>Chips</b> parameter is true, shows the selected items like chips in the ComboBox.</div>
+<DemoExample Title="Chips" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <div>
+        When the <b>Chips</b> parameter is true, the selected items render as chips inside the dropdown instead of one
+        joined text, each with its own remove button that is reachable with the keyboard and announced with the text of
+        the item it removes. It works in both single and multi select modes and pairs naturally with the ComboBox mode.
+        <br /><br />
+        <b>ChipTemplate</b> draws the content of a chip from the item it stands for, which is what turns a bare list of
+        names into avatars, icons or colored categories. It replaces the text only: the remove button is still rendered
+        after it, so a chip stays removable however it is drawn.
+    </div>
     <br />
     <div class="example-content">
         <BitDropdown @bind-Value="comboBoxValueSample2"
@@ -472,11 +915,110 @@
                      Label="Multi select combo box & chips" />
         <br />
         <div>Values: @string.Join(',', comboBoxValues2)</div>
+        <br /><br />
+        <BitDropdown Chips
+                     MultiSelect
+                     Label="ChipTemplate"
+                     Items="GetDataCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "A", "D" })">
+            <ChipTemplate Context="item">
+                <span class="custom-drp custom-drp-chip">
+                    <BitIcon IconName="@((item.Payload as DropdownItemData)?.IconName)" />
+                    <span>@item.Text</span>
+                </span>
+            </ChipTemplate>
+        </BitDropdown>
     </div>
 </DemoExample>
 
-<DemoExample Title="Dynamic ComboBox" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-    <div>When the <b>Dynamic</b> parameter is true, you can add a new item in the ComboBox.</div>
+<DemoExample Title="Selection display" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+    <div>
+        A multi select dropdown that lists every selected item quickly runs out of room. <b>MaxDisplayedItems</b> caps
+        how many of them the closed dropdown shows: with <b>Chips</b> the extra ones collapse into an overflow chip
+        whose text comes from <b>OverflowTextFormat</b> (<b>"+{0}"</b> by default), and without chips the joined list
+        is replaced by the summary of <b>SelectedItemsTextFormat</b> (<b>"{0} items selected"</b> by default) as soon
+        as the limit is passed. Nothing is removed from the selection &mdash; only the way it is displayed changes.
+        <br /><br />
+        <b>AutoClearSearch</b> covers the other half of a multi select session: the callout stays open after a pick, so
+        by default the next item has to be found through the filter left over from the previous one. Enabling it clears
+        the search text after every selection instead.
+        <b>HideSelectedItems</b> goes one step further and drops the picked items out of the callout altogether, which
+        makes sense when the chips already show what is selected and the list is only about what is left to choose. A
+        group header whose items have all been picked goes with them, and so does a divider that lost the items on one
+        of its sides, so the list never opens with a stray rule or ends on a group name with nothing under it.
+        <br /><br />
+        Across all of them the selection is reported in the order it was made rather than in the order of the item
+        list: the chips, the joined text and the overflow summary follow the order of <b>Values</b>, which grows as the
+        user picks, so the <b>Backspace</b> of the ComboBox removes the chip that was added last.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="MaxDisplayedItems (chips)"
+                     Chips
+                     MultiSelect
+                     MaxDisplayedItems="2"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban", "f-gra", "v-car" })" />
+        <br /><br />
+        <BitDropdown Label="OverflowTextFormat"
+                     Chips
+                     MultiSelect
+                     MaxDisplayedItems="2"
+                     OverflowTextFormat="and {0} more"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban", "f-gra", "v-car" })" />
+        <br /><br />
+        <BitDropdown Label="SelectedItemsTextFormat"
+                     MultiSelect
+                     MaxDisplayedItems="2"
+                     SelectedItemsTextFormat="{0} fruits and vegetables"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban", "f-gra", "v-car" })" />
+        <br /><br />
+        <BitDropdown Label="AutoClearSearch"
+                     Combo Chips
+                     MultiSelect
+                     AutoClearSearch
+                     Items="comboBoxCustoms"
+                     NameSelectors="comboBoxNameSelectors"
+                     DefaultValues="@(Array.Empty<string>())"
+                     Placeholder="Type to filter, then pick" />
+        <br /><br />
+        <BitDropdown Label="HideSelectedItems"
+                     Chips
+                     MultiSelect
+                     HideSelectedItems
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Dynamic ComboBox" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <div>
+        When the <b>Dynamic</b> parameter is true, a text typed into the ComboBox that matches no existing item can be
+        added as a new one, which is what makes free-form values (tags, e-mail recipients, ad-hoc categories) possible.
+        <b>DynamicValueGenerator</b> produces the value of the new item from its text and <b>OnDynamicAdd</b> notifies
+        about the addition so the item can be persisted into the source collection &mdash; and only about an addition
+        that stands, so a term refused by the selection limit or by a one-way binding is never reported as one. Before
+        creating anything the component first looks for an existing match; <b>FindItemFunction</b> and
+        <b>ExistsSelectedItemFunction</b> replace the default case-insensitive text comparison used for those two
+        lookups, and <b>AutoSelectFirstMatch</b> gets its turn between them and the creation, so a partially typed term
+        that names an existing item selects it instead of creating a near-duplicate.
+        While the typed text names nothing the list offers to create an item out of it as its first row, so adding one
+        is something to see and click rather than a shortcut to know about; the row is what the enter key would take,
+        it is reached with the arrow keys like any other option, and it disappears the moment the text names something
+        the list already holds.
+    </div>
     <div class="example-content">
         <br />
         <BitDropdown @bind-Value="comboBoxValueSample3"
@@ -491,7 +1033,7 @@
         <div>Value: @comboBoxValueSample3</div>
     </div>
     <br /><br /><br /><br />
-    <div>When the <b>Combo</b>, <b>Chips</b> and <b>Dynamic</b> parameters are true, you can add a new item in the ComboBox (pressing the enter key or touching the add button on the mobile).</div>
+    <div>Combining the <b>Combo</b>, <b>Chips</b> and <b>Dynamic</b> parameters, new items get added by pressing the enter key (or the add button of the responsive panel on mobile) and render as removable chips.</div>
     <br />
     <div class="example-content">
         <br />
@@ -520,14 +1062,699 @@
         <br />
         <div>Values: @string.Join(',', comboBoxValues3)</div>
     </div>
+    <br /><br /><br /><br />
+    <div>
+        <b>DynamicItemTextFormat</b> is the wording of that offer, which receives the text the item would be created
+        from, and <b>DynamicItemTemplate</b> replaces it with markup of your own when a plain sentence is not enough.
+        Type a name no fruit or vegetable has and the list says so in its own words.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="comboBoxValues4"
+                     MultiSelect
+                     Combo Chips Dynamic
+                     Items="comboBoxCustoms"
+                     Placeholder="Select options"
+                     NameSelectors="comboBoxNameSelectors"
+                     Label="Multi select combo box with a custom add row"
+                     DynamicItemTextFormat="Create the new tag '{0}'"
+                     OnDynamicAdd="(Product item) => HandleOnDynamicAdd(item)"
+                     DynamicValueGenerator="@((Product item) => item.Text ?? "")" />
+        <br />
+        <div>Values: @string.Join(',', comboBoxValues4)</div>
+    </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Keyboard navigation" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
     <div>
-        Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>CaretDownIcon</b>, 
-        <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>, <b>SearchBoxClearIcon</b>, and 
-        <b>ResponsiveCloseIcon</b> parameters on the dropdown and the <b>Icon</b> or <b>IconName</b> 
-        properties on custom type.
+        The dropdown is fully operable with the keyboard, following the ARIA authoring practices for a combobox:
+        <b>Enter</b>, <b>Space</b> and the arrow keys open the callout and put the focus on the selected item (or the
+        first one), <b>ArrowUp</b> and <b>ArrowDown</b> move between the items, <b>Home</b> and <b>End</b> jump to the
+        first and the last one &mdash; from the closed dropdown too, so reaching the end of a long list never takes an
+        opening key followed by a second one &mdash; <b>PageUp</b> and <b>PageDown</b> jump several items at a time, <b>Enter</b> and <b>Space</b>
+        select the focused item, <b>Escape</b> and <b>Alt+ArrowUp</b> close the callout and return the focus to the
+        dropdown, and <b>Tab</b> closes it and moves on &mdash; from the trigger just as much as from inside the callout, so a
+        popup revealed without the focus is never left behind when the focus leaves the dropdown.
+        <b>Alt+ArrowDown</b> is the exception among the openers: it
+        reveals the list without moving the focus into it, so the trigger keeps it and the plain arrows can walk the
+        list afterwards. Opening the callout with a mouse click focuses the selected
+        item as well, so the keyboard can take over at any point. In multi select mode <b>Ctrl+A</b> (or <b>Cmd+A</b>)
+        selects every item the current search shows &mdash; or clears them when they are all selected already &mdash;
+        while inside the search and ComboBox inputs the shortcut keeps its native select-the-text behavior.
+        Typing printable characters runs a typeahead: the accumulated characters jump to the
+        item starting with them, repeating one character cycles through the items starting with it, and the buffer
+        resets after a short pause. The arrow keys wrap around by default, so <b>ArrowDown</b> on the last item comes
+        back to the first one; <b>NoWrapNavigation</b> stops them at the ends instead, which suits a long list where
+        the jump from one end to the other is more likely to read as the focus having been lost than as a move that
+        was asked for &mdash; the typeahead keeps wrapping either way, since it looks for the item that matches rather
+        than for the one that comes next. Disabled and hidden items are skipped throughout. In virtualize mode only the
+        rendered items take part in the typeahead, since the ones that have not been rendered yet have no text to
+        match against. The options themselves stay out of the tab order, as the options of a listbox should: they are
+        reached with the arrow keys, and <b>Tab</b> leaves the whole dropdown rather than walking through the list.
+        In ComboBox mode the keys that belong to the typed text &mdash; the printable characters, <b>Backspace</b>,
+        <b>Delete</b>, <b>ArrowLeft</b> and <b>ArrowRight</b> &mdash; return the focus to the input and act on it
+        there, so arrowing into the list never strands the user away from the term they are typing.
+        However the callout is dismissed &mdash; a key, a click outside it, the close button of the responsive panel or
+        a swipe &mdash; the focus comes back to the dropdown (to the ComboBox input when there is one) instead of
+        being dropped at the top of the page along with the element that was holding it.
+        <b>ClearOnEscape</b> gives <b>Escape</b> one more job once it has nothing left to dismiss: a press with the
+        callout already closed (and, in the ComboBox mode, with nothing typed) clears the selection, which is what a
+        keyboard user otherwise has to reach the clear button for. See the <BitLink Href="#example8">Clear button</BitLink>
+        section.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Single select"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item" />
+        <br /><br />
+        <BitDropdown Label="Multi select"
+                     MultiSelect
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors" />
+        <br /><br />
+        <BitDropdown Label="NoWrapNavigation"
+                     NoWrapNavigation
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Select all" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20" PreventRenderForMcpClient>
+    <div>
+        When the <b>ShowSelectAll</b> parameter is true, a select all item renders above the item list of a multi select
+        dropdown. It selects everything with one click and clears everything with the next, and its check box shows an
+        indeterminate state while only some of the items are selected, so it doubles as a summary of the current
+        selection. It only ever applies to what the user can actually see: disabled items are skipped, and while a
+        search is active it selects the search result rather than the whole list, leaving selections made outside the
+        result untouched. The <b>SelectAllText</b> parameter customizes its text. It is not available when the items
+        come from an <b>ItemsProvider</b>, since the items that are not loaded yet cannot be selected. It also honors
+        <b>MaxSelectedItems</b>: it stops at the limit, and once there is no room left it clears the selection instead
+        of doing nothing. It also goes away when there is nothing left for it to select &mdash; an empty list, or a
+        search that matched nothing &mdash; instead of topping the empty state with a control that cannot do anything.
+        While the callout is open, the <b>Ctrl+A</b> (or <b>Cmd+A</b>) shortcut toggles the same select all behavior
+        from the keyboard, even when the select all item itself is not shown.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="selectAllValues"
+                     MultiSelect
+                     ShowSelectAll
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     Label="Select all" />
+        <br />
+        <div>Values: @string.Join(',', selectAllValues)</div>
+        <br /><br />
+        <BitDropdown MultiSelect
+                     ShowSelectAll
+                     ShowSearchBox
+                     SelectAllText="Select all of them"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items"
+                     DefaultValues="@(Array.Empty<string>())"
+                     SearchBoxPlaceholder="Search items"
+                     Label="Custom text & search" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Selection limit" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21" PreventRenderForMcpClient>
+    <div>
+        The <b>MaxSelectedItems</b> parameter limits how many items can be selected in the multi select dropdown. Once
+        the limit is reached the unselected items are disabled rather than silently refusing the click, so the boundary
+        is visible before it is hit, and they become available again as soon as an item is unselected. The select all
+        item honors the same limit and stops adding items once it is reached &mdash; and since it can then never reach
+        "all selected", the next click on it clears the selection instead of leaving the user with a control that does
+        nothing. The items turning unavailable is a change only a sighted user notices, so reaching the limit is also
+        announced to screen readers, with a message you can localize through <b>MaxSelectedItemsText</b> &mdash; and the
+        announcement goes quiet again as soon as unselecting an item makes room.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="maxSelectedValues"
+                     MultiSelect
+                     MaxSelectedItems="2"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select up to 2 items"
+                     Label="Max 2 items" />
+        <br />
+        <div>Values: @string.Join(',', maxSelectedValues)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Empty state" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22" PreventRenderForMcpClient>
+    <div>
+        When there is no item to show, the callout renders a message instead of an empty list. There are two distinct
+        cases and each gets its own text: <b>EmptyText</b> and <b>EmptyTemplate</b> cover a list that has nothing in it
+        ("No items found" by default), while <b>NoResultsText</b> and <b>NoResultsTemplate</b> cover a search that
+        matched nothing ("No results found" by default) &mdash; telling the user that their term found nothing is a
+        different message from telling them the list is empty. When the no-results pair is not set the empty pair is used
+        for both cases.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Default"
+                     Items="emptyCustoms"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     TItem="Product" TValue="string" />
+        <br /><br />
+        <BitDropdown Label="EmptyText"
+                     Items="emptyCustoms"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     EmptyText="There is nothing here!"
+                     TItem="Product" TValue="string" />
+        <br /><br />
+        <BitDropdown Label="EmptyTemplate"
+                     Items="emptyCustoms"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     TItem="Product" TValue="string">
+            <EmptyTemplate>
+                <div class="custom-drp custom-drp-empty">
+                    <BitIcon IconName="@BitIconName.SearchIssue" />
+                    <div>Nothing to show!</div>
+                </div>
+            </EmptyTemplate>
+        </BitDropdown>
+        <br /><br />
+        <BitDropdown Label="Search without result"
+                     ShowSearchBox
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search for anything" />
+        <br /><br />
+        <BitDropdown Label="NoResultsText"
+                     ShowSearchBox
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search for anything"
+                     NoResultsText="Nothing matched your search" />
+        <br /><br />
+        <BitDropdown Label="NoResultsTemplate"
+                     ShowSearchBox
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     SearchBoxPlaceholder="Search for anything">
+            <NoResultsTemplate>
+                <div class="custom-drp custom-drp-empty">
+                    <BitIcon IconName="@BitIconName.SearchAndApps" />
+                    <div>No match. Try another term!</div>
+                </div>
+            </NoResultsTemplate>
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Loading" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23" PreventRenderForMcpClient>
+    <div>
+        The <b>IsLoading</b> parameter reports that the items are still on their way: a spinner replaces the caret
+        down element and the callout shows a loading indicator in place of the item list, while the dropdown itself
+        stays enabled so the user can still open it and see what is happening. The message is customized with the
+        <b>LoadingText</b> parameter and the whole indicator with the <b>LoadingTemplate</b> parameter.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="IsLoading"
+                     IsLoading
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item" />
+        <br /><br />
+        <BitDropdown Label="LoadingText"
+                     IsLoading
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     LoadingText="Fetching the products..." />
+        <br /><br />
+        <BitDropdown Label="LoadingTemplate"
+                     IsLoading
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item">
+            <LoadingTemplate>
+                <div class="custom-drp custom-drp-empty">
+                    <BitIcon IconName="@BitIconName.Sync" />
+                    <div>Just a moment...</div>
+                </div>
+            </LoadingTemplate>
+        </BitDropdown>
+        <br /><br /><br /><br />
+        <div><b>A real fetch</b>: the items get loaded when the button is clicked.</div>
+        <br />
+        <BitButton OnClick="LoadDelayedCustoms" IsLoading="isLoadingItems">Load the items</BitButton>
+        <br /><br />
+        <BitDropdown Label="Products"
+                     IsLoading="isLoadingItems"
+                     Items="delayedCustoms"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Virtualization" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24" PreventRenderForMcpClient>
+    <div>
+        The <b>Virtualize</b> parameter renders only the items that are currently visible instead of the whole list,
+        which keeps the callout fast with thousands of items; <b>ItemSize</b> tells it how tall an item is and
+        <b>OverscanCount</b> how many extra items to keep rendered around the visible window. It works over a local
+        <b>Items</b> collection, or over an <b>ItemsProvider</b> that fetches one page at a time from a server (and
+        receives the current search term, so filtering happens remotely too). <b>ItemsProviderDebounceTime</b> (100ms by default)
+        collapses the burst of requests that fast scrolling and typing produce into a single one, so the provider is
+        not asked once per rendered frame. Because a value can be selected before
+        the page holding its item has ever been fetched, <b>InitialSelectedItems</b> supplies those items up front so
+        the dropdown can show their text right away. The <b>VirtualizePlaceholder</b> template fills the rows that are
+        still being fetched.
+        Opening a virtualized dropdown still lands on what is currently selected, even when that item sits thousands of
+        rows down and has never been rendered: the list is scrolled to where its index says it is and the selection is
+        centred in the window, the way a native select behaves. That needs an index to scroll to, so it applies to a
+        local <b>Items</b> collection; with an <b>ItemsProvider</b> the loaded window is all the component has.
+        Each option still reports where it sits in the whole set &mdash; the provider says how many items there are
+        and which window it is handing over &mdash; so a screen reader announces "Item 4210 of 10,000" in a list that
+        has never been loaded in full.
+    </div>
+    <br /><br /><br />
+    <div class="example-content">
+        <div>With <b>Items</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     Items="virtualizeCustoms1"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br />
+        <BitDropdown Label="Multi select"
+                     Virtualize
+                     MultiSelect
+                     ItemSize="35"
+                     OverscanCount="5"
+                     Items="virtualizeCustoms2"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors" />
+        <br />
+        <BitDropdown Label="Opens on the selected item (5000 of 10,000)"
+                     Virtualize
+                     Items="virtualizeCustoms3"
+                     DefaultValue="@("5000")"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br /><br /><br /><br />
+        <div>With <b>ItemsProvider</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors" />
+        <br />
+        <BitDropdown Label="Multi select & ItemsProviderDebounceTime"
+                     Virtualize
+                     MultiSelect
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     ItemsProviderDebounceTime="300" />
+        <br />
+        <BitDropdown Label="VirtualizePlaceholder"
+                     Virtualize
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     TItem="Product" TValue="string">
+            <VirtualizePlaceholder>
+                <div style="padding:0 0.5rem;color:gray">Loading @(context.Index)...</div>
+            </VirtualizePlaceholder>
+        </BitDropdown>
+        <br /><br /><br /><br />
+        <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
+        <BitDropdown Label="Single select"
+                     Virtualize
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select an item"
+                     InitialSelectedItems="initialSelectedItem"
+                     NameSelectors="nameSelectors" />
+        <br />
+        <BitDropdown Label="Multi select"
+                     Virtualize
+                     MultiSelect
+                     ItemsProvider="LoadItems"
+                     Placeholder="Select items"
+                     InitialSelectedItems="initialSelectedItems"
+                     NameSelectors="nameSelectors" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Localization" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25" PreventRenderForMcpClient>
+    <div>
+        Every piece of text the dropdown produces on its own is a parameter, so nothing has to stay in English in a
+        localized app. <b>Placeholder</b>, <b>Label</b> and <b>SearchBoxPlaceholder</b> cover what is always visible;
+        <b>SelectAllText</b>, <b>EmptyText</b>, <b>NoResultsText</b> and <b>LoadingText</b> cover the states of the
+        callout; and the composite formats <b>SelectedItemsTextFormat</b>, <b>OverflowTextFormat</b>,
+        <b>SearchResultsText</b> and <b>MaxSelectedItemsText</b> cover the texts built from a count, each receiving that
+        count as <b>{0}</b>.
+        The strings only a screen reader ever reads are parameters too, so a localized dropdown does not fall back to
+        English the moment it is used without sight: <b>ChipsRemoveButtonAriaLabel</b> (a composite format that
+        receives the text of the item its chip stands for), <b>ClearButtonAriaLabel</b>, <b>SearchBoxAriaLabel</b>,
+        <b>SearchBoxClearButtonAriaLabel</b>, <b>ResponsiveCloseButtonAriaLabel</b> and
+        <b>ComboBoxAddButtonAriaLabel</b>.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="localizationValues"
+                     Chips
+                     MultiSelect
+                     ShowSelectAll
+                     ShowSearchBox
+                     ShowClearButton
+                     MaxDisplayedItems="2"
+                     Label="Zutaten"
+                     Items="GetLocalizedCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Zutaten auswählen"
+                     SearchBoxPlaceholder="Suchen"
+                     SelectAllText="Alle auswählen"
+                     NoResultsText="Keine Treffer gefunden"
+                     OverflowTextFormat="und {0} weitere"
+                     SearchResultsText="{0} Treffer verfügbar"
+                     ClearButtonAriaLabel="Auswahl löschen"
+                     SearchBoxAriaLabel="Suchtext"
+                     SearchBoxClearButtonAriaLabel="Text löschen"
+                     ChipsRemoveButtonAriaLabel="{0} entfernen"
+                     MaxSelectedItems="3"
+                     MaxSelectedItemsText="Höchstens {0} Einträge ausgewählt" />
+        <br />
+        <div>Values: @string.Join(',', localizationValues)</div>
+        <br /><br />
+        <BitDropdown Label="Leere Liste"
+                     Items="emptyCustoms"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Zutat auswählen"
+                     EmptyText="Es gibt hier nichts"
+                     TItem="Product" TValue="string" />
+        <br /><br />
+        <BitDropdown IsLoading
+                     Label="Wird geladen"
+                     Items="emptyCustoms"
+                     NameSelectors="nameSelectors"
+                     LoadingText="Wird geladen..."
+                     Placeholder="Zutat auswählen"
+                     TItem="Product" TValue="string" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Icons" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26" PreventRenderForMcpClient>
+    <div>
+        Every icon the dropdown draws on its own comes from the built-in Fluent UI set and can be swapped by name:
+        <b>CaretDownIconName</b> for the chevron, <b>ClearButtonIconName</b> for the clear button,
+        <b>ItemCheckIconName</b> for the check mark of the multi select items and of the select all row,
+        <b>SearchBoxIconName</b> and <b>SearchBoxClearIconName</b> for the two icons of the search box,
+        <b>ChipsRemoveIconName</b> for the remove button of a chip, and <b>ResponsiveCloseIconName</b> and
+        <b>ComboBoxAddButtonIconName</b> for the close and add buttons that only the responsive panel shows.
+        Each of them has an <b>...Icon</b> counterpart that takes a <b>BitIconInfo</b> and wins when both are set, which
+        is how an icon from outside the Fluent set gets in &mdash; see the <b>External Icons</b> section below.
+        None of them is ever read out on its own: the icons are hidden from assistive technologies and the button
+        around them carries the accessible name, which is why those names are parameters of their own.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="CaretDownIconName"
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     CaretDownIconName="@BitIconName.ChevronDownMed" />
+        <br /><br />
+        <BitDropdown Label="ClearButtonIconName"
+                     ShowClearButton
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@("f-app")"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     ClearButtonIconName="@BitIconName.ChromeClose" />
+        <br /><br />
+        <BitDropdown Label="ItemCheckIconName"
+                     MultiSelect
+                     ShowSelectAll
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app" })"
+                     ItemCheckIconName="@BitIconName.CheckMark" />
+        <br /><br />
+        <BitDropdown Label="SearchBox icons"
+                     ShowSearchBox
+                     Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     SearchBoxPlaceholder="Search item"
+                     SearchBoxIconName="@BitIconName.Filter"
+                     SearchBoxClearIconName="@BitIconName.EraseTool" />
+        <br /><br />
+        <BitDropdown Label="ChipsRemoveIconName"
+                     Chips
+                     MultiSelect
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(new[] { "f-app", "f-ban" })"
+                     ChipsRemoveIconName="@BitIconName.ChromeClose" />
+        <br /><br />
+        <BitDropdown Label="Responsive panel icons"
+                     Combo
+                     Responsive
+                     Items="comboBoxCustoms"
+                     DefaultValue="@string.Empty"
+                     NameSelectors="comboBoxNameSelectors"
+                     Placeholder="Resize below the small breakpoint"
+                     ResponsiveCloseIconName="@BitIconName.ChromeClose"
+                     ComboBoxAddButtonIconName="@BitIconName.CircleAddition" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Close on select" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27" PreventRenderForMcpClient>
+    <div>
+        Each mode dismisses the callout the way its interaction expects: a single select dropdown closes on the pick,
+        because that pick is the whole interaction, while a multi select one stays open so the next item can be chosen
+        without reopening the list. <b>CloseOnSelect</b> overrides that decision in both directions. Set it to
+        <b>false</b> on a single select dropdown to keep the list open while the user tries one option after another
+        against the page behind it, or to <b>true</b> on a multi select one to turn every pick into a complete
+        interaction of its own &mdash; useful when each selection triggers work that the user should see before
+        choosing again.
+        <br /><br />
+        Whichever way it goes, the focus follows: a callout that closes hands the focus back to the dropdown (or to its
+        ComboBox input), so the keyboard is never left stranded on an element that has just been removed from the page,
+        while a callout that stays open keeps the focus on the option that was picked, ready for the next arrow key.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Value="closeOnSelectValue"
+                     CloseOnSelect="false"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select an item"
+                     NameSelectors="nameSelectors"
+                     Label="Single select that stays open" />
+        <br />
+        <div>Value: @closeOnSelectValue</div>
+        <br /><br />
+        <BitDropdown @bind-Values="closeOnSelectValues"
+                     MultiSelect
+                     CloseOnSelect="true"
+                     Items="GetBasicCustoms()"
+                     Placeholder="Select items"
+                     NameSelectors="nameSelectors"
+                     Label="Multi select that closes on each pick" />
+        <br />
+        <div>Values: @string.Join(", ", closeOnSelectValues)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Token separators" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28" PreventRenderForMcpClient>
+    <div>
+        The <b>TokenSeparators</b> parameter turns the listed characters into term endings for the multi select
+        ComboBox input: typing one commits the term before it exactly as pressing Enter would, and pasting a whole
+        delimited list commits every term it contains in one go. A term that names an existing item selects that item,
+        and &mdash; with <b>Dynamic</b> enabled &mdash; a term that names none becomes a new item, so a list copied out
+        of a spreadsheet or an e-mail turns into a selection without being retyped item by item. A term the selection
+        already covers is refused, so committing the same list twice does not duplicate anything.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Values="tokenSeparatorValues"
+                     Responsive
+                     MultiSelect
+                     Combo Chips Dynamic
+                     Items="comboBoxCustoms"
+                     TokenSeparators="tokenSeparators"
+                     NameSelectors="comboBoxNameSelectors"
+                     Label="Multi select combo box with token separators"
+                     Placeholder="Type or paste options separated by , or ;"
+                     DynamicValueGenerator="@((Product item) => item.Text ?? "")"
+                     OnDynamicAdd="(Product item) => HandleOnDynamicAdd(item)" />
+        <br />
+        <div>Values: @string.Join(',', tokenSeparatorValues)</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Open on focus" RazorCode="@example29RazorCode" CsharpCode="@example29CsharpCode" Id="example29" PreventRenderForMcpClient>
+    <div>
+        The <b>OpenOnFocus</b> parameter opens the callout the moment the dropdown receives the focus, so tabbing into
+        it (or clicking any part of it) already shows the items without a further click or key press &mdash; one
+        interaction fewer in a form that is filled top to bottom. The component tells a focus move made by the user
+        apart from one made by its own focus management: a dismissal that returns the focus to the dropdown (Escape,
+        a pick that closes the callout) does not reopen what was just closed.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown @bind-Value="openOnFocusValue"
+                     OpenOnFocus
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select an item"
+                     Label="Open on focus" />
+        <br />
+        <div>Value: @openOnFocusValue</div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Description" RazorCode="@example30RazorCode" CsharpCode="@example30CsharpCode" Id="example30" PreventRenderForMcpClient>
+    <div>
+        The <b>Description</b> parameter renders a line of helper text under the dropdown &mdash; the place for the rule
+        that the label has no room for ("only the categories you have access to", "leave empty for all regions").
+        It is not decoration: the dropdown points at it with <b>aria-describedby</b>, so a screen reader reads it along
+        with the control instead of leaving it as text that merely happens to sit underneath. In the ComboBox mode the
+        editable input is described by it as well, since that is the element the user is actually typing into.
+        <b>DescriptionTemplate</b> replaces it with any content &mdash; a link, an icon, a warning that changes with the
+        selection &mdash; and is tied to the dropdown in exactly the same way.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Category"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item"
+                     Description="Only the categories you have access to are listed." />
+        <br /><br />
+        <BitDropdown Combo
+                     Label="ComboBox"
+                     Items="comboBoxCustoms"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Type to filter"
+                     NameSelectors="comboBoxNameSelectors"
+                     Description="Type a few letters to narrow the list down." />
+        <br /><br />
+        <BitDropdown Label="DescriptionTemplate"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValue="@string.Empty"
+                     Placeholder="Select an item">
+            <DescriptionTemplate>
+                <div class="custom-drp custom-drp-des">
+                    <BitIcon IconName="@BitIconName.Info" />
+                    <span>Nothing here is final &mdash; you can change it later.</span>
+                </div>
+            </DescriptionTemplate>
+        </BitDropdown>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example31RazorCode" CsharpCode="@example31CsharpCode" Id="example31" PreventRenderForMcpClient>
+    <div>
+        The <b>Color</b> parameter paints the accents of the dropdown &mdash; the focus border, the search box
+        underline and icon, the group headers and the check boxes of the multi select items &mdash; in one of the theme
+        colors, <b>Primary</b> being the default. It changes the accents only, not the surface of the control, so the
+        dropdown keeps fitting its surroundings.
+    </div>
+    <br />
+    <div class="example-content">
+        <BitDropdown Label="Primary"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Primary"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Secondary"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Secondary"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Tertiary"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Tertiary"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Info"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Info"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Success"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Success"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Warning"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Warning"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="SevereWarning"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.SevereWarning"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+        <br /><br />
+        <BitDropdown Label="Error"
+                     MultiSelect
+                     ShowSearchBox
+                     Color="BitColor.Error"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     Placeholder="Select items" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example32RazorCode" CsharpCode="@example32CsharpCode" Id="example32">
+    <div>
+        Every icon of the dropdown can come from an external library instead of the built-in Fluent UI set. The
+        <b>CaretDownIcon</b>, <b>ClearButtonIcon</b>, <b>ChipsRemoveIcon</b>, <b>SearchBoxIcon</b>,
+        <b>SearchBoxClearIcon</b>, <b>ResponsiveCloseIcon</b> and <b>ItemCheckIcon</b> parameters take a
+        <b>BitIconInfo</b> &mdash; built with <b>BitIconInfo.Fa</b>, <b>BitIconInfo.Bi</b> or the generic
+        <b>BitIconInfo.Css</b> &mdash; and each takes precedence over its <b>...IconName</b> counterpart when both are
+        set. The items themselves follow the same rule through their <b>Icon</b> and <b>IconName</b> members. Remember
+        to reference the stylesheet of the icon library you use.
     </div>
     
     <br />
@@ -560,6 +1787,7 @@
                      ChipsRemoveIcon="@BitIconInfo.Css("bi bi-x-circle")"
                      Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
+                     DefaultValues="@(Array.Empty<string>())"
                      Placeholder="Select items" />
 
         <br /><br />
@@ -571,6 +1799,16 @@
                      Items="GetBasicCustoms()"
                      NameSelectors="nameSelectors"
                      Placeholder="Select an item" />
+
+        <br /><br />
+
+        <BitDropdown Label="Item check icon (external)"
+                     MultiSelect
+                     ItemCheckIcon="@BitIconInfo.Css("fa-solid fa-heart")"
+                     Items="GetBasicCustoms()"
+                     NameSelectors="nameSelectors"
+                     DefaultValues="@(Array.Empty<string>())"
+                     Placeholder="Select items" />
 
         <br /><br />
 
@@ -595,70 +1833,48 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
-    <div>Offering a range of specialized color variants with Primary being the default, providing visual cues for specific actions or states within your application.</div>
+<DemoExample Title="Size" RazorCode="@example33RazorCode" CsharpCode="@example33CsharpCode" Id="example33" PreventRenderForMcpClient>
+    <div>
+        The <b>Size</b> parameter scales the whole component in one step, <b>Medium</b> being the default: the height
+        and the font size of the dropdown, of its search box and of the items in the callout all follow the chosen size.
+    </div>
     <br />
     <div class="example-content">
-        <BitDropdown Label="Primary"
-                     MultiSelect
-                     Color="BitColor.Primary"
+        <BitDropdown Label="Small"
+                     ShowSearchBox
                      Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
                      NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
+                     Size="BitSize.Small"
+                     Placeholder="Select an item" />
         <br /><br />
-        <BitDropdown Label="Secondary"
-                     MultiSelect
-                     Color="BitColor.Secondary"
+        <BitDropdown Label="Medium"
+                     ShowSearchBox
                      Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
                      NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
+                     Size="BitSize.Medium"
+                     Placeholder="Select an item" />
         <br /><br />
-        <BitDropdown Label="Tertiary"
-                     MultiSelect
-                     Color="BitColor.Tertiary"
+        <BitDropdown Label="Large"
+                     ShowSearchBox
                      Items="GetBasicCustoms()"
+                     DefaultValue="@string.Empty"
                      NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
-        <br /><br />
-        <BitDropdown Label="Info"
-                     MultiSelect
-                     Color="BitColor.Info"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
-        <br /><br />
-        <BitDropdown Label="Success"
-                     MultiSelect
-                     Color="BitColor.Success"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
-        <br /><br />
-        <BitDropdown Label="Warning"
-                     MultiSelect
-                     Color="BitColor.Warning"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
-        <br /><br />
-        <BitDropdown Label="SevereWarning"
-                     MultiSelect
-                     Color="BitColor.SevereWarning"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
-        <br /><br />
-        <BitDropdown Label="Error"
-                     MultiSelect
-                     Color="BitColor.Error"
-                     Items="GetBasicCustoms()"
-                     NameSelectors="nameSelectors"
-                     Placeholder="Select items" />
+                     Size="BitSize.Large"
+                     Placeholder="Select an item" />
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-    <div>Empower customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+<DemoExample Title="Style & Class" RazorCode="@example34RazorCode" CsharpCode="@example34CsharpCode" Id="example34">
+    <div>
+        The dropdown can be styled at every level: <b>Style</b> and <b>Class</b> apply to the root element, each item
+        carries its own style and class, and the <b>Styles</b> and <b>Classes</b> parameters reach every internal part
+        of the component individually &mdash; the label, the container, the callout, the search box, the scroll
+        container, the items and everything else listed in the class-styles reference below. Because the callout is
+        rendered outside the root element, styling it through <b>Styles.Callout</b> or <b>Classes.Callout</b> is the way
+        to reach it rather than a descendant selector on the root.
+    </div>
     <br /><br />
     <div class="example-content">
         <div>Component's Style & Class:</div><br />
@@ -699,8 +1915,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19" PreventRenderForMcpClient>
-    <div>Use BitDropdown in right-to-left (RTL).</div>
+<DemoExample Title="RTL" RazorCode="@example35RazorCode" CsharpCode="@example35CsharpCode" Id="example35" PreventRenderForMcpClient>
+    <div>
+        Setting the <b>Dir</b> parameter to <b>Rtl</b> renders the dropdown right-to-left for languages like Arabic,
+        Persian and Hebrew: the text, the label, the chevron, the check boxes and the search box all mirror, the
+        callout aligns to the right edge of the dropdown, and the responsive panel slides in from the left and is
+        swiped away in the opposite direction. The callout is rendered outside the dropdown so that it can escape any
+        clipping ancestor around it, which also puts it out of the reach of the direction the dropdown declares, so it
+        carries that direction itself &mdash; the list of an RTL dropdown reads right-to-left even on a page that does not.
+    </div>
     <br />
     <dir dir="rtl" style="padding:0">
         <div class="example-content">
@@ -725,53 +1948,4 @@
                          Placeholder="لطفا انتخاب کنید" />
         </div>
     </dir>
-</DemoExample>
-
-<DemoExample Title="Virtualization" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-    <div>Demonstrates virtualization in the BitDropdown component for handling large datasets efficiently.</div>
-    <br /><br /><br />
-    <div class="example-content">
-        <div>With <b>Items</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     Items="virtualizeCustoms1"
-                     Placeholder="Select an item"
-                     NameSelectors="nameSelectors" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     Items="virtualizeCustoms2"
-                     Placeholder="Select items"
-                     NameSelectors="nameSelectors" />
-        <br /><br /><br /><br />
-        <div>With <b>ItemsProvider</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select an item"
-                     NameSelectors="nameSelectors" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select items"
-                     NameSelectors="nameSelectors" /><br /><br /><br /><br />
-        <div>With <b>ItemsProvider and InitialSelectedItems</b>:</div><br />
-        <BitDropdown Label="Single select"
-                     Virtualize
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select an item"
-                     InitialSelectedItems="initialSelectedItem"
-                     NameSelectors="nameSelectors" />
-        <br />
-        <BitDropdown Label="Multi select"
-                     Virtualize
-                     MultiSelect
-                     ItemsProvider="LoadItems"
-                     Placeholder="Select items"
-                     InitialSelectedItems="initialSelectedItems"
-                     NameSelectors="nameSelectors" />
-    </div>
 </DemoExample>

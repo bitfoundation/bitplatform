@@ -449,9 +449,9 @@ private readonly List<BitChoiceGroupItem<string>> basicItems =
     private readonly string example13CsharpCode = @"
 private readonly List<BitChoiceGroupItem<string>> prefixItems =
 [
-    new() { Text = ""Standard"", Value = ""Standard"", Prefix = ""$0 — "" },
-    new() { Text = ""Express"", Value = ""Express"", Prefix = ""$10 — "" },
-    new() { Text = ""Overnight"", Value = ""Overnight"", Prefix = ""$25 — "" }
+    new() { Text = ""Standard"", Value = ""Standard"", Prefix = ""$0 - "" },
+    new() { Text = ""Express"", Value = ""Express"", Prefix = ""$10 - "" },
+    new() { Text = ""Overnight"", Value = ""Overnight"", Prefix = ""$25 - "" }
 ];
 
 private readonly List<BitChoiceGroupItem<string>> suffixItems =

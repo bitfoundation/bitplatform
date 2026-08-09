@@ -86,6 +86,22 @@
             color: #ff4600;
             font-weight: bold;
         }
+
+        &.custom-drp-empty {
+            color: orangered;
+            padding: 5px 12px;
+            justify-content: center;
+        }
+
+        &.custom-drp-chip {
+            gap: 4px;
+            color: mediumvioletred;
+        }
+
+        &.custom-drp-des {
+            gap: 4px;
+            color: dodgerblue;
+        }
     }
 
     .grid-wrap {
