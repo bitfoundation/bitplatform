@@ -51,8 +51,10 @@ jobs:
       continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
       run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
 
+    # BuildAllTfms=true opts back into net9.0 and net8.0, which the Debug configuration skips so that local
+    # inner-loop builds only compile the TFM the demo and the tests actually run on.
     - name: dotnet build
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -p:BuildAllTfms=true
 
     - name: Test
-      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
+      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true

@@ -31,7 +31,7 @@
         <div>
             The mouse is treated the same way: focusing a box selects the character it holds, so typing replaces
             it instead of appending to it, and a click that lands in the gap between two boxes, or on a separator,
-            is not swallowed either — it puts the caret in the box the typing is meant to carry on in, which is
+            is not swallowed either - it puts the caret in the box the typing is meant to carry on in, which is
             the first one still empty, or the last one once the code is complete. The whole row therefore behaves
             like the single field it represents rather than like a handful of unrelated boxes standing next to
             each other.
@@ -337,7 +337,7 @@
         <div>
             It composes with everything else about the layout: <b>Vertical</b> glues the boxes along the column
             instead of the row, <b>Reversed</b> and a right-to-left direction keep the rounding at the two
-            visual ends of each group, and the <b>Variant</b> decides what is being joined — a row of filled
+            visual ends of each group, and the <b>Variant</b> decides what is being joined - a row of filled
             boxes, of outlined ones, or a single continuous underline. The focused box is drawn above the ones
             it is glued to, so its ring is never clipped by them.
         </div>
@@ -438,7 +438,7 @@
             carries around its digits, the zero width joiners of the scripts that need them, the byte order mark
             that a few clipboards prepend, and the control characters. They are invisible, so letting them
             through would fill the boxes with characters the user cannot see and hand the server a code it never
-            issued — a code that looks right on screen and is refused every single time.
+            issued - a code that looks right on screen and is refused every single time.
         </div>
         <br />
         <div>
@@ -514,7 +514,7 @@
     <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>OnChange</b> reports every change of the value, while <b>OnFill</b> fires the moment the last empty
-            box is filled, which is the callback to submit the code from — and, with it, the place to switch
+            box is filled, which is the callback to submit the code from - and, with it, the place to switch
             <b><BitLink Href="#example17">IsLoading</BitLink></b> on while the answer of the server is awaited. It
             is raised once per completed code, so retyping the same character over an already complete code does
             not submit it twice, and it fires again after the code is edited into a different complete one.
