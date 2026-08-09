@@ -99,6 +99,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Turns the Backspace pressed on an empty input from a removal into a correction: the last tag is taken
+    /// off the list and its text is put back into the input, ready to be fixed and confirmed again, rather
+    /// than simply disappearing. It is what makes the key forgiving on a list that took a while to build,
+    /// since a tag removed by a keystroke has no undo of its own. <see cref="NoBackspaceRemove"/> still wins
+    /// over it, the key doing nothing at all then.
+    /// </summary>
+    [Parameter] public bool BackspaceEditsLastTag { get; set; }
+
+    /// <summary>
     /// When set to true, pressing Enter (or a confirm key) while the input is empty will not be
     /// suppressed, allowing the event to propagate (e.g., to submit a form).
     /// </summary>
@@ -140,6 +149,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// It falls back to the <see cref="ClearButtonAriaLabel"/> and then to "Clear all tags".
     /// </summary>
     [Parameter] public string? ClearButtonTitle { get; set; }
+
+    /// <summary>
+    /// Throws away whatever text is still sitting in the input when the field loses the focus, so that a
+    /// half typed word is not found again, hours later, in a field the user believes they finished with.
+    /// It runs after the text has had its chance to become a tag, so on its own it only takes away what was
+    /// refused; paired with <see cref="NoAddOnBlur"/> it makes leaving the field cancel what was being typed.
+    /// </summary>
+    [Parameter] public bool ClearOnBlur { get; set; }
 
     /// <summary>
     /// The string comparison used to tell one tag from another, which is what decides whether a tag is a
@@ -213,6 +230,24 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? EditedAnnouncementFormat { get; set; }
 
     /// <summary>
+    /// A function returning extra CSS classes for a single tag, which is what tells one chip apart from the
+    /// next: the recipient that is not in the address book drawn in red, the tag that came from a saved
+    /// filter drawn in grey. It receives the tag and is called for each of them on every render, so it
+    /// should be a lookup rather than a computation. The classes are added to those of the component and to
+    /// the <see cref="BitTagsInputClassStyles.Tag"/> of the <see cref="Classes"/>, which apply to every chip
+    /// alike; use <see cref="TagTemplate"/> to change what is drawn inside a chip rather than the chip itself.
+    /// </summary>
+    [Parameter] public Func<string, string?>? GetTagClass { get; set; }
+
+    /// <summary>
+    /// A function returning extra inline CSS styles for a single tag, the exact counterpart of
+    /// <see cref="GetTagClass"/> for the cases where a class of your own is more than is needed. It is
+    /// appended after the <see cref="BitTagsInputClassStyles.Tag"/> and the
+    /// <see cref="BitTagsInputClassStyles.FocusedTag"/> of the <see cref="Styles"/>, so it wins over both.
+    /// </summary>
+    [Parameter] public Func<string, string?>? GetTagStyle { get; set; }
+
+    /// <summary>
     /// The format of the message announced by screen readers when a tag is rejected, where {0} is the tag.
     /// The default is "{0} was not added.". Set it to an empty string to keep the rejection from being announced.
     /// </summary>
@@ -243,6 +278,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// rather than rejected, both while typing and while pasting. 0 means no limit.
     /// </summary>
     [Parameter] public int MaxLength { get; set; }
+
+    /// <summary>
+    /// The number of values the suggestion list is allowed to offer at once. A catalogue of thousands of
+    /// known values is thousands of elements written into the page and rebuilt on every keystroke, so
+    /// beyond this ceiling only the values that hold what is being typed are offered, and only as many of
+    /// them as it allows. 0 means all of them, however many there are.
+    /// </summary>
+    [Parameter] public int MaxSuggestions { get; set; }
 
     /// <summary>
     /// The maximum number of tags allowed. Once it is reached, further tags are rejected with the
@@ -693,8 +736,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             if (args.Cancel) return;
         }
 
-        _inputText = string.Empty;
-        _syncInputValue = true;
+        await ClearInputText();
+
         _focusedTagIndex = -1;
         _tagsExpanded = false;
         _editingTagIndex = -1;
@@ -991,6 +1034,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             suggestions = suggestions.Where(s => tags.Contains(s) is false);
         }
 
+        if (MaxSuggestions > 0)
+        {
+            // Narrowed by what is being typed before it is cut down, so that the values that are kept are
+            // the ones that could still be picked rather than the first few of the alphabet. The browser
+            // filters the list it is handed all over again, which is why narrowing it here changes nothing
+            // about what is actually offered - only about how much of it was written into the page.
+            if (_inputText.Length > 0)
+            {
+                suggestions = suggestions.Where(s => s.Contains(_inputText, Comparison));
+            }
+
+            suggestions = suggestions.Take(MaxSuggestions);
+        }
+
         return [.. suggestions];
     }
 
@@ -1069,20 +1126,51 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         }
     }
 
-    private string? GetTagStyle(bool focused)
+    /// <summary>
+    /// Calls one of the per-tag functions of the consumer, an exception thrown out of it leaving the chip
+    /// with the styling of every other rather than breaking the render of the whole field.
+    /// </summary>
+    private static string? InvokeTagStyling(Func<string, string?>? selector, string tag)
     {
-        if (Styles is null) return null;
+        if (selector is null) return null;
 
-        if (focused is false || Styles.FocusedTag.HasNoValue()) return Styles.Tag;
-
-        if (Styles.Tag.HasNoValue()) return Styles.FocusedTag;
-
-        // The two are joined with a semicolon rather than with a space, since a style that omits its
-        // trailing one would otherwise swallow the declaration appended after it.
-        return $"{Styles.Tag!.TrimEnd().TrimEnd(';')};{Styles.FocusedTag}";
+        try
+        {
+            return selector(tag);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
-    private string GetTagClass(int index, bool focused)
+    private string? BuildTagStyle(string tag, bool focused)
+    {
+        // The declarations are joined with a semicolon rather than with a space, since one that omits its
+        // trailing semicolon would otherwise swallow whatever is appended after it.
+        string? style = null;
+
+        Append(Styles?.Tag);
+
+        if (focused)
+        {
+            Append(Styles?.FocusedTag);
+        }
+
+        // Last, so that a style belonging to this one tag wins over the ones every tag carries.
+        Append(InvokeTagStyling(GetTagStyle, tag));
+
+        return style;
+
+        void Append(string? part)
+        {
+            if (part.HasNoValue()) return;
+
+            style = style is null ? part : $"{style.TrimEnd().TrimEnd(';')};{part}";
+        }
+    }
+
+    private string BuildTagClass(string tag, int index, bool focused)
     {
         var custom = Classes?.Tag;
         var focusedClass = focused ? Classes?.FocusedTag : null;
@@ -1095,7 +1183,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                 ? "bit-tgi-tag-drg"
                 : index == _dragOverTagIndex ? "bit-tgi-tag-dro" : null;
 
-        return $"bit-tgi-tag {custom} {focusedClass} {dragClass}".TrimEnd();
+        var tagClass = InvokeTagStyling(GetTagClass, tag);
+
+        return string.Join(' ', new[] { "bit-tgi-tag", custom, focusedClass, dragClass, tagClass }.Where(c => c.HasValue()));
     }
 
     private string GetTagTabIndex(int index, int count)
@@ -1269,6 +1359,23 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
 
 
+    /// <summary>
+    /// The clear button empties the field, and emptying the field takes the button itself away with it, so
+    /// the focus would otherwise be dropped on the document body and the user would lose their place
+    /// entirely - the very thing the dismiss button of a tag guards against. The caret goes back into the
+    /// input, which is where a field that now holds nothing is carried on from.
+    /// </summary>
+    private async Task HandleClearClick()
+    {
+        await Clear();
+
+        // A clear that OnBeforeClear called off leaves the button, and the focus that is on it, exactly
+        // where they were; only a field that did empty has taken its own clear button away.
+        if (CurrentValue?.Count > 0 || _inputText.Length > 0) return;
+
+        FocusInput();
+    }
+
     private async Task HandleContainerClick()
     {
         // A read-only field is still focused, exactly as a read-only input is: the caret is what the
@@ -1297,9 +1404,19 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        if (NoAddOnBlur is false && ReadOnly is false)
+        if (ReadOnly is false)
         {
-            await TryAddTag();
+            if (NoAddOnBlur is false)
+            {
+                await TryAddTag();
+            }
+
+            // Whatever is left after that is what could not become a tag (or what was never meant to), and
+            // the field was asked not to keep it.
+            if (ClearOnBlur)
+            {
+                await ClearInputText();
+            }
         }
 
         await OnFocusOut.InvokeAsync(e);
@@ -1729,6 +1846,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         _editingTagIndex = -1;
 
+        // A field that was disabled, made read-only or told to stop offering the inline edit while one was
+        // open accepts no change from it: the edit is dropped rather than committed through the back door.
+        if (IsEnabled is false || ReadOnly || EditableTags is false)
+        {
+            _editText = string.Empty;
+            return;
+        }
+
         if (index >= list.Count) return;
 
         var original = list[index];
@@ -1820,8 +1945,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (text.Length == 0)
         {
-            _inputText = string.Empty;
-            _syncInputValue = true;
+            await ClearInputText();
             return;
         }
 
@@ -1842,13 +1966,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         list.Add(text);
 
-        _inputText = string.Empty;
-        _syncInputValue = true;
-
         Announce(AddedAnnouncementFormat ?? "{0} added.", text);
 
         await SetCurrentValueAsync(list);
         await OnAdd.InvokeAsync([text]);
+
+        // Last, so that the list a consumer reads out of OnInput is the one the tag is already in - the
+        // very order a pasted batch is reported in.
+        await ClearInputText();
     }
 
     private async Task<int> TryAddTags(string[] tags)
@@ -1961,9 +2086,37 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
     private async Task RemoveLastTag()
     {
-        var count = CurrentValue?.Count ?? 0;
-        if (count == 0) return;
+        var list = GetTags();
+        if (list.Count == 0) return;
 
-        await RemoveTagAt(count - 1);
+        var last = list[^1];
+
+        var removed = await RemoveTagAt(list.Count - 1);
+
+        // The tag is put back where it was typed rather than simply going away, which turns the key from a
+        // removal into a correction. A removal that OnBeforeRemove called off leaves the input alone too:
+        // the tag is still in the list, and its text sitting in the input next to it would only be added
+        // back as a duplicate.
+        if (removed is false || BackspaceEditsLastTag is false) return;
+
+        _inputText = last;
+        _syncInputValue = true;
+
+        await OnInput.InvokeAsync(_inputText);
+    }
+
+    /// <summary>
+    /// Empties the input, reporting the emptying through <see cref="OnInput"/> exactly as typing it away
+    /// would: a suggestion list of the consumer driven by that callback is otherwise left filtering on a
+    /// word that has already become a tag, and goes on offering it.
+    /// </summary>
+    private async Task ClearInputText()
+    {
+        if (_inputText.Length == 0) return;
+
+        _inputText = string.Empty;
+        _syncInputValue = true;
+
+        await OnInput.InvokeAsync(_inputText);
     }
 }

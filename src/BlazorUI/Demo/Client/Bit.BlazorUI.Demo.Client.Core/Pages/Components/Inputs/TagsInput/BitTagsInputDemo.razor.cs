@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TagsInput;
 
 public partial class BitTagsInputDemo
@@ -40,6 +42,13 @@ public partial class BitTagsInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the input should receive focus on first render.",
+        },
+        new()
+        {
+            Name = "BackspaceEditsLastTag",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the Backspace pressed on an empty input from a removal into a correction: the last tag is taken off the list and its text is put back into the input, ready to be fixed and confirmed again. NoBackspaceRemove still wins over it, the key doing nothing at all then.",
         },
         new()
         {
@@ -93,6 +102,13 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The format of the message announced by screen readers when every tag is removed at once, where {0} is how many of them there were. The default is \"{0} tags removed.\". An empty string keeps the clearing from being announced.",
+        },
+        new()
+        {
+            Name = "ClearOnBlur",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Throws away whatever text is still sitting in the input when the field loses the focus. It runs after the text has had its chance to become a tag, so on its own it only takes away what was refused; paired with NoAddOnBlur it makes leaving the field cancel what was being typed.",
         },
         new()
         {
@@ -175,6 +191,20 @@ public partial class BitTagsInputDemo
         },
         new()
         {
+            Name = "GetTagClass",
+            Type = "Func<string, string?>?",
+            DefaultValue = "null",
+            Description = "A function returning extra CSS classes for a single tag, which is what tells one chip apart from the next. It is called for every drawn tag on every render, so it should be a lookup rather than a computation, and the classes are added to those the Classes give every chip alike.",
+        },
+        new()
+        {
+            Name = "GetTagStyle",
+            Type = "Func<string, string?>?",
+            DefaultValue = "null",
+            Description = "A function returning extra inline CSS styles for a single tag, the counterpart of GetTagClass. It is appended after the Tag and FocusedTag of the Styles, so it wins over both.",
+        },
+        new()
+        {
             Name = "InvalidAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -214,6 +244,13 @@ public partial class BitTagsInputDemo
             Type = "int",
             DefaultValue = "0",
             Description = "The maximum number of characters allowed for each individual tag. Text beyond it is truncated rather than rejected. 0 means no limit.",
+        },
+        new()
+        {
+            Name = "MaxSuggestions",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The number of values the suggestion list is allowed to offer at once. Beyond this ceiling only the values that hold what is being typed are offered, and only as many of them as it allows, which is what keeps a catalogue of thousands from being written into the page in full on every keystroke. 0 means all of them.",
         },
         new()
         {
@@ -1047,6 +1084,12 @@ public partial class BitTagsInputDemo
     private string? maxTagsMessage;
 
     private readonly string[] frameworkSuggestions = ["blazor", "react", "vue", "angular", "svelte"];
+    private readonly string[] countrySuggestions = ["Argentina", "Australia", "Austria", "Belgium", "Brazil",
+                                                    "Canada", "Chile", "China", "Denmark", "Egypt", "Finland",
+                                                    "France", "Germany", "Greece", "India", "Indonesia",
+                                                    "Iran", "Ireland", "Italy", "Japan", "Mexico", "Morocco",
+                                                    "Netherlands", "New Zealand", "Norway", "Poland", "Portugal",
+                                                    "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine"];
     private string? suggestionMessage;
 
     private const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
@@ -1135,6 +1178,19 @@ public partial class BitTagsInputDemo
             beforeClearMessage = $"Cleared {args.Tags.Count} tag(s).";
         }
     }
+
+    private static string? GetRecipientStyle(string tag)
+    {
+        return Regex.IsMatch(tag, emailPattern) ? null : "background: #fde7e9; color: #a4262c;";
+    }
+
+    private static string? GetPriorityClass(string tag) => tag.ToLowerInvariant() switch
+    {
+        "high" => "priority-high",
+        "medium" => "priority-medium",
+        "low" => "priority-low",
+        _ => null
+    };
 
     private void HandleReorder(BitTagsInputReorderArgs args)
     {

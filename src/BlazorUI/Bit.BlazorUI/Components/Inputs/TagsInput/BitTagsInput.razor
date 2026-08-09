@@ -36,11 +36,14 @@
         _tagRefs = new ElementReference[displayedTagCount];
     }
 
-    // An edit that was open on a tag the parent has since taken away - or that the fold has since
-    // closed over - has nothing left to commit.
-    if (_editingTagIndex >= displayedTagCount)
+    // An edit that was open on a tag the parent has since taken away - or that the fold has since closed
+    // over - has nothing left to commit, and neither has one left open on a field that has since been
+    // disabled, made read-only or told to stop offering the inline edit at all: the little input would
+    // otherwise go on taking text in a field that no longer accepts any.
+    if (_editingTagIndex >= displayedTagCount || (_editingTagIndex >= 0 && (isInteractive is false || EditableTags is false)))
     {
         _editingTagIndex = -1;
+        _editText = string.Empty;
     }
 
     var suggestions = GetSuggestions();
@@ -132,8 +135,8 @@
                          aria-setsize="@tagCount"
                          aria-describedby="@(tagHint is null ? null : _hintId)"
                          tabindex="@(isTagEditing ? "-1" : GetTagTabIndex(index, displayedTagCount))"
-                         style="@GetTagStyle(isTagFocused)"
-                         class="@GetTagClass(index, isTagFocused)">
+                         style="@BuildTagStyle(tag, isTagFocused)"
+                         class="@BuildTagClass(tag, index, isTagFocused)">
                         @if (isTagEditing)
                         {
                             @* The little input that replaces the tag while it is being corrected in
@@ -250,7 +253,7 @@
         @if (showClearButton)
         {
             var clearIcon = BitIconInfo.From(ClearButtonIcon, ClearButtonIconName ?? "Clear");
-            <button @onclick="Clear"
+            <button @onclick="HandleClearClick"
                     @onclick:stopPropagation="true"
                     type="button"
                     tabindex="-1"
