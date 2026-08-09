@@ -263,6 +263,18 @@ public partial class BitDataGridDemo : AppComponentBase
     private async Task ApiPageSize50() { if (apiGrid is not null) await apiGrid.SetPageSizeAsync(50); }
     private async Task ApiRefresh() { if (apiGrid is not null) await apiGrid.RefreshAsync(); }
 
+    // example 34 - detail rows from the row & from code
+    private readonly List<Product> detailProducts = SampleData.Generate(20);
+    private BitDataGrid<Product>? detailGrid;
+    private string detailStatus = "Click any row to reveal its details.";
+
+    private void OnDetailToggled(BitDataGridDetailEventArgs<Product> args)
+        => detailStatus = $"{args.Item.Name} (#{args.Item.Id}) {(args.Expanded ? "expanded" : "collapsed")}.";
+
+    private async Task ExpandAllDetails() { if (detailGrid is not null) await detailGrid.ExpandAllDetailsAsync(); }
+    private async Task CollapseAllDetails() { if (detailGrid is not null) await detailGrid.CollapseAllDetailsAsync(); }
+    private async Task ToggleFirstDetail() { if (detailGrid is not null) await detailGrid.ToggleDetailAsync(detailProducts[0]); }
+
     // example 26 - localization
     private readonly List<Product> localizedProducts = SampleData.GeneratePersian(60);
 

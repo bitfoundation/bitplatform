@@ -472,7 +472,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 
 ```json
 {
-    "liveSassCompile.settings.watchOnLaunch": true,
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
     "chat.tools.autoApprove": true,
@@ -505,7 +504,6 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 {
     "recommendations": [
         "GitHub.copilot",
-        "glenn2223.live-sass",
         "GitHub.copilot-chat",
         "ms-dotnettools.csharp",
         "ms-dotnettools.csdevkit",

@@ -245,7 +245,7 @@
             "displayName": "Use bit Brouter?",
             "type": "parameter",
             "datatype": "bool",
-            "defaultValue": "true",
+            "defaultValue": "false",
             "description": "Replaces the built-in Blazor Router with bit Brouter, bringing advanced routing features - nested routes, route guards, data loaders, keep-alive pages and view transitions - inspired by the routers of Vue.js, React and Angular."
         },
         "nameToLower": {
@@ -545,6 +545,7 @@
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
                         "src/Tests/Features/Identity/TwoFactorAuthTests.cs",
                         "src/Tests/Features/Identity/PrivilegedSessionTests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs",
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
@@ -557,6 +558,7 @@
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
                         "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
@@ -629,6 +631,15 @@
                     "condition": "(advancedTests != true || notification != true)",
                     "exclude": [
                         "src/Tests/Features/PushNotification/PushSubscriptionOwnershipTests.cs"
+                    ]
+                },
+                {
+                    // Both sign in as store-admin@bitplatform.dev, which UserConfiguration only seeds under `multitenant`.
+                    // The `(module != Admin)` rule above removes them too; this one adds the other half of what they need.
+                    "condition": "(advancedTests != true || module != Admin || multitenant != true)",
+                    "exclude": [
+                        "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
+                        "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs"
                     ]
                 },
                 {
@@ -752,8 +763,10 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Tenants/**",
                         "src/Server/Boilerplate.Server.Api/Features/Identity/Services/AppRoleValidator.cs",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
+                        "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
                         "src/Tests/Features/Tenants/ReservedTenantNameTests.cs",
-                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs"
+                        "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
+                        "src/Tests/Features/Identity/PrivilegedSessionTenantSwitchTests.cs"
                     ]
                 },
                 {

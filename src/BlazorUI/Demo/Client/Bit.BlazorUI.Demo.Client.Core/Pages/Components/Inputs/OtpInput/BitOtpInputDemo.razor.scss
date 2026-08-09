@@ -16,14 +16,36 @@
         margin-inline: 1rem;
     }
 
+    .custom-label {
+        color: tomato;
+        letter-spacing: 0.1rem;
+    }
+
+    .custom-description {
+        color: tomato;
+    }
+
+    .custom-wrapper {
+        gap: 0.25rem;
+    }
+
     .custom-input {
         border-radius: 50%;
         border: 1px solid tomato;
     }
 
+    .custom-filled {
+        background-color: #fff1ed;
+    }
+
     .custom-focused {
         border-color: red;
         box-shadow: tomato 0 0 1rem;
+    }
+
+    .custom-separator {
+        color: tomato;
+        font-weight: 700;
     }
 
     .validation-message {

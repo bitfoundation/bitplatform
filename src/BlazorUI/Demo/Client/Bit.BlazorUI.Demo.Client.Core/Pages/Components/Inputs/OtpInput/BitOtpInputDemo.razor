@@ -1,12 +1,12 @@
-﻿@page "/components/otpinput"
+@page "/components/otpinput"
 @page "/components/otp-input"
 
 <PageOutlet Url="components/otpinput"
             Title="OtpInput"
-            Description="The OTP input is used for MFA procedure of authenticating users by a one-time password." />
+            Description="A one-time password (OTP) input for Blazor: a row of single character boxes with auto advancing focus, full keyboard navigation, character masking, a regular expression restricting the code, case folding, digit normalization across numbering systems, grouping separators, copy and paste of the whole code, SMS auto fill through the WebOTP API, an accessible group with a described helper text, a busy state for a code that is being checked, and an error state for one the server has rejected." />
 
 <DemoPage Name="OtpInput"
-          Description="The OTP input is used for MFA procedure of authenticating users by a one-time password."
+          Description="The OTP input collects a one-time passcode, the short numeric or alphanumeric code that a multi factor authentication flow sends over SMS or email, as a row of single character boxes bound to one string value. Typing a character advances the focus to the next box, Backspace and Delete take the code apart character by character, the arrow keys along with Home and End move between the boxes, pasting a whole code cleans it up and spreads it over them (a transformer of your own can even pull the code out of the message it was copied inside of), copying or cutting from any box hands over the whole code rather than the one character it holds, and on supporting browsers the code that just arrived by SMS is filled in automatically. The set of characters it accepts is narrowed down by the input type or by a regular expression, upper or lower cased on the way in, and normalized to ASCII when it arrives written in another numbering system; what is rejected outright is reported rather than silently dropped. The code is masked with a character of your own choosing, split into groups by a separator, laid out horizontally or vertically in either direction, kept free of holes, and the whole row can be turned into a single stop of the tab order. The boxes form a labelled and described accessible group, each announcing its own position. It completes with a callback to submit from, takes part in an EditForm like any other input, shows the wait while the code is being checked, and paints the error state of a code that the server sent back as wrong."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -14,30 +14,102 @@
           GitHubUrl="Inputs/OtpInput/BitOtpInput.razor"
           GitHubDemoUrl="Inputs/OtpInput/BitOtpInputDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>Basic usage examples of BitOtpInput, including different lengths, disabled state, auto-shift, and autofocus.</div>
+        <div>
+            The component renders <b>Length</b> single character boxes (5 by default) and keeps their content in a
+            single string value. The focus moves on by itself as each box is filled, so the whole code is typed
+            without ever reaching for the Tab key.
+        </div>
+        <br />
+        <div>
+            The keyboard follows the same rules a single input holding the whole code would: Backspace clears the
+            box it is pressed in and stays there, so the character can be retyped right away, and only once that
+            box is empty does it delete the character before it and follow it. Delete clears the current box
+            without moving. The arrow keys walk between the boxes, and Home and End jump to the first and the last
+            character of the code.
+        </div>
+        <br />
+        <div>
+            The mouse is treated the same way: focusing a box selects the character it holds, so typing replaces
+            it instead of appending to it, and a click that lands in the gap between two boxes, or on a separator,
+            is not swallowed either — it puts the caret in the box the typing is meant to carry on in, which is
+            the first one still empty, or the last one once the code is complete. The whole row therefore behaves
+            like the single field it represents rather than like a handful of unrelated boxes standing next to
+            each other.
+        </div>
+        <br />
+        <div>
+            <b>IsEnabled</b> and <b>ReadOnly</b> are the two ways to stop the user from editing the code:
+            a disabled component is dimmed and drops out of the tab order, while a read-only one still reads and
+            copies like normal text, which is what an already confirmed code should look like.
+            <b>AutoFocus</b> puts the caret in the first box still left to fill on the first render, so a
+            component seeded with a partial code carries on where the typing stopped instead of landing back on
+            its first character. <b>AutoShift</b> makes Backspace and Delete pull the remaining characters one
+            box to the left instead of leaving a hole in the middle of the code, and <b>BlurOnFill</b> drops the
+            focus as soon as the last box is filled, which is what gets the virtual keyboard of a phone out of
+            the way of the button below the code.
+        </div>
+        <br />
+        <div>
+            <b>Sequential</b> keeps the code free of holes: clicking a box that sits after the first empty one
+            moves the focus to that empty box instead, and a pasted chunk cannot land past it either, so the
+            code is always filled from its start onwards. It matters because the value is the characters of the
+            boxes joined together and an empty box contributes nothing to it, so a character typed into the
+            middle of an empty row would be reported as if it were the first one of the code. A complete code
+            is left alone, which keeps every one of its characters clickable and correctable.
+        </div>
         <br /><br />
         <div>Basic</div><br />
         <BitOtpInput />
         <br /><br /><br />
-        <div>Disabled</div><br />
-        <BitOtpInput IsEnabled="false" />
-        <br /><br /><br />
         <div>Length = 4</div><br />
         <BitOtpInput Length="4" />
         <br /><br /><br />
-        <div>AutoShift</div><br />
-        <BitOtpInput AutoShift />
+        <div>Disabled</div><br />
+        <BitOtpInput IsEnabled="false" DefaultValue="12345" />
+        <br /><br /><br />
+        <div>ReadOnly</div><br />
+        <BitOtpInput ReadOnly DefaultValue="12345" />
         <br /><br /><br />
         <div>AutoFocus</div><br />
         <BitOtpInput AutoFocus />
+        <br /><br /><br />
+        <div>AutoShift</div><br />
+        <BitOtpInput AutoShift DefaultValue="12345" />
+        <br /><br /><br />
+        <div>BlurOnFill</div><br />
+        <BitOtpInput BlurOnFill Length="4" />
+        <br /><br /><br />
+        <div>Sequential (try clicking the last box)</div><br />
+        <BitOtpInput Sequential Length="6" Type="BitInputType.Number" />
     </DemoExample>
 
-    <DemoExample Title="Label" RazorCode="@example2RazorCode" Id="example2">
-        <div>Label can express the title of the otp inputs.</div>
+    <DemoExample Title="Label & description" RazorCode="@example2RazorCode" Id="example2">
+        <div>
+            <b>Label</b> renders a caption above the boxes. It is a real <code>label</code> element bound to the
+            first box, so clicking it moves the focus there, and the group of inputs is named after it for screen
+            readers. <b>LabelTemplate</b> replaces the text with arbitrary markup while keeping the same wiring,
+            and <b>Required</b> marks the label with an asterisk and the boxes as required for the browser and for
+            assistive technologies.
+        </div>
+        <br />
+        <div>
+            <b>Description</b> is the helper text under the boxes, and it is where the sentence that turns a row of
+            empty boxes into a question the user can answer belongs: where the code was sent, how long it stays
+            valid, or what to do when it never arrives. The group of boxes references it through
+            <code>aria-describedby</code>, so a screen reader announces it along with the name of the group instead
+            of leaving it as text that only sighted users get. It is deliberately attached to the group and not to
+            each box, which would otherwise repeat the whole sentence at every character of the code.
+            <b>DescriptionTemplate</b> replaces it with arbitrary markup, so a "resend the code" action or a
+            countdown put in there is announced with the group just the same.
+        </div>
         <br /><br />
         <div>Label:</div>
         <br /><br />
         <BitOtpInput Label="OTP" />
+        <br /><br /><br /><br />
+        <div>Required:</div>
+        <br /><br />
+        <BitOtpInput Label="OTP" Required />
         <br /><br /><br /><br />
         <div>LabelTemplate:</div>
         <br /><br />
@@ -50,20 +122,190 @@
                 </BitStack>
             </LabelTemplate>
         </BitOtpInput>
+        <br /><br /><br /><br />
+        <div>Description:</div>
+        <br /><br />
+        <BitOtpInput Label="Verification code" Length="6" Type="BitInputType.Number"
+                     Description="We sent a 6 digit code to +1 555 0100. It stays valid for 10 minutes." />
+        <br /><br /><br /><br />
+        <div>DescriptionTemplate:</div>
+        <br /><br />
+        <BitOtpInput Label="Verification code" Length="6" Type="BitInputType.Number">
+            <DescriptionTemplate>
+                <BitStack Horizontal FitWidth Gap="0.25rem" VerticalAlign="BitAlignment.Center">
+                    <BitText Typography="BitTypography.Caption1">Didn't get it?</BitText>
+                    <BitLink Href="#example2">Send it again</BitLink>
+                </BitStack>
+            </DescriptionTemplate>
+        </BitOtpInput>
     </DemoExample>
 
-    <DemoExample Title="Type" RazorCode="@example3RazorCode" Id="example3">
-        <div>Set different input types for the OTP input: text, number, and password.</div>
+    <DemoExample Title="Type & keyboard" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>Type</b> decides the kind of the underlying inputs and, with it, the virtual keyboard that the
+            mobile browsers bring up. <b>Number</b> asks for the numeric keypad and rejects anything that is not a
+            digit, whether it is typed or pasted, so a code copied as <code>123-456</code> still lands in the
+            boxes as <code>123456</code>. It is deliberately not rendered as a native number input, which would
+            carry spin buttons, react to the mouse wheel and silently report an empty value for the characters a
+            number accepts but a code does not, such as <code>e</code> or <code>-</code>.
+            <b>Password</b> masks the characters with the bullet of the browser, which is what a code that stays
+            on screen for a while should do.
+        </div>
+        <br />
+        <div>
+            The same reasoning applies to <b>Email</b> and <b>Url</b>: those input types carry a constraint
+            validation that a single character can never satisfy, so a row of them would report itself as
+            permanently invalid to the browser and keep a plain HTML form from ever submitting. They are rendered
+            as text inputs as well and contribute only their keyboard, through the <code>inputmode</code>.
+            <b>Tel</b> is the exception and is rendered as it is, since it validates nothing.
+        </div>
+        <br />
+        <div>
+            <b>InputMode</b> asks for a keyboard on its own, without changing the element that is rendered or the
+            characters that are accepted. It defaults to the keyboard that matches the <b>Type</b>, so it is only
+            needed to ask for one the type does not imply: <b>Tel</b> on a code of digits brings up the telephone
+            keypad, whose keys are noticeably larger than the numeric ones on most Android keyboards, which makes
+            a code easier to hit on a small screen.
+        </div>
+        <br />
+        <div>
+            A code of digits is not always written in the digits of ASCII: a message in Persian carries it as
+            <code>۱۲۳۴۵۶</code>, one in Arabic as <code>١٢٣٤٥٦</code>, and a keyboard set to those languages types
+            them that way. <b>NormalizeDigits</b> turns the digits of every other numbering system into their
+            ASCII form as they are typed or pasted, which is what keeps such a code from being refused as if it
+            were not a number at all. The conversion happens before the <b>Type</b> and the <b>Pattern</b> decide
+            what to accept, and the value of the component is the ASCII form that a server expects.
+        </div>
         <br />
         <BitOtpInput Label="Text" Type="BitInputType.Text" />
         <br /><br />
         <BitOtpInput Label="Number" Type="BitInputType.Number" />
         <br /><br />
         <BitOtpInput Label="Password" Type="BitInputType.Password" />
+        <br /><br />
+        <BitOtpInput Label="Number, with the telephone keypad" Type="BitInputType.Number" InputMode="BitInputMode.Tel" />
+        <br /><br />
+        <BitOtpInput Label="Number, typed or pasted in any numbering system" Length="6"
+                     Type="BitInputType.Number" NormalizeDigits @bind-Value="normalizeDigitsValue" />
+        <div>Value: @normalizeDigitsValue</div>
+        <div>Try pasting <code>۱۲۳۴۵۶</code> or <code>١٢٣٤٥٦</code>.</div>
     </DemoExample>
 
-    <DemoExample Title="Directions" RazorCode="@example4RazorCode" Id="example4">
-        <div>Demonstrating various layout directions for BitOtpInput: default, reversed, vertical, and reversed vertical.</div>
+    <DemoExample Title="Mask" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>Mask</b> is the text that every filled box shows in place of the character it holds, which hides
+            the code without turning the boxes into password inputs, so the masking character is chosen rather
+            than dictated by the browser: a bullet, an asterisk, a star, even an emoji. Only the rendering
+            changes; the value of the component stays the code that was typed, and it is what binding, validation
+            and the callbacks all see.
+        </div>
+        <br />
+        <div>
+            A masked code is deliberately kept off the clipboard: copying from a box hands over the whole code
+            everywhere else, but here the boxes are showing a masking character rather than the code, and a
+            <code>Password</code> <b>Type</b>, which browsers refuse to let anyone copy from, is treated the
+            same way. Pasting into the boxes keeps working either way.
+        </div>
+        <br />
+        <BitOtpInput Label="Bullet" Mask="●" DefaultValue="12345" />
+        <br /><br />
+        <BitOtpInput Label="Asterisk" Mask="*" Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Emoji" Mask="🔒" DefaultValue="12345" />
+        <br /><br />
+        <BitOtpInput Label="Masked, with the real value below" Mask="●" @bind-Value="maskValue" />
+        <div>Value: @maskValue</div>
+    </DemoExample>
+
+    <DemoExample Title="Pattern" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Pattern</b> is a regular expression that every single character of the code has to match,
+            which narrows the code down to a set of characters that no input type covers on its own. A
+            character that does not match is rejected as it is typed, and the characters of a pasted code
+            that do not match are dropped instead of the whole paste being refused, so a code copied
+            together with the words around it still lands in the boxes. An expression that does not
+            compile is ignored rather than turning the component into a field that accepts nothing.
+        </div>
+        <br />
+        <div>
+            <b>Uppercase</b> is what keeps such a restriction from becoming a dead end: it turns every
+            character into its upper case form before the expression is applied, so a code that is printed in
+            upper case can be typed in either case, on a phone keyboard as much as on a desk one.
+            <b>Lowercase</b> is its mirror and follows exactly the same rules; <b>Uppercase</b> wins when both
+            are set, since asking for both at once is a contradiction rather than an order to apply. Both of
+            them reach a code that is assigned to the component as well as one that is typed or pasted into it,
+            so the boxes never show one casing while the value reports another.
+        </div>
+        <br />
+        <BitOtpInput Label="Hexadecimal" Length="6" Pattern="^[a-fA-F0-9]$" Placeholder="0" />
+        <br /><br />
+        <BitOtpInput Label="Upper case letters" Length="4" Pattern="^[A-Z]$" Placeholder="A" />
+        <br /><br />
+        <BitOtpInput Label="Upper case letters, typed in any case" Length="4" Pattern="^[A-Z]$" Placeholder="A" Uppercase />
+        <br /><br />
+        <BitOtpInput Label="Lower case letters, typed in any case" Length="4" Pattern="^[a-z]$" Placeholder="a" Lowercase />
+    </DemoExample>
+
+    <DemoExample Title="Placeholder" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>Placeholder</b> puts a hint character in the boxes that are still empty, which makes the expected
+            shape of the code visible before anything is typed. A placeholder exactly as long as <b>Length</b> is
+            spread over the boxes one character each, so a mask like <code>000000</code> or
+            <code>ABCDEF</code> can be shown; any other value is repeated in every box as is.
+        </div>
+        <br />
+        <BitOtpInput Label="Single character" Placeholder="•" />
+        <br /><br />
+        <BitOtpInput Label="One character per input" Length="6" Placeholder="123456" />
+    </DemoExample>
+
+    <DemoExample Title="Separator" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            <b>Separator</b> draws a piece of text between the boxes, the way a long code is usually printed in the
+            message that delivers it. It is purely decorative: it is hidden from screen readers, it does not take
+            the focus, and it is never rendered as a part of the value. A pasted code is filtered by the same rules
+            as a typed one, so the separators of a code copied with them in it are dropped when
+            <b>Type</b> is <code>BitInputType.Number</code> or a <b>Pattern</b> that rejects them is set, and are
+            taken as characters of the code otherwise.
+        </div>
+        <br />
+        <div>
+            <b>SeparatorInterval</b> decides how many boxes each group holds, which is what splits a long code
+            into the chunks it is read in. It defaults to 1, a separator between every pair of boxes; setting it
+            to 3 on a six character code renders a single separator in the middle and turns the row into
+            <code>123-456</code>.
+        </div>
+        <br />
+        <div>
+            <b>SeparatorTemplate</b> replaces that text with arbitrary markup, an icon above all, and takes
+            precedence over <b>Separator</b>. Its context is the zero based index of the box the separator is
+            rendered before, so a single template can tell one separator of the row from another and render
+            something different at each of them.
+        </div>
+        <br />
+        <BitOtpInput Label="Dash" Length="6" Separator="-" />
+        <br /><br />
+        <BitOtpInput Label="Dot" Length="6" Separator="•" Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Grouped by 3" Length="6" Separator="-" SeparatorInterval="3" />
+        <br /><br />
+        <BitOtpInput Label="Grouped by 4" Length="8" Separator="—" SeparatorInterval="4" Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Icon separator" Length="6" SeparatorInterval="3" Type="BitInputType.Number">
+            <SeparatorTemplate>
+                <BitIcon IconName="@BitIconName.Remove" />
+            </SeparatorTemplate>
+        </BitOtpInput>
+    </DemoExample>
+
+    <DemoExample Title="Directions" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>Vertical</b> stacks the boxes in a column and <b>Reversed</b> renders them in the opposite order.
+            The arrow keys follow whatever layout is in effect: left and right walk a horizontal row, up and down
+            walk a vertical one, and both flip along with <b>Reversed</b> and with a right-to-left direction, so
+            the focus always moves the way the boxes look. Home and End are the exception on purpose: they address
+            the code rather than the layout, so they always land on the first and the last character of it.
+        </div>
         <br />
         <BitOtpInput Label="Default" />
         <br /><br />
@@ -74,8 +316,193 @@
         <BitOtpInput Label="Reversed Vertical" Vertical Reversed />
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Examples of one-way and two-way data binding with BitOtpInput.</div>
+    <DemoExample Title="Merged" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            <b>Merged</b> glues the boxes together into a single field instead of leaving them standing next to
+            each other: the gaps between them are closed, the rule that two neighbouring boxes share is drawn
+            once rather than twice, and only the two ends of the row keep their rounding. What it draws is a
+            code printed in one box, which is how a code is printed on the card or in the message it comes
+            from, while every character keeps the input of its own that the typing, the autofill and the
+            screen readers need.
+        </div>
+        <br />
+        <div>
+            A <b>Separator</b> cuts the row into groups and the gluing follows those groups, so a six character
+            code with a <b>SeparatorInterval</b> of 3 is drawn as two joined boxes of three with the separator
+            between them. The separator keeps a little room of its own there, since closing the gaps would
+            otherwise leave a dash touching the boxes on either side of it. A group of a single box keeps all
+            four of its corners rounded, which is what a separator between every pair of boxes falls back to.
+        </div>
+        <br />
+        <div>
+            It composes with everything else about the layout: <b>Vertical</b> glues the boxes along the column
+            instead of the row, <b>Reversed</b> and a right-to-left direction keep the rounding at the two
+            visual ends of each group, and the <b>Variant</b> decides what is being joined — a row of filled
+            boxes, of outlined ones, or a single continuous underline. The focused box is drawn above the ones
+            it is glued to, so its ring is never clipped by them.
+        </div>
+        <br />
+        <BitOtpInput Label="Merged" Length="6" Merged Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Merged, grouped by 3" Length="6" Merged Separator="-" SeparatorInterval="3"
+                     Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Merged, filled" Length="6" Merged Variant="BitVariant.Fill"
+                     Type="BitInputType.Number" DefaultValue="123456" />
+        <br /><br />
+        <BitOtpInput Label="Merged, underlined" Length="6" Merged Variant="BitVariant.Text"
+                     Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Merged, vertical" Length="4" Merged Vertical Type="BitInputType.Number" />
+        <br /><br />
+        <BitOtpInput Label="Merged, reversed" Length="4" Merged Reversed Type="BitInputType.Number" />
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example10RazorCode" Id="example10">
+        <div>
+            The boxes are wrapped in a <code>group</code> that is named after the <b>Label</b>, or after
+            <b>AriaLabel</b> when there is none, so a screen reader announces the purpose of the code once instead
+            of once per box. Each box is then named after its own position, <i>1 of 6</i> by default, which is
+            what tells the user which character they are on. <b>InputAriaLabelFormat</b> is the composite format
+            behind that name, where <code>{0}</code> is the one based position and <code>{1}</code> is the
+            <b>Length</b>, and it is what localizes the announcement.
+        </div>
+        <br />
+        <div>
+            <b>Description</b> completes that picture: the group also carries an <code>aria-describedby</code>
+            pointing at the helper text under the boxes, so the sentence that says where the code was sent and
+            how long it is good for is announced along with the name of the group rather than being left as
+            text that only sighted users get.
+        </div>
+        <br />
+        <div>
+            <b>SingleTabStop</b> turns the whole component into one stop of the tab order: only the box holding
+            the first character stays reachable with the Tab key and the rest are left to the auto advancing
+            focus, the arrow keys and the mouse. A keyboard user then tabs past the code in one press instead of
+            six, the way a group of inputs that hold one single value is expected to behave. The boxes still
+            take the focus on a click and through <b>FocusAsync</b>, so nothing else about them changes.
+        </div>
+        <br />
+        <div>
+            <b>TabIndex</b> places the component itself somewhere in the tab order and is rendered on each box,
+            which is what puts a code entry ahead of the fields printed above it on a page whose reading order
+            and DOM order disagree. It composes with <b>SingleTabStop</b> rather than fighting it: a box that
+            was taken out of the tab order has no position left to be given, so only the reachable one carries
+            it. Use it sparingly, since a positive value pulls the component out of the natural order of the
+            document for every user, not only for the one it was meant to help.
+        </div>
+        <br />
+        <div>
+            The rest of the accessible behavior comes for free: <b>Required</b> marks every box as required for
+            the browser and for assistive technologies, a failing validation and the <b>Invalid</b> state add
+            <code>aria-invalid</code> to them, <b>IsLoading</b> marks the group with <code>aria-busy</code> so
+            that the wait for the answer of the server is announced rather than only drawn, the separators are
+            hidden from screen readers so the code is never read out with the dashes in it, and a disabled
+            component drops out of the tab order altogether.
+        </div>
+        <br />
+        <BitOtpInput Label="Verification code" Length="6" />
+        <br /><br />
+        <BitOtpInput AriaLabel="Enter the 6 digit code sent to your phone" Length="6" />
+        <br /><br />
+        <BitOtpInput Label="Localized announcement" Length="6" InputAriaLabelFormat="رقم {0} از {1}" />
+        <br /><br />
+        <BitOtpInput Label="Single tab stop" Length="6" SingleTabStop />
+        <br /><br />
+        <BitOtpInput Label="Described group" Length="6"
+                     Description="Enter the code from the text message we sent to +1 555 0100." />
+    </DemoExample>
+
+    <DemoExample Title="Autofill, paste & copy" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            A one-time code is copied far more often than it is typed, so the whole code arrives in one go in
+            three different ways and all of them end up in the same place. Every box carries
+            <code>autocomplete="one-time-code"</code>, which is what makes iOS and Safari offer the code that has
+            just arrived by SMS; on browsers that implement the WebOTP API the component asks the browser for that
+            code itself and fills the boxes as soon as the user allows it; and a paste anywhere in the row is
+            caught and spread over the boxes. <b>NoSmsAutoFill</b> turns the first two off for a code that never
+            arrives by SMS, such as one read from an authenticator app.
+        </div>
+        <br />
+        <div>
+            A pasted code is cleaned up before it lands: every kind of whitespace is dropped, so a code that wraps
+            or is spaced in the message it was copied from still fills the boxes, and so are the characters that
+            the <b>Type</b> or the <b>Pattern</b> rejects, which is what lets a code copied as
+            <code>123-456</code> or together with the words around it be pasted as is instead of being refused.
+            <b>Uppercase</b> applies to it too.
+        </div>
+        <br />
+        <div>
+            The characters that carry no glyph at all are dropped whatever the <b>Type</b> and the <b>Pattern</b>
+            say, since no code is ever made of them: the bidi marks that a message written in Persian or Arabic
+            carries around its digits, the zero width joiners of the scripts that need them, the byte order mark
+            that a few clipboards prepend, and the control characters. They are invisible, so letting them
+            through would fill the boxes with characters the user cannot see and hand the server a code it never
+            issued — a code that looks right on screen and is refused every single time.
+        </div>
+        <br />
+        <div>
+            Where the code lands depends on how much of it there is: one that fills the component always starts at
+            the first box, no matter which one received the paste, since anything else would drop its leading
+            characters, while a shorter one is inserted where it was pasted and the focus moves to the first box
+            still left to fill. A partial paste only replaces as many characters as it brings, so the rest of the
+            code around it is left alone, and a code longer than the boxes can hold keeps its first <b>Length</b>
+            characters. <b>Sequential</b> applies here too: it keeps a pasted chunk from landing past the first
+            empty box, which is the hole it exists to prevent.
+        </div>
+        <br />
+        <div>
+            That per-character filtering is enough for a code of digits, where everything around the code is
+            thrown away by definition, but it cannot pull a code of letters out of the text it was copied inside
+            of: the letters of the words match the code just as well as the code does, so
+            <code>your code is A1B2C3</code> would fill the boxes with <code>YOURCODEI</code>.
+            <b>PasteTransformer</b> is the way out. It is a function applied to a chunk of characters that
+            reaches the component in one go, before anything else is done with it, so a single regular
+            expression picks the code out of the sentence. Returning an empty string rejects the whole chunk,
+            which raises <b>OnInvalid</b>, and it is deliberately not applied to a single typed character.
+        </div>
+        <br />
+        <div>
+            The way back out is handled too. Each box is an input of its own, so copying from one of them would
+            hand over the single character it holds instead of the code the user meant; the whole code is put on
+            the clipboard instead, from whichever box the copy is made, which is what a single input holding the
+            code would have given. Cutting does the same and empties the boxes afterwards. A code that is not
+            shown is left alone: with a <b>Mask</b> or a <b>Password</b> type the boxes hold a masking character
+            rather than the code, and a password input refuses to be copied for exactly the same reason.
+        </div>
+        <br />
+        <div>
+            <b>NoSmsAutoFill</b> reaches the password managers as well. An <code>autocomplete</code> of
+            <code>off</code> is a request the browser extensions deliberately ignore, since it is what a site
+            refusing to work with them looks like, so the attributes that 1Password, LastPass, Bitwarden and
+            Dashlane read instead are rendered along with it. They are not rendered otherwise, because offering
+            the code from the authenticator vault that issued it is precisely what a password manager is for.
+        </div>
+        <br />
+        <div>Try pasting <code>123 456</code>, <code>12-34-56</code> or <code>your code is 123456</code>:</div>
+        <br />
+        <BitOtpInput Label="Paste a code" Length="6" Type="BitInputType.Number" @bind-Value="pasteValue" />
+        <div>Value: @pasteValue</div>
+        <br /><br />
+        <div>Try pasting <code>your code is A1B2C3, do not share it</code>:</div>
+        <br />
+        <BitOtpInput Label="Alphanumeric, pulled out of the message" Length="6" Uppercase
+                     PasteTransformer="@(v => System.Text.RegularExpressions.Regex.Match(v, "[A-Za-z0-9]{6}").Value)"
+                     @bind-Value="transformedPasteValue" />
+        <div>Value: @transformedPasteValue</div>
+        <br /><br />
+        <BitOtpInput Label="Without the SMS auto fill" Length="6" NoSmsAutoFill />
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            The value of the component is the whole code as a single string, not one value per box. Binding it
+            one-way with <b>Value</b> makes the boxes follow the model without letting the user change it, while
+            <b>@@bind-Value</b> keeps the two in sync in both directions: typing in the boxes updates the string,
+            and writing a new string into the model spreads it over the boxes. Setting the value to
+            <code>null</code> or to an empty string clears them all. <b>DefaultValue</b> is the uncontrolled
+            counterpart: it seeds the boxes on the first render and then leaves them to the user.
+        </div>
         <br />
         <BitOtpInput Label="One-way" Value="@oneWayValue" />
         <BitTextField Style="margin-top: 5px;" @bind-Value="oneWayValue" />
@@ -84,14 +511,39 @@
         <BitTextField Style="margin-top: 5px;" @bind-Value="twoWayValue" />
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>Handle various events in BitOtpInput, including change, fill, focus, input, keydown, and paste events.</div>
+    <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>OnChange</b> reports every change of the value, while <b>OnFill</b> fires the moment the last empty
+            box is filled, which is the callback to submit the code from — and, with it, the place to switch
+            <b><BitLink Href="#example17">IsLoading</BitLink></b> on while the answer of the server is awaited. It
+            is raised once per completed code, so retyping the same character over an already complete code does
+            not submit it twice, and it fires again after the code is edited into a different complete one.
+        </div>
+        <br />
+        <div>
+            <b>OnInvalid</b> is the other side of that coin: it fires when what was typed, pasted or auto filled
+            is rejected in full by the <b>Type</b> or the <b>Pattern</b>, so that nothing of it reaches the boxes,
+            and it receives the rejected text along with the index of the box that received it. Rejecting a
+            character is otherwise silent, which leaves the user typing into a box that never fills without being
+            told why, so this is the callback that turns it into a message, a shake of the row or the
+            <b>Invalid</b> state. A paste that only loses some of its characters, a code copied with the dashes
+            in it, still fills the boxes and is therefore not a rejection.
+        </div>
+        <br />
+        <div>
+            The remaining callbacks forward the raw DOM events of the individual boxes together with the index of
+            the box that raised them, which is what makes per-box behavior possible in the consuming code.
+        </div>
         <br />
         <BitOtpInput Label="OnChange" OnChange="v => onChangeValue = v" />
         <div>OnChange value: @onChangeValue</div>
         <br /><br />
         <BitOtpInput Label="OnFill" OnFill="v => onFillValue = v" />
         <div>OnFill value: @onFillValue</div>
+        <br /><br />
+        <BitOtpInput Label="OnInvalid (digits only)" Type="BitInputType.Number" OnInvalid="args => onInvalidArgs = args" />
+        <div>Rejected: @onInvalidArgs?.Value</div>
+        <div>Input index: @onInvalidArgs?.Index</div>
         <br /><br />
         <BitOtpInput Label="OnFocusIn" OnFocusIn="args => onFocusInArgs = args" />
         <div>Focus type: @onFocusInArgs?.Event.Type</div>
@@ -114,8 +566,44 @@
         <div>Input index: @onPasteArgs?.Index</div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Use data annotations to validate the BitOtpInput component in a form submission scenario.</div>
+    <DemoExample Title="Public API" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            A reference to the component exposes <b>FocusAsync</b>, which focuses a specific box (the index is
+            clamped into the rendered range), <b>BlurAsync</b>, which drops the focus of whichever box holds it
+            and with it the virtual keyboard of a phone, <b>Clear</b>, which empties every box and the value at
+            once, and <b>InputElements</b>, the element references of the boxes themselves. Clearing and
+            re-focusing the first box is exactly what a "the code you entered is wrong, try again" branch needs
+            to do.
+        </div>
+        <br />
+        <div>
+            All of them are safe to call at any point in the lifetime of the component: focusing before the
+            first render does nothing rather than asking the browser for an element that is not there yet,
+            blurring does nothing when the focus is elsewhere on the page, and clearing does nothing while the
+            component is disabled or read-only. <b>Clear</b> is deliberately not blocked by
+            <b><BitLink Href="#example17">IsLoading</BitLink></b>, since the busy state belongs to the very
+            code that is about to be cleared and switched off again.
+        </div>
+        <br />
+        <BitOtpInput @ref="apiOtpInput" Label="OTP" Length="6" DefaultValue="123456" />
+        <br />
+        <BitStack Horizontal FitWidth Gap="0.5rem" Wrap>
+            <BitButton OnClick="() => apiOtpInput?.FocusAsync(0)">Focus first</BitButton>
+            <BitButton OnClick="() => apiOtpInput?.FocusAsync(5)">Focus last</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="() => apiOtpInput?.BlurAsync()">Blur</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="HandleClearClick">Clear</BitButton>
+        </BitStack>
+    </DemoExample>
+
+    <DemoExample Title="Validation" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            The component is a regular Blazor input, so it takes part in an <b>EditForm</b> like any other one: it
+            picks up the cascading <code>EditContext</code>, reports its value on every keystroke, renders the
+            error state on the boxes, and marks itself with <code>aria-invalid</code> for assistive technologies.
+            Data annotations such as <code>[Required]</code> and <code>[MinLength]</code> on the bound property are
+            all that is needed to validate the length of the code. Outside of an <code>EditForm</code>, <b>Name</b>
+            posts the whole code as one named field of a plain HTML form, not one field per box.
+        </div>
         <br /><br />
         <div>
             @if (formIsValidSubmit is false)
@@ -140,8 +628,131 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example8RazorCode" Id="example8">
-        <div>Varying sizes for inputs tailored to meet diverse design needs, ensuring flexibility and visual hierarchy within your interface.</div>
+    <DemoExample Title="Invalid" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <div>
+            A one-time code is almost never wrong in a way a validator can see: it is the right length and it is
+            made of the right characters, and only the server that issued it knows that it has expired or does not
+            match. <b>Invalid</b> is what paints that answer back onto the boxes, without an
+            <code>EditContext</code> taking any part in it. It draws them in the error color, keeps them there
+            while the user reads the message, and marks them with <code>aria-invalid</code> so that the failure is
+            announced rather than only shown.
+        </div>
+        <br />
+        <div>
+            It is independent of the validation of an <b>EditForm</b>, which renders the very same state on its
+            own, so the two can be used together: data annotations catch a code that is too short before it is
+            ever sent, and <b>Invalid</b> catches the one that was sent and came back rejected. Clearing the boxes
+            and putting the caret back in the first of them, which is what <b>Clear</b> and <b>FocusAsync</b> do
+            together, is the usual companion to it. The wait in between the two, while the code is on its way to
+            the server, is what <b><BitLink Href="#example17">IsLoading</BitLink></b> is for.
+        </div>
+        <br />
+        <div>
+            <b>Invalid</b> paints the failure but does not say what it was, so it belongs together with
+            <b>Description</b>, which carries the sentence the server answered with. Because the group of boxes
+            references the description through <code>aria-describedby</code>, the reason is announced to a screen
+            reader user rather than only being drawn in red next to boxes they cannot see, and a colour alone is
+            never the only carrier of the message. A description that is referenced this way is announced when
+            the focus reaches the code, though, not at the moment the server answers; when the answer arrives
+            while the focus is elsewhere, put the sentence inside a <b>DescriptionTemplate</b> whose own markup
+            carries an <code>aria-live="polite"</code>, so that it is read out as it changes. It is deliberately
+            not done for you, since a description holding a countdown or a "resend the code" link would then be
+            announced on every tick.
+        </div>
+        <br />
+        <BitOtpInput @ref="invalidOtpInput" Label="Verification code" Length="6"
+                     Type="BitInputType.Number"
+                     Invalid="invalidState"
+                     Description="@invalidDescription"
+                     OnFill="HandleInvalidDemoFill" />
+        <br />
+        <BitStack Horizontal FitWidth Gap="0.5rem">
+            <BitButton Variant="BitVariant.Outline" OnClick="HandleInvalidDemoRetry">Clear & retry</BitButton>
+        </BitStack>
+    </DemoExample>
+
+    <DemoExample Title="Loading" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+        <div>
+            Entering a one-time code is a round trip: the last box is filled, the code is sent, and only the
+            answer of the server says whether it was the right one. <b>IsLoading</b> is the middle of that trip.
+            It draws an indeterminate progress bar under the boxes, so the wait is visible where the code is
+            rather than somewhere else on the page, and it marks the group of boxes with
+            <code>aria-busy</code>, which is what tells a screen reader that the answer is still on its way
+            instead of leaving the user wondering whether the code was received at all.
+        </div>
+        <br />
+        <div>
+            It also holds the code still while the answer travels, exactly the way <b>ReadOnly</b> does: nothing
+            can be typed, deleted, pasted or cut over a code that has already been submitted, and the component
+            stops asking the browser for the SMS code it is no longer waiting for. What it does not block is
+            your own <b>Clear</b>, since the busy state belongs to you: clearing the boxes is precisely what the
+            branch that turns <b>IsLoading</b> off and <b>Invalid</b> on is about to do.
+        </div>
+        <br />
+        <div>
+            The three states are meant to be used together and in this order: <b>OnFill</b> submits the code and
+            switches <b>IsLoading</b> on, the answer switches it back off, and a code that came back rejected
+            switches <b>Invalid</b> on along with the sentence the server answered with in the
+            <b>Description</b>. The bar follows the <b>Accent</b> color, so it belongs to the same form as the
+            boxes above it.
+        </div>
+        <br />
+        <BitOtpInput @ref="loadingOtpInput" Label="Verification code" Length="6"
+                     Type="BitInputType.Number"
+                     Invalid="loadingInvalid"
+                     IsLoading="isLoading"
+                     Description="@loadingDescription"
+                     OnFill="HandleLoadingDemoFill" />
+        <br />
+        <BitStack Horizontal FitWidth Gap="0.5rem">
+            <BitButton Variant="BitVariant.Outline" OnClick="HandleLoadingDemoRetry">Clear &amp; retry</BitButton>
+        </BitStack>
+    </DemoExample>
+
+    <DemoExample Title="Variant" RazorCode="@example18RazorCode" Id="example18">
+        <div>
+            <b>Variant</b> decides how much of a frame each box carries: <b>Outline</b> (the default) draws a full
+            rule around it, <b>Fill</b> paints it with a surface color and drops the rule, and <b>Text</b> keeps
+            only an underline, for a code entry that should not outweigh the fields around it.
+        </div>
+        <br />
+        <BitOtpInput Label="Fill" Variant="BitVariant.Fill" DefaultValue="12345" />
+        <br /><br />
+        <BitOtpInput Label="Outline" Variant="BitVariant.Outline" DefaultValue="12345" />
+        <br /><br />
+        <BitOtpInput Label="Text" Variant="BitVariant.Text" DefaultValue="12345" />
+    </DemoExample>
+
+    <DemoExample Title="Accent" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <b>Accent</b> picks the color role that the focused box carries, on both its border and its focus ring,
+            so the component can follow the accent of the form it sits in. The error state of the validation always
+            wins over it, which keeps an invalid code recognizable whatever the accent is.
+        </div>
+        <br />
+        <BitOtpInput Label="Primary" Accent="BitColor.Primary" />
+        <br /><br />
+        <BitOtpInput Label="Secondary" Accent="BitColor.Secondary" />
+        <br /><br />
+        <BitOtpInput Label="Tertiary" Accent="BitColor.Tertiary" />
+        <br /><br />
+        <BitOtpInput Label="Info" Accent="BitColor.Info" />
+        <br /><br />
+        <BitOtpInput Label="Success" Accent="BitColor.Success" />
+        <br /><br />
+        <BitOtpInput Label="Warning" Accent="BitColor.Warning" />
+        <br /><br />
+        <BitOtpInput Label="SevereWarning" Accent="BitColor.SevereWarning" />
+        <br /><br />
+        <BitOtpInput Label="Error" Accent="BitColor.Error" />
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20">
+        <div>
+            <b>Size</b> scales the boxes and the text inside them together, so the code stays centered and readable
+            at every size. Pick the one that matches the density of the surrounding form: the large size suits a
+            standalone verification screen, the small one a code entry tucked into a dense dialog.
+        </div>
         <br />
         <BitOtpInput Label="Small" Size="BitSize.Small" />
         <br /><br />
@@ -150,8 +761,15 @@
         <BitOtpInput Label="Large" Size="BitSize.Large" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
-        <div>Explore styling and class customization for BitOtpInput, including component styles, custom classes, and detailed styles.</div>
+    <DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b> reach
+            every part of the component by name: the root, the label, the description, the wrapper of the inputs,
+            each input, the separator, the <b>Loader</b> drawn while <b>IsLoading</b> is on, plus the two state
+            slots <b>Focused</b> (the input that currently has the focus) and <b>Filled</b> (every input that
+            already holds a character), which are the hooks for a per-box appearance that follows the progress of
+            the typing.
+        </div>
         <br /><br />
         <div>
             <div>Component's Style & Class:</div><br />
@@ -160,23 +778,42 @@
             <BitOtpInput Class="custom-class" />
             <br /><br /><br />
             <div><b>Styles</b> & <b>Classes</b>:</div><br />
-            <BitOtpInput Styles="@(new() { Root = "margin-inline: 1rem;",
+            <BitOtpInput Label="Styles" Description="Every part of the component has a slot of its own."
+                         Styles="@(new() { Root = "margin-inline: 1rem;",
+                                           Label = "color: blueviolet; letter-spacing: 0.1rem;",
+                                           Description = "color: blueviolet;",
+                                           InputsWrapper = "gap: 0.25rem;",
                                            Input = "border-color: blueviolet;",
+                                           Filled = "background-color: #f3e8ff;",
                                            Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
             <br />
-            <BitOtpInput Classes="@(new() { Root = "custom-root",
+            <BitOtpInput Label="Classes" Length="6" Separator="-"
+                         Description="Every part of the component has a slot of its own."
+                         Classes="@(new() { Root = "custom-root",
+                                            Label = "custom-label",
+                                            Description = "custom-description",
+                                            InputsWrapper = "custom-wrapper",
                                             Input = "custom-input",
-                                            Focused = "custom-focused" })" />
+                                            Filled = "custom-filled",
+                                            Focused = "custom-focused",
+                                            Separator = "custom-separator" })" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
-        <div>Use BitOtpInput in right-to-left (RTL).</div>
+    <DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22">
+        <div>
+            In a right-to-left direction the boxes are laid out from right to left and the arrow keys swap along
+            with them, so the left arrow still moves towards the box that sits on the visual left, which is the
+            one holding the next character. The value itself keeps its logical order: the first box is always the
+            first character of the code.
+        </div>
         <br /><br />
         <div dir="rtl">
-            <BitOtpInput Label="Default" Dir="BitDir.Rtl" />
+            <BitOtpInput Label="پیش‌فرض" Dir="BitDir.Rtl" />
             <br /><br />
-            <BitOtpInput Label="Reversed" Reversed Dir="BitDir.Rtl" />
+            <BitOtpInput Label="معکوس" Reversed Dir="BitDir.Rtl" />
+            <br /><br />
+            <BitOtpInput Label="جداکننده" Length="6" Separator="-" Dir="BitDir.Rtl" />
         </div>
     </DemoExample>
 </DemoPage>

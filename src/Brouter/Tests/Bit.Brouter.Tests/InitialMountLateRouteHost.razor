@@ -1,0 +1,19 @@
+@* A route that only exists once ShowLate flips to true. Pins the late-registration rematch: when
+   the route appears while the app is already AT its URL, the router re-evaluates the winner and
+   renders it without requiring a navigation. *@
+
+<Brouter>
+    <Broute Path="/always">
+        <Content><div data-testid="im-always">always</div></Content>
+    </Broute>
+    @if (ShowLate)
+    {
+        <Broute Path="/late">
+            <Content><div data-testid="im-late">late</div></Content>
+        </Broute>
+    }
+</Brouter>
+
+@code {
+    [Parameter] public bool ShowLate { get; set; }
+}

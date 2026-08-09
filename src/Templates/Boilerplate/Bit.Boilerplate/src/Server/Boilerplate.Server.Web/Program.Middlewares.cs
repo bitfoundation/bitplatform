@@ -63,7 +63,7 @@ public static partial class Program
                     {
                         context.Response.GetTypedHeaders().CacheControl = new()
                         {
-                            NoCache = true
+                            NoStore = true
                         };
                     }
                     else

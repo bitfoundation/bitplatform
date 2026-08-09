@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/MauiProgram.Services.cs
+
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;

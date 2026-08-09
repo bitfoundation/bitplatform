@@ -24,7 +24,9 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     /// <summary>
     /// End-to-end feature-set journey proving a user-group's features flow into its members' access tokens at sign-in:
     /// <list type="number">
-    /// <item>The tenant admin grants the "Manage roles" (Roles_Manage) feature to a user-group (needs elevated access).</item>
+    /// <item>The tenant admin grants the "Manage roles" (Roles_Manage) feature to a user-group. Her session was just
+    /// created by a password sign-in, so it is provably not elevated and the OTP step-up MUST be demanded - the test
+    /// fails if it is not.</item>
     /// <item>A member of that group signs in and, because her fresh token now carries the feature, can reach the Manage roles page.</item>
     /// <item>The tenant admin removes that feature from the user-group again (still elevated, so no new prompt).</item>
     /// <item>The member signs out and back in; her new token no longer carries the feature, so the Manage roles page is off-limits.</item>
@@ -46,8 +48,10 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         // ---- Browser 1: the tenant admin (the default Page / Context) ----
         await SignInWithPassword(Page, serverAddress, StoreAdminEmail, Password);
 
-        // She adds the Manage roles page to the user-group's feature set.
-        await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: true);
+        // She adds the Manage roles page to the user-group's feature set. She has just signed in with a password and the
+        // seeded store admin has no two-factor, so her session cannot already be elevated: this mutation MUST be
+        // challenged, and the test says so rather than tolerating a missing prompt.
+        await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: true, elevationIsRequired: true);
 
         // ---- Browser 2: the group's member, in her own isolated browser context ----
         await using var memberContext = await Browser.NewContextAsync(ContextOptions());
@@ -61,7 +65,8 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
         await AssertManageRolesPageAccessible(memberPage, serverAddress, accessible: true);
 
         // ---- Browser 1: the admin removes the feature from the user-group again ----
-        await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: false);
+        // Her elevated window from the grant is still open, so this one legitimately may or may not prompt.
+        await SetUserGroupRolesManageFeature(Page, server, userGroupName, granted: false, elevationIsRequired: false);
 
         // ---- Browser 2: features are captured at sign-in, so only after re-authenticating does she lose access ----
         await SignOut(memberPage, serverAddress);
@@ -134,11 +139,18 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     }
 
     /// <summary>
-    /// Adds or removes the Roles_Manage feature on the given user-group from the Manage roles page. The first
-    /// (grant) call needs elevated access - an elevated token is e-mailed (and dev-logged) and an OTP prompt appears;
-    /// the later (revoke) call reuses that still-valid elevation, so no new prompt shows.
+    /// Adds or removes the Roles_Manage feature on the given user-group from the Manage roles page.
+    /// <para>
+    /// <paramref name="elevationIsRequired"/> is what makes this test a test of the step-up gate rather than of the
+    /// toggle. When true the OTP prompt MUST appear, and its absence fails the run: that is the call made right after a
+    /// password sign-in, where the session provably carries no elevation. When false the caller's earlier elevation may
+    /// still be valid, so both outcomes are legitimate and a missing prompt is tolerated. Tolerating it on BOTH calls -
+    /// which is what a bare catch(TimeoutException) does - leaves the whole file green after the ELEVATED_ACCESS policy
+    /// is removed from RoleManagementController.AddClaims/DeleteClaims, since the only remaining assertion is that the
+    /// mutation happened at all.
+    /// </para>
     /// </summary>
-    private async Task SetUserGroupRolesManageFeature(IPage page, AppTestServer server, string userGroupName, bool granted)
+    private async Task SetUserGroupRolesManageFeature(IPage page, AppTestServer server, string userGroupName, bool granted, bool elevationIsRequired)
     {
         await page.GotoAsync(new Uri(server.WebAppServerAddress, PageUrls.Roles).ToString(),
             new() { WaitUntil = WaitUntilState.NetworkIdle });
@@ -174,25 +186,36 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
 
         await toggle.ClickAsync();
 
-        // Mutating a group's features needs elevated access. The first such mutation in the session pops the OTP prompt (and
-        // an elevated token is e-mailed / dev-logged); later mutations reuse that still-valid elevation, so no prompt shows.
-        // Wait briefly for the prompt and only fill it when it actually appears, rather than assuming which call elevates.
-        try
-        {
-            await page.Locator(".bit-otp-inp").First.WaitForAsync(new()
-            {
-                Timeout = (float)TimeSpan.FromSeconds(10).TotalMilliseconds
-            });
+        // Mutating a group's features needs elevated access: the OTP prompt appears and an elevated token is e-mailed
+        // (and dev-logged). Filling it elevates her session (a token refresh) and then persists the role-claim change.
+        var otpPrompt = page.Locator(".bit-otp-inp").First;
 
+        var elevationWasChallenged = true;
+
+        if (elevationIsRequired)
+        {
+            // No try/catch: an unelevated session that is NOT challenged is the regression this test exists to catch.
+            await otpPrompt.WaitForAsync();
+        }
+        else
+        {
+            try
+            {
+                await otpPrompt.WaitForAsync(new() { Timeout = (float)TimeSpan.FromSeconds(10).TotalMilliseconds });
+            }
+            catch (TimeoutException)
+            {
+                // No prompt appeared: the session is still elevated from an earlier mutation, so the change was persisted directly.
+                elevationWasChallenged = false;
+            }
+        }
+
+        if (elevationWasChallenged)
+        {
             var captured = await server.WaitForCapturedEmail(StoreAdminEmail,
                 capturedEmail => capturedEmail.Kind is CapturedEmailKind.ElevatedAccess, TestContext.CancellationToken);
 
-            // Filling the OTP elevates her session (a token refresh) and then persists the role-claim change.
             await BitOtpInputUtils.FillOtpInputs(page, captured.Token!);
-        }
-        catch (TimeoutException)
-        {
-            // No prompt appeared: the session is still elevated from an earlier mutation, so the change was persisted directly.
         }
 
         // The role-claim change runs over the Blazor Server circuit (invisible to Playwright's network events), so wait on

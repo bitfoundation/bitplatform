@@ -609,14 +609,25 @@ public partial class UserController : AppControllerBase, IUserController
     /// <summary>
     /// Setting AcceptedOn to null hides the user from the tenant's users list and prevents auto signing into that tenant,
     /// but the user can re-join later by switching into it again, as long as the TenantUser record exists.
+    /// <para>
+    /// Leaving a membership that is ALREADY pending deletes it instead, which is how an invitation gets declined. There
+    /// is no other way to get rid of one: setting AcceptedOn to null again changes nothing while still reporting success,
+    /// and the tenant admin cannot remove it either, because UserManagementController.EnsureUserIsInCurrentTenant only
+    /// reaches accepted memberships. Without this, anyone holding Tenant_Manage could pin a tenant card carrying text of
+    /// their choosing into an arbitrary user's tenant list, permanently.
+    /// </para>
     /// </summary>
     [HttpPost("{tenantId}"), Authorize(Policy = AuthPolicies.ELEVATED_ACCESS)]
     public async Task LeaveTenant(Guid tenantId, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
 
-        if (await DbContext.TenantUsers.AnyAsync(tu => tu.UserId == userId && tu.TenantId == tenantId, cancellationToken) is false)
-            throw new ResourceNotFoundException().WithData("Reason", "Tenant user not found.");
+        var membership = await DbContext.TenantUsers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(tu => tu.UserId == userId && tu.TenantId == tenantId, cancellationToken)
+            ?? throw new ResourceNotFoundException().WithData("Reason", "Tenant user not found.");
+
+        var isDecliningAPendingInvitation = membership.AcceptedOn is null;
 
         // The tenant claim gets read from the user session during token refresh (See IdentityController.Refresh),
         // so all of the user's sessions that are signed into this tenant get moved to her next tenant (or none).
@@ -630,9 +641,16 @@ public partial class UserController : AppControllerBase, IUserController
         {
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
 
-            await DbContext.TenantUsers
-                .Where(tu => tu.UserId == userId && tu.TenantId == tenantId)
-                .ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
+            var membershipToLeave = DbContext.TenantUsers.Where(tu => tu.UserId == userId && tu.TenantId == tenantId);
+
+            if (isDecliningAPendingInvitation)
+            {
+                await membershipToLeave.ExecuteDeleteAsync(cancellationToken);
+            }
+            else
+            {
+                await membershipToLeave.ExecuteUpdateAsync(tu => tu.SetProperty(t => t.AcceptedOn, (DateTimeOffset?)null), cancellationToken);
+            }
 
             await DbContext.UserSessions
                 .Where(us => us.UserId == userId && us.TenantId == tenantId)

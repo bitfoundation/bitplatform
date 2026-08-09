@@ -1,3 +1,6 @@
+// [mirror] webauthn ceremony driven through the loopback server - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiWebAuthnService.cs
+
 namespace Boilerplate.Client.Windows.Infrastructure.Services;
 
 public partial class WindowsWebAuthnService : WebAuthnServiceBase

@@ -1,0 +1,12 @@
+@* Flat routes behind the first-batch probe. Used by InitialMountTests to pin that the initial
+   mount reveals the matched route in the FIRST render batch (no blank flash after prerender). *@
+
+<InitialBatchProbe />
+<Brouter>
+    <Broute Path="/home">
+        <Content><InitialMountContent /></Content>
+    </Broute>
+    <Broute Path="/other">
+        <Content><div data-testid="im-other">other</div></Content>
+    </Broute>
+</Brouter>

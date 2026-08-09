@@ -95,9 +95,6 @@ public partial class Templates03GettingStartedPage
                 (text: @"echo 'Install the GitHub Copilot extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';",
                 command: "code --install-extension GitHub.copilot;"),
 
-                (text: @"echo 'Install the Live Sass Compiler extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass';",
-                command: "code --install-extension glenn2223.live-sass;"),
-
                 (text: @"echo 'Install the GitHub Copilot Chat extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat';",
                 command: "code --install-extension GitHub.copilot-chat;"),
 

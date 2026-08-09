@@ -473,9 +473,9 @@ This is **extremely useful for**:
 
 ### Push Notification Subscription
 
-**Client-Side Interface**: [`src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Services/Contracts/IPushNotificationService.cs)
+**Client-Side Interface**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IPushNotificationService.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IPushNotificationService.cs)
 
-**Base Implementation**: [`src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Services/PushNotificationServiceBase.cs)
+**Base Implementation**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/PushNotificationServiceBase.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/PushNotificationServiceBase.cs)
 
 ```csharp
 public async Task Subscribe(CancellationToken cancellationToken)
@@ -504,7 +504,7 @@ Each platform has its own implementation:
 
 ### Server-Side Push Notification Service
 
-**Location**: [`src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Services/PushNotificationService.cs)
+**Location**: [`src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs`](/src/Server/Boilerplate.Server.Api/Features/PushNotification/PushNotificationService.cs)
 
 ---
 

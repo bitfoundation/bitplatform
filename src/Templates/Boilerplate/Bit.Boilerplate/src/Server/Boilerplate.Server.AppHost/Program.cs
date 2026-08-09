@@ -132,13 +132,10 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
     }
 
     builder.AddMaui(serverWebProject, tunnel);
-}
 
-if (builder.ExecutionContext.IsRunMode)
-{
     // Every container is created from scratch on each run and is destroyed as soon as the app host stops.
     // Uncommenting the following line keeps them alive and reuses them instead, which makes starting the project
-    // (F5 / `dotnet run`) and running the automated tests considerably faster.
+    // (F5 / `aspire start`) and running the automated tests considerably faster.
     // The costs are that those containers keep consuming memory even while you're not debugging the project (you can
     // stop them from Docker Desktop whenever you need those resources back)
     // Check out the `.docs/20- .NET Aspire.md` file for more details.

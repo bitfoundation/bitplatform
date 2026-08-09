@@ -1,4 +1,7 @@
 //+:cnd:noEmit
+// [mirror] blazor hybrid DI registrations, logging and OpenTelemetry setup - keep in sync with:
+// - src/Client/Boilerplate.Client.Windows/Program.Services.cs
+
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
 //#endif

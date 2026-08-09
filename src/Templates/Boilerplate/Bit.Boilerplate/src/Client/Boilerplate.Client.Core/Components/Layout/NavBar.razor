@@ -16,7 +16,7 @@
         </AuthorizeView>
         @*#endif*@
 
-        @*#if (module == "Admin")*@
+        @*#if (module == "Admin" && multitenant == true)*@
         <AuthorizeView Policy="@AppFeatures.AdminPanel.Dashboard_View">
             <AuthorizeView Policy="@AuthPolicies.TENANT_SELECTED" Context="_">
                 <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@PageUrls.Dashboard" />
@@ -27,6 +27,14 @@
                 <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@PageUrls.Categories" />
                 <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@PageUrls.Products" />
             </AuthorizeView>
+        </AuthorizeView>
+        @*#elseif (module == "Admin")*@
+        <AuthorizeView Policy="@AppFeatures.AdminPanel.Dashboard_View">
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Dashboard)]" IconName="@BitIconName.BarChartVerticalFill" Url="@PageUrls.Dashboard" />
+        </AuthorizeView>
+        <AuthorizeView Policy="@AppFeatures.AdminPanel.ProductCatalog_Manage">
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Categories)]" IconName="@BitIconName.BuildQueue" Url="@PageUrls.Categories" />
+            <BitNavBarOption Text="@Localizer[nameof(AppStrings.Products)]" IconName="@BitIconName.Product" Url="@PageUrls.Products" />
         </AuthorizeView>
         @*#endif*@
 

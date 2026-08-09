@@ -142,7 +142,6 @@ public partial class Acknowledgements
         new("Container Tools (Docker)", "https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker", "https://github.com/microsoft/vscode-docker", "MIT"),
         new("Dev Containers", "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers", null, "Proprietary"),
         new("Blazor WASM Companion", "https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion", "https://github.com/dotnet/razor", "MIT"),
-        new("Live Sass Compiler", "https://marketplace.visualstudio.com/items?itemName=glenn2223.live-sass", "https://github.com/glenn2223/vscode-live-sass-compiler", "MIT"),
         new("ResX Manager", "https://marketplace.visualstudio.com/items?itemName=TomEnglert.ResXManager", "https://github.com/dotnet/ResXResourceManager", "MIT"),
         new("VS \"ASP.NET & web development\" workload", "https://visualstudio.microsoft.com/vs/features/web", null, "Proprietary"),
         new("VS \".NET MAUI development\" workload", "https://dotnet.microsoft.com/apps/maui", null, "Proprietary"),

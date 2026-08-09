@@ -1,6 +1,6 @@
 //+:cnd:noEmit
 using Boilerplate.Shared.Features.Diagnostic;
-//#if (signalR == true || notification == true)
+//#if (notification == true)
 using Boilerplate.Server.Api.Features.PushNotification;
 //#endif
 
