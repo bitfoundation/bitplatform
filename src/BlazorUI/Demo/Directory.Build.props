@@ -25,6 +25,11 @@
         <DefineConstants Condition="  $(TargetFramework.Contains('-mac')) ">$(DefineConstants);Mac</DefineConstants>
 
         <HotReloadAutoRestart>true</HotReloadAutoRestart>
+
+        <!-- Bit.CodeAnalyzers runs over every demo page and adds ~25% to the inner-loop compile, for
+             diagnostics that are warnings-only here. The IDE still surfaces them live (that is
+             RunAnalyzersDuringLiveAnalysis, untouched) and Release builds still run them. -->
+        <RunAnalyzersDuringBuild Condition=" '$(Configuration)' == 'Debug' ">false</RunAnalyzersDuringBuild>
     </PropertyGroup>
 
     <ItemGroup>

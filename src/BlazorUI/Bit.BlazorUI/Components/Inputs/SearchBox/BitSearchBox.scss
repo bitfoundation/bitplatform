@@ -1,15 +1,25 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-srb {
-    display: flex;
+    margin: 0;
+    padding: 0;
+    display: block;
     font-weight: 400;
-    align-items: stretch;
-    flex-flow: row nowrap;
+    position: relative;
+    box-sizing: border-box;
     font-family: $tg-font-family;
+
+    --bit-srb-height: #{spacing(4)};
+    --bit-srb-fontsize: #{spacing(1.75)};
+    --bit-srb-iconsize: #{spacing(2)};
 
     &.bit-dis {
         cursor: default;
         pointer-events: none;
+
+        .bit-srb-lbl {
+            color: $clr-fg-dis;
+        }
 
         .bit-srb-cnt {
             color: var(--bit-srb-clr-dis-text);
@@ -125,6 +135,25 @@
     }
 }
 
+.bit-srb-lbl {
+    margin: 0;
+    display: block;
+    box-shadow: none;
+    font-weight: 600;
+    color: $clr-fg-pri;
+    box-sizing: border-box;
+    line-height: spacing(2.5);
+    overflow-wrap: break-word;
+    padding: spacing(0.625) 0;
+    font-size: var(--bit-srb-fontsize);
+}
+
+.bit-srb-wrp {
+    display: flex;
+    align-items: stretch;
+    flex-flow: row nowrap;
+}
+
 .bit-srb-cnt {
     flex: 1;
     margin: 0;
@@ -132,12 +161,12 @@
     max-width: 100%;
     box-shadow: none;
     color: $clr-fg-pri;
-    height: spacing(4);
     position: relative;
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    height: var(--bit-srb-height);
+    font-size: var(--bit-srb-fontsize);
     border-radius: $shp-border-radius;
     background-color: var(--bit-srb-clr-bg);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -147,12 +176,12 @@
     cursor: text;
     display: flex;
     flex-shrink: 0;
-    width: spacing(4);
     text-align: center;
-    font-size: spacing(2);
     flex-direction: column;
     justify-content: center;
     color: var(--bit-srb-clr);
+    width: var(--bit-srb-height);
+    font-size: var(--bit-srb-iconsize);
     transition: width $mot-duration ease 0s;
 
     i {
@@ -192,12 +221,11 @@
     align-items: center;
     white-space: nowrap;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
     color: $clr-fg-pri;
     background: $clr-bg-sec;
 
     span {
-        font-size: spacing(1.75);
+        font-size: var(--bit-srb-fontsize);
         padding-bottom: spacing(0.125);
     }
 }
@@ -207,7 +235,6 @@
     border: none;
     cursor: pointer;
     font-weight: 400;
-    width: spacing(4);
     user-select: none;
     position: relative;
     text-align: center;
@@ -216,10 +243,12 @@
     display: inline-block;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    width: var(--bit-srb-height);
     background-color: transparent;
     font-family: $tg-font-family;
-    border-radius: 0 spacing(0.125) spacing(0.125) 0;
+    font-size: var(--bit-srb-fontsize);
+    border-start-end-radius: spacing(0.125);
+    border-end-end-radius: spacing(0.125);
 
     i {
         width: unset;
@@ -227,9 +256,9 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: spacing(1.5);
         line-height: spacing(2);
         color: $clr-fg-sec;
+        font-size: calc(var(--bit-srb-iconsize) * 0.75);
     }
 
     @media (hover: hover) {
@@ -249,19 +278,19 @@
     flex-shrink: 0;
     cursor: pointer;
     font-weight: 400;
-    width: spacing(4);
     user-select: none;
     position: relative;
     text-align: center;
     align-items: center;
     outline: transparent;
-    font-size: spacing(2);
     text-decoration: none;
     box-sizing: border-box;
     flex-direction: column;
     justify-content: center;
     padding: 0 spacing(0.5);
+    width: var(--bit-srb-height);
     font-family: $tg-font-family;
+    font-size: var(--bit-srb-iconsize);
     background-color: var(--bit-srb-clr);
     border-end-end-radius: $shp-border-radius;
     border-start-end-radius: $shp-border-radius;
@@ -283,12 +312,12 @@
     i {
         width: unset;
         flex-shrink: 0;
-        height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: spacing(2);
-        line-height: spacing(2);
         color: var(--bit-srb-clr-txt);
+        height: var(--bit-srb-iconsize);
+        font-size: var(--bit-srb-iconsize);
+        line-height: var(--bit-srb-iconsize);
     }
 }
 
@@ -404,7 +433,7 @@
 .bit-srb-fic {
     &.bit-srb-foc {
         .bit-srb-iwp {
-            width: spacing(4);
+            width: var(--bit-srb-height);
 
             i {
                 opacity: 1;
@@ -416,7 +445,7 @@
         @media (hover: hover) {
             &:hover {
                 .bit-srb-iwp {
-                    width: spacing(4);
+                    width: var(--bit-srb-height);
 
                     i {
                         opacity: 1;
@@ -438,10 +467,30 @@
     }
 }
 
-.bit-srb-hic {
-    .bit-srb-cnt {
-        //padding: 0 spacing(1);
-    }
+// The callout carries the class itself, since it is rendered outside of the root element.
+.bit-srb-cal.bit-srb-nan {
+    animation: none;
+}
+
+// The live region only exists for the assistive technologies, so it is removed from the
+// visual layout without ever being display:none or visibility:hidden, both of which would
+// take it out of the accessibility tree along with the announcement it carries.
+.bit-srb-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+// While the suggest callout is open, a transparent full screen overlay sits on top of the page to
+// catch the next outside click. The component has to stay above it (but still below the callout,
+// whose z-index is higher), otherwise that overlay would swallow the clicks that belong to the
+// search box itself: placing the caret in the input, clearing the field, running the search.
+.bit-srb-opn {
+    z-index: calc(#{$zindex-overlay} + 1);
 }
 
 .bit-srb-ssb {
@@ -449,6 +498,38 @@
         border-end-end-radius: 0;
         border-start-end-radius: 0;
     }
+}
+
+.bit-srb-flw {
+    width: 100%;
+}
+
+.bit-srb-req {
+    .bit-srb-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+// These override the tokens that .bit-srb sets on the very same element, so they are qualified
+// with it to win on specificity rather than on where they happen to sit in the stylesheet.
+.bit-srb.bit-srb-sm {
+    --bit-srb-height: #{spacing(3)};
+    --bit-srb-fontsize: #{spacing(1.5)};
+    --bit-srb-iconsize: #{spacing(1.75)};
+}
+
+.bit-srb.bit-srb-md {
+    --bit-srb-height: #{spacing(4)};
+    --bit-srb-fontsize: #{spacing(1.75)};
+    --bit-srb-iconsize: #{spacing(2)};
+}
+
+.bit-srb.bit-srb-lg {
+    --bit-srb-height: #{spacing(5)};
+    --bit-srb-fontsize: #{spacing(2)};
+    --bit-srb-iconsize: #{spacing(2.5)};
 }
 
 .bit-srb-ovl {
@@ -489,7 +570,7 @@
     display: flex;
     cursor: pointer;
     overflow: hidden;
-    text-align: left;
+    text-align: start;
     font-weight: 400;
     user-select: none;
     position: relative;
@@ -505,7 +586,14 @@
     line-height: spacing(2.5);
     background-color: transparent;
     color: $clr-fg-pri;
+    font-family: $tg-font-family;
     border: $shp-border-width $shp-border-style transparent;
+
+    > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -521,6 +609,76 @@
         &:hover {
             background-color: $clr-bg-pri-hover;
         }
+    }
+}
+
+.bit-srb-hlt {
+    padding: 0;
+    font-weight: 600;
+    color: inherit;
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+.bit-srb-chd,
+.bit-srb-cft {
+    flex-shrink: 0;
+    color: $clr-fg-pri;
+    padding: spacing(1);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+}
+
+.bit-srb-chd {
+    border-block-end: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-srb-cft {
+    border-block-start: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-srb-hnt {
+    cursor: default;
+    user-select: none;
+    text-align: start;
+    font-style: italic;
+    color: $clr-fg-sec;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    font-size: spacing(1.75);
+    padding: spacing(1) spacing(1.25);
+}
+
+.bit-srb-lod,
+.bit-srb-nrs {
+    display: flex;
+    color: $clr-fg-sec;
+    align-items: center;
+    gap: spacing(0.75);
+    min-height: spacing(4.5);
+    padding: spacing(0.5) spacing(1);
+    box-sizing: border-box;
+    font-size: spacing(1.75);
+    overflow-wrap: break-word;
+}
+
+.bit-srb-spn {
+    flex-shrink: 0;
+    border-radius: 50%;
+    width: spacing(1.75);
+    height: spacing(1.75);
+    box-sizing: border-box;
+    border: spacing(0.25) $shp-border-style $clr-brd-pri;
+    border-block-start-color: $clr-pri;
+
+    // The spinner tokens rather than a literal duration: a looping animation must slow down
+    // under prefers-reduced-motion instead of collapsing to zero, which would render as flicker.
+    animation: bit-srb-spin $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-srb-spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 
