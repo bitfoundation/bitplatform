@@ -13,6 +13,11 @@ public class BitToggleClassStyles
     public string? Label { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the description of the BitToggle.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the container of the BitToggle.
     /// </summary>
     public string? Container { get; set; }

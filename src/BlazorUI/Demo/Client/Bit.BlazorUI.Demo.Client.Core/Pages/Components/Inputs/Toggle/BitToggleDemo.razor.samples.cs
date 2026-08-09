@@ -82,12 +82,16 @@ public partial class BitToggleDemo
 <div>Saved state: <b>@savedValue</b></div>
 
 
+<BitToggle Label=""Save to the server (AutoLoading)"" AutoLoading @bind-Value=""autoLoadingValue"" OnChange=""SaveTheToggle"" />
+
+
 <BitToggle Label=""Loading"" Loading />
 <BitToggle Label=""Loading and on"" Loading Value=""true"" />
 <BitToggle Label=""Loading with icons"" Loading OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />";
     private readonly string example9CsharpCode = @"
 private bool isSaving;
 private bool savedValue;
+private bool autoLoadingValue;
 
 private async Task HandleSaveToggle(bool value)
 {
@@ -97,6 +101,12 @@ private async Task HandleSaveToggle(bool value)
 
     savedValue = value;
     isSaving = false;
+}
+
+private async Task SaveTheToggle(bool value)
+{
+    // AutoLoading keeps the toggle busy for exactly as long as this callback takes
+    await Task.Delay(1000);
 }";
 
     private readonly string example10RazorCode = @"
@@ -276,10 +286,22 @@ private void HandleInvalidSubmit() { }";
 <BitToggle AriaLabelledby=""offline-mode-heading"" AriaDescribedby=""offline-mode-hint"" Text=""Enabled"" />
 
 
+<BitToggle Label=""Show advanced settings"" AriaControls=""advanced-settings-panel""
+           @bind-Value=""advancedSettingsVisible"" />
+
+<div id=""advanced-settings-panel"">
+    @if (advancedSettingsVisible)
+    {
+        <BitMessage Color=""BitColor.Info"">The panel this toggle controls.</BitMessage>
+    }
+</div>
+
+
 <BitToggle Text=""Dark mode"" />
 <BitToggle Label=""Notifications"" OnText=""Allowed"" OffText=""Blocked"" />";
     private readonly string example14CsharpCode = @"
 private BitToggle toggleRef = default!;
+private bool advancedSettingsVisible;
 
 private async Task FocusTheToggle()
 {
@@ -287,6 +309,29 @@ private async Task FocusTheToggle()
 }";
 
     private readonly string example15RazorCode = @"
+<BitToggle Label=""Auto renew""
+           Description=""The subscription is renewed one day before it expires."" />
+
+
+<div style=""max-width:32rem"">
+    <BitToggle FullWidth Inline
+               Label=""Offline mode""
+               Description=""Keep a copy of the last synced data on this device."" />
+
+    <BitToggle FullWidth Inline
+               Label=""Usage statistics""
+               Description=""Send anonymous usage data to help us prioritize what to build next."" />
+</div>
+
+
+<BitToggle Label=""Beta features"">
+    <DescriptionTemplate>
+        Turning this on opts you into features that are still changing.
+        <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Learn more</BitLink>
+    </DescriptionTemplate>
+</BitToggle>";
+
+    private readonly string example16RazorCode = @"
 <BitToggle Color=""BitColor.Primary"" Label=""Primary"" Value />
 <BitToggle Color=""BitColor.Secondary"" Label=""Secondary"" Value />
 <BitToggle Color=""BitColor.Tertiary"" Label=""Tertiary"" Value />
@@ -315,7 +360,7 @@ private async Task FocusTheToggle()
 <BitToggle Color=""BitColor.Warning"" Label=""Warning"" />
 <BitToggle Color=""BitColor.Error"" Label=""Error"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitToggle Label=""Check / Xmark (string)"" OnIcon=""@(""fa-solid fa-check"")"" OffIcon=""@(""fa-solid fa-xmark"")"" />
@@ -333,7 +378,7 @@ private async Task FocusTheToggle()
 <BitToggle Label=""Bell (BitIconInfo.Bi)"" Color=""BitColor.Success""
            OnIcon=""@BitIconInfo.Bi(""bell-fill"")"" OffIcon=""@BitIconInfo.Bi(""bell-slash"")"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitToggle Size=""BitSize.Small"" Label=""Off"" />
 <BitToggle Size=""BitSize.Small"" Label=""On"" Value />
 <BitToggle Size=""BitSize.Small"" Label=""With icons"" Value OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />
@@ -346,7 +391,7 @@ private async Task FocusTheToggle()
 <BitToggle Size=""BitSize.Large"" Label=""On"" Value />
 <BitToggle Size=""BitSize.Large"" Label=""With icons"" Value OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -416,7 +461,7 @@ private async Task FocusTheToggle()
     <OffContent>OFF</OffContent>
 </BitToggle>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />
 
 <BitToggle Label=""این یک تاگل خطی است"" Dir=""BitDir.Rtl"" Inline />

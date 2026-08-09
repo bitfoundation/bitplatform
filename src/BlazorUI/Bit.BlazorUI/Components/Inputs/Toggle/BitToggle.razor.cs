@@ -5,12 +5,13 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// A toggle represents a physical switch that allows someone to choose between two mutually exclusive options.
 /// For example, “On/Off”, “Show/Hide”. It supports state texts, an icon or custom content inside the track,
-/// a loading state, cancellable changes, read-only and required modes, label placement on any side, and it is
-/// fully operable from the keyboard.
+/// a description, a loading state, cancellable changes, read-only and required modes, label placement on any
+/// side, and it is fully operable from the keyboard.
 /// </summary>
 public partial class BitToggle : BitInputBase<bool>
 {
     private bool _isChanging;
+    private bool _autoLoading;
     private string? _labelId;
     private string? _buttonId;
     private string? _stateText;
@@ -18,15 +19,28 @@ public partial class BitToggle : BitInputBase<bool>
     private string? _labelledById;
     private string? _describedById;
     private string? _descriptionId;
+    private string? _ariaDescriptionId;
     private ElementReference _buttonRef;
     private string? _ariaChecked => CurrentValue ? "true" : "false";
 
 
 
     /// <summary>
+    /// The id of the element the toggle controls, rendered as <c>aria-controls</c> on the switch.
+    /// </summary>
+    /// <remarks>
+    /// Use it when flipping the toggle governs another region of the page - a panel it reveals, a list it
+    /// filters - so assistive technologies can tie the switch to what it acts on.
+    /// </remarks>
+    [Parameter] public string? AriaControls { get; set; }
+
+    /// <summary>
     /// Detailed description of the toggle for the benefit of screen readers, rendered as a visually
     /// hidden element that the switch points to via <c>aria-describedby</c>.
     /// </summary>
+    /// <remarks>
+    /// Use <see cref="Description"/> instead when the explanation should be visible to everyone.
+    /// </remarks>
     [Parameter] public string? AriaDescription { get; set; }
 
     /// <summary>
@@ -54,6 +68,18 @@ public partial class BitToggle : BitInputBase<bool>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
+    /// Turns the toggle busy on its own for as long as the callbacks behind a change are still running,
+    /// without a loading flag having to be tracked outside the component.
+    /// </summary>
+    /// <remarks>
+    /// It is the <see cref="Loading"/> state in every respect - the knob becomes a spinner and the toggle
+    /// stops accepting clicks - only raised and cleared by the toggle itself around the awaited
+    /// <see cref="OnClick"/>, <see cref="OnChanging"/> and <c>OnChange</c> callbacks. A <see cref="Loading"/>
+    /// set from the outside still applies on top of it, so the two can be mixed.
+    /// </remarks>
+    [Parameter] public bool AutoLoading { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the toggle.
     /// </summary>
     [Parameter] public BitToggleClassStyles? Classes { get; set; }
@@ -64,6 +90,23 @@ public partial class BitToggle : BitInputBase<bool>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// A visible explanation of what the toggle switches, rendered on a line of its own under it and
+    /// announced after the name of the switch through <c>aria-describedby</c>.
+    /// </summary>
+    /// <remarks>
+    /// This is the second line of a settings row - the sentence that says what turning the switch on
+    /// actually does. Use <see cref="AriaDescription"/> instead when it should only be announced.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Custom description of the toggle, replacing <see cref="Description"/> with arbitrary markup.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? DescriptionTemplate { get; set; }
 
     /// <summary>
     /// Renders the toggle in full width of its container while putting space between the label and the knob.
@@ -102,9 +145,10 @@ public partial class BitToggle : BitInputBase<bool>
     /// </summary>
     /// <remarks>
     /// A loading toggle keeps its current state and ignores clicks, but stays focusable and is
-    /// announced as busy, so the change that is still in flight is not toggled a second time.
-    /// The spinner is drawn to the size of the knob it replaces the glyph of, so turning the toggle
-    /// busy never resizes it.
+    /// announced as busy and unavailable, so the change that is still in flight is not toggled a second
+    /// time. The spinner is drawn to the size of the knob it replaces the glyph of, so turning the toggle
+    /// busy never resizes it. Use <see cref="AutoLoading"/> to have the toggle raise this state itself
+    /// around the callbacks of a change.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Loading { get; set; }
@@ -313,7 +357,11 @@ public partial class BitToggle : BitInputBase<bool>
 
         ClassBuilder.Register(() => ReadOnly ? "bit-tgl-rdl" : string.Empty);
 
-        ClassBuilder.Register(() => Loading ? "bit-tgl-ldg" : string.Empty);
+        ClassBuilder.Register(() => IsLoading ? "bit-tgl-ldg" : string.Empty);
+
+        // The description takes a line of its own under the toggle, which the row shapes only have room
+        // for once the root is allowed to wrap - so the wrapping is turned on only when there is one.
+        ClassBuilder.Register(() => HasDescription ? "bit-tgl-hds" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required && HasLabel ? "bit-tgl-req" : string.Empty);
 
@@ -335,6 +383,7 @@ public partial class BitToggle : BitInputBase<bool>
         _buttonId = $"BitToggle-{UniqueId}-button";
         _stateTextId = $"BitToggle-{UniqueId}-state-text";
         _descriptionId = $"BitToggle-{UniqueId}-description";
+        _ariaDescriptionId = $"BitToggle-{UniqueId}-aria-description";
 
         SetDefaultValue();
 
@@ -383,6 +432,12 @@ public partial class BitToggle : BitInputBase<bool>
 
         _isChanging = true;
 
+        // read once, so the flag that is cleared in the end is the one that was raised in the
+        // beginning even if the parameter is swapped while the change is still running
+        var autoLoading = AutoLoading;
+
+        if (autoLoading) SetAutoLoading(true);
+
         try
         {
             await ChangeValueAsync(value);
@@ -390,6 +445,8 @@ public partial class BitToggle : BitInputBase<bool>
         finally
         {
             _isChanging = false;
+
+            if (autoLoading) SetAutoLoading(false);
         }
     }
 
@@ -414,6 +471,17 @@ public partial class BitToggle : BitInputBase<bool>
     private bool HasContent => OnContent is not null || OffContent is not null;
 
     /// <summary>
+    /// Whether the toggle carries a visible description, which is what the extra line under it is rendered for.
+    /// </summary>
+    private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// Whether the toggle is busy, from the <see cref="Loading"/> parameter or from
+    /// <see cref="AutoLoading"/> having raised it around a change of its own.
+    /// </summary>
+    private bool IsLoading => Loading || _autoLoading;
+
+    /// <summary>
     /// Whether the knob has a glyph to hold, which is what decides its enlarged geometry.
     /// </summary>
     /// <remarks>
@@ -430,7 +498,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// A change that is still running its awaited callbacks also closes the toggle to further clicks, so a
     /// second click landing while the first one is in flight cannot start a competing change.
     /// </remarks>
-    private bool IsInteractive => IsEnabled && ReadOnly is false && Loading is false && _isChanging is false;
+    private bool IsInteractive => IsEnabled && ReadOnly is false && IsLoading is false && _isChanging is false;
 
     private BitIconInfo? GetStateIcon()
     {
@@ -463,6 +531,10 @@ public partial class BitToggle : BitInputBase<bool>
         // awaited OnClick or OnChanging is still running is dropped instead of racing the change it precedes.
         _isChanging = true;
 
+        var autoLoading = AutoLoading;
+
+        if (autoLoading) SetAutoLoading(true);
+
         try
         {
             await OnClick.InvokeAsync(e);
@@ -472,7 +544,25 @@ public partial class BitToggle : BitInputBase<bool>
         finally
         {
             _isChanging = false;
+
+            if (autoLoading) SetAutoLoading(false);
         }
+    }
+
+    private void SetAutoLoading(bool value)
+    {
+        if (_autoLoading == value) return;
+
+        _autoLoading = value;
+
+        ClassBuilder.Reset();
+
+        // The spinner has to show up while the callbacks behind the change are still running rather than
+        // after they are done, so the render is asked for here instead of being left to the handler.
+        // Skipped once the toggle is gone, which an awaited callback leaves room for it to be by now.
+        if (IsDisposed) return;
+
+        StateHasChanged();
     }
 
     private async Task ChangeValueAsync(bool newValue)
@@ -526,11 +616,13 @@ public partial class BitToggle : BitInputBase<bool>
                           : (_stateText.HasValue() && string.Equals(onText, offText, StringComparison.Ordinal)) ? _stateTextId : null;
 
         // What is not part of the name becomes a description instead, so a custom state text is still
-        // announced - after the name, where a changing value belongs.
+        // announced - after the name, where a changing value belongs. The visible description comes before
+        // the screen-reader-only one, in the order the two are read on the page.
         _describedById = string.Join(' ', new[]
         {
             _stateText.HasValue() && _labelledById != _stateTextId ? _stateTextId : null,
-            AriaDescription.HasValue() ? _descriptionId : null,
+            HasDescription ? _descriptionId : null,
+            AriaDescription.HasValue() ? _ariaDescriptionId : null,
             AriaDescribedby.HasValue() ? AriaDescribedby : null
         }.Where(id => id.HasValue()));
     }

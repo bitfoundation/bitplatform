@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/toggle"
             Title="Toggle"
-            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, an icon or custom content inside its track, a loading state, cancellable changes, programmatic flipping, label placement on any side, and read-only and required modes." />
+            Description="A keyboard-accessible on/off switch with a sliding knob, state texts, an icon or custom content inside its track, a description line, an automatic or manual loading state, cancellable changes, programmatic flipping, label placement on any side, and read-only and required modes." />
 
 <DemoPage Name="Toggle"
           SecondaryNames="@(["Switch"])"
-          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention that a later submit carries out; a switch inside a long form that ends in a Submit button is the one place not to use it. The knob slides between the two ends of the track, so the state is carried by position as much as by color, and the slide collapses to a jump wherever reduced motion is asked for. It is built on a real focusable button with the switch role, so Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch together with its state. Beyond the two plain states it can name each of them with a state text, put an icon or arbitrary content inside its track, show a spinner while the change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side of the knob."
+          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention that a later submit carries out; a switch inside a long form that ends in a Submit button is the one place not to use it. The knob slides between the two ends of the track, so the state is carried by position as much as by color, and the slide collapses to a jump wherever reduced motion is asked for. It is built on a real focusable button with the switch role, so Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch together with its state. Beyond the two plain states it can name each of them with a state text, put an icon or arbitrary content inside its track, explain itself in a description line, show a spinner for as long as the change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side of the knob."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -79,7 +79,7 @@
             switch marks its two states. The whole toggle steps up to a roomier geometry as soon as either of them is
             set - and stays there in both states - so flipping it never resizes it under the pointer. Setting only one
             of the two leaves the other state with a plain knob. The
-            <BitLink Href="#example16">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
+            <BitLink Href="#example17">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
             these parameters.
         </div>
         <br />
@@ -173,13 +173,23 @@
         <div>
             A switch promises an immediate result, which is a promise a round trip to a server cannot always keep.
             <b>Loading</b> covers that gap: the knob turns into a spinner, the toggle keeps its current state and
-            stops accepting clicks, and it is announced as busy - so the change in flight is never flipped a second
-            time while it is still being saved. The toggle below stays busy for a second before its new state lands.
+            stops accepting clicks, and it is announced as busy and unavailable - so the change in flight is never
+            flipped a second time while it is still being saved. The toggle below stays busy for a second before its
+            new state lands.
         </div>
         <br />
         <BitToggle Label="Save to the server" Loading="isSaving" Value="savedValue" OnChange="HandleSaveToggle" />
         <br />
         <div>Saved state: <b>@savedValue</b></div>
+        <br /><br /><br />
+        <div>
+            <b>AutoLoading</b> reaches the same result without a flag of its own: the BitToggle raises and clears the
+            busy state itself around its awaited callbacks - <b>OnClick</b>, <b>OnChanging</b> and <b>OnChange</b> -
+            so the spinner covers exactly as long as the work behind the change takes. The toggle below saves for a
+            second with no <b>isSaving</b> field anywhere.
+        </div>
+        <br />
+        <BitToggle Label="Save to the server (AutoLoading)" AutoLoading @bind-Value="autoLoadingValue" OnChange="SaveTheToggle" />
         <br /><br /><br />
         <div>
             The spinner takes the place of the knob's icon, so it works with or without one, and it is drawn to the
@@ -355,6 +365,9 @@
             Its pointer target is never smaller than 24 by 24 CSS pixels, whatever size the track is drawn at, and the
             label and the state text are part of that target as well. <b>AutoFocus</b> puts the initial focus on it
             when the page renders, and <b>Title</b> fills the native tooltip shown when the pointer rests on the knob.
+            <b>Role</b> is the escape hatch for the rare case where the switch semantics are wrong - setting it to
+            <b>checkbox</b> makes the control announce itself as checked or unchecked instead of on or off, for a
+            choice that only takes effect on a later submit.
         </div><br />
         <div class="example-box">
             <BitToggle Label="Focus me with Tab, flip me with Space" />
@@ -369,7 +382,8 @@
         <br /><br /><br />
         <div>
             A BitToggle without a visible label needs an <b>AriaLabel</b> to have an accessible name, and
-            <b>AriaDescription</b> adds a visually hidden description that screen readers read after the name.
+            <b>AriaDescription</b> adds a visually hidden description that screen readers read after the name -
+            the announced-only counterpart of the visible <BitLink Href="#example15">Description</BitLink>.
         </div><br />
         <div class="example-box">
             <BitToggle AriaLabel="Dark mode" />
@@ -392,6 +406,22 @@
         </div>
         <br /><br /><br />
         <div>
+            When flipping the switch governs another part of the page, <b>AriaControls</b> names that part by its id,
+            so assistive technologies can tie the switch to what it acts on instead of leaving the two unrelated:
+        </div><br />
+        <div>
+            <BitToggle Label="Show advanced settings" AriaControls="advanced-settings-panel"
+                       @bind-Value="advancedSettingsVisible" />
+            <br />
+            <div id="advanced-settings-panel">
+                @if (advancedSettingsVisible)
+                {
+                    <BitMessage Color="BitColor.Info">The panel this toggle controls.</BitMessage>
+                }
+            </div>
+        </div>
+        <br /><br /><br />
+        <div>
             The name of a switch must not change along with its state, or it renames itself on every flip
             instead of naming itself. So the name comes from the label, and a state text that differs between
             the two states - <b>OnText</b> and <b>OffText</b> - is announced as a description after it rather
@@ -405,7 +435,44 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Description" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Description</b> adds the second line of a settings row: the sentence that says what turning the switch
+            on actually does, where the label only names it. It takes a line of its own under the whole BitToggle -
+            in every layout, including the single-line ones - and screen readers announce it after the name of the
+            switch, so the explanation is heard as well as read. In the single-line shapes the described BitToggle
+            spans its container - the layout a settings row wants anyway - while stacked it keeps hugging its
+            content. <b>DescriptionTemplate</b> puts arbitrary markup there instead of a plain string. Where the
+            explanation should only be announced and never shown, use
+            <BitLink Href="#example14">AriaDescription</BitLink> instead.
+        </div>
+        <br />
+        <BitToggle Label="Auto renew"
+                   Description="The subscription is renewed one day before it expires." />
+        <br /><br /><br />
+        <div><b>Inline</b> and <b>FullWidth</b>, the usual shape of a settings list:</div>
+        <br />
+        <div style="max-width:32rem">
+            <BitToggle FullWidth Inline
+                       Label="Offline mode"
+                       Description="Keep a copy of the last synced data on this device." />
+            <br />
+            <BitToggle FullWidth Inline
+                       Label="Usage statistics"
+                       Description="Send anonymous usage data to help us prioritize what to build next." />
+        </div>
+        <br /><br /><br />
+        <div><b>DescriptionTemplate</b>:</div>
+        <br />
+        <BitToggle Label="Beta features">
+            <DescriptionTemplate>
+                Turning this on opts you into features that are still changing.
+                <BitLink Href="https://bitplatform.dev" Target="_blank">Learn more</BitLink>
+            </DescriptionTemplate>
+        </BitToggle>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Color</b> picks the theme color the track fills with once the BitToggle is on, with <b>Primary</b> as
             the default; the off track stays neutral whichever color is picked, so it keeps reading as "off". The
@@ -454,7 +521,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             The knob icons are not limited to the built-in icon font: <b>OnIcon</b> and <b>OffIcon</b> take a
             <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
@@ -483,7 +550,7 @@
                    OnIcon="@BitIconInfo.Bi("bell-fill")" OffIcon="@BitIconInfo.Bi("bell-slash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Size</b> scales the track, the knob, the label and the state text together: <b>Small</b> for dense
             lists and table rows, <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitToggle is a
@@ -516,12 +583,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             The BitToggle can be restyled from the outside at three levels of reach. <b>Style</b> and <b>Class</b>
             apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name - the
-            root, the label, the container, the button (which is the track), the track content and each of its two
-            sides on its own, the thumb, its icon, the spinner and the state text - plus a <b>Checked</b> slot that
+            root, the label, the description, the container, the button (which is the track), the track content and
+            each of its two sides on its own, the thumb, its icon, the spinner and the state text - plus a
+            <b>Checked</b> slot that
             is applied only while the toggle is on, which is what lets the two states be painted differently without
             a single line of state-tracking code.
         </div>
@@ -550,7 +618,7 @@
         </BitToggle>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
             Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the BitToggle right-to-left. The knob then travels the other
             way - resting on the right when off and sliding to the left when on - and every side-aware layout follows

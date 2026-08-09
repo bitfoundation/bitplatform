@@ -6,6 +6,13 @@ public partial class BitToggleDemo
     [
         new()
         {
+            Name = "AriaControls",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the element the toggle controls, rendered as aria-controls on the switch.",
+        },
+        new()
+        {
             Name = "AriaDescription",
             Type = "string?",
             DefaultValue = "null",
@@ -34,6 +41,13 @@ public partial class BitToggleDemo
         },
         new()
         {
+            Name = "AutoLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Turns the toggle busy on its own for as long as the awaited OnClick, OnChanging and OnChange callbacks behind a change are still running, without a loading flag having to be tracked outside the component.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitToggleClassStyles?",
             DefaultValue = "null",
@@ -49,6 +63,20 @@ public partial class BitToggleDemo
             Description = "The general color of the toggle, applied to the track of the checked state.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "Description",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A visible explanation of what the toggle switches, rendered on a line of its own under it and announced after the name of the switch through aria-describedby.",
+        },
+        new()
+        {
+            Name = "DescriptionTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom description of the toggle, replacing Description with arbitrary markup.",
         },
         new()
         {
@@ -298,6 +326,13 @@ public partial class BitToggleDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the label of the BitToggle."
+                },
+                new()
+                {
+                    Name = "Description",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the description of the BitToggle."
                 },
                 new()
                 {
@@ -574,8 +609,11 @@ public partial class BitToggleDemo
 
     private bool isSaving;
     private bool savedValue;
+    private bool autoLoadingValue;
 
     private bool readOnlyValue;
+
+    private bool advancedSettingsVisible;
 
     private bool oneWayValue;
     private bool twoWayValue;
@@ -604,6 +642,12 @@ public partial class BitToggleDemo
 
         savedValue = value;
         isSaving = false;
+    }
+
+    private async Task SaveTheToggle(bool value)
+    {
+        // AutoLoading keeps the toggle busy for exactly as long as this callback takes
+        await Task.Delay(1000);
     }
 
     private void LogMethodChange(bool value)

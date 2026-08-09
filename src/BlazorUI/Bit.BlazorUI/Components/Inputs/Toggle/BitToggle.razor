@@ -30,6 +30,8 @@
     }
 
     <div style="@Styles?.Container" class="bit-tgl-cnt @Classes?.Container">
+        @* a busy toggle turns clicks away just like a disabled one does, so aria-disabled says so rather than
+           leaving assistive technologies to offer a change that never lands *@
         <button @ref="_buttonRef"
                 @onblur="HandleOnBlur"
                 @onclick="HandleOnClick"
@@ -49,18 +51,19 @@
                 disabled="@(IsEnabled is false)"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
-                aria-busy="@(Loading ? "true" : null)"
+                aria-controls="@AriaControls"
+                aria-busy="@(IsLoading ? "true" : null)"
                 aria-readonly="@(ReadOnly ? "true" : null)"
                 aria-required="@(Required ? "true" : null)"
                 aria-labelledby="@(_labelledById.HasValue() ? _labelledById : null)"
                 aria-describedby="@(_describedById.HasValue() ? _describedById : null)"
                 aria-invalid="@(ValueInvalid is true ? "true" : null)"
-                aria-disabled="@(IsEnabled is false ? "true" : null)">
+                aria-disabled="@(IsEnabled is false || IsLoading ? "true" : null)">
 
             @* The knob is taken out of the flow and slid between the two ends of the track, while the lane it
                would have taken is held open by the padding of the track, which swaps sides with the state. *@
             <span style="@Styles?.Thumb" class="bit-tgl-sta @Classes?.Thumb">
-                @if (Loading)
+                @if (IsLoading)
                 {
                     <span style="@Styles?.Spinner" class="bit-tgl-spn @Classes?.Spinner"></span>
                 }
@@ -93,10 +96,26 @@
         }
     </div>
 
+    @* A line of its own under the toggle: rendered outside the button, so it describes the switch through
+       aria-describedby instead of leaking into the accessible name the way content inside it would. *@
+    @if (HasDescription)
+    {
+        <div id="@_descriptionId" style="@Styles?.Description" class="bit-tgl-des @Classes?.Description">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                @Description
+            }
+        </div>
+    }
+
     @* rendered outside the button so the description drives aria-describedby without leaking into the accessible name *@
     @if (AriaDescription.HasValue())
     {
-        <span id="@_descriptionId" class="bit-tgl-dsc">@AriaDescription</span>
+        <span id="@_ariaDescriptionId" class="bit-tgl-dsc">@AriaDescription</span>
     }
 
     @* The form value carrier: hidden from both the tab order and assistive technologies, which the switch

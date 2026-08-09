@@ -1037,6 +1037,274 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual("an-external-hint", com.Find("button").GetAttribute("aria-describedby"));
     }
 
+    [TestMethod, DataRow("the-panel")]
+    public void BitToggleAriaControlsTest(string ariaControls)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AriaControls, ariaControls);
+        });
+
+        Assert.AreEqual(ariaControls, com.Find("button").GetAttribute("aria-controls"));
+    }
+
+    [TestMethod]
+    public void BitToggleWithoutAriaControlsShouldNotRenderTheAttribute()
+    {
+        Assert.IsFalse(RenderComponent<BitToggle>().Find("button").HasAttribute("aria-controls"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleLoadingShouldBeReportedAsDisabledToo(bool loading)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Loading, loading);
+        });
+
+        var button = com.Find("button");
+
+        // a busy toggle turns clicks away just like a disabled one does, so it says so - while staying
+        // focusable, which is what keeps it out of the native disabled attribute
+        Assert.AreEqual(loading ? "true" : null, button.GetAttribute("aria-disabled"));
+        Assert.IsFalse(button.HasAttribute("disabled"));
+    }
+
+    [TestMethod, DataRow("What this switch does")]
+    public void BitToggleDescriptionTest(string description)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.Description, description);
+        });
+
+        var toggle = com.Find(".bit-tgl");
+        var descriptionElement = com.Find(".bit-tgl-des");
+
+        Assert.AreEqual(description, descriptionElement.TextContent.Trim());
+
+        // the description takes a line of its own, which the row shapes only have room for once the root wraps
+        Assert.IsTrue(toggle.ClassList.Contains("bit-tgl-hds"));
+
+        // it describes the switch rather than naming it, and it does so from outside the button so it cannot
+        // leak into the accessible name the way content inside it would
+        Assert.AreEqual(descriptionElement.Id, com.Find("button").GetAttribute("aria-describedby"));
+        Assert.AreEqual(0, com.Find(".bit-tgl-btn").QuerySelectorAll(".bit-tgl-des").Length);
+    }
+
+    [TestMethod]
+    public void BitToggleWithoutADescriptionShouldNotRenderOneOrWrapTheRoot()
+    {
+        var com = RenderComponent<BitToggle>();
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-des").Count);
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-hds"));
+    }
+
+    [TestMethod, DataRow("<div>This is a description template</div>")]
+    public void BitToggleDescriptionTemplateTest(string descriptionTemplate)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
+        });
+
+        var descriptionElement = com.Find(".bit-tgl-des");
+
+        descriptionElement.ChildNodes.MarkupMatches(descriptionTemplate);
+        Assert.AreEqual(descriptionElement.Id, com.Find("button").GetAttribute("aria-describedby"));
+    }
+
+    [TestMethod]
+    public void BitToggleDescriptionShouldBeAnnouncedBetweenTheStateTextAndTheHiddenOne()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.Text, "The state");
+            parameters.Add(p => p.Description, "The visible description");
+            parameters.Add(p => p.AriaDescription, "The hidden description");
+            parameters.Add(p => p.AriaDescribedby, "an-external-hint");
+        });
+
+        var describedBy = com.Find("button").GetAttribute("aria-describedby")!.Split(' ');
+
+        // the two descriptions are announced in the order they are read on the page
+        Assert.AreEqual(4, describedBy.Length);
+        Assert.AreEqual("The state", com.Find($"#{describedBy[0]}").TextContent.Trim());
+        Assert.AreEqual("The visible description", com.Find($"#{describedBy[1]}").TextContent.Trim());
+        Assert.AreEqual("The hidden description", com.Find($"#{describedBy[2]}").TextContent.Trim());
+        Assert.AreEqual("an-external-hint", describedBy[3]);
+    }
+
+    [TestMethod]
+    public void BitToggleDescriptionShouldNotBecomeTheAccessibleName()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.Description, "The description");
+        });
+
+        // the label names the switch; the description only describes it
+        Assert.AreEqual(com.Find(".bit-tgl-lbl").Id, com.Find("button").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitToggleDescriptionStyleAndClassTest()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Description, "The description");
+            parameters.Add(p => p.Styles, new BitToggleClassStyles { Description = "color: red;" });
+            parameters.Add(p => p.Classes, new BitToggleClassStyles { Description = "description-class" });
+        });
+
+        var descriptionElement = com.Find(".bit-tgl-des");
+
+        Assert.IsTrue(descriptionElement.ClassList.Contains("description-class"));
+        Assert.IsTrue(descriptionElement.GetAttribute("style")!.Contains("color: red;"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleAutoLoadingShouldTurnTheToggleBusyWhileTheChangeIsRunning()
+    {
+        // the continuations of the gate belong to the renderer, so they are handed back to it rather than
+        // run inline on the thread that opens the gate
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.DefaultValue, false);
+            parameters.Add(p => p.OnChange, async (bool _) => await gate.Task);
+        });
+
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count);
+
+        com.Find("button").Click();
+
+        // the spinner has to show up while the callback behind the change is still running, not after it
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-busy"));
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-disabled"));
+
+        await com.InvokeAsync(gate.SetResult);
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count));
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleAutoLoadingShouldCoverAChangeComingFromToggleAsync()
+    {
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.DefaultValue, false);
+            parameters.Add(p => p.OnChanging, async (BitToggleChangeArgs _) => await gate.Task);
+        });
+
+        var toggling = com.InvokeAsync(() => com.Instance.ToggleAsync());
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count));
+
+        await com.InvokeAsync(gate.SetResult);
+        await toggling;
+
+        com.WaitForAssertion(() => Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod]
+    public void BitToggleAutoLoadingShouldLeaveNothingBehindOnASynchronousChange()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.DefaultValue, false);
+        });
+
+        com.Find("button").Click();
+
+        // nothing was awaited, so the busy state has nothing to cover and never shows
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-spn").Count);
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleAutoLoadingShouldNotClearALoadingSetFromTheOutside()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.DefaultValue, false);
+        });
+
+        await com.InvokeAsync(() => com.Instance.ToggleAsync());
+
+        // the toggle only clears the state it raised itself; the parameter stays the caller's to control
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-spn").Count);
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-ldg"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleStopPropagationTest(bool stopPropagation)
+    {
+        var com = RenderComponent<BitTogglePropagationTest>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        com.Find("button").Click();
+
+        // the click a toggle answers is still a click on the page, so it reaches a clickable container
+        // around it unless the toggle is told to keep it to itself
+        Assert.AreEqual(stopPropagation ? 0 : 1, com.Instance.ContainerClickCount);
+    }
+
+    [TestMethod]
+    public void BitToggleStateTextShouldForwardItsClicksToTheSwitch()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Text, "A state text");
+        });
+
+        // the state text is part of the click target of the toggle, which is what the association carries
+        Assert.AreEqual(com.Find("button").Id, com.Find(".bit-tgl-stx").GetAttribute("for"));
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Rtl, "bit-rtl", "rtl"),
+        DataRow(BitDir.Ltr, null, "ltr")
+    ]
+    public void BitToggleDirTest(BitDir dir, string expectedClass, string expectedDir)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        var toggle = com.Find(".bit-tgl");
+
+        Assert.AreEqual(expectedDir, toggle.GetAttribute("dir"));
+        Assert.AreEqual(expectedClass is not null, toggle.ClassList.Contains("bit-rtl"));
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)

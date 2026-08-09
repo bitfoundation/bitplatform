@@ -9,6 +9,21 @@
     flex-direction: column;
     font-family: $tg-font-family;
 
+    // The description is placed off two custom properties rather than off a pile of :not() selectors, so
+    // it follows the very cascade that decides the flex direction: every block below that sets a direction
+    // sets these along with it, and whichever direction wins brings its own placement with it.
+    //   - order: in the two column-reverse shapes the items are laid out bottom to top, so the description
+    //     has to be ordered first to end up last on the page;
+    //   - basis: it takes a whole line of its own, which in a row is a full-width basis that forces a wrap,
+    //     while in a column every item already has a line and a basis would set its height instead;
+    //   - width: a wrapping flex box is as wide as all of its items laid out in a single row, so a described
+    //     toggle whose shape is a row spans its container - the shape of a settings row - instead of carrying
+    //     the width of its description trailing after the knob. Stacked, every item already has its own line
+    //     and the toggle keeps hugging its content.
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
+
     // The unchecked track stays neutral whatever the Color is, so it keeps reading as "off" instead of
     // as a second, dimmer accent.
     --bit-tgl-trk-clr-bg: #{$clr-bg-pri};
@@ -24,7 +39,7 @@
         --bit-tgl-ico-clr: #{$clr-bg-dis};
         --bit-tgl-cnn-clr: #{$clr-fg-dis};
 
-        .bit-tgl-lbl {
+        .bit-tgl-lbl, .bit-tgl-des {
             cursor: default;
             color: $clr-fg-dis;
         }
@@ -81,17 +96,23 @@
 .bit-tgl-inl {
     align-items: center;
     flex-direction: row;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
 }
 
 .bit-tgl-rvs {
     display: flex;
     flex-direction: column-reverse;
+    --bit-tgl-des-order: -1;
 
     // Only the single-line shape ends the label, where it is the far side of the row that the knob has left.
     // Stacked, the label is still a line of its own above or below the knob, and stays where reading starts -
     // the same way LabelPosition.Bottom, which reaches the very same layout, keeps it.
     &.bit-tgl-inl {
         flex-direction: row-reverse;
+        --bit-tgl-des-order: 1;
+        --bit-tgl-des-basis: 100%;
+        --bit-tgl-hds-width: 100%;
 
         .bit-tgl-lbl {
             text-align: end;
@@ -106,6 +127,9 @@
 .bit-tgl.bit-tgl-ltp {
     align-items: stretch;
     flex-direction: column;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
 
     .bit-tgl-lbl {
         text-align: start;
@@ -115,6 +139,9 @@
 .bit-tgl.bit-tgl-lbt {
     align-items: stretch;
     flex-direction: column-reverse;
+    --bit-tgl-des-order: -1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
 
     .bit-tgl-lbl {
         text-align: start;
@@ -124,6 +151,9 @@
 .bit-tgl.bit-tgl-lst {
     align-items: center;
     flex-direction: row;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
 
     .bit-tgl-lbl {
         text-align: start;
@@ -133,6 +163,9 @@
 .bit-tgl.bit-tgl-lnd {
     align-items: center;
     flex-direction: row-reverse;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
 
     .bit-tgl-lbl {
         text-align: end;
@@ -145,13 +178,35 @@
     // Growing the label is what pushes the knob to the far edge, so it only applies to the single-line shapes.
     // Stacked, the label already spans the whole width, and growing it would stretch it down the free height
     // instead of across. Only the label grows; the state text keeps hugging the knob it belongs to.
+    // Only the gap along the row is closed, not the one between the rows: the label and the knob belong to
+    // opposite edges of the same line, while a description sitting on the next line still needs its space.
     &.bit-tgl-inl, &.bit-tgl-lst, &.bit-tgl-lnd {
-        gap: 0;
+        column-gap: 0;
 
         > .bit-tgl-lbl {
             flex-grow: 1;
         }
     }
+}
+
+// A description takes a line of its own under the toggle, which the single-line shapes only have room for
+// once the root is allowed to wrap. Turned on with the description rather than always, so a toggle without
+// one keeps a root that cannot break its label away from its knob.
+.bit-tgl-hds {
+    flex-wrap: wrap;
+    width: var(--bit-tgl-hds-width);
+}
+
+// FullWidth wins over the width a description asks for, whichever shape the toggle takes.
+.bit-tgl-fwi.bit-tgl-hds {
+    width: 100%;
+}
+
+.bit-tgl-des {
+    color: $clr-fg-sec;
+    order: var(--bit-tgl-des-order);
+    flex-basis: var(--bit-tgl-des-basis);
+    font-size: var(--bit-tgl-des-fontsize);
 }
 
 // A read-only or loading toggle stays focusable and legible, but nothing about it invites a click anymore.
@@ -227,6 +282,8 @@
     // than. This grows the pointer target of the track to that floor - centered on it and drawn by nothing -
     // without touching the geometry of the toggle itself. Auto margins against a zero inset keep it centered
     // in both axes even where it overflows the track, and in either reading direction.
+    // The floor is written in CSS pixels rather than through spacing(), which the theme's density multiplier
+    // scales: the success criterion is an absolute size, so a compact theme must not shrink it under 24.
     &::before {
         content: "";
         inset: 0;
@@ -234,8 +291,8 @@
         width: 100%;
         height: 100%;
         position: absolute;
-        min-width: spacing(3);
-        min-height: spacing(3);
+        min-width: 24px;
+        min-height: 24px;
     }
 }
 
@@ -397,6 +454,7 @@
     --bit-tgl-cnn-pad: #{spacing(0.25)};
     --bit-tgl-lbl-fontsize: #{spacing(1.5)};
     --bit-tgl-stx-fontsize: #{spacing(1.5)};
+    --bit-tgl-des-fontsize: #{spacing(1.25)};
 }
 
 .bit-tgl-md {
@@ -414,6 +472,7 @@
     --bit-tgl-cnn-pad: #{spacing(0.375)};
     --bit-tgl-lbl-fontsize: #{spacing(1.75)};
     --bit-tgl-stx-fontsize: inherit;
+    --bit-tgl-des-fontsize: #{spacing(1.5)};
 }
 
 .bit-tgl-lg {
@@ -431,6 +490,7 @@
     --bit-tgl-cnn-pad: #{spacing(0.5)};
     --bit-tgl-lbl-fontsize: #{spacing(2)};
     --bit-tgl-stx-fontsize: #{spacing(2)};
+    --bit-tgl-des-fontsize: #{spacing(1.75)};
 }
 
 // A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size
@@ -509,7 +569,7 @@
             background-color: GrayText;
         }
 
-        .bit-tgl-lbl, .bit-tgl-stx, .bit-tgl-cnn {
+        .bit-tgl-lbl, .bit-tgl-stx, .bit-tgl-cnn, .bit-tgl-des {
             color: GrayText;
         }
 
