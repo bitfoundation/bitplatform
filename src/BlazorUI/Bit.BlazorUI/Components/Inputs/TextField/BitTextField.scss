@@ -87,6 +87,15 @@
                 text-align: start;
             }
         }
+
+        // NoBorder means no border in every state: the disabled frame border above is more specific than
+        // the .bit-tfl-nbd rule, so it has to be turned off again here.
+        &.bit-tfl-nbd {
+            .bit-tfl-fgp,
+            .bit-tfl-cbt {
+                border: none;
+            }
+        }
     }
 
     &.bit-inv {

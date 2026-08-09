@@ -1856,7 +1856,8 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
 <BitTextField Label=""ReadOnly + SelectOnFocus"" SelectOnFocus ReadOnly DefaultValue=""AB12-CD34-EF56"" />
 
 <BitTextField @ref=""selectionRef"" Label=""Driven from code"" DefaultValue=""bit BlazorUI components"" />
-<BitStack Horizontal>
+
+<BitStack>
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectAsync(); }"">SelectAsync</BitButton>
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(4, 12); }"">SelectRangeAsync(4, 12)</BitButton>
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(0, 0); }"">Caret to the start</BitButton>

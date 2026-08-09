@@ -424,6 +424,9 @@ namespace BitBlazorUI {
                 const from = Math.max(0, Math.min(start ?? 0, length));
                 const to = Math.max(from, Math.min(end ?? length, length));
 
+                // A selection of an element that does not have the focus is not painted and the caret is
+                // not shown, so setting one without focusing first does nothing the user can see.
+                inputElement.focus();
                 inputElement.setSelectionRange(from, to);
             } catch (e) {
                 // Selection APIs are not available on every input type (a number or an email input
