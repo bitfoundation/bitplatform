@@ -470,8 +470,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// </summary>
     public async Task HideSuggestItems()
     {
-        if (IsEnabled is false) return;
-
         await CloseCallout();
     }
 
@@ -480,7 +478,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        if (IsEnabled is false) return;
         if (_isOpen is false) return;
 
         _isOpen = false;

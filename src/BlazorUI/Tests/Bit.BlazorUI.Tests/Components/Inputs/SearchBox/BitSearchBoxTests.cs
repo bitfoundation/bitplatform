@@ -1660,7 +1660,7 @@ public class BitSearchBoxTests : BunitTestContext
     [TestMethod]
     public async Task BitSearchBoxLoadingTemplateAndTextShouldRenderWhileTheProviderIsRunning()
     {
-        var tcs = new TaskCompletionSource<IEnumerable<string>>();
+        var tcs = new TaskCompletionSource<IEnumerable<string>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var component = RenderComponent<BitSearchBox>(p =>
         {
