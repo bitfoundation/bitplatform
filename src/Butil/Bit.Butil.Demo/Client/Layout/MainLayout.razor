@@ -9,6 +9,14 @@
         <header class="topbar">
             <button class="menu-btn" title="Toggle navigation" @onclick="() => _nav.Toggle()">☰</button>
             <span class="topbar-title">Bit.Butil <span class="muted">/ browser APIs for Blazor, without JavaScript</span></span>
+            @* The page is prerendered on the server, so it is visible - and inert - until the
+               WebAssembly runtime takes over. Say so instead of letting clicks silently do nothing. *@
+            @if (RendererInfo.IsInteractive is false)
+            {
+                <span class="hydrating" title="Prerendered HTML - the WebAssembly runtime is still loading.">
+                    <i></i>loading
+                </span>
+            }
             <div class="topbar-links">
                 <a href="https://www.nuget.org/packages/Bit.Butil" target="_blank" rel="noopener noreferrer">NuGet</a>
                 <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub</a>

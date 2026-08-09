@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. A second,
+       earlier one would win in the served HTML (browsers and crawlers take the first). *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bit.Butil demo & documentation - use browser APIs from C# in Blazor without writing JavaScript." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/app.css" />
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Pages only touch
+       the browser from OnAfterRenderAsync and event handlers, which never run during the
+       prerender pass - see Layout/MainLayout.razor for the RendererInfo-driven hydration hint. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    @* Loaded before the Blazor script so window.BitButil exists by the time the app boots. *@
+    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

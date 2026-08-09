@@ -83,52 +83,32 @@ h1:focus { outline: none; }
 
 code { font-family: var(--mono); font-size: 0.9em; }
 
-/* ---------- splash (pre-Blazor) ---------- */
+/* ---------- hydration hint (prerendered, not yet interactive) ---------- */
 
-.splash {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+.hydrating {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 14px;
-}
-
-.splash-logo {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    display: grid;
-    place-items: center;
-    font-size: 34px;
-    font-weight: 800;
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-    box-shadow: 0 8px 40px rgba(79, 70, 229, 0.45);
-}
-
-.splash-text { color: var(--text-soft); }
-
-.splash-bar {
-    width: 180px;
-    height: 4px;
-    border-radius: 4px;
+    gap: 7px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    color: var(--text-soft);
     background: var(--bg-raised);
-    overflow: hidden;
+    border: 1px solid var(--border);
+    white-space: nowrap;
 }
 
-.splash-bar i {
-    display: block;
-    height: 100%;
-    width: 40%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
-    animation: splash-slide 1.1s ease-in-out infinite;
+.hydrating i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    animation: hydrating-pulse 1.1s ease-in-out infinite;
 }
 
-@keyframes splash-slide {
-    0% { transform: translateX(-110%); }
-    100% { transform: translateX(360%); }
+@keyframes hydrating-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
 }
 
 /* ---------- shell layout ---------- */

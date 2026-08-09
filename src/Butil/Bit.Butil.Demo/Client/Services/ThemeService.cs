@@ -1,4 +1,4 @@
-﻿namespace Bit.Butil.Demo.Services;
+﻿namespace Bit.Butil.Demo.Client.Services;
 
 /// <summary>
 /// Holds the site-wide dark/light theme, dogfooding Bit.Butil itself:

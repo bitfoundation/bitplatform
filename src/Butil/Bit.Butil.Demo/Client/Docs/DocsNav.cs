@@ -1,4 +1,4 @@
-﻿namespace Bit.Butil.Demo.Docs;
+﻿namespace Bit.Butil.Demo.Client.Docs;
 
 public record DocLink(string Title, string Url, string Icon, string Summary);
 

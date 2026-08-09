@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "Bit.Butil.Demo": {
+    "Bit.Butil.Demo.Server": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

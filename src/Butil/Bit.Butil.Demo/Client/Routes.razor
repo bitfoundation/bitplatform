@@ -1,4 +1,4 @@
-﻿<Router AppAssembly="typeof(App).Assembly">
+﻿<Router AppAssembly="typeof(Routes).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
@@ -6,11 +6,7 @@
     <NotFound>
         <PageTitle>Not found - Bit.Butil</PageTitle>
         <LayoutView Layout="typeof(Layout.MainLayout)">
-            <div class="page-header">
-                <span class="eyebrow">404</span>
-                <h1>Page not found</h1>
-                <p class="lead">There is nothing at this address. Head back to the <a href="">documentation home</a>.</p>
-            </div>
+            <NotFoundContent />
         </LayoutView>
     </NotFound>
 </Router>

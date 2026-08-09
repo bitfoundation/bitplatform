@@ -13,6 +13,9 @@
     </Project>
     <Project Path="Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
   </Folder>
+  <Folder Name="/Bit.Butil.Demo/">
+    <Project Path="Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
+  </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
-  <Project Path="Bit.Butil.Demo/Bit.Butil.Demo.csproj" />
 </Solution>
