@@ -1,57 +1,131 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
+
+/*
+ * checkerboard($size)
+ * --------------------------------------------------
+ * The grey-and-white grid that transparency is read against. Anything semi-transparent - the alpha
+ * slider, the preview box, a preset swatch - is drawn over it, so that a 50% white reads as half
+ * transparent instead of as whatever lighter shade the page behind it happens to make it.
+ * It is two offset gradients rather than an image, so it stays crisp at any zoom and costs no request.
+ */
+@mixin checkerboard($size: spacing(0.75)) {
+    background-color: $clr-ntr-white;
+    background-image: linear-gradient(45deg, $clr-brd-sec 25%, transparent 25%, transparent 75%, $clr-brd-sec 75%),
+                      linear-gradient(45deg, $clr-brd-sec 25%, transparent 25%, transparent 75%, $clr-brd-sec 75%);
+    background-size: calc(#{$size} * 2) calc(#{$size} * 2);
+    background-position: 0 0, #{$size} #{$size};
+}
 
 .bit-clp {
     display: flex;
     font-weight: 400;
     user-select: none;
     position: relative;
-    touch-action: none;
-    width: spacing(33.5);
-    height: spacing(37.5);
+    max-width: 100%;
     flex-direction: column;
     font-size: spacing(1.75);
     font-family: $tg-font-family;
+    width: var(--bit-clp-width, #{spacing(33.5)});
+
+    // No height is declared here on purpose: the panel is as tall as the rows it holds, so turning the
+    // inputs or the presets on grows it instead of squeezing the gradient. An explicit height from a
+    // consumer still shrinks it, and the gradient is the row that gives way (see .bit-clp-rec).
+
+    &.bit-dis {
+        .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-fin, .bit-clp-prt {
+            opacity: 0.65;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .bit-clp-fin {
+            color: $clr-fg-dis;
+        }
+    }
 }
 
+// A read-only picker keeps its full contrast - it is showing a value, not refusing one - but nothing on it
+// responds to the pointer.
+.bit-clp-rdl {
+    .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-prt {
+        cursor: default;
+        pointer-events: none;
+    }
+}
+
+.bit-clp-sm {
+    --bit-clp-width: #{spacing(25)};
+    --bit-clp-sat-height: #{spacing(20)};
+    --bit-clp-track-height: #{spacing(2)};
+    --bit-clp-thumb-size: #{spacing(2)};
+    --bit-clp-target-size: #{spacing(3)};
+    --bit-clp-preview-size: #{spacing(4.5)};
+}
+
+.bit-clp-md {
+    --bit-clp-width: #{spacing(33.5)};
+    --bit-clp-sat-height: #{spacing(29.5)};
+    --bit-clp-track-height: #{spacing(2.5)};
+    --bit-clp-thumb-size: #{spacing(2.5)};
+    --bit-clp-target-size: #{spacing(3)};
+    --bit-clp-preview-size: #{spacing(6)};
+}
+
+.bit-clp-lg {
+    --bit-clp-width: #{spacing(42)};
+    --bit-clp-sat-height: #{spacing(37)};
+    --bit-clp-track-height: #{spacing(3)};
+    --bit-clp-thumb-size: #{spacing(3)};
+    --bit-clp-target-size: #{spacing(3.5)};
+    --bit-clp-preview-size: #{spacing(7.5)};
+}
+
+// The only row that gives way when a consumer pins the panel to a height smaller than its content: the
+// controls stay the size they need to be operable and the gradient absorbs the difference.
 .bit-clp-rec {
     flex-grow: 1;
-    outline: none;
+    flex-shrink: 1;
+    cursor: crosshair;
     position: relative;
     box-sizing: border-box;
     margin-bottom: spacing(1);
+    min-height: spacing(6);
     border-radius: spacing(0.25);
+    height: var(--bit-clp-sat-height);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-}
 
-.bit-clp-des {
-    border: 0;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    width: spacing(0.125);
-    height: spacing(0.125);
-    margin: spacing(-0.125);
+    // A drag across the gradient is a color gesture, not a scroll, so the browser is told not to claim it.
+    // Scoped to the parts that are actually dragged rather than to the whole panel, which would stop the
+    // page from being scrolled by a touch that starts over the presets or the text fields.
+    touch-action: none;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-clp-dark {
     inset: 0;
     position: absolute;
+    border-radius: inherit;
     background: linear-gradient(transparent 0, rgb(0, 0, 0) 100%);
 }
 
+// The saturation axis runs from the inline-start edge outwards, so it mirrors along with the thumb in a
+// right-to-left picker and the two never disagree about which end means "no color".
 .bit-clp-light {
     inset: 0;
     position: absolute;
+    border-radius: inherit;
     background: linear-gradient(to right, white 0%, transparent 100%);
 }
 
 .bit-clp-thumb {
     position: absolute;
     border-radius: 50%;
-    width: spacing(2.5);
-    height: spacing(2.5);
-    transform: translate(-50%,-50%);
+    width: var(--bit-clp-thumb-size);
+    height: var(--bit-clp-thumb-size);
+    transform: translate(-50%, -50%);
     background: $clr-bg-sec;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
     box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
@@ -67,23 +141,32 @@
 }
 
 .bit-clp-cnt {
-    display: flex;
     gap: spacing(1);
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
 }
 
+// Every thumb is centred on the end of its track, which leaves half a thumb hanging past both ends of this
+// column. That overhang is reserved here instead of being left to spill: without it the thumb of a track at
+// its maximum lands on the eye dropper - or the preview box - standing next to the column, and the one at
+// its minimum pokes out of the panel altogether.
 .bit-clp-sct {
     flex-grow: 1;
+    min-width: 0;
+    padding-inline: calc(var(--bit-clp-thumb-size) / 2);
 }
 
 .bit-clp-sld {
     width: 100%;
     outline: none;
     position: relative;
-    height: spacing(2.5);
+    touch-action: none;
     box-sizing: border-box;
     margin-bottom: spacing(1);
     forced-color-adjust: none;
     border-radius: spacing(0.25);
+    height: var(--bit-clp-track-height);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -91,20 +174,39 @@
     background: linear-gradient(to right, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
 }
 
+// The alpha track: a checkerboard with the color faded across it. Both layers run in the reading direction,
+// which is what keeps the fully transparent end under the position the native range input puts 0 at.
+.bit-clp-asd {
+    @include checkerboard;
+}
+
+.bit-clp-abg {
+    inset: 0;
+    position: absolute;
+    border-radius: inherit;
+    background: linear-gradient(to right, transparent 0%, var(--bit-clp-alpha-clr) 100%);
+}
+
 .bit-clp-inp {
     background: none;
     position: relative;
     top: spacing(-0.0625);
     -webkit-appearance: none;
-    margin: 0 spacing(-0.875);
-    width: calc(100% + #{spacing(1.75)});
+    margin: 0 calc(var(--bit-clp-thumb-size) / -2);
+    width: calc(100% + var(--bit-clp-thumb-size));
+    height: var(--bit-clp-track-height);
+
+    &:focus-visible {
+        @include focus-ring;
+        border-radius: spacing(0.25);
+    }
 
     &::-webkit-slider-thumb {
         cursor: pointer;
         appearance: none;
         border-radius: 50%;
-        width: spacing(2.5);
-        height: spacing(2.5);
+        width: var(--bit-clp-thumb-size);
+        height: var(--bit-clp-thumb-size);
         -webkit-appearance: none;
         background-color: $clr-ntr-white;
         border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -113,16 +215,251 @@
     &::-moz-range-thumb {
         cursor: pointer;
         border-radius: 50%;
-        width: spacing(2.5);
-        height: spacing(2.5);
+        box-sizing: border-box;
+        width: var(--bit-clp-thumb-size);
+        height: var(--bit-clp-thumb-size);
         background-color: $clr-ntr-white;
         border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    // A track that will not move should not invite the drag. The thumb keeps its colors - a frozen picker
+    // is showing a value, not refusing one - and only gives up the cursor that promises it can be dragged.
+    // The two vendor pseudo-elements are declared apart, since an engine that does not know one of them
+    // drops the whole selector list.
+    &:disabled::-webkit-slider-thumb {
+        cursor: default;
+    }
+
+    &:disabled::-moz-range-thumb {
+        cursor: default;
+    }
+}
+
+// Sized by the target token rather than by the track it sits next to: the tracks can be as short as the
+// small preset allows, but a button has to stay at least the 24 CSS pixels WCAG 2.2 asks a target for.
+.bit-clp-eyd {
+    padding: 0;
+    display: flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    align-items: center;
+    color: $clr-fg-pri;
+    justify-content: center;
+    box-sizing: border-box;
+    background-color: transparent;
+    width: var(--bit-clp-target-size);
+    height: var(--bit-clp-target-size);
+    border-radius: spacing(0.25);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:hover {
+        background-color: $clr-bg-sec-hover;
+    }
+
+    &:active {
+        background-color: $clr-bg-sec-active;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-clp-eyi {
+    font-size: spacing(1.75);
+    line-height: 1;
+}
+
+.bit-clp-pre {
+    @include checkerboard;
+    flex-shrink: 0;
+    position: relative;
+    box-sizing: border-box;
+    border-radius: spacing(0.25);
+    width: var(--bit-clp-preview-size);
+    height: var(--bit-clp-preview-size);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+}
+
+.bit-clp-prc {
+    inset: 0;
+    position: absolute;
+    border-radius: inherit;
+}
+
+.bit-clp-inps {
+    gap: spacing(0.5);
+    display: flex;
+    flex-shrink: 0;
+    margin-top: spacing(0.5);
+    align-items: flex-start;
+}
+
+.bit-clp-fld {
+    min-width: 0;
+    display: flex;
+    flex: 1 1 0;
+    text-align: center;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+// The hexadecimal field holds six to eight characters where the channel fields hold three, so it is given
+// the room of two of them rather than an equal share that would truncate it.
+.bit-clp-fhx {
+    flex: 2 1 0;
+}
+
+.bit-clp-fin {
+    width: 100%;
+    min-width: 0;
+    text-align: center;
+    box-sizing: border-box;
+    color: $clr-fg-pri;
+    font: inherit;
+    // The panel suppresses text selection so that a drag across it never highlights anything, but the
+    // fields are text: the value in them has to stay selectable and copyable.
+    user-select: text;
+    padding: spacing(0.5);
+    border-radius: spacing(0.25);
+    background-color: $clr-bg-pri;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    // The spinners of the channel fields would take a third of their width for a control the arrow keys
+    // already provide, so they are dropped in favour of the digits.
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        margin: 0;
+        -webkit-appearance: none;
+    }
+
+    &[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+}
+
+.bit-clp-flb {
+    cursor: default;
+    text-align: center;
+    color: $clr-fg-sec;
+    padding-top: spacing(0.25);
+    font-size: spacing(1.5);
+}
+
+.bit-clp-prs {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: spacing(0.5);
+    margin-top: spacing(1);
+}
+
+.bit-clp-prt {
+    @include checkerboard(spacing(0.5));
+    padding: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    box-sizing: border-box;
+    width: var(--bit-clp-target-size);
+    height: var(--bit-clp-target-size);
+    border-radius: spacing(0.25);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    // The swatch color rides on top of the checkerboard, so a semi-transparent preset advertises itself
+    // as one instead of looking like a paler solid.
+    &::after {
+        inset: 0;
+        content: "";
+        position: absolute;
+        border-radius: inherit;
+        background-color: var(--bit-clp-prt-clr);
+    }
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// The selected swatch is marked with an inset ring rather than a check mark, which would be unreadable
+// against half the colors a palette can hold. It is drawn as a layer above the color rather than as a
+// box-shadow around it, so that the focus ring - which is a box-shadow - can be shown at the same time
+// instead of replacing it.
+.bit-clp-prt-sel::before {
+    z-index: 1;
+    content: "";
+    position: absolute;
+    inset: spacing(0.25);
+    // Inherited rather than declared, so the ring keeps the shape of the swatch it marks: a consumer who
+    // rounds the swatches into circles gets a round ring instead of a square one sitting inside a circle.
+    border-radius: inherit;
+    border: spacing(0.25) $shp-border-style var(--bit-clp-prt-sel-clr, #{$clr-ntr-white});
+    box-shadow: 0 0 0 spacing(0.125) var(--bit-clp-prt-sel-shd, #{$clr-ntr-black});
+}
+
+
+// A right-to-left picker mirrors every axis at once. The native range inputs already reverse themselves
+// under dir=rtl, so the gradients behind them have to follow or the fully transparent end of the alpha
+// track would sit under the position the thumb calls opaque.
+.bit-rtl {
+    &.bit-clp .bit-clp-light {
+        background: linear-gradient(to left, white 0%, transparent 100%);
+    }
+
+    &.bit-clp .bit-clp-abg {
+        background: linear-gradient(to left, transparent 0%, var(--bit-clp-alpha-clr) 100%);
+    }
+
+    &.bit-clp .bit-clp-hsd {
+        background: linear-gradient(to left, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
+    }
+
+    // The thumb is positioned from the inline-start edge, which is the right one here, so the half-width
+    // correction that centres it on its color has to point the other way too.
+    &.bit-clp .bit-clp-thumb {
+        transform: translate(50%, -50%);
     }
 }
 
 
-.bit-clp-pre {
-    width: spacing(6);
-    height: spacing(6);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+// Gradients and color swatches are exactly what forced-colors modes replace, and replacing them here would
+// leave a color picker that cannot show colors. They are opted out of, and the structure around them - the
+// borders that separate one control from the next - is drawn in the system colors instead.
+@media (forced-colors: active) {
+    .bit-clp-rec, .bit-clp-light, .bit-clp-dark, .bit-clp-abg, .bit-clp-asd, .bit-clp-pre, .bit-clp-prc, .bit-clp-prt {
+        forced-color-adjust: none;
+    }
+
+    .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin {
+        border-color: CanvasText;
+    }
+
+    .bit-clp-thumb {
+        border-color: Highlight;
+    }
+
+    // The two vendor thumb pseudo-elements are declared apart: an engine that does not know one of them
+    // drops the whole selector list, which would leave the thumb it does know unstyled.
+    .bit-clp-inp::-webkit-slider-thumb {
+        border-color: Highlight;
+    }
+
+    .bit-clp-inp::-moz-range-thumb {
+        border-color: Highlight;
+    }
+
+    .bit-clp.bit-dis {
+        .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin {
+            border-color: GrayText;
+        }
+    }
 }
