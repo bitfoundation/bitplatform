@@ -6,6 +6,11 @@ namespace Bit.BlazorUI;
 public enum BitTagsInputInvalidReason
 {
     /// <summary>
+    /// No reason was given, which is what an uninitialized value stands for rather than an actual rule.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// The tag is already in the list and duplicates are not allowed.
     /// </summary>
     Duplicate,

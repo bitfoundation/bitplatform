@@ -1788,6 +1788,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                 }
                 return;
             }
+
+            // The handler is allowed to correct the text on its way in, so what is stored is what it
+            // left in NewTag rather than what was handed to it.
+            text = args.NewTag;
         }
 
         list[index] = text;

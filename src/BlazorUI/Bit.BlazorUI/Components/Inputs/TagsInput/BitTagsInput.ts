@@ -116,11 +116,11 @@ namespace BitBlazorUI {
             });
         }
 
-        /// The keys the chips answer to are handled on the .NET side, which runs long after the browser
-        /// has already acted on them: the page would be scrolled by Home, and the whole document left
-        /// behind by Alt with an arrow, before the tag ever moved. A single listener on the root - rather
-        /// than a handler per chip - holds those defaults back for the events that started on a chip,
-        /// and does the two things a drag needs that the .NET side cannot reach.
+        // The keys the chips answer to are handled on the .NET side, which runs long after the browser
+        // has already acted on them: the page would be scrolled by Home, and the whole document left
+        // behind by Alt with an arrow, before the tag ever moved. A single listener on the root - rather
+        // than a handler per chip - holds those defaults back for the events that started on a chip,
+        // and does the two things a drag needs that the .NET side cannot reach.
         public static setupTags(root: HTMLElement) {
             if (root.dataset.bitTgiTagsSetup) return;
             root.dataset.bitTgiTagsSetup = 'true';

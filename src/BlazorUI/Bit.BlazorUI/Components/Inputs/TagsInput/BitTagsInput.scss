@@ -34,6 +34,9 @@
     margin: 0;
     display: block;
     max-width: 100%;
+    //a flex item does not shrink below the width of its longest unbroken word unless it is allowed to,
+    //which would push the counter out of the line instead of wrapping the sentence next to it.
+    min-inline-size: 0;
     color: $clr-fg-sec;
     box-sizing: border-box;
     overflow-wrap: break-word;

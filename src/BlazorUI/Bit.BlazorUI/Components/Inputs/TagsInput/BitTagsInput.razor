@@ -44,6 +44,9 @@
     }
 
     var suggestions = GetSuggestions();
+
+    // The same icon on every tag, so it is resolved once per render rather than once per chip.
+    var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -176,7 +179,6 @@
 
                         @if (isInteractive && isTagEditing is false)
                         {
-                            var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
                             @* Out of the tab order on purpose: the tag holding it is the tab stop, and
                                the Delete/Backspace keys are what remove it from the keyboard. *@
                             <button @onclick="() => HandleRemoveTag(index)"

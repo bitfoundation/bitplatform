@@ -411,20 +411,6 @@ public partial class BitTagsInputDemo
         },
         new()
         {
-            Name = "Prefix",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "A short text drawn at the start of the field, in front of the tags, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
-        },
-        new()
-        {
-            Name = "PrefixTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "A custom template drawn in place of the Prefix.",
-        },
-        new()
-        {
             Name = "RemovedAnnouncementFormat",
             Type = "string?",
             DefaultValue = "null",
@@ -482,20 +468,6 @@ public partial class BitTagsInputDemo
             Description = "Custom CSS styles for different parts of the tags input.",
             LinkType = LinkType.Link,
             Href = "#tagsinput-class-styles",
-        },
-        new()
-        {
-            Name = "Suffix",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "A short text drawn at the end of the field, after everything else, which is not part of the value. Since it never reaches the value, the label of the field has to say what it means on its own for a screen reader.",
-        },
-        new()
-        {
-            Name = "SuffixTemplate",
-            Type = "RenderFragment?",
-            DefaultValue = "null",
-            Description = "A custom template drawn in place of the Suffix.",
         },
         new()
         {
@@ -607,7 +579,7 @@ public partial class BitTagsInputDemo
                 {
                     Name = "Reason",
                     Type = "BitTagsInputInvalidReason",
-                    DefaultValue = "BitTagsInputInvalidReason.Duplicate",
+                    DefaultValue = "BitTagsInputInvalidReason.None",
                     Description = "The rule that rejected the tag.",
                     LinkType = LinkType.Link,
                     Href = "#invalid-reason-enum",
@@ -881,39 +853,45 @@ public partial class BitTagsInputDemo
             [
                 new()
                 {
+                    Name = "None",
+                    Description = "No reason was given, which is what an uninitialized value stands for rather than an actual rule.",
+                    Value = "0",
+                },
+                new()
+                {
                     Name = "Duplicate",
                     Description = "The tag is already in the list and duplicates are not allowed.",
-                    Value = "0",
+                    Value = "1",
                 },
                 new()
                 {
                     Name = "MaxTags",
                     Description = "The list already holds the maximum number of tags.",
-                    Value = "1",
+                    Value = "2",
                 },
                 new()
                 {
                     Name = "MinLength",
                     Description = "The tag is shorter than the minimum length.",
-                    Value = "2",
+                    Value = "3",
                 },
                 new()
                 {
                     Name = "Pattern",
                     Description = "The tag does not match the required pattern.",
-                    Value = "3",
+                    Value = "4",
                 },
                 new()
                 {
                     Name = "Validator",
                     Description = "The tag was rejected by the custom validator.",
-                    Value = "4",
+                    Value = "5",
                 },
                 new()
                 {
                     Name = "NotSuggested",
                     Description = "The tag is not one of the suggestions, which RestrictToSuggestions made the only accepted values.",
-                    Value = "5",
+                    Value = "6",
                 },
             ]
         },
