@@ -59,6 +59,7 @@
                               @oninput="@HandleOnStringValueInputAsync"
                               name="@Name"
                               id="@_inputId"
+                              wrap="@Wrap"
                               rows="@(Rows ?? 1)"
                               tabindex="@TabIndex"
                               readonly="@ReadOnly"
@@ -80,7 +81,7 @@
                               aria-label="@AriaLabel"
                               aria-busy="@AriaBusy"
                               aria-invalid="@AriaInvalid"
-                              aria-labelledby="@(HasLabel ? _labelId : null)"
+                              aria-labelledby="@LabelledBy"
                               aria-describedby="@DescribedBy" />
                 }
                 else
@@ -119,7 +120,7 @@
                            aria-label="@AriaLabel"
                            aria-busy="@AriaBusy"
                            aria-invalid="@AriaInvalid"
-                           aria-labelledby="@(HasLabel ? _labelId : null)"
+                           aria-labelledby="@LabelledBy"
                            aria-describedby="@DescribedBy" />
                 }
                 @if (GhostText.HasValue())
@@ -133,24 +134,10 @@
 
             @if (Loading)
             {
-                @* The indicator is a status rather than an alert: it must not steal the focus or interrupt
-                   what is being typed, only be there to be found. *@
-                <div role="status"
-                     style="@Styles?.Loading"
+                @* The indicator is only drawn here; what it means is announced by the live region at the end
+                   of the component, which is already on the page by the time the busy state shows up. *@
+                <div style="@Styles?.Loading"
                      class="bit-tfl-lod @Classes?.Loading">
-                    @* A live region announces its content, not its name, so the text of the indicator lives
-                       inside it - visually hidden, since the spinner already says it on screen. A template is
-                       free to say what is running in its own words, so the default text stays out of it,
-                       while a name given on purpose is kept whichever indicator is drawn. *@
-                    @if (LoadingAriaLabel.HasValue())
-                    {
-                        <span class="bit-tfl-dsc">@LoadingAriaLabel</span>
-                    }
-                    else if (LoadingTemplate is null)
-                    {
-                        <span class="bit-tfl-dsc">Loading</span>
-                    }
-
                     @if (LoadingTemplate is not null)
                     {
                         @LoadingTemplate
@@ -290,4 +277,10 @@
            its own. It is visually hidden and only exists for assistive technologies. *@
         <span id="@_ariaDescriptionId" class="bit-tfl-dsc">@AriaDescription</span>
     }
+
+    @* A status rather than an alert: whatever it says must not steal the focus or interrupt what is being
+       typed, only be announced once the reader is done with the current sentence. It is rendered whether or
+       not it has anything to say, because a live region that arrives with its text already in it is the one
+       thing screen readers are known to miss. *@
+    <span role="status" class="bit-tfl-dsc">@LiveText</span>
 </div>

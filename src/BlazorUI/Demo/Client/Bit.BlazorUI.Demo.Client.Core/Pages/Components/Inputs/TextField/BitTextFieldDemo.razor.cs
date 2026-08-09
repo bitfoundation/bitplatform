@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
@@ -106,6 +107,13 @@ public partial class BitTextFieldDemo : IDisposable
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "The custom content of the clear button, which replaces its icon.",
+        },
+        new()
+        {
+            Name = "CountStrategy",
+            Type = "Func<string?, int>?",
+            DefaultValue = "null",
+            Description = "Decides how the characters of the value are counted for the counter rendered by ShowCount. Leaving it unset counts the value the way the browser counts it against MaxLength - in UTF-16 code units - which makes an emoji count as two and a flag as four. A strategy of its own counts them the way the rest of the app does instead, for instance v => new StringInfo(v ?? string.Empty).LengthInTextElements to count what a reader actually sees. It only changes the number that is shown: the html maxlength attribute keeps holding the keyboard back at its own count.",
         },
         new()
         {
@@ -239,7 +247,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "LoadingAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the busy indicator, which is what a screen reader announces for it. It is kept whichever indicator is drawn, so a LoadingTemplate that says nothing on its own can still be named; without it a template is left to speak for itself. Defaults to \"Loading\".",
+            Description = "What a screen reader announces while Loading is on, in place of the default \"Loading\". It is announced whichever indicator is drawn, so a LoadingTemplate drawing a bare spinner of its own still tells an assistive technology that something is running.",
         },
         new()
         {
@@ -524,6 +532,13 @@ public partial class BitTextFieldDemo : IDisposable
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether or not the text field is underlined.",
+        },
+        new()
+        {
+            Name = "Wrap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Sets the wrap html attribute of the textarea rendered in the Multiline mode, which decides how the text is wrapped and whether the breaks the wrapping adds travel with the value when a form is submitted. Accepted values are \"soft\" (what a browser does on its own), \"hard\" and \"off\", the last of which turns the wrapping off entirely and scrolls long lines sideways instead.",
         },
     ];
 
@@ -1099,6 +1114,8 @@ public partial class BitTextFieldDemo : IDisposable
 
     private string? countValue;
 
+    private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;
+
     private string? trimmedValue;
     private string? notTrimmedValue;
 
@@ -1108,6 +1125,7 @@ public partial class BitTextFieldDemo : IDisposable
     private int clearCount;
     private string? eventLog;
     private string? lastKey;
+    private string? lastKeyUp;
     private string? focusLog;
     private string? clearLog;
 
@@ -1116,6 +1134,10 @@ public partial class BitTextFieldDemo : IDisposable
     private void HandleOnEscape() => eventLog = $"OnEscape ({++eventCount})";
 
     private void HandleOnKeyDown(KeyboardEventArgs e) => lastKey = e.Key;
+
+    private void HandleOnKeyUp(KeyboardEventArgs e) => lastKeyUp = e.Key;
+
+    private void HandleOnClick() => eventLog = $"OnClick ({++eventCount})";
 
     private void HandleOnFocus() => focusLog = "focused";
 
@@ -1345,9 +1367,17 @@ public partial class BitTextFieldDemo : IDisposable
 <BitTextField Label=""Resizable"" Multiline Resizable />
 <BitTextField Label=""Rows = 10"" Multiline Rows=""10"" />
 <BitTextField Label=""AutoHeight"" Multiline AutoHeight />
+
+<BitTextField Label=""AutoHeight with Rows = 4 (never shrinks below it)"" Multiline AutoHeight Rows=""4""
+              Placeholder=""Empty the field: it stays four rows tall..."" />
+
 <BitTextField Label=""AutoHeight with MaxRows = 5"" Multiline AutoHeight MaxRows=""5""
               Placeholder=""Type more than 5 lines to see it stop growing..."" />
-<BitTextField Label=""PreventEnter (use Shift+Enter for new-line)"" Multiline AutoHeight PreventEnter />";
+
+<BitTextField Label=""PreventEnter (use Shift+Enter for new-line)"" Multiline AutoHeight PreventEnter />
+
+<BitTextField Label=""Wrap = off (long lines scroll sideways)"" Multiline Rows=""3"" Wrap=""off""
+              DefaultValue=""A single very long line that is never wrapped, so the field scrolls sideways instead of breaking it apart."" />";
 
     private readonly string example5RazorCode = @"
 <BitTextField Label=""Text"" Type=""BitInputType.Text"" />
@@ -1436,6 +1466,12 @@ public partial class BitTextFieldDemo : IDisposable
 
 <BitTextField Label=""Reveal Password"" Type=""BitInputType.Password"" CanRevealPassword />
 
+<BitTextField Label=""Offered to the password manager""
+              Type=""BitInputType.Password""
+              CanRevealPassword
+              AutoComplete=""current-password""
+              Description=""AutoComplete tells the browser which credential belongs here."" />
+
 <BitTextField Label=""Custom icons and aria-label""
               Type=""BitInputType.Password""
               CanRevealPassword
@@ -1493,9 +1529,25 @@ private string? clearApiValue = ""Clear me from the button below"";";
               DefaultValue=""A value longer than the limit of the field"" />
 
 <BitTextField Label=""Multiline"" Multiline Rows=""4"" ShowCount MaxLength=""140"" @bind-Value=""countValue"" />
-<div>Value: [@countValue]</div>";
+<div>Value: [@countValue]</div>
+
+<BitTextField Label=""Counted in UTF-16 code units (the default)""
+              ShowCount
+              Immediate
+              MaxLength=""20""
+              DefaultValue=""👍🏽 hi"" />
+
+<BitTextField Label=""Counted in text elements (CountStrategy)""
+              ShowCount
+              Immediate
+              MaxLength=""20""
+              DefaultValue=""👍🏽 hi""
+              CountStrategy=""CountTextElements""
+              Description=""The same value, counted the way it reads."" />";
     private readonly string example11CsharpCode = @"
-private string? countValue;";
+private string? countValue;
+
+private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;";
 
     private readonly string example12RazorCode = @"
 <BitTextField Label=""One-way"" Value=""@oneWayValue"" />
@@ -1693,13 +1745,16 @@ private string? notTrimmedValue;";
               OnEnter=""HandleOnEnter""
               OnEscape=""HandleOnEscape""
               OnKeyDown=""HandleOnKeyDown""
+              OnKeyUp=""HandleOnKeyUp""
+              OnClick=""HandleOnClick""
               OnFocus=""HandleOnFocus""
               OnBlur=""HandleOnBlur""
               OnFocusIn=""HandleOnFocusIn""
               OnFocusOut=""HandleOnFocusOut"" />
 
 <div>Last event: [@eventLog]</div>
-<div>Last key: [@lastKey]</div>
+<div>Last key down: [@lastKey]</div>
+<div>Last key up: [@lastKeyUp]</div>
 <div>Focus: [@focusLog]</div>
 
 <BitTextField Label=""Clearable"" ShowClearButton DefaultValue=""Clear me"" OnClear=""HandleOnClear"" />
@@ -1709,6 +1764,7 @@ private int eventCount;
 private int clearCount;
 private string? eventLog;
 private string? lastKey;
+private string? lastKeyUp;
 private string? focusLog;
 private string? clearLog;
 
@@ -1717,6 +1773,10 @@ private void HandleOnEnter() => eventLog = $""OnEnter ({++eventCount})"";
 private void HandleOnEscape() => eventLog = $""OnEscape ({++eventCount})"";
 
 private void HandleOnKeyDown(KeyboardEventArgs e) => lastKey = e.Key;
+
+private void HandleOnKeyUp(KeyboardEventArgs e) => lastKeyUp = e.Key;
+
+private void HandleOnClick() => eventLog = $""OnClick ({++eventCount})"";
 
 private void HandleOnFocus() => focusLog = ""focused"";
 
@@ -1735,9 +1795,9 @@ private void HandleOnClear() => clearLog = $""cleared ({++clearCount})"";";
 
 <BitTextField @ref=""selectionRef"" Label=""Driven from code"" DefaultValue=""bit BlazorUI components"" />
 <BitStack Horizontal>
-    <BitButton OnClick=""() => selectionRef?.SelectAsync()"">SelectAsync</BitButton>
-    <BitButton OnClick=""() => selectionRef?.SelectRangeAsync(4, 12)"">SelectRangeAsync(4, 12)</BitButton>
-    <BitButton OnClick=""() => selectionRef?.SelectRangeAsync(0, 0)"">Caret to the start</BitButton>
+    <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectAsync(); }"">SelectAsync</BitButton>
+    <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(4, 12); }"">SelectRangeAsync(4, 12)</BitButton>
+    <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(0, 0); }"">Caret to the start</BitButton>
 </BitStack>";
     private readonly string example16CsharpCode = @"
 private BitTextField? selectionRef;";
@@ -1846,6 +1906,10 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
               Type=""BitInputType.Search""
               Placeholder=""Search...""
               IconName=""@BitIconName.Search"" />
+
+<BitTextField Label=""Card number""
+              AriaLabel=""Card number, sixteen digits, no spaces""
+              Placeholder=""1234 5678 9012 3456"" />
 
 <BitTextField Label=""With a description of its own""
               Description=""Card number""

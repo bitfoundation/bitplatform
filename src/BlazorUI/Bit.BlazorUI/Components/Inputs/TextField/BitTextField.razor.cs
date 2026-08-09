@@ -8,6 +8,7 @@ namespace Bit.BlazorUI;
 public partial class BitTextField : BitTextInputBase<string?>
 {
     private int _charCount;
+    private bool _hasText;
     private bool _hasFocus;
     private bool _jsSetup;
     private bool _ghostSetup;
@@ -23,6 +24,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string? _oldValue;
     private string? _oldGhostText;
     private string? _oldValueForCount;
+    private Func<string?, int>? _oldCountStrategy;
     private DotNetObjectReference<BitTextField>? _dotnetObj;
     private string? _inputMode;
     private bool _trimOnParse;
@@ -130,6 +132,17 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// The custom content of the clear button, which replaces its icon.
     /// </summary>
     [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
+
+    /// <summary>
+    /// Decides how the characters of the value are counted for the counter rendered by <see cref="ShowCount"/>.
+    /// Leaving it unset counts the value the way the browser counts it against <see cref="MaxLength"/> - in
+    /// UTF-16 code units - which makes an emoji count as two and a flag as four. A strategy of its own counts
+    /// them the way the rest of the app does instead, for instance
+    /// <c>v => new StringInfo(v ?? string.Empty).LengthInTextElements</c> to count what a reader actually sees.
+    /// It only changes the number that is shown: the html maxlength attribute keeps holding the keyboard back
+    /// at its own count.
+    /// </summary>
+    [Parameter] public Func<string?, int>? CountStrategy { get; set; }
 
     /// <summary>
     /// The custom content of the character counter, which receives the current number of characters and
@@ -250,9 +263,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public bool Loading { get; set; }
 
     /// <summary>
-    /// The accessible name of the busy indicator, which is what a screen reader announces for it. It is kept
-    /// whichever indicator is drawn, so a <see cref="LoadingTemplate"/> that says nothing on its own can
-    /// still be named; without it a template is left to speak for itself.
+    /// What a screen reader announces while <see cref="Loading"/> is on, in place of the default "Loading".
+    /// It is announced whichever indicator is drawn, so a <see cref="LoadingTemplate"/> drawing a bare
+    /// spinner of its own still tells an assistive technology that something is running.
     /// </summary>
     [Parameter] public string? LoadingAriaLabel { get; set; }
 
@@ -501,6 +514,15 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
 
+    /// <summary>
+    /// Sets the wrap html attribute of the textarea rendered in the <see cref="Multiline"/> mode, which decides
+    /// how the text is wrapped and whether the breaks the wrapping adds travel with the value when a form is
+    /// submitted. Accepted values are "soft" (what a browser does on its own), "hard" and "off", the last of
+    /// which turns the wrapping off entirely and scrolls long lines sideways instead - what a field holding
+    /// code or log lines wants.
+    /// </summary>
+    [Parameter] public string? Wrap { get; set; }
+
 
 
     /// <summary>
@@ -553,6 +575,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <see cref="CanRevealPassword"/> is enabled.
     /// </summary>
     public void ToggleRevealPassword()
+    {
+        // Like ClearAsync, this one can be called from anywhere, so the state and the re-render it asks
+        // for are handed to the renderer instead of being touched on whatever thread the caller is on.
+        _ = InvokeAsync(RevealPassword);
+    }
+
+    private void RevealPassword()
     {
         if (Type is not BitInputType.Password || CanRevealPassword is false) return;
 
@@ -688,11 +717,14 @@ public partial class BitTextField : BitTextInputBase<string?>
     protected override void OnParametersSet()
     {
         // The counter follows what the input reports while the user types, which is what keeps it live even
-        // when Immediate is off. It is only re-synced from the Value when the Value itself changes.
-        if (_oldValueForCount != Value)
+        // when Immediate is off. It is only re-synced from the Value when the Value itself changes, or when
+        // the way the characters are counted does.
+        if (_oldValueForCount != Value || _oldCountStrategy != CountStrategy)
         {
             _oldValueForCount = Value;
-            _charCount = Value?.Length ?? 0;
+            _oldCountStrategy = CountStrategy;
+            _hasText = string.IsNullOrEmpty(Value) is false;
+            _charCount = CountOf(Value);
         }
 
         base.OnParametersSet();
@@ -840,7 +872,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        UpdateCharCount(e.Value?.ToString()?.Length ?? 0);
+        UpdateCharCount(e.Value?.ToString());
 
         await base.HandleOnStringValueInputAsync(e);
     }
@@ -848,15 +880,21 @@ public partial class BitTextField : BitTextInputBase<string?>
     // The counter and the clear button both follow what the input reports rather than the bound value, which
     // is what keeps them right on a field that only commits its value when it loses focus: a clear button
     // that shows up a whole blur after the first character would be of no use.
-    private void UpdateCharCount(int length)
+    private void UpdateCharCount(string? text)
     {
         if (ShowCount is false && ShowClearButton is false) return;
 
-        if (length == _charCount) return;
+        var hasText = string.IsNullOrEmpty(text) is false;
+        var count = CountOf(text);
 
-        _charCount = length;
+        if (hasText == _hasText && count == _charCount) return;
+
+        _hasText = hasText;
+        _charCount = count;
         StateHasChanged();
     }
+
+    private int CountOf(string? text) => CountStrategy is null ? (text?.Length ?? 0) : CountStrategy(text);
 
 
 
@@ -868,9 +906,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     // (a password mask, a number spinner, ...) that a textarea cannot provide.
     private bool IsMultilineElement => Multiline && Type is null or BitInputType.Text;
 
-    // The number of characters the input currently holds is what decides this rather than the bound value,
-    // so the button is there from the first keystroke even on a field that only commits on blur.
-    private bool ShowClear => ShowClearButton && _charCount > 0;
+    // Whether the input currently holds anything is what decides this rather than the bound value, so the
+    // button is there from the first keystroke even on a field that only commits on blur. It is deliberately
+    // not read off the counter: a counting strategy of its own is free to report a zero for a value that is
+    // not empty - one counting words, say - and a field holding text would otherwise lose its clear button.
+    private bool ShowClear => ShowClearButton && _hasText;
 
     private bool NeedsCompositionGuard => Immediate || OnEnter.HasDelegate || OnEscape.HasDelegate;
 
@@ -912,6 +952,19 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string? AriaInvalid => Invalid ? "true" : GetInputAttribute("aria-invalid");
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+
+    // A live region only announces what changes inside it after it is already on the page: one that is added
+    // along with its text is regularly missed altogether. The busy state and the inline suggestion both have
+    // to be announced the moment they show up, so a single empty region is kept in the markup and only its
+    // text comes and goes. The busy state wins over the suggestion, since it is the newer of the two states.
+    private string? LiveText => Loading
+                                    ? (LoadingAriaLabel ?? "Loading")
+                                    : (GhostText.HasValue() ? GhostText : null);
+
+    // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of its
+    // own was given would quietly throw that name away. The visible label keeps naming the input through the
+    // for/id pair either way, which is what the label element is for.
+    private string? LabelledBy => HasLabel && AriaLabel.HasNoValue() ? _labelId : null;
 
     private string? GetInputAttribute(string name)
     {
@@ -1054,7 +1107,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         // The change event is the one that commits the value, so the counter and the clear button are
         // re-synced from what the value ended up being rather than from the text the event carried: an
         // internal change does not run OnParametersSet, and a trimmed value is shorter than what was typed.
-        UpdateCharCount(CurrentValue?.Length ?? 0);
+        UpdateCharCount(CurrentValue);
     }
 
     private async Task HandleOnClearButtonClick()
@@ -1075,12 +1128,15 @@ public partial class BitTextField : BitTextInputBase<string?>
         // The counter is read from whatever the value ended up being rather than assumed to be zero: a
         // one-way bound field with no way to report a change keeps its value, and a counter saying zero
         // next to a full input would be a lie.
-        _charCount = CurrentValue?.Length ?? 0;
+        _hasText = string.IsNullOrEmpty(CurrentValue) is false;
+        _charCount = CountOf(CurrentValue);
     }
 
     private async Task HandleOnRevealPasswordClick()
     {
-        ToggleRevealPassword();
+        // The click handler already runs on the renderer synchronization context, so it takes the direct
+        // route instead of asking the dispatcher for one it is already on.
+        RevealPassword();
 
         // Swapping the type of an input drops the caret, so the focus is handed back to it explicitly.
         await InputElement.FocusAsync();

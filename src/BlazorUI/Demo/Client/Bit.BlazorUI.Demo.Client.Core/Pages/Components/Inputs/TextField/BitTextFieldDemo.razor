@@ -3,7 +3,7 @@
 
 <PageOutlet Url="components/textfield"
             Title="TextField"
-            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and an auto-growing multiline one, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter, inline ghost suggestions, a busy indicator, debounced and throttled immediate binding with input method editor support, and both EditForm validation and a forced invalid state." />
+            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and a multiline one that grows with its content between a row floor and a row ceiling, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter with a counting strategy of its own, inline ghost suggestions, a busy indicator, debounced and throttled immediate binding with input method editor support, and both EditForm validation and a forced invalid state." />
 
 <DemoPage Name="TextField"
           SecondaryNames="@(["TextInput"])"
@@ -86,12 +86,17 @@
 
     <DemoExample Title="Multiline" RazorCode="@example4RazorCode" Id="example4">
         <div>
-            <b>Multiline</b> renders a textarea instead of an input. <b>Rows</b> sets its initial height, <b>Resizable</b> gives
+            <b>Multiline</b> renders a textarea instead of an input. <b>Rows</b> sets its height, <b>Resizable</b> gives
             back the native resize grip that is hidden by default, and <b>AutoHeight</b> grows the field with its content so no
-            scrollbar ever shows up. <b>MaxRows</b> puts a ceiling on that growth: past that many rows the field stops growing
-            and scrolls internally, which is what keeps a long paste from pushing the rest of the page off screen.
+            scrollbar ever shows up. The two work together: <b>Rows</b> stays the floor of that growth, so a field asking for
+            four rows does not collapse to a single line the moment its value is emptied. <b>MaxRows</b> puts a ceiling on it:
+            past that many rows the field stops growing and scrolls internally, which is what keeps a long paste from pushing
+            the rest of the page off screen. The height is measured again whenever the field itself changes width - a narrowed
+            window, a panel folding away - since the same text takes a different number of lines once it re-wraps.
             <b>PreventEnter</b> stops the Enter key from inserting a new line - handy when Enter should submit the surrounding
-            form - while Shift+Enter still adds one.
+            form - while Shift+Enter still adds one. <b>Wrap</b> passes through to the html attribute of the same name:
+            <code>off</code> turns the wrapping off entirely and scrolls long lines sideways, which is what a field holding
+            code or log lines wants, and <code>hard</code> makes the breaks the wrapping adds travel with the submitted value.
         </div>
         <br />
         <div class="example-box">
@@ -103,9 +108,17 @@
             <br />
             <BitTextField Label="AutoHeight" Multiline AutoHeight />
             <br />
+            <BitTextField Label="AutoHeight with Rows = 4 (never shrinks below it)" Multiline AutoHeight Rows="4" Placeholder="Empty the field: it stays four rows tall..." />
+            <br />
             <BitTextField Label="AutoHeight with MaxRows = 5" Multiline AutoHeight MaxRows="5" Placeholder="Type more than 5 lines to see it stop growing..." />
             <br />
             <BitTextField Label="PreventEnter (use Shift+Enter for new-line)" Multiline AutoHeight PreventEnter />
+            <br />
+            <BitTextField Label="Wrap = off (long lines scroll sideways)"
+                          Multiline
+                          Rows="3"
+                          Wrap="off"
+                          DefaultValue="A single very long line that is never wrapped, so the field scrolls sideways instead of breaking it apart." />
         </div>
     </DemoExample>
 
@@ -259,13 +272,22 @@
             icons, and the native reveal affordance that Edge and Internet Explorer add to a password input is taken away so
             that only one of them is ever shown. The <b>ToggleRevealPassword</b> method drives the same toggle from the
             outside - from a checkbox next to the form, for instance - and is ignored unless the field is a revealable
-            password, so a revealed value can never survive the reveal being taken away.
+            password, so a revealed value can never survive the reveal being taken away. Pair the field with an
+            <b>AutoComplete</b> of <code>current-password</code> or <code>new-password</code>: it is what tells a password
+            manager whether to offer the saved credentials or to generate a new one, and it is the difference between a sign-in
+            form that fills itself and one that fights the browser.
         </div>
         <br />
         <div class="example-box">
             <BitTextField Label="Password" Type="BitInputType.Password" />
             <br />
             <BitTextField Label="Reveal Password" Type="BitInputType.Password" CanRevealPassword />
+            <br />
+            <BitTextField Label="Offered to the password manager"
+                          Type="BitInputType.Password"
+                          CanRevealPassword
+                          AutoComplete="current-password"
+                          Description="AutoComplete tells the browser which credential belongs here." />
             <br />
             <BitTextField Label="Custom icons and aria-label"
                           Type="BitInputType.Password"
@@ -333,6 +355,12 @@
             <a href="#example8">Templates</a> section. A count above the limit turns red: the keyboard cannot get there, since
             <b>MaxLength</b> renders the html <code>maxlength</code> attribute, but a value assigned from the code can, and a
             counter reading a number above its own limit in the muted grey of a valid one would say nothing about it.
+            <br /><br />
+            By default the characters are counted the way the browser counts them against the limit - in UTF-16 code units -
+            which makes an emoji count as two and a family emoji as eleven. <b>CountStrategy</b> replaces that with a count of
+            your own, most often <code>StringInfo.LengthInTextElements</code>, which counts what a reader actually sees. It only
+            changes the number that is shown: the <code>maxlength</code> attribute keeps holding the keyboard back at its own
+            count, so a strategy that counts fewer characters than the browser does reaches the limit before the counter says so.
         </div>
         <br />
         <div class="example-box">
@@ -349,6 +377,20 @@
             <br />
             <BitTextField Label="Multiline" Multiline Rows="4" ShowCount MaxLength="140" @bind-Value="countValue" />
             <div>Value: [@countValue]</div>
+            <br />
+            <BitTextField Label="Counted in UTF-16 code units (the default)"
+                          ShowCount
+                          Immediate
+                          MaxLength="20"
+                          DefaultValue="👍🏽 hi" />
+            <br />
+            <BitTextField Label="Counted in text elements (CountStrategy)"
+                          ShowCount
+                          Immediate
+                          MaxLength="20"
+                          DefaultValue="👍🏽 hi"
+                          CountStrategy="CountTextElements"
+                          Description="The same value, counted the way it reads." />
         </div>
     </DemoExample>
 
@@ -397,9 +439,12 @@
             the value. Pressing <b>Tab</b> or <b>Enter</b> with the caret at the end of the text, or clicking/touching the field
             there, accepts it: the text is inserted, the bound value is updated whether or not <b>Immediate</b> is on, and
             <b>OnGhostTextAccepted</b> fires with the accepted string so the suggestion can be cleared or replaced. Any other
-            keystroke discards the suggestion, and the overlay is hidden from screen readers.
+            keystroke discards the suggestion, and a suggestion that would not fit under <b>MaxLength</b> is cut down to
+            whatever room is left rather than pushing the value past the limit the keyboard cannot pass either.
             <b>PermanentGhost</b> reserves the scrollbar gutter of a multiline field so the text does not shift when the
-            suggestion makes it overflow.
+            suggestion makes it overflow. The overlay itself is painted for the eye only and hidden from screen readers, so
+            the suggestion is announced through a polite live region instead - without it an inline completion would be a
+            feature only sighted users ever learn about.
         </div>
         <br />
         <div class="example-box">
@@ -487,13 +532,16 @@
                           OnEnter="HandleOnEnter"
                           OnEscape="HandleOnEscape"
                           OnKeyDown="HandleOnKeyDown"
+                          OnKeyUp="HandleOnKeyUp"
+                          OnClick="HandleOnClick"
                           OnFocus="HandleOnFocus"
                           OnBlur="HandleOnBlur"
                           OnFocusIn="HandleOnFocusIn"
                           OnFocusOut="HandleOnFocusOut" />
             <br />
             <div>Last event: [@eventLog]</div>
-            <div>Last key: [@lastKey]</div>
+            <div>Last key down: [@lastKey]</div>
+            <div>Last key up: [@lastKeyUp]</div>
             <div>Focus: [@focusLog]</div>
             <br />
             <BitTextField Label="Clearable" ShowClearButton DefaultValue="Clear me" OnClear="HandleOnClear" />
@@ -520,9 +568,9 @@
             <br />
             <BitTextField @ref="selectionRef" Label="Driven from code" DefaultValue="bit BlazorUI components" />
             <BitStack Horizontal Style="margin-top: 0.5rem;">
-                <BitButton OnClick="() => selectionRef?.SelectAsync()">SelectAsync</BitButton>
-                <BitButton OnClick="() => selectionRef?.SelectRangeAsync(4, 12)">SelectRangeAsync(4, 12)</BitButton>
-                <BitButton OnClick="() => selectionRef?.SelectRangeAsync(0, 0)">Caret to the start</BitButton>
+                <BitButton OnClick="async () => { if (selectionRef is not null) await selectionRef.SelectAsync(); }">SelectAsync</BitButton>
+                <BitButton OnClick="async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(4, 12); }">SelectRangeAsync(4, 12)</BitButton>
+                <BitButton OnClick="async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(0, 0); }">Caret to the start</BitButton>
             </BitStack>
         </div>
     </DemoExample>
@@ -559,13 +607,13 @@
         <div>
             <b>Loading</b> shows a busy indicator inside the field, which is how a field says that something is running against
             what was typed - a suggestion being fetched, a name being checked for availability, a value being validated on the
-            server. The field stays fully editable while it is on, so the typing is never interrupted, and the indicator is
-            marked as a status rather than an alert so a screen reader can find it without being interrupted either. The input
-            itself carries <code>aria-busy</code> while it is on, which is what tells an assistive technology that what it is
-            reading is still being worked on. <b>LoadingAriaLabel</b> is the name it announces, and <b>LoadingTemplate</b>
-            replaces the default spinner with any content - one of the other loading components of the library, an icon, a piece
-            of text. The two work together: a template is left to speak for itself when it says something on screen, and a name
-            given on purpose is kept next to it when it does not.
+            server. The field stays fully editable while it is on, so the typing is never interrupted. The input carries
+            <code>aria-busy</code> while it is on, which is what tells an assistive technology that what it is reading is still
+            being worked on, and a polite live region that is always part of the field announces that it started - politely, so
+            it waits for the reader to finish the sentence it is on rather than cutting into it. <b>LoadingAriaLabel</b> is what
+            that announcement says instead of the default "Loading", and <b>LoadingTemplate</b> replaces the spinner with any
+            content - one of the other loading components of the library, an icon, a piece of text - without costing the field
+            its announcement.
         </div>
         <br />
         <div class="example-box">
@@ -599,6 +647,8 @@
             A field is only usable by everyone when what it expects is exposed to assistive technologies as well as to the eye.
             <b>Label</b> is the first tool for that and should be preferred over <b>AriaLabel</b>, which names the input for a
             screen reader without showing anything - use it only where the surrounding layout already makes the purpose obvious.
+            Setting both is allowed and the <b>AriaLabel</b> wins: the visible caption keeps labelling the field for the eye and
+            for the click that focuses it, while the screen reader is given the fuller name.
             <b>Description</b> is the visible hint under the field, while <b>AriaDescription</b> is a hidden one for the cases
             where the instruction would be too long to show; both are referenced by the input through <code>aria-describedby</code>,
             in reading order, alongside the character counter when it carries a limit. An <code>aria-describedby</code> of your
@@ -627,6 +677,10 @@
                           Type="BitInputType.Search"
                           Placeholder="Search..."
                           IconName="@BitIconName.Search" />
+            <br />
+            <BitTextField Label="Card number"
+                          AriaLabel="Card number, sixteen digits, no spaces"
+                          Placeholder="1234 5678 9012 3456" />
             <br />
             <BitTextField Label="With a description of its own"
                           Description="Card number"

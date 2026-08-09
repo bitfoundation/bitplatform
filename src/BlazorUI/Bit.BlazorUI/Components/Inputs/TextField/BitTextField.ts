@@ -7,6 +7,7 @@ namespace BitBlazorUI {
         private static _ghostTexts: { [key: string]: string } = {};
         private static _maxRows: { [key: string]: number | null } = {};
         private static _inputElements: { [key: string]: HTMLInputElement } = {};
+        private static _resizeObservers: { [key: string]: ResizeObserver } = {};
 
         private static getSignal(id: string, feature: string): AbortSignal {
             const features = TextField._abortControllers[id] ?? (TextField._abortControllers[id] = {});
@@ -27,10 +28,38 @@ namespace BitBlazorUI {
             const signal = TextField.getSignal(id, 'multiline');
             TextField._maxRows[id] = maxRows ?? null;
 
+            TextField.disconnectResizeObserver(id);
+
             if (autoHeight) {
                 inputElement.addEventListener('input', e => {
                     TextField.resize(inputElement, TextField._maxRows[id]);
                 }, { signal });
+
+                // Typing is not the only thing that changes how many lines the content takes: a narrower
+                // window, a collapsing side panel or a font that finishes loading all re-wrap the text, and
+                // the height measured before any of that would leave the field either clipped or half empty.
+                if (typeof ResizeObserver !== 'undefined') {
+                    let lastWidth = inputElement.clientWidth;
+
+                    const observer = new ResizeObserver(() => {
+                        // Only the width can re-wrap the content. Measuring again on every height change
+                        // would react to the resize this observer itself causes, which is the loop the
+                        // browser warns about.
+                        const width = inputElement.clientWidth;
+                        if (width === lastWidth) return;
+
+                        lastWidth = width;
+                        TextField.resize(inputElement, TextField._maxRows[id]);
+
+                        // Growing the element can take a scrollbar away, which widens it again. Reading the
+                        // width back is what keeps that second notification from being taken for a new
+                        // change and measuring all over again.
+                        lastWidth = inputElement.clientWidth;
+                    });
+
+                    observer.observe(inputElement);
+                    TextField._resizeObservers[id] = observer;
+                }
             } else {
                 // The heights the auto growing left behind are inline styles, so they would keep the
                 // element at the size of its content long after the feature was turned off. Clearing them
@@ -62,36 +91,62 @@ namespace BitBlazorUI {
         }
 
         // Collapses the input first so scrollHeight reports the height the content actually needs, then
-        // grows it back to that height. When a row ceiling is set the growth stops there and the content
-        // scrolls inside the input instead of pushing the rest of the page down.
+        // grows it back to that height. The rows attribute is the floor of that growth and a row ceiling,
+        // when one is set, is its top: beyond it the content scrolls inside the input instead of pushing
+        // the rest of the page down.
         private static resize(inputElement: HTMLInputElement, maxRows: number | null) {
             inputElement.style.height = 'auto';
-
-            const contentHeight = inputElement.scrollHeight;
-
-            if (!maxRows || maxRows <= 0) {
-                inputElement.style.height = contentHeight + 'px';
-                inputElement.style.overflowY = '';
-                return;
-            }
 
             const styles = getComputedStyle(inputElement);
             const fontSize = parseFloat(styles.fontSize) || 16;
             const lineHeight = parseFloat(styles.lineHeight) || (fontSize * 1.2);
             const paddings = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
-            const borders = styles.boxSizing === 'border-box'
+
+            // scrollHeight covers the content and its padding but never the borders, while the height of a
+            // border-box element does, so the borders are added back to every height derived from it -
+            // otherwise the field ends up exactly one border short of its content and scrolls by a hair.
+            const isBorderBox = styles.boxSizing === 'border-box';
+
+            const borders = isBorderBox
                 ? (parseFloat(styles.borderTopWidth) || 0) + (parseFloat(styles.borderBottomWidth) || 0)
                 : 0;
 
-            const maxHeight = (lineHeight * maxRows) + paddings + borders;
+            // The height of a content-box element is the content alone, so the padding scrollHeight carries
+            // is taken back out of it - and left out of the floor and the ceiling below as well, so all
+            // three speak the same units the style property is read in.
+            const boxPaddings = isBorderBox ? paddings : 0;
 
-            if (contentHeight > maxHeight) {
+            const contentHeight = inputElement.scrollHeight + borders - (isBorderBox ? 0 : paddings);
+
+            // The rows attribute keeps its meaning while the input grows: it is the height the field starts
+            // at and never falls below, so a field asking for five rows does not collapse to a single line
+            // the moment its value is emptied.
+            const rows = (inputElement as unknown as HTMLTextAreaElement).rows;
+            const minHeight = rows > 1 ? (lineHeight * rows) + boxPaddings + borders : 0;
+
+            const height = Math.max(contentHeight, minHeight);
+
+            if (!maxRows || maxRows <= 0) {
+                inputElement.style.height = height + 'px';
+                inputElement.style.overflowY = '';
+                return;
+            }
+
+            const maxHeight = (lineHeight * maxRows) + boxPaddings + borders;
+
+            if (height > maxHeight) {
                 inputElement.style.height = maxHeight + 'px';
                 inputElement.style.overflowY = 'auto';
             } else {
-                inputElement.style.height = contentHeight + 'px';
+                inputElement.style.height = height + 'px';
                 inputElement.style.overflowY = 'hidden';
             }
+        }
+
+        private static disconnectResizeObserver(id: string) {
+            TextField._resizeObservers[id]?.disconnect();
+
+            delete TextField._resizeObservers[id];
         }
 
         // Keeps an input method editor (Pinyin, Kana, Hangul, ...) from leaking into the component while
@@ -171,6 +226,17 @@ namespace BitBlazorUI {
                 justFocused = true;
                 select();
             }
+
+            // Only the interaction that brings the focus in has its mouseup swallowed. A press on a field
+            // that is already focused - the first click after a Tab, or any click after the first one -
+            // must place the caret where it landed, so the flag is dropped before that mouseup arrives.
+            // The focus of a click is given during the default action of the mousedown, which is after
+            // this listener runs, so an unfocused field is still seen as unfocused here.
+            inputElement.addEventListener('mousedown', () => {
+                if (document.activeElement === inputElement) {
+                    justFocused = false;
+                }
+            }, { signal });
 
             inputElement.addEventListener('mouseup', e => {
                 if (!justFocused) return;
@@ -368,6 +434,12 @@ namespace BitBlazorUI {
         // Tears a single feature down, which is what happens when a text field stops being multiline or
         // stops being immediate while the rest of it stays alive.
         public static disposeFeature(id: string, feature: string) {
+            // The auto growing of the multiline mode watches the element as well as listening to it, and
+            // an observer is not something an AbortSignal takes away.
+            if (feature === 'multiline') {
+                TextField.disconnectResizeObserver(id);
+            }
+
             const features = TextField._abortControllers[id];
             if (!features) return;
 
@@ -381,6 +453,8 @@ namespace BitBlazorUI {
             if (features) {
                 Object.keys(features).forEach(feature => features[feature].abort());
             }
+
+            TextField.disconnectResizeObserver(id);
 
             delete TextField._abortControllers[id];
             delete TextField._ghostTexts[id];
