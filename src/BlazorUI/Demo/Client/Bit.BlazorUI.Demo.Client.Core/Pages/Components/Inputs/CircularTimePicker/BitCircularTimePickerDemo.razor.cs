@@ -312,7 +312,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OnViewChange",
             Type = "EventCallback<BitCircularTimePickerView>",
-            Description = "Callback for when the dial switches between the hours and the minutes.",
+            Description = "Callback for when the dial switches between the hours, the minutes and the seconds.",
             Href = "#view-enum",
             LinkType = LinkType.Link
         },
@@ -916,6 +916,7 @@ public partial class BitCircularTimePickerDemo
     private void LogFocusOut() => Log("OnFocusOut");
     private void LogViewChange(BitCircularTimePickerView view) => Log($"OnViewChange: {view}");
     private void LogSelectTime(TimeSpan? time) => Log($"OnSelectTime: {time}");
+    private void LogChange(TimeSpan? time) => Log($"OnChange: {time}");
 
     private void Log(string message)
     {

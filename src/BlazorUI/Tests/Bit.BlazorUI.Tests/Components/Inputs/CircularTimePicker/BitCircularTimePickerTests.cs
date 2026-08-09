@@ -193,6 +193,9 @@ public class BitCircularTimePickerTests : BunitTestContext
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, defaultValue);
+            // the field writes the value with the time separator of the culture, so the one it is read
+            // back against is pinned rather than left to whatever the machine running the test is set to
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
         Assert.AreEqual(defaultValue, component.Instance.Value);
@@ -786,6 +789,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowSeconds, true);
             parameters.Add(p => p.DefaultValue, new TimeSpan(9, 30, 15));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
         var buttons = component.FindAll("button.bit-ctp-txt");
@@ -805,6 +809,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
             parameters.Add(p => p.DefaultValue, new TimeSpan(9, 30, 15));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
         Assert.AreEqual(2, component.FindAll("button.bit-ctp-txt").Count);
@@ -1319,6 +1324,10 @@ public class BitCircularTimePickerTests : BunitTestContext
         });
 
         var clock = component.Find(".bit-ctp-clf");
+
+        // the flag the script reads is on a dial the wheel is left enabled on, which is what makes its
+        // absence in the tests above the answer to the parameter rather than the default
+        Assert.IsTrue(clock.HasAttribute("data-bit-wheel"));
 
         await component.InvokeAsync(() => clock.Focus());
         await component.InvokeAsync(() => clock.Wheel(new WheelEventArgs { DeltaY = -1, ShiftKey = true }));
@@ -2119,7 +2128,14 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var style = component.Find(".bit-ctp-ovl").GetAttribute("style") ?? string.Empty;
 
-        return style.Contains("display:block") ? "block" : "none";
+        // Both of the two the overlay is ever rendered with are matched, so a style that stops carrying
+        // either of them - a renamed declaration, a reformatted one - fails the test instead of passing
+        // it as a hidden overlay.
+        if (style.Contains("display:block")) return "block";
+        if (style.Contains("display:none")) return "none";
+
+        Assert.Fail($"The overlay carries neither display:block nor display:none but '{style}'.");
+        return string.Empty;
     }
 
     #endregion

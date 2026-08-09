@@ -59,12 +59,19 @@ namespace BitBlazorUI {
             const endDrag = () => {
                 if (dragging === false) return;
 
-                dragging = false;
-                latestMoveArgs = null;
                 if (rafId !== 0) {
                     cancelAnimationFrame(rafId);
                     rafId = 0;
                 }
+
+                // A pointer that comes up within the same frame as the last move leaves that move
+                // unsent, and the position it carries is the one the drag was released at - so it is
+                // flushed here, while the drag still counts as on, rather than the pick landing a frame
+                // short of where the hand was let go.
+                flushMove();
+
+                dragging = false;
+                latestMoveArgs = null;
 
                 dotnetObj.invokeMethodAsync(pointerUpHandler);
             };

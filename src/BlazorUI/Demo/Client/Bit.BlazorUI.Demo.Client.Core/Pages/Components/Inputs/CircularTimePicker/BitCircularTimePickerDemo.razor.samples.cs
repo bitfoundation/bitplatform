@@ -267,7 +267,8 @@ private void HandleInvalidSubmit()
                        OnFocusIn=""LogFocusIn""
                        OnFocusOut=""LogFocusOut""
                        OnViewChange=""LogViewChange""
-                       OnSelectTime=""LogSelectTime"" />
+                       OnSelectTime=""LogSelectTime""
+                       OnChange=""LogChange"" />
 
 <div class=""event-log"">
     @foreach (var log in eventLogs)
@@ -285,6 +286,7 @@ private void LogFocusIn() => Log(""OnFocusIn"");
 private void LogFocusOut() => Log(""OnFocusOut"");
 private void LogViewChange(BitCircularTimePickerView view) => Log($""OnViewChange: {view}"");
 private void LogSelectTime(TimeSpan? time) => Log($""OnSelectTime: {time}"");
+private void LogChange(TimeSpan? time) => Log($""OnChange: {time}"");
 
 private void Log(string message)
 {

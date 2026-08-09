@@ -119,7 +119,7 @@
                         title="@_culture.DateTimeFormat.AMDesignator"
                         aria-pressed="@(isAm ? "true" : "false")"
                         style="@GetAmButtonStyle(isAm)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(IsInteractive is false)"
                         class="bit-ctp-apb @(isAm ? $"bit-ctp-aps {Classes?.SelectedButtons}" : "bit-ctp-ina") @Classes?.AmButton">
                     @_culture.DateTimeFormat.AMDesignator
                 </button>
@@ -128,7 +128,7 @@
                         title="@_culture.DateTimeFormat.PMDesignator"
                         aria-pressed="@(isAm ? "false" : "true")"
                         style="@GetPmButtonStyle(isAm)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(IsInteractive is false)"
                         class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : $"bit-ctp-aps {Classes?.SelectedButtons}") @Classes?.PmButton">
                     @_culture.DateTimeFormat.PMDesignator
                 </button>

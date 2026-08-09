@@ -344,7 +344,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public EventCallback<TimeSpan?> OnSelectTime { get; set; }
 
     /// <summary>
-    /// Callback for when the dial switches between the hours and the minutes.
+    /// Callback for when the dial switches between the hours, the minutes and the seconds.
     /// </summary>
     [Parameter] public EventCallback<BitCircularTimePickerView> OnViewChange { get; set; }
 

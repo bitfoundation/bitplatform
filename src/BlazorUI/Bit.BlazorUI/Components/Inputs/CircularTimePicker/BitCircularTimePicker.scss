@@ -19,6 +19,7 @@
     --bit-ctp-num-size: #{spacing(4)};
     --bit-ctp-txt-fontsize: #{spacing(5.5)};
     --bit-ctp-apb-fontsize: #{spacing(2.6)};
+    --bit-ctp-apk-fontsize: #{spacing(1.75)};
     --bit-ctp-num-fontsize: inherit;
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
     --bit-ctp-thb-size: #{spacing(3.5)};
@@ -419,12 +420,13 @@ span.bit-ctp-txt {
     margin-inline-start: 0;
 
     .bit-ctp-apb {
-        // Sized to the numbers on the dial next to it, so the pair is as easy to hit as the ring it belongs to
-        // rather than the two words it used to be in the corner of the toolbar.
+        // Sized off the numbers on the dial next to it, so the pair is as easy to hit as the ring it belongs
+        // to rather than the two words it used to be in the corner of the toolbar - and so it follows the
+        // dial through the size presets instead of staying at the medium one on all three.
         padding: spacing(0.5) spacing(2);
-        font-size: spacing(1.75);
-        min-width: spacing(6);
-        min-height: spacing(4);
+        font-size: var(--bit-ctp-apk-fontsize);
+        min-width: calc(var(--bit-ctp-num-size) * 1.5);
+        min-height: var(--bit-ctp-num-size);
         color: $clr-fg-pri;
         border-radius: $shp-border-radius;
         border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -686,8 +688,10 @@ span.bit-ctp-txt {
 
         // Scoped to the toolbar: its buttons sit on the accent, so the on-accent color is what reads as a
         // lift there. The meridiem pair under the clock sits on the callout instead, where that same color
-        // would make it vanish, so it lifts with a background of its own.
-        .bit-ctp-tlb .bit-ctp-txt:not(:disabled):hover,
+        // would make it vanish, so it lifts with a background of its own. Only the buttons lift: the
+        // separators and the read-out of a single-part edit mode carry the same class without being
+        // anything a pointer can press, and :not(:disabled) is no help there - a span is never disabled.
+        .bit-ctp-tlb button.bit-ctp-txt:not(:disabled):hover,
         .bit-ctp-tlb .bit-ctp-apb:not(:disabled):hover {
             color: var(--bit-ctp-clr-text);
         }
@@ -705,6 +709,7 @@ span.bit-ctp-txt {
     --bit-ctp-num-size: #{spacing(3.25)};
     --bit-ctp-txt-fontsize: #{spacing(4.25)};
     --bit-ctp-apb-fontsize: #{spacing(2)};
+    --bit-ctp-apk-fontsize: #{spacing(1.5)};
     --bit-ctp-num-fontsize: #{spacing(1.5)};
     --bit-ctp-tlb-minwidth: #{spacing(26)};
 }
@@ -720,6 +725,7 @@ span.bit-ctp-txt {
     --bit-ctp-num-size: #{spacing(4.75)};
     --bit-ctp-txt-fontsize: #{spacing(6.5)};
     --bit-ctp-apb-fontsize: #{spacing(3)};
+    --bit-ctp-apk-fontsize: #{spacing(2.25)};
     --bit-ctp-num-fontsize: #{spacing(2.25)};
     --bit-ctp-tlb-minwidth: #{spacing(39)};
 }
