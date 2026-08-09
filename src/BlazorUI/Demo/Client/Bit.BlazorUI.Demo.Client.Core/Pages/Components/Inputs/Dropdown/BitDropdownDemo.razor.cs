@@ -532,7 +532,7 @@ public partial class BitDropdownDemo
         {
             Name = "OnClear",
             Type = "EventCallback",
-            Description = "The callback that is called when the selection gets cleared by the clear button.",
+            Description = "The callback that is called when the selection gets cleared, either by the clear button or by the Escape key when ClearOnEscape is enabled.",
         },
         new()
         {
