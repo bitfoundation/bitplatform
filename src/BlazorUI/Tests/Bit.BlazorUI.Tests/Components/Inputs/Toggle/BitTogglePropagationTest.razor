@@ -1,0 +1,10 @@
+@* A BitToggle inside a clickable container, so what a click on the toggle does to that container can be observed. *@
+<div id="container" @onclick="() => ContainerClickCount++">
+    <BitToggle Label="A toggle" StopPropagation="StopPropagation" />
+</div>
+
+@code {
+    [Parameter] public bool StopPropagation { get; set; }
+
+    public int ContainerClickCount { get; set; }
+}

@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-tgl {
     display: flex;
@@ -9,49 +9,58 @@
     flex-direction: column;
     font-family: $tg-font-family;
 
+    // The description is placed off two custom properties rather than off a pile of :not() selectors, so
+    // it follows the very cascade that decides the flex direction: every block below that sets a direction
+    // sets these along with it, and whichever direction wins brings its own placement with it.
+    //   - order: in the two column-reverse shapes the items are laid out bottom to top, so the description
+    //     has to be ordered first to end up last on the page;
+    //   - basis: it takes a whole line of its own, which in a row is a full-width basis that forces a wrap,
+    //     while in a column every item already has a line and a basis would set its height instead;
+    //   - width: a wrapping flex box is as wide as all of its items laid out in a single row, so a described
+    //     toggle whose shape is a row spans its container - the shape of a settings row - instead of carrying
+    //     the width of its description trailing after the knob. Stacked, every item already has its own line
+    //     and the toggle keeps hugging its content.
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
+
+    // The unchecked track stays neutral whatever the Color is, so it keeps reading as "off" instead of
+    // as a second, dimmer accent.
+    --bit-tgl-trk-clr-bg: #{$clr-bg-pri};
+    --bit-tgl-trk-clr-brd: #{$clr-brd-pri};
+    --bit-tgl-thb-clr: #{$clr-fg-sec};
+    --bit-tgl-ico-clr: #{$clr-bg-pri};
+    --bit-tgl-cnn-clr: #{$clr-fg-sec};
+
     &.bit-dis {
-        .bit-tgl-lbl {
+        --bit-tgl-trk-clr-bg: #{$clr-bg-dis};
+        --bit-tgl-trk-clr-brd: #{$clr-brd-dis};
+        --bit-tgl-thb-clr: #{$clr-fg-dis};
+        --bit-tgl-ico-clr: #{$clr-bg-dis};
+        --bit-tgl-cnn-clr: #{$clr-fg-dis};
+
+        .bit-tgl-lbl, .bit-tgl-des {
+            cursor: default;
             color: $clr-fg-dis;
         }
 
-        .bit-tgl-btn {
+        .bit-tgl-btn, .bit-tgl-stx {
             cursor: default;
-            background: $clr-bg-dis;
-            border: $shp-border-width $shp-border-style $clr-brd-dis;
-
-            @media (hover: hover) {
-                &:hover {
-                    .bit-tgl-sta {
-                        background-color: $clr-fg-dis;
-                    }
-                }
-            }
-        }
-
-        .bit-tgl-sta {
-            background-color: $clr-fg-dis;
         }
 
         &.bit-tgl-chk {
-            .bit-tgl-btn {
-                background: $clr-bg-dis;
-                justify-content: flex-end;
-                border: $shp-border-width $shp-border-style transparent;
-            }
-
-            .bit-tgl-sta {
-                background-color: $clr-fg-dis;
-            }
+            --bit-tgl-trk-clr-bg: #{$clr-bg-dis};
+            --bit-tgl-trk-clr-brd: transparent;
+            --bit-tgl-thb-clr: #{$clr-fg-dis};
+            --bit-tgl-cnn-clr: #{$clr-fg-dis};
         }
     }
 
     &.bit-inv {
-        .bit-tgl-btn {
-            border-color: $clr-err;
+        --bit-tgl-trk-clr-brd: #{$clr-err};
 
-            &:focus-visible {
-                @include focus-ring($clr-err-focus);
-            }
+        .bit-tgl-btn:focus-visible {
+            @include focus-ring($clr-err-focus);
         }
 
         .bit-tgl-stx {
@@ -59,19 +68,27 @@
         }
 
         &.bit-tgl-chk {
-            .bit-tgl-btn {
-                background-color: $clr-err;
+            --bit-tgl-trk-clr-bg: #{$clr-err};
+            --bit-tgl-trk-clr-brd: #{$clr-err};
+            --bit-tgl-thb-clr: #{$clr-err-text};
+            --bit-tgl-ico-clr: #{$clr-err};
+        }
+    }
+}
 
-                @media (hover: hover) {
-                    &:hover {
-                        background-color: $clr-err;
-                    }
-                }
-            }
+// The whole toggle is the hover target, not only the track, because the label and the state text are part
+// of the click target too. The states that cannot be clicked into another one are left out of it: a hover
+// highlight on a disabled, read-only, loading or invalid toggle would either promise a change that no click
+// can make or paint over the error color that is the point of the invalid state.
+@media (hover: hover) {
+    .bit-tgl:hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {
+        --bit-tgl-trk-clr-brd: #{$clr-brd-pri-hover};
+        --bit-tgl-thb-clr: #{$clr-fg-sec-hover};
 
-            .bit-tgl-stx {
-                color: $clr-err;
-            }
+        &.bit-tgl-chk {
+            --bit-tgl-trk-clr-bg: var(--bit-tgl-clr-hover);
+            --bit-tgl-trk-clr-brd: transparent;
+            --bit-tgl-thb-clr: var(--bit-tgl-clr-text);
         }
     }
 }
@@ -79,25 +96,147 @@
 .bit-tgl-inl {
     align-items: center;
     flex-direction: row;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
+}
+
+.bit-tgl-rvs {
+    display: flex;
+    flex-direction: column-reverse;
+    --bit-tgl-des-order: -1;
+
+    // Only the single-line shape ends the label, where it is the far side of the row that the knob has left.
+    // Stacked, the label is still a line of its own above or below the knob, and stays where reading starts -
+    // the same way LabelPosition.Bottom, which reaches the very same layout, keeps it.
+    &.bit-tgl-inl {
+        flex-direction: row-reverse;
+        --bit-tgl-des-order: 1;
+        --bit-tgl-des-basis: 100%;
+        --bit-tgl-hds-width: 100%;
+
+        .bit-tgl-lbl {
+            text-align: end;
+        }
+    }
+}
+
+// The label position classes come after the inline and reversed ones and carry the root class along, so an
+// explicit LabelPosition wins over either of them whichever way they were combined - including over the two
+// of them together, which on its own would outweigh a single class.
+
+.bit-tgl.bit-tgl-ltp {
+    align-items: stretch;
+    flex-direction: column;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
+
+    .bit-tgl-lbl {
+        text-align: start;
+    }
+}
+
+.bit-tgl.bit-tgl-lbt {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    --bit-tgl-des-order: -1;
+    --bit-tgl-des-basis: auto;
+    --bit-tgl-hds-width: fit-content;
+
+    .bit-tgl-lbl {
+        text-align: start;
+    }
+}
+
+.bit-tgl.bit-tgl-lst {
+    align-items: center;
+    flex-direction: row;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
+
+    .bit-tgl-lbl {
+        text-align: start;
+    }
+}
+
+.bit-tgl.bit-tgl-lnd {
+    align-items: center;
+    flex-direction: row-reverse;
+    --bit-tgl-des-order: 1;
+    --bit-tgl-des-basis: 100%;
+    --bit-tgl-hds-width: 100%;
+
+    .bit-tgl-lbl {
+        text-align: end;
+    }
 }
 
 .bit-tgl-fwi {
     width: 100%;
 
-    &.bit-tgl-inl {
-        gap: 0;
-    }
+    // Growing the label is what pushes the knob to the far edge, so it only applies to the single-line shapes.
+    // Stacked, the label already spans the whole width, and growing it would stretch it down the free height
+    // instead of across. Only the label grows; the state text keeps hugging the knob it belongs to.
+    // Only the gap along the row is closed, not the one between the rows: the label and the knob belong to
+    // opposite edges of the same line, while a description sitting on the next line still needs its space.
+    &.bit-tgl-inl, &.bit-tgl-lst, &.bit-tgl-lnd {
+        column-gap: 0;
 
-    label {
-        flex-grow: 1;
+        > .bit-tgl-lbl {
+            flex-grow: 1;
+        }
     }
+}
+
+// A description takes a line of its own under the toggle, which the single-line shapes only have room for
+// once the root is allowed to wrap. Turned on with the description rather than always, so a toggle without
+// one keeps a root that cannot break its label away from its knob.
+.bit-tgl-hds {
+    flex-wrap: wrap;
+    width: var(--bit-tgl-hds-width);
+}
+
+// FullWidth wins over the width a description asks for, whichever shape the toggle takes.
+.bit-tgl-fwi.bit-tgl-hds {
+    width: 100%;
+}
+
+.bit-tgl-des {
+    color: $clr-fg-sec;
+    order: var(--bit-tgl-des-order);
+    flex-basis: var(--bit-tgl-des-basis);
+    font-size: var(--bit-tgl-des-fontsize);
+}
+
+// A read-only or loading toggle stays focusable and legible, but nothing about it invites a click anymore.
+.bit-tgl-rdl, .bit-tgl-ldg {
+    .bit-tgl-lbl, .bit-tgl-btn, .bit-tgl-stx {
+        cursor: default;
+    }
+}
+
+.bit-tgl-req {
+    .bit-tgl-lbl::after {
+        content: "*";
+        color: $clr-req;
+        margin-inline-start: spacing(0.625);
+    }
+}
+
+// Both the label and the state text forward their clicks to the track, so they are part of the switch as far
+// as the pointer is concerned: no text selection to swallow a double click, and no tap delay or highlight box.
+.bit-tgl-lbl, .bit-tgl-stx {
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .bit-tgl-lbl {
     cursor: pointer;
     font-weight: 600;
     color: $clr-fg-pri;
-    font-size: spacing(1.75);
+    font-size: var(--bit-tgl-lbl-fontsize);
 }
 
 .bit-tgl-cnt {
@@ -107,47 +246,159 @@
     align-items: center;
 }
 
+// The track. A minimum width rather than a fixed one, so that the plain toggle keeps the exact geometry of
+// its size token while a toggle carrying track content grows to fit instead of overflowing.
+// The knob is out of the flow, so the lane it occupies is held open by the padding of the track instead -
+// which is what lets the knob slide between the two ends of a track of any width.
 .bit-tgl-btn {
     display: flex;
     cursor: pointer;
-    width: spacing(5);
+    flex: 0 0 auto;
     position: relative;
     align-items: center;
     outline: transparent;
-    height: spacing(2.5);
-    min-width: spacing(5);
+    user-select: none;
     box-sizing: border-box;
-    font-size: spacing(2.5);
-    background: $clr-bg-pri;
-    padding: 0 spacing(0.375);
-    transition: all $mot-duration-short ease 0s;
-    border-radius: spacing(1.25);
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    width: fit-content;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    height: var(--bit-tgl-trk-h);
+    min-width: var(--bit-tgl-trk-w);
+    padding-block: 0;
+    padding-inline: calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap)) var(--bit-tgl-pad);
+    background: var(--bit-tgl-trk-clr-bg);
+    border-radius: calc(var(--bit-tgl-trk-h) / 2);
+    transition: background $mot-duration-short $mot-easing,
+                border-color $mot-duration-short $mot-easing,
+                padding $mot-duration-short $mot-easing;
+    border: $shp-border-width $shp-border-style var(--bit-tgl-trk-clr-brd);
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-tgl-clr-focus, #{$clr-pri-focus}));
     }
 
-    @media (hover: hover) {
-        &:hover {
-            border-color: $clr-brd-pri-hover;
-
-            .bit-tgl-sta {
-                background-color: $clr-fg-sec-hover;
-            }
-        }
+    // WCAG 2.2 Target Size (Minimum) asks for 24x24 CSS pixels, which the small and medium tracks are shorter
+    // than. This grows the pointer target of the track to that floor - centered on it and drawn by nothing -
+    // without touching the geometry of the toggle itself. Auto margins against a zero inset keep it centered
+    // in both axes even where it overflows the track, and in either reading direction.
+    // The floor is written in CSS pixels rather than through spacing(), which the theme's density multiplier
+    // scales: the success criterion is an absolute size, so a compact theme must not shrink it under 24.
+    &::before {
+        content: "";
+        inset: 0;
+        margin: auto;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        min-width: 24px;
+        min-height: 24px;
     }
 }
 
+// The knob. It is positioned rather than laid out, so that moving it from one end of the track to the other
+// is a change of one length that transitions, instead of a reordering that can only jump.
 .bit-tgl-sta {
-    display: block;
+    display: flex;
+    scale: 1;
+    z-index: 1;
     border-radius: 50%;
-    width: spacing(1.5);
-    height: spacing(1.5);
+    align-items: center;
+    position: absolute;
     box-sizing: border-box;
-    transition: all $mot-duration-short ease 0s;
-    background-color: $clr-fg-sec;
-    border: spacing(0.75) $shp-border-style transparent;
+    justify-content: center;
+    inset-block-start: 50%;
+    inset-inline-start: var(--bit-tgl-pad);
+    translate: 0 -50%;
+    width: var(--bit-tgl-thb-size);
+    height: var(--bit-tgl-thb-size);
+    background-color: var(--bit-tgl-thb-clr);
+    transition: inset-inline-start $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing,
+                scale $mot-duration-short $mot-easing;
+}
+
+// A press dips the knob, so the toggle answers the pointer before the state it is about to move to lands.
+// Left off wherever a click cannot change anything, where it would promise a change that never comes.
+.bit-tgl:not(.bit-dis):not(.bit-tgl-rdl):not(.bit-tgl-ldg) .bit-tgl-btn:active .bit-tgl-sta {
+    scale: 0.9;
+}
+
+.bit-tgl-ico {
+    display: flex;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-tgl-ico-clr);
+    font-size: var(--bit-tgl-ico-fontsize);
+}
+
+// The spinner replaces the knob's glyph while a change is in flight, drawn in the same color the glyph
+// would have been so it reads as part of the knob rather than as something laid over it. It is sized off
+// the knob it lands in rather than off a token of its own, so it fits both the plain knob and the roomier
+// one a glyph asks for - which is what lets a toggle turn busy without resizing itself.
+.bit-tgl-spn {
+    border-radius: 50%;
+    box-sizing: border-box;
+    border-style: $shp-border-style;
+    border-color: translucent(var(--bit-tgl-ico-clr), 30%);
+    border-top-color: var(--bit-tgl-ico-clr);
+    border-width: var(--bit-tgl-spn-width);
+    width: calc(var(--bit-tgl-thb-size) * 0.8);
+    height: calc(var(--bit-tgl-thb-size) * 0.8);
+    animation: bit-tgl-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
+}
+
+@keyframes bit-tgl-spinner-animation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// The track content. It never shrinks the knob and never wraps, so a long label widens the track instead
+// of deforming the toggle. Both states are stacked in a single grid cell, so the cell is as wide as the
+// wider of the two and the track keeps that width through a flip instead of resizing under the pointer.
+.bit-tgl-cnn {
+    display: grid;
+    min-width: 0;
+    line-height: 1;
+    cursor: inherit;
+    user-select: none;
+    align-items: center;
+    white-space: nowrap;
+    justify-items: center;
+    color: var(--bit-tgl-cnn-clr);
+    font-size: var(--bit-tgl-cnn-fontsize);
+    padding-inline: var(--bit-tgl-cnn-pad);
+    transition: color $mot-duration-short $mot-easing;
+}
+
+// Hidden rather than unrendered, so the side that is not showing still holds its width open. It is already
+// out of the accessible tree with the cell that carries it, and visibility keeps anything focusable in it
+// out of the tab order too.
+.bit-tgl-cno, .bit-tgl-cnf {
+    display: flex;
+    grid-area: 1 / 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.bit-tgl-cno {
+    visibility: hidden;
+}
+
+.bit-tgl-chk {
+    .bit-tgl-cno {
+        visibility: visible;
+    }
+
+    .bit-tgl-cnf {
+        visibility: hidden;
+    }
 }
 
 .bit-tgl-stx {
@@ -155,42 +406,111 @@
     cursor: pointer;
     font-weight: 400;
     user-select: none;
+    font-size: var(--bit-tgl-stx-fontsize);
+}
+
+.bit-tgl-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tgl-chk {
-    .bit-tgl-btn {
-        cursor: pointer;
-        justify-content: flex-end;
-        background: $clr-pri;
-        border: $shp-border-width $shp-border-style transparent;
+    --bit-tgl-trk-clr-bg: var(--bit-tgl-clr);
+    --bit-tgl-trk-clr-brd: transparent;
+    --bit-tgl-thb-clr: var(--bit-tgl-clr-text);
+    --bit-tgl-ico-clr: var(--bit-tgl-clr);
+    --bit-tgl-cnn-clr: var(--bit-tgl-clr-text);
 
-        @media (hover: hover) {
-            &:hover {
-                border-color: transparent;
-                background-color: $clr-pri-hover;
-
-                .bit-tgl-sta {
-                    background-color: $clr-pri-text;
-                }
-            }
-        }
+    // The knob slides to the far end and the lane held open for it swaps with it, so whatever content the
+    // track carries ends up on the side the knob has just left - in both reading directions.
+    .bit-tgl-sta {
+        inset-inline-start: calc(100% - var(--bit-tgl-thb-size) - var(--bit-tgl-pad));
     }
 
-    .bit-tgl-sta {
-        background-color: $clr-pri-text;
+    .bit-tgl-btn {
+        padding-inline: var(--bit-tgl-pad) calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap));
     }
 }
 
-.bit-tgl-rvs {
-    display: flex;
-    flex-direction: column-reverse;
+.bit-tgl-sm {
+    --bit-tgl-gap: #{spacing(0.25)};
+    --bit-tgl-pad: #{spacing(0.375)};
+    --bit-tgl-trk-w: #{spacing(4)};
+    --bit-tgl-trk-h: #{spacing(2)};
+    --bit-tgl-thb-size: #{spacing(1)};
+    --bit-tgl-trk-w-ico: #{spacing(5)};
+    --bit-tgl-trk-h-ico: #{spacing(2.5)};
+    --bit-tgl-thb-size-ico: #{spacing(1.75)};
+    --bit-tgl-ico-fontsize: #{spacing(1)};
+    --bit-tgl-spn-width: #{spacing(0.1875)};
+    --bit-tgl-cnn-fontsize: #{spacing(1.125)};
+    --bit-tgl-cnn-pad: #{spacing(0.25)};
+    --bit-tgl-lbl-fontsize: #{spacing(1.5)};
+    --bit-tgl-stx-fontsize: #{spacing(1.5)};
+    --bit-tgl-des-fontsize: #{spacing(1.25)};
+}
 
-    &.bit-tgl-inl {
-        flex-direction: row-reverse;
-    }
+.bit-tgl-md {
+    --bit-tgl-gap: #{spacing(0.25)};
+    --bit-tgl-pad: #{spacing(0.375)};
+    --bit-tgl-trk-w: #{spacing(5)};
+    --bit-tgl-trk-h: #{spacing(2.5)};
+    --bit-tgl-thb-size: #{spacing(1.5)};
+    --bit-tgl-trk-w-ico: #{spacing(6.5)};
+    --bit-tgl-trk-h-ico: #{spacing(3.5)};
+    --bit-tgl-thb-size-ico: #{spacing(2.5)};
+    --bit-tgl-ico-fontsize: #{spacing(1.5)};
+    --bit-tgl-spn-width: #{spacing(0.25)};
+    --bit-tgl-cnn-fontsize: #{spacing(1.5)};
+    --bit-tgl-cnn-pad: #{spacing(0.375)};
+    --bit-tgl-lbl-fontsize: #{spacing(1.75)};
+    --bit-tgl-stx-fontsize: inherit;
+    --bit-tgl-des-fontsize: #{spacing(1.5)};
+}
 
-    .bit-tgl-lbl {
-        text-align: end;
+.bit-tgl-lg {
+    --bit-tgl-gap: #{spacing(0.375)};
+    --bit-tgl-pad: #{spacing(0.5)};
+    --bit-tgl-trk-w: #{spacing(6.5)};
+    --bit-tgl-trk-h: #{spacing(3.25)};
+    --bit-tgl-thb-size: #{spacing(2)};
+    --bit-tgl-trk-w-ico: #{spacing(8)};
+    --bit-tgl-trk-h-ico: #{spacing(4.25)};
+    --bit-tgl-thb-size-ico: #{spacing(3.25)};
+    --bit-tgl-ico-fontsize: #{spacing(2)};
+    --bit-tgl-spn-width: #{spacing(0.3125)};
+    --bit-tgl-cnn-fontsize: #{spacing(1.75)};
+    --bit-tgl-cnn-pad: #{spacing(0.5)};
+    --bit-tgl-lbl-fontsize: #{spacing(2)};
+    --bit-tgl-stx-fontsize: #{spacing(2)};
+    --bit-tgl-des-fontsize: #{spacing(1.75)};
+}
+
+// A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size
+// token's icon variant - the same step every size takes, so the sizes stay in proportion. The spinner
+// asks for no step of its own: it is drawn to the size of whichever knob it lands in.
+// It carries the root class along, so it outweighs the size classes that sit on the same element instead of
+// only beating them on source order.
+.bit-tgl.bit-tgl-tic {
+    --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);
+    --bit-tgl-trk-h: var(--bit-tgl-trk-h-ico);
+    --bit-tgl-thb-size: var(--bit-tgl-thb-size-ico);
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tgl-#{$role} {
+        --bit-tgl-clr: #{role($tokens, main)};
+        --bit-tgl-clr-hover: #{role($tokens, hover)};
+        --bit-tgl-clr-text: #{role($tokens, on)};
+        --bit-tgl-clr-focus: #{role($tokens, focus)};
     }
 }
 
@@ -203,11 +523,23 @@
     }
 
     .bit-tgl-sta {
+        forced-color-adjust: none;
         background-color: ButtonText;
+    }
+
+    // The knob is repainted with a system color, so its glyph and its spinner take the color of the surface
+    // behind the knob to stay readable on it. The spinner keeps a translucent ring and an opaque head, or
+    // the rotation it conveys would be invisible.
+    .bit-tgl-ico, .bit-tgl-spn {
+        forced-color-adjust: none;
+        color: Canvas;
+        border-color: translucent(Canvas, 30%);
+        border-top-color: Canvas;
     }
 
     .bit-tgl-chk {
         .bit-tgl-btn {
+            forced-color-adjust: none;
             background: Highlight;
             border-color: Highlight;
         }
@@ -215,9 +547,19 @@
         .bit-tgl-sta {
             background-color: HighlightText;
         }
+
+        .bit-tgl-cnn {
+            color: HighlightText;
+        }
+
+        .bit-tgl-ico, .bit-tgl-spn {
+            color: Highlight;
+            border-color: translucent(Highlight, 30%);
+            border-top-color: Highlight;
+        }
     }
 
-    .bit-dis {
+    .bit-tgl.bit-dis {
         .bit-tgl-btn {
             background: Canvas;
             border-color: GrayText;
@@ -225,6 +567,18 @@
 
         .bit-tgl-sta {
             background-color: GrayText;
+        }
+
+        .bit-tgl-lbl, .bit-tgl-stx, .bit-tgl-cnn, .bit-tgl-des {
+            color: GrayText;
+        }
+
+        // The track goes back to Canvas when disabled, so the knob's glyph and its spinner go back to the
+        // color of that surface too - the checked block above would otherwise leave them Highlight on Canvas.
+        .bit-tgl-ico, .bit-tgl-spn {
+            color: Canvas;
+            border-color: translucent(Canvas, 30%);
+            border-top-color: Canvas;
         }
     }
 }
