@@ -382,7 +382,7 @@ public partial class BitToggleDemo
                     Name = "Value",
                     Type = "bool",
                     DefaultValue = "false",
-                    Description = "The state the toggle is about to move to."
+                    Description = "The state the toggle is about to move to (read-only)."
                 },
                 new()
                 {

@@ -436,8 +436,9 @@
 // A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size
 // token's icon variant - the same step every size takes, so the sizes stay in proportion. The spinner
 // asks for no step of its own: it is drawn to the size of whichever knob it lands in.
-// It comes after the size classes, which sit on the same element and would otherwise win the tie by order.
-.bit-tgl-tic {
+// It carries the root class along, so it outweighs the size classes that sit on the same element instead of
+// only beating them on source order.
+.bit-tgl.bit-tgl-tic {
     --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);
     --bit-tgl-trk-h: var(--bit-tgl-trk-h-ico);
     --bit-tgl-thb-size: var(--bit-tgl-thb-size-ico);

@@ -246,13 +246,13 @@ private void LogOnBlur()
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
     private readonly string example13CsharpCode = @"
+private BitToggleValidationModel validationModel = new();
+
 public class BitToggleValidationModel
 {
     [Range(typeof(bool), ""true"", ""true"", ErrorMessage = ""You must agree to the terms and conditions."")]
-    public bool TermsAgreement { get; set; } = true;
+    public bool TermsAgreement { get; set; }
 }
-
-public BitToggleValidationModel validationModel { get; set; } = new();
 
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";

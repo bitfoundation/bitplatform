@@ -1113,11 +1113,19 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-tgl-cnn").ClassList.Contains("content-class"));
         Assert.IsTrue(com.Find(".bit-tgl-cno").ClassList.Contains("on-content-class"));
         Assert.IsTrue(com.Find(".bit-tgl-cnf").ClassList.Contains("off-content-class"));
-        Assert.IsTrue(com.Find(".bit-tgl-cno").GetAttribute("style")!.Contains("color: teal;"));
-        Assert.IsTrue(com.Find(".bit-tgl-cnf").GetAttribute("style")!.Contains("color: olive;"));
         Assert.IsTrue(com.Find(".bit-tgl-sta").ClassList.Contains("thumb-class"));
         Assert.IsTrue(com.Find(".bit-tgl-ico").ClassList.Contains("icon-class"));
         Assert.IsTrue(com.Find(".bit-tgl-stx").ClassList.Contains("text-class"));
+
+        Assert.IsTrue(com.Find(".bit-tgl-lbl").GetAttribute("style")!.Contains("color: green;"));
+        Assert.IsTrue(com.Find(".bit-tgl-cnt").GetAttribute("style")!.Contains("color: blue;"));
+        Assert.IsTrue(com.Find(".bit-tgl-btn").GetAttribute("style")!.Contains("color: yellow;"));
+        Assert.IsTrue(com.Find(".bit-tgl-cnn").GetAttribute("style")!.Contains("color: orange;"));
+        Assert.IsTrue(com.Find(".bit-tgl-cno").GetAttribute("style")!.Contains("color: teal;"));
+        Assert.IsTrue(com.Find(".bit-tgl-cnf").GetAttribute("style")!.Contains("color: olive;"));
+        Assert.IsTrue(com.Find(".bit-tgl-sta").GetAttribute("style")!.Contains("color: pink;"));
+        Assert.IsTrue(com.Find(".bit-tgl-ico").GetAttribute("style")!.Contains("color: brown;"));
+        Assert.IsTrue(com.Find(".bit-tgl-stx").GetAttribute("style")!.Contains("color: gray;"));
     }
 
     [TestMethod]
