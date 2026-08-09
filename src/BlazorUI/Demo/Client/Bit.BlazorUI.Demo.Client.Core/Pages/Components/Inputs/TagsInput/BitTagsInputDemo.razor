@@ -92,7 +92,41 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Separators" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Variant" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Variant</b> decides how much of a frame the field carries: <b>Outline</b> (the default) draws a
+            full rule around it, <b>Fill</b> paints it with a surface color and drops the rule, and <b>Text</b>
+            keeps only an underline, for a field that should not outweigh the ones around it. <b>NoBorder</b>
+            removes the frame altogether, for a field sitting on a surface that already provides one. It is
+            the frame of the field alone; how the tags in it are painted is the <b>TagVariant</b>.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Fill" Variant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Outline" Variant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Text" Variant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="NoBorder" NoBorder DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Tag variant" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            <b>TagVariant</b> decides how much of the <b>Color</b> the tags themselves are painted with:
+            <b>Fill</b> (the default) fills every chip with it, the way a <b>BitTag</b> is filled,
+            <b>Outline</b> leaves the chip unfilled and draws the color as its rule and its text, and
+            <b>Text</b> keeps only the text in it, for tags that should not outweigh the field holding them.
+            It is independent of the <b>Variant</b>, which is about the frame of the field rather than the
+            tags in it, so the two combine freely.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitTagsInput Label="Fill" TagVariant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Outline" TagVariant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <BitTagsInput Label="Text" TagVariant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Separators" RazorCode="@example7RazorCode" Id="example7">
         <div>
             By default the Enter key is the only thing that turns the typed text into a tag. <b>Separators</b>
             adds characters that do the same: typing one of them commits whatever stands before it, and the
@@ -116,7 +150,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Suggestions" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <DemoExample Title="Suggestions" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
             <b>Suggestions</b> offers a set of known values while the user types, through the suggestion list
             the browser itself renders for a <code>datalist</code> - which is what keeps it reachable,
@@ -162,7 +196,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="MaxTags" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <DemoExample Title="MaxTags" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>MaxTags</b> caps how many tags the list may hold. Once the ceiling is reached every further tag
             is rejected with the <b>MaxTags</b> reason, which the <b>OnInvalid</b> callback receives - so the
@@ -185,7 +219,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Length limits" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Length limits" RazorCode="@example10RazorCode" Id="example10">
         <div>
             <b>MaxLength</b> caps the number of characters of each individual tag. It is a truncation rather
             than a rejection: the input stops accepting characters beyond it, and a pasted value longer than it
@@ -210,7 +244,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Pattern & Validator" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Pattern & Validator" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             <b>Pattern</b> is a regular expression that every tag has to match; an expression that cannot be
             compiled is ignored rather than breaking the field, and a match that runs away is timed out and
@@ -243,7 +277,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Transformer" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Transformer" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>Transformer</b> normalizes the text of a tag before anything else is done with it, which is what
             keeps a list consistent whichever way its entries were typed: lower casing them, stripping a
@@ -263,7 +297,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Duplicates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Duplicates" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             A tag that is already in the list is refused by default, and the refusal is reported through
             <b>OnTagExists</b> as well as through <b>OnInvalid</b>. <b>Duplicates</b> lifts that rule for the
@@ -291,7 +325,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Editable tags" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <DemoExample Title="Editable tags" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
         <div>
             <b>EditableTags</b> lets a tag be corrected in place instead of having to be removed and typed
             again: double click a chip, or press <b>Enter</b> or <b>F2</b> on the focused one, and it turns into
@@ -319,7 +353,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Clear button" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+    <DemoExample Title="Clear button" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>ShowClearButton</b> renders a button at the end of the field that empties the whole list along
             with the text left in the input, and raises <b>OnClear</b> with the tags it removed. It is not
@@ -358,7 +392,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Counter" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Counter" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>ShowCounter</b> draws the number of tags under the field, at the end of the line the
             <b>Description</b> sits on, as a plain count or as <b>count / MaxTags</b> when there is a ceiling to
@@ -380,7 +414,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Keyboard" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Keyboard" RazorCode="@example17RazorCode" Id="example17">
         <div>
             The chips are a single stop of the tab order rather than one per tag, which the arrow keys then
             walk through: <b>Left</b> and <b>Right</b> (swapped in a right-to-left direction) move between
@@ -433,7 +467,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Reordering" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <DemoExample Title="Reordering" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
         <div>
             <b>AllowReorder</b> lets a tag be moved within the list two equal ways. With a pointer, a chip can
             be picked up and dropped onto the one whose position it should take: the chip being carried is
@@ -467,7 +501,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="TagTemplate" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="TagTemplate" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>TagTemplate</b> replaces the text of every chip with markup of your own, the tag itself being
             the context. The chip around it - its background, its focus ring and its dismiss button - is still
@@ -484,7 +518,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Binding" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+    <DemoExample Title="Binding" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
         <div>
             The value is the list of tags itself, bound two ways with <b>@@bind-Value</b>. <b>DefaultValue</b>
             seeds an uncontrolled field, the one that is read through the <b>OnChange</b> callback rather than
@@ -504,7 +538,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+    <DemoExample Title="Events" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
         <div>
             <b>OnBeforeAdd</b> and <b>OnBeforeRemove</b> run before the list is changed and can call the change
             off by setting <b>args.Cancel</b>, which is the hook for a confirmation or for a rule that lives on
@@ -531,7 +565,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+    <DemoExample Title="Public API" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
         <div>
             The component can be driven from the outside as well: <b>AddTagAsync</b> and <b>AddTagsAsync</b>
             add through exactly the same pipeline as typing does (trimming, transformation, every validation
@@ -569,7 +603,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Form submission" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+    <DemoExample Title="Form submission" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
         <div>
             Enter is the key that confirms a tag, so it is held back from submitting the form around the field
             - which would otherwise post the form on the very keystroke meant to add a tag.
@@ -593,7 +627,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Validation" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+    <DemoExample Title="Validation" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
         <div>
             Inside an <b>EditForm</b> the field takes part in the validation like any other input: it reports
             its changes to the <b>EditContext</b>, paints the error state, marks its input with
@@ -617,24 +651,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Variant" RazorCode="@example23RazorCode" Id="example23">
-        <div>
-            <b>Variant</b> decides how much of a frame the field carries: <b>Outline</b> (the default) draws a
-            full rule around it, <b>Fill</b> paints it with a surface color and drops the rule (the chips
-            switching to the page surface so they still stand out against it), and <b>Text</b> keeps only an
-            underline, for a field that should not outweigh the ones around it. <b>NoBorder</b> removes the
-            frame altogether, for a field sitting on a surface that already provides one.
-        </div>
-        <br />
-        <div class="example-box">
-            <BitTagsInput Label="Fill" Variant="BitVariant.Fill" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
-            <BitTagsInput Label="Outline" Variant="BitVariant.Outline" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
-            <BitTagsInput Label="Text" Variant="BitVariant.Text" DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
-            <BitTagsInput Label="NoBorder" NoBorder DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Folding the tags away" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="Folding the tags away" RazorCode="@example25RazorCode" Id="example25">
         <div>
             A field that collects dozens of tags grows into a wall of chips that pushes everything below it
             off the screen. <b>MaxDisplayedTags</b> draws only the first few of them and folds the rest away
@@ -663,7 +680,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility & localization" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="Accessibility & localization" RazorCode="@example26RazorCode" Id="example26">
         <div>
             Nothing about a chip appearing, disappearing or changing place reaches a screen reader on its
             own - the list sits away from the caret the user is typing at - so the component says every one
@@ -715,7 +732,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Prefix & Suffix" RazorCode="@example26RazorCode" Id="example26">
+    <DemoExample Title="Prefix & Suffix" RazorCode="@example27RazorCode" Id="example27">
         <div>
             <b>Prefix</b> and <b>Suffix</b> draw a short text inside the field, at its start and at its end,
             which is not part of the value: the <code>To:</code> of a recipients field, the unit a list of
@@ -754,7 +771,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Styling each tag" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
+    <DemoExample Title="Styling each tag" RazorCode="@example28RazorCode" CsharpCode="@example28CsharpCode" Id="example28">
         <div>
             <b>Classes</b> and <b>Styles</b> dress every chip alike, and <b>TagTemplate</b> only changes what is
             drawn <i>inside</i> one. <b>GetTagClass</b> and <b>GetTagStyle</b> are what tell one chip apart from
@@ -781,26 +798,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example28RazorCode" Id="example28">
+    <DemoExample Title="Color" RazorCode="@example29RazorCode" Id="example29">
         <div>
-            <b>Accent</b> picks the color role the focused field carries, on both its border and its focus
-            ring, so the component follows the accent of the form it sits in. The error state of a failing
-            validation always wins over it, which keeps an invalid field recognizable whatever the accent is.
+            <b>Color</b> picks the color role the component carries. The tags are painted with it, as much of
+            them as the <b>TagVariant</b> asks for, and so are the border and the focus ring of the focused
+            field, so the color is visible at rest rather than only while the field is focused. The error
+            state of a failing validation always wins over it on the field, which keeps an invalid field
+            recognizable whatever its color is.
         </div>
         <br />
         <div class="example-box">
-            <BitTagsInput Label="Primary" Accent="BitColor.Primary" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Secondary" Accent="BitColor.Secondary" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Tertiary" Accent="BitColor.Tertiary" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Info" Accent="BitColor.Info" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Success" Accent="BitColor.Success" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Warning" Accent="BitColor.Warning" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="SevereWarning" Accent="BitColor.SevereWarning" DefaultValue="@(new List<string> { "tag" })" />
-            <BitTagsInput Label="Error" Accent="BitColor.Error" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Primary" Color="BitColor.Primary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Secondary" Color="BitColor.Secondary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Tertiary" Color="BitColor.Tertiary" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Info" Color="BitColor.Info" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Success" Color="BitColor.Success" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Warning" Color="BitColor.Warning" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SevereWarning" Color="BitColor.SevereWarning" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="Error" Color="BitColor.Error" DefaultValue="@(new List<string> { "tag" })" />
+
+            <BitTagsInput Label="PrimaryBackground" Color="BitColor.PrimaryBackground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryBackground" Color="BitColor.SecondaryBackground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryBackground" Color="BitColor.TertiaryBackground" DefaultValue="@(new List<string> { "tag" })" />
+
+            <BitTagsInput Label="PrimaryForeground" Color="BitColor.PrimaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryForeground" Color="BitColor.SecondaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryForeground" Color="BitColor.TertiaryForeground" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="PrimaryBorder" Color="BitColor.PrimaryBorder" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="SecondaryBorder" Color="BitColor.SecondaryBorder" DefaultValue="@(new List<string> { "tag" })" />
+            <BitTagsInput Label="TertiaryBorder" Color="BitColor.TertiaryBorder" DefaultValue="@(new List<string> { "tag" })" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example29RazorCode" Id="example29">
+    <DemoExample Title="External Icons" RazorCode="@example30RazorCode" Id="example30">
         <div>
             The dismiss button of each tag and the clear button of the field both take their icon either from
             the built-in Fluent UI set, through <b>DismissIconName</b> and <b>ClearButtonIconName</b>, or from
@@ -816,11 +846,13 @@
                           DismissIconName="@BitIconName.ChromeClose"
                           ClearButtonIconName="@BitIconName.Delete"
                           DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
             <BitTagsInput Label="FontAwesome"
                           ShowClearButton
                           DismissIcon="@BitIconInfo.Fa("solid xmark")"
                           ClearButtonIcon="@BitIconInfo.Fa("solid trash")"
                           DefaultValue="@(new List<string> { "blazor", "dotnet" })" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
             <BitTagsInput Label="Bootstrap Icons"
                           ShowClearButton
                           DismissIcon="@BitIconInfo.Bi("x-lg")"
@@ -829,7 +861,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example30RazorCode" Id="example30">
+    <DemoExample Title="Size" RazorCode="@example31RazorCode" Id="example31">
         <div>
             <b>Size</b> scales the field, the chips and the text inside them together, so the whole thing stays
             proportionate at every size. Pick the one that matches the density of the surrounding form: the
@@ -843,7 +875,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example31RazorCode" Id="example31">
+    <DemoExample Title="Style & Class" RazorCode="@example32RazorCode" Id="example32">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element only, while <b>Styles</b> and <b>Classes</b>
             reach every part of the component by name: the root, the label, the description, the counter, the
@@ -886,7 +918,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example32RazorCode" Id="example32">
+    <DemoExample Title="RTL" RazorCode="@example33RazorCode" Id="example33">
         <div>
             In a right-to-left direction the chips are laid out from right to left and the arrow keys swap
             along with them, so the key pointing at the visual left still walks towards the tag drawn there.

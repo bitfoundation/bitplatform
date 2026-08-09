@@ -103,8 +103,16 @@
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
     border-radius: $shp-border-radius;
-    background-color: $clr-bg-sec;
-    color: $clr-fg-pri;
+    //the rule is drawn in every tag variant, transparent where it is not painted, so that switching from
+    //a filled chip to an outlined one never moves the text in it by the width of a border.
+    //The three colors are read out of custom properties the tag variant sets rather than being painted by
+    //the variant itself, which keeps this rule as specific as a single class: a class of one's own, handed
+    //to a chip through Classes, GetTagClass or a scoped stylesheet, has to be able to repaint it.
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: var(--bit-tgi-tag-brd);
+    color: var(--bit-tgi-tag-clr);
+    background-color: var(--bit-tgi-tag-bg);
     font-size: var(--bit-tgi-tagfontsize);
     max-width: 100%;
     overflow: hidden;
@@ -112,8 +120,10 @@
     //an inset outline rather than the shared focus ring: the field around the tag is already wearing
     //that ring (it holds the focus too, through :focus-within), and two of them drawn one inside the
     //other read as noise. Drawing it inside the chip also keeps it off the tags standing next to it.
+    //It is drawn with the color of the text of the chip rather than with the accent, since on a filled
+    //chip the accent is what the ring would be drawn on top of.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
@@ -135,7 +145,7 @@
 //the chip the dragged one would land on: an inset outline rather than a border, so that nothing in the
 //row moves by a pixel while the drag is hovering over it.
 .bit-tgi-tag-dro {
-    outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+    outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 }
 
@@ -185,24 +195,28 @@
     align-items: center;
     box-sizing: border-box;
     cursor: pointer;
-    border: none;
-    color: $clr-fg-sec;
     font: inherit;
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
     border-radius: $shp-border-radius;
-    background-color: $clr-bg-sec;
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: var(--bit-tgi-tag-brd);
+    color: var(--bit-tgi-tag-clr);
+    background-color: var(--bit-tgi-tag-bg);
     font-size: var(--bit-tgi-tagfontsize);
     white-space: nowrap;
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri;
+            color: var(--bit-tgi-tgl-clr-hover);
+            border-color: var(--bit-tgi-tgl-brd-hover);
+            background-color: var(--bit-tgi-tgl-bg-hover);
         }
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }
@@ -220,16 +234,21 @@
     background-color: transparent;
     font-size: var(--bit-tgi-iconsize);
     line-height: 1;
+}
 
+//the dismiss button lives inside a chip that is painted with the color of the field, so it answers the
+//pointer by fading rather than by taking a foreground color of its own, which would be the one color the
+//chip is not wearing.
+.bit-tgi-dbt {
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-sec;
+            opacity: 0.75;
         }
     }
 
     //the same inset outline as the tag, and for the same reason: the field is already ringed.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring);
         outline-offset: 0;
     }
 }
@@ -245,6 +264,11 @@
         &:hover {
             color: $clr-fg-pri;
         }
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid var(--bit-tgi-clr);
+        outline-offset: 0;
     }
 }
 
@@ -293,13 +317,6 @@
         background-color: $clr-bg-sec;
     }
 
-    //the tags would otherwise be painted with the very same surface as the field they sit in, which
-    //would leave nothing to tell one from the other.
-    .bit-tgi-tag,
-    .bit-tgi-tgl {
-        background-color: $clr-bg-pri;
-    }
-
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
             background-color: $clr-bg-sec-hover;
@@ -333,6 +350,44 @@
             border-color: transparent;
         }
     }
+}
+
+//The tags carry the color role of the field the way a BitTag does, which is what makes the role visible
+//at rest rather than only in the ring of a focused field. The three tag variants are the three of the
+//BitTag, and the ring the chips are focused with follows whichever of them is painting them: on a filled
+//chip it is the color the text is written in, everywhere else the color itself.
+
+//Fill - the default: the chip is filled with the color and written in the color's own text color.
+.bit-tgi-tgf {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr-txt);
+    --bit-tgi-tag-brd: var(--bit-tgi-clr);
+    --bit-tgi-tag-bg: var(--bit-tgi-clr);
+    --bit-tgi-tag-ring: var(--bit-tgi-clr-txt);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-txt);
+    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-bg-hover: var(--bit-tgi-clr-hover);
+}
+
+//Outline: the chip is left unfilled and the color is drawn as its rule and its text.
+.bit-tgi-tgo {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-brd: var(--bit-tgi-clr);
+    --bit-tgi-tag-bg: transparent;
+    --bit-tgi-tag-ring: var(--bit-tgi-clr);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-brd-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-bg-hover: transparent;
+}
+
+//Text: only the text of the chip is painted, for tags that should not outweigh the field holding them.
+.bit-tgi-tgt {
+    --bit-tgi-tag-clr: var(--bit-tgi-clr);
+    --bit-tgi-tag-brd: transparent;
+    --bit-tgi-tag-bg: transparent;
+    --bit-tgi-tag-ring: var(--bit-tgi-clr);
+    --bit-tgi-tgl-clr-hover: var(--bit-tgi-clr-hover);
+    --bit-tgi-tgl-brd-hover: transparent;
+    --bit-tgi-tgl-bg-hover: transparent;
 }
 
 //a read-only field still takes the caret (the tags are read and copied out of it), but nothing in it can
@@ -392,6 +447,7 @@
     .bit-tgi-tag,
     .bit-tgi-tgl {
         color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
         background-color: $clr-bg-dis;
     }
 
@@ -470,6 +526,8 @@
 @each $role, $tokens in $bit-color-roles {
     .bit-tgi-#{$role} {
         --bit-tgi-clr: #{role($tokens, main)};
+        --bit-tgi-clr-txt: #{role($tokens, on)};
+        --bit-tgi-clr-hover: #{role($tokens, hover)};
         --bit-tgi-clr-focus: #{role($tokens, focus)};
     }
 }

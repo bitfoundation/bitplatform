@@ -8,15 +8,6 @@ public partial class BitTagsInputDemo
     [
         new()
         {
-            Name = "Accent",
-            Type = "BitColor?",
-            DefaultValue = "null",
-            Description = "The accent color of the tags input, used for its focus ring and for the border of the focused field (Primary by default).",
-            LinkType = LinkType.Link,
-            Href = "#color-enum",
-        },
-        new()
-        {
             Name = "AllowReorder",
             Type = "bool",
             DefaultValue = "false",
@@ -109,6 +100,15 @@ public partial class BitTagsInputDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Throws away whatever text is still sitting in the input when the field loses the focus. It runs after the text has had its chance to become a tag, so on its own it only takes away what was refused; paired with NoAddOnBlur it makes leaving the field cancel what was being typed.",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The color role of the tags input (Primary by default). It is carried by the tags themselves, the way a BitTag carries it, and by the border and the focus ring of the focused field. How much of it the tags are painted with is decided by the TagVariant.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -547,6 +547,15 @@ public partial class BitTagsInputDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The placeholder text of the input shown once there is at least one tag in the list, where the Placeholder would otherwise be replaced by nothing at all.",
+        },
+        new()
+        {
+            Name = "TagVariant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "How much of the Color the tags are painted with: Fill (the default) fills each chip with it, the way a BitTag is filled, Outline leaves the chip unfilled and draws the color as its rule and its text, and Text keeps only the text in it. It is independent of the Variant, which is about the frame of the field rather than the tags in it.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum",
         },
         new()
         {
@@ -1181,7 +1190,7 @@ public partial class BitTagsInputDemo
 
     private static string? GetRecipientStyle(string tag)
     {
-        return Regex.IsMatch(tag, emailPattern) ? null : "background: #fde7e9; color: #a4262c;";
+        return Regex.IsMatch(tag, emailPattern) ? null : "background: #fde7e9; color: #a4262c; border-color: #a4262c;";
     }
 
     private static string? GetPriorityClass(string tag) => tag.ToLowerInvariant() switch

@@ -63,13 +63,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
 
     /// <summary>
-    /// The accent color of the tags input, used for its focus ring and for the border of the focused field
-    /// (Primary by default).
-    /// </summary>
-    [Parameter, ResetClassBuilder]
-    public BitColor? Accent { get; set; }
-
-    /// <summary>
     /// Lets a tag be moved within the list, either by dragging it onto the position it should take or
     /// from the keyboard: Alt with the arrow keys walks the focused tag one position at a time, and Alt
     /// with Home or End sends it to either end. The keyboard is not a fallback of the drag but its equal,
@@ -157,6 +150,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// refused; paired with <see cref="NoAddOnBlur"/> it makes leaving the field cancel what was being typed.
     /// </summary>
     [Parameter] public bool ClearOnBlur { get; set; }
+
+    /// <summary>
+    /// The color role of the tags input (Primary by default). It is carried by the tags themselves, the way
+    /// a <see cref="BitTag"/> carries it, and by the border and the focus ring of the focused field, so that
+    /// the component follows the color of the form it sits in rather than only lighting up while it is
+    /// focused. How much of it the tags are painted with is decided by the <see cref="TagVariant"/>.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
 
     /// <summary>
     /// The string comparison used to tell one tag from another, which is what decides whether a tag is a
@@ -565,6 +567,16 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     [Parameter] public string? TagsPlaceholder { get; set; }
 
     /// <summary>
+    /// How much of the <see cref="Color"/> the tags are painted with: <see cref="BitVariant.Fill"/> (the
+    /// default) fills each chip with it, the same way a <see cref="BitTag"/> is filled, <see cref="BitVariant.Outline"/>
+    /// leaves the chip unfilled and draws the color as its rule and its text, and <see cref="BitVariant.Text"/>
+    /// keeps only the text in it, for a field whose tags should not outweigh the field around them. It is
+    /// independent of the <see cref="Variant"/>, which is about the frame of the field rather than the tags in it.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? TagVariant { get; set; }
+
+    /// <summary>
     /// A function applied to the text of a tag before anything else is done with it, which is what
     /// normalizes the tags of a list that has to stay consistent: lower casing them, stripping a leading
     /// "#", collapsing the inner whitespace. It runs before the length, pattern, validator and duplicate
@@ -777,7 +789,15 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             _ => "bit-tgi-otl"
         });
 
-        ClassBuilder.Register(() => Accent switch
+        ClassBuilder.Register(() => TagVariant switch
+        {
+            BitVariant.Fill => "bit-tgi-tgf",
+            BitVariant.Outline => "bit-tgi-tgo",
+            BitVariant.Text => "bit-tgi-tgt",
+            _ => "bit-tgi-tgf"
+        });
+
+        ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-tgi-pri",
             BitColor.Secondary => "bit-tgi-sec",

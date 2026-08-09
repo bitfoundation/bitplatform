@@ -189,11 +189,26 @@ public class BitTagsInputTests : BunitTestContext
         DataRow(BitColor.Success, "bit-tgi-suc"),
         DataRow(BitColor.Error, "bit-tgi-err"),
         DataRow(null, "bit-tgi-pri")]
-    public void BitTagsInputAccentTest(BitColor? accent, string expectedClass)
+    public void BitTagsInputColorTest(BitColor? color, string expectedClass)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
-            parameters.Add(p => p.Accent, accent);
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(BitVariant.Fill, "bit-tgi-tgf"),
+        DataRow(BitVariant.Outline, "bit-tgi-tgo"),
+        DataRow(BitVariant.Text, "bit-tgi-tgt"),
+        DataRow(null, "bit-tgi-tgf")]
+    public void BitTagsInputTagVariantTest(BitVariant? tagVariant, string expectedClass)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.TagVariant, tagVariant);
         });
 
         Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains(expectedClass));
