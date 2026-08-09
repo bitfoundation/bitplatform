@@ -681,9 +681,9 @@ public class Order
 
 private readonly List<Order> prefixCustoms =
 [
-    new() { Name = ""Standard"", ItemValue = ""Standard"", Prefix = ""$0 â€” "" },
-    new() { Name = ""Express"", ItemValue = ""Express"", Prefix = ""$10 â€” "" },
-    new() { Name = ""Overnight"", ItemValue = ""Overnight"", Prefix = ""$25 â€” "" }
+    new() { Name = ""Standard"", ItemValue = ""Standard"", Prefix = ""$0 - "" },
+    new() { Name = ""Express"", ItemValue = ""Express"", Prefix = ""$10 - "" },
+    new() { Name = ""Overnight"", ItemValue = ""Overnight"", Prefix = ""$25 - "" }
 ];
 
 private readonly List<Order> suffixCustoms =
