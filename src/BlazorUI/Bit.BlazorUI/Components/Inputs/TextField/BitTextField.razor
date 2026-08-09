@@ -78,6 +78,8 @@
                               spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                               autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
                               aria-label="@AriaLabel"
+                              aria-busy="@AriaBusy"
+                              aria-invalid="@AriaInvalid"
                               aria-labelledby="@(HasLabel ? _labelId : null)"
                               aria-describedby="@DescribedBy" />
                 }
@@ -115,6 +117,8 @@
                            spellcheck="@(SpellCheck.HasValue ? SpellCheck.Value.ToString().ToLower() : null)"
                            autocorrect="@(AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null)"
                            aria-label="@AriaLabel"
+                           aria-busy="@AriaBusy"
+                           aria-invalid="@AriaInvalid"
                            aria-labelledby="@(HasLabel ? _labelId : null)"
                            aria-describedby="@DescribedBy" />
                 }
@@ -134,15 +138,25 @@
                 <div role="status"
                      style="@Styles?.Loading"
                      class="bit-tfl-lod @Classes?.Loading">
+                    @* A live region announces its content, not its name, so the text of the indicator lives
+                       inside it - visually hidden, since the spinner already says it on screen. A template is
+                       free to say what is running in its own words, so the default text stays out of it,
+                       while a name given on purpose is kept whichever indicator is drawn. *@
+                    @if (LoadingAriaLabel.HasValue())
+                    {
+                        <span class="bit-tfl-dsc">@LoadingAriaLabel</span>
+                    }
+                    else if (LoadingTemplate is null)
+                    {
+                        <span class="bit-tfl-dsc">Loading</span>
+                    }
+
                     @if (LoadingTemplate is not null)
                     {
                         @LoadingTemplate
                     }
                     else
                     {
-                        @* A live region announces its content, not its name, so the text of the indicator
-                           lives inside it - visually hidden, since the spinner already says it on screen. *@
-                        <span class="bit-tfl-dsc">@(LoadingAriaLabel ?? "Loading")</span>
                         <BitSpinnerLoading CustomSize="@LoadingSize" CustomColor="currentColor" />
                     }
                 </div>
@@ -194,7 +208,7 @@
                                 : BitIconInfo.From(RevealPasswordIcon, RevealPasswordIconName ?? "View");
                             <i aria-hidden="true"
                                style="@Styles?.RevealPasswordIcon"
-                               class="bit-tfl-rpi @revealIcon.GetCssClasses() @Classes?.RevealPasswordIcon" />
+                               class="bit-tfl-rpi @revealIcon?.GetCssClasses() @Classes?.RevealPasswordIcon" />
                         }
                     </span>
                 </button>
@@ -256,7 +270,7 @@
             {
                 <span id="@_countId"
                       style="@Styles?.Count"
-                      class="bit-tfl-cnt @Classes?.Count">
+                      class="@CountClass @Classes?.Count">
                     @if (CountTemplate is not null)
                     {
                         @CountTemplate(_charCount)

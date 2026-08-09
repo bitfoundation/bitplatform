@@ -151,15 +151,26 @@ namespace BitBlazorUI {
 
             let justFocused = false;
 
-            inputElement.addEventListener('focus', () => {
-                justFocused = true;
-
+            const select = () => {
                 try {
                     inputElement.select();
                 } catch {
                     // Selection APIs are not available on every input type.
                 }
+            };
+
+            inputElement.addEventListener('focus', () => {
+                justFocused = true;
+                select();
             }, { signal });
+
+            // An auto-focused field is given its focus on the very render this setup follows, so the focus
+            // event is already gone by the time the listener above exists and the value would never be
+            // selected. Whatever already holds the focus is selected right away instead.
+            if (document.activeElement === inputElement) {
+                justFocused = true;
+                select();
+            }
 
             inputElement.addEventListener('mouseup', e => {
                 if (!justFocused) return;
@@ -220,12 +231,26 @@ namespace BitBlazorUI {
 
                 const { start, end, supportsSelection } = getSelection();
 
-                inputElement.value =
-                    inputElement.value.substring(0, start) +
-                    ghost +
-                    inputElement.value.substring(end);
+                const before = inputElement.value.substring(0, start);
+                const after = inputElement.value.substring(end);
 
-                const newPos = start + ghost.length;
+                // A suggestion is written into the element directly, which is not something the maxlength
+                // attribute holds back the way it holds back typing, so the limit of the field is honored
+                // here instead of being broken by the one thing that does not go through the keyboard.
+                const limit = inputElement.maxLength;
+                const room = limit >= 0 ? Math.max(0, limit - before.length - after.length) : ghost.length;
+                const accepted = room < ghost.length ? ghost.substring(0, room) : ghost;
+
+                // A field that is already full has no room for the suggestion at all, so nothing is written
+                // and nothing is reported - only the suggestion goes away, since it can never be taken.
+                if (!accepted) {
+                    clearGhost();
+                    return;
+                }
+
+                inputElement.value = before + accepted + after;
+
+                const newPos = start + accepted.length;
                 if (supportsSelection) {
                     try {
                         inputElement.setSelectionRange(newPos, newPos);
@@ -242,7 +267,11 @@ namespace BitBlazorUI {
                 // bound value either way instead of waiting for the input to lose focus.
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
                 inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-                dotnetObj.invokeMethodAsync('OnGhostTextAccepted', ghost);
+
+                // What the callback receives is what actually made it into the value rather than what was
+                // suggested, so an app appending the accepted text to a log of its own never records more
+                // than the field ended up holding.
+                dotnetObj.invokeMethodAsync('OnGhostTextAccepted', accepted);
             };
 
             // On every keystroke: immediately clear the ghost suggestion.

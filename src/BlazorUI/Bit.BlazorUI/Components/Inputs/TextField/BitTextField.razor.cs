@@ -215,6 +215,15 @@ public partial class BitTextField : BitTextInputBase<string?>
     public BitInputMode? InputMode { get; set; }
 
     /// <summary>
+    /// Marks the value of the field as invalid, which gives a value rejected by something other than the
+    /// cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the
+    /// same aria-invalid attribute that a failing data annotation gives it. A field failing its own
+    /// validation stays invalid regardless of this parameter.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Invalid { get; set; }
+
+    /// <summary>
     /// Label displayed above the text field and read by screen readers.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -241,7 +250,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public bool Loading { get; set; }
 
     /// <summary>
-    /// The accessible name of the busy indicator, which is what a screen reader announces for it.
+    /// The accessible name of the busy indicator, which is what a screen reader announces for it. It is kept
+    /// whichever indicator is drawn, so a <see cref="LoadingTemplate"/> that says nothing on its own can
+    /// still be named; without it a template is left to speak for itself.
     /// </summary>
     [Parameter] public string? LoadingAriaLabel { get; set; }
 
@@ -315,17 +326,20 @@ public partial class BitTextField : BitTextInputBase<string?>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscape { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Callback for when the input receives focus. Unlike <see cref="OnFocusIn"/> it does not bubble, so it
+    /// is the one to use when only the input itself receiving focus is of interest.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input
+    /// Callback for when focus moves into the input or any of its descendants, since unlike
+    /// <see cref="OnFocus"/> it bubbles.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusIn { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves out of the input
+    /// Callback for when focus moves out of the input or any of its descendants, since unlike
+    /// <see cref="OnBlur"/> it bubbles.
     /// </summary>
     [Parameter] public EventCallback<FocusEventArgs> OnFocusOut { get; set; }
 
@@ -563,6 +577,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
 
+        // The base class already marks a value the EditContext rejected, so the forced state only adds the
+        // class where that one did not, instead of rendering it twice on a field that is invalid both ways.
+        ClassBuilder.Register(() => Invalid && ValueInvalid is not true ? "bit-inv" : string.Empty);
+
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
         ClassBuilder.Register(() => NoBorder ? "bit-tfl-nbd" : string.Empty);
@@ -759,7 +777,10 @@ public partial class BitTextField : BitTextInputBase<string?>
             _oldGhostText = null;
         }
 
-        if (_ghostSetup && (GhostText != _oldGhostText || _oldValue != Value))
+        // A suggestion that is being shown is pushed again on every render: the browser side drops it on
+        // every keystroke, and a field that only commits its value on blur changes neither the GhostText nor
+        // the Value while it is typed into, so nothing else would ever put it back.
+        if (_ghostSetup && (GhostText.HasValue() || GhostText != _oldGhostText || _oldValue != Value))
         {
             _oldGhostText = GhostText;
             await _js.BitTextFieldSetGhostText(_Id, GhostText ?? string.Empty);
@@ -819,17 +840,22 @@ public partial class BitTextField : BitTextInputBase<string?>
     {
         if (IsEnabled is false || ReadOnly) return;
 
-        if (ShowCount)
-        {
-            var length = e.Value?.ToString()?.Length ?? 0;
-            if (length != _charCount)
-            {
-                _charCount = length;
-                StateHasChanged();
-            }
-        }
+        UpdateCharCount(e.Value?.ToString()?.Length ?? 0);
 
         await base.HandleOnStringValueInputAsync(e);
+    }
+
+    // The counter and the clear button both follow what the input reports rather than the bound value, which
+    // is what keeps them right on a field that only commits its value when it loses focus: a clear button
+    // that shows up a whole blur after the first character would be of no use.
+    private void UpdateCharCount(int length)
+    {
+        if (ShowCount is false && ShowClearButton is false) return;
+
+        if (length == _charCount) return;
+
+        _charCount = length;
+        StateHasChanged();
     }
 
 
@@ -842,9 +868,18 @@ public partial class BitTextField : BitTextInputBase<string?>
     // (a password mask, a number spinner, ...) that a textarea cannot provide.
     private bool IsMultilineElement => Multiline && Type is null or BitInputType.Text;
 
-    private bool ShowClear => ShowClearButton && CurrentValue.HasValue();
+    // The number of characters the input currently holds is what decides this rather than the bound value,
+    // so the button is there from the first keystroke even on a field that only commits on blur.
+    private bool ShowClear => ShowClearButton && _charCount > 0;
 
     private bool NeedsCompositionGuard => Immediate || OnEnter.HasDelegate || OnEscape.HasDelegate;
+
+    // A value above the limit can only arrive from the code rather than from the keyboard, which the
+    // maxlength attribute holds back, so the counter says so instead of quietly reading a number above the
+    // limit right next to it.
+    private string CountClass => MaxLength >= 0 && _charCount > MaxLength
+                                    ? "bit-tfl-cnt bit-tfl-cno"
+                                    : "bit-tfl-cnt";
 
     private string? DescribedBy
     {
@@ -855,9 +890,13 @@ public partial class BitTextField : BitTextInputBase<string?>
             var hasCount = ShowCount && MaxLength >= 0;
 
             // The visible description and the screen-reader-only one are both legitimate, and a field can
-            // carry either or both, so every part that is present is referenced in reading order.
+            // carry either or both, so every part that is present is referenced in reading order. A
+            // describedby of the consumer's own comes first and is never dropped: the explicit attribute of
+            // the input wins over the splatted ones, so an app pointing the field at an error message of its
+            // own would otherwise lose it the moment the component has anything to reference.
             var ids = string.Join(' ', new[]
             {
+                GetInputAttribute("aria-describedby"),
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
                 hasCount ? _countId : null
@@ -865,6 +904,20 @@ public partial class BitTextField : BitTextInputBase<string?>
 
             return ids.HasValue() ? ids : null;
         }
+    }
+
+    // The forced invalid state and the one the EditContext produces end up on the same attribute, and the
+    // base class writes the latter into the splatted attributes, so the value of the consumer is read back
+    // here instead of being overwritten by the explicit attribute of the input.
+    private string? AriaInvalid => Invalid ? "true" : GetInputAttribute("aria-invalid");
+
+    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+
+    private string? GetInputAttribute(string name)
+    {
+        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
+                ? value?.ToString()
+                : null;
     }
 
     private string CountText => MaxLength >= 0 ? $"{_charCount}/{MaxLength}" : _charCount.ToString();
@@ -997,6 +1050,11 @@ public partial class BitTextField : BitTextInputBase<string?>
         {
             _trimOnParse = false;
         }
+
+        // The change event is the one that commits the value, so the counter and the clear button are
+        // re-synced from what the value ended up being rather than from the text the event carried: an
+        // internal change does not run OnParametersSet, and a trimmed value is shorter than what was typed.
+        UpdateCharCount(CurrentValue?.Length ?? 0);
     }
 
     private async Task HandleOnClearButtonClick()

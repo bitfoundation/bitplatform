@@ -199,6 +199,13 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "Invalid",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Marks the value of the field as invalid, which gives a value rejected by something other than the cascading EditContext - a server, a rule of the app, a validator of its own - the same look and the same aria-invalid attribute that a failing data annotation gives it. A field failing its own validation stays invalid regardless of this parameter.",
+        },
+        new()
+        {
             Name = "Label",
             Type = "string?",
             DefaultValue = "null",
@@ -232,7 +239,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "LoadingAriaLabel",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The accessible name of the busy indicator, which is what a screen reader announces for it. Defaults to \"Loading\".",
+            Description = "The accessible name of the busy indicator, which is what a screen reader announces for it. It is kept whichever indicator is drawn, so a LoadingTemplate that says nothing on its own can still be named; without it a template is left to speak for itself. Defaults to \"Loading\".",
         },
         new()
         {
@@ -322,7 +329,7 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "OnFocusOut",
             Type = "EventCallback<FocusEventArgs>",
-            Description = "Callback for when focus moves out of the input.",
+            Description = "Callback for when focus moves out of the input or any of its descendants, since unlike OnBlur it bubbles.",
         },
         new()
         {
@@ -440,14 +447,14 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the clear button when the text field has a value.",
+            Description = "Whether to show the clear button while the input holds any text. The button follows what the input reports rather than the bound value, so it is there from the first keystroke even on a field that only commits its value when it loses focus.",
         },
         new()
         {
             Name = "ShowCount",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Shows the number of characters that were typed under the text field, followed by the MaxLength when one is set.",
+            Description = "Shows the number of characters that were typed under the text field, followed by the MaxLength when one is set. A count above the limit - only reachable from the code, since the maxlength attribute holds the keyboard back - is colored like a rejected value.",
         },
         new()
         {
@@ -1173,6 +1180,8 @@ public partial class BitTextFieldDemo : IDisposable
         }
     }
 
+    private string? invalidValue = "no-space-here";
+
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
 
@@ -1477,6 +1486,11 @@ private string? clearApiValue = ""Clear me from the button below"";";
 
 <BitTextField Label=""With a description"" ShowCount MaxLength=""30""
               Description=""Both the description and the counter share the footer."" />
+
+<BitTextField Label=""Over the limit (assigned from the code)""
+              ShowCount
+              MaxLength=""10""
+              DefaultValue=""A value longer than the limit of the field"" />
 
 <BitTextField Label=""Multiline"" Multiline Rows=""4"" ShowCount MaxLength=""140"" @bind-Value=""countValue"" />
 <div>Value: [@countValue]</div>";
@@ -1831,7 +1845,12 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 <BitTextField AriaLabel=""Search the documentation""
               Type=""BitInputType.Search""
               Placeholder=""Search...""
-              IconName=""@BitIconName.Search"" />";
+              IconName=""@BitIconName.Search"" />
+
+<BitTextField Label=""With a description of its own""
+              Description=""Card number""
+              InputHtmlAttributes=""@(new() { { ""aria-describedby"", ""card-number-hint"" } })"" />
+<div id=""card-number-hint"">The field also points at this element, which is not a part of it.</div>";
 
     private readonly string example20RazorCode = @"
 <style>
@@ -1839,6 +1858,17 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
         color: red;
     }
 </style>
+
+
+<BitTextField Label=""Invalid"" Invalid DefaultValue=""Not accepted by the server"" />
+
+<BitTextField Label=""Invalid with a description""
+              Invalid=""@(invalidValue.HasValue() && invalidValue!.Contains(' ') is false)""
+              Description=""Anything without a space in it is rejected.""
+              @bind-Value=""invalidValue""
+              Immediate />
+
+<BitTextField Label=""Invalid + Underlined"" Invalid Underlined DefaultValue=""Not accepted either"" />
 
 
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
@@ -1879,6 +1909,8 @@ public class ValidationTextFieldModel
     [StringLength(5, MinimumLength = 3, ErrorMessage = ""The text length must be between 3 and 5 chars."")]
     public string RangeText { get; set; }
 }
+
+private string? invalidValue = ""no-space-here"";
 
 private ValidationTextFieldModel validationTextFieldModel = new();
 

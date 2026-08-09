@@ -329,6 +329,12 @@
     margin-inline-start: auto;
 }
 
+// A count above the limit is a state of the value, not a decoration of the counter, so it is colored like
+// every other rejected value of the library instead of staying the muted grey of a count within the limit.
+.bit-tfl-cno {
+    color: $clr-err;
+}
+
 .bit-tfl-pre,
 .bit-tfl-suf {
     height: 100%;
@@ -355,12 +361,20 @@
     }
 
     // The field group stretches its children in the multiline mode, which would turn the clear and reveal
-    // buttons and the busy indicator into full height columns, so they are pinned to the top row instead.
+    // buttons, the busy indicator and the icon into full height columns, so they are pinned to the top row
+    // instead - next to the first line of the text, where the affordances of a single line field sit.
     .bit-tfl-cbt,
     .bit-tfl-rpb,
-    .bit-tfl-lod {
+    .bit-tfl-lod,
+    .bit-tfl-ico {
         height: var(--bit-tfl-inp-min-height);
         align-self: flex-start;
+    }
+
+    .bit-tfl-ico {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .bit-tfl-ghw {

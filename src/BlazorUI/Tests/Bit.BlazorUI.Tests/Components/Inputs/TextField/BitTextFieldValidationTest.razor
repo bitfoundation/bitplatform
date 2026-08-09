@@ -29,6 +29,7 @@
                   Suffix="@Suffix"
                   Rows="Rows"
                   Resizable="Resizable"
+                  Invalid="Invalid"
                   AutoComplete="@AutoComplete">
     </BitTextField>
 
@@ -55,6 +56,7 @@
     [Parameter] public bool Underlined { get; set; }
     [Parameter] public bool NoBorder { get; set; }
     [Parameter] public bool Resizable { get; set; }
+    [Parameter] public bool Invalid { get; set; }
     [Parameter] public int Rows { get; set; }
     [Parameter] public string? AutoComplete { get; set; }
     [Parameter] public BitTextFieldTestModel TestModel { get; set; } = new();

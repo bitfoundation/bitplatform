@@ -3,11 +3,11 @@
 
 <PageOutlet Url="components/textfield"
             Title="TextField"
-            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and an auto-growing multiline one, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter, inline ghost suggestions, debounced and throttled immediate binding with input method editor support, and full EditForm validation." />
+            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and an auto-growing multiline one, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter, inline ghost suggestions, a busy indicator, debounced and throttled immediate binding with input method editor support, and both EditForm validation and a forced invalid state." />
 
 <DemoPage Name="TextField"
           SecondaryNames="@(["TextInput"])"
-          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label, a visible or screen-reader-only description and a character counter, exposes every part of its chrome to templates and to the Styles and Classes parameters, and plugs into an EditForm the same way the built-in Blazor inputs do."
+          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label in any of the four positions around it, a visible or screen-reader-only description and a character counter, exposes every part of its chrome to templates and to the Styles and Classes parameters, wires its own labels and descriptions to the input through the aria attributes, and plugs into an EditForm the same way the built-in Blazor inputs do."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -288,7 +288,9 @@
     <DemoExample Title="Clear button" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>ShowClearButton</b> renders a button that empties the field, and it only appears while there is something to
-            clear. Clearing sets the value to null through the normal binding, fires <b>OnClear</b> and returns the focus to the
+            clear - from the very first keystroke, since it follows what the input holds rather than the bound value, which on a
+            field without <b>Immediate</b> is only committed on blur. Clearing sets the value to null through the normal binding,
+            fires <b>OnClear</b> and returns the focus to the
             input so typing can continue right away. The button is a real button with an <b>ClearButtonAriaLabel</b>, so it is
             reachable by keyboard, and it is disabled in the read-only and disabled states. <b>ClearButtonIconName</b> swaps its
             icon, and it works in the multiline mode too. A search input draws a clear affordance of its own in WebKit browsers,
@@ -327,6 +329,10 @@
             pointed at by <code>aria-describedby</code>, so a screen reader announces the limit along with the field; without
             one it is just the number of characters typed so far. The counter follows the keystrokes directly rather than the
             bound value, so it stays live even when <b>Immediate</b> is off and the value is only committed on blur.
+            <b>CountTemplate</b> replaces the whole text with content of its own, shown in the
+            <a href="#example8">Templates</a> section. A count above the limit turns red: the keyboard cannot get there, since
+            <b>MaxLength</b> renders the html <code>maxlength</code> attribute, but a value assigned from the code can, and a
+            counter reading a number above its own limit in the muted grey of a valid one would say nothing about it.
         </div>
         <br />
         <div class="example-box">
@@ -335,6 +341,11 @@
             <BitTextField Label="Without a limit" ShowCount Placeholder="Just counts what you type..." />
             <br />
             <BitTextField Label="With a description" ShowCount MaxLength="30" Description="Both the description and the counter share the footer." />
+            <br />
+            <BitTextField Label="Over the limit (assigned from the code)"
+                          ShowCount
+                          MaxLength="10"
+                          DefaultValue="A value longer than the limit of the field" />
             <br />
             <BitTextField Label="Multiline" Multiline Rows="4" ShowCount MaxLength="140" @bind-Value="countValue" />
             <div>Value: [@countValue]</div>
@@ -495,7 +506,8 @@
             <b>SelectOnFocus</b> selects the whole value the moment the field receives focus, so the next keystroke replaces it
             instead of appending to it - what a field holding a value meant to be overwritten rather than edited (a search term,
             a quantity, a generated code) usually wants. It applies to a read-only field too, where selecting the value is
-            exactly what makes it easy to copy. The same thing is available from code through <b>SelectAsync</b>, and
+            exactly what makes it easy to copy, and to an <b>AutoFocus</b> field, whose focus is given to it before anything
+            could listen for it. The same thing is available from code through <b>SelectAsync</b>, and
             <b>SelectRangeAsync</b> selects only a part of the value, or moves the caret when the two positions are equal. Both
             positions are clamped to the length of the value, a null start counts from the beginning and a null end runs to the
             very end, so a range can never fall outside the text.
@@ -548,9 +560,12 @@
             <b>Loading</b> shows a busy indicator inside the field, which is how a field says that something is running against
             what was typed - a suggestion being fetched, a name being checked for availability, a value being validated on the
             server. The field stays fully editable while it is on, so the typing is never interrupted, and the indicator is
-            marked as a status rather than an alert so a screen reader can find it without being interrupted either.
-            <b>LoadingAriaLabel</b> is the name it announces, and <b>LoadingTemplate</b> replaces the default spinner with any
-            content - one of the other loading components of the library, an icon, a piece of text.
+            marked as a status rather than an alert so a screen reader can find it without being interrupted either. The input
+            itself carries <code>aria-busy</code> while it is on, which is what tells an assistive technology that what it is
+            reading is still being worked on. <b>LoadingAriaLabel</b> is the name it announces, and <b>LoadingTemplate</b>
+            replaces the default spinner with any content - one of the other loading components of the library, an icon, a piece
+            of text. The two work together: a template is left to speak for itself when it says something on screen, and a name
+            given on purpose is kept next to it when it does not.
         </div>
         <br />
         <div class="example-box">
@@ -586,7 +601,10 @@
             screen reader without showing anything - use it only where the surrounding layout already makes the purpose obvious.
             <b>Description</b> is the visible hint under the field, while <b>AriaDescription</b> is a hidden one for the cases
             where the instruction would be too long to show; both are referenced by the input through <code>aria-describedby</code>,
-            in reading order, alongside the character counter when it carries a limit. <b>Title</b> renders the html title of the
+            in reading order, alongside the character counter when it carries a limit. An <code>aria-describedby</code> of your
+            own, passed through <b>InputHtmlAttributes</b>, is kept and read first rather than replaced, which is what lets a
+            field point at an error message the app renders next to it and still keep its own description.
+            <b>Title</b> renders the html title of the
             field, which the browser shows as a tooltip on hover. The trailing icon is decorative and hidden from screen readers
             by default; <b>IconAriaLabel</b> turns it into an image with a name for the cases where the icon carries a meaning of
             its own.
@@ -609,6 +627,11 @@
                           Type="BitInputType.Search"
                           Placeholder="Search..."
                           IconName="@BitIconName.Search" />
+            <br />
+            <BitTextField Label="With a description of its own"
+                          Description="Card number"
+                          InputHtmlAttributes="@(new() { { "aria-describedby", "card-number-hint" } })" />
+            <div id="card-number-hint">The field also points at this element, which is not a part of it.</div>
         </div>
     </DemoExample>
 
@@ -619,9 +642,26 @@
             <code>aria-invalid="true"</code> attribute, and the state is refreshed on every validation pass. Use
             <b>NoValidate</b> to opt a field out of the EditContext altogether, and <b>DisplayName</b> to control the name used
             in the generated messages.
+            <br /><br />
+            Not every rejection comes from a data annotation, though - a name a server reports as taken, a rule that needs two
+            fields to be compared, a field that lives outside any form at all. <b>Invalid</b> forces the same state from the
+            outside: the same red frame, the same focus ring and the same <code>aria-invalid</code>, without an
+            <code>EditContext</code> being involved. It only ever adds to the validation of the field, so a value the
+            EditContext already rejected stays invalid whatever the parameter says.
         </div>
         <br />
         <div class="example-box">
+            <BitTextField Label="Invalid" Invalid DefaultValue="Not accepted by the server" />
+            <br />
+            <BitTextField Label="Invalid with a description"
+                          Invalid="@(invalidValue.HasValue() && invalidValue!.Contains(' ') is false)"
+                          Description="Anything without a space in it is rejected."
+                          @bind-Value="invalidValue"
+                          Immediate />
+            <br />
+            <BitTextField Label="Invalid + Underlined" Invalid Underlined DefaultValue="Not accepted either" />
+            <br />
+            <br />
             @if (formIsValidSubmit is false)
             {
                 <EditForm Model="validationTextFieldModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" novalidate>
