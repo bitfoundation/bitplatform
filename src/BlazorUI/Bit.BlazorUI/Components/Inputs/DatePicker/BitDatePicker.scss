@@ -1,5 +1,16 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
+@import "../../../Styles/color-role-maps.scss";
+
+// The default size, declared as a mixin so both the root element and the callout - which is rendered
+// outside of it and therefore inherits nothing from it - can fall back to it.
+@mixin dtp-size-medium {
+    --bit-dtp-inp-h: #{spacing(4)};
+    --bit-dtp-inp-fs: #{spacing(1.75)};
+    --bit-dtp-cell-size: #{spacing(3.5)};
+    --bit-dtp-cell-fs: #{spacing(1.5)};
+    --bit-dtp-lbl-fs: #{spacing(1.75)};
+}
 
 .bit-dtp {
     margin: 0;
@@ -10,6 +21,8 @@
     box-sizing: border-box;
     font-size: spacing(2.25);
     font-family: $tg-font-family;
+
+    @include dtp-size-medium;
 
     &.bit-dis {
         .bit-dtp-lbl {
@@ -84,7 +97,7 @@
     font-weight: 600;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
-    font-size: spacing(1.75);
+    font-size: var(--bit-dtp-lbl-fs);
     overflow-wrap: break-word;
     color: $clr-fg-pri;
 }
@@ -99,7 +112,7 @@
     gap: spacing(1);
     cursor: pointer;
     box-shadow: none;
-    height: spacing(4);
+    height: var(--bit-dtp-inp-h);
     position: relative;
     align-items: center;
     padding: 0 spacing(1);
@@ -155,7 +168,7 @@
     border-radius: 0;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: var(--bit-dtp-inp-fs);
     background: none transparent;
     color: $clr-fg-pri;
     font-family: $tg-font-family;
@@ -197,6 +210,8 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+
+    @include dtp-size-medium;
 }
 
 .bit-dtp-cac {
@@ -238,15 +253,9 @@
     flex-flow: column nowrap;
 }
 
-.bit-dtp-dgd {
-    border-spacing: 0;
-    position: relative;
-    text-align: center;
-    font-size: inherit;
-    table-layout: fixed;
-    margin-top: spacing(0.5);
-    border-collapse: collapse;
-    margin-bottom: spacing(1.25);
+.bit-dtp-grd {
+    display: flex;
+    flex-flow: column nowrap;
 }
 
 .bit-dtp-dgh,
@@ -267,8 +276,8 @@
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    font-size: spacing(1.5);
-    line-height: spacing(3.5);
+    font-size: var(--bit-dtp-cell-fs);
+    line-height: var(--bit-dtp-cell-size);
     animation-fill-mode: both;
     // A step shorter than the calendar's own entry above, so the days still resolve inside the
     // container rather than with it.
@@ -284,13 +293,13 @@
     cursor: pointer;
     overflow: visible;
     position: relative;
-    width: spacing(3.5);
     align-items: center;
-    height: spacing(3.5);
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    width: var(--bit-dtp-cell-size);
+    height: var(--bit-dtp-cell-size);
+    font-size: var(--bit-dtp-cell-fs);
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
@@ -312,6 +321,25 @@
         background-color: transparent;
         color: $clr-fg-dis;
     }
+
+    // The day grid moves the focus with the arrow keys, so the focused day has to be visible as such -
+    // and above its neighbors, whose backgrounds would otherwise clip the ring.
+    &:focus-visible {
+        z-index: 1;
+        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+}
+
+// The placeholder of a day of an adjacent month while ShowOutsideDays is off: it keeps the columns of
+// the week aligned without rendering a day the user cannot pick.
+.bit-dtp-dbe {
+    width: var(--bit-dtp-cell-size);
+    height: var(--bit-dtp-cell-size);
+}
+
+.bit-dtp-dhl {
+    font-weight: 600;
+    background-color: $clr-bg-ter;
 }
 
 .bit-dtp-dbs {
@@ -333,28 +361,28 @@
 .bit-dtp-dtd {
     font-weight: 600;
     border-radius: 50%;
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtp-clr-txt);
+    background-color: var(--bit-dtp-clr);
 
     @media(hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtp-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-dtp-clr-active);
     }
 }
 
 .bit-dtp-wnm {
     display: flex;
     font-weight: 400;
-    width: spacing(3.5);
     align-items: center;
-    height: spacing(3.5);
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    width: var(--bit-dtp-cell-size);
+    height: var(--bit-dtp-cell-size);
+    font-size: var(--bit-dtp-cell-fs);
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     color: $clr-fg-sec;
@@ -365,7 +393,7 @@
 .bit-dtp-pkh {
     width: 100%;
     position: relative;
-    height: spacing(3.5);
+    height: var(--bit-dtp-cell-size);
     display: inline-flex;
     line-height: spacing(5.5);
 }
@@ -432,13 +460,13 @@
     overflow: visible;
     position: relative;
     text-align: center;
-    width: spacing(3.5);
-    height: spacing(3.5);
     outline: transparent;
-    min-width: spacing(3.5);
-    font-size: spacing(1.5);
-    min-height: spacing(3.5);
-    line-height: spacing(3.5);
+    width: var(--bit-dtp-cell-size);
+    height: var(--bit-dtp-cell-size);
+    min-width: var(--bit-dtp-cell-size);
+    min-height: var(--bit-dtp-cell-size);
+    line-height: var(--bit-dtp-cell-size);
+    font-size: var(--bit-dtp-cell-fs);
     background-color: transparent;
     color: $clr-fg-pri;
     border-radius: $shp-border-radius;
@@ -593,13 +621,13 @@
 }
 
 .bit-dtp-pcm {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtp-clr-txt);
+    background-color: var(--bit-dtp-clr);
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-sec-hover;
-            background-color: $clr-pri-hover;
+            color: var(--bit-dtp-clr-txt);
+            background-color: var(--bit-dtp-clr-hover);
         }
     }
 }
@@ -683,8 +711,8 @@
 }
 
 .bit-dtp-bns {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtp-clr-txt);
+    background-color: var(--bit-dtp-clr);
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -692,12 +720,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtp-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-dtp-clr-active);
     }
 }
 
@@ -805,6 +833,7 @@
         .bit-dtp-gtn,
         .bit-dtp-wlb,
         .bit-dtp-dbt,
+        .bit-dtp-dbe,
         .bit-dtp-pkb,
         .bit-dtp-wnm {
             width: 100%;
@@ -856,4 +885,38 @@
             margin: spacing(0.25);
         }
     }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// They are applied to the root element and to the callout alike, since the callout is rendered
+// outside of the root and inherits nothing from it.
+@each $role, $tokens in $bit-color-roles {
+    .bit-dtp-#{$role} {
+        --bit-dtp-clr: #{role($tokens, main)};
+        --bit-dtp-clr-txt: #{role($tokens, on)};
+        --bit-dtp-clr-hover: #{role($tokens, hover)};
+        --bit-dtp-clr-active: #{role($tokens, active)};
+    }
+}
+
+
+.bit-dtp-sm {
+    --bit-dtp-inp-h: #{spacing(3.25)};
+    --bit-dtp-inp-fs: #{spacing(1.5)};
+    --bit-dtp-cell-size: #{spacing(3)};
+    --bit-dtp-cell-fs: #{spacing(1.375)};
+    --bit-dtp-lbl-fs: #{spacing(1.5)};
+}
+
+.bit-dtp-md {
+    @include dtp-size-medium;
+}
+
+.bit-dtp-lg {
+    --bit-dtp-inp-h: #{spacing(5)};
+    --bit-dtp-inp-fs: #{spacing(2)};
+    --bit-dtp-cell-size: #{spacing(4.25)};
+    --bit-dtp-cell-fs: #{spacing(1.75)};
+    --bit-dtp-lbl-fs: #{spacing(2)};
 }

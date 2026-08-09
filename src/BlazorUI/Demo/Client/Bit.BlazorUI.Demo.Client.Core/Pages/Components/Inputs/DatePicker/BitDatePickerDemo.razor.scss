@@ -37,6 +37,10 @@
 }
 
 ::deep {
+    .sunday-cell {
+        color: red;
+    }
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;
@@ -136,6 +140,11 @@
 
     .custom-selected-day {
         background-color: violet;
+    }
+
+    .custom-highlighted-day {
+        border-color: violet;
+        background-color: #ee82ee40;
     }
 
     .custom-week-header {
