@@ -1,0 +1,48 @@
+// bit version: 10.6.0-pre-01
+
+// Development service worker of the Bswup docs site. Unlike the standard Blazor template -
+// whose dev worker is a no-op so caching never hides source changes - this site runs the full
+// Bswup engine even in development, so the complete first-install / update experience is
+// visible on plain F5. Keep this file and service-worker.published.js in sync.
+
+// The docs site is a prerendered Blazor Web App now. This preset expands to: passive caching,
+// defaultUrl '/', no forced prerender, lax error tolerance, case-insensitive URLs, and - the
+// reason it is here - noPrerenderQuery = 'no-prerender=true', which is appended to the default
+// document request so the copy the worker caches as the app shell is the NON-prerendered one.
+// Without it the shell would be the prerendered HOME page and every offline deep link would
+// flash home content before the router corrected it. Server/Components/App.razor reads that
+// same query back to switch prerendering off for exactly this request.
+self.mode = 'InitialPrerender';
+
+// The preset turns passive caching ON (first paint is never blocked behind a full precache).
+// This site deliberately turns it back off: the install progress splash is what the docs exist
+// to demonstrate, so assets are precached eagerly and the progress bar actually runs. Drop this
+// line to get the faster, prerender-friendly passive behavior the preset intends.
+self.isPassive = false;
+
+self.assetsExclude = [/\.scp\.css$/];
+self.caseInsensitiveUrl = true;
+
+// Assets the client's service-worker-assets.js cannot list, because the HOST project owns them.
+self.externalAssets = [
+    // There is no index.html any more - the app shell is the server-rendered host document.
+    // self.defaultUrl is '/' (from the preset above) and must match an entry that exists.
+    {
+        "url": "/"
+    },
+    // A Blazor Web App boots through blazor.web.js, not the blazor.webassembly.js that the
+    // client's asset manifest lists - it belongs to the host project, so the manifest never
+    // sees it and the app cannot start offline without this entry.
+    {
+        "url": "_framework/blazor.web.js"
+    },
+    // blazor.web.js then loads the WASM resource list from a fingerprinted
+    // resource-collection.<hash>.js, named by the host at build time. The concrete name is
+    // unknown here and changes every build, so it is matched with a RegExp and cached lazily
+    // on first fetch (see the externalAssets notes in the Bswup README).
+    {
+        "url": /\/_framework\/resource-collection\.[^\/]*\.js$/
+    }
+];
+
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');

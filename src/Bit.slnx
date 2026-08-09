@@ -81,7 +81,10 @@
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/Bit.Bswup.Demo/">
+    <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bswup/Demos/">
     <Project Path="Bswup/Demos/BasicDemo/Bit.Bswup.BasicDemo.csproj" />

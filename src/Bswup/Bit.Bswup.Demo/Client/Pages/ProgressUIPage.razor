@@ -88,7 +88,7 @@
     render its own copy of those two; restyle them by id instead.
 </Callout>
 
-<h2>Standalone WebAssembly apps (like this site)</h2>
+<h2>Standalone WebAssembly apps</h2>
 <p>
     In a standalone Blazor WebAssembly app the splash must exist <em>before</em> Blazor starts - on a first
     install, Blazor only boots after the download completes - so the <code>BswupProgress</code> component
@@ -100,9 +100,19 @@
 <Callout Type="note" Title="Two placement rules">
     Keep <code>#bit-bswup-reload</code> and its status region <em>outside</em> the <code>#bit-bswup</code>
     overlay (a finished background update must surface the button without revealing the splash), and give
-    the button its own <code>z-index</code> if your app has fixed chrome in the top-right corner. View the
-    source of this very page for a complete working example.
+    the button its own <code>z-index</code> if your app has fixed chrome in the top-right corner.
 </Callout>
+
+<h2>Prerendered Blazor Web Apps (like this site)</h2>
+<p>
+    A Blazor Web App renders its host document (<code>Components/App.razor</code>) on the server, so the
+    hand-written workaround above is unnecessary: drop <code>&lt;BswupProgress /&gt;</code> straight into
+    <code>App.razor</code>, outside the interactive render-mode boundary. It is statically rendered, which
+    puts its markup - and the <code>data-bit-bswup-*</code> configuration
+    <code>bit-bswup.progress.js</code> reads - in the very first HTML the browser receives, before any
+    script runs. This is what this site does; view source on any page for a complete working example.
+</p>
+<CodeBlock Language="html" Code="@HostComponentCode" />
 
 <div class="pager">
     <a href="events">
@@ -122,6 +132,22 @@
 <script src=""_content/Bit.Bswup/bit-bswup.progress.js""></script>";
 
     private const string ComponentCode = @"<BswupProgress AutoReload=""false"" ShowAssets=""true"" HideApp=""true"" AutoHide=""true"" />";
+
+    // The '@' in the @rendermode attribute below needs no escaping: this is a C# verbatim
+    // string inside a @code block, which Razor hands to the C# tokenizer as-is (an '@@' here
+    // would render as two literal '@' characters, not one).
+    private const string HostComponentCode = @"<body>
+    <!-- Statically rendered: present before blazor.web.js (and the app) start. -->
+    <BswupProgress AutoReload=""false"" HideApp=""true"" AutoHide=""true"" AppContainer=""#app"" />
+
+    <div id=""app"">
+        <Routes @rendermode=""renderMode"" />
+    </div>
+
+    <script src=""_framework/blazor.web.js"" autostart=""false""></script>
+    <script src=""_content/Bit.Bswup/bit-bswup.js"" scope=""/"" sw=""service-worker.js""></script>
+    <script src=""_content/Bit.Bswup/bit-bswup.progress.js""></script>
+</body>";
 
     private const string HandWrittenCode = @"<div id=""bit-bswup""
      data-bit-bswup-config=""true""

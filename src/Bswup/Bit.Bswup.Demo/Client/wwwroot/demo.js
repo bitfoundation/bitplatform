@@ -71,9 +71,13 @@
         // Guard for the MutationObserver below: re-render only when something new was
         // recorded, otherwise our own DOM writes would re-trigger the observer forever.
         // A missing dataset.rendered means a fresh element (Blazor replaced the subtree)
-        // that still needs a full render even when the revision itself is unchanged.
-        if (el.dataset.rendered === String(revision)) return;
-        const prior = el.dataset.rendered === undefined ? -1 : Number(el.dataset.rendered);
+        // that still needs a full render even when the revision itself is unchanged - and so
+        // does an element left EMPTY, which is what happens when Blazor makes the prerendered
+        // page interactive: it synchronizes the server-rendered DOM back to the component's
+        // (empty) render tree, discarding the entries this script had already written.
+        const stale = el.dataset.rendered === undefined || el.childElementCount === 0;
+        if (!stale && el.dataset.rendered === String(revision)) return;
+        const prior = stale ? -1 : Number(el.dataset.rendered);
         el.dataset.rendered = String(revision);
 
         if (events.length === 0) {
@@ -213,18 +217,26 @@
         navigator.clipboard.writeText(code.textContent || '').then(() => flash('Copied!'), () => flash('Copy failed'));
     }
 
-    // Blazor renders pages after this script runs (and on every navigation), so watch for the
-    // playground elements appearing and (re)hydrate them. The dataset guards keep this cheap:
-    // the callback exits immediately when nothing relevant changed.
+    // (Re)wires the parts of the page this script owns. The dataset guards keep it cheap: it
+    // exits immediately when nothing relevant changed.
+    function hydrate() {
+        renderEvents();
+        const playground = document.getElementById('bswup-playground');
+        if (playground && playground.dataset.init !== 'true') {
+            playground.dataset.init = 'true';
+            refreshStatus();
+        }
+    }
+
+    // Called once up front because the host prerenders on the server: on a direct load of
+    // /playground the markup is ALREADY in the document when this script runs, so no mutation
+    // would ever announce it and the status cards would sit at their "…" placeholders forever.
+    hydrate();
+
+    // Blazor still renders/replaces page content after this script runs - when the prerendered
+    // page becomes interactive, and again on every client-side navigation - so keep watching.
     if (typeof MutationObserver !== 'undefined') {
-        new MutationObserver(() => {
-            renderEvents();
-            const playground = document.getElementById('bswup-playground');
-            if (playground && playground.dataset.init !== 'true') {
-                playground.dataset.init = 'true';
-                refreshStatus();
-            }
-        }).observe(document.documentElement, { childList: true, subtree: true });
+        new MutationObserver(hydrate).observe(document.documentElement, { childList: true, subtree: true });
     }
 
     // ---------------------------------------------------------------- CSP-safe wiring
