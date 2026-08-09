@@ -7,10 +7,22 @@
     font-weight: 400;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+
+    // The medium size is the default one, so its values sit on the root instead of only on .bit-tfl-md.
+    --bit-tfl-font-size: #{spacing(1.75)};
+    --bit-tfl-line-height: #{spacing(2.125)};
+    --bit-tfl-min-height: #{spacing(4)};
+    --bit-tfl-inp-min-height: #{spacing(3.75)};
+    --bit-tfl-icon-font-size: #{spacing(2)};
+    --bit-tfl-btn-width: #{spacing(4)};
 
     &.bit-dis {
+        .bit-tfl-cnt {
+            color: $clr-fg-dis;
+        }
+
         .bit-tfl-lbl {
             color: $clr-fg-dis;
         }
@@ -32,12 +44,26 @@
             color: $clr-fg-dis;
         }
 
+        // Everything that sits inside the frame goes grey with it: an icon or a busy indicator left at
+        // full contrast next to a greyed-out value reads as if that part of the field were still live.
+        .bit-tfl-ico,
+        .bit-tfl-lod,
+        .bit-tfl-rpi {
+            color: $clr-fg-dis;
+        }
+
         .bit-tfl-cbt {
             cursor: default;
             color: $clr-fg-dis;
             pointer-events: none;
             background: $clr-bg-dis;
             border: $shp-border-width $shp-border-style $clr-brd-dis;
+        }
+
+        .bit-tfl-rpb {
+            cursor: default;
+            color: $clr-fg-dis;
+            pointer-events: none;
         }
 
         &.bit-tfl-und {
@@ -48,16 +74,26 @@
             }
 
             .bit-tfl-lbl {
-                height: spacing(4);
-                margin: 0 spacing(1) 0 0;
-                line-height: spacing(2.75);
-                padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
+                height: var(--bit-tfl-min-height);
+                margin-inline-end: spacing(1);
+                line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
+                padding-block: spacing(0.625);
+                padding-inline-start: spacing(1.5);
             }
 
             .bit-tfl-fgp {
                 flex: 1 1 0;
                 border: none;
-                text-align: left;
+                text-align: start;
+            }
+        }
+
+        // NoBorder means no border in every state: the disabled frame border above is more specific than
+        // the .bit-tfl-nbd rule, so it has to be turned off again here.
+        &.bit-tfl-nbd {
+            .bit-tfl-fgp,
+            .bit-tfl-cbt {
+                border: none;
             }
         }
     }
@@ -100,10 +136,10 @@
     font-weight: 600;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
     overflow-wrap: break-word;
+    font-size: var(--bit-tfl-font-size);
 }
 
 .bit-tfl-fgp {
@@ -116,8 +152,8 @@
     align-items: center;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    min-height: spacing(4);
     border-radius: $shp-border-radius;
+    min-height: var(--bit-tfl-min-height);
     background-color: var(--bit-tfl-clr-bg);
     border: $shp-border-width $shp-border-style var(--bit-tfl-clr-brd);
 }
@@ -136,10 +172,10 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
-    min-height: spacing(3.75);
     background: none transparent;
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+    min-height: var(--bit-tfl-inp-min-height);
 
     &[type="password"]::-ms-reveal,
     &[type="password"]::-ms-clear {
@@ -147,17 +183,52 @@
     }
 }
 
+// A search input draws a clear affordance of its own in WebKit browsers and in Edge, which would sit
+// right next to the clear button of the component, so the native one is taken away wherever the
+// component provides its own.
+.bit-tfl-clb {
+    .bit-tfl-inp {
+        &[type="search"]::-webkit-search-cancel-button,
+        &[type="search"]::-webkit-search-decoration {
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        &::-ms-clear {
+            display: none;
+        }
+    }
+}
+
+// Visually hidden, but still read out: the element only exists to give aria-describedby something to
+// point at.
+.bit-tfl-dsc {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-tfl-rpb {
     height: 100%;
     border: none;
     cursor: pointer;
-    width: spacing(4);
     position: relative;
     outline: transparent;
     padding: 0 spacing(0.5);
-    min-height: spacing(3.75);
     color: var(--bit-tfl-clr);
     background-color: transparent;
+    width: var(--bit-tfl-btn-width);
+    min-height: var(--bit-tfl-inp-min-height);
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-tfl-clr-focus));
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -169,8 +240,8 @@
 .bit-tfl-rpc {
     display: flex;
     align-items: center;
-    font-size: spacing(2);
     justify-content: center;
+    font-size: var(--bit-tfl-icon-font-size);
 }
 
 .bit-tfl-rpi {
@@ -182,7 +253,6 @@
     border: none;
     cursor: pointer;
     font-weight: 400;
-    width: spacing(4);
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
@@ -192,11 +262,13 @@
     display: inline-block;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
     background-color: transparent;
-    border-radius: 0 spacing(0.125) spacing(0.125) 0;
-    min-height: spacing(3.75);
+    width: var(--bit-tfl-btn-width);
+    font-size: var(--bit-tfl-font-size);
+    min-height: var(--bit-tfl-inp-min-height);
+    border-start-end-radius: spacing(0.125);
+    border-end-end-radius: spacing(0.125);
 
     i {
         width: unset;
@@ -208,12 +280,26 @@
         line-height: spacing(2);
     }
 
+    &:focus-visible {
+        @include focus-ring(var(--bit-tfl-clr-focus));
+    }
+
     @media (hover: hover) {
         &:hover {
             color: $clr-fg-pri-hover;
             background-color: $clr-bg-pri-hover;
         }
     }
+}
+
+.bit-tfl-lod {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-tfl-clr);
+    padding-inline: spacing(0.5);
+    min-height: var(--bit-tfl-inp-min-height);
 }
 
 .bit-tfl-ico {
@@ -223,15 +309,52 @@
 .bit-tfl-rpi,
 .bit-tfl-ico {
     text-align: center;
-    font-size: spacing(2);
     min-width: spacing(3.5);
+    font-size: var(--bit-tfl-icon-font-size);
+}
+
+// The rejection is colored like every other rejected value of the library, and it keeps that color while the
+// field is disabled: a message that goes grey with the rest of the field stops reading as the reason the
+// value was refused.
+.bit-tfl-erm {
+    color: $clr-err;
+    overflow-wrap: break-word;
+    font-size: spacing(1.25);
+
+    span {
+        color: $clr-err;
+    }
+}
+
+.bit-tfl-ftr {
+    gap: spacing(1);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 }
 
 .bit-tfl-des {
+    flex: 1 1 auto;
+    min-width: 0;
+
     span {
         color: $clr-fg-pri;
         font-size: spacing(1.25);
     }
+}
+
+.bit-tfl-cnt {
+    flex: 0 0 auto;
+    color: $clr-fg-sec;
+    white-space: nowrap;
+    font-size: spacing(1.25);
+    margin-inline-start: auto;
+}
+
+// A count above the limit is a state of the value, not a decoration of the counter, so it is colored like
+// every other rejected value of the library instead of staying the muted grey of a count within the limit.
+.bit-tfl-cno {
+    color: $clr-err;
 }
 
 .bit-tfl-pre,
@@ -244,11 +367,11 @@
     white-space: nowrap;
     background: $clr-bg-sec;
     padding: 0 spacing(1.25);
-    min-height: spacing(3.75);
+    min-height: var(--bit-tfl-inp-min-height);
 
     span {
-        font-size: spacing(1.75);
         padding-bottom: spacing(0.125);
+        font-size: var(--bit-tfl-font-size);
     }
 }
 
@@ -257,6 +380,23 @@
     .bit-tfl-fgp {
         height: auto;
         align-items: stretch;
+    }
+
+    // The field group stretches its children in the multiline mode, which would turn the clear and reveal
+    // buttons, the busy indicator and the icon into full height columns, so they are pinned to the top row
+    // instead - next to the first line of the text, where the affordances of a single line field sit.
+    .bit-tfl-cbt,
+    .bit-tfl-rpb,
+    .bit-tfl-lod,
+    .bit-tfl-ico {
+        height: var(--bit-tfl-inp-min-height);
+        align-self: flex-start;
+    }
+
+    .bit-tfl-ico {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .bit-tfl-ghw {
@@ -270,8 +410,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -280,8 +420,8 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -291,8 +431,8 @@
         flex-grow: 1;
         overflow: auto;
         min-height: inherit;
-        line-height: spacing(2.125);
         padding: spacing(0.75) spacing(1);
+        line-height: var(--bit-tfl-line-height);
     }
 }
 
@@ -334,24 +474,86 @@
     }
 
     .bit-tfl-lbl {
-        height: spacing(4);
-        margin: 0 spacing(1) 0 0;
-        line-height: spacing(2.75);
-        padding: spacing(0.625) 0 spacing(0.625) spacing(1.5);
+        height: var(--bit-tfl-min-height);
+        margin-inline-end: spacing(1);
+
+        // The label fills the height of the field minus its own padding, so its text stays centered
+        // against the input at every size instead of only at the medium one.
+        line-height: calc(var(--bit-tfl-min-height) - #{spacing(1.25)});
+        padding-block: spacing(0.625);
+        padding-inline-start: spacing(1.5);
     }
 
     .bit-tfl-fgp {
         flex: 1 1 0;
         border: none;
-        text-align: left;
+        text-align: start;
+    }
+}
+
+// The label positions only exist while one is asked for: without them the wrapper stays a plain block,
+// which is the layout the default variant has always had, and the underlined one keeps its own row.
+.bit-tfl-ltp,
+.bit-tfl-lbt,
+.bit-tfl-lst,
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        width: 100%;
+        display: flex;
+    }
+
+    .bit-tfl-fgp {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+.bit-tfl-ltp {
+    .bit-tfl-wrp {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.bit-tfl-lbt {
+    .bit-tfl-wrp {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+}
+
+.bit-tfl-lst,
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        gap: spacing(1);
+        align-items: center;
+    }
+
+    .bit-tfl-lbl {
+        flex: 0 0 auto;
+        padding-block: 0;
+    }
+}
+
+.bit-tfl-lst {
+    .bit-tfl-wrp {
+        flex-direction: row;
+    }
+}
+
+.bit-tfl-led {
+    .bit-tfl-wrp {
+        flex-direction: row-reverse;
     }
 }
 
 .bit-tfl-req {
-    .bit-tfl-lbl::after {
+    // Every label of the field is marked, not only the one built from the Label parameter: a field
+    // rendered through a LabelTemplate is just as required as any other one.
+    .bit-tfl-wrp > label::after {
         content: "*";
         color: $clr-req;
-        margin-left: spacing(0.625);
+        margin-inline-start: spacing(0.625);
     }
 }
 
@@ -361,7 +563,7 @@
         color: $clr-req;
         position: absolute;
         top: spacing(-0.625);
-        right: spacing(-1.25);
+        inset-inline-end: spacing(-1.25);
     }
 }
 
@@ -409,8 +611,36 @@
     color: $clr-fg-ter;
     padding: 0 spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.75);
     font-family: $tg-font-family;
+    font-size: var(--bit-tfl-font-size);
+}
+
+
+.bit-tfl-sm {
+    --bit-tfl-font-size: #{spacing(1.5)};
+    --bit-tfl-line-height: #{spacing(1.875)};
+    --bit-tfl-min-height: #{spacing(3.25)};
+    --bit-tfl-inp-min-height: #{spacing(3)};
+    --bit-tfl-icon-font-size: #{spacing(1.75)};
+    --bit-tfl-btn-width: #{spacing(3.25)};
+}
+
+.bit-tfl-md {
+    --bit-tfl-font-size: #{spacing(1.75)};
+    --bit-tfl-line-height: #{spacing(2.125)};
+    --bit-tfl-min-height: #{spacing(4)};
+    --bit-tfl-inp-min-height: #{spacing(3.75)};
+    --bit-tfl-icon-font-size: #{spacing(2)};
+    --bit-tfl-btn-width: #{spacing(4)};
+}
+
+.bit-tfl-lg {
+    --bit-tfl-font-size: #{spacing(2)};
+    --bit-tfl-line-height: #{spacing(2.5)};
+    --bit-tfl-min-height: #{spacing(5)};
+    --bit-tfl-inp-min-height: #{spacing(4.75)};
+    --bit-tfl-icon-font-size: #{spacing(2.5)};
+    --bit-tfl-btn-width: #{spacing(5)};
 }
 
 
