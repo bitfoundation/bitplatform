@@ -97,7 +97,7 @@
         <div class="example-content">
             <BitDatePicker Label="HighlightedDates" HighlightedDates="@highlightedDates" />
             <br /><br />
-            <BitDatePicker Label="GetDayClass (Sundays)" GetDayClass="@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)" />
+            <BitDatePicker Label="GetDayClass (Sundays)" GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)' />
         </div>
     </DemoExample>
 

@@ -319,7 +319,7 @@
                                             type="button"
                                             role="gridcell"
                                             id="@GetDayButtonId(date)"
-                                            aria-readonly="true"
+                                            aria-readonly="@(ReadOnly ? "true" : null)"
                                             disabled="@disabled"
                                             aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
                                             aria-label="@date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture)"

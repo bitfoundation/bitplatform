@@ -843,7 +843,7 @@
             max-width: unset;
             align-items: center;
             justify-content: center;
-            font-size: spacing(1.75);
+            font-size: var(--bit-dtp-cell-fs);
         }
 
         .bit-dtp-nbt,

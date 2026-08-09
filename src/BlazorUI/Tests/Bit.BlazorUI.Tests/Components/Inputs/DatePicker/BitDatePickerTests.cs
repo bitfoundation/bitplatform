@@ -1279,8 +1279,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.WeekNumberRule, rule);
         });
 
-        // The first rendered row of March 2026 with Monday as the first day of the week starts on
-        // Monday, March 2nd (March 1st is a Sunday, so it belongs to the previous row).
+        // The first rendered row of March 2026 with Monday as the first day of the week runs from
+        // Monday, February 23rd to Sunday, March 1st (March 1st is a Sunday, so it closes that row).
         var calendar = CultureInfo.CurrentUICulture.Calendar;
         var expected = calendar.GetWeekOfYear(new DateTime(2026, 2, 23), rule, DayOfWeek.Monday);
 

@@ -885,13 +885,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // Prevents the default behavior (scrolling) of the navigation keys handled by the
                 // day buttons' keydown handlers, since Blazor cannot conditionally preventDefault per key.
                 await _js.BitCalendarsSetup(_calloutId);
+
+                if (Responsive)
+                {
+                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+                }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
-
-            if (Responsive)
-            {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
-            }
         }
 
         if (_focusAfterRender && _focusedDate.HasValue)
@@ -1212,13 +1212,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (ReadOnly) return;
         if (AllowTextInput is false) return;
 
-        var oldValue = CurrentValue.GetValueOrDefault(GetNow());
+        var oldValue = CurrentValue;
 
         CurrentValueAsString = e.Value?.ToString();
 
-        var curValue = CurrentValue.GetValueOrDefault(GetNow());
-
-        if (IsOpen is false || oldValue == curValue) return;
+        // The comparison is on the nullable values themselves: text that fails to parse leaves
+        // CurrentValue null, and the calendar has nothing to synchronize with in that case.
+        if (IsOpen is false || oldValue == CurrentValue) return;
 
         var previousYear = _currentYear;
 
@@ -1303,9 +1303,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
-        // A one-way bound IsOpen cannot be closed by the selection, so the callout would be left open on
-        // a date it can no longer dismiss - except standalone, where there is no callout to speak of.
-        if (Standalone is false && IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false) return;
         if (IsDayDisabled(selectedDate)) return;
 
         var previousYear = _currentYear;
@@ -1318,7 +1315,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         // With the time picker on screen, picking a day is only half of the value: closing right away
         // would send the user back to reopen the callout to set the time they were about to set.
-        if (AutoClose && Standalone is false && ShowTimePicker is false)
+        // A one-way bound IsOpen cannot be closed by the selection either, so the callout stays open on
+        // the date that was just picked instead - the selection itself still goes through.
+        if (AutoClose && Standalone is false && ShowTimePicker is false &&
+            (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
         {
             await AssignIsOpen(false);
 

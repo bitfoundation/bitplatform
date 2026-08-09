@@ -52,7 +52,7 @@ private readonly DateTimeOffset[] disabledDates =
 <BitDatePicker Label=""HighlightedDates"" HighlightedDates=""@highlightedDates"" />
 
 <BitDatePicker Label=""GetDayClass (Sundays)""
-               GetDayClass=""@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)"" />";
+               GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)' />";
     private readonly string example4CsharpCode = @"
 private readonly DateTimeOffset[] highlightedDates =
 [
