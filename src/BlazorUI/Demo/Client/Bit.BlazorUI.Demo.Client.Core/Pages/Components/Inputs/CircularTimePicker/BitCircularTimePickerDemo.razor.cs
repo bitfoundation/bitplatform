@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
 
 public partial class BitCircularTimePickerDemo
@@ -20,6 +22,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "AllowedSeconds",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The seconds that can be selected, on top of what MinTime, MaxTime and SecondStep already allow. The predicate receives a second of the minute (0-59).",
+        },
+        new()
+        {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
@@ -27,10 +36,17 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "AmPmInClock",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the AM/PM pair under the clock instead of beside the time in the toolbar. Only the 12-hour format has a meridiem to place."
+        },
+        new()
+        {
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Closes the callout as soon as the selection is complete, without waiting for the close button or a click outside of it."
+            Description = "Closes the callout as soon as the selection is complete - the last part the dial offers is picked, or the \"now\" button is used - without waiting for the close button or a click outside of it."
         },
         new()
         {
@@ -120,7 +136,7 @@ public partial class BitCircularTimePickerDemo
             LinkType = LinkType.Link,
             Href = "#edit-mode-enum",
             DefaultValue = "BitCircularTimePickerEditMode.Normal",
-            Description = "Choose the edition mode. By default, you can edit hours and minutes."
+            Description = "Choose the edition mode. By default, you can edit every part the picker shows."
         },
         new()
         {
@@ -182,6 +198,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "InvertMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reverses the direction the mouse wheel moves the dial in."
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
@@ -231,6 +254,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "NoMouseWheel",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables moving the dial with the mouse wheel entirely. By default the wheel moves it by one step while scrolled over the focused dial with the Shift key held down."
+        },
+        new()
+        {
             Name = "NowButtonText",
             Type = "string",
             DefaultValue = "Now",
@@ -252,13 +282,13 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OnFocus",
             Type = "EventCallback",
-            Description = "Callback for when focus moves into the TimePicker input.",
+            Description = "Callback for when the TimePicker input receives focus. Unlike OnFocusIn it does not bubble, so it is the one to use when only the input itself receiving focus is of interest.",
         },
         new()
         {
             Name = "OnFocusIn",
             Type = "EventCallback",
-            Description = "Callback for when focus moves into the TimePicker input.",
+            Description = "Callback for when focus moves into the TimePicker input or any of its descendants, since unlike OnFocus it bubbles.",
         },
         new()
         {
@@ -302,6 +332,20 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "SecondButtonTitle",
+            Type = "string",
+            DefaultValue = "Select second",
+            Description = "The title (and accessible name) of the button that switches the dial to the seconds."
+        },
+        new()
+        {
+            Name = "SecondStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "The step, in seconds, the dial and the keyboard move the second by. A step greater than 1 snaps the pick to the nearest multiple of it."
+        },
+        new()
+        {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
@@ -320,6 +364,13 @@ public partial class BitCircularTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders a button that sets the TimePicker to the current time under the clock, snapped to the steps and clamped into the selectable range."
+        },
+        new()
+        {
+            Name = "ShowSeconds",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Adds the seconds to the picker: a third ring the dial moves on to after the minute, a third part in the toolbar, and the seconds of the value kept instead of zeroed."
         },
         new()
         {
@@ -342,7 +393,7 @@ public partial class BitCircularTimePickerDemo
             Name = "StartView",
             Type = "BitCircularTimePickerView",
             DefaultValue = "BitCircularTimePickerView.Hour",
-            Description = "The part of the time the clock starts on when the picker opens. The EditMode wins over it.",
+            Description = "The part of the time the clock starts on when the picker opens. The EditMode wins over it, and so does a Second start view on a picker that does not show the seconds.",
             Href = "#view-enum",
             LinkType = LinkType.Link
         },
@@ -376,7 +427,43 @@ public partial class BitCircularTimePickerDemo
             Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The format of the time in the TimePicker like ""HH:mm"".",
+            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the TimeFormat and ShowSeconds.",
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputId",
+            Type = "string?",
+            Description = "The id of the input element of the TimePicker."
+        },
+        new()
+        {
+            Name = "View",
+            Type = "BitCircularTimePickerView",
+            Description = "The part of the time the clock is currently editing.",
+            Href = "#view-enum",
+            LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "OpenCallout",
+            Type = "Task OpenCallout()",
+            Description = "Opens the callout of the TimePicker, doing nothing when it is already open or when the picker is standalone and has no callout to open."
+        },
+        new()
+        {
+            Name = "DismissCallout",
+            Type = "Task DismissCallout()",
+            Description = "Closes the callout of the TimePicker."
+        },
+        new()
+        {
+            Name = "SwitchView",
+            Type = "Task SwitchView(BitCircularTimePickerView view)",
+            Description = "Switches the dial to the hours, the minutes or the seconds, as far as the EditMode and ShowSeconds allow it."
         }
     ];
 
@@ -440,20 +527,26 @@ public partial class BitCircularTimePickerDemo
                 new()
                 {
                     Name = "Normal",
-                    Description = "Both the hour and the minute can be edited, and picking an hour moves the dial on to the minutes.",
+                    Description = "Every part the picker shows can be edited, and settling one moves the dial on to the next.",
                     Value = "0",
                 },
                 new()
                 {
                     Name = "OnlyMinutes",
-                    Description = "Only the minute can be edited; the hour of the current value is kept as it is.",
+                    Description = "Only the minute can be edited; the rest of the current value is kept as it is.",
                     Value = "1",
                 },
                 new()
                 {
                     Name = "OnlyHours",
-                    Description = "Only the hour can be edited; the minute of the current value is kept as it is.",
+                    Description = "Only the hour can be edited; the rest of the current value is kept as it is.",
                     Value = "2",
+                },
+                new()
+                {
+                    Name = "OnlySeconds",
+                    Description = "Only the second can be edited; the rest of the current value is kept as it is. The picker deals in seconds in this mode whether or not ShowSeconds is set.",
+                    Value = "3",
                 }
             ]
         },
@@ -475,6 +568,12 @@ public partial class BitCircularTimePickerDemo
                     Name = "Minute",
                     Description = "The dial selects the minute.",
                     Value = "1",
+                },
+                new()
+                {
+                    Name = "Second",
+                    Description = "The dial selects the second, which only a picker that shows the seconds ever moves on to.",
+                    Value = "2",
                 }
             ]
         },
@@ -647,6 +746,13 @@ public partial class BitCircularTimePickerDemo
                 },
                 new()
                 {
+                    Name = "SecondButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the second button of the BitCircularTimePicker."
+                },
+                new()
+                {
                     Name = "HourMinuteSeparator",
                     Type = "string?",
                     DefaultValue = "null",
@@ -748,7 +854,7 @@ public partial class BitCircularTimePickerDemo
                     Name = "ClockPointerThumbMinute",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker when it rests between two numbers."
+                    Description = "Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker when it does not rest on a number of the dial - between two marks, or on a part of the time that has not been set yet."
                 },
                 new()
                 {
@@ -793,8 +899,10 @@ public partial class BitCircularTimePickerDemo
 
     private TimeSpan? selectedTime = new(5, 12, 0);
     private TimeSpan? changedTime;
+    private TimeSpan? secondsTime = new(14, 5, 30);
     private TimeSpan? readOnlyTime = new(2, 50, 0);
     private TimeSpan? classesValue;
+    private bool isCalloutOpen;
     private BitCircularTimePickerView? changedView;
     private FormValidationCircularTimePickerModel formValidationCircularTimePickerModel = new();
     private string successMessage = string.Empty;
@@ -817,6 +925,15 @@ public partial class BitCircularTimePickerDemo
         {
             eventLogs.RemoveRange(8, eventLogs.Count - 8);
         }
+    }
+
+    // The short time pattern of a culture spells the hour with an "h" where its readers expect a 12-hour clock
+    // and with an "H" where they expect a 24-hour one.
+    private static BitTimeFormat GetTimeFormatOf(CultureInfo culture)
+    {
+        return culture.DateTimeFormat.ShortTimePattern.Contains('h')
+            ? BitTimeFormat.TwelveHours
+            : BitTimeFormat.TwentyFourHours;
     }
 
     private async Task OpenCallout()

@@ -108,6 +108,19 @@ namespace BitBlazorUI {
                 e.preventDefault();
             }, { signal: bitController.controller.signal });
 
+            // Shift+wheel over the focused dial is a value change on the .NET side, so the horizontal scroll
+            // the browser would do with it is cancelled here - Blazor's own wheel handler cannot, being
+            // registered passively. Whether the dial is taking the wheel at all is read off the element
+            // itself, which .NET keeps up to date as part of its render, so no state has to be pushed over
+            // interop for it; the focus requirement is the same one the .NET handler applies.
+            clock.addEventListener('wheel', e => {
+                if ((e as WheelEvent).shiftKey === false) return;
+                if (clock.dataset.bitWheel !== '1') return;
+                if (document.activeElement !== clock) return;
+
+                e.preventDefault();
+            }, { passive: false, signal: bitController.controller.signal });
+
             // The field works the callout with the very keys the browser scrolls the page with, so their
             // defaults are stopped here too - a key the picker has just opened its callout with must not also
             // scroll the page out from under it. The space bar only counts while the field is read-only, which

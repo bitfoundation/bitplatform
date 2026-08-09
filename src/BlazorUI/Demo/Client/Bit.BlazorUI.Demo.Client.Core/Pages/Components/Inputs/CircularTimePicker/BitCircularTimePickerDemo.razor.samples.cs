@@ -23,9 +23,25 @@ public partial class BitCircularTimePickerDemo
 
 <BitCircularTimePicker Label=""12-hour"" Standalone
                        TimeFormat=""BitTimeFormat.TwelveHours""
+                       DefaultValue=""@(new TimeSpan(21, 45, 0))"" />
+
+<BitCircularTimePicker Label=""12-hour, AM/PM under the clock"" Standalone AmPmInClock
+                       TimeFormat=""BitTimeFormat.TwelveHours""
                        DefaultValue=""@(new TimeSpan(21, 45, 0))"" />";
 
     private readonly string example4RazorCode = @"
+<BitCircularTimePicker Label=""Hours, minutes & seconds"" Standalone ShowSeconds
+                       DefaultValue=""@(new TimeSpan(9, 30, 15))"" />
+
+<BitCircularTimePicker Label=""SecondStep = 10"" Standalone ShowSeconds SecondStep=""10""
+                       DefaultValue=""@(new TimeSpan(9, 30, 20))"" />
+
+<BitCircularTimePicker Label=""With the field"" ShowSeconds
+                       Placeholder=""Select a time""
+                       @bind-Value=""@secondsTime"" />
+<div>Selected time: @secondsTime.ToString()</div>";
+
+    private readonly string example5RazorCode = @"
 <BitCircularTimePicker Label=""OnlyHours"" Standalone
                        EditMode=""BitCircularTimePickerEditMode.OnlyHours""
                        DefaultValue=""@(new TimeSpan(9, 30, 0))"" />
@@ -34,23 +50,27 @@ public partial class BitCircularTimePickerDemo
                        EditMode=""BitCircularTimePickerEditMode.OnlyMinutes""
                        DefaultValue=""@(new TimeSpan(9, 30, 0))"" />
 
+<BitCircularTimePicker Label=""OnlySeconds"" Standalone
+                       EditMode=""BitCircularTimePickerEditMode.OnlySeconds""
+                       DefaultValue=""@(new TimeSpan(9, 30, 15))"" />
+
 <BitCircularTimePicker Label=""StartView: Minute"" Standalone
                        StartView=""BitCircularTimePickerView.Minute""
                        OnViewChange=""v => changedView = v""
                        DefaultValue=""@(new TimeSpan(9, 30, 0))"" />
 
 <div>Last view change: @(changedView?.ToString() ?? ""-"")</div>";
-    private readonly string example4CsharpCode = @"
+    private readonly string example5CsharpCode = @"
 private BitCircularTimePickerView? changedView;";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitCircularTimePicker Label=""MinuteStep = 5"" Standalone MinuteStep=""5"" DefaultValue=""@(new TimeSpan(10, 15, 0))"" />
 
 <BitCircularTimePicker Label=""MinuteStep = 15"" Standalone MinuteStep=""15"" DefaultValue=""@(new TimeSpan(10, 15, 0))"" />
 
 <BitCircularTimePicker Label=""HourStep = 3"" Standalone HourStep=""3"" DefaultValue=""@(new TimeSpan(9, 0, 0))"" />";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitCircularTimePicker Label=""Between 08:30 and 17:15"" Standalone
                        MinTime=""@(new TimeSpan(8, 30, 0))""
                        MaxTime=""@(new TimeSpan(17, 15, 0))""
@@ -61,26 +81,38 @@ private BitCircularTimePickerView? changedView;";
                        AllowedMinutes=""@(m => m is 0 or 30)""
                        DefaultValue=""@(new TimeSpan(9, 0, 0))"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <BitCircularTimePicker Label=""Now & Clear"" ShowNowButton ShowClearButton Placeholder=""Select a time"" />
 
 <BitCircularTimePicker Label=""Close button"" ShowCloseButton Placeholder=""Select a time"" />
 
 <BitCircularTimePicker Label=""AutoClose"" AutoClose Placeholder=""Select a time"" />";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
+<BitCircularTimePicker Label=""Controlled callout"" Placeholder=""Select a time"" @bind-IsOpen=""isCalloutOpen"" />
+
+<BitButton OnClick=""() => isCalloutOpen = !isCalloutOpen"">
+    @(isCalloutOpen ? ""Close"" : ""Open"") from outside
+</BitButton>
+
+<BitCircularTimePicker Label=""Any direction"" Placeholder=""Select a time""
+                       DropDirection=""BitDropDirection.All"" />";
+    private readonly string example9CsharpCode = @"
+private bool isCalloutOpen;";
+
+    private readonly string example10RazorCode = @"
 <BitCircularTimePicker Label=""Text input allowed""
                        AllowTextInput
                        ValueFormat=""HH:mm""
                        Placeholder=""Enter a time (HH:mm)"" />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitCircularTimePicker Label=""Formatted time""
                        ValueFormat=""hh-mm tt""
                        Placeholder=""Select a time""
                        TimeFormat=""BitTimeFormat.TwelveHours"" />";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitCircularTimePicker Label=""Two-way bound"" @bind-Value=""@selectedTime"" />
 <div>Selected time: @selectedTime.ToString()</div>
 
@@ -88,32 +120,44 @@ private BitCircularTimePickerView? changedView;";
                        DefaultValue=""@(new TimeSpan(7, 30, 0))""
                        OnChange=""v => changedTime = v"" />
 <div>Changed time: @changedTime.ToString()</div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private TimeSpan? selectedTime = new(5, 12, 0);
 private TimeSpan? changedTime;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitCircularTimePicker Label=""fa-IR culture""
                        TimeFormat=""BitTimeFormat.TwelveHours""
-                       Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />";
+                       Culture=""CultureInfoHelper.GetFaIrCultureWithFarsiNames()"" />
 
-    private readonly string example12RazorCode = @"
+<BitCircularTimePicker Label=""Face taken from the current culture""
+                       TimeFormat=""@GetTimeFormatOf(CultureInfo.CurrentUICulture)"" />";
+    private readonly string example13CsharpCode = @"
+// The short time pattern of a culture spells the hour with an ""h"" where its readers
+// expect a 12-hour clock and with an ""H"" where they expect a 24-hour one.
+private static BitTimeFormat GetTimeFormatOf(CultureInfo culture)
+{
+    return culture.DateTimeFormat.ShortTimePattern.Contains('h')
+        ? BitTimeFormat.TwelveHours
+        : BitTimeFormat.TwentyFourHours;
+}";
+
+    private readonly string example14RazorCode = @"
 <BitCircularTimePicker Label=""Basic"" ReadOnly @bind-Value=""@readOnlyTime"" />
 
 <BitCircularTimePicker Label=""Text input allowed"" ReadOnly AllowTextInput @bind-Value=""@readOnlyTime"" />
 
 <BitCircularTimePicker Label=""Standalone"" Standalone ReadOnly @bind-Value=""@readOnlyTime"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private TimeSpan? readOnlyTime = new(2, 50, 0);";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitCircularTimePicker Label=""Underlined"" Underlined Placeholder=""Select a time"" />
 
 <BitCircularTimePicker Label=""No border"" HasBorder=""false"" Placeholder=""Select a time"" />
 
 <BitCircularTimePicker Label=""Icon on the left"" IconLocation=""BitIconLocation.Left"" Placeholder=""Select a time"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitCircularTimePicker @ref=""circularTimePicker"">
     <LabelTemplate>
         Custom label <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitButton>
@@ -127,7 +171,7 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
     </IconTemplate>
 </BitCircularTimePicker>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private BitCircularTimePicker circularTimePicker = default!;
 
 private async Task OpenCallout()
@@ -135,19 +179,19 @@ private async Task OpenCallout()
     await circularTimePicker.OpenCallout();
 }";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitCircularTimePicker Label=""Responsive CircularTimePicker""
                        Placeholder=""Select a time""
                        Responsive />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitCircularTimePicker Label=""Try it with the keyboard""
                        Placeholder=""Select a time""
                        CalloutAriaLabel=""Pick a meeting time""
                        HourButtonTitle=""Meeting hour""
                        MinuteButtonTitle=""Meeting minute"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <EditForm Model=""formValidationCircularTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -190,7 +234,7 @@ private async Task OpenCallout()
         <ValidationSummary />
     </div>
 </EditForm>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 public class FormValidationCircularTimePickerModel
 {
     [Required]
@@ -213,7 +257,7 @@ private void HandleInvalidSubmit()
     successMessage = string.Empty;
 }";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitCircularTimePicker Label=""Watch the log""
                        Placeholder=""Select a time""
                        ShowClearButton
@@ -231,7 +275,7 @@ private void HandleInvalidSubmit()
         <div>@log</div>
     }
 </div>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private readonly List<string> eventLogs = [];
 
 private void LogOpen() => Log(""OnOpen"");
@@ -252,7 +296,7 @@ private void Log(string message)
     }
 }";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCircularTimePicker Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
@@ -275,7 +319,7 @@ private void Log(string message)
 <BitCircularTimePicker Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCircularTimePicker Label=""FontAwesome"" Icon=""@(""fa-solid fa-clock"")"" />
@@ -295,14 +339,14 @@ private void Log(string message)
 <BitCircularTimePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""clock-fill"")""
                        ShowCloseButton CloseButtonIcon=""@BitIconInfo.Bi(""x-lg"")"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitCircularTimePicker Size=""BitSize.Small"" Label=""Small"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 
 <BitCircularTimePicker Size=""BitSize.Medium"" Label=""Medium"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 
 <BitCircularTimePicker Size=""BitSize.Large"" Label=""Large"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example24RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -444,10 +488,10 @@ private void Log(string message)
                                           ClockDisabledNumber = ""custom-clock-disabled-number"",
                                           ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"",
                                           ClearButton = ""custom-clear-button"" })"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example24CsharpCode = @"
 private TimeSpan? classesValue;";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl""
                        Label=""ساعت""
                        Placeholder=""یک ساعت انتخاب کنید""

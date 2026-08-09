@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// Which parts of the time the <see cref="BitCircularTimePicker"/> lets the user edit.
@@ -6,17 +6,23 @@
 public enum BitCircularTimePickerEditMode
 {
     /// <summary>
-    /// Both the hour and the minute can be edited, and picking an hour moves the dial on to the minutes.
+    /// Every part the picker shows can be edited, and settling one moves the dial on to the next.
     /// </summary>
     Normal,
 
     /// <summary>
-    /// Only the minute can be edited; the hour of the current value is kept as it is.
+    /// Only the minute can be edited; the rest of the current value is kept as it is.
     /// </summary>
     OnlyMinutes,
 
     /// <summary>
-    /// Only the hour can be edited; the minute of the current value is kept as it is.
+    /// Only the hour can be edited; the rest of the current value is kept as it is.
     /// </summary>
-    OnlyHours
+    OnlyHours,
+
+    /// <summary>
+    /// Only the second can be edited; the rest of the current value is kept as it is. The picker deals in
+    /// seconds in this mode whether or not <see cref="BitCircularTimePicker.ShowSeconds"/> is set.
+    /// </summary>
+    OnlySeconds
 }

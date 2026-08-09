@@ -73,6 +73,11 @@ public class BitCircularTimePickerClassStyles
     public string? MinuteButton { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the second button of the BitCircularTimePicker.
+    /// </summary>
+    public string? SecondButton { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the hour minute separator of the BitCircularTimePicker.
     /// </summary>
     public string? HourMinuteSeparator { get; set; }
@@ -144,7 +149,8 @@ public class BitCircularTimePickerClassStyles
     public string? ClockPointerThumb { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the clock pointer thumb minute of the BitCircularTimePicker.
+    /// Custom CSS classes/styles for the clock pointer thumb of the BitCircularTimePicker when it does not
+    /// rest on a number of the dial - between two marks, or on a part of the time that has not been set yet.
     /// </summary>
     public string? ClockPointerThumbMinute { get; set; }
 

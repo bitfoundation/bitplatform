@@ -11,14 +11,23 @@
  * number still fits inside of, the inner one 68% of it), which is what lets the pointer hit test use a
  * single boundary for every size.
  */
-.bit-ctp,
-.bit-ctp-cal {
+
+// The medium preset is also what a picker carrying no size class at all is drawn at, so it lives in a mixin
+// the base block and .bit-ctp-md both pull from rather than being written out twice.
+@mixin ctp-size-medium {
     --bit-ctp-clk-size: #{spacing(32.5)};
     --bit-ctp-num-size: #{spacing(4)};
     --bit-ctp-txt-fontsize: #{spacing(5.5)};
     --bit-ctp-apb-fontsize: #{spacing(2.6)};
     --bit-ctp-num-fontsize: inherit;
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
+    --bit-ctp-thb-size: #{spacing(3.5)};
+    --bit-ctp-thb-size-min: #{spacing(1.75)};
+}
+
+.bit-ctp,
+.bit-ctp-cal {
+    @include ctp-size-medium;
 
     // The gap between a number and the rim of the dial, which is also exactly how far the thumb of the hand
     // reaches past its own top - so subtracting it from the radius lands the thumb dead center on the number
@@ -31,9 +40,6 @@
     --bit-ctp-ptr-h: calc(var(--bit-ctp-num-r-out) - var(--bit-ctp-num-gap));
     --bit-ctp-ptr-h-inn: calc(var(--bit-ctp-num-r-inn) - var(--bit-ctp-num-gap));
     --bit-ctp-ptr-w: #{spacing(0.25)};
-
-    --bit-ctp-thb-size: #{spacing(3.5)};
-    --bit-ctp-thb-size-min: #{spacing(1.75)};
 
     // The accent of the dial. Overridden by the color role classes below, which are shared by the root and
     // the callout because the callout is rendered as a sibling of the root rather than inside it.
@@ -120,12 +126,17 @@
 
         .bit-ctp-pin,
         .bit-ctp-ptr,
-        .bit-ctp-sel {
+        .bit-ctp-sel,
+        .bit-ctp-apk .bit-ctp-aps {
             background-color: $clr-bg-dis;
         }
 
         .bit-ctp-sel {
             color: $clr-fg-dis;
+        }
+
+        .bit-ctp-apk .bit-ctp-apb {
+            border-color: $clr-brd-dis;
         }
 
         .bit-ctp-ptm {
@@ -229,6 +240,7 @@
 
     &:not(.bit-ctp-und) .bit-ctp-icn {
         @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+
         border-color: var(--bit-ctp-clr-foc-brd, #{$clr-pri});
     }
 }
@@ -307,6 +319,20 @@
     background-color: $clr-bg-pri;
 }
 
+// Announced but never drawn: clipped rather than sized to nothing or hidden outright, both of which take the
+// element out of the accessibility tree in some engines and would silence the live region with it.
+.bit-ctp-lvr {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-ctp-tlb {
     display: flex;
     align-items: center;
@@ -336,6 +362,7 @@
     -webkit-appearance: none;
     background-color: transparent;
     font-size: var(--bit-ctp-txt-fontsize);
+
     // The toolbar carries the on-color of the accent it is painted with, so its buttons inherit it instead
     // of falling back to the page foreground on top of a colored surface.
     color: inherit;
@@ -379,6 +406,35 @@ span.bit-ctp-txt {
     min-width: spacing(2);
     padding-top: spacing(0.5);
     font-size: var(--bit-ctp-apb-fontsize);
+}
+
+// The meridiem moved out from beside the time and under the clock: no longer on the colored toolbar, so the
+// pair carries its own frame - a segmented control rather than two words stacked in a corner - and the half
+// that is on is filled with the accent instead of merely being the one that is not dimmed.
+.bit-ctp-apk {
+    gap: spacing(1);
+    padding: 0 spacing(2) spacing(1.5);
+    flex-direction: row;
+    justify-content: center;
+    margin-inline-start: 0;
+
+    .bit-ctp-apb {
+        // Sized to the numbers on the dial next to it, so the pair is as easy to hit as the ring it belongs to
+        // rather than the two words it used to be in the corner of the toolbar.
+        padding: spacing(0.5) spacing(2);
+        font-size: spacing(1.75);
+        min-width: spacing(6);
+        min-height: spacing(4);
+        color: $clr-fg-pri;
+        border-radius: $shp-border-radius;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    .bit-ctp-aps {
+        color: var(--bit-ctp-clr-text);
+        background-color: var(--bit-ctp-clr);
+        border-color: var(--bit-ctp-clr);
+    }
 }
 
 .bit-ctp-clk {
@@ -471,6 +527,7 @@ span.bit-ctp-txt {
 
 .bit-ctp-inn {
     --bit-ctp-num-r: var(--bit-ctp-num-r-inn);
+
     color: $clr-fg-sec;
 }
 
@@ -627,9 +684,16 @@ span.bit-ctp-txt {
             background-color: $clr-bg-pri-hover;
         }
 
-        .bit-ctp-txt:not(:disabled):hover,
-        .bit-ctp-apb:not(:disabled):hover {
+        // Scoped to the toolbar: its buttons sit on the accent, so the on-accent color is what reads as a
+        // lift there. The meridiem pair under the clock sits on the callout instead, where that same color
+        // would make it vanish, so it lifts with a background of its own.
+        .bit-ctp-tlb .bit-ctp-txt:not(:disabled):hover,
+        .bit-ctp-tlb .bit-ctp-apb:not(:disabled):hover {
             color: var(--bit-ctp-clr-text);
+        }
+
+        .bit-ctp-apk .bit-ctp-apb:not(:disabled):not(.bit-ctp-aps):hover {
+            background-color: $clr-bg-pri-hover;
         }
     }
 }
@@ -646,14 +710,7 @@ span.bit-ctp-txt {
 }
 
 .bit-ctp-md {
-    --bit-ctp-thb-size: #{spacing(3.5)};
-    --bit-ctp-thb-size-min: #{spacing(1.75)};
-    --bit-ctp-clk-size: #{spacing(32.5)};
-    --bit-ctp-num-size: #{spacing(4)};
-    --bit-ctp-txt-fontsize: #{spacing(5.5)};
-    --bit-ctp-apb-fontsize: #{spacing(2.6)};
-    --bit-ctp-num-fontsize: inherit;
-    --bit-ctp-tlb-minwidth: #{spacing(32.5)};
+    @include ctp-size-medium;
 }
 
 .bit-ctp-lg {
@@ -703,10 +760,15 @@ span.bit-ctp-txt {
         background-color: Canvas;
     }
 
-    .bit-ctp-sel {
+    .bit-ctp-sel,
+    .bit-ctp-apk .bit-ctp-aps {
         forced-color-adjust: none;
         color: HighlightText;
         background-color: Highlight;
+    }
+
+    .bit-ctp-apk .bit-ctp-apb {
+        border-color: CanvasText;
     }
 
     .bit-ctp-dis,

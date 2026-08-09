@@ -6,18 +6,24 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// A BitCircularTimePicker picks a single time from an analog clock dial: an hour ring the pointer snaps to,
-/// then a minute ring, with an optional AM/PM pair in 12-hour mode. It supports mouse, touch and keyboard
-/// selection, selectable-time constraints, hour and minute steps, an editable text input, a standalone
-/// (inline) mode and a responsive mode that turns the callout into a sheet on small screens.
+/// then a minute ring and an optional second ring, with an optional AM/PM pair in 12-hour mode. It supports
+/// mouse, touch and keyboard selection, selectable-time constraints, hour, minute and second steps, an
+/// editable text input, a standalone (inline) mode and a responsive mode that turns the callout into a sheet
+/// on small screens.
 /// </summary>
 public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
+    private static readonly TimeSpan _endOfDay = new(23, 59, 59);
+
     private int? _hour;
     private int? _minute;
+    private int? _second;
     private bool _hasFocus;
+    private bool _clockHasFocus;
     private string? _labelId;
     private string? _inputId;
     private string? _clockId;
+    private bool _pointerPicked;
     private bool _isPointerDown;
     private ElementReference _clockRef;
     private string? _abortControllerId;
@@ -66,13 +72,33 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public Func<int, bool>? AllowedHours { get; set; }
 
     /// <summary>
+    /// The seconds that can be selected, on top of what <see cref="MinTime"/>, <see cref="MaxTime"/> and
+    /// <see cref="SecondStep"/> already allow.
+    /// </summary>
+    /// <remarks>
+    /// The predicate receives a second of the minute (0-59) and returns whether it can be picked. Seconds it
+    /// rejects are dimmed on the dial, skipped by the keyboard and refused by the pointer.
+    /// </remarks>
+    [Parameter] public Func<int, bool>? AllowedSeconds { get; set; }
+
+    /// <summary>
+    /// Renders the AM/PM pair under the clock instead of beside the time in the toolbar.
+    /// </summary>
+    /// <remarks>
+    /// Only the 12-hour format has a meridiem to place. Moving it out of the toolbar is what keeps the read-out
+    /// legible when the seconds are shown as well, and gives the pair a touch-sized target of its own.
+    /// </remarks>
+    [Parameter] public bool AmPmInClock { get; set; }
+
+    /// <summary>
     /// Closes the callout as soon as the selection is complete, without waiting for the close button or a
     /// click outside of it.
     /// </summary>
     /// <remarks>
-    /// The selection is complete once the minute is picked in <see cref="BitCircularTimePickerEditMode.Normal"/>
-    /// mode, and as soon as the single editable part is picked in the other edit modes. A standalone picker has
-    /// no callout to close, so it ignores this.
+    /// The selection is complete once the last part the dial offers is picked - the minute, or the second on a
+    /// picker that shows the seconds - and as soon as the single editable part is picked in the other edit
+    /// modes. The "now" button completes it on its own. A standalone picker has no callout to close, so it
+    /// ignores this.
     /// </remarks>
     [Parameter] public bool AutoClose { get; set; }
 
@@ -143,7 +169,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
 
     /// <summary>
-    /// Choose the edition mode. By default, you can edit hours and minutes.
+    /// Choose the edition mode. By default, you can edit every part the picker shows.
     /// </summary>
     [Parameter, ResetClassBuilder]
     [CallOnSet(nameof(OnSetEditMode))]
@@ -212,6 +238,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string? InvalidErrorMessage { get; set; }
 
     /// <summary>
+    /// Reverses the direction the mouse wheel moves the dial in.
+    /// </summary>
+    /// <inheritdoc cref="NoMouseWheel" path="/remarks"/>
+    [Parameter] public bool InvertMouseWheel { get; set; }
+
+    /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
     [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
@@ -234,7 +266,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <remarks>
     /// Hours past it, and the minutes past it inside its own hour, are dimmed on the dial and refused by the
     /// pointer and the keyboard. When the text input is allowed, a time typed past it fails validation the
-    /// same way an unparsable one does.
+    /// same way an unparsable one does. A value outside of a day is a time of day all the same, so it is
+    /// clamped into one before anything is compared against it.
     /// </remarks>
     [Parameter] public TimeSpan? MaxTime { get; set; }
 
@@ -259,6 +292,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
+    /// Disables moving the dial with the mouse wheel entirely.
+    /// </summary>
+    /// <remarks>
+    /// By default the wheel moves the dial by one step - the same step the arrow keys move it by - while it is
+    /// scrolled over the focused dial with the Shift key held down. Both conditions are what keep an ordinary
+    /// scroll of the page from silently changing the time.
+    /// </remarks>
+    [Parameter] public bool NoMouseWheel { get; set; }
+
+    /// <summary>
     /// The text of the button that sets the TimePicker to the current time.
     /// </summary>
     [Parameter] public string NowButtonText { get; set; } = "Now";
@@ -274,12 +317,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public EventCallback OnClose { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the input.
+    /// Callback for when the input receives focus. Unlike <see cref="OnFocusIn"/> it does not bubble, so it
+    /// is the one to use when only the input itself receiving focus is of interest.
     /// </summary>
     [Parameter] public EventCallback OnFocus { get; set; }
 
     /// <summary>
-    /// Callback for when focus moves into the TimePicker input.
+    /// Callback for when focus moves into the input or any of its descendants, since unlike
+    /// <see cref="OnFocus"/> it bubbles.
     /// </summary>
     [Parameter] public EventCallback OnFocusIn { get; set; }
 
@@ -314,6 +359,20 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public bool Responsive { get; set; }
 
     /// <summary>
+    /// The title (and accessible name) of the button that switches the dial to the seconds.
+    /// </summary>
+    [Parameter] public string SecondButtonTitle { get; set; } = "Select second";
+
+    /// <summary>
+    /// The step, in seconds, the dial and the keyboard move the second by.
+    /// </summary>
+    /// <remarks>
+    /// A step greater than 1 snaps the second to the nearest multiple of it, exactly as
+    /// <see cref="MinuteStep"/> does for the minutes. Values below 1 are treated as 1.
+    /// </remarks>
+    [Parameter] public int SecondStep { get; set; } = 1;
+
+    /// <summary>
     /// Renders a button that clears the value of the TimePicker under the clock.
     /// </summary>
     [Parameter] public bool ShowClearButton { get; set; }
@@ -333,6 +392,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public bool ShowNowButton { get; set; }
 
     /// <summary>
+    /// Adds the seconds to the picker: a third ring the dial moves on to after the minute, a third part in the
+    /// toolbar, and the seconds of the value kept instead of zeroed.
+    /// </summary>
+    /// <remarks>
+    /// The default <see cref="ValueFormat"/> grows a seconds part with it. A picker that is left without the
+    /// seconds still keeps the ones a bound value came with - it just never offers a way to change them.
+    /// </remarks>
+    [Parameter]
+    [CallOnSet(nameof(OnSetShowSeconds))]
+    public bool ShowSeconds { get; set; }
+
+    /// <summary>
     /// The size of the TimePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -342,7 +413,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// The part of the time the clock starts on when the picker opens.
     /// </summary>
     /// <remarks>
-    /// The edit mode wins over it: a picker that only edits one of the two always starts on that one.
+    /// The edit mode wins over it: a picker that only edits one part always starts on that one. So does a
+    /// <see cref="BitCircularTimePickerView.Second"/> start view on a picker that does not show the seconds.
     /// </remarks>
     [Parameter] public BitCircularTimePickerView StartView { get; set; } = BitCircularTimePickerView.Hour;
 
@@ -395,6 +467,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
+        // The focus is on its way to whatever callout is being opened in this one's place, so this is the one
+        // close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
 
         StateHasChanged();
@@ -428,7 +502,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _isPointerDown = true;
 
-        await UpdateTime(angle, distance);
+        _pointerPicked = await UpdateTime(angle, distance);
 
         StateHasChanged();
     }
@@ -442,7 +516,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (_isPointerDown is false) return;
 
-        await UpdateTime(angle, distance);
+        if (await UpdateTime(angle, distance))
+        {
+            _pointerPicked = true;
+        }
 
         StateHasChanged();
     }
@@ -457,7 +534,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _isPointerDown = false;
 
-        if (IsInteractive) await CommitView();
+        // Only a press that landed on a value the picker accepts settles the view. A press on a number the
+        // bounds, the steps or the predicates rule out has picked nothing, so moving the dial on to the next
+        // part - or closing an AutoClose picker - would be acting on a selection that was never made.
+        if (IsInteractive && _pointerPicked) await CommitView();
+
+        _pointerPicked = false;
 
         StateHasChanged();
     }
@@ -481,25 +563,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         await OnOpen.InvokeAsync();
 
-        // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the
-        // input is editable, where the text the person came to type has to keep it.
-        if (AllowTextInput is false && IsRendered)
-        {
-            try
-            {
-                await _clockRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-        }
+        await FocusClock();
     }
 
     /// <summary>
     /// Closes the callout of the TimePicker.
     /// </summary>
-    public Task DismissCallout() => CloseCallout();
+    public Task DismissCallout() => CloseCallout(restoreFocus: false);
 
     /// <summary>
-    /// Switches the dial to the hours or the minutes, as far as the <see cref="EditMode"/> allows it.
+    /// Switches the dial to the hours, the minutes or the seconds, as far as the <see cref="EditMode"/> and
+    /// <see cref="ShowSeconds"/> allow it.
     /// </summary>
     public Task SwitchView(BitCircularTimePickerView view) => ChangeView(view);
 
@@ -556,6 +630,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
+        _second = CurrentValue?.Seconds;
 
         _view = GetInitialView();
 
@@ -639,7 +714,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await OnFocus.InvokeAsync();
     }
 
-    private async Task CloseCallout()
+    // The callout takes the focus when it opens, so closing it has to hand the focus back rather than let it
+    // fall onto the document: whatever held it - the dial, the close button, an action - is being hidden.
+    // Only the closes the person themselves asked for restore it; a close driven from code leaves the focus
+    // wherever that code put it.
+    private Task CloseCallout() => CloseCallout(restoreFocus: true);
+
+    private async Task CloseCallout(bool restoreFocus)
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
@@ -649,6 +730,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await ToggleCallout();
 
         await OnClose.InvokeAsync();
+
+        if (restoreFocus)
+        {
+            await FocusInput();
+        }
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -678,9 +764,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private void OnSetEditMode()
     {
-        // A mode that only edits one of the two parts has a single view to be on, so the dial is moved onto it
-        // right away instead of waiting for an opening that a standalone picker never has.
+        // A mode that only edits one part has a single view to be on, so the dial is moved onto it right away
+        // instead of waiting for an opening that a standalone picker never has.
         _view = GetInitialView();
+    }
+
+    private void OnSetShowSeconds()
+    {
+        // A dial left on a part the picker has just stopped carrying would draw a ring nothing on it can be
+        // picked from, so it falls back to where an opening picker would have started.
+        if (IsViewEditable(_view) is false)
+        {
+            _view = GetInitialView();
+        }
     }
 
     private void OnSetIsOpen()
@@ -706,6 +802,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             await ToggleCallout();
 
             await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
+
+            // A picker opened from the outside is operated the same way as one opened by a click, so the
+            // keyboard has to land on the same place in both.
+            if (isOpen)
+            {
+                await FocusClock();
+            }
         });
     }
 
@@ -724,7 +827,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
     }
 
-    private string GetHoursMinutesClass(int hourMinute)
+    private string GetNumberClass(int value)
     {
         StringBuilder classes = new();
 
@@ -733,7 +836,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Append(Classes.ClockNumber);
         }
 
-        if (IsSelectable(hourMinute) is false)
+        if (IsSelectable(value) is false)
         {
             if (classes.Length > 0) classes.Append(' ');
 
@@ -745,7 +848,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             }
         }
 
-        if (IsSelected(hourMinute))
+        if (IsSelected(value))
         {
             if (classes.Length > 0) classes.Append(' ');
 
@@ -760,7 +863,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return classes.ToString();
     }
 
-    private string GetHoursMinutesStyle(int hourMinute, int index)
+    private string GetNumberStyle(int value, int index)
     {
         StringBuilder styles = new();
 
@@ -776,12 +879,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             styles.Append(' ').Append(Styles.ClockNumber);
         }
 
-        if ((Styles?.ClockDisabledNumber.HasValue() ?? false) && IsSelectable(hourMinute) is false)
+        if ((Styles?.ClockDisabledNumber.HasValue() ?? false) && IsSelectable(value) is false)
         {
             styles.Append(' ').Append(Styles.ClockDisabledNumber);
         }
 
-        if ((Styles?.ClockSelectedNumber.HasValue() ?? false) && IsSelected(hourMinute))
+        if ((Styles?.ClockSelectedNumber.HasValue() ?? false) && IsSelected(value))
         {
             styles.Append(' ').Append(Styles.ClockSelectedNumber);
         }
@@ -792,27 +895,33 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // Whether the number is the one the dial currently points at, which is what the selected paint and the
     // aria-activedescendant of the listbox both hang on. Every number is addressed by the value it stands for -
     // an hour of the day even on the 12-hour dial, which shows it as 1-12 - so one comparison covers both formats.
-    private bool IsSelected(int hourMinute)
+    private bool IsSelected(int value)
     {
-        return IsHourView
-            ? _hour.HasValue && _hour.Value == hourMinute
-            : _minute.HasValue && _minute.Value == hourMinute;
+        return CurrentPart == value;
     }
 
     // Whether the number can be picked at all, in the units of the view it belongs to: an hour of the day for
-    // the hour ring (whichever format the dial is in) and a minute of the hour for the minute ring.
-    private bool IsSelectable(int hourMinute)
+    // the hour ring (whichever format the dial is in), and a minute or a second of the sixty for the other two.
+    private bool IsSelectable(int value)
     {
-        return IsHourView ? IsHourAllowed(hourMinute) : IsMinuteAllowed(hourMinute);
+        return _view switch
+        {
+            BitCircularTimePickerView.Hour => IsHourAllowed(value),
+            BitCircularTimePickerView.Minute => IsMinuteAllowed(value),
+            _ => IsSecondAllowed(value)
+        };
     }
 
-    private string GetNumberId(int hourMinute) => $"{_clockId}-{(IsHourView ? "h" : "m")}{hourMinute}";
+    private string GetNumberId(int value) => $"{_clockId}-{ViewKey}{value}";
 
-    // The option the dial rests on, or nothing when it rests between two of them - a minute with no number of
-    // its own has no option for aria-activedescendant to point at.
-    private string? _activeDescendantId => IsHourView
-        ? (_hour.HasValue ? GetNumberId(_hour.Value) : null)
-        : (_minute.HasValue && _minute.Value % 5 == 0 ? GetNumberId(_minute.Value) : null);
+    // The option the dial rests on, or nothing when it rests between two of them - a minute or a second with no
+    // number of its own has no option for aria-activedescendant to point at.
+    private string? _activeDescendantId => CurrentPart switch
+    {
+        null => null,
+        int value when IsHourView is false && value % 5 != 0 => null,
+        int value => GetNumberId(value)
+    };
 
     // Whether the hand points at the inner ring, which only the 24-hour dial has: it carries 1-12 there, so a
     // hand resting on one of them is shortened to that radius.
@@ -824,7 +933,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         return IsHourView
             ? (_hour.GetValueOrDefault() * 30 % 360)
-            : (_minute.GetValueOrDefault() * 6 % 360);
+            : (CurrentPart.GetValueOrDefault() * 6 % 360);
     }
 
     // The dial and the keyboard both land here, so the rounding, the constraints and the value update stay in
@@ -840,11 +949,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _hour = hour;
 
         // The hour the minute belongs to has changed, so a minute that the new hour puts outside of the range
-        // is pulled back into it instead of quietly holding a value the dial itself refuses.
-        if (_minute.HasValue && IsMinuteAllowed(_minute.Value) is false)
-        {
-            _minute = FindNearestAllowedMinute(_minute.Value);
-        }
+        // is pulled back into it instead of quietly holding a value the dial itself refuses - and the same for
+        // the second, which the minute it was pulled to may in turn rule out.
+        PullMinuteIntoRange();
+
+        PullSecondIntoRange();
 
         await UpdateCurrentValue();
     }
@@ -859,28 +968,98 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _minute = minute;
 
+        PullSecondIntoRange();
+
         await UpdateCurrentValue();
+    }
+
+    private async Task SetSecond(int second)
+    {
+        second = ((second % 60) + 60) % 60;
+
+        if (IsSecondAllowed(second) is false) return;
+
+        if (_second == second) return;
+
+        _second = second;
+
+        await UpdateCurrentValue();
+    }
+
+    // A part of the time that the part above it has just put outside of the range is moved to the closest value
+    // that is still inside it, in the direction of the bound it broke - up from below the minimum, down from
+    // above the maximum. Searching both ways would wrap the long way round the ring instead: a minute of :00
+    // under a minimum of :30 is one step from :59 going backwards, which is the far end of the range rather
+    // than the near one.
+    private void PullMinuteIntoRange()
+    {
+        if (_minute.HasValue is false || IsMinuteAllowed(_minute.Value)) return;
+
+        var min = MinBound;
+        var max = MaxBound;
+
+        if (min.HasValue && _hour == min.Value.Hours && _minute < min.Value.Minutes)
+        {
+            _minute = FindNearestAllowedMinute(min.Value.Minutes, 1);
+        }
+        else if (max.HasValue && _hour == max.Value.Hours && _minute > max.Value.Minutes)
+        {
+            _minute = FindNearestAllowedMinute(max.Value.Minutes, -1);
+        }
+        else
+        {
+            _minute = FindNearestAllowedMinute(_minute.Value);
+        }
+    }
+
+    /// <inheritdoc cref="PullMinuteIntoRange"/>
+    private void PullSecondIntoRange()
+    {
+        if (_second.HasValue is false || IsSecondAllowed(_second.Value)) return;
+
+        var isBoundaryMinute = _hour.HasValue && _minute.HasValue;
+
+        var min = MinBound;
+        var max = MaxBound;
+
+        if (isBoundaryMinute && min.HasValue && _hour == min.Value.Hours
+                             && _minute == min.Value.Minutes && _second < min.Value.Seconds)
+        {
+            _second = FindNearestAllowedSecond(min.Value.Seconds, 1);
+        }
+        else if (isBoundaryMinute && max.HasValue && _hour == max.Value.Hours
+                                  && _minute == max.Value.Minutes && _second > max.Value.Seconds)
+        {
+            _second = FindNearestAllowedSecond(max.Value.Seconds, -1);
+        }
+        else
+        {
+            _second = FindNearestAllowedSecond(_second.Value);
+        }
     }
 
     private async Task UpdateCurrentValue()
     {
         // A pick on the dial always produces a time: the part that has not been picked yet falls back to zero
         // rather than holding the value at null, which is what left the single-part edit modes unable to
-        // produce a value at all.
-        CurrentValue = (_hour.HasValue || _minute.HasValue)
-            ? new TimeSpan(_hour.GetValueOrDefault(), _minute.GetValueOrDefault(), 0)
+        // produce a value at all. The seconds of a bound value are carried through even on a picker that does
+        // not show them, so dialling an hour does not quietly throw away a part of the value it was given.
+        CurrentValue = (_hour.HasValue || _minute.HasValue || _second.HasValue)
+            ? new TimeSpan(_hour.GetValueOrDefault(), _minute.GetValueOrDefault(), _second.GetValueOrDefault())
             : null;
 
         await OnSelectTime.InvokeAsync(CurrentValue);
     }
 
+    // Padded to two digits like the other parts, so the read-out neither disagrees with the field - whose
+    // default format pads as well - nor shifts sideways as the hour crosses ten.
     private string GetHourString()
     {
         if (_hour.HasValue is false) return "--";
 
         var hours = TimeFormat == BitTimeFormat.TwelveHours ? GetAmPmHours(_hour.Value) : _hour.Value;
 
-        return hours.ToString(CultureInfo.InvariantCulture);
+        return hours.ToString("D2", CultureInfo.InvariantCulture);
     }
 
     private string GetMinuteString()
@@ -890,9 +1069,27 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             : "--";
     }
 
+    private string GetSecondString()
+    {
+        return _second.HasValue
+            ? _second.Value.ToString("D2", CultureInfo.InvariantCulture)
+            : "--";
+    }
+
+    // The whole time as the toolbar of a single-part edit mode reads it out, where there are no buttons to
+    // split it across.
+    private string GetTimeString()
+    {
+        return HasSeconds
+            ? $"{GetHourString()}:{GetMinuteString()}:{GetSecondString()}"
+            : $"{GetHourString()}:{GetMinuteString()}";
+    }
+
     private Task HandleOnHourClick() => ChangeView(BitCircularTimePickerView.Hour);
 
     private Task HandleOnMinuteClick() => ChangeView(BitCircularTimePickerView.Minute);
+
+    private Task HandleOnSecondClick() => ChangeView(BitCircularTimePickerView.Second);
 
     private async Task ChangeView(BitCircularTimePickerView view)
     {
@@ -953,10 +1150,16 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _hour = hour;
         _minute = FindNearestAllowedMinute(RoundToStep(now.Minutes, MinuteStep, 60));
+        _second = HasSeconds ? FindNearestAllowedSecond(RoundToStep(now.Seconds, SecondStep, 60)) : 0;
 
         await UpdateCurrentValue();
 
-        await CommitView();
+        // The button sets every part at once, so the selection it makes is already complete: an AutoClose
+        // picker is done rather than moved on to a part that has just been filled in anyway.
+        if (AutoClose && Standalone is false)
+        {
+            await CloseCallout();
+        }
     }
 
     private async Task HandleOnClearClick()
@@ -965,6 +1168,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         _hour = null;
         _minute = null;
+        _second = null;
 
         await UpdateCurrentValue();
 
@@ -975,22 +1179,38 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         _hour = CurrentValue?.Hours;
         _minute = CurrentValue?.Minutes;
+        _second = CurrentValue?.Seconds;
     }
 
     private bool IsAm()
     {
-        // Without a value there is no meridiem to be in, and AM is the half the dial starts filling from, so
-        // an empty 12-hour picker reads as AM instead of starting out on a PM it was never put in.
-        return _hour.GetValueOrDefault() < 12; // am is 00:00 to 11:59
+        if (_hour.HasValue) return _hour.Value < 12; // am is 00:00 to 11:59
+
+        // Without a value there is no meridiem to be in, so the dial starts on the half it can actually be used
+        // in: the morning, unless every one of its hours is ruled out - which a range that begins after noon
+        // does - where an empty picker would otherwise open onto twelve dimmed numbers.
+        return HasAllowedHourInHalf(isAm: true);
+    }
+
+    private bool HasAllowedHourInHalf(bool isAm)
+    {
+        var offset = isAm ? 0 : 12;
+
+        for (var offsetInHalf = 0; offsetInHalf < 12; offsetInHalf++)
+        {
+            if (IsHourAllowed(offsetInHalf + offset)) return true;
+        }
+
+        return false;
     }
 
     private string GetValueFormat()
     {
-        return ValueFormat.HasValue()
-            ? ValueFormat!
-            : TimeFormat == BitTimeFormat.TwentyFourHours
-                ? "HH:mm"
-                : "hh:mm tt";
+        if (ValueFormat.HasValue()) return ValueFormat!;
+
+        return TimeFormat == BitTimeFormat.TwentyFourHours
+            ? (HasSeconds ? "HH:mm:ss" : "HH:mm")
+            : (HasSeconds ? "hh:mm:ss tt" : "hh:mm tt");
     }
 
     private async Task ToggleCallout()
@@ -1019,21 +1239,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     }
 
     // Maps a position on the dial - an angle clockwise from 12 o'clock and a distance as a fraction of the
-    // radius - onto the hour or the minute it points at. The 24-hour dial carries two rings, so the distance
-    // is what tells the inner one (1-12) from the outer one (13-00).
-    private async Task UpdateTime(double angle, double distance)
+    // radius - onto the hour, the minute or the second it points at, and reports whether that value is one the
+    // picker accepts. The 24-hour dial carries two rings, so the distance is what tells the inner one (1-12)
+    // from the outer one (13-00).
+    private async Task<bool> UpdateTime(double angle, double distance)
     {
-        if (IsInteractive is false) return;
+        if (IsInteractive is false) return false;
 
         if (IsHourView)
         {
             var section = (int)Math.Round(angle / 30) % 12;
+            int hour;
 
             if (TimeFormat == BitTimeFormat.TwelveHours)
             {
-                var hour = section == 0 ? 12 : section;
+                var number = section == 0 ? 12 : section;
 
-                await SetHour(IsAm() ? hour % 12 : (hour % 12) + 12);
+                hour = IsAm() ? number % 12 : (number % 12) + 12;
             }
             else
             {
@@ -1042,26 +1264,34 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 // pointer is closer to instead of a fixed pixel band that only holds at one clock size.
                 var isInnerRing = distance < InnerRingThreshold;
 
-                await SetHour(isInnerRing
+                hour = isInnerRing
                     ? (section == 0 ? 12 : section)
-                    : (section == 0 ? 0 : section + 12));
+                    : (section == 0 ? 0 : section + 12);
             }
-        }
-        else
-        {
-            var minute = (int)Math.Round(angle / 6) % 60;
 
-            await SetMinute(RoundToStep(minute, MinuteStep, 60));
+            if (IsHourAllowed(hour) is false) return false;
+
+            await SetHour(hour);
+            return true;
         }
+
+        var value = RoundToStep((int)Math.Round(angle / 6) % 60, IsMinuteView ? MinuteStep : SecondStep, 60);
+
+        if (IsSelectable(value) is false) return false;
+
+        await (IsMinuteView ? SetMinute(value) : SetSecond(value));
+        return true;
     }
 
-    // What happens once a pick is settled: the normal mode moves the dial on to the minutes after an hour, and
-    // a complete selection closes the callout when the picker was asked to.
+    // What happens once a pick is settled: the normal mode moves the dial on to the part that follows the one
+    // just picked, and a complete selection closes the callout when the picker was asked to.
     private async Task CommitView()
     {
-        if (IsHourView && EditMode == BitCircularTimePickerEditMode.Normal)
+        var next = GetNextView();
+
+        if (next.HasValue)
         {
-            await ChangeView(BitCircularTimePickerView.Minute);
+            await ChangeView(next.Value);
             return;
         }
 
@@ -1069,6 +1299,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         {
             await CloseCallout();
         }
+    }
+
+    // The part the dial moves on to once the current one is settled, or nothing when the current one is the
+    // last the picker offers - which is every part at once in the single-part edit modes.
+    private BitCircularTimePickerView? GetNextView()
+    {
+        if (EditMode != BitCircularTimePickerEditMode.Normal) return null;
+
+        if (IsHourView) return BitCircularTimePickerView.Minute;
+
+        if (IsMinuteView && HasSeconds) return BitCircularTimePickerView.Second;
+
+        return null;
     }
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
@@ -1135,14 +1378,26 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
             case "Enter":
             case " ":
-                if (ReadOnly is false) await CommitView();
+                // As with a press on the dial, there is nothing to settle until the part the dial is on has
+                // actually been given a value.
+                if (IsInteractive && CurrentPart.HasValue) await CommitView();
                 break;
 
             case "Escape":
                 await CloseCallout();
-                await FocusInput();
                 break;
         }
+    }
+
+    private async Task HandleOnClockWheel(WheelEventArgs e)
+    {
+        if (IsWheelSpinEnabled is false) return;
+
+        // The wheel only moves the dial the user is actually on. Reacting to a merely hovered one - or to a
+        // scroll that carries no modifier - would silently change the time while the page is being scrolled.
+        if (e.ShiftKey is false || _clockHasFocus is false || e.DeltaY == 0) return;
+
+        await MoveByStep((e.DeltaY < 0) != InvertMouseWheel ? 1 : -1);
     }
 
     private async Task MoveByStep(int steps)
@@ -1157,15 +1412,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
             var hour = FindNearestAllowedHour(target, Math.Sign(steps));
             if (hour.HasValue) await SetHour(hour.Value);
+
+            return;
+        }
+
+        var partStep = Math.Max(1, IsMinuteView ? MinuteStep : SecondStep);
+        var part = CurrentPart ?? 0;
+        var wanted = CurrentPart.HasValue ? part + (steps * partStep) : part;
+
+        if (IsMinuteView)
+        {
+            var minute = FindNearestAllowedMinute(((wanted % 60) + 60) % 60, Math.Sign(steps));
+            if (minute.HasValue) await SetMinute(minute.Value);
         }
         else
         {
-            var step = Math.Max(1, MinuteStep);
-            var current = _minute ?? 0;
-            var target = _minute.HasValue ? current + (steps * step) : current;
-
-            var minute = FindNearestAllowedMinute(((target % 60) + 60) % 60, Math.Sign(steps));
-            if (minute.HasValue) await SetMinute(minute.Value);
+            var second = FindNearestAllowedSecond(((wanted % 60) + 60) % 60, Math.Sign(steps));
+            if (second.HasValue) await SetSecond(second.Value);
         }
     }
 
@@ -1184,26 +1447,43 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 await SetHour(hour);
                 return;
             }
+
+            return;
         }
-        else
+
+        for (var offset = 0; offset < 60; offset++)
         {
-            for (var offset = 0; offset < 60; offset++)
-            {
-                var minute = first ? offset : 59 - offset;
+            var value = first ? offset : 59 - offset;
 
-                if (IsMinuteAllowed(minute) is false) continue;
+            if (IsSelectable(value) is false) continue;
 
-                await SetMinute(minute);
-                return;
-            }
+            await (IsMinuteView ? SetMinute(value) : SetSecond(value));
+            return;
         }
     }
 
-    private ValueTask FocusInput()
+    private async Task FocusInput()
     {
-        if (Standalone) return ValueTask.CompletedTask;
+        if (Standalone || IsRendered is false || IsDisposed) return;
 
-        return InputElement.FocusAsync();
+        try
+        {
+            await InputElement.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
+    // is editable, where the text the person came to type has to keep it.
+    private async Task FocusClock()
+    {
+        if (AllowTextInput || IsRendered is false || IsDisposed) return;
+
+        try
+        {
+            await _clockRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private string? GetHourButtonStyle()
@@ -1214,7 +1494,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string? GetMinuteButtonStyle()
     {
-        var style = $"{Styles?.MinuteButton?.Trim(';')};{(IsHourView ? null : Styles?.SelectedButtons)}".Trim(';');
+        var style = $"{Styles?.MinuteButton?.Trim(';')};{(IsMinuteView ? Styles?.SelectedButtons : null)}".Trim(';');
+        return style.HasValue() ? style : null;
+    }
+
+    private string? GetSecondButtonStyle()
+    {
+        var style = $"{Styles?.SecondButton?.Trim(';')};{(IsSecondView ? Styles?.SelectedButtons : null)}".Trim(';');
         return style.HasValue() ? style : null;
     }
 
@@ -1290,7 +1576,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add("bit-ctp-sta");
         }
 
-        if (Responsive)
+        // The responsive class hides the callout off the top of a small screen until the JS that opens it slides
+        // it in. A standalone picker never goes through that - it has no callout to open - so carrying the class
+        // would leave the clock permanently invisible on a narrow viewport.
+        if (Responsive && Standalone is false)
         {
             classes.Add("bit-ctp-res");
         }
@@ -1312,9 +1601,46 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private bool IsHourView => _view == BitCircularTimePickerView.Hour;
 
+    private bool IsMinuteView => _view == BitCircularTimePickerView.Minute;
+
+    private bool IsSecondView => _view == BitCircularTimePickerView.Second;
+
+    // Whether the picker deals in seconds at all: the mode that edits nothing but them brings them along on
+    // its own, so the two never have to be set together.
+    private bool HasSeconds => ShowSeconds || EditMode == BitCircularTimePickerEditMode.OnlySeconds;
+
+    // The part of the time the dial is on, in its own units, or nothing when that part has not been set yet.
+    // The three views only differ in which field they read, so everything that is about the current one - the
+    // selected paint, the hand, the keyboard steps - goes through this.
+    private int? CurrentPart => _view switch
+    {
+        BitCircularTimePickerView.Hour => _hour,
+        BitCircularTimePickerView.Minute => _minute,
+        _ => _second
+    };
+
+    private string ViewKey => _view switch
+    {
+        BitCircularTimePickerView.Hour => "h",
+        BitCircularTimePickerView.Minute => "m",
+        _ => "s"
+    };
+
+    private string ViewTitle => _view switch
+    {
+        BitCircularTimePickerView.Hour => HourButtonTitle,
+        BitCircularTimePickerView.Minute => MinuteButtonTitle,
+        _ => SecondButtonTitle
+    };
+
     // Whether the dial currently accepts a change, which is what every pointer, keyboard and button path is
     // gated on so none of them has to repeat the three states that close the picker to the user.
     private bool IsInteractive => IsEnabled && ReadOnly is false && InvalidValueBinding() is false;
+
+    // Rendered onto the dial as a data attribute rather than pushed over interop, so the script that has to
+    // cancel the browser's own Shift+wheel scrolling reads the current state straight off the element it is
+    // already listening on, and stays in step with it without a call per change.
+    private bool IsWheelSpinEnabled => IsInteractive && NoMouseWheel is false;
 
     // Whether the row under the clock is rendered at all. The states that close the picker to the user only
     // disable the buttons inside it, so a picker that is switched off does not also change height.
@@ -1351,9 +1677,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     // Where the 24-hour dial stops reading the pointer as the outer ring and starts reading it as the inner
     // one: halfway between the two radii the numbers are laid out on, as a fraction of the radius of the dial.
-    // The stylesheet keeps both radii in the same proportion to the dial at every size, so the one boundary
-    // holds for all of them.
-    private const double InnerRingThreshold = 0.72;
+    // The stylesheet keeps both radii in the same proportion to the dial at every size (the midpoint works out
+    // between 0.69 and 0.71 of the radius across the three of them), so the one boundary holds for all of them.
+    private const double InnerRingThreshold = 0.70;
 
     private BitCircularTimePickerView GetInitialView()
     {
@@ -1361,7 +1687,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         {
             BitCircularTimePickerEditMode.OnlyHours => BitCircularTimePickerView.Hour,
             BitCircularTimePickerEditMode.OnlyMinutes => BitCircularTimePickerView.Minute,
-            _ => StartView
+            BitCircularTimePickerEditMode.OnlySeconds => BitCircularTimePickerView.Second,
+            // A start view of a part the picker does not carry is no start view at all, so it falls back to the
+            // one every picker has rather than opening onto a dial nothing can be picked on.
+            _ => IsViewEditable(StartView) ? StartView : BitCircularTimePickerView.Hour
         };
     }
 
@@ -1371,8 +1700,26 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         {
             BitCircularTimePickerEditMode.OnlyHours => view == BitCircularTimePickerView.Hour,
             BitCircularTimePickerEditMode.OnlyMinutes => view == BitCircularTimePickerView.Minute,
-            _ => true
+            BitCircularTimePickerEditMode.OnlySeconds => view == BitCircularTimePickerView.Second,
+            _ => view != BitCircularTimePickerView.Second || HasSeconds
         };
+    }
+
+    // The bounds are times of day, so one that falls outside of a day is pulled back into one before anything
+    // is compared against it. Without it the dial reads the parts of a bound (a MinTime of 25:00 has an Hours
+    // of 1) while the typed input compares the whole span, and the two would disagree about the same value.
+    private TimeSpan? MinBound => ClampToDay(MinTime);
+
+    /// <inheritdoc cref="MinBound"/>
+    private TimeSpan? MaxBound => ClampToDay(MaxTime);
+
+    private static TimeSpan? ClampToDay(TimeSpan? time)
+    {
+        if (time.HasValue is false) return null;
+
+        if (time.Value < TimeSpan.Zero) return TimeSpan.Zero;
+
+        return time.Value > _endOfDay ? _endOfDay : time.Value;
     }
 
     private bool IsHourAllowed(int hour)
@@ -1383,9 +1730,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         if (AllowedHours is not null && AllowedHours(hour) is false) return false;
 
-        if (MinTime.HasValue && hour < MinTime.Value.Hours) return false;
+        var min = MinBound;
+        var max = MaxBound;
 
-        if (MaxTime.HasValue && hour > MaxTime.Value.Hours) return false;
+        if (min.HasValue && hour < min.Value.Hours) return false;
+
+        if (max.HasValue && hour > max.Value.Hours) return false;
 
         return true;
     }
@@ -1404,9 +1754,35 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         if (hour.HasValue is false) return true;
 
-        if (MinTime.HasValue && hour == MinTime.Value.Hours && minute < MinTime.Value.Minutes) return false;
+        var min = MinBound;
+        var max = MaxBound;
 
-        if (MaxTime.HasValue && hour == MaxTime.Value.Hours && minute > MaxTime.Value.Minutes) return false;
+        if (min.HasValue && hour == min.Value.Hours && minute < min.Value.Minutes) return false;
+
+        if (max.HasValue && hour == max.Value.Hours && minute > max.Value.Minutes) return false;
+
+        return true;
+    }
+
+    private bool IsSecondAllowed(int second)
+    {
+        if (second is < 0 or > 59) return false;
+
+        if (SecondStep > 1 && second % SecondStep != 0) return false;
+
+        if (AllowedSeconds is not null && AllowedSeconds(second) is false) return false;
+
+        // As with the minutes, the bounds only bite inside the minute they fall in.
+        if (_hour.HasValue is false || _minute.HasValue is false) return true;
+
+        var min = MinBound;
+        var max = MaxBound;
+
+        if (min.HasValue && _hour == min.Value.Hours && _minute == min.Value.Minutes
+                         && second < min.Value.Seconds) return false;
+
+        if (max.HasValue && _hour == max.Value.Hours && _minute == max.Value.Minutes
+                         && second > max.Value.Seconds) return false;
 
         return true;
     }
@@ -1429,13 +1805,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private int? FindNearestAllowedMinute(int minute, int direction = 0)
     {
-        minute = ((minute % 60) + 60) % 60;
+        return FindNearestAllowed(minute, direction, IsMinuteAllowed);
+    }
+
+    private int? FindNearestAllowedSecond(int second, int direction = 0)
+    {
+        return FindNearestAllowed(second, direction, IsSecondAllowed);
+    }
+
+    private static int? FindNearestAllowed(int value, int direction, Func<int, bool> isAllowed)
+    {
+        value = ((value % 60) + 60) % 60;
 
         for (var offset = 0; offset < 60; offset++)
         {
-            if (direction >= 0 && IsMinuteAllowed((minute + offset) % 60)) return (minute + offset) % 60;
+            if (direction >= 0 && isAllowed((value + offset) % 60)) return (value + offset) % 60;
 
-            if (direction <= 0 && IsMinuteAllowed(((minute - offset) % 60 + 60) % 60)) return ((minute - offset) % 60 + 60) % 60;
+            if (direction <= 0 && isAllowed(((value - offset) % 60 + 60) % 60)) return ((value - offset) % 60 + 60) % 60;
         }
 
         return null;
@@ -1448,14 +1834,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     }
 
     // Rounds to the nearest multiple of the step, wrapping a result that lands on the top of the range back
-    // onto its bottom (60 minutes is 0, 24 hours is 0).
+    // onto its bottom (60 minutes is 0, 24 hours is 0). A step of a whole range or more is clamped to the
+    // range rather than folded into it, which leaves the bottom of the range as its only value - exactly what
+    // the allowed-value checks make of such a step too.
     private static int RoundToStep(int value, int step, int range)
     {
         if (step <= 1) return value;
 
-        step %= range;
-
-        if (step <= 1) return value;
+        step = Math.Min(step, range);
 
         var result = (value + (step / 2)) / step * step;
 
@@ -1471,6 +1857,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         {
             _hour = null;
             _minute = null;
+            _second = null;
             result = null;
             validationErrorMessage = null;
             return true;
@@ -1482,6 +1869,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             result = parsedValue.TimeOfDay;
             _hour = result.Value.Hours;
             _minute = result.Value.Minutes;
+            _second = result.Value.Seconds;
             validationErrorMessage = null;
             return true;
         }
@@ -1504,9 +1892,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // the dial moves in, and a typed time that is inside the range is a time the person meant.
     private bool IsWithinBounds(TimeSpan time)
     {
-        if (MinTime.HasValue && time < MinTime.Value) return false;
+        var min = MinBound;
+        var max = MaxBound;
 
-        if (MaxTime.HasValue && time > MaxTime.Value) return false;
+        if (min.HasValue && time < min.Value) return false;
+
+        if (max.HasValue && time > max.Value) return false;
 
         return true;
     }
