@@ -4,6 +4,9 @@
     
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the referenced Bit.BlazorUI projects: Debug builds/runs the tests on the latest TFM
+             only, CI passes -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <LangVersion>14.0</LangVersion>
         <Nullable>enable</Nullable>

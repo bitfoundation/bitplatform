@@ -2,6 +2,10 @@
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the referenced Bit.BlazorUI projects: Debug builds the latest TFM only, CI passes
+             -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. Without this the net9.0/net8.0
+             TFMs of this host would reference a Debug Bit.BlazorUI that only builds net10.0. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
