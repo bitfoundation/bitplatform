@@ -3,11 +3,11 @@
 
 <PageOutlet Url="components/textfield"
             Title="TextField"
-            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and a multiline one that grows with its content between a row floor and a row ceiling, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter with a counting strategy of its own, inline ghost suggestions, a busy indicator, debounced and throttled immediate binding with input method editor support, and both EditForm validation and a forced invalid state." />
+            Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. BitTextField covers a single line input and a multiline one that grows with its content between a row floor and a row ceiling, the html input types, prefixes and suffixes, icons, a clear button, a password reveal button, a character counter with a counting strategy of its own, inline ghost suggestions, a busy indicator, debounced and throttled immediate binding with input method editor support, and both EditForm validation and a rejection of its own carrying a message under the field." />
 
 <DemoPage Name="TextField"
           SecondaryNames="@(["TextInput"])"
-          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label in any of the four positions around it, a visible or screen-reader-only description and a character counter, exposes every part of its chrome to templates and to the Styles and Classes parameters, wires its own labels and descriptions to the input through the aria attributes, and plugs into an EditForm the same way the built-in Blazor inputs do."
+          Description="Text fields give people a way to enter and edit text. They’re used in forms, modal dialogs, tables, and other surfaces where text input is required. A single BitTextField renders either an input or a textarea, carries a label in any of the four positions around it, a visible or screen-reader-only description, a character counter and a message saying why the value was rejected, exposes every part of its chrome to templates and to the Styles and Classes parameters, wires its own labels and descriptions to the input through the aria attributes, and plugs into an EditForm the same way the built-in Blazor inputs do."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -206,9 +206,11 @@
             enough: <b>LabelTemplate</b>, <b>DescriptionTemplate</b>, <b>PrefixTemplate</b> and <b>SuffixTemplate</b> take over
             from <b>Label</b>, <b>Description</b>, <b>Prefix</b> and <b>Suffix</b>, <b>ClearButtonTemplate</b> replaces the icon
             of the clear button, <b>RevealPasswordTemplate</b> receives whether the password is currently revealed,
-            <b>CountTemplate</b> receives the current number of characters, and <b>LoadingTemplate</b> replaces the spinner of
-            the busy indicator (shown in the <a href="#example18">Loading</a> section). A field rendered through a
-            <b>LabelTemplate</b> still gets the required asterisk, so custom chrome never costs the field its markings.
+            <b>CountTemplate</b> receives the current number of characters, <b>ErrorMessageTemplate</b> replaces the rejection
+            message under the field and marks it invalid just like the plain <b>ErrorMessage</b> does, and
+            <b>LoadingTemplate</b> replaces the spinner of the busy indicator (shown in the
+            <a href="#example18">Loading</a> section). A field rendered through a <b>LabelTemplate</b> still gets the required
+            asterisk, so custom chrome never costs the field its markings.
         </div>
         <br />
         <div class="example-box">
@@ -258,6 +260,12 @@
                 <CountTemplate Context="count">
                     <span style="color:coral">@count of 20 characters</span>
                 </CountTemplate>
+            </BitTextField>
+            <br />
+            <BitTextField Label="Custom error message" DefaultValue="admin">
+                <ErrorMessageTemplate>
+                    <span>✖ This name is reserved. <a href="#example20">See the Validation section</a>.</span>
+                </ErrorMessageTemplate>
             </BitTextField>
         </div>
     </DemoExample>
@@ -525,6 +533,13 @@
             being tracked. All of them are skipped while the field is disabled. <b>OnEnter</b> and <b>OnEscape</b> are also
             skipped while an input method editor is composing, where the two keys commit and cancel a candidate rather than
             the value - so a form is never submitted in the middle of typing a Chinese or Japanese word.
+            <br /><br />
+            <b>OnInput</b> is the one that fires on every input event, whichever way the text arrived - a keystroke, a paste,
+            a drop, an autofill - which is what a strength meter or a live preview needs. Unlike <b>OnChange</b> it does not
+            wait for the field to lose focus and it does not require <b>Immediate</b>, so it can watch the text without
+            committing it, and it is raised before <b>DebounceTime</b> and <b>ThrottleTime</b> hold the value back rather
+            than along with it. Like the rest of the events it stays quiet while an input method editor is composing, so it
+            never sees a half-composed word.
         </div>
         <br />
         <div class="example-box">
@@ -543,6 +558,12 @@
             <div>Last key down: [@lastKey]</div>
             <div>Last key up: [@lastKeyUp]</div>
             <div>Focus: [@focusLog]</div>
+            <br />
+            <BitTextField Label="OnInput (the value is still committed on blur)"
+                          OnInput="HandleOnInput"
+                          @bind-Value="onInputCommittedValue" />
+            <div>Typed so far: [@onInputText]</div>
+            <div>Committed value: [@onInputCommittedValue]</div>
             <br />
             <BitTextField Label="Clearable" ShowClearButton DefaultValue="Clear me" OnClear="HandleOnClear" />
             <div>OnClear: [@clearLog]</div>
@@ -651,7 +672,8 @@
             for the click that focuses it, while the screen reader is given the fuller name.
             <b>Description</b> is the visible hint under the field, while <b>AriaDescription</b> is a hidden one for the cases
             where the instruction would be too long to show; both are referenced by the input through <code>aria-describedby</code>,
-            in reading order, alongside the character counter when it carries a limit. An <code>aria-describedby</code> of your
+            in reading order, alongside the <a href="#example20">error message</a> that comes first when there is one and the
+            character counter when it carries a limit. An <code>aria-describedby</code> of your
             own, passed through <b>InputHtmlAttributes</b>, is kept and read first rather than replaced, which is what lets a
             field point at an error message the app renders next to it and still keep its own description.
             <b>Title</b> renders the html title of the
@@ -702,6 +724,16 @@
             outside: the same red frame, the same focus ring and the same <code>aria-invalid</code>, without an
             <code>EditContext</code> being involved. It only ever adds to the validation of the field, so a value the
             EditContext already rejected stays invalid whatever the parameter says.
+            <br /><br />
+            <b>ErrorMessage</b> is what turns that red frame into something the reader can act on: the text is rendered under
+            the field, above the description and the counter, and setting it marks the field invalid on its own - there is no
+            need to also set <b>Invalid</b>. It is referenced by the input through <code>aria-describedby</code> ahead of the
+            description, and announced by the live region of the field the moment it shows up, so a rejection that arrives
+            while the field still has focus is not something only sighted users learn about.
+            <b>ErrorMessageTemplate</b> replaces the text with content of its own, shown in the
+            <a href="#example8">Templates</a> section. Both are meant for the rejections the app knows about; inside an
+            <b>EditForm</b> the messages of the data annotations belong to the <code>ValidationMessage</code> component
+            instead, so the same text is not printed twice.
         </div>
         <br />
         <div class="example-box">
@@ -714,6 +746,23 @@
                           Immediate />
             <br />
             <BitTextField Label="Invalid + Underlined" Invalid Underlined DefaultValue="Not accepted either" />
+            <br />
+            <BitTextField Label="ErrorMessage" ErrorMessage="That user name is already taken." DefaultValue="admin" />
+            <br />
+            <BitTextField Label="ErrorMessage, a description and a counter"
+                          ShowCount
+                          MaxLength="20"
+                          Description="Letters and digits only."
+                          ErrorMessage="A user name cannot contain a space."
+                          DefaultValue="john doe" />
+            <br />
+            <BitTextField Label="Checked as you type"
+                          Immediate
+                          MaxLength="20"
+                          @bind-Value="errorMessageValue"
+                          Placeholder="Type an email address..."
+                          ErrorMessage="@EmailError"
+                          Description="The message shows up as soon as the value stops looking like an email address." />
             <br />
             <br />
             @if (formIsValidSubmit is false)

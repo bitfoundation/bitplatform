@@ -229,6 +229,29 @@
         </div>
     </div>
 
+    @if (HasErrorMessage)
+    {
+        @* The message sits on its own line above the footer rather than inside it: what is wrong with the
+           value is the first thing to read under the field, and the footer is a single row shared by the
+           description and the counter. It carries no live role of its own - the region at the end of the
+           component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-tfl-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage"
+                      class="@Classes?.ErrorMessage">
+                    @ErrorMessage
+                </span>
+            }
+        </div>
+    }
+
     @if (HasDescription || ShowCount)
     {
         <div style="@Styles?.Footer" class="bit-tfl-ftr @Classes?.Footer">

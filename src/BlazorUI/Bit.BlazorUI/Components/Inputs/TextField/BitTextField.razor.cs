@@ -20,7 +20,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool _compositionSetupIsMultiline;
     private bool _selectOnFocusSetup;
     private bool _selectOnFocusSetupIsMultiline;
+    private int? _oldRows;
     private int? _oldMaxRows;
+    private BitSize? _oldSize;
     private string? _oldValue;
     private string? _oldGhostText;
     private string? _oldValueForCount;
@@ -33,6 +35,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _countId = string.Empty;
+    private string _errorId = string.Empty;
     private string _inputType = string.Empty;
     private string _descriptionId = string.Empty;
     private string _ariaDescriptionId = string.Empty;
@@ -165,6 +168,29 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// of an on-screen keyboard. Accepted values are "enter", "done", "go", "next", "previous", "search" and "send".
     /// </summary>
     [Parameter] public string? EnterKeyHint { get; set; }
+
+    /// <summary>
+    /// The message shown under the field when the value was rejected, which is what turns a red frame into
+    /// something the user can act on. Setting it marks the field invalid on its own - the same look and the
+    /// same aria-invalid attribute <see cref="Invalid"/> gives it - and the message is referenced by the
+    /// input through its aria-describedby attribute and announced by the live region of the field, so it
+    /// reaches a screen reader the moment it shows up rather than only on the next focus.
+    /// </summary>
+    /// <remarks>
+    /// It is meant for a rejection the app itself knows about (a server response, a rule spanning two
+    /// fields). A field inside an <c>EditForm</c> already gets its messages from the cascading EditContext
+    /// through the <c>ValidationMessage</c> component.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// The custom content of the error message, which replaces the plain <see cref="ErrorMessage"/> text and
+    /// marks the field invalid in the same way. Only the plain text is announced by the live region, since a
+    /// template is free to render anything at all.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public RenderFragment? ErrorMessageTemplate { get; set; }
 
     /// <summary>
     /// Forces the text field fill 100% of its container width.
@@ -362,6 +388,16 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Use this to clear or update the GhostText parameter after acceptance.
     /// </summary>
     [Parameter] public EventCallback<string?> OnGhostTextAccepted { get; set; }
+
+    /// <summary>
+    /// Callback for every input event of the input element, which is what lets a field watch the text as it
+    /// is typed - a strength meter, a live preview, a character-by-character filter - without having to turn
+    /// <see cref="BitTextInputBase{TValue}.Immediate"/> on and commit the value along with it. It is raised
+    /// before the value is committed and is not held back by <see cref="BitTextInputBase{TValue}.DebounceTime"/>
+    /// or <see cref="BitTextInputBase{TValue}.ThrottleTime"/>, and it is not raised for the half-composed text
+    /// of an input method editor.
+    /// </summary>
+    [Parameter] public EventCallback<ChangeEventArgs> OnInput { get; set; }
 
     /// <summary>
     /// Callback for when a keyboard key is pressed
@@ -608,7 +644,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         // The base class already marks a value the EditContext rejected, so the forced state only adds the
         // class where that one did not, instead of rendering it twice on a field that is invalid both ways.
-        ClassBuilder.Register(() => Invalid && ValueInvalid is not true ? "bit-inv" : string.Empty);
+        ClassBuilder.Register(() => HasError && ValueInvalid is not true ? "bit-inv" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
@@ -702,6 +738,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         _inputId = $"BitTextField-{UniqueId}-input";
         _labelId = $"BitTextField-{UniqueId}-label";
         _countId = $"BitTextField-{UniqueId}-count";
+        _errorId = $"BitTextField-{UniqueId}-error";
         _descriptionId = $"BitTextField-{UniqueId}-description";
         _ariaDescriptionId = $"BitTextField-{UniqueId}-aria-description";
 
@@ -738,7 +775,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         {
             _oldValue = Value;
 
-            _oldMaxRows = MaxRows;
+            RememberAutoHeightInputs();
         }
 
         // Every one of the JavaScript features below can be turned on and off at any point in the life of
@@ -755,13 +792,25 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         await SetupSelectOnFocus(isMultiline);
 
-        if (firstRender is false && isMultiline && AutoHeight && (_oldValue != Value || _oldMaxRows != MaxRows))
+        // The height the content needs follows more than the text itself: the row floor, the row ceiling and
+        // the size of the field all move it, and none of them raises an input event the browser side listens
+        // for, so each of them is measured again from here.
+        if (firstRender is false && isMultiline && AutoHeight && (_oldValue != Value || AutoHeightInputsChanged))
         {
-            _oldMaxRows = MaxRows;
+            RememberAutoHeightInputs();
             await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
         }
 
         _oldValue = Value;
+    }
+
+    private bool AutoHeightInputsChanged => _oldRows != Rows || _oldMaxRows != MaxRows || _oldSize != Size;
+
+    private void RememberAutoHeightInputs()
+    {
+        _oldRows = Rows;
+        _oldSize = Size;
+        _oldMaxRows = MaxRows;
     }
 
     private async Task SetupMultiline(bool isMultiline)
@@ -790,7 +839,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         {
             // An input that is rendered with a value already in it has to be measured once, otherwise it
             // stays one row tall until the first keystroke.
-            _oldMaxRows = MaxRows;
+            RememberAutoHeightInputs();
             await _js.BitTextFieldAdjustHeight(_Id, InputElement, MaxRows);
         }
     }
@@ -874,6 +923,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         UpdateCharCount(e.Value?.ToString());
 
+        // The callback is raised before the base class hands the event to the rate limiter, so a field
+        // watching what is typed hears every keystroke even while the value itself is debounced.
+        await OnInput.InvokeAsync(e);
+
         await base.HandleOnStringValueInputAsync(e);
     }
 
@@ -902,6 +955,12 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
 
+    private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;
+
+    // A message saying what is wrong with the value is a rejection of it, so it marks the field the same way
+    // the forced state does instead of drawing a red line under a field that still looks accepted.
+    private bool HasError => Invalid || HasErrorMessage;
+
     // The textarea is only rendered for the plain text types: every other type has a behavior of its own
     // (a password mask, a number spinner, ...) that a textarea cannot provide.
     private bool IsMultilineElement => Multiline && Type is null or BitInputType.Text;
@@ -912,7 +971,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     // not empty - one counting words, say - and a field holding text would otherwise lose its clear button.
     private bool ShowClear => ShowClearButton && _hasText;
 
-    private bool NeedsCompositionGuard => Immediate || OnEnter.HasDelegate || OnEscape.HasDelegate;
+    private bool NeedsCompositionGuard => Immediate || OnInput.HasDelegate || OnEnter.HasDelegate || OnEscape.HasDelegate;
 
     // A value above the limit can only arrive from the code rather than from the keyboard, which the
     // maxlength attribute holds back, so the counter says so instead of quietly reading a number above the
@@ -937,6 +996,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             var ids = string.Join(' ', new[]
             {
                 GetInputAttribute("aria-describedby"),
+                HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
                 hasCount ? _countId : null
@@ -949,17 +1009,20 @@ public partial class BitTextField : BitTextInputBase<string?>
     // The forced invalid state and the one the EditContext produces end up on the same attribute, and the
     // base class writes the latter into the splatted attributes, so the value of the consumer is read back
     // here instead of being overwritten by the explicit attribute of the input.
-    private string? AriaInvalid => Invalid ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => HasError ? "true" : GetInputAttribute("aria-invalid");
 
     private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
 
     // A live region only announces what changes inside it after it is already on the page: one that is added
-    // along with its text is regularly missed altogether. The busy state and the inline suggestion both have
-    // to be announced the moment they show up, so a single empty region is kept in the markup and only its
-    // text comes and goes. The busy state wins over the suggestion, since it is the newer of the two states.
-    private string? LiveText => Loading
-                                    ? (LoadingAriaLabel ?? "Loading")
-                                    : (GhostText.HasValue() ? GhostText : null);
+    // along with its text is regularly missed altogether. The rejection of the value, the busy state and the
+    // inline suggestion all have to be announced the moment they show up, so a single empty region is kept in
+    // the markup and only its text comes and goes. The rejection wins over the other two, which say what the
+    // field is doing rather than what is wrong with it.
+    private string? LiveText => ErrorMessage.HasValue()
+                                    ? ErrorMessage
+                                    : Loading
+                                        ? (LoadingAriaLabel ?? "Loading")
+                                        : (GhostText.HasValue() ? GhostText : null);
 
     // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of its
     // own was given would quietly throw that name away. The visible label keeps naming the input through the

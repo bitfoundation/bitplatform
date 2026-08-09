@@ -145,6 +145,20 @@ public partial class BitTextFieldDemo : IDisposable
         },
         new()
         {
+            Name = "ErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The message shown under the field when the value was rejected. Setting it marks the field invalid on its own - the same look and the same aria-invalid attribute Invalid gives it - and the message is referenced by the input through its aria-describedby attribute and announced by the live region of the field.",
+        },
+        new()
+        {
+            Name = "ErrorMessageTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom content of the error message, which replaces the plain ErrorMessage text and marks the field invalid in the same way. Only the plain text is announced by the live region, since a template is free to render anything at all.",
+        },
+        new()
+        {
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
@@ -344,6 +358,12 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "OnGhostTextAccepted",
             Type = "EventCallback<string?>",
             Description = "Callback invoked when the ghost text is accepted via Tab or Enter key, or click/touch. The accepted ghost text string is passed as the argument.",
+        },
+        new()
+        {
+            Name = "OnInput",
+            Type = "EventCallback<ChangeEventArgs>",
+            Description = "Callback for every input event of the input element, which is what lets a field watch the text as it is typed without having to turn Immediate on and commit the value along with it. It is raised before the value is committed and is not held back by DebounceTime or ThrottleTime, and it is not raised for the half-composed text of an input method editor.",
         },
         new()
         {
@@ -669,6 +689,20 @@ public partial class BitTextFieldDemo : IDisposable
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the BitTextField's suffix."
+                },
+                new()
+                {
+                    Name = "ErrorMessageContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's error message container."
+                },
+                new()
+                {
+                    Name = "ErrorMessage",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the BitTextField's error message."
                 },
                 new()
                 {
@@ -1149,6 +1183,11 @@ public partial class BitTextFieldDemo : IDisposable
 
     private void HandleOnClear() => clearLog = $"cleared ({++clearCount})";
 
+    private string? onInputText;
+    private string? onInputCommittedValue;
+
+    private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString();
+
 
     private BitTextField? passwordRef;
 
@@ -1203,6 +1242,12 @@ public partial class BitTextFieldDemo : IDisposable
     }
 
     private string? invalidValue = "no-space-here";
+
+    private string? errorMessageValue = "not-an-email";
+
+    private string? EmailError => errorMessageValue.HasValue() && errorMessageValue!.Contains('@') is false
+                                    ? $"'{errorMessageValue}' is not an email address."
+                                    : null;
 
     private ValidationTextFieldModel validationTextFieldModel = new();
     public bool formIsValidSubmit;
@@ -1459,6 +1504,12 @@ public partial class BitTextFieldDemo : IDisposable
     <CountTemplate Context=""count"">
         <span style=""color:coral"">@count of 20 characters</span>
     </CountTemplate>
+</BitTextField>
+
+<BitTextField Label=""Custom error message"" DefaultValue=""admin"">
+    <ErrorMessageTemplate>
+        <span>✖ This name is reserved. <a href=""#example20"">See the Validation section</a>.</span>
+    </ErrorMessageTemplate>
 </BitTextField>";
 
     private readonly string example9RazorCode = @"
@@ -1757,6 +1808,12 @@ private string? notTrimmedValue;";
 <div>Last key up: [@lastKeyUp]</div>
 <div>Focus: [@focusLog]</div>
 
+<BitTextField Label=""OnInput (the value is still committed on blur)""
+              OnInput=""HandleOnInput""
+              @bind-Value=""onInputCommittedValue"" />
+<div>Typed so far: [@onInputText]</div>
+<div>Committed value: [@onInputCommittedValue]</div>
+
 <BitTextField Label=""Clearable"" ShowClearButton DefaultValue=""Clear me"" OnClear=""HandleOnClear"" />
 <div>OnClear: [@clearLog]</div>";
     private readonly string example15CsharpCode = @"
@@ -1786,7 +1843,12 @@ private void HandleOnFocusIn() => focusLog = ""focused in"";
 
 private void HandleOnFocusOut() => focusLog = ""focused out"";
 
-private void HandleOnClear() => clearLog = $""cleared ({++clearCount})"";";
+private void HandleOnClear() => clearLog = $""cleared ({++clearCount})"";
+
+private string? onInputText;
+private string? onInputCommittedValue;
+
+private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString();";
 
     private readonly string example16RazorCode = @"
 <BitTextField Label=""SelectOnFocus"" SelectOnFocus DefaultValue=""Focus me and start typing"" />
@@ -1934,6 +1996,23 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 
 <BitTextField Label=""Invalid + Underlined"" Invalid Underlined DefaultValue=""Not accepted either"" />
 
+<BitTextField Label=""ErrorMessage"" ErrorMessage=""That user name is already taken."" DefaultValue=""admin"" />
+
+<BitTextField Label=""ErrorMessage, a description and a counter""
+              ShowCount
+              MaxLength=""20""
+              Description=""Letters and digits only.""
+              ErrorMessage=""A user name cannot contain a space.""
+              DefaultValue=""john doe"" />
+
+<BitTextField Label=""Checked as you type""
+              Immediate
+              MaxLength=""20""
+              @bind-Value=""errorMessageValue""
+              Placeholder=""Type an email address...""
+              ErrorMessage=""@EmailError""
+              Description=""The message shows up as soon as the value stops looking like an email address."" />
+
 
 <EditForm Model=""validationTextFieldModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"" novalidate>
     <DataAnnotationsValidator />
@@ -1975,6 +2054,12 @@ public class ValidationTextFieldModel
 }
 
 private string? invalidValue = ""no-space-here"";
+
+private string? errorMessageValue = ""not-an-email"";
+
+private string? EmailError => errorMessageValue.HasValue() && errorMessageValue!.Contains('@') is false
+                                ? $""'{errorMessageValue}' is not an email address.""
+                                : null;
 
 private ValidationTextFieldModel validationTextFieldModel = new();
 

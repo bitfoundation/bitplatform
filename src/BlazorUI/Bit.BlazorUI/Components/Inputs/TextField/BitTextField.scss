@@ -304,6 +304,19 @@
     font-size: var(--bit-tfl-icon-font-size);
 }
 
+// The rejection is colored like every other rejected value of the library, and it keeps that color while the
+// field is disabled: a message that goes grey with the rest of the field stops reading as the reason the
+// value was refused.
+.bit-tfl-erm {
+    color: $clr-err;
+    overflow-wrap: break-word;
+    font-size: spacing(1.25);
+
+    span {
+        color: $clr-err;
+    }
+}
+
 .bit-tfl-ftr {
     gap: spacing(1);
     display: flex;

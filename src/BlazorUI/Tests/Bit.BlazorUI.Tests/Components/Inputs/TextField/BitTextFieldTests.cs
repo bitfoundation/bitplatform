@@ -2897,4 +2897,343 @@ public class BitTextFieldTests : BunitTestContext
         // The visible label keeps naming the field for the eye and for the click that focuses it.
         Assert.AreEqual(input.Id, component.Find(".bit-tfl-lbl").GetAttribute("for"));
     }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldErrorMessageIsRendered(bool multiline)
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ErrorMessage, "That user name is already taken.");
+        });
+
+        Assert.AreEqual("That user name is already taken.", component.Find(".bit-tfl-erm span").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageIsNotRenderedByDefault()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldErrorMessageMarksTheFieldInvalidOnItsOwn(bool multiline)
+    {
+        // A message saying what is wrong with the value is a rejection of it, so it must not need the
+        // Invalid parameter next to it to draw the field as rejected.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-tfl-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageTemplateMarksTheFieldInvalidToo()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-error");
+                builder.AddContent(2, "rejected");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("rejected", component.Find(".bit-tfl-erm .custom-error").TextContent);
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-tfl-inp").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageTemplateWinsOverTheText()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "the plain text");
+            parameters.Add(p => p.ErrorMessageTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-error");
+                builder.AddContent(2, "the template");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual("the template", component.Find(".bit-tfl-erm").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageIsResetWhenItGoesAway()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, (string?)null);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-tfl-erm").Count);
+        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-inv"));
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageIsRenderedOnlyOnceOnAFieldTheEditContextRejectedToo()
+    {
+        var component = RenderComponent<BitTextFieldValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "rejected by the server");
+        });
+
+        component.Find("form").Submit();
+
+        Assert.AreEqual(1, component.Find(".bit-tfl").ClassList.Count(c => c == "bit-inv"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldDescribedByPointsAtTheErrorMessageFirst()
+    {
+        // What is wrong with the value comes before the hint about what to type into it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.MaxLength, 20);
+            parameters.Add(p => p.Description, "a description");
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        var ids = component.Find(".bit-tfl-inp").GetAttribute("aria-describedby")!.Split(' ');
+
+        Assert.AreEqual(3, ids.Length);
+        Assert.AreEqual(component.Find(".bit-tfl-erm").Id, ids[0]);
+        Assert.AreEqual(component.Find(".bit-tfl-des").Id, ids[1]);
+        Assert.AreEqual(component.Find(".bit-tfl-cnt").Id, ids[2]);
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageIsAnnouncedThroughTheLiveRegion()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        var liveRegion = component.Find("[role=status]");
+
+        Assert.AreEqual(string.Empty, liveRegion.TextContent);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        Assert.AreEqual("rejected", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageWinsOverTheBusyStateInTheLiveRegion()
+    {
+        // What is wrong with the value outranks what the field is busy doing with it.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.GhostText, "a suggestion");
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        Assert.AreEqual("rejected", component.Find("[role=status]").TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageCustomClassesAndStylesAreApplied()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ErrorMessage, "rejected");
+            parameters.Add(p => p.Classes, new BitTextFieldClassStyles
+            {
+                ErrorMessageContainer = "custom-error-container",
+                ErrorMessage = "custom-error"
+            });
+            parameters.Add(p => p.Styles, new BitTextFieldClassStyles
+            {
+                ErrorMessageContainer = "padding: 1rem;",
+                ErrorMessage = "font-weight: 900;"
+            });
+        });
+
+        var container = component.Find(".bit-tfl-erm");
+
+        Assert.IsTrue(container.ClassList.Contains("custom-error-container"));
+        Assert.AreEqual("padding: 1rem;", container.GetAttribute("style"));
+
+        var message = component.Find(".bit-tfl-erm span");
+
+        Assert.IsTrue(message.ClassList.Contains("custom-error"));
+        Assert.AreEqual("font-weight: 900;", message.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldErrorMessageIsRenderedAboveTheFooter()
+    {
+        // The reason the value was refused is the first thing to read under the field, ahead of the hint
+        // and the counter that share the footer.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ShowCount, true);
+            parameters.Add(p => p.Description, "a description");
+            parameters.Add(p => p.ErrorMessage, "rejected");
+        });
+
+        var children = component.Find(".bit-tfl").Children.ToList();
+
+        var errorIndex = children.FindIndex(c => c.ClassList.Contains("bit-tfl-erm"));
+        var footerIndex = children.FindIndex(c => c.ClassList.Contains("bit-tfl-ftr"));
+
+        Assert.AreNotEqual(-1, errorIndex);
+        Assert.AreNotEqual(-1, footerIndex);
+        Assert.IsTrue(errorIndex < footerIndex);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitTextFieldOnInputIsRaisedForEveryKeystrokeWithoutImmediate(bool multiline)
+    {
+        // The callback watches the text as it is typed without committing it, which is the whole point of
+        // having it next to the value binding rather than on top of it.
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.OnInput, (ChangeEventArgs e) => values.Add(e.Value?.ToString()));
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+
+        input.Input("h");
+        input.Input("he");
+
+        CollectionAssert.AreEqual(new[] { "h", "he" }, values);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitTextFieldOnInputIsNotRaisedWhenTheFieldCannotBeEdited()
+    {
+        var count = 0;
+
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnInput, () => count++);
+        });
+
+        component.Find(".bit-tfl-inp").Input("h");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, false);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        component.Find(".bit-tfl-inp").Input("h");
+
+        Assert.AreEqual(0, count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldOnInputSetsUpTheCompositionGuard()
+    {
+        // The callback reports every keystroke, so the half-composed text of an input method editor has to
+        // be kept away from it exactly as it is kept away from an Immediate binding.
+        RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.OnInput, () => { });
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.setupComposition"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldRowsChangeIsRemeasuredWhileAutoHeightIsOn()
+    {
+        // The rows attribute is the floor the auto growing never falls below, and moving it changes the
+        // height of a field whose content did not change at all.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, true);
+            parameters.Add(p => p.Rows, 2);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Rows, 6);
+        });
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldSizeChangeIsRemeasuredWhileAutoHeightIsOn()
+    {
+        // Every size of the field comes with a line height of its own, so the same text takes a different
+        // number of pixels once the size moves.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, true);
+            parameters.Add(p => p.Size, BitSize.Small);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+    }
+
+    [TestMethod]
+    public void BitTextFieldIsNotRemeasuredWhenNothingItDependsOnMoved()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Multiline, true);
+            parameters.Add(p => p.AutoHeight, true);
+            parameters.Add(p => p.Rows, 2);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Label, "a label");
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.TextField.adjustHeight"].Count);
+    }
 }
