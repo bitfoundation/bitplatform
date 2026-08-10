@@ -61,13 +61,6 @@
     }
 }
 
-.bit-tpc-cal.bit-tpc-rtl {
-    .bit-tpc-cbn {
-        left: 0;
-        right: unset;
-    }
-}
-
 .bit-tpc-lbl {
     margin: 0;
     display: block;
@@ -213,6 +206,7 @@
     height: 100%;
     display: flex;
     outline: none;
+    flex-wrap: wrap;
     box-shadow: none;
     position: relative;
     align-items: center;
@@ -337,6 +331,10 @@
             color: $clr-fg-dis;
         }
     }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-tpc-bam,
@@ -364,12 +362,50 @@
     }
 }
 
+.bit-tpc-act {
+    width: 100%;
+    display: flex;
+    gap: spacing(1);
+    margin-top: spacing(1);
+    justify-content: flex-end;
+}
+
+.bit-tpc-abn {
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: $clr-pri;
+    font-size: spacing(1.75);
+    background-color: transparent;
+    font-family: $tg-font-family;
+    padding: spacing(0.75) spacing(1.5);
+    border-radius: $shp-border-radius;
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active:not(:disabled) {
+        background-color: $clr-bg-pri-active;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
 .bit-tpc-cbn {
     top: 0;
-    right: 0;
-    display: none;
     aspect-ratio: 1;
     position: absolute;
+    inset-inline-end: 0;
     max-width: spacing(5);
 }
 
@@ -431,7 +467,7 @@
         }
 
         .bit-tpc-cbn {
-            display: block;
+            min-width: spacing(4);
             max-width: spacing(5);
         }
     }

@@ -13,6 +13,34 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "AllowedHours",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The hours that can be selected, on top of what MinTime and MaxTime already allow. The predicate receives an hour of the day (0-23); the spin buttons skip over the hours it rejects, a typed one snaps to the nearest it accepts, and a time entered as text that lands on one fails validation.",
+        },
+        new()
+        {
+            Name = "AllowedMinutes",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The minutes that can be selected, on top of what MinTime and MaxTime already allow. The predicate receives a minute of the hour (0-59); the spin buttons skip over the minutes it rejects, a typed one snaps to the nearest it accepts, and a time entered as text that lands on one fails validation.",
+        },
+        new()
+        {
+            Name = "AllowedSeconds",
+            Type = "Func<int, bool>?",
+            DefaultValue = "null",
+            Description = "The seconds that can be selected, on top of what MinTime and MaxTime already allow. The predicate receives a second of the minute (0-59); the spin buttons skip over the seconds it rejects, a typed one snaps to the nearest it accepts, and a time entered as text that lands on one fails validation.",
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the input of the TimePicker gets the focus as soon as it renders for the first time.",
+        },
+        new()
+        {
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
@@ -33,6 +61,13 @@ public partial class BitTimePickerDemo
             Description = "Custom CSS classes for different parts of the TimePicker.",
             Href = "#timepicker-class-styles",
             LinkType = LinkType.Link
+        },
+        new()
+        {
+            Name = "ClearButtonText",
+            Type = "string",
+            DefaultValue = "Clear",
+            Description = "The text of the clear button, shown when ShowClearButton is set.",
         },
         new()
         {
@@ -86,6 +121,13 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "DecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease hour",
+            Description = "The title of the decrease hour button (tooltip and aria-label).",
+        },
+        new()
+        {
             Name = "DecreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -104,6 +146,38 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "DecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease minute",
+            Description = "The title of the decrease minute button (tooltip and aria-label).",
+        },
+        new()
+        {
+            Name = "DecreaseSecondIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the decrease second button icon using custom CSS classes for external icon libraries. Takes precedence over DecreaseSecondIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "DecreaseSecondIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the decrease second button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "DecreaseSecondTitle",
+            Type = "string",
+            DefaultValue = "Decrease second",
+            Description = "The title of the decrease second button (tooltip and aria-label).",
+        },
+        new()
+        {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
@@ -117,6 +191,13 @@ public partial class BitTimePickerDemo
             Type = "bool",
             DefaultValue = "true",
             Description = "Determines if the TimePicker has a border.",
+        },
+        new()
+        {
+            Name = "HourInputAriaLabel",
+            Type = "string",
+            DefaultValue = "Hour",
+            Description = "The aria-label of the hour input.",
         },
         new()
         {
@@ -179,6 +260,13 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "IncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase hour",
+            Description = "The title of the increase hour button (tooltip and aria-label).",
+        },
+        new()
+        {
             Name = "IncreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -197,10 +285,49 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "IncreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Increase minute",
+            Description = "The title of the increase minute button (tooltip and aria-label).",
+        },
+        new()
+        {
+            Name = "IncreaseSecondIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "Gets or sets the increase second button icon using custom CSS classes for external icon libraries. Takes precedence over IncreaseSecondIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "IncreaseSecondIconName",
+            Type = "string?",
+            DefaultValue = "ChevronDownSmall",
+            Description = "Gets or sets the name of the increase second button icon from the built-in Fluent UI icons.",
+            LinkType = LinkType.Link,
+            Href = "https://blazorui.bitplatform.dev/iconography",
+        },
+        new()
+        {
+            Name = "IncreaseSecondTitle",
+            Type = "string",
+            DefaultValue = "Increase second",
+            Description = "The title of the increase second button (tooltip and aria-label).",
+        },
+        new()
+        {
+            Name = "InvalidErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for the invalid value.",
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this TimePicker is open.",
+            Description = "Whether or not this TimePicker is open. Supports two-way binding to open and close the callout from code.",
         },
         new()
         {
@@ -218,6 +345,27 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "MaxTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The maximum time of day that can be selected. Stepping clamps the value into the bound, a typed time beyond it fails validation, and a bound outside of a day is clamped into one before it is applied.",
+        },
+        new()
+        {
+            Name = "MinTime",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The minimum time of day that can be selected. Stepping clamps the value into the bound, a typed time beyond it fails validation, and a bound outside of a day is clamped into one before it is applied.",
+        },
+        new()
+        {
+            Name = "MinuteInputAriaLabel",
+            Type = "string",
+            DefaultValue = "Minute",
+            Description = "The aria-label of the minute input.",
+        },
+        new()
+        {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
@@ -225,9 +373,22 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "NowButtonText",
+            Type = "string",
+            DefaultValue = "Now",
+            Description = "The text of the now button, shown when ShowNowButton is set.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback",
             Description = "Callback for when clicking on TimePicker input.",
+        },
+        new()
+        {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "Callback for when the callout of the TimePicker is closed.",
         },
         new()
         {
@@ -245,20 +406,26 @@ public partial class BitTimePickerDemo
         {
             Name = "OnFocusOut",
             Type = "EventCallback",
-            Description = "Callback for when clicking on TimePicker input.",
+            Description = "Callback for when focus moves out of the TimePicker input.",
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "Callback for when the callout of the TimePicker is opened.",
         },
         new()
         {
             Name = "OnSelectTime",
             Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the on selected time changed.",
+            Description = "Callback for when the selected time changes.",
         },
         new()
         {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Placeholder text for the DatePicker.",
+            Description = "Placeholder text for the TimePicker.",
         },
         new()
         {
@@ -269,10 +436,45 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "SecondInputAriaLabel",
+            Type = "string",
+            DefaultValue = "Second",
+            Description = "The aria-label of the second input.",
+        },
+        new()
+        {
+            Name = "SecondStep",
+            Type = "int",
+            DefaultValue = "1",
+            Description = "Determines increment/decrement steps for time-picker's second.",
+        },
+        new()
+        {
+            Name = "ShowClearButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the BitTimePicker's clear button should be shown or not."
+        },
+        new()
+        {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the BitTimePicker's close button should be shown or not."
+        },
+        new()
+        {
+            Name = "ShowNowButton",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the BitTimePicker's now button should be shown or not. The button selects the current time of day, snapped to the steps and to the allowed values."
+        },
+        new()
+        {
+            Name = "ShowSeconds",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the BitTimePicker shows the seconds input or not."
         },
         new()
         {
@@ -312,6 +514,28 @@ public partial class BitTimePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = @"The format of the time in the TimePicker like ""HH:mm"".",
+        }
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "InputId",
+            Type = "string?",
+            Description = "The id of the input element of the TimePicker."
+        },
+        new()
+        {
+            Name = "OpenCallout",
+            Type = "Task OpenCallout()",
+            Description = "Opens the callout of the TimePicker, doing nothing when it is already open or when the picker is standalone and has no callout to open."
+        },
+        new()
+        {
+            Name = "DismissCallout",
+            Type = "Task DismissCallout()",
+            Description = "Closes the callout of the TimePicker, leaving the focus wherever it is."
         }
     ];
 
@@ -361,33 +585,6 @@ public partial class BitTimePickerDemo
                 {
                     Name = "Right",
                     Description = "Show the icon at the right side.",
-                    Value = "1",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "edit-mode-enum",
-            Name = "BitTimePickerEditMode",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name = "Normal",
-                    Description = "Can edit hours and minutes.",
-                    Value = "0",
-                },
-                new()
-                {
-                    Name = "OnlyMinutes",
-                    Description = "Can edit only minutes.",
-                    Value = "1",
-                },
-                new()
-                {
-                    Name = "OnlyHours",
-                    Description = "Can edit only hours.",
                     Value = "1",
                 }
             ]
@@ -614,6 +811,55 @@ public partial class BitTimePickerDemo
                 },
                 new()
                 {
+                    Name = "MinuteSecondSeparator",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the minute second separator of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "SecondInputContainer",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the second input container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseSecondButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase second button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "IncreaseSecondIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the increase second icon of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "SecondInput",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the second input of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseSecondButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease second button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "DecreaseSecondIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the decrease second icon of the BitTimePicker."
+                },
+                new()
+                {
                     Name = "AmPmContainer",
                     Type = "string?",
                     DefaultValue = "null",
@@ -632,6 +878,27 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the PM button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "Actions",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the actions container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "NowButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the now button of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clear button of the BitTimePicker."
                 },
                 new()
                 {
@@ -682,6 +949,11 @@ public partial class BitTimePickerDemo
 
 
 
+    private bool isOpen;
+    private readonly List<string> eventLogs = [];
+    private TimeSpan? boundTime;
+    private TimeSpan? actionsTime;
+    private TimeSpan? classesValue;
     private TimeSpan? readOnlyTime = new(2, 50, 0);
     private TimeSpan? selectedTime = new(5, 12, 15);
     private FormValidationTimePickerModel formValidationTimePickerModel = new();
@@ -706,5 +978,21 @@ public partial class BitTimePickerDemo
         successMessage = string.Empty;
     }
 
-    private TimeSpan? classesValue;
+    private void LogOpen() => Log("OnOpen");
+    private void LogClose() => Log("OnClose");
+    private void LogClick() => Log("OnClick");
+    private void LogFocusIn() => Log("OnFocusIn");
+    private void LogFocusOut() => Log("OnFocusOut");
+    private void LogSelectTime(TimeSpan? time) => Log($"OnSelectTime: {time}");
+    private void LogChange(TimeSpan? time) => Log($"OnChange: {time}");
+
+    private void Log(string message)
+    {
+        eventLogs.Insert(0, message);
+
+        if (eventLogs.Count > 8)
+        {
+            eventLogs.RemoveRange(8, eventLogs.Count - 8);
+        }
+    }
 }

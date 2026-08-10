@@ -1,0 +1,32 @@
+@using Bit.BlazorUI.Tests.Components.Inputs.TimePicker
+
+<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <BitTimePicker AllowTextInput
+                   MinTime="@MinTime"
+                   MaxTime="@MaxTime"
+                   InvalidErrorMessage="@InvalidErrorMessage"
+                   @bind-Value="@TestModel.Time" />
+
+    <ValidationMessage For="@(() => TestModel.Time)" />
+
+    <button type="submit">submit</button>
+</EditForm>
+
+@code {
+    [Parameter] public BitTimePickerTestModel TestModel { get; set; } = new();
+
+    [Parameter] public TimeSpan? MinTime { get; set; }
+
+    [Parameter] public TimeSpan? MaxTime { get; set; }
+
+    [Parameter] public string? InvalidErrorMessage { get; set; }
+
+    public int ValidCount { get; set; }
+    public int InvalidCount { get; set; }
+
+    private void HandleValidSubmit() => ValidCount++;
+
+    private void HandleInvalidSubmit() => InvalidCount++;
+}
