@@ -95,6 +95,9 @@ body {
     0%, 100% { opacity: .25; }
     50% { opacity: 1; }
 }
+@media (prefers-reduced-motion: reduce) {
+    .bm-hydrating i { animation: none; }
+}
 
 /* Hamburger toggle - hidden until the nav collapses on narrow screens */
 .bm-nav-burger {

@@ -17,6 +17,7 @@
         </span>
     }
     <button type="button" class="bm-nav-burger" @onclick="Toggle" aria-label="Toggle navigation"
+            disabled="@(RendererInfo.IsInteractive is false)"
             aria-expanded="@(_open ? "true" : "false")" aria-controls="bm-nav-links">
         <span></span><span></span><span></span>
     </button>
