@@ -64,7 +64,7 @@
 </Callout>
 
 <div class="pager">
-    <a href="">
+    <a href="/">
         <span class="pager-label">Previous</span>
         <b>← Introduction</b>
     </a>
@@ -91,7 +91,11 @@
     }
 });";
 
-    private const string AutostartCode = @"<script src=""_framework/blazor.webassembly.js"" autostart=""false""></script>";
+    private const string AutostartCode = @"<!-- standalone WebAssembly app (wwwroot/index.html): -->
+<script src=""_framework/blazor.webassembly.js"" autostart=""false""></script>
+
+<!-- Blazor Web App with Interactive WebAssembly (Components/App.razor): -->
+<script src=""_framework/blazor.web.js"" autostart=""false""></script>";
 
     private const string ScriptTagCode = @"<script src=""_content/Bit.Bswup/bit-bswup.js""
         scope=""/""

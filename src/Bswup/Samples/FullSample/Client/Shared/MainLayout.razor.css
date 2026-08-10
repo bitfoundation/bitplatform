@@ -20,9 +20,18 @@
     z-index: 1000;
 }
 
+    /* A <button> keeps the dismiss control keyboard-reachable and activatable with
+       Enter/Space; these resets strip the native chrome so it still reads as the plain
+       glyph the stock templates show. */
     #blazor-error-ui .dismiss {
         cursor: pointer;
         position: absolute;
         right: 0.75rem;
         top: 0.5rem;
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+        line-height: 1;
     }
