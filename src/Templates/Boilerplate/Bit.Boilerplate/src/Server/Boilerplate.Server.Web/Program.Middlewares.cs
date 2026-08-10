@@ -190,7 +190,7 @@ public static partial class Program
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
-              {
+                    {
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))

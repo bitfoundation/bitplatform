@@ -108,28 +108,30 @@ public static partial class WebApplicationExtensions
 
                 List<string> pagedProductsUrls = [];
 
-                while (pagedProductsUrls.Count < maxProducts)
+                while (pagedProductsUrls.Count <= maxProducts)
                 {
+                    var top = Math.Min(pageSize, maxProducts + 1 - pagedProductsUrls.Count);
+
                     var page = await controller.WithQuery(new ODataQuery()
                     {
                         Select = nameof(ProductDto.ShortId), // All ProductDto.PageUrl needs.
                         OrderBy = nameof(ProductDto.ShortId), // $skip without an order returns an arbitrary subset.
-                        Top = Math.Min(pageSize, maxProducts - pagedProductsUrls.Count),
+                        Top = top,
                         Skip = pagedProductsUrls.Count
                     }).Get(context.RequestAborted);
 
                     pagedProductsUrls.AddRange(page.Select(p => p.PageUrl));
 
-                    if (page.Count < pageSize)
-                        break;
+                    if (page.Count < top)
+                        break; // Fewer rows than were asked for, so that was the end of the catalogue.
                 }
 
-                if (pagedProductsUrls.Count >= maxProducts)
+                if (pagedProductsUrls.Count > maxProducts)
                 {
                     app.Logger.LogWarning("products.xml holds the first {MaxProducts} products only. A sitemap may carry 50,000 urls and each product is listed once per culture, so the rest of the catalogue is not advertised until this document is split into several.", maxProducts);
                 }
 
-                var productsUrls = pagedProductsUrls.ToArray();
+                var productsUrls = pagedProductsUrls.Take(maxProducts).ToArray();
 
                 productsUrls = CultureInfoManager.InvariantGlobalization is false
                     ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
