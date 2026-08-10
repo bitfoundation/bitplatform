@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Bit.Butil.E2ETests;
 
 /// <summary>
-/// Boots <c>Bit.Butil.Demo.Web</c> as a child process for the duration of the test session and
+/// Boots <c>Bit.Butil.Samples.Web</c> as a child process for the duration of the test session and
 /// exposes the URL test fixtures should hit. Reuses an externally-running server when
 /// <c>BUTIL_E2E_BASE_URL</c> is set so CI can hand-roll the boot if it wants.
 /// </summary>
@@ -102,14 +102,14 @@ public class DemoServerFixture
         var dir = AppContext.BaseDirectory;
         for (var i = 0; i < 10 && dir is not null; i++)
         {
-            var candidate = Path.Combine(dir, "Demo", "Bit.Butil.Demo.Web", "Bit.Butil.Demo.Web.csproj");
+            var candidate = Path.Combine(dir, "Samples", "Bit.Butil.Samples.Web", "Bit.Butil.Samples.Web.csproj");
             if (File.Exists(candidate)) return candidate;
             // Also handle running from tests/Bit.Butil.E2ETests/bin/Debug/...
-            candidate = Path.Combine(dir, "..", "..", "..", "..", "..", "Demo", "Bit.Butil.Demo.Web", "Bit.Butil.Demo.Web.csproj");
+            candidate = Path.Combine(dir, "..", "..", "..", "..", "..", "Samples", "Bit.Butil.Samples.Web", "Bit.Butil.Samples.Web.csproj");
             if (File.Exists(candidate)) return Path.GetFullPath(candidate);
             dir = Path.GetDirectoryName(dir);
         }
-        throw new InvalidOperationException("Could not locate Bit.Butil.Demo.Web.csproj relative to the test binaries.");
+        throw new InvalidOperationException("Could not locate Bit.Butil.Samples.Web.csproj relative to the test binaries.");
     }
 
     private static async Task WaitForReady(string baseUrl)
