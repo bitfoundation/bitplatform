@@ -454,6 +454,12 @@ public class BitColorTests
         DataRow("hsva(1,2%,3%,0.5)", BitColorFormat.Hsva),
         DataRow("hwb(1 2% 3%)", BitColorFormat.Hwb),
         DataRow("hwb(1 2% 3% / 0.5)", BitColorFormat.Hwba),
+        DataRow("hwba(1 2% 3% / 0.5)", BitColorFormat.Hwba),
+        // The notations with no format of their own keep the alpha they carry, in the one notation that
+        // is always available to hold it.
+        DataRow("lab(70% 40 20 / 0.5)", BitColorFormat.Rgba),
+        DataRow("lch(70% 40 200 / 0.5)", BitColorFormat.Rgba),
+        DataRow("color(srgb 1 0 0 / 0.5)", BitColorFormat.Rgba),
         DataRow("oklab(0.5 0.1 0.1)", BitColorFormat.Oklab),
         DataRow("oklab(0.5 0.1 0.1 / 0.5)", BitColorFormat.Oklaba),
         DataRow("oklch(0.5 0.1 200)", BitColorFormat.Oklch),
@@ -472,7 +478,10 @@ public class BitColorTests
         DataRow("tomato"),
         DataRow("color(srgb 1 0 0)"),
         DataRow("lab(70% 40 20)"),
-        DataRow("lch(70% 40 200)")
+        DataRow("lch(70% 40 200)"),
+        // A space this model does not read names nothing either, alpha or no alpha: the value is refused
+        // by the parser, so a format detected off it would describe a color the picker never took.
+        DataRow("color(display-p3 1 0 0 / 0.5)")
     ]
     public void BitColorShouldDetectNoFormatForUnnotatedInput(string? color)
     {

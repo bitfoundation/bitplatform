@@ -39,6 +39,14 @@ namespace BitBlazorUI {
                 };
             };
 
+            // A .NET handler that throws - or a consumer callback behind it that does - rejects the promise
+            // this returns. Nothing awaits it, so an unhandled rejection is all the page would see of it,
+            // reported without the call that raised it; the .NET side handles the exception either way.
+            const invoke = (method: string, ...args: any[]) => {
+                dotnetObj.invokeMethodAsync(method, ...args)
+                         .catch(e => console.error('BitBlazorUI.ColorPicker:', method, e));
+            };
+
             const flushMove = () => {
                 rafId = 0;
                 // Disposing aborts the listeners, but not a frame that is already queued: it still runs,
@@ -47,7 +55,7 @@ namespace BitBlazorUI {
                 if (dragging === false || latestPosition === null) return;
                 const position = latestPosition;
                 latestPosition = null;
-                dotnetObj.invokeMethodAsync(pointerHandler, position.x, position.y);
+                invoke(pointerHandler, position.x, position.y);
             };
 
             const endDrag = () => {
@@ -58,7 +66,7 @@ namespace BitBlazorUI {
                     cancelAnimationFrame(rafId);
                     rafId = 0;
                 }
-                dotnetObj.invokeMethodAsync(pointerUpHandler);
+                invoke(pointerUpHandler);
             };
 
             saturationPicker?.addEventListener('pointerdown', e => {
@@ -74,7 +82,7 @@ namespace BitBlazorUI {
                 saturationPicker.focus();
 
                 const position = toRelativePosition(e);
-                dotnetObj.invokeMethodAsync(pointerHandler, position.x, position.y);
+                invoke(pointerHandler, position.x, position.y);
             }, { signal });
 
             saturationPicker?.addEventListener('keydown', e => {
@@ -116,7 +124,13 @@ namespace BitBlazorUI {
             try {
                 const result = await new (window as any).EyeDropper().open();
                 return result?.sRGBHex ?? null;
-            } catch {
+            } catch (e) {
+                // Dismissing it rejects with an AbortError, which is the user answering rather than a
+                // fault: only what is left over that is reported.
+                if ((e as any)?.name !== 'AbortError') {
+                    console.error('BitBlazorUI.ColorPicker.openEyeDropper:', e);
+                }
+
                 return null;
             }
         }

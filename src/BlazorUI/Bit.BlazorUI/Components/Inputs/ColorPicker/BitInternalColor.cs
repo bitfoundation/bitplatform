@@ -378,7 +378,15 @@ internal sealed class BitInternalColor
 
         if (name is null) return null;
 
-        var hasAlphaArgument = SplitArguments(text).Length > 3;
+        var args = SplitArguments(text);
+
+        // color() names its color space in the first argument, which shifts the alpha one place along
+        // with every channel it also shifts.
+        var hasAlphaArgument = args.Length > (name == "color" ? 4 : 3);
+
+        // Only the sRGB spaces are read, so only they can name a format; any other space is a color this
+        // model does not take, and answering with one it never parsed would be worse than naming nothing.
+        var readableColorFunction = name == "color" && args.Length > 0 && args[0].ToLowerInvariant() is "srgb" or "srgb-linear";
 
         return name switch
         {
@@ -388,9 +396,18 @@ internal sealed class BitInternalColor
             "hsl" => hasAlphaArgument ? BitColorFormat.Hsla : BitColorFormat.Hsl,
             "hsva" or "hsba" => BitColorFormat.Hsva,
             "hsv" or "hsb" => hasAlphaArgument ? BitColorFormat.Hsva : BitColorFormat.Hsv,
+            // CSS has no hwba() function, but the parser takes one, so the notation it detects has to
+            // agree with the notation it reads.
+            "hwba" => BitColorFormat.Hwba,
             "hwb" => hasAlphaArgument ? BitColorFormat.Hwba : BitColorFormat.Hwb,
             "oklab" => hasAlphaArgument ? BitColorFormat.Oklaba : BitColorFormat.Oklab,
             "oklch" => hasAlphaArgument ? BitColorFormat.Oklcha : BitColorFormat.Oklch,
+            // lab(), lch() and color() are read but have no notation of their own to be answered in, so
+            // they name none and the picker falls back to its default. The alpha they carry must not fall
+            // with the notation, though - a value bound to one of them is the only place it is kept - so
+            // an alpha-carrying one names the rgba() that can still hold it.
+            "lab" or "lch" => hasAlphaArgument ? BitColorFormat.Rgba : null,
+            "color" => readableColorFunction && hasAlphaArgument ? BitColorFormat.Rgba : null,
             _ => null
         };
     }
