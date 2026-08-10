@@ -3,9 +3,15 @@
 
 @{
     var disabled = _IsInputDisabled;
-    var slidersDisabled = _IsSliderDisabled;
     var eyeDropperIcon = BitIconInfo.From(EyeDropperIcon, EyeDropperIconName ?? "Eyedropper");
-    var hexValue = ShowAlphaSlider ? _color.HexAlpha : _color.Hex;
+    var switchIcon = BitIconInfo.From(InputsModeSwitchIcon, InputsModeSwitchIconName ?? "Sort");
+    var presetsStyle = PresetsPerRow > 0
+                            ? $"--bit-clp-prs-cols:{PresetsPerRow};{Styles?.Presets}"
+                            : Styles?.Presets;
+    var contrast = ShowContrast ? _Contrast : 0;
+    var contrastText = FormatContrast(contrast);
+    var aaNormal = BitThemeColorContrast.MeetsWcagAaNormalText(contrast);
+    var aaLarge = BitThemeColorContrast.MeetsWcagAaLargeText(contrast);
 }
 
 <div @ref="RootElement"
@@ -15,9 +21,28 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@_AriaLabel"
-     aria-readonly="@(ReadOnly ? "true" : null)"
+     aria-label="@(_AriaLabelledBy is null ? _AriaLabel : null)"
+     aria-labelledby="@_AriaLabelledBy"
      aria-disabled="@(IsEnabled ? null : "true")">
+
+    @* aria-readonly is not a state a "group" carries - it belongs to the widgets inside it, which is where
+       the saturation slider and the native ranges declare it. *@
+
+    @if (_HasLabel)
+    {
+        @* Not a label element: with no single input to point a "for" at, a label here would label nothing.
+           The panel is named through aria-labelledby referencing this id instead. *@
+        <div id="@_LabelId" style="@Styles?.LabelContainer" class="bit-clp-lbc @Classes?.LabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Label" class="bit-clp-lbl @Classes?.Label">@Label</span>
+            }
+        </div>
+    }
 
     @* The saturation-brightness area is a two-dimensional control, which no ARIA role covers on its own:
        it is exposed as a slider over the saturation, named as a 2D slider so the arrangement is announced,
@@ -57,7 +82,7 @@
                        aria-label="Hue"
                        value="@_HueValue"
                        tabindex="@_TabIndex"
-                       disabled="@slidersDisabled"
+                       disabled="@disabled"
                        style="@Styles?.SliderInput"
                        class="bit-clp-inp @Classes?.SliderInput"
                        aria-valuetext="@_HueValueText" />
@@ -79,7 +104,7 @@
                            aria-label="Alpha"
                            value="@_AlphaValue"
                            tabindex="@_TabIndex"
-                           disabled="@slidersDisabled"
+                           disabled="@disabled"
                            style="@Styles?.SliderInput"
                            class="bit-clp-inp @Classes?.SliderInput"
                            aria-valuetext="@($"Alpha {_AlphaPercentValue}%")" />
@@ -116,33 +141,39 @@
 
     @if (ShowInputs)
     {
-        @* Keyed by a revision that only moves when a field has to be overwritten with something other than
-           what the user typed, since replacing the elements is the only way to do that. *@
-        <div @key="_inputsRevision" class="bit-clp-inps @Classes?.Inputs" style="@Styles?.Inputs">
-            <div class="bit-clp-fld bit-clp-fhx @Classes?.Field" style="@Styles?.Field">
-                @* Committed on change rather than on input, so a hex is read once it has been typed out
-                   instead of the picker jumping around after every keystroke. *@
-                <input @onchange="HandleOnHexInput"
-                       type="text"
-                       maxlength="9"
-                       autocomplete="off"
-                       spellcheck="false"
-                       value="@hexValue"
-                       disabled="@disabled"
-                       tabindex="@(disabled ? "-1" : TabIndex)"
-                       id="@($"{_Id}-hex")"
-                       style="@Styles?.FieldInput"
-                       class="bit-clp-fin @Classes?.FieldInput" />
-                <label for="@($"{_Id}-hex")" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">Hex</label>
-            </div>
-
-            @foreach (var (index, name, title, value) in _RgbFields)
+        <div class="bit-clp-inps @Classes?.Inputs" style="@Styles?.Inputs">
+            @if (_ShowHexField)
             {
-                <div class="bit-clp-fld @Classes?.Field" style="@Styles?.Field">
-                    <input @onchange="e => HandleOnChannelInput(e, index)"
+                <div class="bit-clp-fld bit-clp-fhx @Classes?.Field" style="@Styles?.Field">
+                    @* Committed on change rather than on input, so a hex is read once it has been typed out
+                       instead of the picker jumping around after every keystroke. *@
+                    <input @ref="_hexInputRef"
+                           @onchange="HandleOnHexInput"
+                           type="text"
+                           maxlength="9"
+                           autocomplete="off"
+                           spellcheck="false"
+                           value="@_HexValue"
+                           disabled="@disabled"
+                           tabindex="@(disabled ? "-1" : TabIndex)"
+                           id="@($"{_Id}-hex")"
+                           style="@Styles?.FieldInput"
+                           class="bit-clp-fin @Classes?.FieldInput" />
+                    <label for="@($"{_Id}-hex")" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">Hex</label>
+                </div>
+            }
+
+            @* Keyed by the mode, so moving from one set of channels to another replaces the fields rather
+               than retitling them - which would leave the browser's own undo history, and any half-typed
+               number, attached to a field that now means something else. *@
+            @foreach (var (index, name, title, value, max) in _ChannelFields)
+            {
+                <div @key="@($"{InputsMode}-{name}")" class="bit-clp-fld @Classes?.Field" style="@Styles?.Field">
+                    <input @ref="_channelInputRefs[index]"
+                           @onchange="e => HandleOnChannelInput(e, index)"
                            min="0"
-                           max="255"
                            step="1"
+                           max="@max"
                            type="number"
                            title="@title"
                            value="@value"
@@ -159,7 +190,8 @@
             @if (ShowAlphaSlider)
             {
                 <div class="bit-clp-fld @Classes?.Field" style="@Styles?.Field">
-                    <input @onchange="HandleOnAlphaFieldInput"
+                    <input @ref="_alphaInputRef"
+                           @onchange="HandleOnAlphaFieldInput"
                            min="0"
                            max="100"
                            step="1"
@@ -175,22 +207,71 @@
                     <label for="@($"{_Id}-alpha")" title="Alpha" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">A%</label>
                 </div>
             }
+
+            @if (ShowInputsModeSwitch)
+            {
+                @* Enabled wherever the picker itself is: it moves which numbers the color is being read as,
+                   not the color, so a read-only picker has nothing to refuse about it. *@
+                <div class="bit-clp-fld bit-clp-fsw @Classes?.Field" style="@Styles?.Field">
+                    <button @onclick="HandleOnInputsModeSwitchClick"
+                            type="button"
+                            disabled="@(IsEnabled is false)"
+                            tabindex="@(IsEnabled ? TabIndex : "-1")"
+                            style="@Styles?.InputsModeSwitch"
+                            title="@($"Color inputs: {InputsMode}")"
+                            aria-label="@($"Color inputs: {InputsMode}. Switch to the next set.")"
+                            class="bit-clp-swb @Classes?.InputsModeSwitch">
+                        <i aria-hidden="true"
+                           style="@Styles?.InputsModeSwitchIcon"
+                           class="bit-clp-swi @switchIcon?.GetCssClasses() @Classes?.InputsModeSwitchIcon">
+                        </i>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (ShowContrast)
+    {
+        @* Not a live region: the ratio moves on every frame of a drag, and a screen reader reading each one
+           out would drown the picker it is describing. It is read when the user goes looking for it. *@
+        <div class="bit-clp-cnr @Classes?.Contrast" style="@Styles?.Contrast">
+            <span style="@Styles?.ContrastRatio"
+                  class="bit-clp-cnv @Classes?.ContrastRatio"
+                  aria-label="@($"Contrast ratio {contrastText} to 1")">@contrastText:1</span>
+            @* Both bars, because a color that is fine for a heading is not necessarily fine for body text,
+               and the whole point of showing the number here is to answer that before the page ships. *@
+            <span style="@Styles?.ContrastBadge"
+                  class="bit-clp-cnb @(aaNormal ? "bit-clp-cnp" : "bit-clp-cnf") @Classes?.ContrastBadge"
+                  aria-label="@($"WCAG AA for normal text: {(aaNormal ? "pass" : "fail")}")">AA</span>
+            <span style="@Styles?.ContrastBadge"
+                  class="bit-clp-cnb @(aaLarge ? "bit-clp-cnp" : "bit-clp-cnf") @Classes?.ContrastBadge"
+                  aria-label="@($"WCAG AA for large text: {(aaLarge ? "pass" : "fail")}")">AA Large</span>
         </div>
     }
 
     @if (_Presets.Count > 0)
     {
-        <div class="bit-clp-prs @Classes?.Presets" style="@Styles?.Presets" role="group" aria-label="Color presets">
-            @foreach (var preset in _Presets)
+        @* A toolbar rather than a plain group: a palette is a set of alternatives, so it takes one Tab to
+           reach and the arrow keys to move within. A tab stop per swatch would put a thirty-color palette
+           between the picker and everything after it on the page. *@
+        <div @ref="_presetsRef"
+             class="bit-clp-prs @(PresetsPerRow > 0 ? "bit-clp-prg" : null) @Classes?.Presets"
+             style="@presetsStyle"
+             role="toolbar"
+             aria-label="Color presets">
+            @{
+                var tabStop = _PresetTabStop;
+                var presets = _Presets;
+            }
+            @* The index is copied into the loop body before anything closes over it: a for-loop variable is
+               one variable shared by every iteration, so a handler capturing it directly would be handed the
+               count rather than the swatch it belongs to. *@
+            @for (var i = 0; i < presets.Count; i++)
             {
-                @* A swatch that carries no alpha of its own is picked onto whatever alpha the picker is
-                   already on, so it is the swatch the picker is on whenever the RGB matches - comparing its
-                   opaque alpha too would leave a semi-transparent picker showing nothing as selected. One
-                   that does carry an alpha names a transparency of its own, and is only on when that matches. *@
-                var isSelected = preset.Color.R == _color.R
-                              && preset.Color.G == _color.G
-                              && preset.Color.B == _color.B
-                              && (preset.Color.HasParsedAlpha is false || preset.Color.A == _color.A);
+                var index = i;
+                var preset = presets[index];
+                var isSelected = IsPresetSelected(preset.Color);
                 var presetStyle = $"--bit-clp-prt-clr:{preset.Css};{Styles?.Preset}";
 
                 if (isSelected && Styles?.SelectedPreset is not null)
@@ -198,13 +279,15 @@
                     presetStyle = $"{presetStyle};{Styles.SelectedPreset}";
                 }
 
-                <button @onclick="() => HandleOnPresetClick(preset.Value)"
+                <button @ref="_presetRefs[index]"
+                        @onclick="() => HandleOnPresetClick(preset.Value)"
+                        @onkeydown="e => HandleOnPresetsKeyDown(e, index)"
                         type="button"
                         title="@preset.Value"
                         disabled="@disabled"
                         style="@presetStyle"
-                        aria-label="@preset.Value"
-                        tabindex="@(disabled ? "-1" : TabIndex)"
+                        aria-label="@($"{preset.Color.ColorDescription}, {preset.Value}")"
+                        tabindex="@(disabled || index != tabStop ? "-1" : TabIndex ?? "0")"
                         aria-pressed="@(isSelected ? "true" : "false")"
                         class="bit-clp-prt @(isSelected ? "bit-clp-prt-sel" : null) @Classes?.Preset @(isSelected ? Classes?.SelectedPreset : null)">
                 </button>

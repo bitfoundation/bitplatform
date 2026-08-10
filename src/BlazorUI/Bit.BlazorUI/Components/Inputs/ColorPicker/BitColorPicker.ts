@@ -41,6 +41,9 @@ namespace BitBlazorUI {
 
             const flushMove = () => {
                 rafId = 0;
+                // Disposing aborts the listeners, but not a frame that is already queued: it still runs,
+                // and by then the .NET reference it would call has been disposed with the component.
+                if (signal.aborted) return;
                 if (dragging === false || latestPosition === null) return;
                 const position = latestPosition;
                 latestPosition = null;

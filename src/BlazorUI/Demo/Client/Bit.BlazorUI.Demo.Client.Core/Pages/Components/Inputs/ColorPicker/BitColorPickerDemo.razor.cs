@@ -13,6 +13,13 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the saturation-brightness area takes the focus on the first render.",
+        },
+        new()
+        {
             Name = "Classes",
             Type = "BitColorPickerClassStyles?",
             DefaultValue = "null",
@@ -25,7 +32,14 @@ public partial class BitColorPickerDemo
             Name = "Color",
             Type = "string",
             DefaultValue = "rgb(255,255,255)",
-            Description = "String describing the color. Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax, as are hsv() and hsva(), which are not CSS notations but the model the picker itself is built on.",
+            Description = "String describing the color. Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), hwb(), lab() and lch(), oklab() and oklch(), color(srgb ...), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax, as are hsv() and hsva(), which are not CSS notations but the model the picker itself is built on.",
+        },
+        new()
+        {
+            Name = "ContrastColor",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The color the contrast readout measures the picked color against - the background it is going to be read on. It accepts any of the notations Color does, and defaults to white.",
         },
         new()
         {
@@ -52,6 +66,43 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "InputsMode",
+            Type = "BitColorInputsMode",
+            DefaultValue = "BitColorInputsMode.HexRgb",
+            Description = "Which channels the text fields are written in. It decides how the color is typed, not how it is published - a picker edited in HSL still answers in whatever Format says.",
+            LinkType = LinkType.Link,
+            Href = "#color-inputs-mode-enum",
+        },
+        new()
+        {
+            Name = "InputsModeSwitchIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the inputs mode switch button, using custom CSS classes for external icon libraries. Takes precedence over InputsModeSwitchIconName when both are set.",
+        },
+        new()
+        {
+            Name = "InputsModeSwitchIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Custom icon name for the inputs mode switch button. If unset, default will be the Sort icon.",
+        },
+        new()
+        {
+            Name = "Label",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text that names the picker. It is not a label element: with no single input to point a \"for\" at, one would label nothing, so the panel is named through aria-labelledby instead.",
+        },
+        new()
+        {
+            Name = "LabelTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom markup in place of the plain Label text, for when the name needs more than a string.",
+        },
+        new()
+        {
             Name = "OnChange",
             Type = "EventCallback<BitColorChangeEventArgs>",
             Description = "Callback for when the value changed. It fires on every step of a drag.",
@@ -75,6 +126,13 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "PresetsPerRow",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "How many preset swatches are laid out per row. Left unset they simply wrap; setting it lays them out on a grid instead, which keeps a palette meant to be read in columns in the arrangement it was written in.",
+        },
+        new()
+        {
             Name = "ReadOnly",
             Type = "bool",
             DefaultValue = "false",
@@ -89,6 +147,13 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "ShowContrast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the contrast readout: how far the picked color stands from the ContrastColor it will be read on, and whether that clears the WCAG bar for text.",
+        },
+        new()
+        {
             Name = "ShowEyeDropper",
             Type = "bool",
             DefaultValue = "false",
@@ -100,6 +165,13 @@ public partial class BitColorPickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether to show the hexadecimal and Red-Green-Blue text fields, which is how an exact color is entered or read off without hunting for it on the gradient.",
+        },
+        new()
+        {
+            Name = "ShowInputsModeSwitch",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether to show the button that moves the text fields from one set of channels to the next, so the user can type the color in whichever model they are thinking in.",
         },
         new()
         {
@@ -191,6 +263,25 @@ public partial class BitColorPickerDemo
                     Type = "(double Hue, double Saturation, double Value)",
                     Description = "The changed color as hue (0-360), saturation and value (both 0-1)."
                 },
+                new()
+                {
+                    Name = "Hwb",
+                    Type = "(double Hue, double Whiteness, double Blackness)",
+                    Description = "The changed color as hue (0-360), whiteness and blackness (both 0-1)."
+                },
+                new()
+                {
+                    Name = "Oklch",
+                    Type = "(double Lightness, double Chroma, double Hue)",
+                    Description = "The changed color as Oklab lightness (0-1), chroma (0 to about 0.4) and hue (0-360)."
+                },
+                new()
+                {
+                    Name = "ColorDescription",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "The changed color said in words, e.g. \"light vibrant blue\"."
+                },
             ]
         },
         new()
@@ -201,6 +292,8 @@ public partial class BitColorPickerDemo
             Parameters =
             [
                 new() { Name = "Root", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the root element of the color picker." },
+                new() { Name = "LabelContainer", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the element the label is rendered into." },
+                new() { Name = "Label", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the label text of the color picker." },
                 new() { Name = "SaturationPicker", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the saturation-value area of the color picker." },
                 new() { Name = "SaturationThumb", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the thumb of the saturation-value area." },
                 new() { Name = "Content", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the row that holds the sliders, the eye dropper and the preview." },
@@ -210,11 +303,16 @@ public partial class BitColorPickerDemo
                 new() { Name = "SliderInput", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the range inputs of both sliders." },
                 new() { Name = "EyeDropper", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the eye dropper button." },
                 new() { Name = "EyeDropperIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the icon of the eye dropper button." },
+                new() { Name = "InputsModeSwitch", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the button that moves the text fields to the next set of channels." },
+                new() { Name = "InputsModeSwitchIcon", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the icon of the inputs mode switch button." },
                 new() { Name = "Preview", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the color preview box." },
                 new() { Name = "Inputs", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the row of the hex and channel text fields." },
                 new() { Name = "Field", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for a single field of the inputs row, label included." },
                 new() { Name = "FieldInput", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the text input of a single field." },
                 new() { Name = "FieldLabel", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the caption of a single field." },
+                new() { Name = "Contrast", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the row that holds the contrast readout." },
+                new() { Name = "ContrastRatio", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the contrast ratio itself." },
+                new() { Name = "ContrastBadge", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for a pass/fail badge of the contrast readout." },
                 new() { Name = "Presets", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the container of the preset swatches." },
                 new() { Name = "Preset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for a single preset swatch." },
                 new() { Name = "SelectedPreset", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the preset swatch of the current color, applied on top of Preset." },
@@ -239,6 +337,26 @@ public partial class BitColorPickerDemo
                 new() { Name = "Hsla", Description = "Functional HSL notation with an alpha channel: hsla(0,100%,50%,0.5).", Value = "5" },
                 new() { Name = "Hsv", Description = "Functional HSV notation: hsv(0,100%,100%). It is the model the picker itself is built on, but unlike the others it is not a notation any browser understands.", Value = "6" },
                 new() { Name = "Hsva", Description = "Functional HSV notation with an alpha channel: hsva(0,100%,100%,0.5).", Value = "7" },
+                new() { Name = "Hwb", Description = "Functional HWB notation: hwb(0 0% 0%). CSS only defines the space-separated syntax for it, so that is the one written.", Value = "8" },
+                new() { Name = "Hwba", Description = "Functional HWB notation with an alpha channel: hwb(0 0% 0% / 0.5). CSS has no hwba() function - the alpha is written into hwb() itself, after a slash.", Value = "9" },
+                new() { Name = "Oklab", Description = "Functional Oklab notation: oklab(0.6279 0.2249 0.1258). Oklab is a perceptually uniform color space, so the same numeric step covers the same visual difference wherever it is taken.", Value = "10" },
+                new() { Name = "Oklaba", Description = "Functional Oklab notation with an alpha channel: oklab(0.6279 0.2249 0.1258 / 0.5).", Value = "11" },
+                new() { Name = "Oklch", Description = "Functional Oklch notation: oklch(0.6279 0.2577 29.23). It is the polar form of Oklab, and the notation modern design tokens are increasingly written in.", Value = "12" },
+                new() { Name = "Oklcha", Description = "Functional Oklch notation with an alpha channel: oklch(0.6279 0.2577 29.23 / 0.5).", Value = "13" },
+            ]
+        },
+        new()
+        {
+            Id = "color-inputs-mode-enum",
+            Name = "BitColorInputsMode",
+            Description = "Which channels the text fields of the color picker are written in. The mode only decides how the color is typed and read off, not the value the picker publishes - that is what BitColorFormat is for.",
+            Items =
+            [
+                new() { Name = "HexRgb", Description = "The hexadecimal field alongside the three Red-Green-Blue channels, which is the pair most color pickers show together.", Value = "0" },
+                new() { Name = "Hex", Description = "The hexadecimal field on its own.", Value = "1" },
+                new() { Name = "Rgb", Description = "The Red, Green and Blue channels, each from 0 to 255.", Value = "2" },
+                new() { Name = "Hsl", Description = "Hue in degrees, saturation and lightness as percentages.", Value = "3" },
+                new() { Name = "Hsv", Description = "Hue in degrees, saturation and brightness as percentages - the model the picker itself is driven in.", Value = "4" },
             ]
         },
         new()
@@ -264,6 +382,11 @@ public partial class BitColorPickerDemo
     private string inputsColor = "#B3804D";
     private string inputsAlphaColor = "#4DB39980";
 
+    private BitColorInputsMode inputsMode = BitColorInputsMode.HexRgb;
+    private string inputsModeColor = "#B34D6B";
+    private string hslInputsColor = "hsl(150,45%,45%)";
+    private string hexInputsColor = "#4D6BB3";
+
     private static readonly string[] brandPresets =
     [
         "#E24A4A", "#E2934A", "#E2D24A", "#7EE24A", "#4AE2C0",
@@ -273,11 +396,22 @@ public partial class BitColorPickerDemo
 
     private static readonly string[] alphaPresets =
     [
-        "rgba(74,155,226,1)", "rgba(74,155,226,0.75)", "rgba(74,155,226,0.5)", "rgba(74,155,226,0.25)"
+        "rgba(74,155,226,1)", "rgba(74,155,226,0.75)", "rgba(74,155,226,0.5)", "rgba(74,155,226,0.25)", "transparent"
     ];
     private string alphaPresetColor = "rgba(74,155,226,0.5)";
 
+    private static readonly string[] rampPresets =
+    [
+        "#FDE7E7", "#F7B9B9", "#EE8080", "#E24A4A", "#B02F2F",
+        "#E7F0FB", "#B9D3F2", "#80B0E8", "#4A9BE2", "#2F6BB0"
+    ];
+    private string rampPresetColor = "#4A9BE2";
+
     private string eyeDropperColor = "#5B8C5A";
+
+    private string contrastColor = "#767676";
+    private string contrastBackground = "#FFFFFF";
+    private string contrastOnDarkColor = "rgba(122,200,255,1)";
 
     private BitColorFormat selectedFormat = BitColorFormat.Hex;
     private string formatColor = "#B34D8C";
@@ -327,6 +461,14 @@ public partial class BitColorPickerDemo
     private readonly string example1RazorCode = @"
 <BitColorPicker />
 
+<BitColorPicker Label=""Brand color"" Color=""#4AE2C0"" />
+
+<BitColorPicker Color=""#E2934A"">
+    <LabelTemplate>
+        <BitIcon IconName=""@BitIconName.Color"" /> <b>Accent color</b>
+    </LabelTemplate>
+</BitColorPicker>
+
 <BitColorPicker IsEnabled=""false"" Color=""#B34D4D"" />
 
 <BitColorPicker ReadOnly Color=""#4D7FB3"" />";
@@ -355,6 +497,26 @@ private string inputsColor = ""#B3804D"";
 private string inputsAlphaColor = ""#4DB39980"";";
 
     private readonly string example4RazorCode = @"
+<BitColorPicker ShowInputs ShowPreview ShowInputsModeSwitch
+                @bind-InputsMode=""inputsMode"" @bind-Color=""inputsModeColor"" />
+<div>Mode: @inputsMode &nbsp; Color: @inputsModeColor</div>
+
+<BitColorPicker ShowInputs ShowPreview
+                InputsMode=""BitColorInputsMode.Hsl""
+                @bind-Color=""hslInputsColor"" />
+<div>Color: @hslInputsColor</div>
+
+<BitColorPicker ShowInputs ShowPreview
+                InputsMode=""BitColorInputsMode.Hex""
+                @bind-Color=""hexInputsColor"" />
+<div>Color: @hexInputsColor</div>";
+    private readonly string example4CsharpCode = @"
+private BitColorInputsMode inputsMode = BitColorInputsMode.HexRgb;
+private string inputsModeColor = ""#B34D6B"";
+private string hslInputsColor = ""hsl(150,45%,45%)"";
+private string hexInputsColor = ""#4D6BB3"";";
+
+    private readonly string example5RazorCode = @"
 <BitColorPicker ShowPreview Presets=""brandPresets"" @bind-Color=""presetColor"" />
 <div>Color: @presetColor</div>
 
@@ -362,8 +524,11 @@ private string inputsAlphaColor = ""#4DB39980"";";
                 Presets=""alphaPresets""
                 Format=""BitColorFormat.Rgba""
                 @bind-Color=""alphaPresetColor"" />
-<div>Color: @alphaPresetColor</div>";
-    private readonly string example4CsharpCode = @"
+<div>Color: @alphaPresetColor</div>
+
+<BitColorPicker ShowPreview Presets=""rampPresets"" PresetsPerRow=""5"" @bind-Color=""rampPresetColor"" />
+<div>Color: @rampPresetColor</div>";
+    private readonly string example5CsharpCode = @"
 private static readonly string[] brandPresets =
 [
     ""#E24A4A"", ""#E2934A"", ""#E2D24A"", ""#7EE24A"", ""#4AE2C0"",
@@ -373,17 +538,42 @@ private string presetColor = ""#4A9BE2"";
 
 private static readonly string[] alphaPresets =
 [
-    ""rgba(74,155,226,1)"", ""rgba(74,155,226,0.75)"", ""rgba(74,155,226,0.5)"", ""rgba(74,155,226,0.25)""
+    ""rgba(74,155,226,1)"", ""rgba(74,155,226,0.75)"", ""rgba(74,155,226,0.5)"", ""rgba(74,155,226,0.25)"", ""transparent""
 ];
-private string alphaPresetColor = ""rgba(74,155,226,0.5)"";";
+private string alphaPresetColor = ""rgba(74,155,226,0.5)"";
 
-    private readonly string example5RazorCode = @"
-<BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color=""eyeDropperColor"" />
-<div>Color: @eyeDropperColor</div>";
-    private readonly string example5CsharpCode = @"
-private string eyeDropperColor = ""#5B8C5A"";";
+private static readonly string[] rampPresets =
+[
+    ""#FDE7E7"", ""#F7B9B9"", ""#EE8080"", ""#E24A4A"", ""#B02F2F"",
+    ""#E7F0FB"", ""#B9D3F2"", ""#80B0E8"", ""#4A9BE2"", ""#2F6BB0""
+];
+private string rampPresetColor = ""#4A9BE2"";";
 
     private readonly string example6RazorCode = @"
+<BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color=""eyeDropperColor"" />
+<div>Color: @eyeDropperColor</div>";
+    private readonly string example6CsharpCode = @"
+private string eyeDropperColor = ""#5B8C5A"";";
+
+    private readonly string example7RazorCode = @"
+<BitColorPicker ShowContrast ShowInputs ShowPreview
+                ContrastColor=""@contrastBackground""
+                @bind-Color=""contrastColor"" />
+<div>@contrastColor on @contrastBackground</div>
+
+<BitColorPicker ShowPreview ShowInputs @bind-Color=""contrastBackground"" />
+
+<BitColorPicker ShowContrast ShowAlphaSlider ShowPreview
+                ContrastColor=""#1B1A19""
+                Format=""BitColorFormat.Rgba""
+                @bind-Color=""contrastOnDarkColor"" />
+<div>Color: @contrastOnDarkColor</div>";
+    private readonly string example7CsharpCode = @"
+private string contrastColor = ""#767676"";
+private string contrastBackground = ""#FFFFFF"";
+private string contrastOnDarkColor = ""rgba(122,200,255,1)"";";
+
+    private readonly string example8RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowPreview Format=""selectedFormat"" @bind-Color=""formatColor"" />
 <div>Color: @formatColor</div>
 
@@ -399,12 +589,18 @@ private string eyeDropperColor = ""#5B8C5A"";";
     <BitChoiceGroupOption Text=""Hsla"" Value=""BitColorFormat.Hsla"" />
     <BitChoiceGroupOption Text=""Hsv"" Value=""BitColorFormat.Hsv"" />
     <BitChoiceGroupOption Text=""Hsva"" Value=""BitColorFormat.Hsva"" />
+    <BitChoiceGroupOption Text=""Hwb"" Value=""BitColorFormat.Hwb"" />
+    <BitChoiceGroupOption Text=""Hwba"" Value=""BitColorFormat.Hwba"" />
+    <BitChoiceGroupOption Text=""Oklab"" Value=""BitColorFormat.Oklab"" />
+    <BitChoiceGroupOption Text=""Oklaba"" Value=""BitColorFormat.Oklaba"" />
+    <BitChoiceGroupOption Text=""Oklch"" Value=""BitColorFormat.Oklch"" />
+    <BitChoiceGroupOption Text=""Oklcha"" Value=""BitColorFormat.Oklcha"" />
 </BitChoiceGroup>";
-    private readonly string example6CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private BitColorFormat selectedFormat = BitColorFormat.Hex;
 private string formatColor = ""#B34D8C"";";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitColorPicker Color=""oneWayColor"" ShowPreview />
 @foreach (var (label, color) in oneWayOptions)
 {
@@ -414,7 +610,7 @@ private string formatColor = ""#B34D8C"";";
 <BitColorPicker @bind-Color=""twoWayColor"" @bind-Alpha=""twoWayAlpha"" ShowAlphaSlider ShowPreview />
 <BitTextField Label=""Enter a color"" @bind-Value=""twoWayColor"" Style=""width: 220px;"" />
 <div>Alpha: @twoWayAlpha</div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly (string Label, string Color)[] oneWayOptions =
 [
     (""Red"", ""#E24A4A""), (""Green"", ""#4AE27E""), (""Blue"", ""#4A7FE2"")
@@ -423,13 +619,13 @@ private string oneWayColor = ""#E24A4A"";
 private string twoWayColor = ""#4A9BE2"";
 private double twoWayAlpha = 1;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowPreview
                 OnChange=""HandleOnChange""
                 OnChangeEnd=""HandleOnChangeEnd"" />
 <div>OnChange: @changeCount times, last @changedColor</div>
 <div>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private int changeCount;
 private int changeEndCount;
 private string? changedColor;
@@ -449,28 +645,31 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
     changedRgba = args.Rgba;
 }";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitColorPicker @ref=""colorPickerRef"" @bind-Color=""boundColor"" ShowAlphaSlider ShowPreview />
 <div>Color: @boundColor</div>
+<div>ColorDescription: @colorPickerRef?.ColorDescription</div>
 <div>Hex: @colorPickerRef?.Hex</div>
 <div>HexAlpha: @colorPickerRef?.HexAlpha</div>
 <div>Rgb: @colorPickerRef?.Rgb</div>
 <div>Rgba: @colorPickerRef?.Rgba</div>
 <div>Hsl: @colorPickerRef?.Hsl</div>
-<div>Hsv: @colorPickerRef?.Hsv</div>";
-    private readonly string example9CsharpCode = @"
+<div>Hsv: @colorPickerRef?.Hsv</div>
+<div>Hwb: @colorPickerRef?.Hwb</div>
+<div>Oklch: @colorPickerRef?.Oklch</div>";
+    private readonly string example11CsharpCode = @"
 private string boundColor = ""#B3B34D"";
 private BitColorPicker? colorPickerRef;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview
                 AriaLabel=""Choose the brand color""
                 @bind-Color=""accessibilityColor"" />
 <div>Color: @accessibilityColor</div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string accessibilityColor = ""#4DB3B3"";";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -480,18 +679,18 @@ private string accessibilityColor = ""#4DB3B3"";";
 
 <BitColorPicker ShowEyeDropper EyeDropperIcon=""@BitIconInfo.Bi(""eyedropper"")"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitColorPicker Size=""BitSize.Small"" ShowAlphaSlider ShowPreview @bind-Color=""smallColor"" />
 
 <BitColorPicker Size=""BitSize.Medium"" ShowAlphaSlider ShowPreview @bind-Color=""mediumColor"" />
 
 <BitColorPicker Size=""BitSize.Large"" ShowAlphaSlider ShowPreview @bind-Color=""largeColor"" />";
-    private readonly string example12CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private string smallColor = ""#C25E5E"";
 private string mediumColor = ""#5EC27A"";
 private string largeColor = ""#5E7AC2"";";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         width: 100px;
@@ -527,7 +726,7 @@ private string largeColor = ""#5E7AC2"";";
                                    Preset = ""custom-preset"",
                                    SelectedPreset = ""custom-preset-selected"" })"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowPreview ShowInputs
                 Presets=""brandPresets"" @bind-Color=""rtlColor"" />
 <div>@rtlColor</div>";

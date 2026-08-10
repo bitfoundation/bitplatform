@@ -157,6 +157,111 @@ public class BitColorTests
         Assert.AreEqual(alpha, Math.Round(bitColor.A, 2));
     }
 
+    // HWB names a hue and then how much white and how much black are stirred into it. A pair that adds up
+    // to more than the whole leaves no room for the hue, and CSS says the answer is the grey the two make.
+    [TestMethod,
+        DataRow("hwb(0 0% 0%)", "#FF0000", 1.0),
+        DataRow("hwb(120 0% 0%)", "#00FF00", 1.0),
+        DataRow("hwb(0 100% 0%)", "#FFFFFF", 1.0),
+        DataRow("hwb(0 0% 100%)", "#000000", 1.0),
+        DataRow("hwb(0 50% 50%)", "#808080", 1.0),
+        DataRow("hwb(0 80% 80%)", "#808080", 1.0)
+    ]
+    public void BitColorShouldParseHwb(string color, string hex, double alpha)
+    {
+        var bitColor = new BitInternalColor(color);
+
+        Assert.AreEqual(hex, bitColor.Hex);
+        Assert.AreEqual(alpha, Math.Round(bitColor.A, 2));
+    }
+
+    // The whiteness and the blackness survive the trip into the HSV the picker turns on and back out of it,
+    // which is what lets an hwb() binding be edited and answered in the same numbers it arrived in.
+    [TestMethod]
+    public void BitColorShouldRoundTripHwb()
+    {
+        var bitColor = new BitInternalColor("hwb(210deg 20% 30% / 0.5)");
+
+        var (hue, whiteness, blackness) = bitColor.Hwb;
+
+        Assert.AreEqual(210, Math.Round(hue, 6));
+        Assert.AreEqual(0.2, Math.Round(whiteness, 6));
+        Assert.AreEqual(0.3, Math.Round(blackness, 6));
+        Assert.AreEqual(0.5, bitColor.A);
+        Assert.AreEqual("hwb(210 20% 30% / 0.5)", bitColor.HwbaString);
+    }
+
+    // Oklab and its polar form Oklch are the color spaces modern design tokens are written in - a Tailwind
+    // palette is a list of oklch() - so a value handed straight from one has to be a color the picker reads.
+    [TestMethod,
+        DataRow("oklch(0.62796 0.25768 29.234)", "#FF0000", 1.0),
+        DataRow("oklch(0.86644 0.29483 142.4953)", "#00FF00", 1.0),
+        DataRow("oklch(0.45201 0.31321 264.052)", "#0000FF", 1.0),
+        DataRow("oklch(1 0 0)", "#FFFFFF", 1.0),
+        DataRow("oklch(0 0 0)", "#000000", 1.0),
+        DataRow("oklch(100% 0 0)", "#FFFFFF", 1.0),
+        DataRow("oklch(0.62796 0.25768 29.234 / 0.4)", "#FF0000", 0.4),
+        DataRow("oklab(0.62796 0.22486 0.12585)", "#FF0000", 1.0),
+        DataRow("oklab(0.86644 -0.23389 0.1795)", "#00FF00", 1.0),
+        DataRow("oklab(1 0 0 / 25%)", "#FFFFFF", 0.25)
+    ]
+    public void BitColorShouldParseOklabAndOklch(string color, string hex, double alpha)
+    {
+        var bitColor = new BitInternalColor(color);
+
+        Assert.AreEqual(hex, bitColor.Hex);
+        Assert.AreEqual(alpha, Math.Round(bitColor.A, 2));
+    }
+
+    // CIE Lab and its polar form are read too, which completes the CSS Color 4 set. They are read but
+    // never written: where a perceptual notation is wanted the picker answers in Oklab, which is the one
+    // that actually holds its hue when the lightness is moved.
+    [TestMethod,
+        DataRow("lab(100% 0 0)", "#FFFFFF", 1.0),
+        DataRow("lab(0% 0 0)", "#000000", 1.0),
+        DataRow("lab(54.29% 80.8 69.89)", "#FF0000", 1.0),
+        DataRow("lab(87.82% -79.27 80.99)", "#00FF00", 1.0),
+        DataRow("lab(54.29 80.8 69.89 / 0.4)", "#FF0000", 0.4),
+        DataRow("lch(54.29% 106.84 40.85)", "#FF0000", 1.0),
+        DataRow("lch(100% 0 0)", "#FFFFFF", 1.0),
+        DataRow("lch(54.29% 106.84 40.85 / 25%)", "#FF0000", 0.25)
+    ]
+    public void BitColorShouldParseLabAndLch(string color, string hex, double alpha)
+    {
+        var bitColor = new BitInternalColor(color);
+
+        Assert.AreEqual(hex, bitColor.Hex);
+        Assert.AreEqual(alpha, Math.Round(bitColor.A, 2));
+    }
+
+    // A color named outside the sRGB gamut is clamped into it rather than refused, which is what the
+    // browsers themselves do with an out-of-range oklch().
+    [TestMethod]
+    public void BitColorShouldClampAnOutOfGamutOklch()
+    {
+        Assert.AreEqual("#FF0000", new BitInternalColor("oklch(0.7 0.5 29.234)").Hex);
+        Assert.AreEqual("#000000", new BitInternalColor("oklch(-1 0 0)").Hex);
+        Assert.AreEqual("#FFFFFF", new BitInternalColor("oklch(2 0 0)").Hex);
+    }
+
+    // The color() notation names its color space first, which shifts every channel - and the alpha with
+    // them - one place along. Only the sRGB spaces are read: gamut-mapping a wider one would answer with a
+    // color that is not the one that was asked for.
+    [TestMethod,
+        DataRow("color(srgb 1 0 0)", "#FF0000", 1.0),
+        DataRow("color(srgb 0 0.5 1)", "#0080FF", 1.0),
+        DataRow("color(srgb 1 1 1 / 0.5)", "#FFFFFF", 0.5),
+        DataRow("color(srgb 100% 0% 0%)", "#FF0000", 1.0),
+        DataRow("color(srgb-linear 1 0 0)", "#FF0000", 1.0)
+    ]
+    public void BitColorShouldParseTheColorFunction(string color, string hex, double alpha)
+    {
+        var bitColor = new BitInternalColor(color);
+
+        Assert.AreEqual(hex, bitColor.Hex);
+        Assert.AreEqual(alpha, Math.Round(bitColor.A, 2));
+    }
+
     [TestMethod,
         DataRow("red", "#FF0000", 1.0),
         DataRow("Tomato", "#FF6347", 1.0),
@@ -184,7 +289,8 @@ public class BitColorTests
         DataRow("hsl(x,1%,1%)"),
         DataRow("not-a-color"),
         DataRow("rgb(1,2,3"),
-        DataRow("oklch(0.7 0.1 200)")
+        DataRow("lch(70% x 200)"),
+        DataRow("color(display-p3 1 0 0)")
     ]
     public void BitColorShouldFallBackToWhiteOnInvalidInput(string? color)
     {
@@ -244,6 +350,93 @@ public class BitColorTests
         Assert.AreEqual("hsla(0,100%,50%,0.5)", bitColor.ToString(BitColorFormat.Hsla));
         Assert.AreEqual("hsv(0,100%,100%)", bitColor.ToString(BitColorFormat.Hsv));
         Assert.AreEqual("hsva(0,100%,100%,0.5)", bitColor.ToString(BitColorFormat.Hsva));
+
+        // CSS defines hwb() and oklch() with the space-separated syntax only, and has no hwba() or
+        // oklcha() function at all - the alpha goes into the notation itself, after a slash.
+        Assert.AreEqual("hwb(0 0% 0%)", bitColor.ToString(BitColorFormat.Hwb));
+        Assert.AreEqual("hwb(0 0% 0% / 0.5)", bitColor.ToString(BitColorFormat.Hwba));
+    }
+
+    // Every notation the picker writes has to be one it can read back, or a bound value would not survive
+    // the round trip through the consumer that holds it.
+    [TestMethod,
+        DataRow("#FF0000"),
+        DataRow("#5D0914"),
+        DataRow("#123456"),
+        DataRow("#ABCDEF"),
+        DataRow("#808080"),
+        DataRow("#000000"),
+        DataRow("#FFFFFF"),
+        DataRow("#010203")
+    ]
+    public void BitColorShouldReadBackEveryFormatItWrites(string hex)
+    {
+        var source = new BitInternalColor(hex, 0.5);
+
+        foreach (var format in Enum.GetValues<BitColorFormat>())
+        {
+            var written = source.ToString(format);
+            var readBack = new BitInternalColor(written, 0.5);
+
+            Assert.AreEqual(hex, readBack.Hex, $"{format} wrote \"{written}\", which reads back as {readBack.Hex}.");
+        }
+    }
+
+    [TestMethod,
+        DataRow("#FF0000", 0.628, 0.2577, 29.23),
+        DataRow("#00FF00", 0.8664, 0.2948, 142.5),
+        DataRow("#0000FF", 0.452, 0.3132, 264.05),
+        DataRow("#FFFFFF", 1.0, 0.0, 0.0),
+        DataRow("#000000", 0.0, 0.0, 0.0)
+    ]
+    public void BitColorShouldExposeOklch(string hex, double lightness, double chroma, double hue)
+    {
+        var (l, c, h) = new BitInternalColor(hex).Oklch;
+
+        Assert.AreEqual(lightness, Math.Round(l, 4), 0.001);
+        Assert.AreEqual(chroma, Math.Round(c, 4), 0.001);
+
+        // A color with no chroma has no hue to report, so it keeps the one it was reached from - which,
+        // for a color parsed out of a grey hexadecimal, is zero.
+        Assert.AreEqual(hue, Math.Round(h, 2), 0.05);
+    }
+
+    [TestMethod,
+        DataRow("#FF0000", 0.0, 0.0),
+        DataRow("#FFFFFF", 1.0, 0.0),
+        DataRow("#000000", 0.0, 1.0),
+        DataRow("#808080", 0.502, 0.498)
+    ]
+    public void BitColorShouldExposeHwb(string hex, double whiteness, double blackness)
+    {
+        var (_, w, b) = new BitInternalColor(hex).Hwb;
+
+        Assert.AreEqual(whiteness, Math.Round(w, 3));
+        Assert.AreEqual(blackness, Math.Round(b, 3));
+    }
+
+    // The picker announces the color it is on by name, since a gradient carries no text a screen reader
+    // could read instead and a channel triplet is three numbers nobody can picture.
+    [TestMethod,
+        DataRow("#FF0000", "vibrant red"),
+        DataRow("#000000", "black"),
+        DataRow("#FFFFFF", "white"),
+        DataRow("#808080", "gray"),
+        DataRow("#333333", "dark gray"),
+        DataRow("#DDDDDD", "light gray"),
+        DataRow("#0000FF", "vibrant blue"),
+        DataRow("#B0C4DE", "light pale blue"),
+        DataRow("#4D7FB3", "pale blue"),
+        DataRow("#00203F", "very dark vibrant blue"),
+        DataRow("#00FFFF", "vibrant cyan"),
+        DataRow("#FFFF00", "vibrant yellow"),
+        DataRow("#8A4B08", "vibrant brown"),
+        DataRow("#FF00FF", "vibrant magenta"),
+        DataRow("#7E4AE2", "purple")
+    ]
+    public void BitColorShouldDescribeItself(string hex, string expected)
+    {
+        Assert.AreEqual(expected, new BitInternalColor(hex).ColorDescription);
     }
 
     [TestMethod,
@@ -258,7 +451,13 @@ public class BitColorTests
         DataRow("hsla(1,2%,3%,0.5)", BitColorFormat.Hsla),
         DataRow("hsv(1,2%,3%)", BitColorFormat.Hsv),
         DataRow("hsb(1,2%,3%)", BitColorFormat.Hsv),
-        DataRow("hsva(1,2%,3%,0.5)", BitColorFormat.Hsva)
+        DataRow("hsva(1,2%,3%,0.5)", BitColorFormat.Hsva),
+        DataRow("hwb(1 2% 3%)", BitColorFormat.Hwb),
+        DataRow("hwb(1 2% 3% / 0.5)", BitColorFormat.Hwba),
+        DataRow("oklab(0.5 0.1 0.1)", BitColorFormat.Oklab),
+        DataRow("oklab(0.5 0.1 0.1 / 0.5)", BitColorFormat.Oklaba),
+        DataRow("oklch(0.5 0.1 200)", BitColorFormat.Oklch),
+        DataRow("oklch(0.5 0.1 200 / 0.5)", BitColorFormat.Oklcha)
     ]
     public void BitColorShouldDetectTheFormatItWasGiven(string color, BitColorFormat expected)
     {
@@ -271,7 +470,9 @@ public class BitColorTests
         DataRow(null),
         DataRow(""),
         DataRow("tomato"),
-        DataRow("oklch(0.7 0.1 200)")
+        DataRow("color(srgb 1 0 0)"),
+        DataRow("lab(70% 40 20)"),
+        DataRow("lch(70% 40 200)")
     ]
     public void BitColorShouldDetectNoFormatForUnnotatedInput(string? color)
     {

@@ -56,4 +56,19 @@ public class BitColorChangeEventArgs
     /// The changed color as hue (0-360), saturation and value (both 0-1).
     /// </summary>
     public (double Hue, double Saturation, double Value) Hsv { get; set; }
+
+    /// <summary>
+    /// The changed color as hue (0-360), whiteness and blackness (both 0-1).
+    /// </summary>
+    public (double Hue, double Whiteness, double Blackness) Hwb { get; set; }
+
+    /// <summary>
+    /// The changed color as Oklab lightness (0-1), chroma (0 to about 0.4) and hue (0-360).
+    /// </summary>
+    public (double Lightness, double Chroma, double Hue) Oklch { get; set; }
+
+    /// <summary>
+    /// The changed color said in words, e.g. <c>light vibrant blue</c>.
+    /// </summary>
+    public string? ColorDescription { get; set; }
 }

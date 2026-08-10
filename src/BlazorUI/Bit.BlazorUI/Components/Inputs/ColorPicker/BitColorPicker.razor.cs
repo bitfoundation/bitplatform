@@ -28,16 +28,20 @@ public partial class BitColorPicker : BitComponentBase
     // publishes is worth re-reading, so while it is publishing, none of it is.
     private bool _publishing;
     private bool _initialized;
-    private int _inputsRevision;
     private double _alphaParam = 1;
     private string? _colorParam;
     private string? _abortControllerId;
     private bool _eyeDropperChecked;
     private bool _eyeDropperSupported;
     private BitColorFormat? _formatEmitted;
+    private string? _contrastParam;
+    private BitInternalColor? _contrastColor;
     private readonly BitInternalColor _color = new();
     private BitColorFormat _format = BitColorFormat.Rgb;
     private ElementReference _saturationPickerRef;
+    private ElementReference _hexInputRef;
+    private ElementReference _alphaInputRef;
+    private readonly ElementReference[] _channelInputRefs = new ElementReference[3];
     private DotNetObjectReference<BitColorPicker>? _dotnetObj;
 
 
@@ -57,6 +61,11 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter, TwoWayBound] public double Alpha { get; set; } = 1;
 
     /// <summary>
+    /// Whether the saturation-brightness area takes the focus on the first render.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the BitColorPicker.
     /// </summary>
     [Parameter] public BitColorPickerClassStyles? Classes { get; set; }
@@ -71,6 +80,16 @@ public partial class BitColorPicker : BitComponentBase
     /// <see cref="Format"/> says otherwise the picker answers in the same notation it was given.
     /// </remarks>
     [Parameter, TwoWayBound] public string Color { get; set; } = "rgb(255,255,255)";
+
+    /// <summary>
+    /// The color the contrast readout measures the picked color against - the background it is going to be
+    /// read on. It accepts any of the notations <see cref="Color"/> does, and defaults to white.
+    /// </summary>
+    /// <remarks>
+    /// A semi-transparent picked color is composited onto this one before the ratio is taken, since that is
+    /// what the eye will actually see. Only rendered where <see cref="ShowContrast"/> asks for it.
+    /// </remarks>
+    [Parameter] public string? ContrastColor { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the eye dropper button using custom CSS classes for external icon libraries.
@@ -95,6 +114,43 @@ public partial class BitColorPicker : BitComponentBase
     /// <c>rgb()</c> one stays <c>rgb()</c>.
     /// </summary>
     [Parameter] public BitColorFormat? Format { get; set; }
+
+    /// <summary>
+    /// Which channels the text fields are written in: the hexadecimal field with the Red-Green-Blue
+    /// channels beside it, either of those on its own, or the hue-saturation-lightness and
+    /// hue-saturation-brightness triplets.
+    /// </summary>
+    /// <remarks>
+    /// This is how the color is typed, not how it is published - a picker edited in HSL still answers in
+    /// whatever <see cref="Format"/> says. It only takes effect where <see cref="ShowInputs"/> renders the
+    /// fields at all, and <see cref="ShowInputsModeSwitch"/> lets the user move it themselves.
+    /// </remarks>
+    [Parameter, TwoWayBound] public BitColorInputsMode InputsMode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the icon of the inputs mode switch button using custom CSS classes for external icon
+    /// libraries. Takes precedence over <see cref="InputsModeSwitchIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? InputsModeSwitchIcon { get; set; }
+
+    /// <summary>
+    /// Custom icon name for the inputs mode switch button. If unset, default will be the Sort icon.
+    /// The icon name should be from the Fluent UI icon set. For external icon libraries, use
+    /// <see cref="InputsModeSwitchIcon"/> instead.
+    /// </summary>
+    [Parameter] public string? InputsModeSwitchIconName { get; set; }
+
+    /// <summary>
+    /// The text that names the picker. It is not a <c>label</c> element: with no single input to point a
+    /// <c>for</c> at, one would label nothing, so the panel is named through <c>aria-labelledby</c> instead.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Custom markup in place of the plain <see cref="Label"/> text, for when the name needs more than a
+    /// string - an icon beside it, a required marker, a link.
+    /// </summary>
+    [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
     /// Callback for when the value changed. It fires on every step of a drag.
@@ -122,6 +178,13 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public IEnumerable<string>? Presets { get; set; }
 
     /// <summary>
+    /// How many preset swatches are laid out per row. Left unset they simply wrap, filling the width of
+    /// the picker; setting it lays them out on a grid instead, which is what keeps a palette meant to be
+    /// read in columns - a hue per column, a shade per row - in the arrangement it was written in.
+    /// </summary>
+    [Parameter] public int? PresetsPerRow { get; set; }
+
+    /// <summary>
     /// Makes the color picker read-only: the value is still shown at full contrast, but nothing about it
     /// can be changed.
     /// </summary>
@@ -131,6 +194,16 @@ public partial class BitColorPicker : BitComponentBase
     /// Whether to show a slider for editing alpha value.
     /// </summary>
     [Parameter] public bool ShowAlphaSlider { get; set; }
+
+    /// <summary>
+    /// Whether to show the contrast readout: how far the picked color stands from the
+    /// <see cref="ContrastColor"/> it will be read on, and whether that clears the WCAG bar for text.
+    /// </summary>
+    /// <remarks>
+    /// It answers the question a color is usually being picked to settle - "can this be read?" - at the
+    /// moment it is being picked, rather than after the page has shipped and an audit has failed.
+    /// </remarks>
+    [Parameter] public bool ShowContrast { get; set; }
 
     /// <summary>
     /// Whether to show the button that opens the browser's eyedropper to sample a color from anywhere on
@@ -147,6 +220,13 @@ public partial class BitColorPicker : BitComponentBase
     /// entered or read off without hunting for it on the gradient.
     /// </summary>
     [Parameter] public bool ShowInputs { get; set; }
+
+    /// <summary>
+    /// Whether to show the button that moves the text fields from one set of channels to the next -
+    /// hexadecimal with RGB, hexadecimal alone, RGB alone, HSL, HSV - so the user can type the color in
+    /// whichever model they are thinking in rather than the one the page picked for them.
+    /// </summary>
+    [Parameter] public bool ShowInputsModeSwitch { get; set; }
 
     /// <summary>
     /// Whether to show color preview box.
@@ -195,6 +275,23 @@ public partial class BitColorPicker : BitComponentBase
     /// The current color as hue (0-360), saturation and value (both 0-1).
     /// </summary>
     public (double Hue, double Saturation, double Value) Hsv => _color.Hsv;
+
+    /// <summary>
+    /// The current color as hue (0-360), whiteness and blackness (both 0-1).
+    /// </summary>
+    public (double Hue, double Whiteness, double Blackness) Hwb => _color.Hwb;
+
+    /// <summary>
+    /// The current color as Oklab lightness (0-1), chroma (0 to about 0.4) and hue (0-360).
+    /// </summary>
+    public (double Lightness, double Chroma, double Hue) Oklch => _color.Oklch;
+
+    /// <summary>
+    /// The current color said in words, e.g. <c>light vibrant blue</c>. It is what the picker announces to
+    /// a screen reader, and it is public because a page showing the color elsewhere usually wants to name
+    /// it the same way.
+    /// </summary>
+    public string ColorDescription => _color.ColorDescription;
 
 
 
@@ -315,7 +412,16 @@ public partial class BitColorPicker : BitComponentBase
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
+        var presetsToRegister = _presetItems.Count > 0 && _presetKeysRegistered is false;
+
+        if (_presetItems.Count == 0)
+        {
+            // The container the registration lives on is gone with the palette, so the next one has to ask
+            // for it again.
+            _presetKeysRegistered = false;
+        }
+
+        if (firstRender is false && presetsToRegister is false && (_eyeDropperChecked || ShowEyeDropper is false)) return;
 
         try
         {
@@ -324,6 +430,20 @@ public partial class BitColorPicker : BitComponentBase
                 _dotnetObj = DotNetObjectReference.Create(this);
 
                 _abortControllerId = await _js.BitColorPickerSetup(_dotnetObj, _saturationPickerRef, nameof(HandlePointerMove), nameof(HandlePointerUp));
+
+                // The autofocus attribute is only honored for elements that are in the initial document, so
+                // a picker rendered into a page that is already up has to ask for the focus itself.
+                if (AutoFocus && IsEnabled)
+                {
+                    await _saturationPickerRef.FocusAsync();
+                }
+            }
+
+            if (presetsToRegister)
+            {
+                _presetKeysRegistered = true;
+
+                await _js.BitUtilsRegisterPreventKeys(_presetsRef, _presetNavigationKeys);
             }
 
             if (ShowEyeDropper && _eyeDropperChecked is false)
@@ -366,13 +486,18 @@ public partial class BitColorPicker : BitComponentBase
     /// The accessible name of the picker as a whole. An explicit AriaLabel wins; otherwise the color itself
     /// is spelled out, since a gradient carries no text a screen reader could read instead.
     /// </summary>
+    /// <remarks>
+    /// The color is both named and spelled out in channels. The name is what actually tells someone which
+    /// color the picker has landed on - "Red 77 Green 127 Blue 179" is three numbers nobody can picture -
+    /// while the channels are what they need once they are adjusting it rather than reading it.
+    /// </remarks>
     private string _AriaLabel
     {
         get
         {
             if (AriaLabel.HasValue()) return AriaLabel!;
 
-            var label = FormattableString.Invariant($"Color picker, Red {_color.R} Green {_color.G} Blue {_color.B}");
+            var label = FormattableString.Invariant($"Color picker, {_color.ColorDescription}, Red {_color.R} Green {_color.G} Blue {_color.B}");
 
             if (ShowAlphaSlider)
             {
@@ -394,7 +519,7 @@ public partial class BitColorPicker : BitComponentBase
         {
             var (_, saturation, value) = _color.Hsv;
 
-            return FormattableString.Invariant($"Saturation {Math.Round(saturation * 100)}%, Brightness {Math.Round(value * 100)}%, {_color.Hex}");
+            return FormattableString.Invariant($"{_color.ColorDescription}, Saturation {Math.Round(saturation * 100)}%, Brightness {Math.Round(value * 100)}%, {_color.Hex}");
         }
     }
 
@@ -443,29 +568,133 @@ public partial class BitColorPicker : BitComponentBase
 
     private bool _ShowEyeDropper => ShowEyeDropper && _eyeDropperSupported;
 
-    private bool _IsInputDisabled => IsEnabled is false || ReadOnly;
-
     /// <summary>
-    /// Whether the sliders refuse the gesture at the element rather than in their handler. A native range
-    /// moves its own thumb before any handler is reached, so a picker that is not going to accept the change
-    /// has to stop it there - otherwise the thumb is left sitting on a color the picker is not on. The
-    /// disabled and the read-only picker are covered by the state they are in; the one-way bound one is not,
-    /// since it looks like an ordinary picker and only has nowhere to report a change to.
+    /// Whether every control on the picker refuses the gesture at the element rather than in its handler.
+    /// A native range moves its own thumb, and a text field keeps whatever was typed into it, before any
+    /// handler is reached - so a picker that is not going to accept the change has to stop it there, or be
+    /// left showing a value it is not on. The disabled and the read-only picker are covered by the state
+    /// they are in; the one-way bound one is not, since it looks like an ordinary picker and only has
+    /// nowhere to report a change to.
     /// </summary>
-    private bool _IsSliderDisabled => _IsInteractive is false;
+    private bool _IsInputDisabled => _IsInteractive is false;
+
+    private string _HexValue => ShowAlphaSlider ? _color.HexAlpha : _color.Hex;
 
     /// <summary>
     /// The three channel fields of the inputs row, each carrying the index the change handler switches on,
-    /// the id and caption it is labelled with, and its current value.
+    /// the id and caption it is labelled with, its current value and the top of its range. Which three they
+    /// are is what <see cref="InputsMode"/> decides; the hexadecimal field is rendered on its own since it
+    /// is a text field rather than a number one.
     /// </summary>
-    private (int Index, string Name, string Title, byte Value)[] _RgbFields =>
-    [
-        (0, "r", "Red", _color.R),
-        (1, "g", "Green", _color.G),
-        (2, "b", "Blue", _color.B)
-    ];
+    private (int Index, string Name, string Title, string Value, int Max)[] _ChannelFields
+    {
+        get
+        {
+            switch (InputsMode)
+            {
+                case BitColorInputsMode.Hex:
+                    return [];
+
+                case BitColorInputsMode.Hsl:
+                    {
+                        var (hue, saturation, lightness) = _color.Hsl;
+
+                        return
+                        [
+                            (0, "h", "Hue", Rounded(hue), 360),
+                            (1, "s", "Saturation", Percent(saturation), 100),
+                            (2, "l", "Lightness", Percent(lightness), 100)
+                        ];
+                    }
+
+                case BitColorInputsMode.Hsv:
+                    {
+                        var (hue, saturation, value) = _color.Hsv;
+
+                        return
+                        [
+                            (0, "h", "Hue", Rounded(hue), 360),
+                            (1, "s", "Saturation", Percent(saturation), 100),
+                            (2, "v", "Brightness", Percent(value), 100)
+                        ];
+                    }
+
+                default:
+                    return
+                    [
+                        (0, "r", "Red", _color.R.ToString(CultureInfo.InvariantCulture), 255),
+                        (1, "g", "Green", _color.G.ToString(CultureInfo.InvariantCulture), 255),
+                        (2, "b", "Blue", _color.B.ToString(CultureInfo.InvariantCulture), 255)
+                    ];
+            }
+        }
+    }
+
+    private bool _ShowHexField => InputsMode is BitColorInputsMode.HexRgb or BitColorInputsMode.Hex;
+
+    private bool _HasLabel => LabelTemplate is not null || Label.HasValue();
+
+    private string _LabelId => $"{_Id}-label";
+
+    /// <summary>
+    /// An explicit AriaLabel still wins, and a Label names the panel through the element it is rendered
+    /// into. Only a picker with neither falls back to spelling the color out on the group itself.
+    /// </summary>
+    private string? _AriaLabelledBy => AriaLabel.HasValue() is false && _HasLabel ? _LabelId : null;
+
+    /// <summary>
+    /// How far the picked color stands from the one it will be read on, on the WCAG 2 scale of 1 to 21.
+    /// </summary>
+    /// <remarks>
+    /// A semi-transparent color is composited onto the background first, since a ratio taken against the
+    /// color the user cannot actually see would be a reassuring answer to the wrong question.
+    /// </remarks>
+    private double _Contrast
+    {
+        get
+        {
+            // Parsed only when the background itself changes, since the readout is recomputed on every
+            // frame of a drag and re-reading the same string on each of them would be work with nothing to
+            // show for it.
+            if (_contrastParam != ContrastColor || _contrastColor is null)
+            {
+                _contrastParam = ContrastColor;
+                _contrastColor = new BitInternalColor(ContrastColor.HasValue() ? ContrastColor : "#FFFFFF");
+            }
+
+            var background = _contrastColor;
+
+            var alpha = _color.A;
+
+            var composited = new BitInternalColor((byte)Math.Round(_color.R * alpha + background.R * (1 - alpha)),
+                                                  (byte)Math.Round(_color.G * alpha + background.G * (1 - alpha)),
+                                                  (byte)Math.Round(_color.B * alpha + background.B * (1 - alpha)));
+
+            return BitThemeColorContrast.GetContrastRatio(composited.Hex, background.Hex);
+        }
+    }
+
+    // Two decimals, and none where there is nothing to say: "4.54:1" is the precision the WCAG thresholds
+    // are stated to, and "21:1" reads better than "21.00:1".
+    private static string FormatContrast(double ratio) => ratio.ToString("0.##", CultureInfo.InvariantCulture);
+
+    // The fields hold whole numbers: a hue to the degree and a percentage to the point are already finer
+    // than the gradient they stand next to can be dragged.
+    private static string Rounded(double value) => Math.Round(value).ToString(CultureInfo.InvariantCulture);
+
+    private static string Percent(double value) => Rounded(value * 100);
 
     private List<(string Value, string Css, BitInternalColor Color)> _presetItems = [];
+    private ElementReference[] _presetRefs = [];
+    private ElementReference _presetsRef;
+    private bool _presetKeysRegistered;
+    private int _presetFocusIndex;
+
+    /// <summary>
+    /// The keys the palette is walked with. They all scroll the page by default, which would carry the
+    /// palette out from under the user while they are moving through it.
+    /// </summary>
+    private static readonly string[] _presetNavigationKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"];
 
     /// <summary>
     /// The presets, each paired with the normalized color it stands for. Normalizing them is what lets a
@@ -500,9 +729,46 @@ public partial class BitColorPicker : BitComponentBase
 
                     return (p, color.Rgba, color);
                 }).ToList();
+
+                _presetRefs = new ElementReference[_presetItems.Count];
+                _presetFocusIndex = 0;
             }
 
             return _presetItems;
+        }
+    }
+
+    /// <summary>
+    /// Whether a swatch is the one the picker is currently on.
+    /// </summary>
+    /// <remarks>
+    /// A swatch that carries no alpha of its own is picked onto whatever alpha the picker is already on, so
+    /// it is the swatch the picker is on whenever the RGB matches - comparing its opaque alpha too would
+    /// leave a semi-transparent picker showing nothing as selected. One that does carry an alpha names a
+    /// transparency of its own, and is only on when that matches.
+    /// </remarks>
+    private bool IsPresetSelected(BitInternalColor preset)
+    {
+        return preset.R == _color.R
+            && preset.G == _color.G
+            && preset.B == _color.B
+            && (preset.HasParsedAlpha is false || preset.A == _color.A);
+    }
+
+    /// <summary>
+    /// The one swatch of the palette that is in the tab order. A palette is a set of alternatives, not a
+    /// queue of controls, so it takes one Tab to reach and the arrow keys to move within - otherwise a
+    /// thirty-color palette would put thirty tab stops between the picker and whatever comes after it.
+    /// </summary>
+    private int _PresetTabStop
+    {
+        get
+        {
+            // Entering the palette lands on the color the picker is already on wherever there is one, which
+            // is both the swatch the user is most likely looking for and the one they can see is current.
+            var selected = _presetItems.FindIndex(p => IsPresetSelected(p.Color));
+
+            return selected >= 0 ? selected : Math.Clamp(_presetFocusIndex, 0, Math.Max(_presetItems.Count - 1, 0));
         }
     }
 
@@ -608,7 +874,7 @@ public partial class BitColorPicker : BitComponentBase
         // back into it - which is less surprising than resetting the picker to white.
         if (BitInternalColor.IsValid(text) is false)
         {
-            RestoreInputs();
+            await RestoreInputAsync(_hexInputRef, text, _HexValue);
             return;
         }
 
@@ -616,66 +882,192 @@ public partial class BitColorPicker : BitComponentBase
         // silently make it opaque; an eight-digit one still brings its own alpha with it.
         _color.Parse(text, _color.A);
 
-        RestoreInputs(text, ShowAlphaSlider ? _color.HexAlpha : _color.Hex);
-
         await ChangeAsync(final: true);
+
+        await RestoreInputAsync(_hexInputRef, text, _HexValue);
     }
 
     private async Task HandleOnChannelInput(ChangeEventArgs args, int channel)
     {
         if (_IsInteractive is false) return;
 
+        var typed = args.Value as string;
+
         if (TryReadNumber(args.Value, out var number) is false)
         {
-            RestoreInputs();
+            await RestoreInputAsync(_channelInputRefs[channel], typed, _ChannelFields[channel].Value);
             return;
         }
 
+        switch (InputsMode)
+        {
+            case BitColorInputsMode.Hsl:
+                ApplyHslChannel(channel, number);
+                break;
+
+            case BitColorInputsMode.Hsv:
+                ApplyHsvChannel(channel, number);
+                break;
+
+            default:
+                ApplyRgbChannel(channel, number);
+                break;
+        }
+
+        await ChangeAsync(final: true);
+
+        await RestoreInputAsync(_channelInputRefs[channel], typed, _ChannelFields[channel].Value);
+    }
+
+    private void ApplyRgbChannel(int channel, double number)
+    {
         var value = (byte)Math.Clamp(Math.Round(number), 0, 255);
 
         _color.SetRgb(channel == 0 ? value : _color.R,
                       channel == 1 ? value : _color.G,
                       channel == 2 ? value : _color.B);
+    }
 
-        RestoreInputs(args.Value as string, value.ToString(CultureInfo.InvariantCulture));
+    /// <summary>
+    /// Only the edited channel is taken from the field; the other two are taken from the color itself
+    /// rather than from the rounded numbers standing in their fields, so editing one of them does not
+    /// quietly nudge the other two onto whole percentages.
+    /// </summary>
+    private void ApplyHslChannel(int channel, double number)
+    {
+        var (hue, saturation, lightness) = _color.Hsl;
 
-        await ChangeAsync(final: true);
+        if (channel == 0) hue = number;
+        else if (channel == 1) saturation = Math.Clamp(number / 100, 0, 1);
+        else lightness = Math.Clamp(number / 100, 0, 1);
+
+        // HSL and HSV share a hue but not a saturation, so the pair is converted rather than copied.
+        var value = lightness + saturation * Math.Min(lightness, 1 - lightness);
+
+        _color.Update(hue, value == 0 ? 0 : 2 * (1 - lightness / value), value, _color.A);
+    }
+
+    private void ApplyHsvChannel(int channel, double number)
+    {
+        var (hue, saturation, value) = _color.Hsv;
+
+        if (channel == 0) hue = number;
+        else if (channel == 1) saturation = number / 100;
+        else value = number / 100;
+
+        _color.Update(hue, saturation, value, _color.A);
     }
 
     private async Task HandleOnAlphaFieldInput(ChangeEventArgs args)
     {
         if (_IsInteractive is false) return;
 
+        var typed = args.Value as string;
+
         if (TryReadNumber(args.Value, out var percent) is false)
         {
-            RestoreInputs();
+            await RestoreInputAsync(_alphaInputRef, typed, _AlphaPercentValue);
             return;
         }
 
         _color.A = percent / 100;
 
-        RestoreInputs(args.Value as string, _AlphaPercentValue);
-
         await ChangeAsync(final: true);
+
+        await RestoreInputAsync(_alphaInputRef, typed, _AlphaPercentValue);
     }
 
     /// <summary>
-    /// Puts the committed color back into the text fields when what the user left in one of them is not
-    /// what the picker ended up on - a value it refused, or one it normalized ("#0f0" into "#00FF00").
+    /// Moves the text fields on to the next set of channels. It changes nothing about the color, only which
+    /// numbers it is being read as, so a read-only picker still answers it - there is nothing to refuse.
+    /// </summary>
+    private async Task HandleOnInputsModeSwitchClick()
+    {
+        if (IsEnabled is false) return;
+
+        await AssignInputsMode(InputsMode switch
+        {
+            BitColorInputsMode.HexRgb => BitColorInputsMode.Hex,
+            BitColorInputsMode.Hex => BitColorInputsMode.Rgb,
+            BitColorInputsMode.Rgb => BitColorInputsMode.Hsl,
+            BitColorInputsMode.Hsl => BitColorInputsMode.Hsv,
+            _ => BitColorInputsMode.HexRgb
+        });
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Puts the committed color back into a text field when what the user left in it is not what the picker
+    /// ended up on - a value it refused, or one it normalized ("#0f0" into "#00FF00").
     /// </summary>
     /// <remarks>
     /// Re-rendering alone would not do it: the renderer compares the new value against the last one it
-    /// rendered, not against what the user typed, so an unchanged value leaves their text sitting in the
-    /// field. Bumping the revision the fields are keyed by replaces the elements instead, which is the one
-    /// way to overwrite text the renderer believes is already correct.
+    /// rendered, not against what the user typed, so a value that has not moved leaves their text sitting in
+    /// the field. The element is written to directly instead, which - unlike replacing it - leaves the field
+    /// focused, so correcting a typo does not also cost the user their place in the panel.
     /// </remarks>
-    private void RestoreInputs(string? typed = null, string? committed = null)
+    private async Task RestoreInputAsync(ElementReference element, string? typed, string committed)
     {
-        if (typed is not null && string.Equals(typed, committed, StringComparison.OrdinalIgnoreCase)) return;
+        if (string.Equals(typed, committed, StringComparison.OrdinalIgnoreCase)) return;
 
-        _inputsRevision++;
+        try
+        {
+            await _js.BitUtilsSetProperty(element, "value", committed);
+        }
+        // The field is only ever written to from a handler the user has just raised on it, so the ways this
+        // can fail are the ways the page itself can go away underneath one.
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    /// <summary>
+    /// Walks the palette with the arrow keys. Only the focus moves - a swatch is picked by pressing it, the
+    /// same way it is picked with the pointer - so arrowing across a palette does not fire a change for every
+    /// color it passes over.
+    /// </summary>
+    private async Task HandleOnPresetsKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (e.CtrlKey || e.AltKey || e.MetaKey) return;
+
+        var count = _presetItems.Count;
+
+        if (count == 0) return;
+
+        // A palette laid out on a grid is walked as a grid; one left to wrap has no row length anything can
+        // know, so the vertical keys move along it one swatch at a time like the horizontal ones do.
+        var columns = PresetsPerRow > 0 ? Math.Min(PresetsPerRow.Value, count) : 1;
+        var step = Dir == BitDir.Rtl ? -1 : 1;
+
+        var target = e.Key switch
+        {
+            "ArrowRight" => index + step,
+            "ArrowLeft" => index - step,
+            "ArrowDown" => index + columns,
+            "ArrowUp" => index - columns,
+            "Home" => 0,
+            "End" => count - 1,
+            _ => index
+        };
+
+        if (target == index) return;
+
+        // Clamped rather than wrapped: a palette is read as a picture of the colors on offer, and a focus
+        // that jumps from the end of one row to the start of the next reads as having lost its place.
+        target = Math.Clamp(target, 0, count - 1);
+
+        _presetFocusIndex = target;
 
         StateHasChanged();
+
+        try
+        {
+            await _presetRefs[target].FocusAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
+        catch (OperationCanceledException) { }
     }
 
     private async Task HandleOnPresetClick(string preset)
@@ -788,7 +1180,10 @@ public partial class BitColorPicker : BitComponentBase
                 Rgb = _color.Rgb,
                 Rgba = _color.Rgba,
                 Hsl = _color.Hsl,
-                Hsv = _color.Hsv
+                Hsv = _color.Hsv,
+                Hwb = _color.Hwb,
+                Oklch = _color.Oklch,
+                ColorDescription = _color.ColorDescription
             };
 
             if (notifyChange)

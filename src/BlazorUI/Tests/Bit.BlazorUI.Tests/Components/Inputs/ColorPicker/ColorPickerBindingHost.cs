@@ -11,7 +11,11 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.ColorPicker;
 /// </summary>
 internal sealed class ColorPickerBindingHost : ComponentBase
 {
-    [Parameter] public string Color { get; set; } = "#FFFFFF";
+    /// <summary>
+    /// The color the page starts on. The one it is on from then is <see cref="Color"/>, which the binding
+    /// writes to - a field of the page, as it would be in real markup, rather than the parameter itself.
+    /// </summary>
+    [Parameter] public string InitialColor { get; set; } = "#FFFFFF";
 
     /// <summary>
     /// A consumer that answers a change with a different color, which is the normalizing or clamping half
@@ -20,6 +24,18 @@ internal sealed class ColorPickerBindingHost : ComponentBase
     [Parameter] public Func<string, string>? Rewrite { get; set; }
 
     public BitColorPicker Picker { get; private set; } = default!;
+
+    /// <summary>
+    /// What the page is holding: the initial color until the binding writes to it.
+    /// </summary>
+    public string Color { get; private set; } = "#FFFFFF";
+
+    protected override void OnInitialized()
+    {
+        Color = InitialColor;
+
+        base.OnInitialized();
+    }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {

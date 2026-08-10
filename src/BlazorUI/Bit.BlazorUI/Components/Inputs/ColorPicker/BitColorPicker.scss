@@ -32,7 +32,7 @@
     // consumer still shrinks it, and the gradient is the row that gives way (see .bit-clp-rec).
 
     &.bit-dis {
-        .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-fin, .bit-clp-prt {
+        .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-fin, .bit-clp-prt, .bit-clp-swb {
             opacity: 0.65;
             cursor: not-allowed;
             pointer-events: none;
@@ -78,6 +78,66 @@
     --bit-clp-thumb-size: #{spacing(3)};
     --bit-clp-target-size: #{spacing(3.5)};
     --bit-clp-preview-size: #{spacing(7.5)};
+}
+
+.bit-clp-lbc {
+    flex-shrink: 0;
+    margin-bottom: spacing(0.5);
+}
+
+.bit-clp-lbl {
+    color: $clr-fg-pri;
+    font-weight: 600;
+    font-size: spacing(1.75);
+}
+
+// The contrast readout sits under the controls rather than beside them: it is the answer to a question
+// about the color, not another way of changing it.
+.bit-clp-cnr {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: spacing(0.5);
+    align-items: center;
+    margin-top: spacing(1);
+    font-size: spacing(1.5);
+}
+
+.bit-clp-cnv {
+    color: $clr-fg-pri;
+    font-weight: 600;
+}
+
+// Never the color alone: a pass marked only in green and a failure only in red would be exactly the
+// distinction this readout exists to help someone avoid making. The mark carries the answer too.
+.bit-clp-cnb {
+    display: flex;
+    align-items: center;
+    gap: spacing(0.25);
+    box-sizing: border-box;
+    border-radius: spacing(0.25);
+    padding: spacing(0.125) spacing(0.5);
+    border: $shp-border-width $shp-border-style currentColor;
+
+    &::before {
+        line-height: 1;
+    }
+}
+
+.bit-clp-cnp {
+    color: $clr-suc;
+
+    &::before {
+        content: "\2713"; // check mark
+    }
+}
+
+.bit-clp-cnf {
+    color: $clr-err;
+
+    &::before {
+        content: "\2717"; // ballot x
+    }
 }
 
 // The only row that gives way when a consumer pins the panel to a height smaller than its content: the
@@ -310,6 +370,46 @@
     flex: 2 1 0;
 }
 
+// The switch is a button rather than a field, so it takes the width it needs instead of an equal share of
+// the row, and stays out of the way of the numbers it moves.
+.bit-clp-fsw {
+    flex: 0 0 auto;
+}
+
+// Sized by the target token, like the eye dropper: a button has to stay at least the 24 CSS pixels
+// WCAG 2.2 asks a target for, whatever the fields next to it end up as.
+.bit-clp-swb {
+    padding: 0;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    color: $clr-fg-pri;
+    justify-content: center;
+    box-sizing: border-box;
+    background-color: transparent;
+    width: var(--bit-clp-target-size);
+    height: var(--bit-clp-target-size);
+    border-radius: spacing(0.25);
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+
+    &:hover {
+        background-color: $clr-bg-sec-hover;
+    }
+
+    &:active {
+        background-color: $clr-bg-sec-active;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-clp-swi {
+    font-size: spacing(1.75);
+    line-height: 1;
+}
+
 .bit-clp-fin {
     width: 100%;
     min-width: 0;
@@ -357,6 +457,15 @@
     flex-shrink: 0;
     gap: spacing(0.5);
     margin-top: spacing(1);
+}
+
+// A palette given a row length is laid out on a grid instead of being left to wrap, so a column of the
+// palette stays a column on the screen however wide the panel happens to be. The columns are sized to the
+// swatch rather than stretched, which keeps a short last row aligned under the one above it.
+.bit-clp-prg {
+    display: grid;
+    justify-content: start;
+    grid-template-columns: repeat(var(--bit-clp-prs-cols, 1), var(--bit-clp-target-size));
 }
 
 .bit-clp-prt {
@@ -439,7 +548,7 @@
         forced-color-adjust: none;
     }
 
-    .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin {
+    .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin, .bit-clp-swb {
         border-color: CanvasText;
     }
 
@@ -458,7 +567,7 @@
     }
 
     .bit-clp.bit-dis {
-        .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin {
+        .bit-clp-rec, .bit-clp-sld, .bit-clp-pre, .bit-clp-prt, .bit-clp-eyd, .bit-clp-fin, .bit-clp-swb {
             border-color: GrayText;
         }
     }

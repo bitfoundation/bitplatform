@@ -11,6 +11,16 @@ public class BitColorPickerClassStyles
     public string? Root { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the element the label is rendered into.
+    /// </summary>
+    public string? LabelContainer { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the label text of the color picker.
+    /// </summary>
+    public string? Label { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the saturation-value area of the color picker.
     /// </summary>
     public string? SaturationPicker { get; set; }
@@ -79,6 +89,31 @@ public class BitColorPickerClassStyles
     /// Custom CSS classes/styles for the caption of a single field.
     /// </summary>
     public string? FieldLabel { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the button that moves the text fields to the next set of channels.
+    /// </summary>
+    public string? InputsModeSwitch { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the icon of the inputs mode switch button.
+    /// </summary>
+    public string? InputsModeSwitchIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the row that holds the contrast readout.
+    /// </summary>
+    public string? Contrast { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the contrast ratio itself.
+    /// </summary>
+    public string? ContrastRatio { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for a pass/fail badge of the contrast readout.
+    /// </summary>
+    public string? ContrastBadge { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the container of the preset swatches.

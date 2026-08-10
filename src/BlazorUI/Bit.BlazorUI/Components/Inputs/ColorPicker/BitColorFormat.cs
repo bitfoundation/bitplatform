@@ -50,5 +50,39 @@ public enum BitColorFormat
     /// <summary>
     /// Functional HSV notation with an alpha channel: <c>hsva(0,100%,100%,0.5)</c>.
     /// </summary>
-    Hsva
+    Hsva,
+
+    /// <summary>
+    /// Functional HWB notation: <c>hwb(0 0% 0%)</c>. CSS only defines the space-separated syntax for it,
+    /// so that is the one written.
+    /// </summary>
+    Hwb,
+
+    /// <summary>
+    /// Functional HWB notation with an alpha channel: <c>hwb(0 0% 0% / 0.5)</c>. CSS has no
+    /// <c>hwba()</c> function - the alpha is written into <c>hwb()</c> itself, after a slash.
+    /// </summary>
+    Hwba,
+
+    /// <summary>
+    /// Functional Oklab notation: <c>oklab(0.6279 0.2249 0.1258)</c>. Oklab is a perceptually uniform
+    /// color space, so the same numeric step covers the same visual difference wherever it is taken.
+    /// </summary>
+    Oklab,
+
+    /// <summary>
+    /// Functional Oklab notation with an alpha channel: <c>oklab(0.6279 0.2249 0.1258 / 0.5)</c>.
+    /// </summary>
+    Oklaba,
+
+    /// <summary>
+    /// Functional Oklch notation: <c>oklch(0.6279 0.2577 29.23)</c>. It is the polar form of
+    /// <see cref="Oklab"/>, and the notation modern design tokens are increasingly written in.
+    /// </summary>
+    Oklch,
+
+    /// <summary>
+    /// Functional Oklch notation with an alpha channel: <c>oklch(0.6279 0.2577 29.23 / 0.5)</c>.
+    /// </summary>
+    Oklcha
 }
