@@ -52,6 +52,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     public bool? Fixed { get; set; }
 
     /// <summary>
+    /// The space between the children of the footer.
+    /// </summary>
+    public string? Gap { get; set; }
+
+    /// <summary>
     /// The height of the footer (in pixels).
     /// </summary>
     public int? Height { get; set; }
@@ -65,6 +70,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up.
     /// </summary>
     public bool? Reveal { get; set; }
+
+    /// <summary>
+    /// How far (in pixels) the scroll has to travel from the top before a Reveal footer starts hiding itself.
+    /// </summary>
+    public int? RevealOffset { get; set; }
 
     /// <summary>
     /// The size of the footer, which determines the paddings around its content.
@@ -152,6 +162,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.ClassBuilder.Reset();
         }
 
+        if (Gap is not null && bitFooter.HasNotBeenSet(nameof(Gap)))
+        {
+            bitFooter.Gap = Gap;
+
+            bitFooter.StyleBuilder.Reset();
+        }
+
         if (Height.HasValue && bitFooter.HasNotBeenSet(nameof(Height)))
         {
             bitFooter.Height = Height.Value;
@@ -171,6 +188,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.Reveal = Reveal.Value;
 
             bitFooter.ClassBuilder.Reset();
+        }
+
+        if (RevealOffset.HasValue && bitFooter.HasNotBeenSet(nameof(RevealOffset)))
+        {
+            bitFooter.RevealOffset = RevealOffset.Value;
         }
 
         if (Size.HasValue && bitFooter.HasNotBeenSet(nameof(Size)))

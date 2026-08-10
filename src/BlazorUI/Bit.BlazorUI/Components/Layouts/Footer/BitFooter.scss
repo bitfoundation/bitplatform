@@ -32,6 +32,7 @@
     position: relative;
     box-sizing: border-box;
     padding: var(--bit-ftr-padding);
+    gap: var(--bit-ftr-gap, 0);
     align-items: var(--bit-ftr-align, center);
     justify-content: var(--bit-ftr-justify, normal);
 }

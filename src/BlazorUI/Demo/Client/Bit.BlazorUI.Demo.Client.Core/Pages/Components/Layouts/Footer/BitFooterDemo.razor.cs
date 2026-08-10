@@ -61,10 +61,17 @@ public partial class BitFooterDemo
         },
         new()
         {
+            Name = "Gap",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the space between the children of the BitFooter (the CSS gap of the container). It takes any CSS length or the two value form of the gap shorthand.",
+        },
+        new()
+        {
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the height of the BitFooter (in pixels). The height includes the paddings and the border of the footer.",
+            Description = "Gets or sets the height of the BitFooter (in pixels). The height includes the paddings and the border of the footer, and a Fixed or Sticky footer adds the bottom safe area inset of the device on top of it.",
         },
         new()
         {
@@ -86,6 +93,13 @@ public partial class BitFooterDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer.",
+        },
+        new()
+        {
+            Name = "RevealOffset",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Gets or sets how far (in pixels) the scroll has to travel from the top before a Reveal footer starts hiding itself. The footer stays revealed while the scroll is still within this offset.",
         },
         new()
         {
@@ -216,7 +230,7 @@ public partial class BitFooterDemo
         {
             Id = "size-enum",
             Name = "BitSize",
-            Description = "",
+            Description = "Determines the paddings around the content of the footer.",
             Items =
             [
                 new() { Name = "Small", Description = "The small size.", Value = "0" },

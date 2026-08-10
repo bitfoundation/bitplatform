@@ -15,6 +15,7 @@ public partial class BitFooter : BitComponentBase
 {
     private bool _hidden;
     private bool _revealAttached;
+    private int _attachedRevealOffset = -1;
     private DotNetObjectReference<BitFooter>? _dotnetObj;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -93,14 +94,30 @@ public partial class BitFooter : BitComponentBase
     /// <br />
     /// Takes precedence over <see cref="Sticky"/> when both are set.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Fixed { get; set; }
+
+    /// <summary>
+    /// Gets or sets the space between the children of the BitFooter (the CSS gap of the container).
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length or the two value form of the gap shorthand (for example <c>0.5rem</c> or <c>4px 8px</c>).
+    /// <br />
+    /// When not set, the children of the footer sit right next to each other, so anything that needs
+    /// breathing room between its parts either sets this or brings its own spacing.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Gap { get; set; }
 
     /// <summary>
     /// Gets or sets the height of the BitFooter (in pixels).
     /// </summary>
     /// <remarks>
     /// The height includes the paddings and the border of the footer (the root element is a border-box).
+    /// <br />
+    /// A <see cref="Fixed"/> or <see cref="Sticky"/> footer adds the bottom safe area inset of the device on
+    /// top of it, so the content of the footer keeps the height that was asked for instead of losing part of
+    /// it to the home indicator.
     /// <br />
     /// When not set, the footer is as tall as its content plus the paddings of the current <see cref="Size"/>.
     /// </remarks>
@@ -132,6 +149,18 @@ public partial class BitFooter : BitComponentBase
     public bool Reveal { get; set; }
 
     /// <summary>
+    /// Gets or sets how far (in pixels) the scroll has to travel from the top before a <see cref="Reveal"/>
+    /// footer starts hiding itself.
+    /// </summary>
+    /// <remarks>
+    /// The footer stays revealed while the scroll is still within this offset, which keeps it from
+    /// flickering away on the first few pixels of a scroll that has barely started.
+    /// <br />
+    /// When not set (or set to 0), the footer starts hiding as soon as the scroll goes down.
+    /// </remarks>
+    [Parameter] public int? RevealOffset { get; set; }
+
+    /// <summary>
     /// The size of the BitFooter, which determines the paddings around its content.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -145,7 +174,7 @@ public partial class BitFooter : BitComponentBase
     /// and needs no extra room reserved for it. It requires an ancestor that scrolls (commonly the page itself)
     /// and no ancestor with an overflow other than visible.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Sticky { get; set; }
 
     /// <summary>
@@ -191,6 +220,10 @@ public partial class BitFooter : BitComponentBase
     [JSInvokable("OnRevealChange")]
     public async Task _OnRevealChange(bool hidden)
     {
+        // The script is disposed asynchronously, so a scroll of the very last frame can still land here
+        // after the component is gone, where there is nothing left to re-render.
+        if (IsDisposed) return;
+
         if (_hidden == hidden) return;
 
         _hidden = hidden;
@@ -282,7 +315,18 @@ public partial class BitFooter : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Height.HasValue ? $"height:{Height}px" : string.Empty);
+        // A pinned footer pads itself with the bottom safe area inset of the device, and the root is a
+        // border-box, so an explicit height would be eaten into by that inset and leave the content of the
+        // footer shorter than it was asked to be. Adding the inset to the height keeps the two apart: the
+        // height is the footer, the inset is the room the device asks for underneath it. env() resolves to
+        // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
+        StyleBuilder.Register(() => Height.HasValue
+                                    ? ((Fixed || Sticky)
+                                        ? $"height:calc({Height}px + env(safe-area-inset-bottom, 0px))"
+                                        : $"height:{Height}px")
+                                    : string.Empty);
+
+        StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-ftr-gap:{Gap}" : string.Empty);
     }
 
 
@@ -307,19 +351,30 @@ public partial class BitFooter : BitComponentBase
         // tearing the listener down and setting it up again.
         var shouldAttach = Reveal && (Fixed || Sticky);
 
-        if (shouldAttach == _revealAttached) return;
+        // The offset is read by the script when it is set up, so a change of it has to set the listener
+        // up again. -1 is not a reachable offset (it is clamped at 0), which keeps the detached state
+        // from ever comparing equal to an attached one.
+        var revealOffset = shouldAttach ? Math.Max(0, RevealOffset.GetValueOrDefault()) : -1;
 
-        _revealAttached = shouldAttach;
+        if (shouldAttach == _revealAttached && revealOffset == _attachedRevealOffset) return;
 
         if (shouldAttach)
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitFootersSetup(_Id, _dotnetObj);
+            await _js.BitFootersSetup(_Id, _dotnetObj, revealOffset);
+
+            // The flags are only moved once the interop call has gone through, so a call that failed
+            // leaves them as they were and the next render tries to set the listener up again.
+            _revealAttached = true;
+            _attachedRevealOffset = revealOffset;
         }
         else
         {
             await _js.BitFootersDispose(_Id);
+
+            _revealAttached = false;
+            _attachedRevealOffset = revealOffset;
 
             // The footer is no longer driven by the script, so it must not stay stuck in the hidden state.
             if (_hidden)

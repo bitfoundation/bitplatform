@@ -41,6 +41,12 @@ public partial class BitFooterDemo
     <BitTag Text=""the items"" />
 </BitFooter>
 
+<BitFooter Alignment=""BitAlignment.SpaceAround"" Bordered>
+    <BitTag Text=""Space"" />
+    <BitTag Text=""around"" />
+    <BitTag Text=""the items"" />
+</BitFooter>
+
 <BitFooter Alignment=""BitAlignment.SpaceEvenly"" Bordered>
     <BitTag Text=""Space"" />
     <BitTag Text=""evenly"" />
@@ -62,6 +68,25 @@ public partial class BitFooterDemo
 </BitFooter>";
 
     private readonly string example6RazorCode = @"
+<BitFooter Bordered>
+    <BitTag Text=""No"" />
+    <BitTag Text=""gap"" />
+    <BitTag Text=""at all"" />
+</BitFooter>
+
+<BitFooter Bordered Gap=""0.5rem"">
+    <BitTag Text=""A"" />
+    <BitTag Text=""0.5rem"" />
+    <BitTag Text=""gap"" />
+</BitFooter>
+
+<BitFooter Bordered Gap=""2rem"" Alignment=""BitAlignment.Center"">
+    <BitTag Text=""A"" />
+    <BitTag Text=""2rem"" />
+    <BitTag Text=""gap"" />
+</BitFooter>";
+
+    private readonly string example7RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -98,7 +123,20 @@ public partial class BitFooterDemo
     <BitFooter Fixed Elevated Color=""BitColor.Primary"">I'm a fixed Footer</BitFooter>
 </div>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
+<style>
+    .scroll-demo {
+        height: 10rem;
+        overflow: auto;
+        border: 1px solid gray;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+
 <div>Scroll inside the box to hide and reveal the footer: <b>@(isFooterRevealed ? ""revealed"" : ""hidden"")</b></div>
 
 <div class=""scroll-demo"">
@@ -112,11 +150,25 @@ public partial class BitFooterDemo
                OnRevealChanged=""v => isFooterRevealed = v"">
         I hide myself while you scroll down
     </BitFooter>
+</div>
+
+
+<div class=""scroll-demo"">
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Row @i</div>
+    }
+    <BitFooter Sticky Reveal Elevated
+               RevealOffset=""100""
+               Color=""BitColor.Tertiary""
+               Alignment=""BitAlignment.Center"">
+        I stay until you scroll past 100px
+    </BitFooter>
 </div>";
-    private readonly string example7CsharpCode = @"
+    private readonly string example8CsharpCode = @"
 private bool isFooterRevealed = true;";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .translucent-demo {
         height: 10rem;
@@ -142,7 +194,7 @@ private bool isFooterRevealed = true;";
     <BitFooter Fixed Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Footer</BitFooter>
 </div>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .footer-content {
         flex-grow: 1;
@@ -199,7 +251,7 @@ private bool isFooterRevealed = true;";
     </div>
 </BitFooter>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitFooter Color=""BitColor.Primary"">Primary</BitFooter>
 <BitFooter Color=""BitColor.Secondary"">Secondary</BitFooter>
 <BitFooter Color=""BitColor.Tertiary"">Tertiary</BitFooter>
@@ -221,14 +273,14 @@ private bool isFooterRevealed = true;";
 <BitFooter Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"">SecondaryBorder</BitFooter>
 <BitFooter Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitFooter>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitFooter Size=""BitSize.Small"" Bordered>Small</BitFooter>
 
 <BitFooter Size=""BitSize.Medium"" Bordered>Medium</BitFooter>
 
 <BitFooter Size=""BitSize.Large"" Bordered>Large</BitFooter>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         color: white;
@@ -260,7 +312,7 @@ private bool isFooterRevealed = true;";
     Classes
 </BitFooter>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitFooter Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />
