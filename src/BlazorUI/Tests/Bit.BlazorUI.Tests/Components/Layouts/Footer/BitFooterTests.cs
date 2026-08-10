@@ -1,4 +1,7 @@
-﻿using Bunit;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Footer;
@@ -12,7 +15,7 @@ public class BitFooterTests : BunitTestContext
         var component = RenderComponent<BitFooter>();
 
         component.MarkupMatches(@"
-<footer class=""bit-ftr"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -29,7 +32,7 @@ public class BitFooterTests : BunitTestContext
         });
 
         component.MarkupMatches($@"
-<footer class=""bit-ftr"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
         {childContent}
     </div>
@@ -47,10 +50,102 @@ public class BitFooterTests : BunitTestContext
         });
 
         component.MarkupMatches($@"
-<footer style=""height:{height}px"" class=""bit-ftr"" id:ignore>
+<footer style=""height:{height}px"" class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void BitFooterShouldAddTheSafeAreaInsetToTheHeightOfAPinnedFooter(bool @fixed, bool sticky)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+            parameters.Add(p => p.Fixed, @fixed);
+            parameters.Add(p => p.Sticky, sticky);
+        });
+
+        // The pinned footer pads itself with the inset, so the asked for height has to grow by it or the
+        // content of the footer would lose that much of its own room.
+        Assert.AreEqual("height:calc(56px + env(safe-area-inset-bottom, 0px))",
+                        component.Find(".bit-ftr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldSwitchTheHeightWhenTheFooterIsPinnedDynamically()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+        });
+
+        Assert.AreEqual("height:56px", component.Find(".bit-ftr").GetAttribute("style"));
+
+        component.Render(parameters => parameters.Add(p => p.Sticky, true));
+
+        Assert.AreEqual("height:calc(56px + env(safe-area-inset-bottom, 0px))",
+                        component.Find(".bit-ftr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    [DataRow("1rem")]
+    [DataRow("4px 8px")]
+    public void BitFooterShouldRespectGap(string gap)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Gap, gap);
+        });
+
+        component.MarkupMatches($@"
+<footer style=""--bit-ftr-gap:{gap}"" class=""bit-ftr bit-ftr-fil"" id:ignore>
+    <div class=""bit-ftr-gut"">
+    </div>
+</footer>");
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotRenderTheGapVariableByDefault()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        var style = component.Find(".bit-ftr").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-ftr-gap"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectGapAndHeightTogether()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Height, 64);
+            parameters.Add(p => p.Gap, "1rem");
+        });
+
+        var style = component.Find(".bit-ftr").GetAttribute("style")!;
+
+        StringAssert.Contains(style, "height:64px");
+        StringAssert.Contains(style, "--bit-ftr-gap:1rem");
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectGapChangedDynamically()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Gap, "1rem");
+        });
+
+        StringAssert.Contains(component.Find(".bit-ftr").GetAttribute("style")!, "--bit-ftr-gap:1rem");
+
+        component.Render(parameters => parameters.Add(p => p.Gap, "2rem"));
+
+        StringAssert.Contains(component.Find(".bit-ftr").GetAttribute("style")!, "--bit-ftr-gap:2rem");
     }
 
     [TestMethod]
@@ -64,6 +159,684 @@ public class BitFooterTests : BunitTestContext
         var footer = component.Find(".bit-ftr");
 
         Assert.IsTrue(footer.ClassList.Contains("bit-ftr-fix"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-stk"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectSticky()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-stk"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-fix"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectAbsolute()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Absolute, true);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-abs"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-fix"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-stk"));
+    }
+
+    [TestMethod]
+    // An element has one position, so the widest reach wins: Fixed, then Absolute, then Sticky.
+    [DataRow(true, true, true, "bit-ftr-fix")]
+    [DataRow(true, true, false, "bit-ftr-fix")]
+    [DataRow(true, false, true, "bit-ftr-fix")]
+    [DataRow(false, true, true, "bit-ftr-abs")]
+    public void BitFooterShouldRespectThePrecedenceOfThePositions(bool @fixed, bool absolute, bool sticky, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Fixed, @fixed);
+            parameters.Add(p => p.Absolute, absolute);
+            parameters.Add(p => p.Sticky, sticky);
+        });
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        Assert.IsTrue(classes.Contains(expectedClass));
+
+        foreach (var other in new[] { "bit-ftr-fix", "bit-ftr-abs", "bit-ftr-stk" }.Where(c => c != expectedClass))
+        {
+            Assert.IsFalse(classes.Contains(other));
+        }
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotAddTheSafeAreaInsetToTheHeightOfAnAbsoluteFooter()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+            parameters.Add(p => p.Absolute, true);
+        });
+
+        // An absolute footer is pinned to its container, not to the bottom of the screen, so there is no
+        // device inset underneath it to make room for.
+        Assert.AreEqual("height:56px", component.Find(".bit-ftr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotSetUpTheRevealScriptForAnAbsoluteFooter()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Absolute, true);
+        });
+
+        // An absolute footer scrolls away with its container, so it has nothing to slide over.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectFixedChangedDynamically()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-fix"));
+
+        component.Render(parameters => parameters.Add(p => p.Fixed, true));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-fix"));
+    }
+
+    [TestMethod]
+    [DataRow(BitColor.Primary, "bit-ftr-pri")]
+    [DataRow(BitColor.Secondary, "bit-ftr-sec")]
+    [DataRow(BitColor.Tertiary, "bit-ftr-ter")]
+    [DataRow(BitColor.Info, "bit-ftr-inf")]
+    [DataRow(BitColor.Success, "bit-ftr-suc")]
+    [DataRow(BitColor.Warning, "bit-ftr-wrn")]
+    [DataRow(BitColor.SevereWarning, "bit-ftr-swr")]
+    [DataRow(BitColor.Error, "bit-ftr-err")]
+    [DataRow(BitColor.PrimaryBackground, "bit-ftr-pbg")]
+    [DataRow(BitColor.SecondaryBackground, "bit-ftr-sbg")]
+    [DataRow(BitColor.TertiaryBackground, "bit-ftr-tbg")]
+    [DataRow(BitColor.PrimaryForeground, "bit-ftr-pfg")]
+    [DataRow(BitColor.SecondaryForeground, "bit-ftr-sfg")]
+    [DataRow(BitColor.TertiaryForeground, "bit-ftr-tfg")]
+    [DataRow(BitColor.PrimaryBorder, "bit-ftr-pbr")]
+    [DataRow(BitColor.SecondaryBorder, "bit-ftr-sbr")]
+    [DataRow(BitColor.TertiaryBorder, "bit-ftr-tbr")]
+    public void BitFooterShouldRespectColor(BitColor color, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotRenderAnyColorClassByDefault()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        // Without a Color the footer keeps the plain page surface, so no role class is emitted.
+        Assert.IsFalse(classes.Contains("bit-ftr-pri"));
+        Assert.IsFalse(classes.Contains("bit-ftr-pbg"));
+    }
+
+    [TestMethod]
+    [DataRow(BitVariant.Fill, "bit-ftr-fil")]
+    [DataRow(BitVariant.Outline, "bit-ftr-otl")]
+    [DataRow(BitVariant.Text, "bit-ftr-txt")]
+    [DataRow(null, "bit-ftr-fil")]
+    public void BitFooterShouldRespectVariant(BitVariant? variant, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(BitSize.Small, "bit-ftr-sm")]
+    [DataRow(BitSize.Medium, "bit-ftr-md")]
+    [DataRow(BitSize.Large, "bit-ftr-lg")]
+    public void BitFooterShouldRespectSize(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotRenderAnySizeClassByDefault()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        Assert.IsFalse(classes.Contains("bit-ftr-sm"));
+        Assert.IsFalse(classes.Contains("bit-ftr-md"));
+        Assert.IsFalse(classes.Contains("bit-ftr-lg"));
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.Start, "bit-ftr-srt")]
+    [DataRow(BitAlignment.End, "bit-ftr-end")]
+    [DataRow(BitAlignment.Center, "bit-ftr-cnt")]
+    [DataRow(BitAlignment.SpaceBetween, "bit-ftr-sbt")]
+    [DataRow(BitAlignment.SpaceAround, "bit-ftr-sar")]
+    [DataRow(BitAlignment.SpaceEvenly, "bit-ftr-sev")]
+    [DataRow(BitAlignment.Baseline, "bit-ftr-bsl")]
+    [DataRow(BitAlignment.Stretch, "bit-ftr-str")]
+    public void BitFooterShouldRespectAlignment(BitAlignment alignment, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.Start, "bit-ftr-vst")]
+    [DataRow(BitAlignment.End, "bit-ftr-ved")]
+    [DataRow(BitAlignment.Center, "bit-ftr-vcn")]
+    [DataRow(BitAlignment.Baseline, "bit-ftr-bsl")]
+    [DataRow(BitAlignment.Stretch, "bit-ftr-str")]
+    public void BitFooterShouldRespectVerticalAlign(BitAlignment verticalAlign, string expectedClass)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.VerticalAlign, verticalAlign);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.SpaceBetween)]
+    [DataRow(BitAlignment.SpaceAround)]
+    [DataRow(BitAlignment.SpaceEvenly)]
+    public void BitFooterShouldIgnoreTheSpaceDistributionsOfVerticalAlign(BitAlignment verticalAlign)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.VerticalAlign, verticalAlign);
+        });
+
+        // Distributing free space says nothing about how a line is aligned on the cross axis, so those
+        // three members have no class of their own here and must not leak the horizontal one either.
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        Assert.IsFalse(classes.Contains("bit-ftr-sbt"));
+        Assert.IsFalse(classes.Contains("bit-ftr-sar"));
+        Assert.IsFalse(classes.Contains("bit-ftr-sev"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotRenderAnyCrossAxisClassByDefault()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        Assert.IsFalse(classes.Contains("bit-ftr-vst"));
+        Assert.IsFalse(classes.Contains("bit-ftr-ved"));
+        Assert.IsFalse(classes.Contains("bit-ftr-vcn"));
+        Assert.IsFalse(classes.Contains("bit-ftr-bsl"));
+        Assert.IsFalse(classes.Contains("bit-ftr-str"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldPreferVerticalAlignOverTheCrossAxisMembersOfAlignment()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Baseline);
+            parameters.Add(p => p.VerticalAlign, BitAlignment.End);
+        });
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        // Both spellings drive the same CSS variable, so only one of them may reach the markup.
+        Assert.IsTrue(classes.Contains("bit-ftr-ved"));
+        Assert.IsFalse(classes.Contains("bit-ftr-bsl"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotEmitAHorizontalClassForTheCrossAxisMembersOfAlignment()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Stretch);
+        });
+
+        var classes = component.Find(".bit-ftr").ClassList;
+
+        Assert.IsTrue(classes.Contains("bit-ftr-str"));
+        Assert.IsFalse(classes.Contains("bit-ftr-srt"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectWrap(bool wrap)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Wrap, wrap);
+        });
+
+        Assert.AreEqual(wrap, component.Find(".bit-ftr").ClassList.Contains("bit-ftr-wrp"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectBordered(bool bordered)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Bordered, bordered);
+        });
+
+        Assert.AreEqual(bordered, component.Find(".bit-ftr").ClassList.Contains("bit-ftr-brd"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectElevated(bool elevated)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Elevated, elevated);
+        });
+
+        Assert.AreEqual(elevated, component.Find(".bit-ftr").ClassList.Contains("bit-ftr-elv"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectTranslucent(bool translucent)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Translucent, translucent);
+        });
+
+        Assert.AreEqual(translucent, component.Find(".bit-ftr").ClassList.Contains("bit-ftr-trs"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectNoGutter(bool noGutter)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.NoGutter, noGutter);
+        });
+
+        Assert.AreEqual(noGutter, component.Find(".bit-ftr").ClassList.Contains("bit-ftr-ngt"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectReveal(bool reveal)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, reveal);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.AreEqual(reveal, footer.ClassList.Contains("bit-ftr-anm"));
+        // The footer starts revealed no matter what.
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsTrue(component.Instance.IsRevealed);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public void BitFooterShouldOnlySetTheRevealScriptUpForAPositionedFooter(bool reveal, bool positioned)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, reveal);
+            parameters.Add(p => p.Sticky, positioned);
+        });
+
+        // A footer in the normal flow has nothing to slide over, so the scroll listener is only
+        // attached for a Fixed or Sticky one.
+        var setups = Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup");
+
+        Assert.AreEqual((reveal && positioned) ? 1 : 0, setups);
+    }
+
+    [TestMethod]
+    [DataRow(null, 0)]
+    [DataRow(0, 0)]
+    [DataRow(120, 120)]
+    [DataRow(-5, 0)]
+    public void BitFooterShouldRespectRevealOffset(int? revealOffset, int expectedOffset)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, revealOffset);
+        });
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Footers.setup");
+
+        Assert.AreEqual(component.Instance.UniqueId.ToString(), invocation.Arguments[0]);
+        // A negative offset is clamped, so it can never keep the footer hidden at the top of the scroller.
+        Assert.AreEqual(expectedOffset, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitFooterShouldSetTheRevealScriptUpAgainWhenTheRevealOffsetChanges()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, 50);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, 150);
+        });
+
+        var offsets = Context.JSInterop.Invocations
+                             .Where(i => i.Identifier == "BitBlazorUI.Footers.setup")
+                             .Select(i => i.Arguments[2])
+                             .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { 50, 150 }, offsets);
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotSetTheRevealScriptUpAgainOnAnUnrelatedRender()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, 50);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.RevealOffset, 50);
+            parameters.Add(p => p.Bordered, true);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldMoveTheRevealScriptWhenTheIdChanges()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Id, "footer-one");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Id, "footer-two");
+        });
+
+        // The listeners of the script are keyed by the id, so the old registration has to go down and a
+        // new one has to come up under the new id, or the reveal would be driven by an element that is gone.
+        var setups = Context.JSInterop.Invocations
+                            .Where(i => i.Identifier == "BitBlazorUI.Footers.setup")
+                            .Select(i => i.Arguments[0])
+                            .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { "footer-one", "footer-two" }, setups);
+
+        var disposes = Context.JSInterop.Invocations
+                              .Where(i => i.Identifier == "BitBlazorUI.Footers.dispose")
+                              .Select(i => i.Arguments[0])
+                              .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { "footer-one" }, disposes);
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotCallTheRevealScriptAtAllWithoutReveal()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Bordered, true);
+        });
+
+        // A footer that never asked for the reveal must not pay for a single interop call, on any render.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.StartsWith("BitBlazorUI.Footers")));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldDisposeTheRevealScriptWhenRevealIsTurnedOff()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, false);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldToggleTheHiddenClassOnRevealChange()
+    {
+        var revealStates = new List<bool>();
+
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.OnRevealChanged, (bool v) => revealStates.Add(v));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsFalse(component.Instance.IsRevealed);
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(false));
+
+        Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsTrue(component.Instance.IsRevealed);
+
+        CollectionAssert.AreEqual(new[] { false, true }, revealStates);
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldNotRaiseOnRevealChangedForTheSameState()
+    {
+        var callCount = 0;
+
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.OnRevealChanged, (bool _) => callCount++);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+
+        Assert.AreEqual(1, callCount);
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldNotStayHiddenWhenRevealIsTurnedOff()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(true));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, false);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // The hidden state is cleared in OnAfterRenderAsync, after the interop call that detaches the
+        // scroll listener, so the render that turns Reveal off is not the render that reveals the footer.
+        component.WaitForAssertion(() =>
+        {
+            var footer = component.Find(".bit-ftr");
+
+            Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
+            Assert.IsFalse(footer.ClassList.Contains("bit-ftr-anm"));
+            Assert.IsTrue(component.Instance.IsRevealed);
+        });
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectHidden(bool hidden)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, hidden);
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.AreEqual(hidden, footer.ClassList.Contains("bit-ftr-hdn"));
+        // A hidden footer is only translated out of the view, so it is made inert to keep its content
+        // out of reach of the pointer and the keyboard while it is gone.
+        Assert.AreEqual(hidden, footer.HasAttribute("inert"));
+        // A bound Hidden makes the footer animatable whichever way it is bound, so the first slide runs too.
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-anm"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotBeAnimatableWithoutRevealOrHidden()
+    {
+        var component = RenderComponent<BitFooter>();
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-anm"));
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsFalse(footer.HasAttribute("inert"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectHiddenChangedDynamically()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, false);
+        });
+
+        Assert.IsFalse(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+
+        component.Render(parameters => parameters.Add(p => p.Hidden, true));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+
+        component.Render(parameters => parameters.Add(p => p.Hidden, false));
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsFalse(footer.ClassList.Contains("bit-ftr-hdn"));
+        // The transition has to outlive the hidden state or the way back in would not be animated.
+        Assert.IsTrue(footer.ClassList.Contains("bit-ftr-anm"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldNotSetUpTheRevealScriptForAHiddenFooter()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // Hidden is driven by the application alone, so it needs no scroll listener of its own.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldKeepTheFooterHiddenWhileHiddenIsSetEvenAfterAReveal()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Hidden, true);
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+
+        // The scroll says reveal, but the application says hidden, and the explicit parameter wins.
+        await component.InvokeAsync(() => component.Instance._OnRevealChange(false));
+
+        Assert.IsTrue(component.Find(".bit-ftr").ClassList.Contains("bit-ftr-hdn"));
+        Assert.IsTrue(component.Instance.IsRevealed);
     }
 
     [TestMethod]
@@ -79,7 +852,7 @@ public class BitFooterTests : BunitTestContext
         if (string.IsNullOrEmpty(style) is false)
         {
             component.MarkupMatches($@"
-<footer style=""{style}"" class=""bit-ftr"" id:ignore>
+<footer style=""{style}"" class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -87,7 +860,7 @@ public class BitFooterTests : BunitTestContext
         else
         {
             component.MarkupMatches(@"
-<footer class=""bit-ftr"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -107,10 +880,30 @@ public class BitFooterTests : BunitTestContext
         var cssClass = !string.IsNullOrEmpty(@class) ? $" {@class}" : string.Empty;
 
         component.MarkupMatches($@"
-<footer class=""bit-ftr{cssClass}"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil{cssClass}"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectClassesAndStyles()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitFooterClassStyles { Root = "root-class", Container = "container-class" });
+            parameters.Add(p => p.Styles, new BitFooterClassStyles { Root = "color:red", Container = "color:blue" });
+        });
+
+        var footer = component.Find(".bit-ftr");
+
+        Assert.IsTrue(footer.ClassList.Contains("root-class"));
+        Assert.IsTrue(footer.GetAttribute("style")!.Contains("color:red"));
+
+        var container = component.Find(".bit-ftr-gut");
+
+        Assert.IsTrue(container.ClassList.Contains("container-class"));
+        Assert.IsTrue(container.GetAttribute("style")!.Contains("color:blue"));
     }
 
     [TestMethod]
@@ -126,10 +919,59 @@ public class BitFooterTests : BunitTestContext
         var expectedId = id ?? component.Instance.UniqueId.ToString();
 
         component.MarkupMatches($@"
-<footer id=""{expectedId}"" class=""bit-ftr"">
+<footer id=""{expectedId}"" class=""bit-ftr bit-ftr-fil"">
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
+    }
+
+    [TestMethod]
+    [DataRow("Site footer")]
+    [DataRow(null)]
+    public void BitFooterShouldRespectAriaLabel(string ariaLabel)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+        });
+
+        Assert.AreEqual(ariaLabel, component.Find(".bit-ftr").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitFooterShouldRespectIsEnabled(bool isEnabled)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, isEnabled);
+        });
+
+        Assert.AreEqual(isEnabled is false, component.Find(".bit-ftr").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    [DataRow(BitVisibility.Visible, null)]
+    [DataRow(BitVisibility.Hidden, "visibility:hidden")]
+    [DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitFooterShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-ftr").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.AreEqual(string.Empty, style);
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
     }
 
     [TestMethod]
@@ -148,7 +990,7 @@ public class BitFooterTests : BunitTestContext
         {
             var cssClass = dir is BitDir.Rtl ? " bit-rtl" : string.Empty;
             component.MarkupMatches($@"
-<footer dir=""{dir.Value.ToString().ToLower()}"" class=""bit-ftr{cssClass}"" id:ignore>
+<footer dir=""{dir.Value.ToString().ToLower()}"" class=""bit-ftr bit-ftr-fil{cssClass}"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -156,7 +998,7 @@ public class BitFooterTests : BunitTestContext
         else
         {
             component.MarkupMatches(@"
-<footer class=""bit-ftr"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -175,7 +1017,7 @@ public class BitFooterTests : BunitTestContext
 
         var cssClass = forceAnimation ? " bit-fam" : string.Empty;
         component.MarkupMatches($@"
-<footer class=""bit-ftr{cssClass}"" id:ignore>
+<footer class=""bit-ftr bit-ftr-fil{cssClass}"" id:ignore>
     <div class=""bit-ftr-gut"">
     </div>
 </footer>");
@@ -187,10 +1029,43 @@ public class BitFooterTests : BunitTestContext
         var component = RenderComponent<BitFooterHtmlAttributesTest>();
 
         component.MarkupMatches(@"
-<footer data-val-test=""bit"" class=""bit-ftr"" id:ignore>
+<footer data-val-test=""bit"" class=""bit-ftr bit-ftr-fil"" id:ignore>
     <div class=""bit-ftr-gut"">
         I'm a footer
     </div>
 </footer>");
+    }
+
+    [TestMethod]
+    public void BitFooterShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitFooterCascadingParamsTest>();
+
+        var footers = component.FindAll(".bit-ftr");
+
+        // The first footer takes everything from the cascading parameters.
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-suc"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-otl"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-lg"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-brd"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-stk"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-anm"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-wrp"));
+        Assert.IsTrue(footers[0].ClassList.Contains("bit-ftr-ved"));
+        StringAssert.Contains(footers[0].GetAttribute("style")!, "--bit-ftr-gap:1rem");
+
+        // The second one sets its own color and gap, which the cascading parameters must not overwrite.
+        Assert.IsTrue(footers[1].ClassList.Contains("bit-ftr-err"));
+        Assert.IsFalse(footers[1].ClassList.Contains("bit-ftr-suc"));
+        Assert.IsTrue(footers[1].ClassList.Contains("bit-ftr-otl"));
+        StringAssert.Contains(footers[1].GetAttribute("style")!, "--bit-ftr-gap:2rem");
+
+        // The cascaded RevealOffset reaches the script of both footers.
+        var offsets = Context.JSInterop.Invocations
+                             .Where(i => i.Identifier == "BitBlazorUI.Footers.setup")
+                             .Select(i => i.Arguments[2])
+                             .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { 80, 80 }, offsets);
     }
 }
