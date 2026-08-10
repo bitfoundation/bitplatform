@@ -1,4 +1,5 @@
 @namespace Bit.BlazorUI
+@using System.Globalization
 @inherits BitInputBase<TimeSpan?>
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -259,7 +260,7 @@
                                       aria-selected="@(IsSelected(hour) ? "true" : "false")"
                                       aria-disabled="@(IsSelectable(hour) ? null : "true")"
                                       style="@GetNumberStyle(hour, i)"
-                                      class="bit-ctp-num @GetNumberClass(hour)">@(hour.ToString("D2"))</span>
+                                      class="bit-ctp-num @GetNumberClass(hour)">@(hour.ToString("D2", CultureInfo.InvariantCulture))</span>
                             }
                             @*Hours from 01 to 12 on the inner ring*@
                             for (int i = 1; i <= 12; i++)
@@ -269,7 +270,7 @@
                                       aria-selected="@(IsSelected(i) ? "true" : "false")"
                                       aria-disabled="@(IsSelectable(i) ? null : "true")"
                                       style="@GetNumberStyle(i, i)"
-                                      class="bit-ctp-num bit-ctp-inn @GetNumberClass(i)">@(i.ToString("D2"))</span>
+                                      class="bit-ctp-num bit-ctp-inn @GetNumberClass(i)">@(i.ToString("D2", CultureInfo.InvariantCulture))</span>
                             }
                         }
                     }
@@ -284,7 +285,7 @@
                                   aria-selected="@(IsSelected(value) ? "true" : "false")"
                                   aria-disabled="@(IsSelectable(value) ? null : "true")"
                                   style="@GetNumberStyle(value, i)"
-                                  class="bit-ctp-num @GetNumberClass(value)">@(value.ToString("D2"))</span>
+                                  class="bit-ctp-num @GetNumberClass(value)">@(value.ToString("D2", CultureInfo.InvariantCulture))</span>
                         }
                     }
 

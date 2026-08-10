@@ -116,9 +116,11 @@ namespace BitBlazorUI {
 
             // Blazor cannot preventDefault per key, so the keys the dial acts on are stopped here instead -
             // otherwise every arrow press would scroll the page underneath the callout as well as move the
-            // pointer. Tab and the rest are deliberately left alone so focus can still leave the dial.
+            // pointer, and the Enter the dial settles the view with would submit the form the picker sits in.
+            // Tab, Escape and the rest are deliberately left alone so focus can still leave the dial.
             clock.addEventListener('keydown', e => {
-                if (CircularTimePicker._navigationKeys.indexOf((e as KeyboardEvent).key) < 0) return;
+                const key = (e as KeyboardEvent).key;
+                if (key !== 'Enter' && CircularTimePicker._navigationKeys.indexOf(key) < 0) return;
 
                 e.preventDefault();
             }, { signal: bitController.controller.signal });

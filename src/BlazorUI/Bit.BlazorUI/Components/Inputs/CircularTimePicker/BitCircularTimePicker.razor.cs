@@ -701,6 +701,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             if (Responsive && Standalone is false)
             {
                 await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+
+                // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
+                // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the
+                // component otherwise, so it is torn down here instead.
+                if (IsDisposed)
+                {
+                    await _js.BitSwipesDispose(_calloutId);
+                    return;
+                }
             }
 
             if (IsDisposed) return;
