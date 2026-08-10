@@ -186,5 +186,5 @@ public static class WebApplicationExtensions
     /// The hosts ASP.NET Core's own <c>HstsMiddleware</c> excludes by default. Kept so the hand-written
     /// Strict-Transport-Security below behaves exactly like <c>UseHsts()</c> did.
     /// </summary>
-    private static readonly HashSet<string> HstsExcludedHosts = new(["localhost", "127.0.0.1", "::1"], StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> HstsExcludedHosts = new(["localhost", "127.0.0.1", "[::1]"], StringComparer.OrdinalIgnoreCase);
 }

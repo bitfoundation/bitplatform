@@ -68,8 +68,14 @@ public partial class IntegrationTests
         // Non-vacuity first: the document has to actually list the sitemap, or the assertions below prove nothing.
         Assert.Contains($"<loc>{new Uri(server.WebAppServerAddress, "sitemap.xml")}</loc>", siteMapIndex);
 
+        //-:cnd:noEmit
+        // Conditional processing is off for these two lines. The template engine scans for the text
+        // "#if" without regard for C# string literals, and with no condition after it the expression
+        // parser throws and aborts the whole `dotnet new` run - so the marker below is what keeps this
+        // file, and the generation of every project that carries it, working. Do not remove it.
         Assert.DoesNotContain("#if", siteMapIndex);
         Assert.DoesNotContain("#endif", siteMapIndex);
+        //+:cnd:noEmit
 
         var strayText = XDocument.Parse(siteMapIndex).Root!.Nodes()
             .OfType<XText>()
@@ -78,5 +84,144 @@ public partial class IntegrationTests
             .ToArray();
 
         Assert.IsEmpty(strayText, $"<sitemapindex> may only contain <sitemap> elements, but it also carries: {string.Join(" | ", strayText)}");
+    }
+
+    /// <summary>
+    /// With pre-rendering on, the home page's html carries its content before any interactivity starts - which is the
+    /// whole point of pre-rendering for a crawler, and the reason this asserts on the response body rather than on a
+    /// rendered page. Reading the response is also all a crawler ever does, so there is nothing a browser would add here.
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering")]
+    public async Task Prerendering_HomePage_Should_RenderHomeMessage()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
+
+        var homeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
+
+        Assert.Contains(homeMessage, html);
+    }
+
+    /// <summary>
+    /// Enabling output caching makes HttpRequestExtensions.IsStreamPrerenderingSuppressed() return true,
+    /// because a streamed response may not be stored in the output/CDN cache. As a result the server fully
+    /// pre-renders the page and returns it as a single, complete (non-streamed) response.
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Caching")]
+    public async Task Prerendering_WithOutputCaching_Should_ReturnCompleteNonStreamedHomePage()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration =>
+            {
+                configuration["WebAppRender:PrerenderEnabled"] = "true";
+                configuration["ResponseCaching:EnableOutputCaching"] = "true";
+            }
+        ).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        // Reading the first complete response ourselves is what makes the streaming assertion below meaningful: a client
+        // that waits for a streamed response to finish cannot tell whether streaming happened at all.
+        using var response = await httpClient.GetAsync(PageUrls.Home, HttpCompletionOption.ResponseHeadersRead, TestContext.CancellationToken);
+        response.EnsureSuccessStatusCode();
+        var html = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        var homeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
+
+        // The complete (non-streamed) pre-rendered response already contains the message.
+        Assert.Contains(homeMessage, html);
+
+        // Streaming SSR appends its incremental updates inside <blazor-ssr> elements; a suppressed/complete pre-render never does.
+        Assert.IsFalse(html.Contains("<blazor-ssr", StringComparison.OrdinalIgnoreCase),
+            "Streaming pre-rendering must be suppressed while output caching is enabled.");
+
+        // The App-Cache-Response header proves the shared (output) cache path handled this request,
+        // which is exactly the condition that suppresses streaming pre-rendering.
+        Assert.IsTrue(response.Headers.TryGetValues("App-Cache-Response", out var appCacheResponse));
+        var appCacheResponseValue = string.Concat(appCacheResponse!);
+        Assert.Contains("Output:", appCacheResponseValue);
+        Assert.DoesNotContain("Output:-1", appCacheResponseValue, "Output caching should be active for this request.");
+    }
+
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Localization")]
+    public async Task Prerendering_FaCulture_HomePage_Should_RenderLocalizedHomeMessage()
+    {
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var httpClient = scope.ServiceProvider.GetRequiredService<HttpClient>();
+
+        // "fa-IR/" is the exact culture-prefixed home URL advertised in the sitemap.
+        var html = await httpClient.GetStringAsync($"{PageUrls.Home}fa-IR/", TestContext.CancellationToken);
+        // Decode so the assertion holds whether the non-ASCII (Persian) text is emitted as raw UTF-8 or HTML entities.
+        html = System.Net.WebUtility.HtmlDecode(html);
+
+        // Read the expected translation from the resx resources for the fa-IR culture instead of hard-coding it.
+        var faCulture = CultureInfoManager.GetCultureInfo("fa-IR")!;
+        var faHomeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), faCulture)!;
+        var defaultHomeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), CultureInfo.InvariantCulture)!;
+
+        Assert.DoesNotContain(defaultHomeMessage, html);
+        Assert.Contains(faHomeMessage, html);
+    }
+
+    /// <summary>
+    /// A browser can advertise the <b>neutral</b> culture "fa" (rather than the specific "fa-IR") in its Accept-Language
+    /// header. AppAcceptLanguageRequestCultureProvider maps that neutral name up to the supported specific culture
+    /// "fa-IR", so the (culture-less) home page must still be served in Persian - resolved purely from the header, with
+    /// no culture in the URL.
+    /// <para>
+    /// <b>Why a bare <see cref="HttpClient"/> here</b>, unlike the tests above: the header IS the input, and the app's own
+    /// <c>RequestHeadersDelegatingHandler</c> adds an Accept-Language of its own (from <c>CurrentUICulture</c>) to every
+    /// request, so the DI-resolved client would send the value under test joined with that one.
+    /// </para>
+    /// </summary>
+    [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Localization")]
+    public async Task Prerendering_FaAcceptLanguageHeader_HomePage_Should_RenderLocalizedHomeMessage()
+    {
+        if (CultureInfoManager.InvariantGlobalization)
+        {
+            Assert.Inconclusive("Accept-Language is not honoured on an invariant globalization build.");
+            return;
+        }
+
+        await using var server = new AppTestServer();
+
+        await server.Build(
+            configureTestServices: services => services.FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:PrerenderEnabled"] = "true"
+        ).Start(TestContext.CancellationToken);
+
+        using var httpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+        // The neutral "fa", never "fa-IR": mapping it up to the supported specific culture is the behavior under test.
+        httpClient.DefaultRequestHeaders.AcceptLanguage.Add(new StringWithQualityHeaderValue("fa"));
+
+        var html = await httpClient.GetStringAsync(PageUrls.Home, TestContext.CancellationToken);
+        // Decode so the assertion holds whether the non-ASCII (Persian) text is emitted as raw UTF-8 or HTML entities.
+        html = System.Net.WebUtility.HtmlDecode(html);
+
+        var faCulture = CultureInfoManager.GetCultureInfo("fa-IR")!;
+        var faHomeMessage = AppStrings.ResourceManager.GetString(nameof(AppStrings.HomeMessage), faCulture)!;
+
+        Assert.Contains(faHomeMessage, html);
     }
 }

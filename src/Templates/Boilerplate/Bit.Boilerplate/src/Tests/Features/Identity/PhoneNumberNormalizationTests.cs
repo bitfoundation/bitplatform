@@ -7,8 +7,8 @@ using Boilerplate.Server.Api.Infrastructure.Services;
 
 namespace Boilerplate.Tests.Features.Identity;
 
-[TestClass, TestCategory("UITest"), Retry(2)]
-public partial class PhoneNumberNormalizationUITests : AppPageTest
+[TestClass, TestCategory("IntegrationTest")]
+public partial class PhoneNumberNormalizationTests
 {
     /// <summary>
     /// The Sign in page accepts a phone number in any human format, but the server must always text the one-time code to
@@ -18,33 +18,37 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
     /// <item>Replace the real <c>PhoneService</c> with a subclass that overrides only <c>SendSms</c> to record every
     /// (message, phone-number) pair into a static collector and deliver nothing - no Hangfire job, no Twilio - while
     /// still using the real <c>NormalizePhoneNumber</c>, which is exactly the behavior under test.</item>
-    /// <item>For three brand-new random US numbers, each typed in a different de-normalized format (parentheses + dash,
-    /// dots, spaces), switch to the Phone tab and request the code. A brand-new number makes the server register the
-    /// (still unconfirmed) account, text the confirmation code and reveal the OTP panel.</item>
+    /// <item>For three brand-new random US numbers, each written in a different de-normalized format (parentheses + dash,
+    /// dots, spaces), request the code. A brand-new number makes the server register the (still unconfirmed) account,
+    /// text the confirmation code and answer "not confirmed" - the very response that reveals the OTP panel in the UI.</item>
     /// <item>Assert every number handed to <c>SendSms</c> arrived already normalized to E.164 - a leading "+", digits
     /// only, none of the punctuation that was typed.</item>
     /// <item>For the last number, finish signing in: read the 6 digit code straight from the captured SMS body (the SMS
-    /// is the only place a phone code is delivered), type it into the OTP panel and land on the home page, signed in.</item>
+    /// is the only place a phone code is delivered) and confirm with the number still in its typed form, which proves the
+    /// account really was created against the normalized one.</item>
     /// </list>
+    /// <para>
+    /// Nothing here is about rendering: what the sign-in form contributes is a phone number in the request body, so the
+    /// requests are made directly and no browser is started. The Phone tab's own behavior (its de-bounce, the OTP panel)
+    /// is covered by the Playwright sign-in journeys.
+    /// </para>
     /// </summary>
     [TestMethod]
-    public async Task SignIn_Should_NormalizePhoneNumber_BeforeSendingSms()
+    public async Task SendOtp_Should_NormalizePhoneNumber_BeforeSendingSms()
     {
         // A shared static collector can never mix in another test's calls because every assertion below filters by this
         // run's own unique random numbers; clearing it up-front just keeps the failure messages readable.
         CapturingPhoneService.SentMessages.Clear();
 
-        await using var server = new AppTestServer(Context);
+        await using var server = new AppTestServer();
         await server.Build(services =>
         {
             // Swap the real PhoneService (registered as AddScoped<PhoneService> in Program.Services) for the capturing
-            // subclass, only for this test's server. IdentityController injects the concrete PhoneService, so the service
-            // type stays PhoneService and only the implementation becomes the fake.
+            // subclass. IdentityController injects the concrete PhoneService, so the service type stays PhoneService and
+            // only the implementation becomes the fake.
             services.RemoveAll<PhoneService>();
             services.AddScoped<PhoneService, CapturingPhoneService>();
         }).Start(TestContext.CancellationToken);
-
-        var serverAddress = server.WebAppServerAddress;
 
         // Three brand-new, unique US numbers (random area code + exchange, three consecutive subscriber numbers), each
         // written in a different de-normalized format. All three must normalize to "+1" + the ten digits. Random keeps
@@ -65,26 +69,19 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
         // proves the number was normalized (not merely passed through).
         var e164 = new Regex(@"^\+[1-9]\d{6,14}$");
 
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+        var identityController = scope.ServiceProvider.GetRequiredService<IIdentityController>();
+
         foreach (var (Typed, Normalized) in attempts)
         {
-            // Each request starts from a fresh Sign in page. A hard reload is the simplest way back to the phone form:
-            // the OTP panel is treated as a modal, but its NavigationLock only intercepts internal Blazor navigation
-            // (SignInPanel.razor), so a full page navigation resets the panel cleanly.
-            await Page.GotoAsync(new Uri(serverAddress, PageUrls.SignIn).ToString(),
-                new() { WaitUntil = WaitUntilState.NetworkIdle });
+            // A brand-new number auto-provisions the (still unconfirmed) account, texts the confirmation code and answers
+            // "not confirmed". Asserting on that specific key is what proves SendSms really ran on this call rather than
+            // the request failing earlier for some unrelated reason.
+            var notConfirmed = await Assert.ThrowsExactlyAsync<BadRequestException>(
+                () => identityController.SendOtp(new() { PhoneNumber = Typed }, null, TestContext.CancellationToken));
 
-            // Switch from the default Email tab to the Phone tab (BitPivot HeaderOnly renders each header as role="tab").
-            await Page.GetByRole(AriaRole.Tab, new() { Name = AppStrings.Phone, Exact = true }).ClickAsync();
-
-            // Type the de-normalized number into the BitPhoneInput's number box (its <input type="tel"> carries the
-            // placeholder) and ask for the code. Send OTP stays disabled until the debounced value commits, so
-            // Playwright's actionability wait covers the 500ms debounce.
-            await Page.GetByPlaceholder(AppStrings.PhoneNumberPlaceholder).FillAsync(Typed);
-            await Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SendOtpButtonText }).ClickAsync();
-
-            // The server registers the new account, texts the confirmation code (captured synchronously by the fake) and
-            // answers "not confirmed", which reveals the OTP panel - a reliable signal that SendSms has already run.
-            await Page.Locator(".bit-otp-inp").First.WaitForAsync();
+            Assert.AreEqual(nameof(AppStrings.UserIsNotConfirmed), notConfirmed.Key,
+                $"Requesting a code for the brand-new number '{Typed}' should have reported the account as unconfirmed.");
 
             var sms = await WaitForSmsTo(Normalized, TestContext.CancellationToken);
 
@@ -94,7 +91,7 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
                 "SendSms must receive a canonical E.164 number (leading '+', digits only, no formatting).");
         }
 
-        // The OTP panel for the last number is still on screen. Complete the sign-in using the code from its SMS body.
+        // Complete the sign-in for the last number using the code from its SMS.
         var lastSms = await WaitForSmsTo(attempts[^1].Normalized, TestContext.CancellationToken);
 
         // The confirmation SMS reads "{code} is your code in Boilerplate.\n@host #code" (See ConfirmPhoneTokenShortText),
@@ -103,18 +100,19 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
         Assert.MatchesRegex(new Regex(@"^\d{6}$"), otpCode,
             "The confirmation SMS should start with a 6 digit code.");
 
-        await BitOtpInputUtils.FillOtpInputs(Page, otpCode);
+        // Confirming with the number still in its typed form is the second half of the proof: the account exists under the
+        // normalized number, so this only succeeds because the confirm path normalizes what it is given the very same way.
+        var tokens = await identityController.ConfirmPhone(
+            new() { Token = otpCode, PhoneNumber = attempts[^1].Typed }, TestContext.CancellationToken);
 
-        // Filling the last digit confirms the phone number, signs the account in and redirects to the home page.
-        await Expect(Page).ToHaveURLAsync(serverAddress.ToString());
-        await Expect(Page.Locator(".bit-prs.persona").First).ToBeVisibleAsync();
-        await Expect(Page.GetByRole(AriaRole.Button, new() { Name = AppStrings.SignIn })).ToBeHiddenAsync();
+        Assert.IsFalse(string.IsNullOrEmpty(tokens.AccessToken),
+            "Confirming with the code texted to the normalized number should have signed the account in.");
     }
 
     /// <summary>
     /// Polls the static collector for the newest <c>SendSms</c> call addressed to <paramref name="phoneNumber"/>. The
-    /// call is normally already recorded (SendSms runs synchronously inside the request that then reveals the OTP panel);
-    /// the short poll only guards against reading a hair too early.
+    /// call is normally already recorded (SendSms runs synchronously inside the request that then reports the account as
+    /// unconfirmed); the short poll only guards against reading a hair too early.
     /// </summary>
     private static async Task<(string MessageText, string PhoneNumber)> WaitForSmsTo(string phoneNumber, CancellationToken cancellationToken)
     {
@@ -135,6 +133,8 @@ public partial class PhoneNumberNormalizationUITests : AppPageTest
             await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
         }
     }
+
+    public TestContext TestContext { get; set; } = default!;
 }
 
 /// <summary>

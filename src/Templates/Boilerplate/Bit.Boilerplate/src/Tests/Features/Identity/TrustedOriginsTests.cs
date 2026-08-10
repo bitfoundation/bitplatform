@@ -93,6 +93,36 @@ public class TrustedOriginsTests
     }
 
     /// <summary>
+    /// The built-in regex's wildcarded alternatives must be bounded by a dot, so that a host which merely <em>ends</em>
+    /// with the trusted text is refused. Without that boundary <c>evildevtunnels.ms</c> and <c>attacker-github.dev</c>
+    /// are registrable domains that the server trusts - and a trusted origin is admitted by CORS
+    /// (<c>SetIsOriginAllowed</c>, including the credentialed policy), accepted as an external-sign-in and
+    /// email-confirmation return target, and accepted as a WebAuthn origin.
+    /// <para>
+    /// The devtunnels/github.dev alternatives exist only in the <c>Development</c> arm, and <c>Development</c> is a
+    /// real compile constant (<c>src/Directory.Build.props</c> derives it from the Configuration and pushes it into
+    /// <c>DefineConstants</c>). Every <c>dotnet test</c> run is a Debug build, so this test exercises that arm - which
+    /// is the arm a developer's machine actually runs, and the one nothing else pins.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    // The genuine local and tunnel origins stay trusted...
+    [DataRow("http://localhost", true)]
+    [DataRow("https://mytunnel.devtunnels.ms", true)]
+    [DataRow("https://myspace.github.dev", true)]
+    // ...but a domain that merely ends with the trusted text must not be...
+    [DataRow("https://evildevtunnels.ms", false)]
+    [DataRow("https://attacker-github.dev", false)]
+    // ...nor may the loopback names be used as a prefix of someone else's domain.
+    [DataRow("https://localhost.evil.com", false)]
+    [DataRow("http://127.0.0.1.evil.com", false)]
+    public void IsTrustedOrigin_Should_BoundTheBuiltInWildcardsAtADot(string requestOrigin, bool expected)
+    {
+        Assert.AreEqual(expected, IsTrusted(requestOrigin),
+            $"'{requestOrigin}' should{(expected ? "" : " not")} be trusted by the built-in origin rule.");
+    }
+
+    /// <summary>
     /// With an empty allow-list and no built-in rule to fall back on, an arbitrary external origin is not trusted.
     /// </summary>
     [TestMethod]
