@@ -208,14 +208,14 @@ await _persistent.DisposeAsync();
 
     public async ValueTask DisposeAsync()
     {
-        if (_persistent is not null)
-        {
-            await _persistent.DisposeAsync();
-            _persistent = null;
-        }
-
         try
         {
+            if (_persistent is not null)
+            {
+                await _persistent.DisposeAsync();
+                _persistent = null;
+            }
+
             await wakeLock.Release();
         }
         catch (Exception)

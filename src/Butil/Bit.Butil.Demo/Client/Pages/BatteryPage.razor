@@ -157,6 +157,7 @@ batteryLabel = status.Charging
     {
         if (seconds is null) return "unknown";
         if (double.IsInfinity(seconds.Value)) return "∞";
-        return TimeSpan.FromSeconds(seconds.Value).ToString(@"hh\:mm\:ss");
+        var span = TimeSpan.FromSeconds(seconds.Value);
+        return span.Days > 0 ? span.ToString(@"d\.hh\:mm\:ss") : span.ToString(@"hh\:mm\:ss");
     }
 }

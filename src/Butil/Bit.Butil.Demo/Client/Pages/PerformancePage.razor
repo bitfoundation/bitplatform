@@ -396,10 +396,17 @@ await performance.ClearResourceTimings();
 
     public async ValueTask DisposeAsync()
     {
-        if (observerSub is not null)
+        try
         {
-            await observerSub.DisposeAsync();
-            observerSub = null;
+            if (observerSub is not null)
+            {
+                await observerSub.DisposeAsync();
+                observerSub = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

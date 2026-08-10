@@ -1,4 +1,4 @@
-@page "/service-worker"
+﻿@page "/service-worker"
 @implements IAsyncDisposable
 @inject Bit.Butil.ServiceWorker serviceWorker
 
@@ -108,33 +108,34 @@ var removed = await serviceWorker.Unregister();
         <DemoConsole @ref="unregisterOutput" Title="unregister output" />
     </DemoSection>
 
-    <Callout Type="warning" Title="Registrations outlive the page">
-        A service worker registration persists across reloads and browser restarts until it is unregistered
-        or its script fails to fetch. If you registered the demo worker here, it stays registered for this
-        origin until you press Unregister (or remove it in DevTools, under Application, Service workers).
-    </Callout>
-
-    <ApiTable Title="API reference">
-        <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.serviceWorker." />
-        <ApiMember Name="Register" Signature="ValueTask<ServiceWorkerRegistrationInfo> Register(string scriptUrl, string? scope = null, string? updateViaCache = null, bool moduleType = false)" Description="Registers a same-origin service worker script and resolves once the registration is created." />
-        <ApiMember Name="GetRegistration" Signature="ValueTask<ServiceWorkerRegistrationInfo> GetRegistration(string? scope = null)" Description="Returns the registration matching the scope (or the most specific one for the document URL when null)." />
-        <ApiMember Name="Update" Signature="ValueTask Update(string? scope = null)" Description="Forces an update check for a registration." />
-        <ApiMember Name="Unregister" Signature="ValueTask<bool> Unregister(string? scope = null)" Description="Unregisters the worker matching the scope. Returns true when something was removed." />
-        <ApiMember Name="PostMessage" Signature="ValueTask<bool> PostMessage<T>(T message)" Description="Sends the message to the active worker controlling this page. Returns false when no controller exists." />
-        <ApiMember Name="SubscribeMessage" Signature="Task<ButilSubscription> SubscribeMessage(Action<JsonElement> handler)" Description="Subscribes to messages broadcast from the service worker; each payload arrives as a JsonElement." />
-        <ApiMember Name="SubscribeControllerChange" Signature="Task<ButilSubscription> SubscribeControllerChange(Action handler)" Description="Fires when navigator.serviceWorker.controller changes." />
-        <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every subscription created by this instance. Registrations themselves are left untouched." />
-        <ApiMember Name="InvokeServiceWorkerMessage" Signature="void InvokeServiceWorkerMessage(Guid id, JsonElement data)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
-        <ApiMember Name="InvokeServiceWorkerControllerChange" Signature="void InvokeServiceWorkerControllerChange(Guid id)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.IsRegistered" Signature="bool IsRegistered { get; set; }" Description="True when a registration was found or created." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.Scope" Signature="string Scope { get; set; }" Description="Scope URL the registration applies to." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.ActiveState" Signature="string? ActiveState { get; set; }" Description="The active worker's state: installing, installed, activating, activated, redundant, or null when none." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.InstallingState" Signature="string? InstallingState { get; set; }" Description="The installing worker's state, when one is being installed." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.WaitingState" Signature="string? WaitingState { get; set; }" Description="The waiting worker's state, when an update is queued." />
-        <ApiMember Name="ServiceWorkerRegistrationInfo.UpdateViaCache" Signature="string? UpdateViaCache { get; set; }" Description="Update via cache strategy: imports, all, or none." />
-    </ApiTable>
-
 </div>
+
+<Callout Type="warning" Title="Registrations outlive the page">
+    A service worker registration persists across reloads and browser restarts until it is unregistered
+    or its script fails to fetch. If you registered the demo worker here, it stays registered for this
+    origin until you press Unregister (or remove it in DevTools, under Application, Service workers).
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.serviceWorker." />
+    <ApiMember Name="Register" Signature="ValueTask<ServiceWorkerRegistrationInfo> Register(string scriptUrl, string? scope = null, string? updateViaCache = null, bool moduleType = false)" Description="Registers a same-origin service worker script and resolves once the registration is created." />
+    <ApiMember Name="GetRegistration" Signature="ValueTask<ServiceWorkerRegistrationInfo> GetRegistration(string? scope = null)" Description="Returns the registration matching the scope (or the most specific one for the document URL when null)." />
+    <ApiMember Name="Update" Signature="ValueTask Update(string? scope = null)" Description="Forces an update check for a registration." />
+    <ApiMember Name="Unregister" Signature="ValueTask<bool> Unregister(string? scope = null)" Description="Unregisters the worker matching the scope. Returns true when something was removed." />
+    <ApiMember Name="PostMessage" Signature="ValueTask<bool> PostMessage<T>(T message)" Description="Sends the message to the active worker controlling this page. Returns false when no controller exists." />
+    <ApiMember Name="SubscribeMessage" Signature="Task<ButilSubscription> SubscribeMessage(Action<JsonElement> handler)" Description="Subscribes to messages broadcast from the service worker; each payload arrives as a JsonElement." />
+    <ApiMember Name="SubscribeControllerChange" Signature="Task<ButilSubscription> SubscribeControllerChange(Action handler)" Description="Fires when navigator.serviceWorker.controller changes." />
+    <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every subscription created by this instance. Registrations themselves are left untouched." />
+    <ApiMember Name="InvokeServiceWorkerMessage" Signature="void InvokeServiceWorkerMessage(Guid id, JsonElement data)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+    <ApiMember Name="InvokeServiceWorkerControllerChange" Signature="void InvokeServiceWorkerControllerChange(Guid id)" Description="Interop plumbing invoked from JavaScript ([JSInvokable]); not intended for direct use." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.IsRegistered" Signature="bool IsRegistered { get; set; }" Description="True when a registration was found or created." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.Scope" Signature="string Scope { get; set; }" Description="Scope URL the registration applies to." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.ActiveState" Signature="string? ActiveState { get; set; }" Description="The active worker's state: installing, installed, activating, activated, redundant, or null when none." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.InstallingState" Signature="string? InstallingState { get; set; }" Description="The installing worker's state, when one is being installed." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.WaitingState" Signature="string? WaitingState { get; set; }" Description="The waiting worker's state, when an update is queued." />
+    <ApiMember Name="ServiceWorkerRegistrationInfo.UpdateViaCache" Signature="string? UpdateViaCache { get; set; }" Description="Update via cache strategy: imports, all, or none." />
+</ApiTable>
+
 
 @code {
     private DemoConsole supportOutput = default!;

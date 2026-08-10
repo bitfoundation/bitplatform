@@ -493,10 +493,17 @@ await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
 
     public async ValueTask DisposeAsync()
     {
-        if (db is not null)
+        try
         {
-            await db.DisposeAsync();
-            db = null;
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

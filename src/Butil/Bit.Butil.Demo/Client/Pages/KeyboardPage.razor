@@ -351,10 +351,17 @@ ButilKeyCodes.Backquote   // "Backquote"
 
     public async ValueTask DisposeAsync()
     {
-        if (ctrlKId is not null) await keyboard.Remove(ctrlKId.Value);
-        if (f9Id is not null) await keyboard.Remove(f9Id.Value);
-        if (customId is not null) await keyboard.Remove(customId.Value);
-        if (ctrlBSub is not null) await ctrlBSub.DisposeAsync();
-        if (editorSub is not null) await editorSub.DisposeAsync();
+        try
+        {
+            if (ctrlKId is not null) await keyboard.Remove(ctrlKId.Value);
+            if (f9Id is not null) await keyboard.Remove(f9Id.Value);
+            if (customId is not null) await keyboard.Remove(customId.Value);
+            if (ctrlBSub is not null) await ctrlBSub.DisposeAsync();
+            if (editorSub is not null) await editorSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
     }
 }

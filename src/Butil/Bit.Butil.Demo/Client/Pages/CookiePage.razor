@@ -203,6 +203,12 @@ await cookie.Remove(new ButilCookie { Name = "session-hint", Path = "/" });
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(setName))
+            {
+                await setOutput.Warn("Enter a cookie name first.");
+                return;
+            }
+
             await cookie.Set(new ButilCookie { Name = setName, Value = setValue });
             await setOutput.Log($"Set(\"{setName}\", \"{setValue}\") →", await cookie.GetValue(setName));
         }
@@ -216,6 +222,12 @@ await cookie.Remove(new ButilCookie { Name = "session-hint", Path = "/" });
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(advName))
+            {
+                await attributesOutput.Warn("Enter a cookie name first.");
+                return;
+            }
+
             var c = new ButilCookie
             {
                 Name = advName,

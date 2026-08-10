@@ -163,8 +163,11 @@ await _sub.DisposeAsync();
             _sub = await idleDetector.Start(_threshold, state =>
             {
                 _liveState = $"user={state.UserState}, screen={state.ScreenState}";
-                _ = watchOutput.Log("Idle change →", _liveState);
-                StateHasChanged();
+                _ = InvokeAsync(async () =>
+                {
+                    await watchOutput.Log("Idle change →", _liveState);
+                    StateHasChanged();
+                });
             });
 
             _liveState = "Watching - leave the machine untouched to go idle.";
@@ -189,10 +192,17 @@ await _sub.DisposeAsync();
 
     public async ValueTask DisposeAsync()
     {
-        if (_sub is not null)
+        try
         {
-            await _sub.DisposeAsync();
-            _sub = null;
+            if (_sub is not null)
+            {
+                await _sub.DisposeAsync();
+                _sub = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

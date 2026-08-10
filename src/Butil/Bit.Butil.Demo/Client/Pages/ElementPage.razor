@@ -698,7 +698,14 @@ await box.Remove(); // detaches the element from the DOM
 
     public async ValueTask DisposeAsync()
     {
-        if (clickSub is not null) await clickSub.DisposeAsync();
-        if (keydownOnceSub is not null) await keydownOnceSub.DisposeAsync();
+        try
+        {
+            if (clickSub is not null) await clickSub.DisposeAsync();
+            if (keydownOnceSub is not null) await keydownOnceSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
     }
 }

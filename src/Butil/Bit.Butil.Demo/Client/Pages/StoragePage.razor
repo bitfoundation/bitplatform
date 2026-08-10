@@ -452,10 +452,17 @@ await subscription.DisposeAsync();
 
     public async ValueTask DisposeAsync()
     {
-        if (subscription is not null)
+        try
         {
-            await subscription.DisposeAsync();
-            subscription = null;
+            if (subscription is not null)
+            {
+                await subscription.DisposeAsync();
+                subscription = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
         }
     }
 }

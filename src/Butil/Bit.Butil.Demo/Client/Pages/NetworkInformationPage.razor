@@ -111,8 +111,8 @@ await offlineSub.DisposeAsync();
                 return;
             }
 
-            onlineSub = await window.SubscribeEvent<object>(ButilEvents.Online, evt => { _ = OnConnectivityChanged("online"); });
-            offlineSub = await window.SubscribeEvent<object>(ButilEvents.Offline, evt => { _ = OnConnectivityChanged("offline"); });
+            onlineSub = await window.SubscribeEvent<object>(ButilEvents.Online, evt => { _ = InvokeAsync(() => OnConnectivityChanged("online")); });
+            offlineSub = await window.SubscribeEvent<object>(ButilEvents.Offline, evt => { _ = InvokeAsync(() => OnConnectivityChanged("offline")); });
             await connectivityOutput.Success("Watching the online / offline window events. Toggle Offline in the DevTools Network tab to trigger them.");
         }
         catch (Exception ex)

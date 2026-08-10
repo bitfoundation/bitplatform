@@ -177,6 +177,12 @@ await cookieStore.Delete("butil-docs");
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(itemName))
+            {
+                await setOutput.Warn("Enter a cookie name first.");
+                return;
+            }
+
             var item = new CookieStoreItem
             {
                 Name = itemName,
