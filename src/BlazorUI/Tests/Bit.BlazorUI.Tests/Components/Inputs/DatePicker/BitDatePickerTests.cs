@@ -1091,6 +1091,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Add(p => p.DisabledDates, [GetLocalDate(2026, 1, 15)]);
         });
@@ -1126,6 +1127,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Add(p => p.IsDateDisabled, d => d.Day % 2 == 1);
         });
@@ -1141,6 +1143,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Add(p => p.DisabledDates, [GetLocalDate(2026, 1, 15)]);
         });
@@ -1174,6 +1177,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Add(p => p.HighlightedDates, [GetLocalDate(2026, 1, 15)]);
         });
@@ -1188,6 +1192,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
             parameters.Add(p => p.GetDayClass, d => d.Day == 15 ? "custom-day-class" : null);
         });
@@ -1365,7 +1370,10 @@ public class BitDatePickerTests : BunitTestContext
         var culture = CultureInfo.CreateSpecificCulture("he-IL");
         // The component counts months with CultureInfo.Calendar, which has no public setter and is not
         // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
-        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, calendar);
+        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
+                                        "update this test if the field is renamed or removed.");
+        calendarField.SetValue(culture, calendar);
 
         // 2024-03-15 falls in the Hebrew year 5784, a leap year of thirteen months.
         var startingValue = GetLocalDate(2024, 3, 15);
@@ -1828,6 +1836,7 @@ public class BitDatePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
         });
 

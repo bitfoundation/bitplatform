@@ -1428,18 +1428,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private DateTime ClampToRange(DateTime date, int month)
     {
+        // The bounds are truncated to their day: what this returns is a day of the calendar, and a time of
+        // day carried over from MinDate would both miss the day cell _focusedDate is matched against and
+        // be added on top of the hour and minute the time picker contributes in SelectDate.
         if (MinDate.HasValue)
         {
-            var minDate = GetDateTime(MinDate.Value);
-            // The bound is returned with its time of day intact: MinDate.Date would land before MinDate
-            // itself and IsWeekDayOutOfMinAndMaxDate - which compares the full values - would then
-            // refuse the very date this clamp produced.
+            var minDate = GetDateTime(MinDate.Value).Date;
             if (date < minDate && _culture.Calendar.GetMonth(minDate) == month) return minDate;
         }
 
         if (MaxDate.HasValue)
         {
-            var maxDate = GetDateTime(MaxDate.Value);
+            var maxDate = GetDateTime(MaxDate.Value).Date;
             if (date > maxDate && _culture.Calendar.GetMonth(maxDate) == month) return maxDate;
         }
 
@@ -1794,16 +1794,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                ) is false;
     }
 
+    // Every caller weighs a day of the calendar, so the comparison is day against day: a MinDate that
+    // carries a time of day rules out the days before it, not the day it itself falls on.
     private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)
     {
         if (MaxDate.HasValue)
         {
-            if (date > GetDateTime(MaxDate.Value)) return true;
+            if (date.Date > GetDateTime(MaxDate.Value).Date) return true;
         }
 
         if (MinDate.HasValue)
         {
-            if (date < GetDateTime(MinDate.Value)) return true;
+            if (date.Date < GetDateTime(MinDate.Value).Date) return true;
         }
 
         return false;
