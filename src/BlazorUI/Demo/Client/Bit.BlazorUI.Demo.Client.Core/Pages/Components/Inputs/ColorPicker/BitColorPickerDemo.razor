@@ -234,8 +234,9 @@
 
     <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            A one-way <b>Color</b> makes the picker a pure display of whatever the page decides - the buttons below
-            drive it and dragging the gradient does nothing, because there is nowhere for the new color to go.
+            A one-way <b>Color</b> leaves the page in charge of the color - the buttons below drive it, and dragging
+            the gradient moves the picker without the page ever hearing about it, so the next color the page sets
+            takes it straight back. Pair it with <b>ReadOnly</b> when the picker is only meant to display.
             <b>@@bind-Color</b> completes the circuit in both directions, which is why the text field and the picker
             below stay in step whichever one is used. That text field is also the quickest way to see how forgiving
             the parser is: three-, four-, six- and eight-digit hexadecimal, <b>rgb()</b> and <b>rgba()</b>,

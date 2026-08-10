@@ -876,7 +876,18 @@ internal sealed class BitInternalColor
         return Math.Clamp(value, 0, 1);
     }
 
-    private static byte ToByte(double value) => (byte)Math.Clamp(Math.Round(value * 255), 0, 255);
+    /// <summary>
+    /// The last step of every conversion into an eight-bit channel. NaN is answered with 0 rather than
+    /// left to the cast: Math.Clamp passes it through - every comparison against it is false - and casting
+    /// it to a byte is undefined, so a color parsed from a notation carrying "NaN" would land on whatever
+    /// the platform happens to produce.
+    /// </summary>
+    private static byte ToByte(double value)
+    {
+        if (double.IsNaN(value)) return 0;
+
+        return (byte)Math.Clamp(Math.Round(value * 255), 0, 255);
+    }
 
     private static double RoundDegrees(double value) => Math.Round(value, 2);
 

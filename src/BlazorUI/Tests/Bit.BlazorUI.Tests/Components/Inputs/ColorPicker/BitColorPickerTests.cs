@@ -95,7 +95,7 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(BitColorFormat.Hwb, "hwb(0 0% 0%)"),
         DataRow(BitColorFormat.Hwba, "hwb(0 0% 0% / 0.5)")
     ]
-    public void BitColorPickerShouldWriteTheRequestedFormat(BitColorFormat format, string expected)
+    public async Task BitColorPickerShouldWriteTheRequestedFormat(BitColorFormat format, string expected)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
@@ -104,8 +104,8 @@ public class BitColorPickerTests : BunitTestContext
         });
 
         // Uncontrolled, so the Color parameter is the picker's own answer in the requested notation.
-        com.Instance.HandlePointerMove(1, 0);
-        com.Instance.HandlePointerUp();
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
+        await com.InvokeAsync(com.Instance.HandlePointerUp);
         com.Find(".bit-clp-hsd .bit-clp-inp").Input("0");
         com.Find(".bit-clp-asd .bit-clp-inp").Input("0.5");
 
@@ -120,7 +120,7 @@ public class BitColorPickerTests : BunitTestContext
         DataRow("rgba(255,255,255,1)", "rgba(255,0,0,1)"),
         DataRow("hsl(0,0%,100%)", "hsl(0,100%,50%)")
     ]
-    public void BitColorPickerShouldKeepTheNotationItWasGiven(string initial, string expected)
+    public async Task BitColorPickerShouldKeepTheNotationItWasGiven(string initial, string expected)
     {
         var color = initial;
 
@@ -129,7 +129,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Bind(p => p.Color, color, v => color = v);
         });
 
-        com.Instance.HandlePointerMove(1, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
         Assert.AreEqual(expected, color);
     }
@@ -156,7 +156,7 @@ public class BitColorPickerTests : BunitTestContext
     // A one-way Color has nowhere to report a change to, so the picker becomes a display of that value
     // rather than pretending to accept edits.
     [TestMethod]
-    public void BitColorPickerShouldStayInertWithAOneWayColor()
+    public async Task BitColorPickerShouldStayInertWithAOneWayColor()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.ColorPicker.isEyeDropperSupported").SetResult(true);
 
@@ -169,7 +169,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Presets, ["#FF0000"]);
         });
 
-        com.Instance.HandlePointerMove(1, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
         Assert.AreEqual("#FFFFFF", com.Instance.Color);
         Assert.AreEqual("#FFFFFF", com.Instance.Hex);
@@ -186,7 +186,7 @@ public class BitColorPickerTests : BunitTestContext
 
     // OnChange is a valid binding of its own: it is how an uncontrolled picker reports its result.
     [TestMethod]
-    public void BitColorPickerShouldChangeWithOnChangeAlone()
+    public async Task BitColorPickerShouldChangeWithOnChangeAlone()
     {
         BitColorChangeEventArgs? args = null;
 
@@ -196,7 +196,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.OnChange, (BitColorChangeEventArgs a) => args = a);
         });
 
-        com.Instance.HandlePointerMove(1, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
         Assert.IsNotNull(args);
         Assert.AreEqual("#FF0000", args.Hex);
@@ -217,7 +217,7 @@ public class BitColorPickerTests : BunitTestContext
 
     // OnChange fires on every step of a drag; OnChangeEnd fires once, when the gesture is over.
     [TestMethod]
-    public void BitColorPickerShouldRaiseOnChangeEndOnlyWhenTheGestureEnds()
+    public async Task BitColorPickerShouldRaiseOnChangeEndOnlyWhenTheGestureEnds()
     {
         var changes = 0;
         var ends = 0;
@@ -228,14 +228,14 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
-        com.Instance.HandlePointerMove(0.2, 0.2);
-        com.Instance.HandlePointerMove(0.4, 0.4);
-        com.Instance.HandlePointerMove(0.6, 0.6);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0.2, 0.2));
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0.4, 0.4));
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0.6, 0.6));
 
         Assert.AreEqual(3, changes);
         Assert.AreEqual(0, ends);
 
-        com.Instance.HandlePointerUp();
+        await com.InvokeAsync(com.Instance.HandlePointerUp);
 
         Assert.AreEqual(3, changes);
         Assert.AreEqual(1, ends);
@@ -243,7 +243,7 @@ public class BitColorPickerTests : BunitTestContext
 
     // A pointer up with no drag behind it has nothing to report, so it stays quiet.
     [TestMethod]
-    public void BitColorPickerShouldNotRaiseOnChangeEndWithoutADrag()
+    public async Task BitColorPickerShouldNotRaiseOnChangeEndWithoutADrag()
     {
         var ends = 0;
 
@@ -252,7 +252,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
-        com.Instance.HandlePointerUp();
+        await com.InvokeAsync(com.Instance.HandlePointerUp);
 
         Assert.AreEqual(0, ends);
     }
@@ -266,7 +266,7 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(1d, 1d, "#000000"),
         DataRow(0.5d, 0.5d, "#804040")
     ]
-    public void BitColorPickerShouldMapThePointerOntoTheArea(double x, double y, string expected)
+    public async Task BitColorPickerShouldMapThePointerOntoTheArea(double x, double y, string expected)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
@@ -274,7 +274,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => { });
         });
 
-        com.Instance.HandlePointerMove(x, y);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(x, y));
 
         Assert.AreEqual(expected, com.Instance.Hex);
     }
@@ -282,7 +282,7 @@ public class BitColorPickerTests : BunitTestContext
     // The area is measured from its inline-start edge, which is the right one in a right-to-left picker,
     // so the horizontal axis mirrors along with the gradient drawn on it.
     [TestMethod]
-    public void BitColorPickerShouldMirrorThePointerAxisInRtl()
+    public async Task BitColorPickerShouldMirrorThePointerAxisInRtl()
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
@@ -291,11 +291,11 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => { });
         });
 
-        com.Instance.HandlePointerMove(0, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0, 0));
 
         Assert.AreEqual("#FF0000", com.Instance.Hex);
 
-        com.Instance.HandlePointerMove(1, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
         Assert.AreEqual("#FFFFFF", com.Instance.Hex);
     }
@@ -378,7 +378,7 @@ public class BitColorPickerTests : BunitTestContext
     // A pointer that has not left the color it is already on - a press that lands on the thumb, or a move
     // along an edge the position is clamped against - has nothing to report.
     [TestMethod]
-    public void BitColorPickerShouldNotReportAPointerThatMovesNothing()
+    public async Task BitColorPickerShouldNotReportAPointerThatMovesNothing()
     {
         var changes = 0;
 
@@ -388,11 +388,11 @@ public class BitColorPickerTests : BunitTestContext
         });
 
         // The picker starts on opaque white, which is the top-left corner of the area.
-        com.Instance.HandlePointerMove(0, 0);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0, 0));
 
         Assert.AreEqual(0, changes);
 
-        com.Instance.HandlePointerMove(0.5, 0.5);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0.5, 0.5));
 
         Assert.AreEqual(1, changes);
     }
@@ -512,7 +512,7 @@ public class BitColorPickerTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitColorPickerShouldRespectIsEnabled(bool isEnabled)
+    public async Task BitColorPickerShouldRespectIsEnabled(bool isEnabled)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
@@ -530,7 +530,7 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(isEnabled is false, com.Find(".bit-clp-hsd .bit-clp-inp").HasAttribute("disabled"));
         Assert.AreEqual(isEnabled is false, com.Find(".bit-clp-fhx .bit-clp-fin").HasAttribute("disabled"));
 
-        com.Instance.HandlePointerMove(1, 1);
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 1));
 
         Assert.AreEqual(isEnabled ? "#000000" : "#FFFFFF", com.Instance.Hex);
     }
@@ -1715,7 +1715,9 @@ public class BitColorPickerTests : BunitTestContext
 
     // Every number rendered into the markup is written in the invariant format the browser reads them
     // back in, whatever culture the application happens to be running under.
-    [TestMethod]
+    // The culture it switches to is process-wide - DefaultThreadCurrentCulture reaches every thread that
+    // has not set one of its own - so it is run on its own rather than alongside tests it would reach into.
+    [TestMethod, DoNotParallelize]
     public void BitColorPickerShouldRenderInvariantNumbers()
     {
         var culture = CultureInfo.CurrentCulture;
