@@ -70,8 +70,9 @@
             Each <b>BitDateRangePickerPreset</b> carries the text of its button and either a fixed <b>Value</b> or a
             <b>ValueProvider</b> function, which is re-evaluated on every click and therefore keeps relative ranges such as
             "Last 7 days" correct however long the page has been open. The applied preset stays highlighted until the range
-            is changed by any other means, <b>OnPresetSelect</b> reports which one was clicked, and selecting one closes the
-            callout just like picking the second date does. A preset can also be disabled, titled and styled individually.
+            is changed by any other means, <b>OnPresetSelect</b> reports which one was clicked, and when <b>AutoClose</b> is on
+            (and the picker is not <b>Standalone</b>), selecting one closes the callout just like picking the second date
+            does. A preset can also be disabled, titled and styled individually.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Common ranges" Presets="presets" @bind-Value="presetsValue"

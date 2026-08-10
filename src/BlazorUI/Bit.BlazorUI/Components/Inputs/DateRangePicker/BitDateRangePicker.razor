@@ -163,7 +163,7 @@
                                 title="@(preset.Title ?? preset.Text)"
                                 aria-disabled="@presetDisabled"
                                 aria-pressed="@(presetSelected ? "true" : "false")"
-                                style="@Styles?.PresetButton @preset.Style"
+                                style="@($"{Styles?.PresetButton?.Trim(';')};{preset.Style}".Trim(';'))"
                                 class="bit-dtrp-prb @(presetSelected ? $"bit-dtrp-prs {Classes?.SelectedPresetButton}" : null) @Classes?.PresetButton @preset.Class">
                             @preset.Text
                         </button>

@@ -1248,12 +1248,13 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerDisabledDatesTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var today = DateTimeOffset.Now.Date;
-        var disabledDate = new DateTimeOffset(today.AddDays(1), DateTimeOffset.Now.Offset);
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+        var disabledDate = today.AddDays(1);
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
             parameters.Add(p => p.DisabledDates, new[] { disabledDate });
         });
 
@@ -1299,11 +1300,13 @@ public class BitDateRangePickerTests : BunitTestContext
     public void BitDateRangePickerHighlightedDatesTest()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
-        var highlightedDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(1), DateTimeOffset.Now.Offset);
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+        var highlightedDate = today.AddDays(1);
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
             parameters.Add(p => p.HighlightedDates, new[] { highlightedDate });
         });
 

@@ -104,7 +104,7 @@ private readonly DateTimeOffset[] disabledDates =
 <style>
     .custom-friday {
         color: white;
-        background-color: #8a2be29c;
+        background-color: blueviolet;
     }
 </style>
 

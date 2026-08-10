@@ -1130,6 +1130,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             endDate = parsedEndDate;
         }
 
+        // A text that is nothing but the literal parts of the format holds no date at all, so it is
+        // invalid input rather than an empty range.
+        if (startDate.HasValue is false && endDate.HasValue is false) return false;
+
         if (startDate.HasValue && endDate.HasValue && endDate < startDate)
         {
             (startDate, endDate) = (endDate, startDate);
@@ -1652,13 +1656,46 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var presetValue = preset.ValueProvider is not null ? preset.ValueProvider() : preset.Value;
         if (presetValue is null) return;
 
+        var startDate = presetValue.StartDate;
+        var endDate = presetValue.EndDate;
+
+        // A preset reaching outside the Min/Max bounds is rejected rather than clamped, since a
+        // shifted variant of the advertised range would not be the range its button promised.
+        if (MinDate.HasValue)
+        {
+            var minDate = GetDateTime(MinDate.Value).Date;
+
+            if ((startDate.HasValue && GetDateTime(startDate.Value).Date < minDate) ||
+                (endDate.HasValue && GetDateTime(endDate.Value).Date < minDate)) return;
+        }
+
+        if (MaxDate.HasValue)
+        {
+            var maxDate = GetDateTime(MaxDate.Value).Date;
+
+            if ((startDate.HasValue && GetDateTime(startDate.Value).Date > maxDate) ||
+                (endDate.HasValue && GetDateTime(endDate.Value).Date > maxDate)) return;
+        }
+
+        if (startDate.HasValue && endDate.HasValue && MaxRange.HasValue)
+        {
+            var maxEndDate = new DateTimeOffset(GetMaxEndDate(startDate), endDate.Value.Offset);
+
+            if (maxEndDate < endDate)
+            {
+                _endTimeHour = maxEndDate.Hour;
+                _endTimeMinute = maxEndDate.Minute;
+                endDate = maxEndDate;
+            }
+        }
+
         _hoveredDate = null;
-        _focusedDate = presetValue.StartDate.HasValue ? GetDateTime(presetValue.StartDate.Value).Date : null;
+        _focusedDate = startDate.HasValue ? GetDateTime(startDate.Value).Date : null;
 
         CurrentValue = new BitDateRangePickerValue
         {
-            StartDate = presetValue.StartDate,
-            EndDate = presetValue.EndDate
+            StartDate = startDate,
+            EndDate = endDate
         };
 
         // A ValueProvider is re-evaluated on every call and a relative range therefore never compares
@@ -2681,6 +2718,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (customClass.HasValue())
         {
             klass.Append(' ').Append(customClass);
+        }
+
+        // The markup appends Styles?.DayButton after the produced style, so a missing trailing
+        // semicolon would merge the last declaration with the first one of that slot.
+        if (style.Length > 0 && style[^1] is not ';')
+        {
+            style.Append(';');
         }
 
         return (style.ToString(), klass.ToString());
