@@ -954,6 +954,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (parsed)
         {
+            // A typed month is a whole month, whose first day can fall before MinDate (or whose last day
+            // after MaxDate) while the month itself is still selectable, so it is pulled into the range the
+            // same way SelectMonth pulls a month clicked in the calendar. The typed time of day survives it.
+            if (Mode == BitDatePickerMode.MonthPicker)
+            {
+                parsedValue = ClampToRange(parsedValue.Date, _culture.Calendar.GetMonth(parsedValue)) + parsedValue.TimeOfDay;
+            }
+
             // A date typed by hand is the only way a value outside of the allowed range can reach the
             // component (the calendar disables those days), so it is rejected here rather than silently
             // accepted - which would leave the input showing a date the calendar refuses to select.

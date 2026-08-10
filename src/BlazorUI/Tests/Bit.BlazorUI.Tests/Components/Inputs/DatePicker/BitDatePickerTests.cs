@@ -2304,6 +2304,28 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerMonthPickerModeShouldClampTheTypedMonthToMinDate()
+    {
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitDatePickerMode.MonthPicker);
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "MM/yyyy");
+            parameters.Add(p => p.MinDate, GetLocalDate(2026, 1, 10));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // January is selectable in the calendar even though its first day is before MinDate, so typing
+        // it has to be clamped the same way a click on it is rather than rejected as out of range.
+        component.Find(".bit-dtp-inp").Input("01/2026");
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(new DateTime(2026, 1, 10), value!.Value.Date);
+    }
+
+    [TestMethod]
     public void BitDatePickerReadOnlyShouldIgnoreTheTypedDate()
     {
         DateTimeOffset? value = null;
