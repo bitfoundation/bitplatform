@@ -201,7 +201,7 @@
 }
 
 .bit-clp-cnt {
-    gap: spacing(1);
+    gap: spacing(1.5);
     display: flex;
     flex-shrink: 0;
     align-items: flex-start;
@@ -214,7 +214,6 @@
 .bit-clp-sct {
     flex-grow: 1;
     min-width: 0;
-    padding-inline: calc(var(--bit-clp-thumb-size) / 2);
 }
 
 .bit-clp-sld {

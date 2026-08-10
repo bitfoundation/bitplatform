@@ -461,9 +461,9 @@ public partial class BitColorPickerDemo
     private readonly string example1RazorCode = @"
 <BitColorPicker />
 
-<BitColorPicker Label=""Brand color"" Color=""#4AE2C0"" />
+<BitColorPicker Label=""Brand color"" />
 
-<BitColorPicker Color=""#E2934A"">
+<BitColorPicker>
     <LabelTemplate>
         <BitIcon IconName=""@BitIconName.Color"" /> <b>Accent color</b>
     </LabelTemplate>
