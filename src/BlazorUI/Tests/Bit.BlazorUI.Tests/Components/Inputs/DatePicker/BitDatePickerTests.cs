@@ -1363,6 +1363,8 @@ public class BitDatePickerTests : BunitTestContext
         // them out and the days of the last one out of reach altogether.
         var calendar = new HebrewCalendar();
         var culture = CultureInfo.CreateSpecificCulture("he-IL");
+        // The component counts months with CultureInfo.Calendar, which has no public setter and is not
+        // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
         culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, calendar);
 
         // 2024-03-15 falls in the Hebrew year 5784, a leap year of thirteen months.

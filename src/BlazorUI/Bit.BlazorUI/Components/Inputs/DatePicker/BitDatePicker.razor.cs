@@ -1113,7 +1113,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         var wasOpen = IsOpen;
 
-        if (await AssignIsOpen(true) is false) return;
+        if (await AssignIsOpen(true) is false)
+        {
+            _focusDayOnOpen = false;
+            return;
+        }
 
         ResetPickersState();
 
@@ -1262,7 +1266,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         // The comparison is on the nullable values themselves: text that fails to parse leaves
         // CurrentValue null, and the calendar has nothing to synchronize with in that case.
-        if (IsOpen is false || oldValue == CurrentValue) return;
+        if (IsOpen is false || oldValue == CurrentValue || CurrentValue.HasValue is false) return;
 
         var previousYear = _currentYear;
 

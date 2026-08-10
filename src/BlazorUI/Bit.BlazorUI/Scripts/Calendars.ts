@@ -11,7 +11,7 @@ namespace BitBlazorUI {
 
         // Everything that can hold the focus inside a calendar. The roving tabindex of the grids takes
         // every cell but one out of the tab sequence, which is why tabindex="-1" is excluded here.
-        private static _focusables = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        private static _focusables = 'button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
         // Attaches a keydown listener that prevents the default behavior (page scrolling) of the
         // navigation keys pressed on the grid cells - the actual keyboard logic runs in the Blazor
