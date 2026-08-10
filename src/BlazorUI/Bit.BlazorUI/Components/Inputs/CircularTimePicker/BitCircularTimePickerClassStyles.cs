@@ -58,6 +58,12 @@ public class BitCircularTimePickerClassStyles
     public string? Toolbar { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the body of the BitCircularTimePicker - everything under the toolbar:
+    /// the clock, the AM/PM pair when it is placed there, and the row of actions.
+    /// </summary>
+    public string? Body { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the hour and minute container of the BitCircularTimePicker.
     /// </summary>
     public string? HourMinuteContainer { get; set; }

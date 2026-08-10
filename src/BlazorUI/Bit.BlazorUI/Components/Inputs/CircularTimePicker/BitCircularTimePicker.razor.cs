@@ -26,6 +26,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private bool _pointerPicked;
     private bool _isPointerDown;
     private ElementReference _clockRef;
+    private ElementReference _calloutRef;
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
     private string _calloutId = string.Empty;
@@ -251,6 +252,18 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Lays the clock out beside its toolbar instead of under it, for a picker that has more width than
+    /// height to work with.
+    /// </summary>
+    /// <remarks>
+    /// The toolbar becomes a column down the leading edge - the parts of the time stacked instead of spelled
+    /// out on one line - which is what halves the height of the picker. It only takes effect from the small
+    /// breakpoint up: a screen narrower than that has no width to give the toolbar, and the responsive mode is
+    /// already using all of it.
+    /// </remarks>
+    [Parameter] public bool Landscape { get; set; }
+
+    /// <summary>
     /// Label for the TimePicker
     /// </summary>
     [Parameter] public string? Label { get; set; }
@@ -464,6 +477,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
+        if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -487,6 +501,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public async Task _OnClose()
     {
         await CloseCallout();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Called from JavaScript when the focus leaves the callout for something outside of it.
+    /// </summary>
+    [JSInvokable(nameof(_HandleCalloutFocusOut))]
+    public async Task _HandleCalloutFocusOut()
+    {
+        // The focus is already on whatever it was moved to, so this is the one close that must not pull it
+        // back onto the field: doing so would make it impossible to tab past an open picker at all.
+        await CloseCallout(restoreFocus: false);
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -555,6 +582,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsEnabled is false) return;
         if (Standalone) return;
 
+        // Assigning the same state over again counts as a change, so an open that is already open would
+        // report itself a second time - and, worse, throw away the part of the time the dial had been moved
+        // on to by starting the picker over. Every path into here has to be able to fire without checking
+        // first: a second ArrowDown on an editable field, a click that lands on the picker again.
+        if (IsOpen) return;
+
         if (await AssignIsOpenInternal(true) is false) return;
 
         _view = GetInitialView();
@@ -576,6 +609,20 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <see cref="ShowSeconds"/> allow it.
     /// </summary>
     public Task SwitchView(BitCircularTimePickerView view) => ChangeView(view);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// A standalone picker carries its value in a hidden input nobody can see or tab to, so the focus goes on
+    /// the dial - the part that is actually on the screen and the one every key of the picker acts on.
+    /// </remarks>
+    public override ValueTask FocusAsync() => Standalone ? _clockRef.FocusAsync() : base.FocusAsync();
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        return Standalone ? _clockRef.FocusAsync(preventScroll) : base.FocusAsync(preventScroll);
+    }
 
 
 
@@ -658,10 +705,21 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
             if (IsDisposed) return;
 
-            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement,
+            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement, _calloutRef,
+                                                                     Standalone is false,
                                                                      nameof(_HandlePointerDown),
                                                                      nameof(_HandlePointerMove),
-                                                                     nameof(_HandlePointerUp));
+                                                                     nameof(_HandlePointerUp),
+                                                                     nameof(_HandleCalloutFocusOut));
+
+            // The setup is a round trip, so the picker can be gone by the time the controller id comes back -
+            // at a point where DisposeAsync had nothing to abort yet. The listeners it registered would
+            // outlive the component otherwise, so they are torn down here instead.
+            if (IsDisposed)
+            {
+                await _js.BitCircularTimePickerDispose(_abortControllerId);
+                return;
+            }
 
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
             // callout element to toggle yet, so the open state is applied here instead.
@@ -724,6 +782,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone) return;
         if (IsEnabled is false) return;
+
+        // See OpenCallout: a close that has nothing to close must stay silent, since the keys that dismiss the
+        // picker - Escape, Tab - reach here whether or not it was open at the time.
+        if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -1330,6 +1392,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 await OpenCallout();
                 break;
 
+            case "Tab":
+                // An open callout is relocated to the end of the document, so it is not what the tab order
+                // runs into from the field: tabbing on would leave the popup open behind an overlay that
+                // swallows every click that could dismiss it. The focus is on its way to the next control,
+                // so it is left there rather than pulled back onto the field.
+                await CloseCallout(restoreFocus: false);
+                break;
+
             case "Enter":
             case " ":
                 // The editable input owns those two keys - Enter submits the form it sits in and the space bar
@@ -1571,6 +1641,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             classes.Add(Classes.Callout);
         }
 
+        if (Landscape)
+        {
+            classes.Add("bit-ctp-lnd");
+        }
+
         if (Standalone)
         {
             classes.Add("bit-ctp-sta");
@@ -1632,6 +1707,14 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         BitCircularTimePickerView.Minute => MinuteButtonTitle,
         _ => SecondButtonTitle
     };
+
+    // What the live region of the callout carries. The name of the part the dial is on is enough wherever the
+    // hand rests on a number, since the option it points at is announced along with it. Between two marks
+    // there is no option to announce - a minute of :37 has no number of its own - so the value is spelled out
+    // here instead, which is what keeps a keyboard step of one from moving the dial in silence.
+    private string ViewAnnouncement => (_activeDescendantId is null && CurrentPart.HasValue)
+        ? $"{ViewTitle} {CurrentPart.Value.ToString("D2", CultureInfo.InvariantCulture)}"
+        : ViewTitle;
 
     // Whether the dial currently accepts a change, which is what every pointer, keyboard and button path is
     // gated on so none of them has to repeat the three states that close the picker to the user.

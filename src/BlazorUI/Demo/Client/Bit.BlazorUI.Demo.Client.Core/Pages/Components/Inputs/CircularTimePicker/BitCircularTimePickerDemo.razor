@@ -6,7 +6,7 @@
             Description="A BitCircularTimePicker picks a time from an analog clock dial, with a 12/24-hour face, optional seconds, steps, selectable-time limits and full keyboard support." />
 
 <DemoPage Name="CircularTimePicker"
-          Description="A BitCircularTimePicker picks a single time from an analog clock dial: an hour ring the pointer snaps to, then a minute ring and an optional second ring, with an AM/PM pair in 12-hour mode. It can be driven with a pointer or entirely from the keyboard, restricted to a range or a step, edited as text, and rendered either inline or in a callout that becomes a sheet on small screens."
+          Description="A BitCircularTimePicker picks a single time from an analog clock dial: an hour ring the pointer snaps to, then a minute ring and an optional second ring, with an AM/PM pair in 12-hour mode. It can be driven with a pointer or entirely from the keyboard, restricted to a range or a step, edited as text, laid out portrait or landscape, and rendered either inline or in a callout that becomes a sheet on small screens."
           Parameters="componentParameters" PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           GitHubUrl="Inputs/CircularTimePicker/BitCircularTimePicker.razor"
@@ -36,7 +36,8 @@
         <div>
             <b>Standalone</b> drops the field and the callout and renders the clock inline, as a permanent part of the
             page. The value still travels through a hidden input, so a standalone picker takes part in a form exactly
-            like a callout one does.
+            like a callout one does - but that input is kept out of the tab order, so the dial is the one thing the
+            keyboard lands on, and the one <b>FocusAsync</b> puts the focus on.
         </div>
         <br />
         <div class="example-content-standalone">
@@ -68,7 +69,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Seconds" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Seconds" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
         <div>
             <b>ShowSeconds</b> adds a third part: a second ring the dial moves on to after the minute, a third
             read-out in the toolbar, and the seconds kept in the value instead of zeroed. <b>SecondStep</b> and
@@ -185,7 +186,9 @@
             <b>DropDirection</b> chooses the sides the callout may open towards: <b>TopAndBottom</b> (the default)
             keeps it above or below the field, while <b>All</b> lets it take whichever side has the room. <b>OnOpen</b>
             and <b>OnClose</b> report every change either way, and closing the picker hands the focus back to the
-            field so the keyboard carries on where it left off.
+            field so the keyboard carries on where it left off. Tabbing out of the callout closes it too, and leaves
+            the focus where it was going: the callout is moved to the end of the document while it is open, so a
+            picker left behind would be one nothing on the page could reach any more.
         </div>
         <br />
         <div class="example-content">
@@ -350,7 +353,9 @@
         <br />
         <ul>
             <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> on the field opens the picker; <b>Esc</b> closes it and
-                puts the focus back on the field.</li>
+                puts the focus back on the field, while <b>Tab</b> closes it and carries on to the next control.</li>
+            <li><b>Tab</b> inside the callout moves between the toolbar, the dial and the buttons, and leaving the
+                last of them closes the picker rather than stranding it behind the overlay.</li>
             <li><b>&uarr;</b> / <b>&rarr;</b> and <b>&darr;</b> / <b>&larr;</b> move the pointer by one step,
                 <b>PageUp</b> / <b>PageDown</b> by five.</li>
             <li><b>Home</b> and <b>End</b> jump to the first and the last selectable value.</li>
@@ -363,9 +368,11 @@
         <br />
         <div>
             <b>CalloutAriaLabel</b> names the dialog, <b>HourButtonTitle</b>, <b>MinuteButtonTitle</b> and
-            <b>SecondButtonTitle</b> name the toolbar buttons and the dial in each view, and <b>AutoFocus</b> puts the
-            focus on the field as the page renders. Values the constraints rule out are marked <b>aria-disabled</b>
-            rather than merely dimmed.
+            <b>SecondButtonTitle</b> name the toolbar buttons and the dial in each view, <b>AutoFocus</b> puts the
+            focus on the field as the page renders, and <b>TabIndex</b> reaches the dial as well as the field. Values
+            the constraints rule out are marked <b>aria-disabled</b> rather than merely dimmed, and a live region
+            announces every move of the dial - the part it switches to, and the value it lands on where no number of
+            the face stands for it, so a step of a single minute is never made in silence.
         </div>
         <br />
         <div class="example-content">
@@ -449,7 +456,31 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="Landscape" RazorCode="@example21RazorCode" Id="example21">
+        <div>
+            <b>Landscape</b> puts the toolbar down the leading edge of the picker instead of above the clock,
+            stacking the parts of the time in a column - which is roughly half the height for a picker that has
+            width to spare. It takes effect from the small breakpoint up: below it there is no width to give the
+            toolbar, so the picker keeps its portrait layout. The <b>Body</b> slot of <b>Styles</b> and
+            <b>Classes</b> reaches the column the toolbar is set beside - the clock, the AM/PM pair when
+            <b>AmPmInClock</b> puts it there, and the row of actions.
+        </div>
+        <br />
+        <div class="example-content-standalone">
+            <BitCircularTimePicker Label="Landscape" Standalone Landscape
+                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
+            <br /><br />
+            <BitCircularTimePicker Label="Landscape, 12-hour with the seconds" Standalone Landscape ShowSeconds
+                                   AmPmInClock ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
+                                   DefaultValue="@(new TimeSpan(21, 45, 30))" />
+        </div>
+        <br />
+        <div class="example-content">
+            <BitCircularTimePicker Label="In the callout" Landscape Placeholder="Select a time" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <b>Color</b> picks the theme color of the accent the dial is painted with - the toolbar, the hand, the pin
             and the selected number - with <b>Primary</b> as the default. The semantic colors tie the picker to what
@@ -506,7 +537,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
         <div>
             The glyphs are not limited to the built-in icon font: <b>Icon</b> and <b>CloseButtonIcon</b> take a
             <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
@@ -540,7 +571,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
         <div>
             <b>Size</b> scales the dial, its numbers and the toolbar together: <b>Small</b> where the clock has to
             share a dense layout, <b>Medium</b> (the default) for forms, and <b>Large</b> where the picker is the
@@ -556,7 +587,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
             named part of the picker on their own - the toolbar, the face, the numbers, the hand and its thumb - so
@@ -610,7 +641,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
+    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
         <div>
             <b>Dir</b> flips the field, the label and the toolbar into a right-to-left layout, and reaches the callout
             as well even though it is rendered outside the root element. The dial itself keeps running clockwise, and

@@ -226,6 +226,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "Landscape",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lays the clock out beside its toolbar instead of under it, from the small breakpoint up."
+        },
+        new()
+        {
             Name = "MaxTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
@@ -722,6 +729,13 @@ public partial class BitCircularTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the toolbar of the BitCircularTimePicker."
+                },
+                new()
+                {
+                    Name = "Body",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the body of the BitCircularTimePicker - everything under the toolbar: the clock, the AM/PM pair when it is placed there, and the row of actions."
                 },
                 new()
                 {

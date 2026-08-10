@@ -449,6 +449,56 @@ span.bit-ctp-txt {
     }
 }
 
+// Everything under the toolbar. A column of its own, so the landscape layout below can put the toolbar
+// beside it by turning a single container into a row - and so a caller styling the Body slot has one box
+// that holds the clock, the meridiem pair and the actions together.
+.bit-ctp-bdy {
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+ * The toolbar beside the clock instead of above it, which is how a clock is laid out wherever there is more
+ * width than height to fill: the parts of the time stack down a column, so the separators between them have
+ * nothing left to separate and are dropped.
+ *
+ * Only from the small breakpoint up. Below it there is no width to give the toolbar, and the responsive mode
+ * is already spending all of it on a sheet the width of the screen.
+ */
+.bit-ctp-lnd {
+    @include gt-xs {
+        .bit-ctp-cac {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        .bit-ctp-tlb {
+            min-width: unset;
+            padding: spacing(2);
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bit-ctp-hmc {
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bit-ctp-sep {
+            display: none;
+        }
+
+        // Only the pair that sits in the toolbar moves: the one AmPmInClock puts under the clock is already
+        // laid out for the column it is in.
+        .bit-ctp-tlb .bit-ctp-apc {
+            margin-block-start: spacing(1.5);
+            margin-inline-start: 0;
+        }
+    }
+}
+
 .bit-ctp-clk {
     margin: spacing(2);
     position: relative;

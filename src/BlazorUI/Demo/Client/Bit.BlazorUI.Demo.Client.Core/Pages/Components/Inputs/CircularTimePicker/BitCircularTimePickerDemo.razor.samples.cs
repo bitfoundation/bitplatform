@@ -40,6 +40,8 @@ public partial class BitCircularTimePickerDemo
                        Placeholder=""Select a time""
                        @bind-Value=""@secondsTime"" />
 <div>Selected time: @secondsTime.ToString()</div>";
+    private readonly string example4CsharpCode = @"
+private TimeSpan? secondsTime = new(14, 5, 30);";
 
     private readonly string example5RazorCode = @"
 <BitCircularTimePicker Label=""OnlyHours"" Standalone
@@ -299,6 +301,17 @@ private void Log(string message)
 }";
 
     private readonly string example21RazorCode = @"
+<BitCircularTimePicker Label=""Landscape"" Standalone Landscape
+                       DefaultValue=""@(new TimeSpan(9, 30, 0))"" />
+
+<BitCircularTimePicker Label=""Landscape, 12-hour with the seconds"" Standalone Landscape ShowSeconds
+                       AmPmInClock ShowNowButton
+                       TimeFormat=""BitTimeFormat.TwelveHours""
+                       DefaultValue=""@(new TimeSpan(21, 45, 30))"" />
+
+<BitCircularTimePicker Label=""In the callout"" Landscape Placeholder=""Select a time"" />";
+
+    private readonly string example22RazorCode = @"
 <BitCircularTimePicker Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.Secondary"" Label=""Secondary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.Tertiary"" Label=""Tertiary"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
@@ -321,7 +334,7 @@ private void Log(string message)
 <BitCircularTimePicker Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 <BitCircularTimePicker Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCircularTimePicker Label=""FontAwesome"" Icon=""@(""fa-solid fa-clock"")"" />
@@ -341,14 +354,14 @@ private void Log(string message)
 <BitCircularTimePicker Label=""Bootstrap (Bi)"" Icon=""@BitIconInfo.Bi(""clock-fill"")""
                        ShowCloseButton CloseButtonIcon=""@BitIconInfo.Bi(""x-lg"")"" />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitCircularTimePicker Size=""BitSize.Small"" Label=""Small"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 
 <BitCircularTimePicker Size=""BitSize.Medium"" Label=""Medium"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />
 
 <BitCircularTimePicker Size=""BitSize.Large"" Label=""Large"" DefaultValue=""@(new TimeSpan(10, 10, 0))"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -490,10 +503,10 @@ private void Log(string message)
                                           ClockDisabledNumber = ""custom-clock-disabled-number"",
                                           ClockPointerThumbMinute = ""custom-clock-pointer-thumb-minute"",
                                           ClearButton = ""custom-clear-button"" })"" />";
-    private readonly string example24CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 private TimeSpan? classesValue;";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitCircularTimePicker Dir=""BitDir.Rtl""
                        Label=""ساعت""
                        Placeholder=""یک ساعت انتخاب کنید""

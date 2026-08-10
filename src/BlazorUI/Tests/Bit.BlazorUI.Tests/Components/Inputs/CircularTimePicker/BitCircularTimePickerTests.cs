@@ -1659,6 +1659,91 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCircularTimePickerShouldSpellOutAValueNoNumberStandsFor()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.StartView, BitCircularTimePickerView.Minute);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 30, 0));
+        });
+
+        // :30 is one of the twelve marks, so the option the dial rests on is announced along with the view
+        // and the live region only has to carry the name of the part
+        Assert.AreEqual("Select minute", component.Find(".bit-ctp-lvr").TextContent.Trim());
+
+        await KeyDown(component, "ArrowUp");
+
+        // :31 has no number of its own, so aria-activedescendant has nothing to point at and the value is
+        // spelled out here instead - a step of a single minute must not move the dial in silence
+        Assert.IsNull(component.Find(".bit-ctp-clf").GetAttribute("aria-activedescendant"));
+        Assert.AreEqual("Select minute 31", component.Find(".bit-ctp-lvr").TextContent.Trim());
+
+        await KeyDown(component, "ArrowDown");
+
+        Assert.AreEqual("Select minute", component.Find(".bit-ctp-lvr").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerStandaloneShouldKeepItsHiddenInputOutOfTheTabOrder()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // the field of a standalone picker is invisible, so a tab stop on it is a place the focus disappears
+        // into on the way to the dial - which is the part that is actually being operated
+        Assert.AreEqual("-1", component.Find("input.bit-input-hidden").GetAttribute("tabindex"));
+        Assert.AreEqual("0", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public async Task BitCircularTimePickerFocusAsyncShouldLandOnWhatIsOnTheScreen(bool standalone)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, standalone);
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync());
+
+        var focused = (ElementReference)Context.JSInterop
+            .Invocations["Blazor._internal.domWrapper.focus"].Last().Arguments[0]!;
+
+        // the field of a standalone picker is invisible, so the focus goes on the dial instead - the part that
+        // is actually on the screen and the one every key of the picker acts on
+        if (standalone)
+        {
+            Assert.AreNotEqual(component.Instance.InputElement.Id, focused.Id);
+        }
+        else
+        {
+            Assert.AreEqual(component.Instance.InputElement.Id, focused.Id);
+        }
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldRespectTabIndexOnTheDial()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-ctp-inp").GetAttribute("tabindex"));
+        Assert.AreEqual("3", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
+
+        // a picker that is switched off is out of the tab order whatever the tab index says
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        Assert.AreEqual("-1", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitCircularTimePickerReadOnlyShouldBeAnnouncedRatherThanDisabled()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
@@ -1864,6 +1949,47 @@ public class BitCircularTimePickerTests : BunitTestContext
         StringAssert.Contains(component.Find(".bit-ctp-ptr").GetAttribute("style"), "opacity:0.5");
     }
 
+    [TestMethod]
+    public void BitCircularTimePickerBodyShouldHoldEverythingUnderTheToolbar()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AmPmInClock, true);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Classes, new BitCircularTimePickerClassStyles { Body = "bdy" });
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Body = "opacity:0.5" });
+        });
+
+        var body = component.Find(".bit-ctp-bdy");
+
+        Assert.IsTrue(body.ClassList.Contains("bdy"));
+        StringAssert.Contains(body.GetAttribute("style"), "opacity:0.5");
+
+        // the column the landscape layout sets the toolbar beside: the clock, the meridiem pair where
+        // AmPmInClock puts it, and the actions - and the toolbar itself outside of it
+        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-clk").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-apk").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-ctp-bdy > .bit-ctp-act").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-ctp-bdy .bit-ctp-tlb").Count);
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCircularTimePickerShouldRespectLandscape(bool landscape)
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Landscape, landscape);
+        });
+
+        // the layout lives on the callout, which is rendered as a sibling of the root rather than inside it
+        Assert.AreEqual(landscape, component.Find(".bit-ctp-cal").ClassList.Contains("bit-ctp-lnd"));
+        Assert.IsFalse(component.Find(".bit-ctp").ClassList.Contains("bit-ctp-lnd"));
+    }
+
     #endregion
 
 
@@ -2017,6 +2143,44 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCircularTimePickerShouldReportNothingWhenTheOpenStateDoesNotChange()
+    {
+        var opened = 0;
+        var closed = 0;
+        var isOpen = false;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // the keys that dismiss the picker reach it whether or not it was open at the time
+        await component.InvokeAsync(() =>
+            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
+        await component.InvokeAsync(() =>
+            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
+
+        Assert.AreEqual(0, closed);
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+        await Press(component, HourAngle(3), OuterRing);
+
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(BitCircularTimePickerView.Minute, component.Instance.View);
+
+        // opening what is already open must neither report itself again nor throw away the part of the time
+        // the dial has been moved on to
+        await component.InvokeAsync(() =>
+            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" }));
+
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(BitCircularTimePickerView.Minute, component.Instance.View);
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerShouldGoBackToTheStartViewOnEveryOpening()
     {
         var component = RenderComponent<BitCircularTimePicker>();
@@ -2030,6 +2194,52 @@ public class BitCircularTimePickerTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.OpenCallout());
 
         Assert.AreEqual(BitCircularTimePickerView.Hour, component.Instance.View);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldCloseWhenTheFocusLeavesTheCallout()
+    {
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        // an open callout is relocated to the end of the document, so tabbing out of it would otherwise leave
+        // it open behind an overlay that swallows every click which could still dismiss it
+        await component.InvokeAsync(() => component.Instance._HandleCalloutFocusOut());
+
+        Assert.AreEqual(1, closed);
+        Assert.IsFalse(isOpen);
+
+        // the focus is already on whatever it was moved to, so pulling it back onto the field would make it
+        // impossible to tab past an open picker at all
+        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerTabShouldCloseTheCalloutFromTheField()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        await component.InvokeAsync(() =>
+            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

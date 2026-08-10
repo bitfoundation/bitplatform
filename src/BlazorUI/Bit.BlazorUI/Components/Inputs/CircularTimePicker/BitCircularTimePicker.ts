@@ -9,9 +9,12 @@ namespace BitBlazorUI {
             dotnetObj: DotNetObject,
             clock: HTMLElement,
             input: HTMLInputElement,
+            callout: HTMLElement,
+            dismissOnFocusOut: boolean,
             pointerDownHandler: string,
             pointerMoveHandler: string,
-            pointerUpHandler: string): string {
+            pointerUpHandler: string,
+            focusOutHandler: string): string {
 
             const bitController = new BitController();
             bitController.dotnetObj = dotnetObj;
@@ -144,6 +147,23 @@ namespace BitBlazorUI {
 
                 e.preventDefault();
             }, { signal: bitController.controller.signal });
+
+            // An open callout is relocated to the end of the document, so the tab order does not run from it
+            // back into the page: focus that leaves it for anything else has left an open popup behind, under
+            // an overlay that swallows every click which could still dismiss it. A relatedTarget of null is
+            // deliberately left alone - that is the window itself losing the focus, not the person moving on,
+            // and the callout has to still be there when they come back. A standalone picker is inline and has
+            // no callout to dismiss, so it does not listen at all rather than answering every focus change
+            // with an interop call that would do nothing.
+            if (dismissOnFocusOut) {
+                callout?.addEventListener('focusout', e => {
+                    const next = (e as FocusEvent).relatedTarget as Node | null;
+
+                    if (next === null || callout.contains(next)) return;
+
+                    dotnetObj.invokeMethodAsync(focusOutHandler);
+                }, { signal: bitController.controller.signal });
+            }
 
             document.addEventListener('pointerup', endDrag, { signal: bitController.controller.signal });
 
