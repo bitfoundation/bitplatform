@@ -17,7 +17,7 @@
         renderMode = null;
     }
     // Nothing of the page is produced on the server, so the scripts are the only thing that can ever fill it in.
-    var noPrerenderedContent = serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender;
+    var noPrerenderedContent = renderMode is not null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender);
 }
 
 <!DOCTYPE html>

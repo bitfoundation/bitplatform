@@ -31,15 +31,7 @@ public partial class BlazorEndpointAuthorizationTests
             "from receiving the page shell it is supposed to render itself.");
     }
 
-    /// <summary>
-    /// ⚠ <c>[Ignore]</c>d because BP-258 is <b>open</b>: the guard at <c>Program.Middlewares.cs</c> keys on
-    /// <c>PrerenderEnabled</c> alone, so <c>BlazorSsr</c> still drops endpoint authorization while rendering the whole
-    /// component tree on the server. Remove the attribute once the condition also requires
-    /// <c>settings.WebAppRender.RenderMode is not null</c>. Without the attribute it fails on the first assertion with
-    /// "Expected condition to be false" - i.e. every razor component endpoint carries <c>IAllowAnonymous</c> under
-    /// <c>BlazorSsr</c>.
-    /// </summary>
-    [TestMethod, Ignore]
+    [TestMethod]
     public async Task BlazorEndpoints_Should_KeepAuthorization_WhenTheComponentTreeRendersOnTheServer()
     {
         Assert.IsFalse(await BlazorEndpointsAreAnonymous(blazorMode: "BlazorSsr", prerenderEnabled: "false"),

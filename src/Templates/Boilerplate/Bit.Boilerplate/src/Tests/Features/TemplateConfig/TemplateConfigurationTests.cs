@@ -218,7 +218,7 @@ public class TemplateConfigurationTests
             }
         }
 
-        // Non-vacuity: the template declares five port symbols (web, api, client web and two aspire ports).
+        // Non-vacuity: the template declares six port symbols (web, api, client web and three aspire ports).
         Assert.IsGreaterThan(1, portSymbolsChecked,
             $"Only {portSymbolsChecked} port symbols were found - the scan is not reading template.json's symbols.");
 

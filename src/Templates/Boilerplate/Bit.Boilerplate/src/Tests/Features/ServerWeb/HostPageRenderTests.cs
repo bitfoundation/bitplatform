@@ -72,6 +72,33 @@ public partial class HostPageRenderTests
     }
 
     /// <summary>
+    /// Under <c>BlazorSsr</c> the whole component tree is rendered on the server, so a crawler gets the real page and
+    /// needs no scripts at all - which is the one configuration where dropping them costs nothing.
+    /// <para>
+    /// This is the case the <c>noPrerenderedContent</c> predicate exists to keep apart: it keys on the effective
+    /// <c>renderMode</c>, not on <c>PrerenderEnabled</c> alone, because <c>BlazorSsr</c> leaves <c>PrerenderEnabled</c>
+    /// at its shipped <c>false</c> while still producing html. Reading the setting alone would treat this response as
+    /// empty and hand the crawler the scripts (plus a loading shell over a fully rendered page).
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public async Task UnderBlazorSsr_ACrawler_Should_GetTheRenderedPageWithoutScripts()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(
+            configureTestServices: services => services.AddIntegrationApiOnlyTestsServices().FakeExternalStatistics(),
+            configureTestConfigurations: configuration => configuration["WebAppRender:BlazorMode"] = "BlazorSsr")
+            .Start(TestContext.CancellationToken);
+
+        using var visitorHttpClient = new HttpClient { BaseAddress = server.WebAppServerAddress };
+
+        var html = await GetHomePage(visitorHttpClient, GooglebotUserAgent);
+
+        Assert.DoesNotContain(BlazorBootScript, html, "There is nothing for the scripts to do on a statically rendered page.");
+        Assert.DoesNotContain("bit-lds-wrapper", html, "A statically rendered page has its content already; it needs no loading shell.");
+    }
+
+    /// <summary>
     /// A response whose scripts were dropped must never be stored in a cache that is shared with ordinary visitors.
     /// <para>
     /// Nothing in the cache key varies by <c>User-Agent</c> (See <c>AppResponseCachePolicy.CacheRequestAsync</c>), so

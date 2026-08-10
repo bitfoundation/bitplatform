@@ -165,14 +165,11 @@ public static partial class Program
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-            if (settings.WebAppRender.PrerenderEnabled is false)
+            if (settings.WebAppRender.RenderMode is not null && settings.WebAppRender.PrerenderEnabled is false)
             {
-                // In the interactive modes nothing of the page is produced on the server here - blazor emits only a
-                // marker comment and the client renders everything - so endpoint authorization has nothing to protect
-                // and the client handles it. Note the exception: under BlazorMode `BlazorSsr` the whole component tree
-                // IS rendered on the server while PrerenderEnabled stays false, so this also drops [Authorize] there
-                // and leaves Routes.razor's AuthorizeRouteView as the only gate. Add `RenderMode is not null` to this
-                // condition if BlazorSsr is ever used in anger.
+                // In the interactive modes with pre-rendering off, nothing of the page is produced on the server -
+                // blazor emits only a marker comment and the client renders everything - so endpoint authorization has
+                // nothing to protect here and the client handles it.
                 blazorApp.AllowAnonymous();
             }
         }
@@ -192,7 +189,7 @@ public static partial class Program
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
-                    {
+              {
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))
