@@ -16,6 +16,9 @@
 
     <ItemGroup>
       <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitInternalColor.cs" Link="Components\Inputs\ColorPicker\BitInternalColor.cs" />
+      <!-- The color model reads CSS color keywords through this table, so the linked copy above needs
+           its own copy of it rather than the library's internal one. -->
+      <Compile Include="..\..\Bit.BlazorUI\Components\Inputs\ColorPicker\BitCssNamedColors.cs" Link="Components\Inputs\ColorPicker\BitCssNamedColors.cs" />
       <!-- Compile-linked so the derivation tests can verify OKLCH lightness/hue invariants with
            the exact same conversion the library derives with (same pattern as BitInternalColor). -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\Theme\BitThemeOklch.cs" Link="Utils\Theme\BitThemeOklch.cs" />
