@@ -1,4 +1,6 @@
 {
+    // [mirror] the Docker profile is kept in sync with:
+    // - src/Server/Boilerplate.Server.Web/Properties/launchSettings.json
     "profiles": {
         "Boilerplate.Server.Api": {
             "commandName": "Project",

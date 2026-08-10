@@ -10,12 +10,14 @@
 
 @{
     var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
-    var renderMode = noPrerender ? noPrerenderBlazorWebAssembly : serverWebSettings.WebAppRender.RenderMode;
+    var renderMode = noPrerender ? serverWebSettings.WebAppRender.NoPrerenderRenderMode : serverWebSettings.WebAppRender.RenderMode;
     if (HttpContext.AcceptsInteractiveRouting() is false)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-9.0?view=aspnetcore-9.0#add-static-server-side-rendering-ssr-pages-to-a-globally-interactive-blazor-web-app
         renderMode = null;
     }
+    // Nothing of the page is produced on the server, so the scripts are the only thing that can ever fill it in.
+    var noPrerenderedContent = serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender;
 }
 
 <!DOCTYPE html>
@@ -64,7 +66,7 @@
     <Link rel="stylesheet" Href="_content/Boilerplate.Client.Core/styles/app.css" />
     <Link rel="stylesheet" Href="Boilerplate.Server.Web.styles.css" />
 
-    @if (renderMode != null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender))
+    @if (noPrerenderedContent)
     {
         <LoadingComponent @rendermode="null" />
     }
@@ -83,7 +85,10 @@
         </StreamRenderingEnabledContainer>
     }
 
-    @if (HttpContext.Request.IsLightHouseRequest() is false)
+    @* A benchmark run and a crawler both want the pre-rendered html on its own: the scripts would only cost the
+       benchmark its score and give the crawler a bundle it does not need. But that is only true when this response
+       actually carries pre-rendered html - otherwise the caller gets a page with no content AND no way to fetch any. *@
+    @if ((HttpContext.Request.IsLightHouseRequest() || HttpContext.Request.IsCrawlerClient()) is false || noPrerenderedContent)
     {
         <!-- If you don't plan to older browsers and prefer to use the original `blazor.web.js`, follow the instructions in this link: https://github.com/orgs/bitfoundation/discussions/10238#discussioncomment-12493737 -->
         <Script Src="_framework/bit.blazor.web.es2019.js" autostart="false"></Script>

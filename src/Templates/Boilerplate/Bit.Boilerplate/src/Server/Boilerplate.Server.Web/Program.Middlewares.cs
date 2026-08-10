@@ -25,8 +25,7 @@ public static partial class Program
             var configuration = app.Configuration;
             var env = app.Environment;
 
-            ServerWebSettings settings = new();
-            configuration.Bind(settings);
+            var settings = app.Services.GetRequiredService<ServerWebSettings>();
 
             app.UseAppForwardedHeaders();
 
@@ -168,7 +167,13 @@ public static partial class Program
 
             if (settings.WebAppRender.PrerenderEnabled is false)
             {
-                blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
+                // In the interactive modes nothing of the page is produced on the server here - blazor emits only a
+                // marker comment and the client renders everything - so endpoint authorization has nothing to protect
+                // and the client handles it. Note the exception: under BlazorMode `BlazorSsr` the whole component tree
+                // IS rendered on the server while PrerenderEnabled stays false, so this also drops [Authorize] there
+                // and leaves Routes.razor's AuthorizeRouteView as the only gate. Add `RenderMode is not null` to this
+                // condition if BlazorSsr is ever used in anger.
+                blazorApp.AllowAnonymous();
             }
         }
 
@@ -226,7 +231,7 @@ public static partial class Program
                     else if (httpContext.Response.StatusCode is 404 &&
                         httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
                     {
-                        httpContext.Response.Redirect($"{PageUrls.NotFound}?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                        httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
                     }
                 }
             });

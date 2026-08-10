@@ -119,8 +119,13 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             clientCacheTtl = -1;
         }
 
-        if (context.HttpContext.Request.IsLightHouseRequest())
+        if (context.HttpContext.Request.IsLightHouseRequest() || context.HttpContext.Request.IsCrawlerClient())
         {
+            // These callers get a DIFFERENT document: App.razor omits every script tag for them, so a benchmark is not
+            // charged for the blazor bundle and a crawler is not handed one it has no use for. Nothing in the cache key
+            // varies by user agent (See CacheVaryByRules above), so storing that response would hand the next ordinary
+            // visitor a page with no scripts - a shell that can never boot. Their responses are therefore theirs alone:
+            // never written to the output cache, never offered to a CDN.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
         }

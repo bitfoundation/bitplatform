@@ -94,17 +94,12 @@ public static partial class Program
         //#endif
         //#endif
 
-        services.AddSingleton(sp =>
-        {
-            ServerWebSettings settings = new();
-            configuration.Bind(settings);
-            return settings;
-        });
-
         services.AddOptions<ServerWebSettings>()
             .Bind(configuration)
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<ServerWebSettings>>().Value);
 
         AddBlazor(builder);
     }
@@ -114,7 +109,7 @@ public static partial class Program
         var services = builder.Services;
         var configuration = builder.Configuration;
 
-        services.AddTransient<IPrerenderStateService, WebServerPrerenderStateService>();
+        services.AddScoped<IPrerenderStateService, WebServerPrerenderStateService>();
         services.AddScoped<ClientExceptionHandlerBase, WebServerExceptionHandler>();
         //#if (api == "Standalone")
         //#if (IsInsideProjectTemplate)
@@ -127,6 +122,19 @@ public static partial class Program
         //#endif
 
         services.AddScoped<IAuthTokenProvider, ServerSideAuthTokenProvider>();
+
+        services.AddSingleton(_ => new SocketsHttpHandler
+        {
+            EnableMultipleHttp2Connections = true,
+            EnableMultipleHttp3Connections = true,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(15),
+            AutomaticDecompression = System.Net.DecompressionMethods.All,
+            SslOptions = new()
+            {
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+            }
+        });
+
         services.AddScoped<HttpClient>(sp =>
         {
             // This HTTP client is utilized during pre-rendering and within Blazor Auto/Server sessions for API calls. 
@@ -138,15 +146,18 @@ public static partial class Program
             var serverAddressString = string.IsNullOrEmpty(serverSettings.ServerSideHttpClientBaseAddress) is false ?
                 serverSettings.ServerSideHttpClientBaseAddress : configuration.GetServerAddress();
 
-            Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress);
-            var currentRequest = sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.Request;
-            if (serverAddress!.IsAbsoluteUri is false)
+            if (Uri.TryCreate(serverAddressString, UriKind.RelativeOrAbsolute, out var serverAddress) is false)
+                throw new InvalidOperationException($"'{serverAddressString}' is not a valid address. Set ServerAddress (or ServerSideHttpClientBaseAddress) in appsettings.json.");
+
+            var currentRequest = (sp.GetRequiredService<IHttpContextAccessor>().HttpContext ?? throw new InvalidOperationException()).Request;
+
+            if (serverAddress.IsAbsoluteUri is false)
             {
                 serverAddress = new Uri(currentRequest.GetBaseUrl(), serverAddress);
             }
 
             var handlerFactory = sp.GetRequiredService<HttpMessageHandlersChainFactory>();
-            var httpClient = new HttpClient(handlerFactory.Invoke())
+            var httpClient = new HttpClient(handlerFactory.Invoke(new NonDisposingHandler(sp.GetRequiredService<SocketsHttpHandler>())))
             {
                 BaseAddress = serverAddress
             };
@@ -154,15 +165,32 @@ public static partial class Program
             var forwardedHeadersSection = configuration.GetSection("ForwardedHeaders");
             var forwardedHeadersOptions = forwardedHeadersSection.Exists() ? forwardedHeadersSection.DynamicBind<ForwardedHeadersOptions>() : null;
 
-            foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase)))
+            // Headers that describe WHO the caller is are decided here, never forwarded from what the caller sent:
+            // the api resolves the client ip (and therefore the identity rate limiter's partition and UserSession.IP)
+            // from X-Forwarded-For, the request scheme from X-Forwarded-Proto, and the web app's origin from X-Origin.
+            // The names are literals on purpose - deriving them from forwardedHeadersOptions would skip the exclusion
+            // entirely whenever the ForwardedHeaders section is absent and that object is null.
+            HashSet<string> clientControlledForwardingHeaders = new(StringComparer.OrdinalIgnoreCase)
+            {
+                "X-Forwarded-For", "X-Forwarded-Proto", "X-Forwarded-Host", "X-Forwarded-Prefix", "X-Origin"
+            };
+            if (forwardedHeadersOptions is not null)
+            {
+                clientControlledForwardingHeaders.Add(forwardedHeadersOptions.ForwardedForHeaderName);
+                clientControlledForwardingHeaders.Add(forwardedHeadersOptions.ForwardedProtoHeaderName);
+                clientControlledForwardingHeaders.Add(forwardedHeadersOptions.ForwardedHostHeaderName);
+                clientControlledForwardingHeaders.Add(forwardedHeadersOptions.ForwardedPrefixHeaderName);
+            }
+
+            foreach (var xHeader in currentRequest.Headers.Where(h => h.Key.StartsWith("X-", StringComparison.InvariantCultureIgnoreCase) &&
+                                                                      clientControlledForwardingHeaders.Contains(h.Key) is false))
             {
                 httpClient.DefaultRequestHeaders.Add(xHeader.Key, string.Join(',', xHeader.Value.AsEnumerable()));
             }
 
-            if (forwardedHeadersOptions is not null && httpClient.DefaultRequestHeaders.Contains(forwardedHeadersOptions.ForwardedForHeaderName) is false &&
-                currentRequest.HttpContext.Connection.RemoteIpAddress is not null)
+            if (currentRequest.HttpContext.Connection.RemoteIpAddress is not null)
             {
-                httpClient.DefaultRequestHeaders.Add(forwardedHeadersOptions.ForwardedForHeaderName,
+                httpClient.DefaultRequestHeaders.Add(forwardedHeadersOptions?.ForwardedForHeaderName ?? "X-Forwarded-For",
                                                      currentRequest.HttpContext.Connection.RemoteIpAddress.ToString());
             }
 
@@ -187,5 +215,19 @@ public static partial class Program
         services.AddRazorComponents()
             .AddInteractiveServerComponents()
             .AddInteractiveWebAssemblyComponents();
+    }
+
+    /// <summary>
+    /// The <see cref="SocketsHttpHandler"/> above is shared by every pre-rendering request and every Blazor Server
+    /// session, so its connections are re-used instead of a new pool being opened each time. But each of those gets its
+    /// own <see cref="HttpClient"/>, and an HttpClient disposes its whole handler chain - which would close the shared
+    /// handler for everyone else. This wrapper sits in between and simply doesn't pass the dispose along.
+    /// </summary>
+    private sealed class NonDisposingHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+    {
+        protected override void Dispose(bool disposing)
+        {
+            // Nothing to do on purpose: the shared handler is owned by the DI container, not by this client.
+        }
     }
 }

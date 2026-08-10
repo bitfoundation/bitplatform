@@ -179,6 +179,56 @@ public class TemplateConfigurationTests
     }
 
     /// <summary>
+    /// A <c>"generator": "port"</c> symbol must declare an explicit, non-zero <c>fallback</c>.
+    /// <para>
+    /// The template engine's port macro tries to bind the wildcard address to prove a port is free, and when it cannot
+    /// it substitutes <c>fallback</c> - which defaults to <b>0</b>. Nothing warns: <c>dotnet new</c> exits 0 and emits a
+    /// project whose launch profile says <c>http://*:0</c> (so Kestrel binds a random ephemeral port) while every client
+    /// head's <c>ServerAddress</c> / <c>WebAppUrl</c> and the devcontainer's <c>forwardPorts</c> say <c>0</c> too. The
+    /// app starts and no client can reach it. This fires whenever something already holds the port on the wildcard
+    /// address - most obviously a previously generated project of this same template, which pins port 5000.
+    /// </para>
+    /// <para>
+    /// Verified against the real engine before this test was written: with <c>{"low":5000,"high":5000,"fallback":5999}</c>
+    /// and a <c>TcpListener</c> on <c>0.0.0.0:5000</c>, <c>dotnet new</c> generated <c>"http://*:5999"</c>; with the port
+    /// free it generated <c>"http://*:5000"</c>.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void EveryGeneratedPortSymbol_Should_DeclareANonZeroFallback()
+    {
+        var (_, template) = LoadTemplateJson();
+
+        List<string> offenders = [];
+        var portSymbolsChecked = 0;
+
+        foreach (var symbol in template.RootElement.GetProperty("symbols").EnumerateObject())
+        {
+            if (symbol.Value.TryGetProperty("generator", out var generator) is false ||
+                generator.GetString() is not "port")
+                continue;
+
+            portSymbolsChecked++;
+
+            if (symbol.Value.TryGetProperty("parameters", out var parameters) is false ||
+                parameters.TryGetProperty("fallback", out var fallback) is false ||
+                fallback.GetInt32() is 0)
+            {
+                offenders.Add(symbol.Name);
+            }
+        }
+
+        // Non-vacuity: the template declares five port symbols (web, api, client web and two aspire ports).
+        Assert.IsGreaterThan(1, portSymbolsChecked,
+            $"Only {portSymbolsChecked} port symbols were found - the scan is not reading template.json's symbols.");
+
+        Assert.IsEmpty(offenders,
+            "These \"generator\": \"port\" symbols have no explicit non-zero \"fallback\", so a machine that already " +
+            "has the port bound on the wildcard address generates a project wired to port 0, silently: " +
+            $"{string.Join(", ", offenders)}");
+    }
+
+    /// <summary>
     /// A <c>using</c> of a namespace that only exists in some configurations has to be guarded at least as narrowly as
     /// the rule that deletes it. A guard that is <b>wider</b> - typically an <c>||</c> that brings in an unrelated
     /// symbol - keeps the line in a configuration where the namespace is gone, and the generated project fails to
@@ -395,6 +445,13 @@ public class TemplateConfigurationTests
     }
 
     /// <summary>
+    /// Local-only directories that exist or not depending on which tools the developer has run. A rule naming one of
+    /// them is housekeeping, exactly like <c>**/[Bb]in/**</c>, and its absence says nothing about template.json being
+    /// out of date - it only says nobody has opened the solution in that tool on this machine.
+    /// </summary>
+    private static readonly string[] toolingOnlyDirectories = [".vs", ".vscode", ".idea", ".playwright-mcp", "App_Data", "node_modules"];
+
+    /// <summary>
     /// True when the entry is a wildcard glob this test deliberately does not judge, or when it names something that
     /// is really there.
     /// </summary>
@@ -405,6 +462,9 @@ public class TemplateConfigurationTests
         if (normalized.EndsWith($"{Path.DirectorySeparatorChar}**", StringComparison.Ordinal))
         {
             var directory = normalized[..^3];
+
+            if (toolingOnlyDirectories.Contains(directory, StringComparer.OrdinalIgnoreCase))
+                return true;
 
             // Still a glob somewhere else in the entry (src/Server/**/Data/Migrations/**) - not this test's business.
             return directory.Contains('*') || directory.Contains('?')

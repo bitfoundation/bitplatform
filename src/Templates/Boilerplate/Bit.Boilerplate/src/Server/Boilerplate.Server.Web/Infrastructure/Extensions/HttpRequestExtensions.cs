@@ -11,22 +11,5 @@ public static partial class HttpRequestExtensions
 
             return request.IsCrawlerClient();
         }
-
-        public bool IsCrawlerClient()
-        {
-            var agent = request.GetLoweredUserAgent();
-
-            if (agent.Contains("google")) return true;
-
-            if (agent.Contains("bing")) return true;
-
-            if (agent.Contains("yahoo")) return true;
-
-            if (agent.Contains("duckduck")) return true;
-
-            if (agent.Contains("yandex")) return true;
-
-            return false;
-        }
     }
 }

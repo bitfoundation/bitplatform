@@ -174,7 +174,7 @@
     <data name="TooManyRequestsException" xml:space="preserve">
     <value>درخواست های بیش از حد</value>
   </data>
-    <data name="ServerConnectionException" xml:space="preserve">
+    <data name="TransientException" xml:space="preserve">
     <value>قادر به اتصال به سرور نیست.</value>
   </data>
     <!-- Boilerplate strings -->

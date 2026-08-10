@@ -61,7 +61,7 @@ public static partial class Program
             scope.ServiceProvider.GetRequiredService<ClientExceptionHandlerBase>().Handle(exp, parameters: new()
             {
                 { nameof(reportedBy), reportedBy }
-            }, displayKind: AppEnvironment.IsDevelopment() ? ExceptionDisplayKind.NonInterrupting : ExceptionDisplayKind.None);
+            }, displayKind: ExceptionDisplayKind.None);
         }
         else
         {

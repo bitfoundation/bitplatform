@@ -293,7 +293,8 @@
             "generator": "port",
             "parameters": {
                 "low": 5000,
-                "high": 5000
+                "high": 5000,
+                "fallback": 5030
             },
             "replaces": "5030"
         },
@@ -302,7 +303,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2030
             },
             "replaces": "2030"
         },
@@ -311,7 +313,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2031
             },
             "replaces": "2031"
         },
@@ -320,7 +323,8 @@
             "generator": "port",
             "parameters": {
                 "low": 2001,
-                "high": 2300
+                "high": 2300,
+                "fallback": 2032
             },
             "replaces": "2032"
         },
@@ -329,7 +333,8 @@
             "generator": "port",
             "parameters": {
                 "low": 5001,
-                "high": 5300
+                "high": 5300,
+                "fallback": 5031
             },
             "replaces": "5031"
         },
@@ -338,7 +343,8 @@
             "generator": "port",
             "parameters": {
                 "low": 4000,
-                "high": 4300
+                "high": 4300,
+                "fallback": 4030
             },
             "replaces": "4030"
         },
@@ -527,6 +533,7 @@
                 {
                     "condition": "(offlineDb != true)",
                     "exclude": [
+                        "src/Server/Boilerplate.Server.Web/.config/**",
                         "src/Server/Boilerplate.Server.Api/Features/Todo/TodoItemTableController.cs",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Data/**",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/SyncService.cs",
@@ -538,6 +545,8 @@
                 {
                     "condition": "(advancedTests != true)",
                     "exclude": [
+                        "src/Tests/Features/ServerWeb/**",
+                        "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
