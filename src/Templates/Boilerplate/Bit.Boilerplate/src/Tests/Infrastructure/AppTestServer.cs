@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using Bunit;
 using Hangfire;
 using System.Net.Sockets;
@@ -17,6 +18,10 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     private WebApplicationBuilder? builder;
 
     public WebApplication WebApp => webApp ?? throw new InvalidOperationException($"{nameof(WebApp)} is null. Call {nameof(Build)} method first.");
+
+    //#if (advancedTests == true)
+    public IServiceCollection Services => builder?.Services ?? throw new InvalidOperationException($"{nameof(Services)} is null. Call {nameof(Build)} method first.");
+    //#endif
     public readonly Uri WebAppServerAddress = new(GenerateServerUrl());
 
     public AppTestServer Build(Action<IServiceCollection>? configureTestServices = null,

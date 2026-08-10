@@ -160,6 +160,12 @@ public partial class IntegrationTests
     [TestMethod, TestCategory("SEO"), TestCategory("PreRendering"), TestCategory("Localization")]
     public async Task Prerendering_FaCulture_HomePage_Should_RenderLocalizedHomeMessage()
     {
+        if (CultureInfoManager.InvariantGlobalization)
+        {
+            Assert.Inconclusive("A culture-prefixed url resolves to no culture on an invariant globalization build.");
+            return;
+        }
+
         await using var server = new AppTestServer();
 
         await server.Build(

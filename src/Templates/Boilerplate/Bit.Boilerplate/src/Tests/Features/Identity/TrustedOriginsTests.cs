@@ -99,20 +99,35 @@ public class TrustedOriginsTests
     /// (<c>SetIsOriginAllowed</c>, including the credentialed policy), accepted as an external-sign-in and
     /// email-confirmation return target, and accepted as a WebAuthn origin.
     /// <para>
+    /// The regex is matched against the whole url rather than the authority (<see cref="ServerSharedSettings.IsTrustedOrigin"/>
+    /// passes <c>origin.ToString()</c>), so the wildcard also has to be confined to host-label characters: otherwise it
+    /// runs past the authority and a <em>path</em> is enough to be trusted (<c>https://evil.com/.devtunnels.ms</c>).
+    /// </para>
+    /// <para>
     /// The devtunnels/github.dev alternatives exist only in the <c>Development</c> arm, and <c>Development</c> is a
     /// real compile constant (<c>src/Directory.Build.props</c> derives it from the Configuration and pushes it into
-    /// <c>DefineConstants</c>). Every <c>dotnet test</c> run is a Debug build, so this test exercises that arm - which
-    /// is the arm a developer's machine actually runs, and the one nothing else pins.
+    /// <c>DefineConstants</c>). Only the rows that expect those hosts to be <em>trusted</em> depend on that arm and are
+    /// guarded; every row that expects a refusal holds in both arms and stays unconditional, which is the half that
+    /// matters. The guard has to sit inside a <c>-:cnd:noEmit</c> region: the template engine reads an unwrapped C#
+    /// preprocessor conditional as one of its own, evaluates the undeclared symbol as false, and silently deletes the
+    /// block from every generated project.
     /// </para>
     /// </summary>
     [TestMethod]
-    // The genuine local and tunnel origins stay trusted...
+    // The genuine local origins stay trusted...
     [DataRow("http://localhost", true)]
+    //-:cnd:noEmit
+#if Development
     [DataRow("https://mytunnel.devtunnels.ms", true)]
     [DataRow("https://myspace.github.dev", true)]
+#endif
+    //+:cnd:noEmit
     // ...but a domain that merely ends with the trusted text must not be...
     [DataRow("https://evildevtunnels.ms", false)]
     [DataRow("https://attacker-github.dev", false)]
+    // ...nor may a path be able to carry the trusted text out of the authority...
+    [DataRow("https://evil.com/.devtunnels.ms", false)]
+    [DataRow("https://evil.com/x/.github.dev", false)]
     // ...nor may the loopback names be used as a prefix of someone else's domain.
     [DataRow("https://localhost.evil.com", false)]
     [DataRow("http://127.0.0.1.evil.com", false)]

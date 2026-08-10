@@ -452,10 +452,6 @@ public class TemplateConfigurationTests
     private static readonly string[] toolingOnlyDirectories = [".vs", ".vscode", ".idea", ".playwright-mcp", "App_Data", "node_modules"];
 
     /// <summary>
-    /// True when the entry is a wildcard glob this test deliberately does not judge, or when it names something that
-    /// is really there.
-    /// </summary>
-    /// <summary>
     /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
     /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
     /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one
@@ -502,12 +498,22 @@ public class TemplateConfigurationTests
                 if (processingOn is false)
                     continue;
 
-                if (line.Contains(OpenDirectiveText, StringComparison.Ordinal) is false)
+                var firstOccurrence = line.IndexOf(OpenDirectiveText, StringComparison.Ordinal);
+                if (firstOccurrence < 0)
                     continue;
 
-                // A real template conditional always carries a parenthesized condition, and a real C# preprocessor
-                // directive is `#if SYMBOL` at the start of a line. Anything else is the hazard.
-                if (conditionalDirective.IsMatch(line) || csharpPreprocessorDirective.IsMatch(line))
+                // The engine stops at the FIRST occurrence, so it is that one which has to be a real directive: a line
+                // that opens with the literal inside a string and only then carries a valid conditional is still fatal,
+                // and the valid one must not excuse it. A real template conditional also carries a non-blank
+                // parenthesized condition - an empty one is as fatal as no parentheses at all - while a real C#
+                // preprocessor directive is the bare keyword plus a symbol at the start of a line.
+                var conditional = conditionalDirective.Match(line, firstOccurrence);
+                if (conditional.Success && conditional.Index == firstOccurrence
+                    && string.IsNullOrWhiteSpace(conditional.Groups["condition"].Value) is false)
+                    continue;
+
+                var preprocessor = csharpPreprocessorDirective.Match(line);
+                if (preprocessor.Success && preprocessor.Index + preprocessor.Value.IndexOf(OpenDirectiveText, StringComparison.Ordinal) == firstOccurrence)
                     continue;
 
                 offenders.Add($"{Path.GetRelativePath(templateRoot, file)}:{i + 1}: {line.Trim()}");
@@ -541,6 +547,10 @@ public class TemplateConfigurationTests
     /// </summary>
     private static readonly Regex processingMarker = new(@"^\s*(?://|/\*|@\*|<!--|#)?\s*(?<onOff>[-+]):cnd:noEmit\s*(?:\*/|\*@|-->)?\s*$", RegexOptions.Compiled);
 
+    /// <summary>
+    /// True when the entry is a wildcard glob this test deliberately does not judge, or when it names something that
+    /// is really there.
+    /// </summary>
     private static bool ResolvesToSomething(string templateRoot, string path)
     {
         var normalized = path.Replace('/', Path.DirectorySeparatorChar);

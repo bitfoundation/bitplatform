@@ -323,17 +323,19 @@ public static partial class Program
         //#endif
 
         //#if (database == "PostgreSQL")
-        var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
-        dataSourceBuilder.UseVector();
-        dataSourceBuilder.EnableDynamicJson();
-        var dataSource = dataSourceBuilder.Build();
-        services.AddSingleton(dataSource);
+        services.AddSingleton(_ =>
+        {
+            var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(configuration.GetRequiredConnectionString("postgresdb"));
+            dataSourceBuilder.UseVector();
+            dataSourceBuilder.EnableDynamicJson();
+            return dataSourceBuilder.Build();
+        });
         //#endif
 
         services.AddDbContextPool<AppDbContext>(AddDbContext);
         services.AddPooledDbContextFactory<AppDbContext>(AddDbContext);
 
-        void AddDbContext(DbContextOptionsBuilder options)
+        void AddDbContext(IServiceProvider sp, DbContextOptionsBuilder options)
         {
             options.EnableSensitiveDataLogging(env.IsDevelopment())
                 .EnableDetailedErrors(env.IsDevelopment());
@@ -364,7 +366,7 @@ public static partial class Program
                     errorNumbersToAdd: null);
             });
             //#elif (database == "PostgreSQL")
-            options.UseNpgsql(dataSource, dbOptions =>
+            options.UseNpgsql(sp.GetRequiredService<Npgsql.NpgsqlDataSource>(), dbOptions =>
             {
                 dbOptions.UseVector();
                 dbOptions.SetPostgresVersion(18, 0);
@@ -598,7 +600,7 @@ public static partial class Program
                 */
                 //#endif
                 //#else
-                hangfireConfiguration.UseEFCoreStorage(AddDbContext, new()
+                hangfireConfiguration.UseEFCoreStorage(optionsBuilder => AddDbContext(sp, optionsBuilder), new()
                 {
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
