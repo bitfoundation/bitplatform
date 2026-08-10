@@ -127,7 +127,7 @@
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.CalloutContainer"
          class="bit-dtrp-cac @Classes?.CalloutContainer"
-         role="dialog"
+         role="@(Standalone ? null : "dialog")"
          @attributes=@CalloutHtmlAttributes
          @onkeydown="HandleOnCalloutKeyDown"
          aria-label="@CalloutAriaLabel">

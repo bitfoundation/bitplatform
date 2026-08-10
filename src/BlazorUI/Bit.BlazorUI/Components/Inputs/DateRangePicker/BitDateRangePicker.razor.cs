@@ -989,19 +989,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // Prevents the default behavior (scrolling) of the navigation keys handled by the
                 // day buttons' keydown handlers, since Blazor cannot conditionally preventDefault per key.
                 await _js.BitCalendarsSetup(_calloutId);
+
+                if (Responsive)
+                {
+                    await _js.BitSwipesSetup(
+                        id: _calloutId,
+                        trigger: 0.25m,
+                        position: BitPanelPosition.Top,
+                        isRtl: Dir is BitDir.Rtl,
+                        orientationLock: BitSwipeOrientation.Vertical,
+                        dotnetObj: _dotnetObj);
+                }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
-
-            if (Responsive)
-            {
-                await _js.BitSwipesSetup(
-                    id: _calloutId,
-                    trigger: 0.25m,
-                    position: BitPanelPosition.Top,
-                    isRtl: Dir is BitDir.Rtl,
-                    orientationLock: BitSwipeOrientation.Vertical,
-                    dotnetObj: _dotnetObj);
-            }
         }
 
         if (_focusAfterRender && _focusedDate.HasValue)
@@ -1092,7 +1092,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var startText = text[..separatorIndex];
         var endText = text[(separatorIndex + separator.Length)..];
 
-        if (TryParseDate(startText, out var startDate) is false) return false;
+        DateTimeOffset? startDate = null;
+        if (IsEmptyDateToken(startText) is false)
+        {
+            if (TryParseDate(startText, out var parsedStartDate) is false) return false;
+
+            startDate = parsedStartDate;
+        }
 
         DateTimeOffset? endDate = null;
         if (IsEmptyDateToken(endText) is false)
@@ -1102,9 +1108,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             endDate = parsedEndDate;
         }
 
-        if (endDate.HasValue && endDate < startDate)
+        if (startDate.HasValue && endDate.HasValue && endDate < startDate)
         {
-            (startDate, endDate) = (endDate.Value, startDate);
+            (startDate, endDate) = (endDate, startDate);
         }
 
         result = new BitDateRangePickerValue { StartDate = startDate, EndDate = endDate };
@@ -2556,20 +2562,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.StartDayButton);
             }
 
-            if (Styles?.StartDayButton is not null)
-            {
-                style.Append(Styles?.StartDayButton);
-            }
+            AppendStyle(style, Styles?.StartDayButton);
 
             if (Classes?.StartAndEndSelectionDays is not null)
             {
                 klass.Append(' ').Append(Classes?.StartAndEndSelectionDays);
             }
 
-            if (Styles?.StartAndEndSelectionDays is not null)
-            {
-                style.Append(Styles?.StartAndEndSelectionDays);
-            }
+            AppendStyle(style, Styles?.StartAndEndSelectionDays);
         }
 
         if (isEndDaySelectedDate)
@@ -2581,20 +2581,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.EndDayButton);
             }
 
-            if (Styles?.EndDayButton is not null)
-            {
-                style.Append(Styles?.EndDayButton);
-            }
+            AppendStyle(style, Styles?.EndDayButton);
 
             if (Classes?.StartAndEndSelectionDays is not null)
             {
                 klass.Append(' ').Append(Classes?.StartAndEndSelectionDays);
             }
 
-            if (Styles?.StartAndEndSelectionDays is not null)
-            {
-                style.Append(Styles?.StartAndEndSelectionDays);
-            }
+            AppendStyle(style, Styles?.StartAndEndSelectionDays);
 
             if (IsEqualStartAndEndDaySelectedDate(date))
             {
@@ -2611,10 +2605,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.SelectedDayButtons);
             }
 
-            if (Styles?.SelectedDayButtons is not null)
-            {
-                style.Append(Styles?.SelectedDayButtons);
-            }
+            AppendStyle(style, Styles?.SelectedDayButtons);
         }
 
         //Is in the prospective range being hovered
@@ -2627,10 +2618,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.HoveredDayButtons);
             }
 
-            if (Styles?.HoveredDayButtons is not null)
-            {
-                style.Append(Styles?.HoveredDayButtons);
-            }
+            AppendStyle(style, Styles?.HoveredDayButtons);
         }
 
         var isInMonth = IsInMonth(date, monthIndex);
@@ -2651,10 +2639,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.HighlightedDayButton);
             }
 
-            if (Styles?.HighlightedDayButton is not null)
-            {
-                style.Append(' ').Append(Styles?.HighlightedDayButton);
-            }
+            AppendStyle(style, Styles?.HighlightedDayButton);
         }
 
         //Is today
@@ -2667,10 +2652,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 klass.Append(' ').Append(Classes?.TodayDayButton);
             }
 
-            if (Styles?.TodayDayButton is not null)
-            {
-                style.Append(' ').Append(Styles?.TodayDayButton);
-            }
+            AppendStyle(style, Styles?.TodayDayButton);
         }
 
         var customClass = GetDayClass?.Invoke(GetDateTimeOfDayCell(date));
@@ -2680,6 +2662,20 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return (style.ToString(), klass.ToString());
+    }
+
+    // The style slots of a day button are joined with a semicolon rather than with a space, since a
+    // style that omits its trailing one would otherwise swallow the declaration appended after it.
+    private static void AppendStyle(StringBuilder styles, string? style)
+    {
+        if (style.HasNoValue()) return;
+
+        if (styles.Length > 0 && styles[^1] is not ';')
+        {
+            styles.Append(';');
+        }
+
+        styles.Append(style);
     }
 
     private string GetMonthCellCssClass(int monthIndex, int todayYear, int todayMonth)
