@@ -1,12 +1,13 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 <footer @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
+        aria-label="@AriaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()">
-    <div class="bit-ftr-gut">
+    <div style="@Styles?.Container" class="bit-ftr-gut @Classes?.Container">
         @ChildContent
     </div>
 </footer>

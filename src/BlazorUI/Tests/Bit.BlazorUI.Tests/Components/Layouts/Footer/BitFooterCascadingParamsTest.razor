@@ -1,0 +1,16 @@
+@* Covers BitFooterParams: the cascaded values fill in the parameters the footer did not set itself,
+   and never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitFooterParams[]
+                         {
+                             new()
+                             {
+                                 Color = BitColor.Success,
+                                 Variant = BitVariant.Outline,
+                                 Size = BitSize.Large,
+                                 Bordered = true,
+                             }
+                         })">
+    <BitFooter>Cascaded</BitFooter>
+    <BitFooter Color="BitColor.Error">Own color</BitFooter>
+</BitParams>

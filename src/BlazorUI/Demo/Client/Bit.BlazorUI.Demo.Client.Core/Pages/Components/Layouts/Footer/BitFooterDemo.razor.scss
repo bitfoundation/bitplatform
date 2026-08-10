@@ -1,7 +1,35 @@
-﻿@import '../../../../Styles/abstracts/_functions.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
 
 .container {
     border: 1px solid gray;
+}
+
+// The Position and Reveal examples both need a box that scrolls on its own, so the footer has
+// something to stick to (and to slide over) without taking over the whole demo page.
+.scroll-demo {
+    height: rem2(160px);
+    overflow: auto;
+    border: 1px solid gray;
+}
+
+.scroll-demo-row {
+    padding: rem2(8px) rem2(16px);
+}
+
+// A transform makes this box the containing block of any fixed descendant, which scopes the fixed
+// footer of the example to the box instead of the bottom of the page.
+.fixed-demo {
+    height: rem2(160px);
+    overflow: hidden;
+    position: relative;
+    transform: translateZ(0);
+    border: 1px solid gray;
+}
+
+// Same containing block trick, but the content scrolls behind the still footer, which is what makes
+// the frosted glass of the Translucent example visible.
+.translucent-demo {
+    overflow: auto;
 }
 
 .footer-content {
@@ -26,5 +54,23 @@
 
     svg path {
         fill: dodgerblue;
+    }
+}
+
+// The footer and its container are rendered by BitFooter itself, so they carry its own scope and
+// only ::deep rules can reach the classes handed to it through Class and Classes.
+::deep {
+    .custom-class {
+        color: white;
+        background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+
+    .custom-root {
+        border-block-start: 2px solid blueviolet;
+    }
+
+    .custom-container {
+        color: blueviolet;
+        justify-content: flex-end;
     }
 }
