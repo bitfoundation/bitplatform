@@ -77,6 +77,11 @@ namespace BitBlazorUI {
             };
 
             clock.addEventListener('pointerdown', e => {
+                // Only the primary button drags the hand: a right- or middle-click on the dial keeps
+                // what it does everywhere else - a context menu, an auto-scroll - instead of being
+                // swallowed by a pick that was never started.
+                if ((e as PointerEvent).button !== 0) return;
+
                 const args = extractArgs(e as PointerEvent);
                 if (args === null) return;
 

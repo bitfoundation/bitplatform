@@ -383,6 +383,16 @@
     color: translucent(currentcolor, 54%);
 }
 
+// A ring drawn with currentcolor would be dimmed along with the text it surrounds, so the two places the
+// dimmed buttons appear in each repaint it with the undimmed color of the surface they sit on.
+.bit-ctp-tlb .bit-ctp-ina:focus-visible {
+    outline-color: var(--bit-ctp-clr-text);
+}
+
+.bit-ctp-apk .bit-ctp-ina:focus-visible {
+    outline-color: $clr-fg-pri;
+}
+
 // The separator, and the whole read-out of the single-part edit modes, are text rather than controls, so they
 // do not carry the cursor of the buttons they share their type with.
 span.bit-ctp-txt {
@@ -744,7 +754,6 @@ span.bit-ctp-txt {
 // repainted with system colors so the selection still reads, and GrayText where nothing can be picked.
 @media (forced-colors: active) {
     .bit-ctp-tlb {
-        forced-color-adjust: none;
         color: CanvasText;
         background-color: Canvas;
         border-bottom: 1px solid CanvasText;
