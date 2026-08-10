@@ -205,6 +205,12 @@ code { font-family: var(--mono); font-size: 0.9em; }
     border-bottom: 1px solid var(--border);
 }
 
+.sidebar-brand img {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+}
+
 .sidebar-brand:hover { text-decoration: none; }
 
 .sidebar-brand .logo {
