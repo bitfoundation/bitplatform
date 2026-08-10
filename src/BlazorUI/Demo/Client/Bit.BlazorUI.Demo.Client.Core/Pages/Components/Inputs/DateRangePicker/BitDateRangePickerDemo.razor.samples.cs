@@ -290,14 +290,14 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
     <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
-               OnClick=""() => { validationModel = new(); SuccessMessage = string.Empty; }"">
+               OnClick=""() => { validationModel = new(); successMessage = string.Empty; }"">
         Reset
     </BitButton>
 </EditForm>
 
-@if (string.IsNullOrEmpty(SuccessMessage) is false)
+@if (string.IsNullOrEmpty(successMessage) is false)
 {
-    <BitMessage Color=""BitColor.Success"">@SuccessMessage</BitMessage>
+    <BitMessage Color=""BitColor.Success"">@successMessage</BitMessage>
 }";
     private readonly string example18CsharpCode = @"
 public class FormValidationDateRangePickerModel
@@ -318,18 +318,17 @@ public class CompleteDateRangeAttribute : ValidationAttribute
     }
 }
 
-private string SuccessMessage = string.Empty;
+private string successMessage = string.Empty;
 private FormValidationDateRangePickerModel validationModel = new();
 
 private void HandleValidSubmit()
 {
-    SuccessMessage = ""Form Submitted Successfully!"";
-    StateHasChanged();
+    successMessage = ""Form Submitted Successfully!"";
 }
 
 private void HandleInvalidSubmit()
 {
-    SuccessMessage = string.Empty;
+    successMessage = string.Empty;
 }";
 
     private readonly string example19RazorCode = @"

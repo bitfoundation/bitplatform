@@ -311,7 +311,7 @@
                      Target="_blank">more info</BitLink>).
         </div>
         <br />
-        <div>Defalt (local TimeZone):</div><br />
+        <div>Default (local TimeZone):</div><br />
         <div class="example-content">
             <BitDateRangePicker @bind-Value="@timeZoneDateRange1" ShowTimePicker />
         </div>
@@ -454,14 +454,14 @@
                 <br />
                 <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
-                           OnClick="() => { validationModel = new(); SuccessMessage = string.Empty; }">
+                           OnClick="() => { validationModel = new(); successMessage = string.Empty; }">
                     Reset
                 </BitButton>
             </EditForm>
             <br />
-            @if (string.IsNullOrEmpty(SuccessMessage) is false)
+            @if (string.IsNullOrEmpty(successMessage) is false)
             {
-                <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+                <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
             }
         </div>
     </DemoExample>

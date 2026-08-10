@@ -133,13 +133,6 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "ExcludeDisabledDates",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether the disabled days are excluded from the selected range. By default a range simply spans over the disabled days between its two ends. When enabled, once the start date is picked every day whose range would contain a disabled day becomes unselectable."
-        },
-        new()
-        {
             Name = "EndTimeDecreaseHourIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -201,6 +194,13 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the end time-picker's increase-minute button icon from the built-in Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "ExcludeDisabledDates",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the disabled days are excluded from the selected range. By default a range simply spans over the disabled days between its two ends. When enabled, once the start date is picked every day whose range would contain a disabled day becomes unselectable."
         },
         new()
         {
@@ -545,15 +545,21 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "OnMonthChange",
-            Type = "EventCallback<DateTimeOffset>",
-            Description = "Callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month.",
-        },
-        new()
-        {
             Name = "OnFocusIn",
             Type = "EventCallback",
             Description = "The callback for when the focus moves into the DateRangePicker's input.",
+        },
+        new()
+        {
+            Name = "OnFocusOut",
+            Type = "EventCallback",
+            Description = "The callback for when the focus moves out of the DateRangePicker's input.",
+        },
+        new()
+        {
+            Name = "OnMonthChange",
+            Type = "EventCallback<DateTimeOffset>",
+            Description = "Callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month.",
         },
         new()
         {
@@ -562,12 +568,6 @@ public partial class BitDateRangePickerDemo
             Description = "The callback for when a preset is selected. The argument is the selected preset.",
             Href = "#date-range-picker-preset",
             LinkType = LinkType.Link
-        },
-        new()
-        {
-            Name = "OnFocusOut",
-            Type = "EventCallback",
-            Description = "The callback for when the focus moves out of the DateRangePicker's input.",
         },
         new()
         {
@@ -684,17 +684,17 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
-            Name = "ShowTimePicker",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether or not render the time-picker.",
-        },
-        new()
-        {
             Name = "ShowOutsideDays",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether the days of the previous and next months, filling the first and last week rows, should be rendered.",
+        },
+        new()
+        {
+            Name = "ShowTimePicker",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether or not render the time-picker.",
         },
         new()
         {
@@ -1024,6 +1024,20 @@ public partial class BitDateRangePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the input of the BitDateRangePicker."
+                },
+                new()
+                {
+                    Name = "ClearButton",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clear button of the BitDateRangePicker."
+                },
+                new()
+                {
+                    Name = "ClearButtonIcon",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the clear button icon of the BitDateRangePicker."
                 },
                 new()
                 {
@@ -1896,18 +1910,17 @@ public partial class BitDateRangePickerDemo
         DateTimeOffset.Now.AddDays(3),
     ];
 
-    private string SuccessMessage = string.Empty;
+    private string successMessage = string.Empty;
     private FormValidationDateRangePickerModel validationModel = new();
 
     private void HandleValidSubmit()
     {
-        SuccessMessage = "Form Submitted Successfully!";
-        StateHasChanged();
+        successMessage = "Form Submitted Successfully!";
     }
 
     private void HandleInvalidSubmit()
     {
-        SuccessMessage = string.Empty;
+        successMessage = string.Empty;
     }
 
     private BitDateRangePickerValue? selectedDateRange = new()

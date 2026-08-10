@@ -301,7 +301,7 @@
                             <div role="row" style="@Styles?.DaysHeaderRow" class="bit-dtrp-dgh @Classes?.DaysHeaderRow">
                                 @if (ShowWeekNumbers)
                                 {
-                                    <div style="@Styles?.WeekNumbersHeader" class="bit-dtrp-wlb @Classes?.WeekNumbersHeader"></div>
+                                    <div role="columnheader" style="@Styles?.WeekNumbersHeader" class="bit-dtrp-wlb @Classes?.WeekNumbersHeader"></div>
                                 }
 
                                 @for (var index = 0; index < 7; index++)
@@ -313,7 +313,7 @@
                                          aria-label="@dayOfWeekName"
                                          style="@Styles?.WeekDayHeader"
                                          class="bit-dtrp-wlb @Classes?.WeekDayHeader">
-                                        @shortestDayOfWeekName[0]
+                                        @GetFirstTextElement(shortestDayOfWeekName)
                                     </div>
                                 }
                             </div>

@@ -1655,10 +1655,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (ReferenceEquals(preset, _selectedPreset)) return true;
 
-        var presetValue = preset.ValueProvider is not null ? preset.ValueProvider() : preset.Value;
-        if (presetValue is null) return false;
+        // A ValueProvider is not evaluated here since it can be non-deterministic, so such a preset
+        // only appears selected through _selectedPreset above.
+        if (preset.Value is null) return false;
 
-        return presetValue.StartDate == CurrentValue.StartDate && presetValue.EndDate == CurrentValue.EndDate;
+        return preset.Value.StartDate == CurrentValue.StartDate && preset.Value.EndDate == CurrentValue.EndDate;
     }
 
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
@@ -2228,7 +2229,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private DateTime GetToday()
     {
-        return Today.HasValue ? GetDateTime(Today.Value) : DateTime.Now;
+        return GetDateTime(Today ?? DateTimeOffset.Now);
+    }
+
+    // The first character of a shortest day name can be a surrogate pair, which indexing with [0] would split in half.
+    private static string GetFirstTextElement(string value)
+    {
+        return value.Length == 0 ? value : StringInfo.GetNextTextElement(value, 0);
     }
 
     private bool IsInMonth(DateTime date, int monthIndex)

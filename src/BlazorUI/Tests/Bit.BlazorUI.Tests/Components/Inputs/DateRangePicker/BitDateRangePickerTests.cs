@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1268,6 +1269,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsDateDisabled, (DateTimeOffset date) => date.Day % 2 == 0);
         });
 
@@ -1330,6 +1332,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Monday);
         });
 
@@ -1488,6 +1491,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.Value, new BitDateRangePickerValue
             {
@@ -1972,7 +1976,7 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDateRangePickerDisabledPresetShouldNotBeSelectable()
+    public void BitDateRangePickerReadOnlyShouldNotAllowSelectingAPreset()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
@@ -1988,6 +1992,30 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerDisabledPresetShouldNotBeSelectable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var isOpen = true;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Today", IsEnabled = false, Value = new() { StartDate = DateTimeOffset.Now.Date } },
+            });
+        });
+
+        var preset = component.Find(".bit-dtrp-prb");
+
+        Assert.IsTrue(preset.HasAttribute("disabled"));
+
+        preset.Click();
 
         Assert.IsNull(component.Instance.Value);
     }
@@ -2322,6 +2350,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.NoDateText, "n/a");
             parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2340,6 +2369,7 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.NoDateText, "n/a");
             parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
