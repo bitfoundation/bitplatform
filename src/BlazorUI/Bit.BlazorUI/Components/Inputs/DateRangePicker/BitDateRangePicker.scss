@@ -40,6 +40,7 @@
         .bit-dtrp-wlb,
         .bit-dtrp-dbt,
         .bit-dtrp-pkb,
+        .bit-dtrp-prb,
         .bit-dtrp-ptb,
         .bit-dtrp-tdv {
             color: $clr-fg-dis;
@@ -67,6 +68,20 @@
     }
 
     &.bit-rtl {
+    }
+}
+
+// The callout is rendered outside of the root element, so it carries its own disabled marker.
+.bit-dtrp-cal.bit-dis {
+    .bit-dtrp-pkt,
+    .bit-dtrp-nbt,
+    .bit-dtrp-wlb,
+    .bit-dtrp-dbt,
+    .bit-dtrp-pkb,
+    .bit-dtrp-prb,
+    .bit-dtrp-ptb,
+    .bit-dtrp-tdv {
+        color: $clr-fg-dis;
     }
 }
 
@@ -162,7 +177,7 @@
 }
 
 .bit-dtrp-ein {
-    cursor: default;
+    cursor: text;
 }
 
 .bit-dtrp-lic {
@@ -238,15 +253,15 @@
     flex-flow: column nowrap;
 }
 
-.bit-dtrp-dgd {
-    border-spacing: 0;
-    position: relative;
-    text-align: center;
-    font-size: inherit;
-    table-layout: fixed;
-    margin-top: spacing(0.5);
-    border-collapse: collapse;
-    margin-bottom: spacing(1.25);
+// Consecutive months sit right next to each other, so only the first one pads its inline start.
+.bit-dtrp-dwp + .bit-dtrp-dwp {
+    padding-inline-start: 0;
+}
+
+.bit-dtrp-grd {
+    display: flex;
+    flex-grow: 1;
+    flex-flow: column nowrap;
 }
 
 .bit-dtrp-dgh,
@@ -312,6 +327,11 @@
         pointer-events: none;
         background-color: transparent;
     }
+
+    &:focus-visible {
+        z-index: 1;
+        outline: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
 }
 
 .bit-dtrp-dbo {
@@ -319,41 +339,51 @@
     color: $clr-fg-sec;
 }
 
+.bit-dtrp-dbe {
+    width: spacing(3.5);
+    height: spacing(3.5);
+}
+
+.bit-dtrp-dhl {
+    font-weight: 600;
+    background-color: $clr-bg-ter;
+}
+
 .bit-dtrp-dtd {
     font-weight: 600;
     border-radius: 50%;
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtrp-clr-txt);
+    background-color: var(--bit-dtrp-clr);
 
     @media(hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-dtrp-clr-active);
     }
 }
 
 .bit-dtrp-dss {
-    color: $clr-pri-text;
+    color: var(--bit-dtrp-clr-txt);
     border-end-end-radius: 0;
     border-start-end-radius: 0;
-    background-color: $clr-pri;
+    background-color: var(--bit-dtrp-clr);
     border-end-start-radius: spacing(1);
     border-start-start-radius: spacing(1);
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
         }
     }
 }
 
 .bit-dtrp-dse {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtrp-clr-txt);
+    background-color: var(--bit-dtrp-clr);
     border-end-start-radius: 0;
     border-start-start-radius: 0;
     border-end-end-radius: spacing(1);
@@ -361,7 +391,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
         }
     }
 }
@@ -377,7 +407,20 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
+        }
+    }
+}
+
+// The prospective range previewed while the pointer moves over the day cells.
+.bit-dtrp-dhr {
+    border-radius: 0;
+    color: $clr-fg-pri;
+    background-color: $clr-bg-sec;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-sec-hover;
         }
     }
 }
@@ -554,10 +597,65 @@
     overflow: hidden;
     box-shadow: none;
     padding: spacing(1.5);
-    min-width: spacing(26);
     box-sizing: content-box;
     flex-flow: column nowrap;
     min-width: spacing(24.5);
+}
+
+.bit-dtrp-prc {
+    margin: 0;
+    display: flex;
+    overflow: auto;
+    box-shadow: none;
+    gap: spacing(0.5);
+    padding: spacing(1.5);
+    box-sizing: content-box;
+    flex-flow: column nowrap;
+    min-width: spacing(14);
+    max-height: spacing(40);
+}
+
+.bit-dtrp-prb {
+    border: none;
+    cursor: pointer;
+    text-align: start;
+    white-space: nowrap;
+    color: $clr-fg-pri;
+    outline: transparent;
+    text-overflow: ellipsis;
+    padding: spacing(1) spacing(1.25);
+    font-size: spacing(1.75);
+    background-color: transparent;
+    border-radius: $shp-border-radius;
+    font-family: $tg-font-family;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:disabled {
+        color: $clr-fg-dis;
+        pointer-events: none;
+        background-color: transparent;
+    }
+}
+
+.bit-dtrp-prs {
+    font-weight: 600;
+    color: var(--bit-dtrp-clr-txt);
+    background-color: var(--bit-dtrp-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-dtrp-clr-hover);
+        }
+    }
+
+    &:active {
+        background-color: var(--bit-dtrp-clr-active);
+    }
 }
 
 .bit-dtrp-pkc {
@@ -617,13 +715,12 @@
 }
 
 .bit-dtrp-pcm {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtrp-clr-txt);
+    background-color: var(--bit-dtrp-clr);
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-sec-hover;
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
         }
     }
 }
@@ -716,8 +813,8 @@
 }
 
 .bit-dtrp-bns {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-dtrp-clr-txt);
+    background-color: var(--bit-dtrp-clr);
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -725,12 +822,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-dtrp-clr-active);
     }
 }
 
@@ -902,5 +999,132 @@
         .bit-dtrp-tic {
             display: flex;
         }
+
+        // The presets no longer fit in a side column on a narrow screen, so they wrap into a row.
+        .bit-dtrp-prc {
+            max-height: unset;
+            flex-flow: row wrap;
+            justify-content: center;
+        }
     }
+}
+
+
+.bit-dtrp-pri {
+    --bit-dtrp-clr: #{$clr-pri};
+    --bit-dtrp-clr-txt: #{$clr-pri-text};
+    --bit-dtrp-clr-hover: #{$clr-pri-hover};
+    --bit-dtrp-clr-active: #{$clr-pri-active};
+}
+
+.bit-dtrp-sec {
+    --bit-dtrp-clr: #{$clr-sec};
+    --bit-dtrp-clr-txt: #{$clr-sec-text};
+    --bit-dtrp-clr-hover: #{$clr-sec-hover};
+    --bit-dtrp-clr-active: #{$clr-sec-active};
+}
+
+.bit-dtrp-ter {
+    --bit-dtrp-clr: #{$clr-ter};
+    --bit-dtrp-clr-txt: #{$clr-ter-text};
+    --bit-dtrp-clr-hover: #{$clr-ter-hover};
+    --bit-dtrp-clr-active: #{$clr-ter-active};
+}
+
+.bit-dtrp-inf {
+    --bit-dtrp-clr: #{$clr-inf};
+    --bit-dtrp-clr-txt: #{$clr-inf-text};
+    --bit-dtrp-clr-hover: #{$clr-inf-hover};
+    --bit-dtrp-clr-active: #{$clr-inf-active};
+}
+
+.bit-dtrp-suc {
+    --bit-dtrp-clr: #{$clr-suc};
+    --bit-dtrp-clr-txt: #{$clr-suc-text};
+    --bit-dtrp-clr-hover: #{$clr-suc-hover};
+    --bit-dtrp-clr-active: #{$clr-suc-active};
+}
+
+.bit-dtrp-wrn {
+    --bit-dtrp-clr: #{$clr-wrn};
+    --bit-dtrp-clr-txt: #{$clr-wrn-text};
+    --bit-dtrp-clr-hover: #{$clr-wrn-hover};
+    --bit-dtrp-clr-active: #{$clr-wrn-active};
+}
+
+.bit-dtrp-swr {
+    --bit-dtrp-clr: #{$clr-swr};
+    --bit-dtrp-clr-txt: #{$clr-swr-text};
+    --bit-dtrp-clr-hover: #{$clr-swr-hover};
+    --bit-dtrp-clr-active: #{$clr-swr-active};
+}
+
+.bit-dtrp-err {
+    --bit-dtrp-clr: #{$clr-err};
+    --bit-dtrp-clr-txt: #{$clr-err-text};
+    --bit-dtrp-clr-hover: #{$clr-err-hover};
+    --bit-dtrp-clr-active: #{$clr-err-active};
+}
+
+.bit-dtrp-pbg {
+    --bit-dtrp-clr: #{$clr-bg-pri};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-bg-pri-hover};
+    --bit-dtrp-clr-active: #{$clr-bg-pri-active};
+}
+
+.bit-dtrp-sbg {
+    --bit-dtrp-clr: #{$clr-bg-sec};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-bg-sec-hover};
+    --bit-dtrp-clr-active: #{$clr-bg-sec-active};
+}
+
+.bit-dtrp-tbg {
+    --bit-dtrp-clr: #{$clr-bg-ter};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-bg-ter-hover};
+    --bit-dtrp-clr-active: #{$clr-bg-ter-active};
+}
+
+.bit-dtrp-pfg {
+    --bit-dtrp-clr: #{$clr-fg-pri};
+    --bit-dtrp-clr-txt: #{$clr-bg-pri};
+    --bit-dtrp-clr-hover: #{$clr-fg-pri-hover};
+    --bit-dtrp-clr-active: #{$clr-fg-pri-active};
+}
+
+.bit-dtrp-sfg {
+    --bit-dtrp-clr: #{$clr-fg-sec};
+    --bit-dtrp-clr-txt: #{$clr-bg-pri};
+    --bit-dtrp-clr-hover: #{$clr-fg-sec-hover};
+    --bit-dtrp-clr-active: #{$clr-fg-sec-active};
+}
+
+.bit-dtrp-tfg {
+    --bit-dtrp-clr: #{$clr-fg-ter};
+    --bit-dtrp-clr-txt: #{$clr-bg-pri};
+    --bit-dtrp-clr-hover: #{$clr-fg-ter-hover};
+    --bit-dtrp-clr-active: #{$clr-fg-ter-active};
+}
+
+.bit-dtrp-pbr {
+    --bit-dtrp-clr: #{$clr-brd-pri};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-brd-pri-hover};
+    --bit-dtrp-clr-active: #{$clr-brd-pri-active};
+}
+
+.bit-dtrp-sbr {
+    --bit-dtrp-clr: #{$clr-brd-sec};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-brd-sec-hover};
+    --bit-dtrp-clr-active: #{$clr-brd-sec-active};
+}
+
+.bit-dtrp-tbr {
+    --bit-dtrp-clr: #{$clr-brd-ter};
+    --bit-dtrp-clr-txt: #{$clr-fg-pri};
+    --bit-dtrp-clr-hover: #{$clr-brd-ter-hover};
+    --bit-dtrp-clr-active: #{$clr-brd-ter-active};
 }

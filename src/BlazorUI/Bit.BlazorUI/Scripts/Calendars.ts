@@ -17,7 +17,7 @@ namespace BitBlazorUI {
                 if (Calendars._navKeys.indexOf(e.key) === -1) return;
 
                 const target = e.target as HTMLElement | null;
-                if (!target || !target.closest('.bit-cal-dbt')) return;
+                if (!target || !target.closest('.bit-cal-dbt, .bit-dtrp-dbt')) return;
 
                 e.preventDefault();
             };
