@@ -390,12 +390,17 @@ public class BitColorTests
     }
 
     // ToRgb takes saturation and value either as fractions or as percentages, since a consumer reading
-    // "saturation" naturally reaches for one or the other.
+    // "saturation" naturally reaches for one or the other. The two ranges overlap at 1, which is read as
+    // the fraction - a full 100% - so anything at or below 1 is a fraction and anything above it a
+    // percentage.
     [TestMethod]
     public void BitColorToRgbShouldAcceptFractionsAndPercentages()
     {
         Assert.AreEqual(BitInternalColor.ToRgb(120, 1, 1), BitInternalColor.ToRgb(120, 100, 100));
         Assert.AreEqual(((byte)0, (byte)255, (byte)0), BitInternalColor.ToRgb(120, 1, 1));
+
+        Assert.AreEqual(BitInternalColor.ToRgb(120, 0.5, 0.5), BitInternalColor.ToRgb(120, 50, 50));
+        Assert.AreEqual(((byte)64, (byte)128, (byte)64), BitInternalColor.ToRgb(120, 50, 50));
     }
 
     [TestMethod]

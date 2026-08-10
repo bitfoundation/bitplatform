@@ -41,6 +41,14 @@ internal sealed class BitInternalColor
     }
 
     /// <summary>
+    /// Whether the string this color was last parsed from carried an alpha of its own - an <c>rgba()</c>,
+    /// an <c>hsla()</c>, an eight-digit hexadecimal or <c>transparent</c> - rather than taking the alpha it
+    /// was parsed with. It is how a color read from a string can be told apart from one that only names a
+    /// hue, which is what lets a preset be compared against the picker on its RGB alone.
+    /// </summary>
+    public bool HasParsedAlpha { get; private set; }
+
+    /// <summary>
     /// The color as hue (0-360), saturation and value (both 0-1).
     /// </summary>
     public (double Hue, double Saturation, double Value) Hsv => (_hue, _saturation, _value);
@@ -266,8 +274,11 @@ internal sealed class BitInternalColor
         {
             ResetColor();
             A = alpha;
+            HasParsedAlpha = false;
             return false;
         }
+
+        HasParsedAlpha = parsedAlpha.HasValue;
 
         if (parsedAlpha.HasValue)
         {
@@ -545,7 +556,7 @@ internal sealed class BitInternalColor
 
     private static byte ParseHexPair(string digits, int index)
     {
-        return (byte)(Convert.ToInt32(digits[index].ToString(), 16) * 16 + Convert.ToInt32(digits[index + 1].ToString(), 16));
+        return (byte)(Uri.FromHex(digits[index]) * 16 + Uri.FromHex(digits[index + 1]));
     }
 
     /// <summary>

@@ -183,7 +183,14 @@
         <div class="bit-clp-prs @Classes?.Presets" style="@Styles?.Presets" role="group" aria-label="Color presets">
             @foreach (var preset in _Presets)
             {
-                var isSelected = preset.Css == _color.Rgba;
+                @* A swatch that carries no alpha of its own is picked onto whatever alpha the picker is
+                   already on, so it is the swatch the picker is on whenever the RGB matches - comparing its
+                   opaque alpha too would leave a semi-transparent picker showing nothing as selected. One
+                   that does carry an alpha names a transparency of its own, and is only on when that matches. *@
+                var isSelected = preset.Color.R == _color.R
+                              && preset.Color.G == _color.G
+                              && preset.Color.B == _color.B
+                              && (preset.Color.HasParsedAlpha is false || preset.Color.A == _color.A);
                 var presetStyle = $"--bit-clp-prt-clr:{preset.Css};{Styles?.Preset}";
 
                 if (isSelected && Styles?.SelectedPreset is not null)

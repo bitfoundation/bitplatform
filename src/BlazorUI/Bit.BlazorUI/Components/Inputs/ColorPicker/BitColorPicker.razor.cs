@@ -354,7 +354,13 @@ public partial class BitColorPicker : BitComponentBase
                                 && ReadOnly is false
                                 && (ColorHasBeenSet is false || ColorChanged.HasDelegate || OnChange.HasDelegate || OnChangeEnd.HasDelegate);
 
-    private string _TabIndex => (IsEnabled && ReadOnly is false) ? (TabIndex ?? "0") : "-1";
+    /// <summary>
+    /// Only the disabled picker leaves the tab order. A read-only one is still showing a color, and the
+    /// saturation area is the only element that announces it, so taking it out of the tab order would put
+    /// that color out of reach of a keyboard or a screen reader. The gestures are refused in the handlers
+    /// instead.
+    /// </summary>
+    private string _TabIndex => IsEnabled ? (TabIndex ?? "0") : "-1";
 
     /// <summary>
     /// The accessible name of the picker as a whole. An explicit AriaLabel wins; otherwise the color itself
@@ -459,7 +465,7 @@ public partial class BitColorPicker : BitComponentBase
         (2, "b", "Blue", _color.B)
     ];
 
-    private List<(string Value, string Css)> _presetItems = [];
+    private List<(string Value, string Css, BitInternalColor Color)> _presetItems = [];
 
     /// <summary>
     /// The presets, each paired with the normalized color it stands for. Normalizing them is what lets a
@@ -472,7 +478,7 @@ public partial class BitColorPicker : BitComponentBase
     /// is by content rather than by reference, so a palette rebuilt into a new list of the same colors -
     /// which an inline collection in the markup does on every render - is recognized as the same one.
     /// </remarks>
-    private List<(string Value, string Css)> _Presets
+    private List<(string Value, string Css, BitInternalColor Color)> _Presets
     {
         get
         {
@@ -488,7 +494,12 @@ public partial class BitColorPicker : BitComponentBase
 
             if (Presets.SequenceEqual(_presetItems.Select(p => p.Value)) is false)
             {
-                _presetItems = Presets.Select(p => (p, new BitInternalColor(p).Rgba)).ToList();
+                _presetItems = Presets.Select(p =>
+                {
+                    var color = new BitInternalColor(p);
+
+                    return (p, color.Rgba, color);
+                }).ToList();
             }
 
             return _presetItems;
@@ -688,9 +699,20 @@ public partial class BitColorPicker : BitComponentBase
         {
             picked = await _js.BitColorPickerOpenEyeDropper();
         }
+        // The eyedropper is open for as long as the user takes to aim it, which is long enough for the page
+        // to go away underneath it: the circuit drops, the interop is disposed, or the call is cancelled with
+        // it. Whichever way it ends, there is no color to apply and nothing left to apply it to.
         catch (JSDisconnectedException)
         {
-            return; // the circuit went away while the eyedropper was open
+            return;
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
+        catch (OperationCanceledException) // TaskCanceledException among them
+        {
+            return;
         }
 
         // Null means the user dismissed the eyedropper, which leaves the color where it was.

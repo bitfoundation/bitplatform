@@ -533,7 +533,11 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(readOnly, root.ClassList.Contains("bit-clp-rdl"));
         Assert.IsFalse(root.ClassList.Contains("bit-dis"));
         Assert.AreEqual(readOnly ? "true" : null, root.GetAttribute("aria-readonly"));
-        Assert.AreEqual(readOnly ? "-1" : "0", com.Find(".bit-clp-rec").GetAttribute("tabindex"));
+
+        // It keeps its place in the tab order either way: a read-only picker is still showing a color, and
+        // the saturation area is what announces it.
+        Assert.AreEqual("0", com.Find(".bit-clp-rec").GetAttribute("tabindex"));
+        Assert.AreEqual(readOnly ? "true" : null, com.Find(".bit-clp-rec").GetAttribute("aria-readonly"));
 
         com.Find(".bit-clp-rec").KeyDown("ArrowDown");
 
@@ -732,6 +736,31 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreEqual("#00FF00", com.Instance.Hex);
         Assert.AreEqual(0.3, com.Instance.Alpha);
+
+        // And it reads as the swatch the picker is on, since the alpha it kept is not one the swatch named.
+        Assert.AreEqual("true", com.Find(".bit-clp-prt").GetAttribute("aria-pressed"));
+        Assert.IsTrue(com.Find(".bit-clp-prt").ClassList.Contains("bit-clp-prt-sel"));
+    }
+
+    // A swatch that does name an alpha of its own is only the one the picker is on when that alpha matches.
+    [TestMethod]
+    public void BitColorPickerShouldCompareTheAlphaOfAPresetThatCarriesOne()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.Presets, ["rgba(255,0,0,0.5)", "#FF0000"]);
+            parameters.Add(p => p.Color, "rgba(255,0,0,0.3)");
+        });
+
+        var presets = com.FindAll(".bit-clp-prt");
+
+        Assert.AreEqual("false", presets[0].GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", presets[1].GetAttribute("aria-pressed"));
+
+        com.Render(parameters => parameters.Add(p => p.Color, "rgba(255,0,0,0.5)"));
+
+        Assert.AreEqual("true", com.FindAll(".bit-clp-prt")[0].GetAttribute("aria-pressed"));
     }
 
     [TestMethod]
@@ -1135,10 +1164,16 @@ public class BitColorPickerTests : BunitTestContext
     public void BitColorPickerShouldRenderInvariantNumbers()
     {
         var culture = CultureInfo.CurrentCulture;
+        var defaultCulture = CultureInfo.DefaultThreadCurrentCulture;
 
         try
         {
-            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            var german = new CultureInfo("de-DE");
+
+            // Both, because the renderer does its work on a dispatcher thread of its own: the current
+            // culture covers this thread, and the default thread culture is what the other one picks up.
+            CultureInfo.CurrentCulture = german;
+            CultureInfo.DefaultThreadCurrentCulture = german;
 
             var com = RenderComponent<BitColorPicker>(parameters =>
             {
@@ -1153,6 +1188,7 @@ public class BitColorPickerTests : BunitTestContext
         finally
         {
             CultureInfo.CurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
         }
     }
 
