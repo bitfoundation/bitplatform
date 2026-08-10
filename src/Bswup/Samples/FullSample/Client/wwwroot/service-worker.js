@@ -1,16 +1,16 @@
 // bit version: 10.6.0-pre-01
 
-// Development service worker of the FullDemo. Unlike the standard Blazor template - whose
-// dev worker is a no-op so caching never hides source changes - this demo runs the full
+// Development service worker of the FullSample. Unlike the standard Blazor template - whose
+// dev worker is a no-op so caching never hides source changes - this sample runs the full
 // Bswup engine even in development (see the importScripts at the bottom), so the complete
-// first-install / update experience is exercised on plain F5, matching the other demos.
+// first-install / update experience is exercised on plain F5, matching the other samples.
 
 self.assetsInclude = [];
 // The client's scoped-css bundle is in this app's asset manifest but is never served: in a
 // Blazor Web App the host project merges the client's scoped styles into its own
 // <HostAssembly>.styles.css. Precaching it would fail with a 404, so it's excluded here and
 // the two files the page actually loads are precached through externalAssets instead.
-self.assetsExclude = [/^Bit\.Bswup\.FullDemo\.Client\.styles\.css$/, /weather\.json$/];
+self.assetsExclude = [/^Bit\.Bswup\.FullSample\.Client\.styles\.css$/, /weather\.json$/];
 self.defaultUrl = '/';
 self.prohibitedUrls = [];
 // self.assetsUrl is deliberately NOT set: since v-10-6-0 it defaults to a relative
@@ -31,10 +31,10 @@ self.externalAssets = [
     // The host's scoped-css bundle (linked from App.razor) and the client bundle it @imports.
     // Both are served by the host project, so they're absent from the client asset manifest.
     {
-        "url": "Bit.Bswup.FullDemo.Server.styles.css"
+        "url": "Bit.Bswup.FullSample.Server.styles.css"
     },
     {
-        "url": "Bit.Bswup.FullDemo.Client.bundle.scp.css"
+        "url": "Bit.Bswup.FullSample.Client.bundle.scp.css"
     },
     // A Blazor Web App boots through blazor.web.js, not the blazor.webassembly.js that the
     // client's asset manifest lists - it belongs to the host project, so the manifest never

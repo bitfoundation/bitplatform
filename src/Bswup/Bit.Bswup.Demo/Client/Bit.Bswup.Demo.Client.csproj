@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
         <!-- The host project owns the launch profile: this project is never run on its own,
              the host document (Server/Components/App.razor) lives on the server now. -->
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>

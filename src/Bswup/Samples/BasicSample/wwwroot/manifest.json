@@ -1,6 +1,6 @@
 {
-    "name": "Bit.Bswup.BasicDemo",
-    "short_name": "Bit.Bswup.BasicDemo",
+    "name": "Bit.Bswup.BasicSample",
+    "short_name": "Bit.Bswup.BasicSample",
     "start_url": "./",
     "display": "standalone",
     "background_color": "#ffffff",

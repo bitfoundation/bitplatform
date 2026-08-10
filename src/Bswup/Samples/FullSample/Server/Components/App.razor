@@ -15,10 +15,10 @@
 <head>
     <base href="/" />
     <meta charset="utf-8" />
-    <title>bit Bswup Full Demo</title>
+    <title>bit Bswup Full Sample</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="Bit.Bswup.FullDemo.Server.styles.css" />
+    <link rel="stylesheet" href="Bit.Bswup.FullSample.Server.styles.css" />
     <HeadOutlet @rendermode="@renderMode" />
 </head>
 
@@ -42,7 +42,7 @@
     @* The component renders first so its data-bit-bswup-* configuration is already in the
        document when the script initializes. Rendered after the script it still works - the
        script's MutationObserver picks up a late element - but that is the fallback path. *@
-    <DemoBswupProgressBar />
+    <SampleBswupProgressBar />
     <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
 </body>
 

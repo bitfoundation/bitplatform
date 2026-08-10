@@ -1,12 +1,12 @@
 /* The #blazor-error-ui banner in MainLayout.razor is the standard Blazor error placeholder:
    the framework flips it to 'display: block' when an unhandled exception reaches the client.
-   The stock templates hide it from wwwroot/css/app.css, which this demo deliberately does not
+   The stock templates hide it from wwwroot/css/app.css, which this sample deliberately does not
    have - so without this rule the banner renders on every page from the first paint, looking
    like a permanent error. Scoped CSS reaches it because the element lives in this layout's
    own markup. */
 #blazor-error-ui {
     color-scheme: only light;
-    /* The demo's body sets 'color: white', which would be unreadable on lightyellow. */
+    /* The sample's body sets 'color: white', which would be unreadable on lightyellow. */
     color: black;
     background: lightyellow;
     bottom: 0;

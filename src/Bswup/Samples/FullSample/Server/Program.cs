@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using Bit.Bswup.FullDemo.Server.Components;
+using Bit.Bswup.FullSample.Server.Components;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +45,6 @@ app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(Bit.Bswup.FullDemo.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Bit.Bswup.FullSample.Client._Imports).Assembly);
 
 app.Run();
