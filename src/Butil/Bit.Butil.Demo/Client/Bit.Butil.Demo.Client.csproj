@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <!-- The host owns the launch profile: this project is never started on its own. -->
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <!-- Publishes this project's static web assets at the app root (not under _content/), the
