@@ -895,9 +895,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // keeps the focus inside the callout while it is the modal dialog it reports itself to be.
                 await _js.BitCalendarsSetup(_calloutId, Standalone is false);
 
-                if (Responsive)
+                // The swipe dismisses the callout, and standalone there is no callout to dismiss.
+                if (Responsive && Standalone is false)
                 {
-                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1418,7 +1419,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (Mode == BitDatePickerMode.MonthPicker)
         {
-            var selectedDate = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, 0, 0, 0, 0);
+            var selectedDate = GetFirstDayOfMonthOrClamp(_currentYear, _currentMonth);
 
             // The first of the month can fall before MinDate (or after MaxDate) while the month itself is
             // still selectable, so the selection is pulled to the first day of it the range allows.
@@ -1573,7 +1574,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (previousYear == _currentYear && previousMonth == _currentMonth) return;
         if (OnMonthChange.HasDelegate is false) return;
 
-        var date = _culture.Calendar.ToDateTime(_currentYear, _currentMonth, 1, 0, 0, 0, 0);
+        var date = GetFirstDayOfMonthOrClamp(_currentYear, _currentMonth);
 
         await OnMonthChange.InvokeAsync(new(date, _timeZone.GetUtcOffset(date)));
     }
@@ -1594,10 +1595,27 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _monthTitle = $"{_culture.DateTimeFormat.GetMonthName(month)} {year}";
 
         var calendar = _culture.Calendar;
-        var firstDayOfMonth = new DateTime(year, month, 1, calendar);
         int daysInMonth = calendar.GetDaysInMonth(year, month);
-        int dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth);
         int firstDayOfWeek = (int)GetFirstDayOfWeek();
+        int dayOfWeek;
+
+        var firstDayOfMonth = TryCreateDate(year, month, 1);
+        if (firstDayOfMonth.HasValue)
+        {
+            dayOfWeek = (int)calendar.GetDayOfWeek(firstDayOfMonth.Value);
+        }
+        else
+        {
+            // The first supported month of a calendar does not have to start at its first day (the
+            // minimum of the Hebrew calendar falls in the middle of a month), so the weekday of the
+            // unrepresentable first day is walked back from the first day the calendar does support.
+            var minDate = calendar.MinSupportedDateTime;
+            dayOfWeek = ((int)calendar.GetDayOfWeek(minDate) - (calendar.GetDayOfMonth(minDate) - 1)) % 7;
+            if (dayOfWeek < 0)
+            {
+                dayOfWeek += 7;
+            }
+        }
 
         // Adjust dayOfWeek to match the culture's first day of week
         dayOfWeek = (dayOfWeek - firstDayOfWeek + 7) % 7;
@@ -1609,8 +1627,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         int monthsInYear = calendar.GetMonthsInYear(year);
 
         int previousYear = month == 1 ? year - 1 : year;
-        int previousMonth = month == 1 ? calendar.GetMonthsInYear(previousYear) : month - 1;
-        int daysInPreviousMonth = calendar.GetDaysInMonth(previousYear, previousMonth);
+        int previousMonth;
+        int daysInPreviousMonth;
+        if (previousYear < GetMinCalendarYearMonth().Year)
+        {
+            // The year before the calendar's first year cannot be asked anything - every one of its
+            // days comes out as an empty cell anyway, so any day numbers at all do for the counting.
+            previousMonth = 1;
+            daysInPreviousMonth = dayOfWeek;
+        }
+        else
+        {
+            previousMonth = month == 1 ? calendar.GetMonthsInYear(previousYear) : month - 1;
+            daysInPreviousMonth = calendar.GetDaysInMonth(previousYear, previousMonth);
+        }
 
         int nextYear = month == monthsInYear ? year + 1 : year;
         int nextMonth = month == monthsInYear ? 1 : month + 1;
@@ -1621,7 +1651,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             for (int j = 0; j < dayOfWeek; j++)
             {
-                _daysOfCurrentMonth[i, j] = new(previousYear, previousMonth, day, calendar);
+                _daysOfCurrentMonth[i, j] = TryCreateDate(previousYear, previousMonth, day);
                 day++;
             }
         }
@@ -1636,7 +1666,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
                 if (day <= daysInMonth)
                 {
-                    _daysOfCurrentMonth[i, j] = new(year, month, day, calendar);
+                    _daysOfCurrentMonth[i, j] = TryCreateDate(year, month, day);
                     day++;
                 }
                 else
@@ -1645,15 +1675,74 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                     {
                         ended = true;
                     }
-                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextYear, nextMonth, day - daysInMonth, calendar);
+                    _daysOfCurrentMonth[i, j] = ended ? null : TryCreateDate(nextYear, nextMonth, day - daysInMonth);
                     day++;
                 }
             }
         }
     }
 
+    // A day at the very edge of the calendar - the days around its first and last supported months -
+    // cannot be represented as a DateTime at all, so it becomes an empty cell instead of an exception.
+    private DateTime? TryCreateDate(int year, int month, int day)
+    {
+        try
+        {
+            return new DateTime(year, month, day, _culture.Calendar);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    // The first day of a month at the very edge of the calendar's supported range does not have to be
+    // representable (the range of the Hebrew calendar starts in the middle of a month), so the nearest
+    // day the calendar does support stands in for it.
+    private DateTime GetFirstDayOfMonthOrClamp(int year, int month)
+    {
+        var date = TryCreateDate(year, month, 1);
+        if (date.HasValue) return date.Value;
+
+        var calendar = _culture.Calendar;
+
+        return year == GetMinCalendarYearMonth().Year && month <= GetMinCalendarYearMonth().Month
+            ? calendar.MinSupportedDateTime.Date
+            : calendar.MaxSupportedDateTime.Date;
+    }
+
+    // DateTime is bounded to the years 1 through 9999 of the Gregorian calendar, and some calendars
+    // support even less, so everything the navigation can reach is bounded by the calendar's own range
+    // the same way MinDate and MaxDate bound it.
+    private (int Year, int Month) GetMinCalendarYearMonth()
+    {
+        var calendar = _culture.Calendar;
+        var minDate = calendar.MinSupportedDateTime;
+
+        return (calendar.GetYear(minDate), calendar.GetMonth(minDate));
+    }
+
+    private (int Year, int Month) GetMaxCalendarYearMonth()
+    {
+        var calendar = _culture.Calendar;
+        var maxDate = calendar.MaxSupportedDateTime;
+
+        return (calendar.GetYear(maxDate), calendar.GetMonth(maxDate));
+    }
+
+    private bool IsWeekRowEmpty(int weekIndex)
+    {
+        for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+        {
+            if (_daysOfCurrentMonth[weekIndex, day].HasValue) return false;
+        }
+
+        return true;
+    }
+
     // Moving to another year of a calendar whose years do not all have the same number of months (the
-    // Hebrew one) can leave the displayed month past the end of the year that is now displayed.
+    // Hebrew one) can leave the displayed month past the end of the year that is now displayed - and
+    // moving to the first or the last supported year can leave it past the supported part of that year.
     private void ClampCurrentMonthToYear()
     {
         var monthsInYear = GetMonthsInCurrentYear();
@@ -1661,6 +1750,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (_currentMonth > monthsInYear)
         {
             _currentMonth = monthsInYear;
+        }
+
+        var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+        if (_currentYear == minCalendarYear && _currentMonth < minCalendarMonth)
+        {
+            _currentMonth = minCalendarMonth;
+        }
+
+        var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+        if (_currentYear == maxCalendarYear && _currentMonth > maxCalendarMonth)
+        {
+            _currentMonth = maxCalendarMonth;
         }
     }
 
@@ -1712,7 +1813,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private int GetWeekNumber(int weekIndex)
     {
-        return _culture.Calendar.GetWeekOfYear(_daysOfCurrentMonth[weekIndex, 0]!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
+        // The first cells of the week can be empty at the very edge of the calendar's supported range,
+        // so the number of the week is read off the first day of it that actually exists.
+        var date = _daysOfCurrentMonth[weekIndex, 0];
+        for (var day = 1; date.HasValue is false && day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+        {
+            date = _daysOfCurrentMonth[weekIndex, day];
+        }
+
+        return _culture.Calendar.GetWeekOfYear(date!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
     }
 
     private void ToggleMonthPickerOverlay()
@@ -1760,23 +1869,33 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false) return false;
 
-        if (isNext && MaxDate.HasValue)
+        if (isNext)
         {
-            var maxDate = GetDateTime(MaxDate.Value);
-            var maxDateYear = _culture.Calendar.GetYear(maxDate);
-            var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
+            var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+            if (_currentYear == maxCalendarYear && _currentMonth >= maxCalendarMonth) return false;
 
-            if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
+            if (MaxDate.HasValue)
+            {
+                var maxDate = GetDateTime(MaxDate.Value);
+                var maxDateYear = _culture.Calendar.GetYear(maxDate);
+                var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
+
+                if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
+            }
         }
-
-
-        if (isNext is false && MinDate.HasValue)
+        else
         {
-            var minDate = GetDateTime(MinDate.Value);
-            var minDateYear = _culture.Calendar.GetYear(minDate);
-            var minDateMonth = _culture.Calendar.GetMonth(minDate);
+            var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+            if (_currentYear == minCalendarYear && _currentMonth <= minCalendarMonth) return false;
 
-            if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
+            if (MinDate.HasValue)
+            {
+                var minDate = GetDateTime(MinDate.Value);
+                var minDateYear = _culture.Calendar.GetYear(minDate);
+                var minDateMonth = _culture.Calendar.GetMonth(minDate);
+
+                if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
+            }
         }
 
         return true;
@@ -1785,6 +1904,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool CanChangeYear(bool isNext)
     {
         if (IsEnabled is false) return false;
+
+        if (isNext && _currentYear >= GetMaxCalendarYearMonth().Year) return false;
+        if (isNext is false && _currentYear <= GetMinCalendarYearMonth().Year) return false;
 
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) == _currentYear) ||
@@ -1795,6 +1917,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool CanChangeYearRange(bool isNext)
     {
         if (IsEnabled is false) return false;
+
+        if (isNext && GetMaxCalendarYearMonth().Year < _yearPickerStartYear + 12) return false;
+        if (isNext is false && GetMinCalendarYearMonth().Year >= _yearPickerStartYear) return false;
 
         return (
                 (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) < _yearPickerStartYear + 12) ||
@@ -1821,6 +1946,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsMonthOutOfMinAndMaxDate(int month)
     {
+        // The supported range of the calendar itself bounds the selection the same way MinDate and
+        // MaxDate do: a month past its edge has no representable days at all.
+        var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
+        if (_currentYear < minCalendarYear || (_currentYear == minCalendarYear && month < minCalendarMonth)) return true;
+
+        var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
+        if (_currentYear > maxCalendarYear || (_currentYear == maxCalendarYear && month > maxCalendarMonth)) return true;
+
         if (MaxDate.HasValue)
         {
             var maxDate = GetDateTime(MaxDate.Value);
@@ -1844,7 +1977,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsYearOutOfMinAndMaxDate(int year)
     {
-        return (MaxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)))
+        // The years outside of the calendar's own supported range are as unselectable as the ones
+        // outside of MinDate and MaxDate - the year picker can show them at the edges of its ranges.
+        return year < GetMinCalendarYearMonth().Year
+            || year > GetMaxCalendarYearMonth().Year
+            || (MaxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)))
             || (MinDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(MinDate.Value)));
     }
 
@@ -1978,7 +2115,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private DateTimeOffset GetDateTimeOfMonthCell(int monthIndex)
     {
-        var date = _culture.Calendar.ToDateTime(_currentYear, monthIndex, 1, 0, 0, 0, 0);
+        var date = GetFirstDayOfMonthOrClamp(_currentYear, monthIndex);
         return new(date, _timeZone.GetUtcOffset(date));
     }
 
@@ -1998,6 +2135,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsDayDisabled(DateTime date)
     {
+        // A day the calendar itself cannot represent is not selectable (nor focusable) at all - the
+        // supported range of a calendar does not have to cover the whole range of DateTime.
+        if (date < _culture.Calendar.MinSupportedDateTime.Date || date > _culture.Calendar.MaxSupportedDateTime) return true;
+
         if (IsWeekDayOutOfMinAndMaxDate(date)) return true;
 
         if (_disabledDaysOfWeek.Contains(date.DayOfWeek)) return true;
@@ -2300,18 +2441,28 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         var isRtl = IsRtl();
 
-        DateTime? target = e.Key switch
+        DateTime? target;
+        try
         {
-            "ArrowLeft" => FindEnabledDay(date, isRtl ? 1 : -1),
-            "ArrowRight" => FindEnabledDay(date, isRtl ? -1 : 1),
-            "ArrowUp" => FindEnabledDay(date, -7),
-            "ArrowDown" => FindEnabledDay(date, 7),
-            "Home" => FindEnabledDayTowards(GetStartOfWeek(date), date),
-            "End" => FindEnabledDayTowards(GetStartOfWeek(date).AddDays(6), date),
-            "PageUp" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, -1) : _culture.Calendar.AddMonths(date, -1), date),
-            "PageDown" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, 1) : _culture.Calendar.AddMonths(date, 1), date),
-            _ => null
-        };
+            target = e.Key switch
+            {
+                "ArrowLeft" => FindEnabledDay(date, isRtl ? 1 : -1),
+                "ArrowRight" => FindEnabledDay(date, isRtl ? -1 : 1),
+                "ArrowUp" => FindEnabledDay(date, -7),
+                "ArrowDown" => FindEnabledDay(date, 7),
+                "Home" => FindEnabledDayTowards(GetStartOfWeek(date), date),
+                "End" => FindEnabledDayTowards(GetStartOfWeek(date).AddDays(6), date),
+                "PageUp" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, -1) : _culture.Calendar.AddMonths(date, -1), date),
+                "PageDown" => FindEnabledDayTowards(e.ShiftKey ? _culture.Calendar.AddYears(date, 1) : _culture.Calendar.AddMonths(date, 1), date),
+                _ => null
+            };
+        }
+        catch (ArgumentException)
+        {
+            // Stepping over the edge of the calendar's supported range (the days around its first and
+            // last representable dates) throws instead of wrapping, and the focus simply stays put.
+            return;
+        }
 
         if (target.HasValue is false) return;
 
@@ -2462,12 +2613,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (ReadOnly) return;
         if (IsEnabled is false) return;
 
-        if (_hour <= 12) // "12:-- pm" is "12:--" in 24h
+        // "12:-- pm" is already "12:--" in 24h, so only the hours before noon move forward -
+        // otherwise clicking pm at 12:-- pm would wrap the hour around to 12:-- am.
+        if (_hour < 12)
         {
             _hour += 12;
         }
 
-        _hour %= 24;
         await UpdateCurrentValue();
     }
 
@@ -2650,7 +2802,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: BitDropDirection.TopAndBottom,
-            isRtl: Dir is BitDir.Rtl,
+            // The same direction the callout renders in (bit-dtp-rtl covers the culture-implied RTL
+            // as well), so the positioning matches the layout.
+            isRtl: IsRtl(),
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: "",

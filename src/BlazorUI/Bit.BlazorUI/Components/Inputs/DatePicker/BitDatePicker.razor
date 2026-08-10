@@ -285,8 +285,10 @@
 
                         @for (var week = 0; week < 6; week++)
                         {
-                            //to ignore the last empty week out of month || to ignore the first whole week out of month
-                            if (_daysOfCurrentMonth[week, 0].HasValue is false) continue;
+                            @* The weeks past the end of the month (FixedWeeks off) hold no days at all.
+                               The check spans the whole row: at the very edge of the calendar's supported
+                               range a row can start with empty cells and still hold days to show. *@
+                            if (IsWeekRowEmpty(week)) continue;
 
                             <div role="row" style="@Styles?.DaysRow" class="bit-dtp-dgr @Classes?.DaysRow">
                                 @if (ShowWeekNumbers)
@@ -304,13 +306,19 @@
 
                                 @for (var day = 0; day < 7; day++)
                                 {
-                                    var date = _daysOfCurrentMonth[week, day]!.Value;
+                                    var nullableDate = _daysOfCurrentMonth[week, day];
 
-                                    if (ShowOutsideDays is false && IsInCurrentMonth(date) is false)
+                                    @* A day out of the calendar's supported range has no date to offer,
+                                       so it stays an empty cell keeping the columns of the week aligned,
+                                       exactly like an outside day hidden by ShowOutsideDays. *@
+                                    if (nullableDate.HasValue is false ||
+                                        (ShowOutsideDays is false && IsInCurrentMonth(nullableDate.Value) is false))
                                     {
                                         <div role="gridcell" style="@Styles?.DayButton" class="bit-dtp-dbe @Classes?.DayButton"></div>
                                         continue;
                                     }
+
+                                    var date = nullableDate.Value;
 
                                     var disabled = IsEnabled is false || IsDayDisabled(date);
                                     var isSelected = IsSelectedDate(date);

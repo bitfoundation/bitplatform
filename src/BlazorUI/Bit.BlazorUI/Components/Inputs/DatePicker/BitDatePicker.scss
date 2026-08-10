@@ -79,8 +79,6 @@
         }
     }
 
-    &.bit-rtl {
-    }
 }
 
 .bit-dtp-cal.bit-dtp-rtl {
@@ -852,36 +850,25 @@
             width: spacing(5.5);
         }
 
-        .bit-dtp-wlb {
-            //font-weight: bold;
-        }
-
         .bit-dtp-grp {
             justify-content: center;
-        }
-
-        .bit-dtp-tdv {
-            //font-size: spacing(7);
         }
 
         .bit-dtp-tin {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            //font-size: spacing(5);
         }
 
         .bit-dtp-tbt {
             width: 100%;
             min-width: spacing(7);
             max-width: spacing(12);
-            //font-size: spacing(3);
         }
 
         .bit-dtp-bam,
         .bit-dtp-bpm {
             width: 100%;
-            //font-size: spacing(4);
             margin: spacing(0.25);
         }
     }

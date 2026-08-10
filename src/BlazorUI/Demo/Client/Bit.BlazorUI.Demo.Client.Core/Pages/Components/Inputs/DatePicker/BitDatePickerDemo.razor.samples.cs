@@ -282,7 +282,7 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
 private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
     private readonly string example18RazorCode = @"
-<BitDatePicker Label=""Response DatePicker""
+<BitDatePicker Label=""Responsive DatePicker""
                Responsive
                ShowWeekNumbers
                Placeholder=""Select a date"" />";

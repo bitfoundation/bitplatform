@@ -285,29 +285,29 @@ public class BitDatePickerTests : BunitTestContext
         }
     }
 
-    //[TestMethod,
-    //    DataRow(false),
-    //    DataRow(true)
-    //]
-    //public void BitDatePickerShowCloseButtonTest(bool showCloseButton)
-    //{
-    //    Context.JSInterop.Mode = JSRuntimeMode.Loose;
-    //    var component = RenderComponent<BitDatePicker>(parameters =>
-    //    {
-    //        parameters.Add(p => p.ShowCloseButton, showCloseButton);
-    //    });
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDatePickerShowCloseButtonTest(bool showCloseButton)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, showCloseButton);
+        });
 
-    //    var closeBtnElms = component.FindAll(".bit-dtp-cbtn");
+        var closeBtnElms = component.FindAll("button[title='Close date picker']");
 
-    //    if (showCloseButton)
-    //    {
-    //        Assert.AreEqual(1, closeBtnElms.Count);
-    //    }
-    //    else
-    //    {
-    //        Assert.AreEqual(0, closeBtnElms.Count);
-    //    }
-    //}
+        if (showCloseButton)
+        {
+            Assert.HasCount(1, closeBtnElms);
+        }
+        else
+        {
+            Assert.IsEmpty(closeBtnElms);
+        }
+    }
 
     [TestMethod,
         DataRow(false),
@@ -2264,6 +2264,50 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(5, value!.Value.Hour);
     }
 
+    [TestMethod,
+        DataRow(9, 21),   // 9:30 am + pm => 9:30 pm
+        DataRow(12, 12),  // 12:30 pm + pm => 12:30 pm (already pm, must not wrap to 12:30 am)
+        DataRow(21, 21)]  // 9:30 pm + pm => 9:30 pm
+    public void BitDatePickerPmClickShouldMoveTheTimeToThePm(int hour, int expectedHour)
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, hour, 30);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-bpm").Click();
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(expectedHour, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+    }
+
+    [TestMethod,
+        DataRow(21, 9),   // 9:30 pm + am => 9:30 am
+        DataRow(12, 0),   // 12:30 pm + am => 12:30 am
+        DataRow(0, 0)]    // 12:30 am + am => 12:30 am
+    public void BitDatePickerAmClickShouldMoveTheTimeToTheAm(int hour, int expectedHour)
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, hour, 30);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-bam").Click();
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(expectedHour, value!.Value.Hour);
+        Assert.AreEqual(30, value!.Value.Minute);
+    }
+
     // ── Text input ────────────────────────────────────────────────────────────
 
     [TestMethod]
@@ -2341,6 +2385,97 @@ public class BitDatePickerTests : BunitTestContext
         component.Find(".bit-dtp-inp").Input("20/01/2026");
 
         Assert.IsNull(value);
+    }
+
+    // ── Calendar supported range ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheFirstSupportedMonth()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, new CultureInfo("en-US"));
+            parameters.Add(p => p.ShowWeekNumbers, true);
+            parameters.Add(p => p.Value, GetLocalDate(1, 1, 15, 12));
+        });
+
+        // The days before the first supported day of the calendar cannot be represented, so the cells
+        // of the week around them stay empty instead of crashing the whole render.
+        Assert.IsNotNull(component.FindAll(".bit-dtp-dbt").FirstOrDefault(b => b.TextContent.Trim() == "1"));
+
+        var prevMonthButton = component.Find("button[title='Go to previous month']");
+        Assert.IsTrue(prevMonthButton.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheLastSupportedMonth()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, new CultureInfo("en-US"));
+            parameters.Add(p => p.Value, GetLocalDate(9999, 12, 15, 12));
+        });
+
+        // The days after the last supported day of the calendar cannot be represented either.
+        Assert.IsNotNull(component.FindAll(".bit-dtp-dbt").FirstOrDefault(b => b.TextContent.Trim() == "31"));
+
+        var nextMonthButton = component.Find("button[title='Go to next month']");
+        Assert.IsTrue(nextMonthButton.HasAttribute("disabled"));
+
+        var nextYearButton = component.Find("button[title='Go to next year 10000']");
+        Assert.IsTrue(nextYearButton.HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheFirstSupportedMonthOfTheHebrewCalendar()
+    {
+        // The supported range of the Hebrew calendar starts in the middle of a month, so even the first
+        // day of its first supported month cannot be represented as a DateTime.
+        var calendar = new HebrewCalendar();
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
+                                        "update this test if the field is renamed or removed.");
+        calendarField.SetValue(culture, calendar);
+
+        var value = calendar.MinSupportedDateTime.AddDays(10);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.ShowWeekNumbers, true);
+            parameters.Add(p => p.MonthCellTemplate, month => builder => builder.AddContent(0, calendar.GetMonth(month.DateTime)));
+            parameters.Add(p => p.Value, new DateTimeOffset(value, TimeZoneInfo.Local.GetUtcOffset(value)));
+        });
+
+        // The unrepresentable days at the start of the month become empty cells instead of exceptions.
+        Assert.IsNotEmpty(component.FindAll(".bit-dtp-dbt"));
+
+        var prevMonthButton = component.Find("button[title='Go to previous month']");
+        Assert.IsTrue(prevMonthButton.HasAttribute("disabled"));
+
+        // Home aims at the start of the week, which can fall before the first supported day of the
+        // calendar; those days are skipped instead of throwing on the way to them.
+        component.FindAll(".bit-dtp-dbt")[0].KeyDown("Home");
+    }
+
+    [TestMethod]
+    public void BitDatePickerTypingADateAtTheEdgeOfTheCalendarShouldNotCrash()
+    {
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, new CultureInfo("en-US"));
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-inp").Input("31/12/9999");
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(9999, value!.Value.Year);
     }
 
     [TestMethod]

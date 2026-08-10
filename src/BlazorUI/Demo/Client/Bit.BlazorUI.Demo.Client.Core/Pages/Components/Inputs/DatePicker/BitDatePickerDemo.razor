@@ -54,7 +54,7 @@
         <div>
             Limit the selectable dates using <b>MinDate</b> and <b>MaxDate</b>. Days outside of the range are
             disabled, the month, year, and year-range navigation stops at the boundaries, and a date typed into
-            the input outside of the range is reported as a validation error.
+            the input outside of the range (when <b>AllowTextInput</b> is enabled) is reported as a validation error.
         </div>
         <br /><br />
         <div class="example-content">
@@ -264,14 +264,14 @@
             calendar shows - the highlighted day, the month it opens on, and the time in the time picker - is
             resolved in that zone.
             <br />
-            Remeber using this feature in different runtimes needs more investigations, for example,
-            there are different data available based on the OS the code is running on or different settings
+            Remember that using this feature across different runtimes needs more investigation; for example,
+            different time zone data is available based on the OS the code is running on, or different settings
             enabled for the project (like InvariantTimezone in the project file,
             <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
                      Target="_blank">more info</BitLink>).
         </div>
         <br /><br />
-        <div>Defalt (local TimeZone):</div><br/>
+        <div>Default (local TimeZone):</div><br/>
         <div class="example-content">
             <BitDatePicker @bind-Value="@timeZoneDate1" ShowTimePicker />
         </div>
@@ -429,7 +429,7 @@
         </div>
         <br />
         <div class="example-content">
-            <BitDatePicker Label="Response DatePicker"
+            <BitDatePicker Label="Responsive DatePicker"
                            Responsive
                            ShowWeekNumbers
                            Placeholder="Select a date" />
