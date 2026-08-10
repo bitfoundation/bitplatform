@@ -1,0 +1,18 @@
+@page "/not-found"
+
+@* Rendered two ways, which is why it is a component and not markup inlined in Routes.razor:
+   - client-side, as the <NotFound> fragment of the router (a link to a URL with no page); and
+   - server-side, as the re-execution target of app.UseStatusCodePagesWithReExecute("/not-found")
+     in the host's Program.cs. That second path matters because a deep link that matches no page
+     never reaches Blazor at all - ASP.NET routing answers it with a bare 404 before
+     MapRazorComponents is consulted - so on a first visit (no service worker yet) the router's
+     fragment would never run.
+   It lives in the client project because Routes.razor binds the router to that assembly only. *@
+
+<PageTitle>Not found - bit Bswup</PageTitle>
+
+<div class="docs-not-found">
+    <h1>404</h1>
+    <p role="alert">Sorry, there's nothing at this address.</p>
+    <a class="button-primary" href="/">Back to the docs</a>
+</div>

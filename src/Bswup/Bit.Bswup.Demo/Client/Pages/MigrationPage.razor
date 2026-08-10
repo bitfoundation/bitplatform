@@ -1,0 +1,58 @@
+﻿@page "/migration"
+
+<PageTitle>Migrating to 10-6-0 - bit Bswup</PageTitle>
+
+<h1>Migrating to v-10-6-0</h1>
+<p class="docs-lead">
+    v-10-6-0 is a resilience-focused release. Most changes are internal hardening; this page lists what is
+    visible when upgrading.
+</p>
+
+<h2>Action items</h2>
+<Callout Type="warning" Title="Check these four things">
+    <p><strong>1. Updates no longer auto-reload.</strong> <code>BswupProgress.AutoReload</code> now defaults to <code>false</code> - updates announce themselves through the reload button. Set <code>AutoReload="true"</code> to restore the old behavior.</p>
+    <p><strong>2. Blocked URLs answer 403.</strong> <code>prohibitedUrls</code> matches are answered with <code>403 Forbidden</code> (previously <code>405</code>). Code detecting a blocked URL by status must check for <code>403</code>.</p>
+    <p><strong>3. String entries now take effect.</strong> Strings in the URL-matching lists (<code>assetsInclude</code>, <code>assetsExclude</code>, <code>prohibitedUrls</code>, <code>serverHandledUrls</code>, <code>serverRenderedUrls</code>) are now matched literally as substrings. Previous releases silently <em>ignored</em> them - audit any strings sitting in those lists, because they take effect for the first time after upgrading.</p>
+    <p><strong>4. Hand-written splash markup needs one edit.</strong> Move <code>&lt;button id="bit-bswup-reload"&gt;</code> <em>outside</em> the <code>#bit-bswup</code> overlay (and give it a <code>z-index</code>), optionally adding a visually-hidden <code>&lt;span id="bit-bswup-reload-status" role="status"&gt;</code> next to it. The built-in handling no longer reveals the overlay for updates, so a button left inside it would never become visible. The <code>BswupProgress</code> component ships this layout already.</p>
+</Callout>
+
+<h2>Behavior changes</h2>
+<ul>
+    <li>Cache buckets are scope-qualified: <code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code> (previously <code>bit-bswup - &lt;version&gt;</code>). Multiple Bswup apps on one origin no longer evict each other's caches; the migration from legacy-named buckets is automatic and does not re-download.</li>
+    <li>Under the default <code>lax</code> tolerance, the asset download now runs inside the install event (<code>waitUntil</code>): the browser keeps the worker alive for the whole download, and <code>updateReady</code> is only raised once the new version is <em>fully</em> staged - previously it could fire while the download had barely started.</li>
+    <li><code>assetsUrl</code> defaults to a path resolved against the service worker script's own location (previously root-absolute), so apps mounted on a sub-path work without configuration.</li>
+    <li>The <code>cleanup</code> callback only prunes when no update is staged or staging, and <code>BitBswup.forceRefresh()</code>'s default filter clears only this app's own, legacy, and Blazor caches. The same staged-or-staging guard protects <em>every</em> cache-pruning path, so a prune can never race a newer install's freshly written bucket.</li>
+    <li>Requests carrying a <code>Range</code> header are answered with real <code>206 Partial Content</code> slices from cached bodies (cached media now plays in Safari), and partial responses are never written to the cache.</li>
+    <li>Updates found later in the same session as the first install are treated as real updates: <code>updateReady</code> is raised, <code>downloadFinished</code> carries <code>firstInstall: false</code>, and accepting them runs the normal <code>SKIP_WAITING</code> flow. Previously a long-lived tab kept classifying every later update as another first install.</li>
+    <li>Navigations whose URL is itself a managed asset (e.g. opening <code>/manifest.json</code> directly) are served that asset instead of the SPA default document.</li>
+    <li>An update's re-download of the default document and of hash-less assets no longer deletes the existing cache entry first: if the refresh fails (offline mid-update), the previous copy keeps serving - including offline navigation.</li>
+    <li>The built-in progress UI stays out of the way during background updates: the full-screen splash is first-install only (<code>downloadStarted</code>/<code>downloadProgress</code> payloads carry <code>firstInstall</code> so custom handlers can do the same), the reload button lives outside the overlay, it is announced via a <code>role="status"</code> region, and the overlay no longer swallows clicks outside its content.</li>
+    <li>A first install completes even when no handler function is registered at all (previously the app waited out the full <code>stallTimeout</code> behind the splash).</li>
+    <li>The cleanup worker unregisters its own registration during teardown and no longer claims clients; the page reloads on <code>UNREGISTER</code> only while actually controlled, removing a reload-loop hazard.</li>
+    <li>The passive-mode background top-up after first boot is deterministic: it fills every asset still missing from the cache.</li>
+    <li>The default asset excludes cover all shipped worker-script variants (<code>bit-bswup.sw.min.js</code>, <code>bit-bswup.sw-cleanup.js</code>, <code>bit-bswup.sw-cleanup.min.js</code>).</li>
+    <li>A manifest or <code>externalAssets</code> entry whose URL cannot be parsed is skipped with a non-fatal <code>request</code> error instead of killing the whole service worker at startup.</li>
+    <li>A navigation to a URL that only a <code>RegExp</code> externalAssets pattern matches is served the app shell, never the pattern asset - and a shell cache miss during navigation is refilled from the shell's own URL, never from the navigated route's URL.</li>
+    <li><code>WAITING_SKIPPED</code> and <code>UNREGISTER</code> never reload an <em>uncontrolled</em> page anymore; they make sure the app is booted instead. Activating a first install through <code>BitBswup.skipWaiting()</code> completes the seamless claim-and-start flow instead of reloading.</li>
+    <li>A page that loads while an update is already mid-install now observes it: <code>updateReady</code> / <code>stateChanged</code> fire in that tab when the update finishes staging.</li>
+    <li>An exception thrown by the app's <code>bitBswupHandler</code> no longer breaks the update pipeline (it is logged, and the remaining messages still dispatch).</li>
+</ul>
+
+<h2>New capabilities</h2>
+<ul>
+    <li><strong>Update polling:</strong> the <code>updateInterval</code> / <code>updateOnVisibility</code> script attributes, a registration-aware <code>BitBswup.checkForUpdate()</code>, and the <code>updateNotFound</code> / <code>updateCheckFailed</code> events.</li>
+    <li><strong>Install robustness:</strong> <code>errorTolerance</code> (<code>lax</code>/<code>strict</code>), transient-failure retries (<code>maxRetries</code>, <code>retryDelay</code>), the <code>stallTimeout</code> first-install watchdog, and structured <code>error</code> payloads (<code>reason</code>, <code>fatal</code>, <code>firstInstall</code> - including the terminal <code>install-infra</code> reason).</li>
+    <li><strong>Storage:</strong> <code>persistStorage</code> / <code>BitBswup.persistStorage()</code> for eviction-resistant storage, and <code>cacheVersion</code> for manual control of cache-bucket rotation.</li>
+    <li><strong>Registration:</strong> automatic retry with the default scope when the browser rejects the configured <code>scope</code>, and fingerprint-tolerant Blazor entry-script detection for .NET 9+ <code>@@Assets[...]</code> references.</li>
+</ul>
+
+<div class="pager">
+    <a href="cleanup">
+        <span class="pager-label">Previous</span>
+        <b>← Backing Out of Bswup</b>
+    </a>
+    <a class="pager-next" href="/">
+        <span class="pager-label">Back to</span>
+        <b>Introduction →</b>
+    </a>
+</div>

@@ -1,0 +1,14 @@
+@page "/error"
+
+@* Target of app.UseExceptionHandler("/error") in the host's Program.cs. It lives in the client
+   project on purpose: Routes.razor binds the router to this assembly only, so a page placed in
+   the host project would never be matched and the re-executed request would end in a 404.
+   Deliberately absent from NavMenu - it is reachable only through the error handler. *@
+
+<PageTitle>Error - bit Bswup</PageTitle>
+
+<div class="docs-not-found">
+    <h1>Error</h1>
+    <p role="alert">Sorry, something went wrong while processing your request.</p>
+    <a class="button-primary" href="/">Back to the docs</a>
+</div>

@@ -1,0 +1,124 @@
+﻿@page "/getting-started"
+
+<PageTitle>Getting Started - bit Bswup</PageTitle>
+
+<h1>Getting Started</h1>
+<p class="docs-lead">
+    Add install progress, controlled updates, and offline support to a Blazor WebAssembly app
+    in six small steps.
+</p>
+
+<h2>1. Install the NuGet package</h2>
+<CodeBlock Language="shell" Code="dotnet add package Bit.Bswup" />
+
+<h2>2. Enable static file caching (server-hosted apps)</h2>
+<p>
+    Long-lived HTTP caching makes repeat visits and updates dramatically faster - the service worker
+    revalidates content by hash, so stale HTTP caches are never a correctness problem.
+</p>
+<CodeBlock Language="csharp" Code="@ServerCacheCode" />
+
+<h2>3. Defer Blazor's startup</h2>
+<p>
+    Bswup must start Blazor at the right moment (after the first install completes, or immediately when
+    the app is already cached), so disable auto-start on the Blazor script in your host document
+    (<code>index.html</code> or <code>App.razor</code>):
+</p>
+<CodeBlock Language="html" Code="@AutostartCode" />
+
+<h2>4. Add the Bswup script</h2>
+<p>Reference <code>bit-bswup.js</code> right after the Blazor script:</p>
+<CodeBlock Language="html" Code="@ScriptTagCode" />
+<p>
+    Every attribute is optional - see the <a href="script-options">Script Options</a> reference for all
+    of them and their defaults.
+</p>
+
+<h2>5. Configure the service worker</h2>
+<p>
+    Create (or edit) <code>wwwroot/service-worker.js</code> and <code>wwwroot/service-worker.published.js</code>.
+    The only <em>mandatory</em> line is the <code>importScripts</code> call; everything else is tuning:
+</p>
+<CodeBlock Language="javascript" Code="@ServiceWorkerCode" />
+<p>Then make sure the service worker is registered in your project file:</p>
+<CodeBlock Language="xml" Code="@CsprojCode" />
+<p>See the <a href="service-worker">Service Worker Settings</a> reference for every available option.</p>
+
+<h2>6. Pick a progress UI</h2>
+<p>You have two options:</p>
+<ul>
+    <li>
+        Use the <a href="progress-ui">built-in progress UI</a> - the <code>BswupProgress</code> component
+        plus <code>bit-bswup.progress.js</code> - and you are done. This is what this site uses.
+    </li>
+    <li>
+        Write your own handler function and drive any markup you like - see
+        <a href="events">Events &amp; Handler</a> for the full event catalog and a complete sample.
+    </li>
+</ul>
+
+<Callout Type="tip" Title="See it working">
+    This documentation site is a live Bswup app. Open dev tools → Application → Service Workers to
+    inspect the registration, or visit the <a href="playground">Live Playground</a> to watch events and
+    drive the update lifecycle by hand.
+</Callout>
+
+<div class="pager">
+    <a href="/">
+        <span class="pager-label">Previous</span>
+        <b>← Introduction</b>
+    </a>
+    <a class="pager-next" href="script-options">
+        <span class="pager-label">Next</span>
+        <b>Script Options →</b>
+    </a>
+</div>
+
+@code {
+    private const string ServerCacheCode = @"app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        if (env.IsDevelopment() is false)
+        {
+            // https://bitplatform.dev/templates/cache-mechanism
+            ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+            {
+                MaxAge = TimeSpan.FromDays(7),
+                Public = true
+            };
+        }
+    }
+});";
+
+    private const string AutostartCode = @"<!-- standalone WebAssembly app (wwwroot/index.html): -->
+<script src=""_framework/blazor.webassembly.js"" autostart=""false""></script>
+
+<!-- Blazor Web App with Interactive WebAssembly (Components/App.razor): -->
+<script src=""_framework/blazor.web.js"" autostart=""false""></script>";
+
+    private const string ScriptTagCode = @"<script src=""_content/Bit.Bswup/bit-bswup.js""
+        scope=""/""
+        log=""verbose""
+        sw=""service-worker.js""
+        handler=""bitBswupHandler""
+        updateInterval=""3600""
+        updateOnVisibility=""true""></script>";
+
+    private const string ServiceWorkerCode = @"// Put the same content in BOTH files:
+// wwwroot/service-worker.js (used during development)
+// wwwroot/service-worker.published.js (used when published)
+self.assetsExclude = [/\.scp\.css$/];
+self.caseInsensitiveUrl = true;
+
+// The one mandatory line - imports the Bswup service worker engine:
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');";
+
+    private const string CsprojCode = @"<PropertyGroup>
+    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+</PropertyGroup>
+
+<ItemGroup>
+    <ServiceWorker Include=""wwwroot\service-worker.js"" PublishedContent=""wwwroot\service-worker.published.js"" />
+</ItemGroup>";
+}

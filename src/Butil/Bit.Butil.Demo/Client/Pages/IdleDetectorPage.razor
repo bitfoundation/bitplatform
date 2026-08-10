@@ -1,0 +1,208 @@
+@page "/idle-detector"
+@implements IAsyncDisposable
+@inject Bit.Butil.IdleDetector idleDetector
+
+<PageTitle>IdleDetector - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="IdleDetector"
+            Lead="Know when the user walks away - the IdleDetector API reports user activity (active/idle) and screen lock state, ideal for pausing work, muting notifications or signing out."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/IdleDetector"
+            InjectAs="IdleDetector idleDetector" />
+
+<Callout Type="warning" Title="Experimental - Chromium only">
+    The IdleDetector API is experimental and currently implemented only in Chromium-based
+    browsers (Chrome, Edge, Opera). Firefox and Safari do not support it. Always gate usage
+    behind <code>IsSupported</code>.
+</Callout>
+
+<Callout Type="info" Title="Permission and user gesture">
+    Idle detection requires a secure context and the <code>idle-detection</code> permission.
+    Call <code>RequestPermission</code> from a user-gesture handler (like the buttons below) -
+    the browser rejects prompts that don't originate from user interaction.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes IdleDetector. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.IdleDetector idleDetector
+
+var supported = await idleDetector.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Request permission"
+                 Api="RequestPermission"
+                 Description="Asks the browser for the idle-detection permission and returns the resulting PermissionState (Granted, Denied, Prompt or Unknown). Starting a detector without a granted permission fails."
+                 Code=@("""
+var state = await idleDetector.RequestPermission();
+
+if (state is PermissionState.Granted)
+{
+    // safe to call Start
+}
+""")>
+        <div class="controls">
+            <button @onclick="RequestPermission">RequestPermission</button>
+        </div>
+        <DemoConsole @ref="permissionOutput" Title="permission output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch idle state"
+                 Api="Start"
+                 Description="Starts watching for idle changes with the given threshold in seconds (the spec minimum is 60 - smaller values are clamped). The handler receives an IdleState with UserState (active/idle) and ScreenState (locked/unlocked) on every change. Dispose the returned ButilSubscription to stop."
+                 Code=@("""
+private ButilSubscription? _sub;
+
+_sub = await idleDetector.Start(60, state =>
+{
+    // state.UserState:   "active" | "idle"
+    // state.ScreenState: "unlocked" | "locked"
+});
+
+// stop watching:
+await _sub.DisposeAsync();
+""")>
+        <div class="field">
+            <span class="field-label">Threshold (seconds, minimum 60)</span>
+            <input type="number" min="60" @bind="_threshold" />
+        </div>
+        <div class="controls">
+            <button @onclick="StartWatch">Start</button>
+            <button class="danger" @onclick="StopWatch">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Live state</span>
+            <span>@_liveState</span>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="idle watch output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes IdleDetector. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="RequestPermission"
+               Signature="ValueTask<PermissionState> RequestPermission()"
+               Description="Asks the browser for the idle-detection permission and returns the new permission state." />
+    <ApiMember Name="Start"
+               Signature="Task<ButilSubscription> Start(int threshold, Action<IdleState> handler)"
+               Description="Starts watching for idle changes. Thresholds below 60 seconds are clamped to 60. Dispose the returned subscription to stop." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Stops every active detector and releases the JS callback reference. Called automatically on scope/circuit teardown." />
+    <ApiMember Name="InvokeIdleDetector"
+               Signature="void InvokeIdleDetector(Guid id, IdleState state)"
+               Description="JSInvokable interop plumbing for state changes - not intended for app code." />
+    <ApiMember Name="IdleState.UserState"
+               Signature="string UserState { get; set; }"
+               Description="The user's activity state: active or idle." />
+    <ApiMember Name="IdleState.ScreenState"
+               Signature="string ScreenState { get; set; }"
+               Description="The screen's lock state: locked or unlocked." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole permissionOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private int _threshold = 60;
+    private string _liveState = "Not watching.";
+    private ButilSubscription? _sub;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await idleDetector.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task RequestPermission()
+    {
+        try
+        {
+            if (!await idleDetector.IsSupported())
+            {
+                await permissionOutput.Warn("IdleDetector is not supported in this browser.");
+                return;
+            }
+
+            var state = await idleDetector.RequestPermission();
+            await permissionOutput.Success("RequestPermission →", state);
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("RequestPermission failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatch()
+    {
+        await StopWatch();
+
+        try
+        {
+            if (!await idleDetector.IsSupported())
+            {
+                await watchOutput.Warn("IdleDetector is not supported in this browser.");
+                return;
+            }
+
+            _sub = await idleDetector.Start(_threshold, state =>
+            {
+                _liveState = $"user={state.UserState}, screen={state.ScreenState}";
+                _ = InvokeAsync(async () =>
+                {
+                    await watchOutput.Log("Idle change →", _liveState);
+                    StateHasChanged();
+                });
+            });
+
+            _liveState = "Watching - leave the machine untouched to go idle.";
+            await watchOutput.Log($"Idle watch started (threshold={Math.Max(_threshold, 60)}s).");
+        }
+        catch (Exception ex)
+        {
+            _liveState = "Start failed - is the permission granted?";
+            await watchOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatch()
+    {
+        if (_sub is null) return;
+
+        await _sub.DisposeAsync();
+        _sub = null;
+        _liveState = "Not watching.";
+        await watchOutput.Log("Idle watch stopped.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_sub is not null)
+            {
+                await _sub.DisposeAsync();
+                _sub = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}

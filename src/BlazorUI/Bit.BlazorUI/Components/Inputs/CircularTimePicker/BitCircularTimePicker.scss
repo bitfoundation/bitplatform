@@ -1,8 +1,66 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
+
+/*
+ * The dial is laid out off two custom properties - the diameter of the clock and the size of a number -
+ * and every other length inside it is derived from them, so a size only has to set those two and the
+ * rings, the pointer and the hit test all follow. The .NET side places each number by rotating it out to
+ * --bit-ctp-num-r, which the ring classes below point at the matching radius.
+ *
+ * The two radii are kept at a fixed proportion of the diameter (the outer ring is the largest circle a
+ * number still fits inside of, the inner one 68% of it), which is what lets the pointer hit test use a
+ * single boundary for every size.
+ */
+
+// The medium preset is also what a picker carrying no size class at all is drawn at, so it lives in a mixin
+// the base block and .bit-ctp-md both pull from rather than being written out twice.
+@mixin ctp-size-medium {
+    --bit-ctp-clk-size: #{spacing(32.5)};
+    --bit-ctp-num-size: #{spacing(4)};
+    --bit-ctp-txt-fontsize: #{spacing(5.5)};
+    --bit-ctp-apb-fontsize: #{spacing(2.6)};
+    --bit-ctp-apk-fontsize: #{spacing(1.75)};
+    --bit-ctp-num-fontsize: inherit;
+    --bit-ctp-tlb-minwidth: #{spacing(32.5)};
+    --bit-ctp-thb-size: #{spacing(3.5)};
+    --bit-ctp-thb-size-min: #{spacing(1.75)};
+}
+
+.bit-ctp,
+.bit-ctp-cal {
+    @include ctp-size-medium;
+
+    // The gap between a number and the rim of the dial, which is also exactly how far the thumb of the hand
+    // reaches past its own top - so subtracting it from the radius lands the thumb dead center on the number
+    // at every size.
+    --bit-ctp-num-gap: #{spacing(0.625)};
+    --bit-ctp-num-r-out: calc((var(--bit-ctp-clk-size) - var(--bit-ctp-num-size)) / 2 - var(--bit-ctp-num-gap));
+    --bit-ctp-num-r-inn: calc(var(--bit-ctp-num-r-out) * 0.68);
+    --bit-ctp-num-r: var(--bit-ctp-num-r-out);
+
+    --bit-ctp-ptr-h: calc(var(--bit-ctp-num-r-out) - var(--bit-ctp-num-gap));
+    --bit-ctp-ptr-h-inn: calc(var(--bit-ctp-num-r-inn) - var(--bit-ctp-num-gap));
+    --bit-ctp-ptr-w: #{spacing(0.25)};
+
+    // The accent of the dial. Overridden by the color role classes below, which are shared by the root and
+    // the callout because the callout is rendered as a sibling of the root rather than inside it.
+    --bit-ctp-clr: #{$clr-pri};
+    --bit-ctp-clr-text: #{$clr-pri-text};
+    --bit-ctp-clr-focus: #{$clr-pri-focus};
+
+    // What the border and the icon of the field turn into while it holds focus, so the field answers the
+    // focus ring from its own frame instead of staying neutral inside it. They are custom properties rather
+    // than plain declarations because the invalid and the disabled states re-point them below: an error, or
+    // a field nothing can be typed into, keeps its own color even while the focus class is on it.
+    --bit-ctp-clr-foc-brd: var(--bit-ctp-clr);
+    --bit-ctp-clr-foc-ico: var(--bit-ctp-clr);
+}
 
 .bit-ctp {
     &.bit-dis {
+        --bit-ctp-clr-foc-brd: #{$clr-brd-dis};
+        --bit-ctp-clr-foc-ico: #{$clr-fg-dis};
+
         .bit-ctp-lbl {
             color: $clr-fg-dis;
         }
@@ -25,22 +83,12 @@
                 background: none $clr-bg-dis;
             }
         }
-
-        .bit-ctp-txt,
-        .bit-ctp-num {
-            cursor: default;
-            color: $clr-fg-dis;
-        }
-
-        .bit-ctp-tbr,
-        .bit-ctp-pin,
-        .bit-ctp-ptr,
-        .bit-ctp-sel {
-            background-color: $clr-bg-dis;
-        }
     }
 
     &.bit-inv {
+        --bit-ctp-clr-foc-brd: #{$clr-err};
+        --bit-ctp-clr-foc-ico: #{$clr-err};
+
         .bit-ctp-icn {
             border-color: $clr-err;
         }
@@ -57,6 +105,55 @@
 
         &.bit-ctp-und.bit-ctp-foc .bit-ctp-icn {
             @include focus-underline-ring($clr-err-focus);
+        }
+    }
+}
+
+// The states that close the dial to the user. They live on the callout rather than on the root because the
+// callout is a sibling of it, so the root classes never reach the clock inside.
+.bit-ctp-cal {
+    &.bit-dis {
+        .bit-ctp-txt,
+        .bit-ctp-apb,
+        .bit-ctp-num {
+            cursor: default;
+            color: $clr-fg-dis;
+        }
+
+        .bit-ctp-tlb {
+            color: $clr-fg-dis;
+            background-color: $clr-bg-dis;
+        }
+
+        .bit-ctp-pin,
+        .bit-ctp-ptr,
+        .bit-ctp-sel,
+        .bit-ctp-apk .bit-ctp-aps {
+            background-color: $clr-bg-dis;
+        }
+
+        .bit-ctp-sel {
+            color: $clr-fg-dis;
+        }
+
+        .bit-ctp-apk .bit-ctp-apb {
+            border-color: $clr-brd-dis;
+        }
+
+        .bit-ctp-ptm {
+            color: $clr-fg-dis;
+            background-color: transparent;
+        }
+    }
+
+    // A read-only dial still reads out and still takes focus, but nothing on it can be moved, so the whole
+    // clock loses the affordances that would promise otherwise.
+    &.bit-ctp-rdl {
+        .bit-ctp-clk,
+        .bit-ctp-num,
+        .bit-ctp-txt,
+        .bit-ctp-apb {
+            cursor: default;
         }
     }
 }
@@ -135,9 +232,17 @@
     }
 }
 
-.bit-ctp-foc:not(.bit-ctp-und) {
-    .bit-ctp-icn {
-        @include focus-ring;
+// A focused field carries the accent on its own border and icon, so it reads as the active one even where the
+// ring around it is hard to make out - against a busy background, or on a form that shows several of them.
+.bit-ctp-foc {
+    .bit-ctp-ico {
+        color: var(--bit-ctp-clr-foc-ico, #{$clr-pri});
+    }
+
+    &:not(.bit-ctp-und) .bit-ctp-icn {
+        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+
+        border-color: var(--bit-ctp-clr-foc-brd, #{$clr-pri});
     }
 }
 
@@ -161,8 +266,14 @@
     }
 
     &.bit-ctp-foc {
+        // The underlined variant has no icon border to color, so the accent lands on the rule under the field
+        // instead - right below the ring, which reads as one thicker underline rather than two lines.
+        .bit-ctp-wrp {
+            border-bottom-color: var(--bit-ctp-clr-foc-brd, #{$clr-pri});
+        }
+
         .bit-ctp-icn {
-            @include focus-underline-ring;
+            @include focus-underline-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
         }
     }
 }
@@ -209,15 +320,29 @@
     background-color: $clr-bg-pri;
 }
 
-.bit-ctp-tbr {
+// Announced but never drawn: clipped rather than sized to nothing or hidden outright, both of which take the
+// element out of the accessibility tree in some engines and would silence the live region with it.
+.bit-ctp-lvr {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.bit-ctp-tlb {
     display: flex;
     align-items: center;
     flex-direction: row;
     padding: spacing(2) 0;
     justify-content: center;
-    min-width: spacing(32.5);
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    min-width: var(--bit-ctp-tlb-minwidth);
+    color: var(--bit-ctp-clr-text);
+    background-color: var(--bit-ctp-clr);
 }
 
 .bit-ctp-txt,
@@ -234,20 +359,44 @@
     display: inline-flex;
     text-decoration: none;
     vertical-align: middle;
-    font-size: spacing(5.5);
     justify-content: center;
     -webkit-appearance: none;
     background-color: transparent;
-    color: $clr-fg-pri;
+    font-size: var(--bit-ctp-txt-fontsize);
+
+    // The toolbar carries the on-color of the accent it is painted with, so its buttons inherit it instead
+    // of falling back to the page foreground on top of a colored surface.
+    color: inherit;
 
     &:disabled {
         cursor: default;
-        color: $clr-fg-dis;
+    }
+
+    &:focus-visible {
+        outline: $shp-focus-ring-width $shp-border-style currentcolor;
+        outline-offset: $shp-focus-ring-offset;
     }
 }
 
+// The part of the time the dial is not on: still readable, but clearly behind the one that is.
 .bit-ctp-ina {
-    color: rgba(255,255,255,.54);
+    color: translucent(currentcolor, 54%);
+}
+
+// A ring drawn with currentcolor would be dimmed along with the text it surrounds, so the two places the
+// dimmed buttons appear in each repaint it with the undimmed color of the surface they sit on.
+.bit-ctp-tlb .bit-ctp-ina:focus-visible {
+    outline-color: var(--bit-ctp-clr-text);
+}
+
+.bit-ctp-apk .bit-ctp-ina:focus-visible {
+    outline-color: $clr-fg-pri;
+}
+
+// The separator, and the whole read-out of the single-part edit modes, are text rather than controls, so they
+// do not carry the cursor of the buttons they share their type with.
+span.bit-ctp-txt {
+    cursor: default;
 }
 
 .bit-ctp-hmc {
@@ -265,9 +414,89 @@
 }
 
 .bit-ctp-apb {
-    font-size: spacing(2.6);
     min-width: spacing(2);
     padding-top: spacing(0.5);
+    font-size: var(--bit-ctp-apb-fontsize);
+}
+
+// The meridiem moved out from beside the time and under the clock: no longer on the colored toolbar, so the
+// pair carries its own frame - a segmented control rather than two words stacked in a corner - and the half
+// that is on is filled with the accent instead of merely being the one that is not dimmed.
+.bit-ctp-apk {
+    gap: spacing(1);
+    padding: 0 spacing(2) spacing(1.5);
+    flex-direction: row;
+    justify-content: center;
+    margin-inline-start: 0;
+
+    .bit-ctp-apb {
+        // Sized off the numbers on the dial next to it, so the pair is as easy to hit as the ring it belongs
+        // to rather than the two words it used to be in the corner of the toolbar - and so it follows the
+        // dial through the size presets instead of staying at the medium one on all three.
+        padding: spacing(0.5) spacing(2);
+        font-size: var(--bit-ctp-apk-fontsize);
+        min-width: calc(var(--bit-ctp-num-size) * 1.5);
+        min-height: var(--bit-ctp-num-size);
+        color: $clr-fg-pri;
+        border-radius: $shp-border-radius;
+        border: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    .bit-ctp-aps {
+        color: var(--bit-ctp-clr-text);
+        background-color: var(--bit-ctp-clr);
+        border-color: var(--bit-ctp-clr);
+    }
+}
+
+// Everything under the toolbar. A column of its own, so the landscape layout below can put the toolbar
+// beside it by turning a single container into a row - and so a caller styling the Body slot has one box
+// that holds the clock, the meridiem pair and the actions together.
+.bit-ctp-bdy {
+    display: flex;
+    flex-direction: column;
+}
+
+/*
+ * The toolbar beside the clock instead of above it, which is how a clock is laid out wherever there is more
+ * width than height to fill: the parts of the time stack down a column, so the separators between them have
+ * nothing left to separate and are dropped.
+ *
+ * Only from the small breakpoint up. Below it there is no width to give the toolbar, and the responsive mode
+ * is already spending all of it on a sheet the width of the screen.
+ */
+.bit-ctp-lnd {
+    @include gt-xs {
+        .bit-ctp-cac {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        .bit-ctp-tlb {
+            min-width: unset;
+            padding: spacing(2);
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bit-ctp-hmc {
+            align-items: center;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .bit-ctp-sep {
+            display: none;
+        }
+
+        // Only the pair that sits in the toolbar moves: the one AmPmInClock puts under the clock is already
+        // laid out for the column it is in.
+        .bit-ctp-tlb .bit-ctp-apc {
+            margin-block-start: spacing(1.5);
+            margin-inline-start: 0;
+        }
+    }
 }
 
 .bit-ctp-clk {
@@ -275,9 +504,9 @@
     position: relative;
     touch-action: none;
     border-radius: 50%;
-    width: spacing(32.5);
-    height: spacing(32.5);
-    background-color: rgba(0,0,0,.07);
+    width: var(--bit-ctp-clk-size);
+    height: var(--bit-ctp-clk-size);
+    background-color: $clr-bg-sec;
 }
 
 .bit-ctp-pin {
@@ -288,16 +517,22 @@
     width: spacing(0.75);
     height: spacing(0.75);
     transform: translate(-50%,-50%);
-    background-color: $clr-pri;
+    background-color: var(--bit-ctp-clr);
 }
 
 .bit-ctp-ptr {
     bottom: 50%;
     position: absolute;
-    width: spacing(0.25);
-    left: calc(50% - spacing(0.125));
+    width: var(--bit-ctp-ptr-w);
+    height: var(--bit-ctp-ptr-h);
+    left: calc(50% - var(--bit-ctp-ptr-w) / 2);
     transform-origin: center bottom 0;
-    background-color: $clr-pri;
+    background-color: var(--bit-ctp-clr);
+}
+
+// The 24-hour dial puts 1-12 on the inner ring, so the hand pointing at one of them is shortened to it.
+.bit-ctp-pti {
+    height: var(--bit-ctp-ptr-h-inn);
 }
 
 .bit-ctp-ani {
@@ -307,55 +542,122 @@
 .bit-ctp-pth {
     border: none;
     position: absolute;
-    width: spacing(3.5);
     border-radius: 100%;
-    top: spacing(-2.375);
-    height: spacing(3.5);
-    left: spacing(-1.625);
+    box-sizing: border-box;
     background-color: unset;
+    width: var(--bit-ctp-thb-size);
+    height: var(--bit-ctp-thb-size);
+    top: calc((var(--bit-ctp-thb-size) / 2 + var(--bit-ctp-num-gap)) * -1);
+    left: calc((var(--bit-ctp-thb-size) - var(--bit-ctp-ptr-w)) / -2);
 }
 
 .bit-ctp-ptm {
-    left: spacing(-0.5);
-    width: spacing(1.25);
-    top: spacing(-1.125);
-    height: spacing(1.25);
     background: transparent;
-    color: $clr-pri;
+    color: var(--bit-ctp-clr);
+    width: var(--bit-ctp-thb-size-min);
+    height: var(--bit-ctp-thb-size-min);
     border: spacing(0.25) $shp-border-style;
+    top: calc((var(--bit-ctp-thb-size-min) / 2 + var(--bit-ctp-num-gap)) * -1);
+    left: calc((var(--bit-ctp-thb-size-min) - var(--bit-ctp-ptr-w)) / -2);
 }
 
+/*
+ * Every number sits at the center of the dial and is rotated out to the radius of its ring by the transform
+ * the .NET side writes, so the ring is a matter of which radius --bit-ctp-num-r points at rather than of a
+ * position computed against one fixed clock size.
+ */
 .bit-ctp-num {
-    width: spacing(4);
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    cursor: pointer;
     user-select: none;
-    height: spacing(4);
     position: absolute;
     border-radius: 50%;
     align-items: center;
     display: inline-flex;
     justify-content: center;
+    width: var(--bit-ctp-num-size);
+    height: var(--bit-ctp-num-size);
+    font-size: var(--bit-ctp-num-fontsize);
+    margin-top: calc(var(--bit-ctp-num-size) / -2);
+    margin-left: calc(var(--bit-ctp-num-size) / -2);
     transition-duration: $mot-duration-short;
-    transition-property: color;
-    bottom: calc(100% - spacing(4));
+    transition-property: color, background-color;
     color: $clr-fg-pri;
-    left: calc((100% - spacing(4))/2);
+}
+
+.bit-ctp-inn {
+    --bit-ctp-num-r: var(--bit-ctp-num-r-inn);
+
+    color: $clr-fg-sec;
+}
+
+// A number the bounds, the steps or the allowed-value predicates rule out: dimmed, and out of the way of the
+// pointer so a press on it lands on the dial rather than on a value that would be refused anyway.
+.bit-ctp-dis {
+    cursor: default;
+    pointer-events: none;
+    color: $clr-fg-dis;
 }
 
 .bit-ctp-sel {
-    color: $clr-fg-pri;
-    background-color: $clr-pri;
     z-index: 1;
+    color: var(--bit-ctp-clr-text);
+    background-color: var(--bit-ctp-clr);
 }
 
 .bit-ctp-clf {
     width: 100%;
     height: 100%;
+    outline: none;
     border-radius: 50%;
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+    }
+}
+
+.bit-ctp-act {
+    display: flex;
+    gap: spacing(1);
+    padding: 0 spacing(2) spacing(1.5);
+    justify-content: flex-end;
+}
+
+.bit-ctp-abn {
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: spacing(1.75);
+    padding: spacing(0.75) spacing(1.5);
+    border-radius: $shp-border-radius;
+    background-color: transparent;
+    font-family: $tg-font-family;
+    color: var(--bit-ctp-clr);
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:active:not(:disabled) {
+        background-color: $clr-bg-pri-hover;
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
 }
 
 .bit-ctp-cbn {
     top: 0;
-    right: 0;
     padding: 0;
     border: none;
     cursor: pointer;
@@ -363,6 +665,7 @@
     overflow: visible;
     position: absolute;
     text-align: center;
+    inset-inline-end: 0;
     width: spacing(3.75);
     max-width: spacing(5);
     font-size: spacing(1.5);
@@ -378,6 +681,10 @@
 
     &:active {
         background-color: $clr-bg-pri-hover;
+    }
+
+    &:focus-visible {
+        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
     }
 }
 
@@ -401,7 +708,7 @@
     .bit-ctp-lbl::after {
         content: "*";
         color: $clr-req;
-        margin-left: spacing(0.625);
+        margin-inline-start: spacing(0.625);
     }
 }
 
@@ -428,5 +735,125 @@
             max-width: spacing(5);
             font-size: spacing(2.5);
         }
+    }
+}
+
+// Only the numbers of a dial that can still be moved light up under the pointer: a promise of a change that
+// a disabled, read-only or already-selected number could not deliver would be a lie.
+@media (hover: hover) {
+    .bit-ctp-cal:not(.bit-dis):not(.bit-ctp-rdl) {
+        .bit-ctp-num:not(.bit-ctp-dis):not(.bit-ctp-sel):hover {
+            background-color: $clr-bg-pri-hover;
+        }
+
+        // Scoped to the toolbar: its buttons sit on the accent, so the on-accent color is what reads as a
+        // lift there. The meridiem pair under the clock sits on the callout instead, where that same color
+        // would make it vanish, so it lifts with a background of its own. Only the buttons lift: the
+        // separators and the read-out of a single-part edit mode carry the same class without being
+        // anything a pointer can press, and :not(:disabled) is no help there - a span is never disabled.
+        .bit-ctp-tlb button.bit-ctp-txt:not(:disabled):hover,
+        .bit-ctp-tlb .bit-ctp-apb:not(:disabled):hover {
+            color: var(--bit-ctp-clr-text);
+        }
+
+        .bit-ctp-apk .bit-ctp-apb:not(:disabled):not(.bit-ctp-aps):hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+}
+
+.bit-ctp-sm {
+    --bit-ctp-thb-size: #{spacing(2.875)};
+    --bit-ctp-thb-size-min: #{spacing(1.5)};
+    --bit-ctp-clk-size: #{spacing(26)};
+    --bit-ctp-num-size: #{spacing(3.25)};
+    --bit-ctp-txt-fontsize: #{spacing(4.25)};
+    --bit-ctp-apb-fontsize: #{spacing(2)};
+    --bit-ctp-apk-fontsize: #{spacing(1.5)};
+    --bit-ctp-num-fontsize: #{spacing(1.5)};
+    --bit-ctp-tlb-minwidth: #{spacing(26)};
+}
+
+.bit-ctp-md {
+    @include ctp-size-medium;
+}
+
+.bit-ctp-lg {
+    --bit-ctp-thb-size: #{spacing(4.25)};
+    --bit-ctp-thb-size-min: #{spacing(2)};
+    --bit-ctp-clk-size: #{spacing(39)};
+    --bit-ctp-num-size: #{spacing(4.75)};
+    --bit-ctp-txt-fontsize: #{spacing(6.5)};
+    --bit-ctp-apb-fontsize: #{spacing(3)};
+    --bit-ctp-apk-fontsize: #{spacing(2.25)};
+    --bit-ctp-num-fontsize: #{spacing(2.25)};
+    --bit-ctp-tlb-minwidth: #{spacing(39)};
+}
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-ctp-#{$role} {
+        --bit-ctp-clr: #{role($tokens, main)};
+        --bit-ctp-clr-text: #{role($tokens, on)};
+        --bit-ctp-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+// Windows High Contrast / forced-colors: author backgrounds are stripped to Canvas, which would leave the
+// hand, the pin and the selected number invisible and the toolbar indistinguishable from the dial. They are
+// repainted with system colors so the selection still reads, and GrayText where nothing can be picked.
+@media (forced-colors: active) {
+    .bit-ctp-tlb {
+        color: CanvasText;
+        background-color: Canvas;
+        border-bottom: 1px solid CanvasText;
+    }
+
+    .bit-ctp-clk {
+        border: 1px solid CanvasText;
+    }
+
+    .bit-ctp-pin,
+    .bit-ctp-ptr {
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+
+    .bit-ctp-ptm {
+        forced-color-adjust: none;
+        color: Highlight;
+        background-color: Canvas;
+    }
+
+    .bit-ctp-sel,
+    .bit-ctp-apk .bit-ctp-aps {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background-color: Highlight;
+    }
+
+    .bit-ctp-apk .bit-ctp-apb {
+        border-color: CanvasText;
+    }
+
+    .bit-ctp-dis,
+    .bit-ctp-cal.bit-dis .bit-ctp-num,
+    .bit-ctp-cal.bit-dis .bit-ctp-txt,
+    .bit-ctp-cal.bit-dis .bit-ctp-apb {
+        forced-color-adjust: none;
+        color: GrayText;
+    }
+
+    // A selection that cannot be acted on - the picker is disabled, or the constraints have since ruled the
+    // value out - takes the GrayText of the rules above, which would be left sitting on the Highlight the
+    // selection paints. The background goes back to the one of the surface around it so the pair still reads.
+    .bit-ctp-dis.bit-ctp-sel,
+    .bit-ctp-cal.bit-dis .bit-ctp-sel,
+    .bit-ctp-cal.bit-dis .bit-ctp-apk .bit-ctp-aps {
+        background-color: Canvas;
+    }
+
+    .bit-ctp-ina {
+        color: GrayText;
     }
 }

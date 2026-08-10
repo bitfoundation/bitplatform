@@ -1,92 +1,439 @@
-﻿@page "/components/colorpicker"
+@page "/components/colorpicker"
 @page "/components/color-picker"
 
 <PageOutlet Url="components/colorpicker"
             Title="ColorPicker"
-            Description="The color picker (ColorPicker) is used to browse through and select colors." />
+            Description="A keyboard-accessible color picker with a saturation-brightness area, hue and alpha sliders, text fields in hex, RGB, HSL or HSV, preset swatches, the browser's screen eyedropper, and a value that reads and writes hex, rgb, hsl, hsv, hwb and oklch." />
 
 <DemoPage Name="ColorPicker"
-          Description="The color picker (ColorPicker) is used to browse through and select colors. By default, it lets people navigate through colors on a color spectrum, or specify a color in either Red-Green-Blue (RGB), or alpha color code; or Hexadecimal textboxes."
+          Description="BitColorPicker is the panel a color is chosen on: drag the saturation-brightness area for the shade, the hue slider for the color it is a shade of, and the alpha slider for how much of it shows through. The exact value can be typed into the text fields instead - in hexadecimal, RGB, HSL or HSV, with an optional button that moves between them - picked in one click from a palette of presets, or sampled from anywhere on the screen with the browser's own eyedropper. The value is read and written in whatever notation it arrives in - hexadecimal in three, four, six or eight digits, rgb(), hsl(), hwb(), the perceptual oklab() and oklch() modern design tokens are written in, a color keyword like 'tomato', plus hsv() for the model the picker itself is built on - or pinned to one with Format, with a matching alpha-carrying notation for when a single string has to survive a transparent color. Everything on it is reachable from the keyboard, including the two-dimensional area, every part of it announces the color by name rather than by channel numbers, and the whole panel mirrors in right-to-left."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           GitHubUrl="Inputs/ColorPicker/BitColorPicker.razor"
           GitHubDemoUrl="Inputs/ColorPicker/BitColorPickerDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div class="example-content">
-            <BitColorPicker />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Alpha & Preview" RazorCode="@example2RazorCode" Id="example2">
-        <div>Use alpha slider and preview option in the BitColorPicker, allowing to adjust the transparency of the color and preview the result.</div>
-        <br /><br />
-        <div class="example-content">
-            <BitColorPicker ShowAlphaSlider ShowPreview />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
         <div>
-            The color type (hex or rgb) of the BitColorPicker automatically matches the initial value of the Color parameter.
-            For example, if the initial value of this parameter is in hex format, the component will return the resulting colors in hex and vice versa.
+            On its own the BitColorPicker keeps its own state with no binding or event handler involved, starting
+            on opaque white. <b>Label</b> names the panel - and names it to a screen reader too, through
+            <b>aria-labelledby</b> rather than a <b>label</b> element, since a panel of many controls has no single
+            input a <b>for</b> could point at - while <b>LabelTemplate</b> takes markup where a string will not do.
+            Disabling it greys the whole panel out and takes it out of the interaction entirely.
+            <b>ReadOnly</b> is the other half of that: the color is still shown at full contrast, but nothing about
+            it can be changed - the mode to reach for when the picker is displaying a color someone else chose.
         </div>
-        <br /><br />
-        <div class="example-content">
-            <div>RGB:</div>
+        <br />
+        <div class="example-box">
+            <div>Basic:</div>
+            <BitColorPicker />
             <br />
-            <BitColorPicker @bind-Color="rgbColor" />
-            <div>Color: @rgbColor</div>
-            <br /><br /><br />
-            <div>HEX:</div>
+            <div>Label:</div>
+            <BitColorPicker Label="Brand color" />
             <br />
-            <BitColorPicker @bind-Color="hexColor" />
-            <div>Color: @hexColor</div>
-            <br /><br /><br />
-            <div>Two-way binding:</div>
+            <div>LabelTemplate:</div>
+            <BitColorPicker>
+                <LabelTemplate>
+                    <BitIcon IconName="@BitIconName.Color" /> <b>Accent color</b>
+                </LabelTemplate>
+            </BitColorPicker>
             <br />
-            <BitColorPicker @bind-Color="twoWayColor" ShowAlphaSlider ShowPreview />
-            <BitTextField Label="Enter Color (Hex or Rgb)" @bind-Value="twoWayColor" Style="width: 200px;" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>Handle color change events in the BitColorPicker. This example shows how to capture the selected color and its alpha value when the user makes a selection.</div>
-        <br /><br />
-        <div class="example-content">
-            <div>OnChange:</div>
+            <div>Disabled:</div>
+            <BitColorPicker IsEnabled="false" Color="#B34D4D" />
             <br />
-            <BitColorPicker OnChange="v => (changedColor, changedAlpha) = v" ShowAlphaSlider />
-            <br />
-            <div>Color: @changedColor</div>
-            <div>Alpha: @changedAlpha</div>
+            <div>ReadOnly:</div>
+            <BitColorPicker ReadOnly Color="#4D7FB3" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Public API" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-        <div>Explore the public API of the BitColorPicker component, including how to access different color formats such as Hex, RGB, RGBA, and HSV using component references.</div>
-        <br /><br />
-        <div class="example-content">
+    <DemoExample Title="Alpha & Preview" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            <b>ShowAlphaSlider</b> adds the transparency track under the hue slider, and <b>ShowPreview</b> adds the
+            swatch beside them. Both are drawn over a checkerboard, so a half-transparent color reads as
+            half-transparent rather than as a paler solid - which is the whole point of showing it. The alpha itself
+            is tracked either way and is always readable through the <b>Alpha</b> parameter; the slider only decides
+            whether the user gets to change it.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Alpha slider and preview:</div>
+            <BitColorPicker ShowAlphaSlider ShowPreview @bind-Color="alphaColor" @bind-Alpha="alphaValue" />
+            <BitLabel>Color: @alphaColor &nbsp; Alpha: @alphaValue</BitLabel>
+            <br />
+            <div>Preview only:</div>
+            <BitColorPicker ShowPreview @bind-Color="previewColor" />
+            <BitLabel>Color: @previewColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Inputs" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            <b>ShowInputs</b> adds the hexadecimal and Red-Green-Blue text fields, which is how an exact color is
+            entered - or read off - without hunting for it on the gradient. Each field commits when it is left or
+            when Enter is pressed, so the picker does not jump around after every keystroke, and a value that is not
+            a color is simply refused and replaced by the current one. The hexadecimal field grows to eight digits
+            once the alpha slider is on, and gains its own percentage field beside the channels.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Hex and RGB:</div>
+            <BitColorPicker ShowInputs ShowPreview @bind-Color="inputsColor" />
+            <BitLabel>Color: @inputsColor</BitLabel>
+            <br />
+            <div>With alpha (eight-digit hex and an A% field):</div>
+            <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider Format="BitColorFormat.HexAlpha" @bind-Color="inputsAlphaColor" />
+            <BitLabel>Color: @inputsAlphaColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Input modes" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            <b>InputsMode</b> decides which channels the text fields are written in: the hexadecimal field with
+            the Red-Green-Blue channels beside it, either of those on its own, or the hue-saturation-lightness
+            and hue-saturation-brightness triplets - the model the picker itself is driven in. It is about how
+            the color is typed, not how it is published: a picker edited in HSL still answers in whatever
+            <b>Format</b> says. <b>ShowInputsModeSwitch</b> hands that choice to the user with a button that
+            moves the fields on to the next set, so someone who thinks in hue and lightness is not made to
+            translate it into RGB first, and <b>@@bind-InputsMode</b> follows them there. Because the switch
+            only changes which numbers the color is being read as, it keeps working on a read-only picker.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>The user picks the model (try the button at the end of the row):</div>
+            <BitColorPicker ShowInputs ShowPreview ShowInputsModeSwitch
+                            @bind-InputsMode="inputsMode" @bind-Color="inputsModeColor" />
+            <BitLabel>Mode: @inputsMode &nbsp; Color: @inputsModeColor</BitLabel>
+            <br />
+            <div>Fixed to HSL:</div>
+            <BitColorPicker ShowInputs ShowPreview InputsMode="BitColorInputsMode.Hsl" @bind-Color="hslInputsColor" />
+            <BitLabel>Color: @hslInputsColor</BitLabel>
+            <br />
+            <div>Hexadecimal alone:</div>
+            <BitColorPicker ShowInputs ShowPreview InputsMode="BitColorInputsMode.Hex" @bind-Color="hexInputsColor" />
+            <BitLabel>Color: @hexInputsColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Presets" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            <b>Presets</b> puts a palette of one-click swatches under the picker, which is what turns "pick any color"
+            into "pick one of ours" without giving up the gradient behind it. Each preset is written in any of the
+            notations the Color parameter accepts, and the swatch matching the current color is marked with a ring.
+            A preset that carries its own alpha applies it too, so the same hue can be offered at several
+            transparencies; one that does not keeps whatever transparency is already dialled in - and
+            <b>transparent</b> is a color like any other, which is how a palette offers "no color" at all.
+            <b>PresetsPerRow</b> lays the swatches out on a grid instead of letting them wrap, which is what keeps
+            a palette meant to be read in columns - a hue per column, a shade per row - in the arrangement it was
+            written in. The palette is a single tab stop, walked with the arrow keys - <b>Home</b> and <b>End</b>
+            jump to its ends, and the vertical arrows move a row at a time once PresetsPerRow says how long a row
+            is - so a thirty-color palette does not put thirty tab stops between the picker and whatever comes
+            after it. Tabbing in lands on the swatch the picker is already on.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Brand palette:</div>
+            <BitColorPicker ShowPreview Presets="brandPresets" @bind-Color="presetColor" />
+            <BitLabel>Color: @presetColor</BitLabel>
+            <br />
+            <div>The same hue at four transparencies, plus "no color":</div>
+            <BitColorPicker ShowPreview ShowAlphaSlider Presets="alphaPresets" Format="BitColorFormat.Rgba" @bind-Color="alphaPresetColor" />
+            <BitLabel>Color: @alphaPresetColor</BitLabel>
+            <br />
+            <div>A shade ramp, five to a row:</div>
+            <BitColorPicker ShowPreview Presets="rampPresets" PresetsPerRow="5" @bind-Color="rampPresetColor" />
+            <BitLabel>Color: @rampPresetColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Eye dropper" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            <b>ShowEyeDropper</b> adds the button that opens the browser's own eyedropper and samples a color from
+            anywhere on the screen - including outside the browser window. It is a Chromium-only browser feature, so
+            the button is only rendered where the browser actually provides one and the picker never offers a control
+            that cannot work. Dismissing the eyedropper with Escape leaves the color exactly where it was.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Click the eyedropper, then click anywhere on the screen:</div>
+            <BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color="eyeDropperColor" />
+            <BitLabel>Color: @eyeDropperColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Contrast" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            <b>ShowContrast</b> adds the readout that answers the question a color is usually being picked to
+            settle: can this be read? It measures the picked color against <b>ContrastColor</b> - the background
+            it will be read on, white unless you say otherwise, in any of the notations Color accepts - and
+            reports the WCAG 2 ratio along with whether it clears the bar for normal text (4.5:1) and for large
+            text (3:1). A semi-transparent color is composited onto the background first, since a ratio taken
+            against a color the eye never sees would answer the wrong question. Both bars are shown because a
+            color that is fine for a heading is not necessarily fine for body copy, and each verdict carries a
+            mark as well as a color - a pass marked only in green would be exactly the distinction this readout
+            exists to help someone avoid making.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Text color against a page background:</div>
+            <BitColorPicker ShowContrast ShowInputs ShowPreview
+                            ContrastColor="@contrastBackground"
+                            @bind-Color="contrastColor" />
+            <BitLabel>@contrastColor on @contrastBackground</BitLabel>
+            <br />
+            <div>Pick the background it is read on:</div>
+            <BitColorPicker ShowPreview ShowInputs @bind-Color="contrastBackground" />
+            <br />
+            <div>Against a dark surface, with transparency in play:</div>
+            <BitColorPicker ShowContrast ShowAlphaSlider ShowPreview
+                            ContrastColor="#1B1A19"
+                            Format="BitColorFormat.Rgba"
+                            @bind-Color="contrastOnDarkColor" />
+            <BitLabel>Color: @contrastOnDarkColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Format" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            Left unset, the picker answers in the same notation it was given: a hexadecimal binding stays hexadecimal,
+            an <b>rgb()</b> one stays <b>rgb()</b>. <b>Format</b> pins it to one instead, which matters when the value
+            is going somewhere with its own expectations - a stylesheet variable, an API, a database column. Every
+            notation has an alpha-carrying twin (<b>HexAlpha</b>, <b>Rgba</b>, <b>Hsla</b>, <b>Hsva</b>,
+            <b>Hwba</b>, <b>Oklaba</b>, <b>Oklcha</b>): the plain ones drop the transparency from the string while
+            the twins fold it in, which is what a single bound value needs to survive a semi-transparent color.
+            <b>Hwb</b> is the "hue plus how much white and black" model, and <b>Oklab</b> and <b>Oklch</b> are the
+            perceptually uniform pair modern design tokens are increasingly written in - a Tailwind palette is a
+            list of <b>oklch()</b>. Both are read as well as written, so a token can be handed straight to the
+            picker. Note that <b>Hsv</b> is the model the picker is actually built on, but unlike the others it is
+            not a notation any browser understands.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitColorPicker ShowAlphaSlider ShowPreview Format="selectedFormat" @bind-Color="formatColor" />
+            <BitLabel>Color: @formatColor</BitLabel>
+            <br />
+            <BitChoiceGroup Horizontal
+                            Label="Format"
+                            @bind-Value="selectedFormat"
+                            TItem="BitChoiceGroupOption<BitColorFormat>" TValue="BitColorFormat">
+                <BitChoiceGroupOption Text="Hex" Value="BitColorFormat.Hex" />
+                <BitChoiceGroupOption Text="HexAlpha" Value="BitColorFormat.HexAlpha" />
+                <BitChoiceGroupOption Text="Rgb" Value="BitColorFormat.Rgb" />
+                <BitChoiceGroupOption Text="Rgba" Value="BitColorFormat.Rgba" />
+                <BitChoiceGroupOption Text="Hsl" Value="BitColorFormat.Hsl" />
+                <BitChoiceGroupOption Text="Hsla" Value="BitColorFormat.Hsla" />
+                <BitChoiceGroupOption Text="Hsv" Value="BitColorFormat.Hsv" />
+                <BitChoiceGroupOption Text="Hsva" Value="BitColorFormat.Hsva" />
+                <BitChoiceGroupOption Text="Hwb" Value="BitColorFormat.Hwb" />
+                <BitChoiceGroupOption Text="Hwba" Value="BitColorFormat.Hwba" />
+                <BitChoiceGroupOption Text="Oklab" Value="BitColorFormat.Oklab" />
+                <BitChoiceGroupOption Text="Oklaba" Value="BitColorFormat.Oklaba" />
+                <BitChoiceGroupOption Text="Oklch" Value="BitColorFormat.Oklch" />
+                <BitChoiceGroupOption Text="Oklcha" Value="BitColorFormat.Oklcha" />
+            </BitChoiceGroup>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            A one-way <b>Color</b> leaves the page in charge of the color - the buttons below drive it, and dragging
+            the gradient moves the picker without the page ever hearing about it, so the next color the page sets
+            takes it straight back. Pair it with <b>ReadOnly</b> when the picker is only meant to display.
+            <b>@@bind-Color</b> completes the circuit in both directions, which is why the text field and the picker
+            below stay in step whichever one is used. That text field is also the quickest way to see how forgiving
+            the parser is: three-, four-, six- and eight-digit hexadecimal, <b>rgb()</b> and <b>rgba()</b>,
+            <b>hsl()</b> and <b>hsla()</b>, <b>hsv()</b>, <b>hwb()</b>, <b>oklab()</b> and <b>oklch()</b>,
+            <b>color(srgb ...)</b>, the modern space-separated syntax with a slashed alpha, any CSS color keyword,
+            and <b>transparent</b> are all understood, and anything it cannot read leaves the picker where it was
+            rather than throwing - which is what lets a half-typed color be bound straight from a text field.
+            <b>@@bind-Alpha</b> is the separate binding for the transparency, and a color string that carries its
+            own alpha overrides it.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>One-way:</div>
+            <BitColorPicker Color="oneWayColor" ShowPreview />
+            <div class="buttons">
+                @foreach (var (label, color) in oneWayOptions)
+                {
+                    <BitButton OnClick="() => oneWayColor = color">@label</BitButton>
+                }
+            </div>
+            <br />
+            <div>Two-way (try 'tomato', '#0f8', 'rgb(255 128 0 / 40%)', 'hwb(280 10% 20%)', 'oklch(0.7 0.18 200)'):</div>
+            <BitColorPicker @bind-Color="twoWayColor" @bind-Alpha="twoWayAlpha" ShowAlphaSlider ShowPreview />
+            <BitTextField Label="Enter a color" @bind-Value="twoWayColor" Style="width: 220px;" />
+            <BitLabel>Alpha: @twoWayAlpha</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>OnChange</b> fires on every step of a drag, which is what keeps a live preview in step with the
+            pointer. <b>OnChangeEnd</b> fires once, when the gesture is over: the drag ends, the slider is released, a
+            text field is committed, a preset is picked. That is the one to hang expensive work off - saving,
+            recoloring a document, a network call - since the counters below show just how much more often the first
+            one runs. Both hand over a <b>BitColorChangeEventArgs</b> carrying the color in every notation at once -
+            <b>Hex</b>, <b>HexAlpha</b>, <b>Rgb</b>, <b>Rgba</b>, the <b>Hsl</b>, <b>Hsv</b>, <b>Hwb</b> and
+            <b>Oklch</b> tuples, and the <b>ColorDescription</b> that says it in words - so a handler that needs
+            the hex does not have to convert the rgb back.
+        </div>
+        <br />
+        <div class="example-box">
+            <BitColorPicker ShowAlphaSlider ShowPreview
+                            OnChange="HandleOnChange"
+                            OnChangeEnd="HandleOnChangeEnd" />
+            <BitLabel>OnChange: @changeCount times, last @changedColor</BitLabel>
+            <BitLabel>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Public API" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            A <b>@@ref</b> to the picker exposes the current color in every notation without going through the
+            binding: <b>Hex</b> and <b>HexAlpha</b>, <b>Rgb</b> and <b>Rgba</b>, and the <b>Hsl</b>, <b>Hsv</b>,
+            <b>Hwb</b> and <b>Oklch</b> tuples for when the channels are wanted as numbers rather than as a string.
+            <b>ColorDescription</b> is the color said in words - "light vibrant blue" - which is what the picker
+            announces to a screen reader and what a page usually wants when it has to name the color in text.
+            They all describe the color the picker is on, whatever Format the bound value happens to be written in.
+        </div>
+        <br />
+        <div class="example-box">
             <BitColorPicker @ref="colorPickerRef" @bind-Color="boundColor" ShowAlphaSlider ShowPreview />
-            <br />
-            <div>Color: @boundColor</div>
-            <div>Hex: @colorPickerRef?.Hex</div>
-            <div>Rgb: @colorPickerRef?.Rgb</div>
-            <div>Rgba: @colorPickerRef?.Rgba</div>
-            <div>Hsv: @colorPickerRef?.Hsv</div>
+            <BitLabel>Color: @boundColor</BitLabel>
+            <BitLabel>ColorDescription: @colorPickerRef?.ColorDescription</BitLabel>
+            <BitLabel>Hex: @colorPickerRef?.Hex</BitLabel>
+            <BitLabel>HexAlpha: @colorPickerRef?.HexAlpha</BitLabel>
+            <BitLabel>Rgb: @colorPickerRef?.Rgb</BitLabel>
+            <BitLabel>Rgba: @colorPickerRef?.Rgba</BitLabel>
+            <BitLabel>Hsl: @colorPickerRef?.Hsl</BitLabel>
+            <BitLabel>Hsv: @colorPickerRef?.Hsv</BitLabel>
+            <BitLabel>Hwb: @colorPickerRef?.Hwb</BitLabel>
+            <BitLabel>Oklch: @colorPickerRef?.Oklch</BitLabel>
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
-        <div>Apply custom CSS classes and styles to the BitColorPicker component for tailoring its appearance to fit your design needs.</div>
+    <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            Every part of the picker is a tab stop of its own, and the saturation-brightness area is the interesting
+            one: a two-dimensional control, which no ARIA role covers, exposed as a slider over the saturation and
+            named a <b>2D slider</b> so the arrangement is announced. Its value text names the color and then spells
+            it out - "light vibrant green, Saturation 75%, Brightness 80%, #5CCC33" - because a channel triplet is
+            three numbers nobody can picture, while the name says at once which color the area has landed on. The
+            panel names itself the same way, and so does every preset swatch, so a palette is a list of colors
+            rather than a list of hexadecimal strings read out digit by digit.
+            <b>ArrowLeft</b> and <b>ArrowRight</b> move the saturation by one percent,
+            <b>ArrowUp</b> and <b>ArrowDown</b> the brightness; holding <b>Shift</b>, or using <b>PageUp</b> and
+            <b>PageDown</b> which need no modifier, moves ten at a time, and <b>Home</b> and <b>End</b> jump to the
+            ends of the saturation axis. The horizontal arrows follow the reading direction, so they swap in
+            right-to-left. The hue and alpha tracks are native range inputs and answer to the whole keyboard contract
+            of a slider for free. <b>AriaLabel</b> names the panel as a whole, <b>Label</b> names it through the text
+            it renders, and a picker given neither describes the color it is currently on. <b>AutoFocus</b> puts the
+            focus on the gradient as soon as the picker renders, which is what a picker opened as the answer to a
+            question - inside a popover, a dialog, a toolbar - usually wants.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Tab to the gradient, then use the arrow, Page, Home and End keys:</div>
+            <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview
+                            AriaLabel="Choose the brand color"
+                            @bind-Color="accessibilityColor" />
+            <BitLabel>Color: @accessibilityColor</BitLabel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            <b>EyeDropperIconName</b> replaces the built-in glyph of the eyedropper button with another one from the
+            bit icon set, and <b>EyeDropperIcon</b> takes a <b>BitIconInfo</b> instead, which is how an icon from an
+            external library is used. <b>BitIconInfo.Fa</b> and <b>BitIconInfo.Bi</b> build the class names for
+            FontAwesome and Bootstrap Icons, <b>BitIconInfo.Css</b> takes whatever classes you hand it, and a plain
+            string works too; the BitIconInfo wins when both are set. Remember to reference the stylesheet of the
+            icon library itself. The buttons below only appear on browsers that provide an eyedropper.
+        </div>
+
         <br /><br />
-        <div class="example-content">
-            <div>Style</div>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+        <div class="example-box">
+            <div>bit icon set:</div>
+            <BitColorPicker ShowEyeDropper EyeDropperIconName="@BitIconName.Color" />
             <br />
+            <div>FontAwesome:</div>
+            <BitColorPicker ShowEyeDropper EyeDropperIcon="@BitIconInfo.Fa("solid eye-dropper")" />
+            <br />
+            <div>Bootstrap:</div>
+            <BitColorPicker ShowEyeDropper EyeDropperIcon="@BitIconInfo.Bi("eyedropper")" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>Size</b> scales the whole panel at once - the gradient, the tracks, the thumbs and the preview - from
+            the <b>Small</b> that fits inside a narrow popover to the <b>Large</b> that carries a color asked as the
+            main question on a page. <b>Medium</b> is the default. A larger size also means a larger gradient, which
+            is the difference between picking a shade and approximating one.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Small:</div>
+            <BitColorPicker Size="BitSize.Small" ShowAlphaSlider ShowPreview @bind-Color="smallColor" />
+            <br />
+            <div>Medium:</div>
+            <BitColorPicker Size="BitSize.Medium" ShowAlphaSlider ShowPreview @bind-Color="mediumColor" />
+            <br />
+            <div>Large:</div>
+            <BitColorPicker Size="BitSize.Large" ShowAlphaSlider ShowPreview @bind-Color="largeColor" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element of the picker, which is where its overall size and
+            framing live - note that the panel's height is the sum of its rows, so a fixed height shrinks the gradient
+            rather than the controls. <b>Styles</b> and <b>Classes</b> go a level deeper and address the parts by name
+            - among them <b>Root</b>, <b>SaturationPicker</b>, <b>SaturationThumb</b>, <b>Sliders</b>,
+            <b>HueSlider</b>, <b>AlphaSlider</b>, <b>Preview</b>, <b>Inputs</b>, <b>FieldInput</b>,
+            <b>InputsModeSwitch</b>, <b>Label</b>, <b>Contrast</b>, <b>Preset</b> and
+            <b>SelectedPreset</b> - so the gradient, the tracks and the text fields can each be restyled without
+            leaving the component. A swatch reshaped through <b>Preset</b> takes its selection ring with it, and the
+            colors of that ring are read from the <b>--bit-clp-prt-sel-clr</b> and <b>--bit-clp-prt-sel-shd</b>
+            variables, so <b>SelectedPreset</b> can recolor the mark without redrawing it.
+        </div>
+        <br />
+        <div class="example-box">
+            <div>Component's Style & Class:</div>
             <BitColorPicker ShowAlphaSlider Style="width: 230px; height: 150px;" />
-            <br /><br /><br />
-            <div>Class</div>
             <br />
             <BitColorPicker ShowAlphaSlider Class="custom-class" />
+            <br /><br />
+            <div>Styles & Classes:</div>
+            <BitColorPicker ShowAlphaSlider ShowPreview ShowInputs
+                            Styles="@(new() { SaturationPicker = "border-radius: 1rem;",
+                                              SaturationThumb = "width: 1.5rem; height: 1.5rem;",
+                                              Preview = "border-radius: 50%;" })" />
+            <br />
+            <BitColorPicker ShowAlphaSlider ShowInputs Presets="brandPresets"
+                            Classes="@(new() { FieldInput = "custom-field",
+                                               Preset = "custom-preset",
+                                               SelectedPreset = "custom-preset-selected" })" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            Setting <b>Dir</b> to <b>Rtl</b> mirrors the whole panel: the saturation axis runs from the right edge
+            outwards, the hue and alpha tracks reverse along with the native sliders that sit on them - so the fully
+            transparent end stays under the position the thumb calls zero - the thumbs are corrected to stay centred
+            on their color, and the horizontal arrow keys swap so that ArrowLeft still means "more saturated". The
+            text fields and the presets flow right-to-left with everything else.
+        </div>
+        <br />
+        <div dir="rtl">
+            <div class="example-box">
+                <BitColorPicker Dir="BitDir.Rtl" ShowAlphaSlider ShowPreview ShowInputs Presets="brandPresets" @bind-Color="rtlColor" />
+                <BitLabel>@rtlColor</BitLabel>
+            </div>
         </div>
     </DemoExample>
 </DemoPage>

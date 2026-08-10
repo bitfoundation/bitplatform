@@ -11,6 +11,17 @@
     padding: rem2(5px);
 }
 
+.event-log {
+    gap: rem2(2px);
+    display: flex;
+    padding: rem2(8px);
+    min-height: rem2(60px);
+    flex-flow: column nowrap;
+    font-family: monospace;
+    border-radius: rem2(4px);
+    background-color: $bit-color-background-secondary;
+}
+
 .validation-summary {
     overflow: hidden;
     margin-bottom: rem2(10px);
@@ -99,6 +110,14 @@
 
     .custom-clock-number {
         font-weight: bold;
+    }
+
+    .custom-clock-disabled-number {
+        opacity: 0.4;
+    }
+
+    .custom-clear-button {
+        color: blueviolet;
     }
 
     .custom-clock-pin,

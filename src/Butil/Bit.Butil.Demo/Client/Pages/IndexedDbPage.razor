@@ -1,0 +1,509 @@
+@page "/indexed-db"
+@implements IAsyncDisposable
+@inject Bit.Butil.IndexedDb indexedDb
+
+<PageTitle>IndexedDb - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="IndexedDb"
+            Lead="A structured, transactional client-side database for serious amounts of data. Butil wraps the most commonly needed CRUD shape - open with a schema, put, get, query by index - without the ceremony of raw IDB transactions."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API"
+            InjectAs="IndexedDb indexedDb" />
+
+<div class="stack">
+    <DemoSection Title="Check for support"
+                 Api="IsSupported"
+                 Description="IndexedDB is available in every modern browser, but private-browsing modes and unusual embedding contexts can restrict it - feature-detect when your app depends on it."
+                 Code=@("""
+@inject Bit.Butil.IndexedDb indexedDb
+
+if (await indexedDb.IsSupported())
+{
+    // safe to open databases
+}
+""")>
+        <button @onclick="CheckSupport">IsSupported</button>
+        <DemoConsole @ref="supportOutput" Title="support output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a database"
+                 Api="Open"
+                 Description="Open connects to (and creates if needed) the named database, returning a live IndexedDbHandle. Object stores declared in the schema are created during the upgrade transaction if they do not yet exist; existing stores are left untouched. The demo below opens a notes database with an id keypath and a category index."
+                 Code=@("""
+private IndexedDbHandle db = default!;
+
+db = await indexedDb.Open("butil-docs-notes", version: 1, stores:
+[
+    new IndexedDbStoreSchema
+    {
+        Name = "notes",
+        KeyPath = "id",
+        Indexes =
+        [
+            new IndexedDbIndexSchema { Name = "by-category", KeyPath = "category" },
+        ],
+    },
+]);
+""")>
+        <div class="controls">
+            <button @onclick="OpenDb" disabled="@(db is not null)">Open database</button>
+        </div>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Write records"
+                 Api="Add / Put"
+                 Description="Add inserts a new record and throws when the key already exists; Put upserts - insert or overwrite. Records are plain C# objects, JSON-serialized on the way in. Because the store's keypath is id, the key comes from the record itself."
+                 Code=@("""
+public class Note
+{
+    public int Id { get; set; }
+    public string Text { get; set; } = "";
+    public string Category { get; set; } = "general";
+}
+
+await db.Add("notes", new Note { Id = 1, Text = "Hello IndexedDB", Category = "intro" });
+
+await db.Put("notes", new Note { Id = 1, Text = "Hello again", Category = "intro" }); // upsert
+""")>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Id</span>
+                <input @bind="noteId" type="number" />
+            </div>
+            <div class="field">
+                <span class="field-label">Text</span>
+                <input @bind="noteText" placeholder="e.g. Hello IndexedDB" />
+            </div>
+            <div class="field">
+                <span class="field-label">Category</span>
+                <input @bind="noteCategory" placeholder="e.g. intro" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="AddNote">Add</button>
+            <button class="secondary" @onclick="PutNote">Put (upsert)</button>
+        </div>
+        <DemoConsole @ref="writeOutput" Title="write output" />
+    </DemoSection>
+
+    <DemoSection Title="Read records"
+                 Api="Get / GetAll / GetAllKeys / Count"
+                 Description="Get reads a single record by key, GetAll returns the whole store (optionally capped by a count), GetAllKeys lists just the keys, and Count reports how many records the store holds. GetRaw is the untyped sibling of Get, returning a JsonElement when no static type fits."
+                 Code=@("""
+var one = await db.Get<Note>("notes", 1);         // null when absent
+
+var all = await db.GetAll<Note>("notes");          // Note[]
+
+var keys = await db.GetAllKeys("notes");           // JsonElement[]
+
+var count = await db.Count("notes");               // int
+""")>
+        <div class="field">
+            <span class="field-label">Id to read</span>
+            <input @bind="readId" type="number" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetNote">Get</button>
+            <button class="secondary" @onclick="GetAllNotes">GetAll</button>
+            <button class="secondary" @onclick="GetKeys">GetAllKeys</button>
+            <button class="secondary" @onclick="CountNotes">Count</button>
+        </div>
+        <DemoConsole @ref="readOutput" Title="read output" />
+    </DemoSection>
+
+    <DemoSection Title="Query by index"
+                 Api="GetByIndex / GetAllByIndex"
+                 Description="Indexes let you look records up by a property other than the primary key. The demo database declares a by-category index over the category property: GetByIndex returns the first match, GetAllByIndex returns every record with the given index value."
+                 Code=@("""
+var first = await db.GetByIndex<Note>("notes", "by-category", "intro");
+
+var matches = await db.GetAllByIndex<Note>("notes", "by-category", "intro");
+""")>
+        <div class="field">
+            <span class="field-label">Category</span>
+            <input @bind="queryCategory" placeholder="e.g. intro" />
+        </div>
+        <div class="controls">
+            <button class="secondary" @onclick="GetByIndexDemo">GetByIndex</button>
+            <button class="secondary" @onclick="GetAllByIndexDemo">GetAllByIndex</button>
+        </div>
+        <DemoConsole @ref="queryOutput" Title="query output" />
+    </DemoSection>
+
+    <DemoSection Title="Delete and clear"
+                 Api="Delete / Clear"
+                 Description="Delete removes a single record by key; Clear empties the store while keeping its schema and indexes intact."
+                 Code=@("""
+await db.Delete("notes", 1);
+
+await db.Clear("notes");
+""")>
+        <div class="field">
+            <span class="field-label">Id to delete</span>
+            <input @bind="deleteId" type="number" />
+        </div>
+        <div class="controls">
+            <button class="danger" @onclick="DeleteNote">Delete</button>
+            <button class="danger" @onclick="ClearNotes">Clear store</button>
+        </div>
+        <DemoConsole @ref="deleteOutput" Title="delete output" />
+    </DemoSection>
+
+    <DemoSection Title="Close and delete the database"
+                 Api="DisposeAsync / DeleteDatabase"
+                 Description="The handle owns the underlying IDBDatabase connection - dispose it when you are done so the connection closes. DeleteDatabase removes the database entirely; close any open handle first, otherwise the browser blocks the deletion until the connection goes away."
+                 Code=@("""
+await db.DisposeAsync();                            // close the connection
+
+await indexedDb.DeleteDatabase("butil-docs-notes"); // drop the whole database
+""")>
+        <div class="controls">
+            <button class="secondary" @onclick="CloseDb" disabled="@(db is null)">Dispose handle</button>
+            <button class="danger" @onclick="DeleteDb">DeleteDatabase</button>
+        </div>
+        <DemoConsole @ref="closeOutput" Title="close output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Versioning semantics">
+    Schema changes only happen inside an upgrade transaction, which the browser runs when
+    <code>Open</code> is called with a version number higher than the stored one. Opening with the
+    same version never touches the schema - to add a store or index to an existing database, bump the
+    version. Butil creates missing stores during the upgrade but performs no automatic data migration.
+</Callout>
+
+<Callout Type="info" Title="A deliberate subset">
+    The wrapper surfaces the CRUD shape most apps need. Cursors, key ranges, multi-store transactions
+    and other advanced IDB features are out of scope - drop down to your own JS interop for those.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes indexedDB." />
+    <ApiMember Name="Open"
+               Signature="ValueTask<IndexedDbHandle> Open(string name, int version = 1, IndexedDbStoreSchema[]? stores = null)"
+               Description="Opens (and upgrades if needed) the named database, creating missing stores from the schema. Returns a handle that owns the connection." />
+    <ApiMember Name="DeleteDatabase"
+               Signature="ValueTask DeleteDatabase(string name)"
+               Description="Deletes the named database; resolves once the deletion completes." />
+    <ApiMember Name="Handle.Id"
+               Signature="Guid Id { get; }"
+               Description="Internal handle id - the database is keyed by this on the JS side." />
+    <ApiMember Name="Handle.Put<T>"
+               Signature="ValueTask Put<T>(string store, T value, object? key = null)"
+               Description="Inserts or updates a value. Pass key for stores without a keypath." />
+    <ApiMember Name="Handle.Add<T>"
+               Signature="ValueTask Add<T>(string store, T value, object? key = null)"
+               Description="Inserts a new value; throws on duplicate key." />
+    <ApiMember Name="Handle.Get<T>"
+               Signature="ValueTask<T?> Get<T>(string store, object key)"
+               Description="Reads a value by key; returns default when the key is not present." />
+    <ApiMember Name="Handle.GetRaw"
+               Signature="ValueTask<JsonElement> GetRaw(string store, object key)"
+               Description="Reads a value by key as a JsonElement - no static type required." />
+    <ApiMember Name="Handle.GetAll<T>"
+               Signature="ValueTask<T[]> GetAll<T>(string store, int? count = null)"
+               Description="Reads all values in a store, optionally limited to count." />
+    <ApiMember Name="Handle.GetAllKeys"
+               Signature="ValueTask<JsonElement[]> GetAllKeys(string store, int? count = null)"
+               Description="Lists every key in a store." />
+    <ApiMember Name="Handle.Delete"
+               Signature="ValueTask Delete(string store, object key)"
+               Description="Deletes the value with the given key." />
+    <ApiMember Name="Handle.Clear"
+               Signature="ValueTask Clear(string store)"
+               Description="Empties the store, keeping its schema and indexes." />
+    <ApiMember Name="Handle.Count"
+               Signature="ValueTask<int> Count(string store)"
+               Description="Counts records in a store." />
+    <ApiMember Name="Handle.GetByIndex<T>"
+               Signature="ValueTask<T?> GetByIndex<T>(string store, string index, object key)"
+               Description="Reads the first record whose index value matches key exactly." />
+    <ApiMember Name="Handle.GetAllByIndex<T>"
+               Signature="ValueTask<T[]> GetAllByIndex<T>(string store, string index, object key, int? count = null)"
+               Description="Reads every record matching the given index value." />
+    <ApiMember Name="Handle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the underlying IDBDatabase connection. Idempotent." />
+    <ApiMember Name="IndexedDbStoreSchema"
+               Signature="class IndexedDbStoreSchema { string Name; string? KeyPath; bool AutoIncrement; IndexedDbIndexSchema[] Indexes; }"
+               Description="Object-store definition supplied to Open. Null KeyPath means out-of-line keys; AutoIncrement only applies then." />
+    <ApiMember Name="IndexedDbIndexSchema"
+               Signature="class IndexedDbIndexSchema { string Name; string KeyPath; bool Unique; bool MultiEntry; }"
+               Description="Index definition created alongside the store." />
+</ApiTable>
+
+@code {
+    private const string DbName = "butil-docs-notes";
+    private const string StoreName = "notes";
+    private const string IndexName = "by-category";
+
+    private DemoConsole supportOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole writeOutput = default!;
+    private DemoConsole readOutput = default!;
+    private DemoConsole queryOutput = default!;
+    private DemoConsole deleteOutput = default!;
+    private DemoConsole closeOutput = default!;
+    private IndexedDbHandle? db;
+
+    private int noteId = 1;
+    private string noteText = "Hello IndexedDB";
+    private string noteCategory = "intro";
+    private int readId = 1;
+    private int deleteId = 1;
+    private string queryCategory = "intro";
+
+    private sealed class Note
+    {
+        public int Id { get; set; }
+        public string Text { get; set; } = "";
+        public string Category { get; set; } = "general";
+    }
+
+    private async Task<bool> EnsureOpen(DemoConsole output)
+    {
+        if (db is not null) return true;
+        await output.Warn("No open database - use \"Open database\" first.");
+        return false;
+    }
+
+    private async Task CheckSupport()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported() →", await indexedDb.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task OpenDb()
+    {
+        try
+        {
+            db = await indexedDb.Open(DbName, 1,
+            [
+                new IndexedDbStoreSchema
+                {
+                    Name = StoreName,
+                    KeyPath = "id",
+                    Indexes =
+                    [
+                        new IndexedDbIndexSchema { Name = IndexName, KeyPath = "category" },
+                    ],
+                },
+            ]);
+            await openOutput.Log($"Open(\"{DbName}\", 1) → connection open, store \"{StoreName}\" ready.");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task AddNote()
+    {
+        if (await EnsureOpen(writeOutput) is false) return;
+        try
+        {
+            await db!.Add(StoreName, new Note { Id = noteId, Text = noteText, Category = noteCategory });
+            await writeOutput.Log($"Add(\"{StoreName}\", {{ id: {noteId} }}) - inserted.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error($"Add failed (duplicate key?): {ex.Message}");
+        }
+    }
+
+    private async Task PutNote()
+    {
+        if (await EnsureOpen(writeOutput) is false) return;
+        try
+        {
+            await db!.Put(StoreName, new Note { Id = noteId, Text = noteText, Category = noteCategory });
+            await writeOutput.Log($"Put(\"{StoreName}\", {{ id: {noteId} }}) - upserted.");
+        }
+        catch (Exception ex)
+        {
+            await writeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetNote()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var note = await db!.Get<Note>(StoreName, readId);
+            if (note is null)
+            {
+                await readOutput.Warn($"Get({readId}) → not found");
+                return;
+            }
+            await readOutput.Success($"Get({readId}) →", note);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetAllNotes()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var notes = await db!.GetAll<Note>(StoreName);
+            await readOutput.Success($"GetAll() → {notes.Length} record(s):", notes);
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetKeys()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            var keys = await db!.GetAllKeys(StoreName);
+            await readOutput.Success($"GetAllKeys() → [{string.Join(", ", keys.Select(k => k.ToString()))}]");
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CountNotes()
+    {
+        if (await EnsureOpen(readOutput) is false) return;
+        try
+        {
+            await readOutput.Success("Count() →", await db!.Count(StoreName));
+        }
+        catch (Exception ex)
+        {
+            await readOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var note = await db!.GetByIndex<Note>(StoreName, IndexName, queryCategory);
+            if (note is null)
+            {
+                await queryOutput.Warn($"GetByIndex(\"{IndexName}\", \"{queryCategory}\") → not found");
+                return;
+            }
+            await queryOutput.Success($"GetByIndex(\"{IndexName}\", \"{queryCategory}\") →", note);
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task GetAllByIndexDemo()
+    {
+        if (await EnsureOpen(queryOutput) is false) return;
+        try
+        {
+            var notes = await db!.GetAllByIndex<Note>(StoreName, IndexName, queryCategory);
+            await queryOutput.Success($"GetAllByIndex(\"{IndexName}\", \"{queryCategory}\") → {notes.Length} record(s):", notes);
+        }
+        catch (Exception ex)
+        {
+            await queryOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteNote()
+    {
+        if (await EnsureOpen(deleteOutput) is false) return;
+        try
+        {
+            await db!.Delete(StoreName, deleteId);
+            await deleteOutput.Warn($"Delete({deleteId}) - record removed.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task ClearNotes()
+    {
+        if (await EnsureOpen(deleteOutput) is false) return;
+        try
+        {
+            await db!.Clear(StoreName);
+            await deleteOutput.Warn($"Clear(\"{StoreName}\") - store emptied.");
+        }
+        catch (Exception ex)
+        {
+            await deleteOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task CloseDb()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+                await closeOutput.Warn("Handle disposed - connection closed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task DeleteDb()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+                await closeOutput.Warn("Open handle disposed first (deletion would block otherwise).");
+            }
+            await indexedDb.DeleteDatabase(DbName);
+            await closeOutput.Warn($"DeleteDatabase(\"{DbName}\") - database dropped.");
+        }
+        catch (Exception ex)
+        {
+            await closeOutput.Error(ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (db is not null)
+            {
+                await db.DisposeAsync();
+                db = null;
+            }
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}
