@@ -47,14 +47,17 @@
   <Folder Name="/Bswup/">
     <File Path="Bswup/README.md" />
     <Project Path="Bswup/Bit.Bswup/Bit.Bswup.csproj" />
-    <Project Path="Bswup/Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
   </Folder>
-  <Folder Name="/Bswup/Demos/">
-    <Project Path="Bswup/Demos/BasicDemo/Bit.Bswup.BasicDemo.csproj" />
+  <Folder Name="/Bswup/Bit.Bswup.Demo/">
+    <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/Bswup/Demos/FullDemo/">
-    <Project Path="Bswup/Demos/FullDemo/Client/Bit.Bswup.FullDemo.Client.csproj" />
-    <Project Path="Bswup/Demos/FullDemo/Server/Bit.Bswup.FullDemo.Server.csproj" />
+  <Folder Name="/Bswup/Samples/">
+    <Project Path="Bswup/Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/Samples/FullSample/">
+    <Project Path="Bswup/Samples/FullSample/Client/Bit.Bswup.FullSample.Client.csproj" />
+    <Project Path="Bswup/Samples/FullSample/Server/Bit.Bswup.FullSample.Server.csproj" />
   </Folder>
   <Folder Name="/Brouter/">
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />

@@ -1,0 +1,17 @@
+@* Renamed from App.razor: in a Blazor Web App "App" is the host document (it lives in the
+   Server project now), and this file is only the router that the host renders interactively. *@
+<Router AppAssembly="@typeof(Routes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    @* Handles client-side navigation to an unknown route. A deep link typed straight into the
+       address bar never gets here on a first visit - the server answers it before Blazor runs -
+       so NotFoundPage is shared with the host's status-code re-execution; see the comment in
+       NotFoundPage.razor. *@
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <NotFoundPage />
+        </LayoutView>
+    </NotFound>
+</Router>

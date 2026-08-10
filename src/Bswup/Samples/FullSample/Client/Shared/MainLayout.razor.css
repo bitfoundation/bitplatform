@@ -1,0 +1,37 @@
+/* The #blazor-error-ui banner in MainLayout.razor is the standard Blazor error placeholder:
+   the framework flips it to 'display: block' when an unhandled exception reaches the client.
+   The stock templates hide it from wwwroot/css/app.css, which this sample deliberately does not
+   have - so without this rule the banner renders on every page from the first paint, looking
+   like a permanent error. Scoped CSS reaches it because the element lives in this layout's
+   own markup. */
+#blazor-error-ui {
+    color-scheme: only light;
+    /* The sample's body sets 'color: white', which would be unreadable on lightyellow. */
+    color: black;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    /* A <button> keeps the dismiss control keyboard-reachable and activatable with
+       Enter/Space; these resets strip the native chrome so it still reads as the plain
+       glyph the stock templates show. */
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+        line-height: 1;
+    }
