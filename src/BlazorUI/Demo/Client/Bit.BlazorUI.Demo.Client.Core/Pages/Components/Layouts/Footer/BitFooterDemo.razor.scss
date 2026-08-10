@@ -26,10 +26,22 @@
     border: 1px solid gray;
 }
 
+// An absolute footer only asks for an ancestor that is positioned, which any plain relative box is.
+.absolute-demo {
+    height: rem2(160px);
+    position: relative;
+    border: 1px solid gray;
+}
+
 // Same containing block trick, but the content scrolls behind the still footer, which is what makes
 // the frosted glass of the Translucent example visible.
 .translucent-demo {
     overflow: auto;
+}
+
+// The Wrap example needs a footer narrow enough to actually run out of room for its content.
+.wrap-demo {
+    max-width: rem2(384px);
 }
 
 .footer-content {

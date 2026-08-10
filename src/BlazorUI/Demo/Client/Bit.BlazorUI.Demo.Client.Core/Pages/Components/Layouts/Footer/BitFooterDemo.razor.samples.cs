@@ -51,23 +51,62 @@ public partial class BitFooterDemo
     <BitTag Text=""Space"" />
     <BitTag Text=""evenly"" />
     <BitTag Text=""around the items"" />
+</BitFooter>
+
+
+<BitFooter Height=""72"" Bordered VerticalAlign=""BitAlignment.Start"">
+    <BitTag Text=""Top of the footer"" />
+</BitFooter>
+
+<BitFooter Height=""72"" Bordered VerticalAlign=""BitAlignment.Center"">
+    <BitTag Text=""Middle of the footer"" />
+</BitFooter>
+
+<BitFooter Height=""72"" Bordered VerticalAlign=""BitAlignment.End"">
+    <BitTag Text=""Bottom of the footer"" />
 </BitFooter>";
 
     private readonly string example4RazorCode = @"
+<style>
+    .wrap-demo {
+        max-width: 24rem;
+    }
+</style>
+
+
+<div class=""wrap-demo"">
+    <BitFooter Bordered Gap=""0.25rem 0.5rem"">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <BitTag Text=""@($""No wrap {i}"")"" />
+        }
+    </BitFooter>
+</div>
+
+<div class=""wrap-demo"">
+    <BitFooter Bordered Wrap Gap=""0.25rem 0.5rem"" Alignment=""BitAlignment.Center"">
+        @for (var i = 1; i <= 8; i++)
+        {
+            <BitTag Text=""@($""Wrapped {i}"")"" />
+        }
+    </BitFooter>
+</div>";
+
+    private readonly string example5RazorCode = @"
 <BitFooter Bordered>Bordered</BitFooter>
 
 <BitFooter Elevated>Elevated</BitFooter>
 
 <BitFooter Bordered Elevated Color=""BitColor.Tertiary"" Variant=""BitVariant.Outline"">Bordered & Elevated</BitFooter>";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitFooter Bordered>With the default gutter</BitFooter>
 
 <BitFooter Bordered NoGutter>
     <BitProgress Percent=""60"" />
 </BitFooter>";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitFooter Bordered>
     <BitTag Text=""No"" />
     <BitTag Text=""gap"" />
@@ -86,7 +125,7 @@ public partial class BitFooterDemo
     <BitTag Text=""gap"" />
 </BitFooter>";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example8RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -107,6 +146,12 @@ public partial class BitFooterDemo
            Drop it and the footer anchors to the bottom of the page. */
         transform: translateZ(0);
     }
+
+    .absolute-demo {
+        height: 10rem;
+        position: relative;
+        border: 1px solid gray;
+    }
 </style>
 
 
@@ -121,9 +166,14 @@ public partial class BitFooterDemo
 <div class=""fixed-demo"">
     <div class=""scroll-demo-row"">The fixed footer covers the bottom of its page.</div>
     <BitFooter Fixed Elevated Color=""BitColor.Primary"">I'm a fixed Footer</BitFooter>
+</div>
+
+<div class=""absolute-demo"">
+    <div class=""scroll-demo-row"">The absolute footer covers the bottom of its container.</div>
+    <BitFooter Absolute Bordered Color=""BitColor.TertiaryBackground"">I'm an absolute Footer</BitFooter>
 </div>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -165,10 +215,47 @@ public partial class BitFooterDemo
         I stay until you scroll past 100px
     </BitFooter>
 </div>";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private bool isFooterRevealed = true;";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
+<style>
+    .fixed-demo {
+        height: 10rem;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid gray;
+        /* Scopes the fixed footer to this box for the sake of the demo.
+           Drop it and the footer anchors to the bottom of the page. */
+        transform: translateZ(0);
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+
+<div class=""fixed-demo"">
+    <div class=""scroll-demo-row"">
+        <BitToggleButton @bind-IsChecked=""isSelectionMode""
+                         OnText=""Leave selection mode""
+                         OffText=""Enter selection mode"" />
+    </div>
+    <BitFooter Fixed Elevated
+               Gap=""0.5rem""
+               Color=""BitColor.Primary""
+               Hidden=""@(isSelectionMode is false)""
+               Alignment=""BitAlignment.SpaceBetween""
+               AriaLabel=""Selection actions"">
+        <span>2 items selected</span>
+        <BitButton Color=""BitColor.Error"" Size=""BitSize.Small"">Delete</BitButton>
+    </BitFooter>
+</div>";
+    private readonly string example10CsharpCode = @"
+private bool isSelectionMode;";
+
+    private readonly string example11RazorCode = @"
 <style>
     .translucent-demo {
         height: 10rem;
@@ -194,7 +281,13 @@ private bool isFooterRevealed = true;";
     <BitFooter Fixed Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Footer</BitFooter>
 </div>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example12RazorCode = @"
+<BitFooter AriaLabel=""Editor actions"" Alignment=""BitAlignment.End"" Gap=""0.5rem"" Bordered>
+    <BitButton Variant=""BitVariant.Text"">Discard</BitButton>
+    <BitButton>Save</BitButton>
+</BitFooter>";
+
+    private readonly string example13RazorCode = @"
 <style>
     .footer-content {
         flex-grow: 1;
@@ -251,7 +344,7 @@ private bool isFooterRevealed = true;";
     </div>
 </BitFooter>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitFooter Color=""BitColor.Primary"">Primary</BitFooter>
 <BitFooter Color=""BitColor.Secondary"">Secondary</BitFooter>
 <BitFooter Color=""BitColor.Tertiary"">Tertiary</BitFooter>
@@ -273,14 +366,14 @@ private bool isFooterRevealed = true;";
 <BitFooter Color=""BitColor.SecondaryBorder"" Variant=""BitVariant.Outline"">SecondaryBorder</BitFooter>
 <BitFooter Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitFooter>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitFooter Size=""BitSize.Small"" Bordered>Small</BitFooter>
 
 <BitFooter Size=""BitSize.Medium"" Bordered>Medium</BitFooter>
 
 <BitFooter Size=""BitSize.Large"" Bordered>Large</BitFooter>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         color: white;
@@ -312,7 +405,7 @@ private bool isFooterRevealed = true;";
     Classes
 </BitFooter>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitFooter Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />

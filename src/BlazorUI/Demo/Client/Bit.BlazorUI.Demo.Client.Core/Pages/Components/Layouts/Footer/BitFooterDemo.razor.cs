@@ -6,6 +6,13 @@ public partial class BitFooterDemo
     [
         new()
         {
+            Name = "Absolute",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the footer with an absolute position at the bottom of its nearest positioned ancestor. Fixed takes precedence over it, and it takes precedence over Sticky.",
+        },
+        new()
+        {
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
@@ -57,7 +64,7 @@ public partial class BitFooterDemo
             Name = "Fixed",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the footer with a fixed position at the bottom of the page. It takes precedence over Sticky when both are set.",
+            Description = "Renders the footer with a fixed position at the bottom of the page. It takes precedence over Absolute and Sticky when more than one of them is set.",
         },
         new()
         {
@@ -72,6 +79,13 @@ public partial class BitFooterDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Gets or sets the height of the BitFooter (in pixels). The height includes the paddings and the border of the footer, and a Fixed or Sticky footer adds the bottom safe area inset of the device on top of it.",
+        },
+        new()
+        {
+            Name = "Hidden",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Slides the BitFooter out of the view, and brings it back when it is turned off again. A hidden footer is also marked inert, so nothing inside it can be clicked or reached with the keyboard while it is out of the view.",
         },
         new()
         {
@@ -92,7 +106,7 @@ public partial class BitFooterDemo
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer.",
+            Description = "Slides the footer out of the view while the page is scrolled down and brings it back while the page is scrolled up. It only has an effect on a Fixed or Sticky footer, since the others have nothing to slide over.",
         },
         new()
         {
@@ -142,6 +156,22 @@ public partial class BitFooterDemo
             LinkType = LinkType.Link,
             Href = "#variant-enum",
         },
+        new()
+        {
+            Name = "VerticalAlign",
+            Type = "BitAlignment?",
+            DefaultValue = "null",
+            Description = "Gets or sets the vertical alignment of the content of the BitFooter (the CSS align-items of the container). Only Start, End, Center, Baseline and Stretch align a line on the cross axis, so the three space distributions are ignored here.",
+            LinkType = LinkType.Link,
+            Href = "#alignment-enum",
+        },
+        new()
+        {
+            Name = "Wrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the content of the BitFooter wrap onto more than one line instead of being squeezed into a single one. The lines are packed by VerticalAlign and separated by the row part of Gap.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -151,7 +181,7 @@ public partial class BitFooterDemo
             Name = "IsRevealed",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Gets a value indicating whether the footer is currently revealed. It is always true unless Reveal is enabled.",
+            Description = "Gets a value indicating whether the footer is currently revealed. It reports the scroll driven reveal state alone, so it is always true unless Reveal is enabled, and stays true for a footer slid out of the view with Hidden.",
         },
     ];
 
@@ -187,15 +217,15 @@ public partial class BitFooterDemo
         {
             Id = "alignment-enum",
             Name = "BitAlignment",
-            Description = "Determines how the free space of the content line is distributed.",
+            Description = "Determines how the free space of the content line is distributed (Alignment) and where the content sits in the height of the footer (VerticalAlign).",
             Items =
             [
-                new() { Name = "Start", Description = "Packs the content at the start of the line.", Value = "0" },
-                new() { Name = "End", Description = "Packs the content at the end of the line.", Value = "1" },
-                new() { Name = "Center", Description = "Packs the content at the center of the line.", Value = "2" },
-                new() { Name = "SpaceBetween", Description = "Distributes the free space between the items, with no space at the two edges.", Value = "3" },
-                new() { Name = "SpaceAround", Description = "Distributes the free space around the items, so the edges get half of what sits between the items.", Value = "4" },
-                new() { Name = "SpaceEvenly", Description = "Distributes the free space evenly between the items and at the two edges.", Value = "5" },
+                new() { Name = "Start", Description = "Packs the content at the start of the line, or at the top of the footer.", Value = "0" },
+                new() { Name = "End", Description = "Packs the content at the end of the line, or at the bottom of the footer.", Value = "1" },
+                new() { Name = "Center", Description = "Packs the content at the center of the line, or in the middle of the footer.", Value = "2" },
+                new() { Name = "SpaceBetween", Description = "Distributes the free space between the items, with no space at the two edges. Ignored by VerticalAlign.", Value = "3" },
+                new() { Name = "SpaceAround", Description = "Distributes the free space around the items, so the edges get half of what sits between the items. Ignored by VerticalAlign.", Value = "4" },
+                new() { Name = "SpaceEvenly", Description = "Distributes the free space evenly between the items and at the two edges. Ignored by VerticalAlign.", Value = "5" },
                 new() { Name = "Baseline", Description = "Aligns the content on its baseline (the cross axis of the footer).", Value = "6" },
                 new() { Name = "Stretch", Description = "Stretches the content to the full height of the footer (the cross axis).", Value = "7" },
             ]
@@ -255,4 +285,5 @@ public partial class BitFooterDemo
 
 
     private bool isFooterRevealed = true;
+    private bool isSelectionMode;
 }

@@ -22,6 +22,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Renders the footer with an absolute position at the bottom of its nearest positioned ancestor.
+    /// </summary>
+    public bool? Absolute { get; set; }
+
+    /// <summary>
     /// Gets or sets the horizontal distribution of the content of the footer.
     /// </summary>
     public BitAlignment? Alignment { get; set; }
@@ -60,6 +65,11 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// The height of the footer (in pixels).
     /// </summary>
     public int? Height { get; set; }
+
+    /// <summary>
+    /// Slides the footer out of the view, and brings it back when it is turned off again.
+    /// </summary>
+    public bool? Hidden { get; set; }
 
     /// <summary>
     /// Removes the default paddings around the content of the footer.
@@ -101,6 +111,16 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
     /// </summary>
     public BitVariant? Variant { get; set; }
 
+    /// <summary>
+    /// The vertical alignment of the content of the footer.
+    /// </summary>
+    public BitAlignment? VerticalAlign { get; set; }
+
+    /// <summary>
+    /// Lets the content of the footer wrap onto more than one line.
+    /// </summary>
+    public bool? Wrap { get; set; }
+
 
 
     /// <summary>
@@ -119,6 +139,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
         if (bitFooter is null) return;
 
         UpdateBaseParameters(bitFooter);
+
+        if (Absolute.HasValue && bitFooter.HasNotBeenSet(nameof(Absolute)))
+        {
+            bitFooter.Absolute = Absolute.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
 
         if (Alignment.HasValue && bitFooter.HasNotBeenSet(nameof(Alignment)))
         {
@@ -176,6 +203,13 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.StyleBuilder.Reset();
         }
 
+        if (Hidden.HasValue && bitFooter.HasNotBeenSet(nameof(Hidden)))
+        {
+            bitFooter.Hidden = Hidden.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
+
         if (NoGutter.HasValue && bitFooter.HasNotBeenSet(nameof(NoGutter)))
         {
             bitFooter.NoGutter = NoGutter.Value;
@@ -226,6 +260,20 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
         if (Variant.HasValue && bitFooter.HasNotBeenSet(nameof(Variant)))
         {
             bitFooter.Variant = Variant.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
+
+        if (VerticalAlign.HasValue && bitFooter.HasNotBeenSet(nameof(VerticalAlign)))
+        {
+            bitFooter.VerticalAlign = VerticalAlign.Value;
+
+            bitFooter.ClassBuilder.Reset();
+        }
+
+        if (Wrap.HasValue && bitFooter.HasNotBeenSet(nameof(Wrap)))
+        {
+            bitFooter.Wrap = Wrap.Value;
 
             bitFooter.ClassBuilder.Reset();
         }

@@ -5,6 +5,7 @@ namespace BitBlazorUI {
             scrollHandler: () => void,
             focusHandler: () => void,
             target: HTMLElement | Window,
+            observer?: ResizeObserver,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
@@ -91,7 +92,19 @@ namespace BitBlazorUI {
             window.addEventListener('resize', scrollHandler, { passive: true });
             element.addEventListener('focusin', focusHandler);
 
-            Footers._entries.set(id, { element, scrollHandler, focusHandler, target, frame });
+            // Whether the scroller sits at its end is a function of how tall its content is, and content that
+            // grows or shrinks on its own (a list that loads more rows, an expanding panel) moves that end
+            // without any scroll event to announce it. Watching the box that holds the content picks those up,
+            // so a footer does not stay hidden below a page that just became shorter than the scroll it had.
+            let observer: ResizeObserver | undefined;
+
+            if (typeof ResizeObserver !== 'undefined') {
+                observer = new ResizeObserver(scrollHandler);
+
+                observer.observe(target === window ? document.documentElement : target as HTMLElement);
+            }
+
+            Footers._entries.set(id, { element, scrollHandler, focusHandler, target, observer, frame });
         }
 
         public static dispose(id: string) {
@@ -101,6 +114,8 @@ namespace BitBlazorUI {
             entry.target.removeEventListener('scroll', entry.scrollHandler);
             window.removeEventListener('resize', entry.scrollHandler);
             entry.element.removeEventListener('focusin', entry.focusHandler);
+
+            entry.observer?.disconnect();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.

@@ -33,8 +33,12 @@
     box-sizing: border-box;
     padding: var(--bit-ftr-padding);
     gap: var(--bit-ftr-gap, 0);
+    flex-wrap: var(--bit-ftr-wrap, nowrap);
     align-items: var(--bit-ftr-align, center);
     justify-content: var(--bit-ftr-justify, normal);
+    // align-content only does anything once the content wraps, where it packs the lines the same way
+    // align-items packs a single one, so a wrapped footer stays aligned the way it was asked to be.
+    align-content: var(--bit-ftr-align, center);
 }
 
 
@@ -139,14 +143,31 @@
     --bit-ftr-justify: space-evenly;
 }
 
-// Baseline and Stretch say nothing about how a single line distributes its free space, so they are
-// the two members of BitAlignment that act on the cross axis of the footer instead.
+// The cross axis: VerticalAlign, plus the two members of BitAlignment that say nothing about how a
+// line distributes its free space and so act here instead.
+.bit-ftr-vst {
+    --bit-ftr-align: flex-start;
+}
+
+.bit-ftr-ved {
+    --bit-ftr-align: flex-end;
+}
+
+.bit-ftr-vcn {
+    --bit-ftr-align: center;
+}
+
 .bit-ftr-bsl {
     --bit-ftr-align: baseline;
 }
 
 .bit-ftr-str {
     --bit-ftr-align: stretch;
+}
+
+
+.bit-ftr-wrp {
+    --bit-ftr-wrap: wrap;
 }
 
 
@@ -167,6 +188,15 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+// Pinned to its container rather than to the page, so there is no device edge underneath it and no safe
+// area to make room for: the inset belongs to the two positions that really sit at the bottom of the screen.
+.bit-ftr-abs {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
 
 .bit-ftr-brd {
     border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd);
@@ -181,7 +211,7 @@
 }
 
 
-.bit-ftr-rvl {
+.bit-ftr-anm {
     will-change: transform;
     transition: transform $mot-duration $mot-easing;
 }
@@ -190,4 +220,37 @@
 // footer in both directions without any RTL specific rule.
 .bit-ftr-hdn {
     transform: translateY(100%);
+}
+
+
+// A shadow is the only thing separating an Elevated footer from the content above it, and forced colors
+// modes drop shadows entirely, so the separation is restored as a border of the system palette there.
+@media (forced-colors: active) {
+    .bit-ftr-elv {
+        border-block-start: $shp-border-width $shp-border-style CanvasText;
+    }
+}
+
+// On paper there is no viewport to pin anything to: a pinned footer would either repeat on every sheet or
+// sit over the content, and a footer that happens to be slid out at print time would be missing entirely.
+@media print {
+    .bit-ftr-fix,
+    .bit-ftr-abs,
+    .bit-ftr-stk {
+        position: static;
+        padding-bottom: 0;
+    }
+
+    .bit-ftr-anm {
+        transition: none;
+    }
+
+    .bit-ftr-hdn {
+        transform: none;
+    }
+
+    .bit-ftr-trs.bit-ftr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }

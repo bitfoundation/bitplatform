@@ -6,15 +6,17 @@ namespace Bit.BlazorUI;
 /// The BitFooter component renders a bar (with text and possibly other components) at the bottom of a site or an application.
 /// </summary>
 /// <remarks>
-/// It renders a semantic <c>footer</c> element and lays its content out in a single horizontal line whose color, variant,
-/// size, alignment and gutters are all parameters. It can stay in the flow of the page or be pinned to the bottom of the
-/// viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, or revealing itself only while the page is scrolled up
-/// (<see cref="Reveal"/>).
+/// It renders a semantic <c>footer</c> element and lays its content out in a horizontal line whose color, variant,
+/// size, alignment, wrapping and gutters are all parameters. It can stay in the flow of the page or be pinned to the
+/// bottom of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page is scrolled
+/// up (<see cref="Reveal"/>), or slid out of the way on demand (<see cref="Hidden"/>).
 /// </remarks>
 public partial class BitFooter : BitComponentBase
 {
     private bool _hidden;
+    private bool _slidable;
     private bool _revealAttached;
+    private string? _attachedId;
     private int _attachedRevealOffset = -1;
     private DotNetObjectReference<BitFooter>? _dotnetObj;
 
@@ -39,16 +41,31 @@ public partial class BitFooter : BitComponentBase
     /// Gets or sets the horizontal distribution of the content of the BitFooter (the CSS justify-content of the container).
     /// </summary>
     /// <remarks>
-    /// The content of the footer is laid out in a single horizontal flex line, so this controls how the remaining
+    /// The content of the footer is laid out in a horizontal flex line, so this controls how the remaining
     /// free space of that line is shared between and around the children.
     /// <br />
     /// Baseline and Stretch say nothing about distributing that free space, so those two act on the cross axis
-    /// (the vertical alignment of the content) instead, which is centered by default.
+    /// (the vertical alignment of the content) instead, exactly like <see cref="VerticalAlign"/>, which takes
+    /// precedence over them when it is set.
     /// <br />
     /// When not set, the content keeps the browser default (packed to the start of the line).
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitAlignment? Alignment { get; set; }
+
+    /// <summary>
+    /// Renders the footer with an absolute position at the bottom of its nearest positioned ancestor.
+    /// </summary>
+    /// <remarks>
+    /// This is <see cref="Fixed"/> scoped to a box instead of to the page: the footer of a card, a panel or a dialog
+    /// pins itself to the bottom of that container and scrolls away with it, rather than staying on the screen.
+    /// It needs an ancestor with a position other than static to pin itself to, and it overlaps the content of that
+    /// ancestor just like a fixed footer overlaps the page.
+    /// <br />
+    /// <see cref="Fixed"/> takes precedence over it, and it takes precedence over <see cref="Sticky"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Absolute { get; set; }
 
     /// <summary>
     /// Renders a divider line on the top edge of the BitFooter to separate it from the content above.
@@ -92,7 +109,7 @@ public partial class BitFooter : BitComponentBase
     /// Reserve room for it at the end of the page (for example with a bottom padding) to keep the last
     /// piece of content reachable.
     /// <br />
-    /// Takes precedence over <see cref="Sticky"/> when both are set.
+    /// Takes precedence over <see cref="Absolute"/> and <see cref="Sticky"/> when more than one of them is set.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Fixed { get; set; }
@@ -125,6 +142,24 @@ public partial class BitFooter : BitComponentBase
     public int? Height { get; set; }
 
     /// <summary>
+    /// Slides the BitFooter out of the view, and brings it back when it is turned off again.
+    /// </summary>
+    /// <remarks>
+    /// This is the programmatic counterpart of <see cref="Reveal"/>: the footer slides away because the application
+    /// says so rather than because the page is being scrolled, which is what a contextual bar that only belongs to
+    /// part of a workflow needs.
+    /// <br />
+    /// A hidden footer is also marked <c>inert</c>, so nothing inside it can be clicked or reached with the keyboard
+    /// while it is out of the view. Unlike <see cref="BitComponentBase.Visibility"/>, which switches the footer off at
+    /// once, this slides it in and out and keeps the room it occupies in the layout.
+    /// <br />
+    /// It only slides over a <see cref="Fixed"/> or <see cref="Sticky"/> footer; a footer in the normal flow is
+    /// translated over whatever follows it in the page.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Hidden { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the BitFooter, so it can span the full width of the footer.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -143,7 +178,8 @@ public partial class BitFooter : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> footer, since a footer in the normal
-    /// flow has nothing to slide over. The footer is always revealed at the very top and at the very end of the page.
+    /// flow has nothing to slide over, and an <see cref="Absolute"/> one scrolls away with its container anyway.
+    /// The footer is always revealed at the very top and at the very end of the page.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reveal { get; set; }
@@ -173,6 +209,8 @@ public partial class BitFooter : BitComponentBase
     /// Unlike <see cref="Fixed"/>, a sticky footer stays in the normal flow, so it never overlaps the content
     /// and needs no extra room reserved for it. It requires an ancestor that scrolls (commonly the page itself)
     /// and no ancestor with an overflow other than visible.
+    /// <br />
+    /// It is the position of last resort: both <see cref="Fixed"/> and <see cref="Absolute"/> take precedence over it.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Sticky { get; set; }
@@ -203,11 +241,41 @@ public partial class BitFooter : BitComponentBase
     [Parameter, ResetClassBuilder]
     public BitVariant? Variant { get; set; }
 
+    /// <summary>
+    /// Gets or sets the vertical alignment of the content of the BitFooter (the CSS align-items of the container).
+    /// </summary>
+    /// <remarks>
+    /// Only Start, End, Center, Baseline and Stretch align a line on the cross axis, so the three space distributions
+    /// of <see cref="BitAlignment"/> have no meaning here and are ignored.
+    /// <br />
+    /// When not set, the content is centered in the height of the footer, which is what a bar of mixed content
+    /// (a line of text next to a row of buttons) wants.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitAlignment? VerticalAlign { get; set; }
+
+    /// <summary>
+    /// Lets the content of the BitFooter wrap onto more than one line instead of being squeezed into a single one.
+    /// </summary>
+    /// <remarks>
+    /// A site footer with a copyright note, a set of legal links and a row of social icons runs out of room on a
+    /// narrow screen, where wrapping is what keeps it readable instead of shrinking every item.
+    /// <br />
+    /// The lines of a wrapped footer are packed by <see cref="VerticalAlign"/> (centered by default) and separated
+    /// by the row part of <see cref="Gap"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Wrap { get; set; }
+
 
 
     /// <summary>
     /// Gets a value indicating whether the footer is currently revealed. It is always true unless <see cref="Reveal"/> is enabled.
     /// </summary>
+    /// <remarks>
+    /// This reports the scroll driven reveal state alone, so it stays true for a footer that was slid out of the
+    /// view with <see cref="Hidden"/>.
+    /// </remarks>
     public bool IsRevealed => _hidden is false;
 
 
@@ -289,14 +357,29 @@ public partial class BitFooter : BitComponentBase
             BitAlignment.SpaceBetween => "bit-ftr-sbt",
             BitAlignment.SpaceAround => "bit-ftr-sar",
             BitAlignment.SpaceEvenly => "bit-ftr-sev",
+            // Baseline and Stretch distribute nothing, so they fall through to the cross axis registration below.
+            _ => string.Empty
+        });
+
+        // The cross axis takes VerticalAlign, and falls back to the two members of Alignment that only make sense
+        // there, so the older Alignment spelling of a baseline or stretched footer keeps working.
+        ClassBuilder.Register(() => (VerticalAlign ?? (Alignment is BitAlignment.Baseline or BitAlignment.Stretch ? Alignment : null)) switch
+        {
+            BitAlignment.Start => "bit-ftr-vst",
+            BitAlignment.End => "bit-ftr-ved",
+            BitAlignment.Center => "bit-ftr-vcn",
             BitAlignment.Baseline => "bit-ftr-bsl",
             BitAlignment.Stretch => "bit-ftr-str",
             _ => string.Empty
         });
 
-        // Fixed takes the footer out of the flow, sticky keeps it in it, so the two positions cannot be
-        // combined: Fixed wins and Sticky is ignored when both are set.
-        ClassBuilder.Register(() => Fixed ? "bit-ftr-fix" : (Sticky ? "bit-ftr-stk" : string.Empty));
+        ClassBuilder.Register(() => Wrap ? "bit-ftr-wrp" : string.Empty);
+
+        // An element has one position, so the three cannot be combined and the widest reach wins: Fixed pins
+        // the footer to the page, Absolute pins it to its container, and Sticky leaves it in the flow.
+        ClassBuilder.Register(() => Fixed
+                                    ? "bit-ftr-fix"
+                                    : (Absolute ? "bit-ftr-abs" : (Sticky ? "bit-ftr-stk" : string.Empty)));
 
         ClassBuilder.Register(() => Translucent ? "bit-ftr-trs" : string.Empty);
 
@@ -306,9 +389,12 @@ public partial class BitFooter : BitComponentBase
 
         ClassBuilder.Register(() => NoGutter ? "bit-ftr-ngt" : string.Empty);
 
-        ClassBuilder.Register(() => Reveal ? "bit-ftr-rvl" : string.Empty);
+        // The slide is only worth a compositor layer on a footer that can actually slide: one driven by the scroll,
+        // or one that has been handed a Hidden state. The flag is sticky, so the transition stays in place while
+        // Hidden is false and the way back in is animated just like the way out.
+        ClassBuilder.Register(() => (Reveal || _slidable) ? "bit-ftr-anm" : string.Empty);
 
-        ClassBuilder.Register(() => (Reveal && _hidden) ? "bit-ftr-hdn" : string.Empty);
+        ClassBuilder.Register(() => (Hidden || (Reveal && _hidden)) ? "bit-ftr-hdn" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -336,6 +422,17 @@ public partial class BitFooter : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        // A footer whose Hidden is bound at all is going to slide sooner or later, so it is made animatable up
+        // front: a transition that only arrives with the state it is meant to animate does not run for that first
+        // change. The cascaded spelling can only be recognized once it actually hides, which is why Hidden itself
+        // is checked as well.
+        if (_slidable is false && (Hidden || HasNotBeenSet(nameof(Hidden)) is false))
+        {
+            _slidable = true;
+
+            ClassBuilder.Reset();
+        }
+
         base.OnParametersSet();
     }
 
@@ -356,7 +453,20 @@ public partial class BitFooter : BitComponentBase
         // from ever comparing equal to an attached one.
         var revealOffset = shouldAttach ? Math.Max(0, RevealOffset.GetValueOrDefault()) : -1;
 
-        if (shouldAttach == _revealAttached && revealOffset == _attachedRevealOffset) return;
+        // The script looks the footer up by id and keeps its listeners keyed by it, so an Id changed at
+        // runtime would leave them behind on the element that id no longer names. That stale registration
+        // is taken down first, and only then is the listener set up again under the new id.
+        var attachedToAnotherId = _revealAttached && _attachedId != _Id;
+
+        if (shouldAttach == _revealAttached && revealOffset == _attachedRevealOffset && attachedToAnotherId is false) return;
+
+        if (attachedToAnotherId)
+        {
+            await _js.BitFootersDispose(_attachedId!);
+
+            _attachedId = null;
+            _revealAttached = false;
+        }
 
         if (shouldAttach)
         {
@@ -367,6 +477,7 @@ public partial class BitFooter : BitComponentBase
             // The flags are only moved once the interop call has gone through, so a call that failed
             // leaves them as they were and the next render tries to set the listener up again.
             _revealAttached = true;
+            _attachedId = _Id;
             _attachedRevealOffset = revealOffset;
         }
         else
@@ -374,6 +485,7 @@ public partial class BitFooter : BitComponentBase
             await _js.BitFootersDispose(_Id);
 
             _revealAttached = false;
+            _attachedId = null;
             _attachedRevealOffset = revealOffset;
 
             // The footer is no longer driven by the script, so it must not stay stuck in the hidden state.

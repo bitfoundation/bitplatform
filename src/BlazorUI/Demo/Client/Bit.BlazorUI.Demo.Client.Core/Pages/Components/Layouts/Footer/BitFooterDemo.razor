@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/footer"
             Title="Footer"
-            Description="The BitFooter component renders the bar at the bottom of a site or an application, with theme colors, variants, sizes, alignment, spacing and pinned positioning." />
+            Description="The BitFooter component renders the bar at the bottom of a site or an application, with theme colors, variants, sizes, alignment, wrapping, spacing and pinned positioning." />
 
 <DemoPage Name="Footer"
-          Description="The BitFooter component renders a bar at the bottom of a site or an application, holding whatever content belongs there: a copyright line, legal links, social icons or a toolbar of actions. It renders a semantic footer element and lays its content out in a single horizontal line whose color, variant, size, alignment, gutters and spacing are all parameters, and it can stay in the flow or be pinned to the bottom of the viewport - fixed, sticky, or revealing itself only while the page is scrolled up."
+          Description="The BitFooter component renders a bar at the bottom of a site or an application, holding whatever content belongs there: a copyright line, legal links, social icons or a toolbar of actions. It renders a semantic footer element - the contentinfo landmark of the page - and lays its content out in a horizontal line whose color, variant, size, alignment, wrapping, gutters and spacing are all parameters. It can stay in the flow or be pinned to the bottom of the viewport, revealing itself only while the page is scrolled up, or sliding out of the way on demand."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -50,7 +50,7 @@
 
     <DemoExample Title="Alignment" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            The content of the footer is a single horizontal flex line, and <b>Alignment</b> decides how the free space of
+            The content of the footer is a horizontal flex line, and <b>Alignment</b> decides how the free space of
             that line is shared. <b>SpaceBetween</b> is the classic website footer: a copyright note on one edge and the
             links on the other. <b>Baseline</b> and <b>Stretch</b> distribute nothing, so those two align the content on
             the cross axis instead of the horizontal one.
@@ -103,9 +103,60 @@
                 <BitTag Text="around the items" />
             </BitFooter>
         </div>
+        <br /><br />
+        <div>
+            <b>VerticalAlign</b> is the other axis: it decides where the content sits in the height of a footer that is
+            taller than its content, which is what a footer with an explicit <b>Height</b> or a stretched neighbour
+            needs. It is centered by default, and the three space distributions have no meaning here.
+        </div>
+        <br />
+        <div class="container">
+            <BitFooter Height="72" Bordered VerticalAlign="BitAlignment.Start">
+                <BitTag Text="Top of the footer" />
+            </BitFooter>
+        </div>
+        <br />
+        <div class="container">
+            <BitFooter Height="72" Bordered VerticalAlign="BitAlignment.Center">
+                <BitTag Text="Middle of the footer" />
+            </BitFooter>
+        </div>
+        <br />
+        <div class="container">
+            <BitFooter Height="72" Bordered VerticalAlign="BitAlignment.End">
+                <BitTag Text="Bottom of the footer" />
+            </BitFooter>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Border & elevation" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Wrap" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            The content of the footer is a single line by default, which squeezes every item once there is not enough
+            room for all of them. <b>Wrap</b> lets it break onto more lines instead, so a footer that holds a credit
+            line, a set of legal links and a row of icons stays readable on a narrow screen. The lines are separated by
+            the row part of <b>Gap</b> and packed by <b>VerticalAlign</b>.
+        </div>
+        <br />
+        <div class="container wrap-demo">
+            <BitFooter Bordered Gap="0.25rem 0.5rem">
+                @for (var i = 1; i <= 8; i++)
+                {
+                    <BitTag Text="@($"No wrap {i}")" />
+                }
+            </BitFooter>
+        </div>
+        <br />
+        <div class="container wrap-demo">
+            <BitFooter Bordered Wrap Gap="0.25rem 0.5rem" Alignment="BitAlignment.Center">
+                @for (var i = 1; i <= 8; i++)
+                {
+                    <BitTag Text="@($"Wrapped {i}")" />
+                }
+            </BitFooter>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Border & elevation" RazorCode="@example5RazorCode" Id="example5">
         <div>
             <b>Bordered</b> draws a divider on the top edge of the footer, and <b>Elevated</b> casts a shadow upwards.
             Both separate the footer from the content above it, which matters most when the footer is pinned over that
@@ -127,7 +178,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Gutter" RazorCode="@example5RazorCode" Id="example5">
+    <DemoExample Title="Gutter" RazorCode="@example6RazorCode" Id="example6">
         <div>
             The content of the footer sits in a container with paddings around it (the gutter). <b>NoGutter</b> removes
             them, so the content can run edge to edge - for a full width progress bar, a toolbar of buttons or any content
@@ -145,7 +196,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Gap" RazorCode="@example6RazorCode" Id="example6">
+    <DemoExample Title="Gap" RazorCode="@example7RazorCode" Id="example7">
         <div>
             The children of the footer sit right next to each other by default. <b>Gap</b> puts space between them,
             and it takes any CSS length (or the two value form of the gap shorthand) - so the same footer works for a
@@ -177,13 +228,20 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Position" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>Sticky</b> keeps the footer in the flow but pins it to the bottom of the scrolling area until its own place
             in the content is reached, so it never covers anything. <b>Fixed</b> takes it out of the flow and anchors it to
-            the bottom of the page, which does overlap the content: reserve room for it at the end of the page. Both add
-            the bottom safe area inset of the device, so the footer never lands under a home indicator - and an
-            explicit <b>Height</b> grows by that inset instead of losing part of itself to it.
+            the bottom of the page, which does overlap the content: reserve room for it at the end of the page.
+            <b>Absolute</b> is that same overlap scoped to a box - the footer of a card, a panel or a dialog - and it needs
+            an ancestor with a position of its own to pin itself to. Only one position can win, and Fixed beats Absolute,
+            which beats Sticky.
+        </div>
+        <br />
+        <div>
+            The two that really sit at the bottom of the screen, Fixed and Sticky, also add the bottom safe area inset of
+            the device, so the footer never lands under a home indicator - and an explicit <b>Height</b> grows by that
+            inset instead of losing part of itself to it.
         </div>
         <br />
         <div>Sticky (scroll inside the box):</div>
@@ -203,9 +261,17 @@
             <div class="scroll-demo-row">The fixed footer covers the bottom of its page.</div>
             <BitFooter Fixed Elevated Color="BitColor.Primary">I'm a fixed Footer</BitFooter>
         </div>
+        <br />
+        <br />
+        <div>Absolute (pinned to the bottom of the box that holds it, with no scoping trick needed):</div>
+        <br />
+        <div class="absolute-demo">
+            <div class="scroll-demo-row">The absolute footer covers the bottom of its container.</div>
+            <BitFooter Absolute Bordered Color="BitColor.TertiaryBackground">I'm an absolute Footer</BitFooter>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Reveal" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <DemoExample Title="Reveal" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
             <b>Reveal</b> hides a pinned footer while the scroll goes down and slides it back in as soon as the scroll goes
             up, so it gives the content the whole viewport while the user is reading and returns the moment they look for
@@ -250,7 +316,32 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Translucent" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Hidden" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>Hidden</b> is the programmatic counterpart of Reveal: the footer slides away because the application says
+            so rather than because the page is being scrolled, which is what a contextual bar belonging to only part of
+            a workflow needs. Unlike <b>Visibility</b>, which switches the footer off at once, it animates in and out and
+            keeps the room the footer occupies. A hidden footer is also marked <b>inert</b>, so none of its buttons can
+            be clicked or reached with the keyboard while it is out of the view.
+        </div>
+        <br />
+        <div class="fixed-demo">
+            <div class="scroll-demo-row">
+                <BitToggleButton @bind-IsChecked="isSelectionMode" OnText="Leave selection mode" OffText="Enter selection mode" />
+            </div>
+            <BitFooter Fixed Elevated
+                       Gap="0.5rem"
+                       Color="BitColor.Primary"
+                       Hidden="@(isSelectionMode is false)"
+                       Alignment="BitAlignment.SpaceBetween"
+                       AriaLabel="Selection actions">
+                <span>2 items selected</span>
+                <BitButton Color="BitColor.Error" Size="BitSize.Small">Delete</BitButton>
+            </BitFooter>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Translucent" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <b>Translucent</b> softens the background of the footer and blurs what passes behind it, so a pinned footer
             hints at the content it covers instead of cutting it off - the frosted glass of a native mobile bar. Only the
@@ -266,7 +357,29 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Usage" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Accessibility" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The footer renders a semantic <b>footer</b> element, which the browser exposes as the <b>contentinfo</b>
+            landmark of the page - the region screen reader users jump to for the copyright, the legal links and the
+            rest of the information about the page. That mapping only holds while the element is not nested in an
+            article, aside, main, nav or section, so a page level footer belongs outside of them.
+        </div>
+        <br />
+        <div>
+            A page is meant to expose that landmark once, so a second footer (a toolbar of actions, a bar that belongs
+            to one pane) needs an <b>AriaLabel</b> to tell the two apart when they are listed. There is no need to
+            spell out the word footer in that label - the role is announced already.
+        </div>
+        <br />
+        <div class="container">
+            <BitFooter AriaLabel="Editor actions" Alignment="BitAlignment.End" Gap="0.5rem" Bordered>
+                <BitButton Variant="BitVariant.Text">Discard</BitButton>
+                <BitButton>Save</BitButton>
+            </BitFooter>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Usage" RazorCode="@example13RazorCode" Id="example13">
         <div>A complete site footer: a centered credit line over a row of social links, all of it plain content handed to the footer.</div>
         <br />
         <div class="container">
@@ -300,7 +413,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div>
             The general colors of the theme are all available, and each of them works with every variant. Without a color
             the footer keeps the primary background and foreground of the theme, which is what a page level footer usually wants.
@@ -375,7 +488,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div>The size sets the paddings around the content, which is what makes a footer compact or roomy when its height is left to the content.</div>
         <br />
         <div class="container">
@@ -391,7 +504,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element of the footer, while <b>Styles</b> and <b>Classes</b> reach
             each of its parts by name - the root and the container that holds the content.
@@ -423,7 +536,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>Use the <b>Dir</b> parameter to change the direction of the footer, which flips the alignment of its content and the side its paddings sit on.</div>
         <br />
         <div class="container">
