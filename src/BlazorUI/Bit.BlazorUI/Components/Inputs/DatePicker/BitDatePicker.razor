@@ -138,12 +138,14 @@
                 var today = GetToday();
                 var todayYear = _culture.Calendar.GetYear(today);
                 var todayMonth = _culture.Calendar.GetMonth(today);
-                var focusableDay = GetFocusableDay();
                 var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
             }
 
             @if (ShowDayPicker())
             {
+                @* Only the day picker has days to focus, so the scan for one is scoped to it. *@
+                var focusableDay = GetFocusableDay();
+
                 <div style="@Styles?.DayPickerWrapper" class="bit-dtp-dwp @Classes?.DayPickerWrapper">
                     <div style="@Styles?.DayPickerHeader" class="bit-dtp-pkh @Classes?.DayPickerHeader">
                         @* The month title is only a button where there is a month picker for it to reveal;
@@ -324,7 +326,7 @@
                                             aria-disabled="@((disabled || ReadOnly) ? "true" : null)"
                                             aria-label="@date.ToString(_culture.DateTimeFormat.LongDatePattern, _culture)"
                                             aria-current="@(isToday ? "date" : null)"
-                                            style="@style @Styles?.DayButton"
+                                            style="@style"
                                             class="bit-dtp-dbt@(klass) @Classes?.DayButton"
                                             tabindex="@(date == focusableDay ? 0 : -1)"
                                             aria-selected="@(isSelected ? "true" : "false")">

@@ -420,7 +420,7 @@
     text-overflow: ellipsis;
     padding: 0 spacing(1.25);
     font-size: spacing(1.75);
-    line-height: spacing(3.5);
+    line-height: var(--bit-dtp-cell-size);
     background-color: transparent;
     border-radius: $shp-border-radius;
 }

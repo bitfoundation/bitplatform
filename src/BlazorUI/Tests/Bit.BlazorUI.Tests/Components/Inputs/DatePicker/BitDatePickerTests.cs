@@ -2019,13 +2019,14 @@ public class BitDatePickerTests : BunitTestContext
     [TestMethod]
     public async Task BitDatePickerDisposeShouldNotThrow()
     {
-        var component = RenderComponent<BitDatePicker>(parameters =>
+        RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.Value, DateTimeOffset.Now);
             parameters.Add(p => p.ShowTimePicker, true);
         });
 
-        await component.Instance.DisposeAsync();
+        // Disposal goes through bUnit so the component is disposed once, by the framework that owns it.
+        await Context.DisposeComponentsAsync();
     }
 
     private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)

@@ -802,16 +802,21 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// </summary>
     public Task OpenCallout()
     {
-        return HandleOnClick();
+        // Called from application code, which may well be off the renderer's dispatcher, so the whole
+        // body - state mutations and JS interop alike - runs through InvokeAsync.
+        return InvokeAsync(HandleOnClick);
     }
 
     /// <summary>
     /// Closes the callout of the DatePicker and moves the focus back to its input.
     /// </summary>
-    public async Task CloseCalloutAndFocus()
+    public Task CloseCalloutAndFocus()
     {
-        await CloseCalloutAndRestoreFocus();
-        await InvokeAsync(StateHasChanged);
+        return InvokeAsync(async () =>
+        {
+            await CloseCalloutAndRestoreFocus();
+            StateHasChanged();
+        });
     }
 
 
@@ -1383,13 +1388,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (MinDate.HasValue)
         {
             var minDate = GetDateTime(MinDate.Value);
-            if (date < minDate && _culture.Calendar.GetMonth(minDate) == month) return minDate.Date;
+            // The bound is returned with its time of day intact: MinDate.Date would land before MinDate
+            // itself and IsWeekDayOutOfMinAndMaxDate - which compares the full values - would then
+            // refuse the very date this clamp produced.
+            if (date < minDate && _culture.Calendar.GetMonth(minDate) == month) return minDate;
         }
 
         if (MaxDate.HasValue)
         {
             var maxDate = GetDateTime(MaxDate.Value);
-            if (date > maxDate && _culture.Calendar.GetMonth(maxDate) == month) return maxDate.Date;
+            if (date > maxDate && _culture.Calendar.GetMonth(maxDate) == month) return maxDate;
         }
 
         return date;
@@ -1808,6 +1816,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             klass.Append(' ').Append(customClass);
         }
+
+        // The style of every day comes last so it wins over the state specific ones, and it goes
+        // through the same appender so it is separated from them by a semicolon.
+        AppendStyle(style, Styles?.DayButton);
 
         return (style.ToString(), klass.ToString());
     }
