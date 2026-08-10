@@ -214,7 +214,7 @@
                                     @monthTitle
                                 </div>
                             }
-                            <div class="bit-dtrp-nbc">
+                            <div style="@Styles?.DayPickerNavWrapper" class="bit-dtrp-nbc @Classes?.DayPickerNavWrapper">
                                 @if (isFirstMonth)
                                 {
                                     <button @onclick="() => HandleMonthChange(false)"

@@ -19,6 +19,8 @@
             clicking a second day closes it, and clicking again starts a new range. Beyond the usual input states
             (<b>Label</b>, <b>Placeholder</b>, <b>Required</b>, <b>IsEnabled</b>) the calendar itself can show week numbers,
             highlight the current and selected month, and render a start/end time picker with <b>ShowTimePicker</b>.
+            The input's look is adjustable too: <b>IconName</b>/<b>IconLocation</b> replace and reposition its icon, and
+            <b>Underlined</b> and <b>HasBorder</b> switch between the bordered, underlined and borderless appearances.
             <b>AutoClose</b> keeps the callout open after the second pick, <b>ShowClearButton</b> adds a reset button (labelled
             through <b>ClearButtonTitle</b>) once a range is set, and <b>StartingValue</b> decides which month and which times
             the calendar opens on while no value is selected. Opening the callout moves the keyboard focus onto the day grid,
@@ -40,6 +42,12 @@
             <BitDateRangePicker Label="TimePicker" ShowTimePicker />
             <br /><br />
             <BitDateRangePicker Label="Custom Icon" IconName="@BitIconName.Airplane" />
+            <br /><br />
+            <BitDateRangePicker Label="Left icon" IconLocation="BitIconLocation.Left" />
+            <br /><br />
+            <BitDateRangePicker Label="Underlined" Underlined />
+            <br /><br />
+            <BitDateRangePicker Label="Without border" HasBorder="false" />
             <br /><br />
             <BitDateRangePicker Label="Disabled AutoClose" AutoClose="false" />
             <br /><br />
@@ -304,7 +312,7 @@
             <b>TimeZone</b> specifies the time zone used to interpret and display the selected dates and times, so the
             offsets of the produced <b>DateTimeOffset</b> values belong to that zone instead of the local one.
             <br />
-            Remeber using this feature in different runtimes needs more investigations, for example,
+            Remember using this feature in different runtimes needs more investigations, for example,
             there are different data available based on the OS the code is running on or different settings
             enabled for the project (like InvariantTimezone in the project file,
             <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"

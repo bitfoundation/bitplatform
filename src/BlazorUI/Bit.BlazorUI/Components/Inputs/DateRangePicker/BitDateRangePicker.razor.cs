@@ -87,7 +87,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
         set
         {
-
             if (value > 23)
             {
                 value = 23;
@@ -95,6 +94,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             else if (value < 0)
             {
                 value = 0;
+            }
+
+            if (TimeFormat == BitTimeFormat.TwelveHours && value <= 12)
+            {
+                // The input carries the 12-hour face value, so it has to be mapped back into the
+                // 24-hour hour without flipping the currently selected AM/PM period.
+                value %= 12;
+
+                if (IsAm(_startTimeHour) is false)
+                {
+                    value += 12;
+                }
             }
 
             if (CanChangeTime(startTimeHour: value) is false) return;
@@ -150,7 +161,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
         set
         {
-
             if (value > 23)
             {
                 value = 23;
@@ -158,6 +168,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             else if (value < 0)
             {
                 value = 0;
+            }
+
+            if (TimeFormat == BitTimeFormat.TwelveHours && value <= 12)
+            {
+                // The input carries the 12-hour face value, so it has to be mapped back into the
+                // 24-hour hour without flipping the currently selected AM/PM period.
+                value %= 12;
+
+                if (IsAm(_endTimeHour) is false)
+                {
+                    value += 12;
+                }
             }
 
             if (CanChangeTime(endTimeHour: value) is false) return;
@@ -3079,6 +3101,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return startDate >= minDate && endDate <= maxDate;
         }
 
+        // While the dates of the range are not picked yet, only a sub-day MaxRange can be violated
+        // by the times alone: with a whole day available the times always fit inside it.
+        if (MaxRange.Value.TotalHours >= 24) return true;
+
         var maxRangeTotalMinutes = new TimeSpan(MaxRange.Value.Hours, MaxRange.Value.Minutes, MaxRange.Value.Seconds).TotalMinutes;
 
         return maxRangeTotalMinutes > Math.Abs((startTime - endTime).TotalMinutes);
@@ -3194,6 +3220,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             return startDate < minDate || endDate > maxDate;
         }
+
+        // While the dates of the range are not picked yet, only a sub-day MaxRange can be violated
+        // by the times alone: with a whole day available the times always fit inside it.
+        if (MaxRange.Value.TotalHours >= 24) return false;
 
         var maxRangeTotalMinutes = new TimeSpan(MaxRange.Value.Hours, MaxRange.Value.Minutes, MaxRange.Value.Seconds).TotalMinutes;
         return maxRangeTotalMinutes < Math.Abs((startTime - endTime).TotalMinutes);

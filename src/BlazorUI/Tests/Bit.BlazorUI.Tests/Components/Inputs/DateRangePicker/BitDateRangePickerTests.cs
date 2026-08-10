@@ -2638,6 +2638,90 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsTrue(value!.StartDate.HasValue);
     }
 
+    [TestMethod]
+    public void BitDateRangePickerTypedHourShouldKeepThePmPeriodInTwelveHoursFormat()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 9, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 14, 0, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The end time shows "2" (14:00 is 2 PM); typing "3" must mean 3 PM, not 3 AM.
+        component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].Input("3");
+
+        Assert.AreEqual(15, value!.EndDate!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedTwelveShouldMeanMidnightInTheAmPeriod()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 9, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 14, 0, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The start time shows "9" (9 AM); typing "12" on a 12-hour face means 12 AM, which is 00:00.
+        component.FindAll(".bit-dtrp-sic .bit-dtrp-tin")[0].Input("12");
+
+        Assert.AreEqual(0, value!.StartDate!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerWholeDayMaxRangeShouldNotDisableTheTimeSpinnersWithoutAValue()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            // A MaxRange of at least a whole day cannot be violated by the times alone, so the
+            // default 00:00 - 23:59 times must not lock the spinners while no date is picked.
+            parameters.Add(p => p.MaxRange, new TimeSpan(2, 4, 30, 0));
+        });
+
+        foreach (var button in component.FindAll(".bit-dtrp-tbt"))
+        {
+            Assert.IsFalse(button.HasAttribute("disabled"));
+        }
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerDayPickerNavWrapperClassTest()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Classes, new BitDateRangePickerClassStyles { DayPickerNavWrapper = "custom-nav-wrapper" });
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { DayPickerNavWrapper = "background-color: red;" });
+        });
+
+        var navWrapper = component.Find(".bit-dtrp-dwp .bit-dtrp-nbc");
+
+        Assert.IsTrue(navWrapper.ClassList.Contains("custom-nav-wrapper"));
+        Assert.AreEqual("background-color: red;", navWrapper.GetAttribute("style"));
+    }
+
     // Midday keeps a date-only assertion safe from any time zone shifting the instant across midnight.
     private static DateTimeOffset FixedDate(int year, int month, int day)
     {

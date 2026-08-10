@@ -113,12 +113,12 @@ public class BitDateRangePickerClassStyles
     public string? GoToTodayIcon { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the hide time-picker button of the BitDatePicker.
+    /// Custom CSS classes/styles for the hide time-picker button of the BitDateRangePicker.
     /// </summary>
     public string? HideTimePickerButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the hide time-picker icon of the BitDatePicker.
+    /// Custom CSS classes/styles for the hide time-picker icon of the BitDateRangePicker.
     /// </summary>
     public string? HideTimePickerIcon { get; set; }
 
@@ -248,22 +248,12 @@ public class BitDateRangePickerClassStyles
     public string? EndTimeMinuteInputContainer { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the start time's wrapper of the BitDateRangePicker.
-    /// </summary>
-    public string? StartTimeWrapper { get; set; }
-
-    /// <summary>
-    /// Custom CSS classes/styles for the end time's wrapper of the BitDateRangePicker.
-    /// </summary>
-    public string? EndTimeWrapper { get; set; }
-
-    /// <summary>
     /// Custom CSS classes/styles for the time's wrapper of the BitDateRangePicker.
     /// </summary>
     public string? TimePickerWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the time's header of the BitDatePicker.
+    /// Custom CSS classes/styles for the time's header of the BitDateRangePicker.
     /// </summary>
     public string? TimePickerHeader { get; set; }
 
@@ -428,12 +418,12 @@ public class BitDateRangePickerClassStyles
     public string? YearPickerToggleButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the show time-picker button of the BitDatePicker.
+    /// Custom CSS classes/styles for the show time-picker button of the BitDateRangePicker.
     /// </summary>
     public string? ShowTimePickerButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the show time-picker icon of the BitDatePicker.
+    /// Custom CSS classes/styles for the show time-picker icon of the BitDateRangePicker.
     /// </summary>
     public string? ShowTimePickerIcon { get; set; }
 
@@ -443,7 +433,7 @@ public class BitDateRangePickerClassStyles
     public string? MonthPickerNavWrapper { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the wrapper of the time-picker's nav buttons of the BitDatePicker.
+    /// Custom CSS classes/styles for the wrapper of the time-picker's nav buttons of the BitDateRangePicker.
     /// </summary>
     public string? TimePickerNavWrapper { get; set; }
 
@@ -533,12 +523,12 @@ public class BitDateRangePickerClassStyles
     public string? YearButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitDatePicker's clear button.
+    /// Custom CSS classes/styles for the BitDateRangePicker's clear button.
     /// </summary>
     public string? ClearButton { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the BitDatePicker's clear button icon.
+    /// Custom CSS classes/styles for the BitDateRangePicker's clear button icon.
     /// </summary>
     public string? ClearButtonIcon { get; set; }
 }

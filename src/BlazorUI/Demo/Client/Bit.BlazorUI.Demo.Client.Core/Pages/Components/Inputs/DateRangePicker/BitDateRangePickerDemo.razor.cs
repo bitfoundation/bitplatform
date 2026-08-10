@@ -1573,20 +1573,6 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
-                    Name = "StartTimeWrapper",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the start time's wrapper of the BitDateRangePicker."
-                },
-                new()
-                {
-                    Name = "EndTimeWrapper",
-                    Type = "string?",
-                    DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the end time's wrapper of the BitDateRangePicker."
-                },
-                new()
-                {
                     Name = "Divider",
                     Type = "string?",
                     DefaultValue = "null",
