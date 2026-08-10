@@ -1,0 +1,274 @@
+﻿@page "/variants"
+@inject BmotionAnimateService Motion
+
+<PageTitle>Variants - Bit.Bmotion</PageTitle>
+
+<h1 class="demo-page-title">Variants</h1>
+
+<div class="demo-section">
+    <h2>Variants</h2>
+    <p>
+        Define named states in a <strong>BmVariants</strong> dictionary and select them with the
+        string-friendly <c>State</c> / <c>InitialState</c> parameters. Children automatically
+        receive the active state name and resolve it against their own variants.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card" style="flex-direction:column; gap:1rem;">
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible ? "visible" : "hidden")'
+                    Transition="Bm.Tween(staggerChildren: 0.08)">
+                <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        var idx = i;
+                        <Bmotion Variants="_itemVariants">
+                            <li style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;">
+                                Item @(idx + 1)
+                            </li>
+                        </Bmotion>
+                    }
+                </ul>
+            </Bmotion>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
+        @(_visible ? "Hide" : "Show") list
+    </button>
+
+    <CodeSnippet Code="@_variantsCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Variant Orchestration</h2>
+    <p>
+        Use <c>staggerChildren</c> and <c>delayChildren</c> in the container's
+        transition to choreograph child animations. A variant can also embed its
+        own transition via <c>Bm.To(..., transition: ...)</c>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(staggerChildren: 0.12, delayChildren: 0.2)">
+                <div style="display:flex;gap:.5rem;">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <Bmotion Variants="_itemVariants">
+                            <div class="box box-sm" style="@($"background:hsl({i*60+200},70%,60%)")" />
+                        </Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible2 = !_visible2)">
+        @(_visible2 ? "Hide" : "Show") boxes
+    </button>
+
+    <CodeSnippet Code="@_orchestrationCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Grid stagger</h2>
+    <p>
+        <strong>Bm.Stagger</strong> now radiates across a 2-D grid - pass
+        <c>grid: (cols, rows)</c> and a <c>from</c> origin and the delay grows with Euclidean distance
+        from that cell. Drive it imperatively with the <strong>BmotionAnimateService</strong>.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="stagger-grid">
+                @for (int i = 0; i < 36; i++)
+                {
+                    <div class="grid-dot"></div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-bm" style="margin-top:1rem" @onclick="RippleAsync">Ripple from center</button>
+
+    <CodeSnippet Code="@_gridStaggerCode" />
+</div>
+
+<style>
+    .stagger-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: .5rem; }
+    .grid-dot { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #6c47ff, #ff4785); }
+</style>
+
+@code {
+    private bool _visible = true;
+    private bool _visible2 = true;
+
+    private async Task RippleAsync()
+    {
+        await Motion.AnimateAsync(
+            ".grid-dot",
+            Bm.To(scale: [1, 1.6, 1]),
+            Bm.Spring(stiffness: 400, damping: 18),
+            stagger: Bm.Stagger(0.04, from: BmStaggerFrom.Center, grid: (6, 6)));
+    }
+
+    private readonly BmVariants _containerVariants = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0),
+        ["visible"] = Bm.To(opacity: 1),
+    };
+
+    private readonly BmVariants _itemVariants = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0, x: -30),
+        ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
+    };
+
+    private const string _gridStaggerCode = """
+        @inject BmotionAnimateService Motion
+
+        <div class="stagger-grid">
+            @for (int i = 0; i < 36; i++) { <div class="grid-dot"></div> }
+        </div>
+
+        @code {
+            async Task RippleAsync() =>
+                await Motion.AnimateAsync(".grid-dot",
+                    Bm.To(scale: [1, 1.6, 1]),
+                    Bm.Spring(stiffness: 400, damping: 18),
+                    stagger: Bm.Stagger(0.04, from: BmStaggerFrom.Center, grid: (6, 6)));
+        }
+        """;
+
+    private const string _variantsCode = """
+        @using Bit.Bmotion
+
+        <style>
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .btn-bm {
+                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Variants</h2>
+
+            <div class="demo-row">
+                <div class="demo-card" style="flex-direction:column; gap:1rem;">
+                    <Bmotion Variants="_containerVariants"
+                            InitialState="hidden"
+                            State='@(_visible ? "visible" : "hidden")'
+                            Transition="Bm.Tween(staggerChildren: 0.08)">
+                        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                var idx = i;
+                                <Bmotion Variants="_itemVariants">
+                                    <li style="background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;">
+                                        Item @(idx + 1)
+                                    </li>
+                                </Bmotion>
+                            }
+                        </ul>
+                    </Bmotion>
+                </div>
+            </div>
+
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
+                @(_visible ? "Hide" : "Show") list
+            </button>
+        </div>
+
+        @code {
+            private bool _visible = true;
+
+            private readonly BmVariants _containerVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0),
+                ["visible"] = Bm.To(opacity: 1),
+            };
+
+            private readonly BmVariants _itemVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0, x: -30),
+                ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
+            };
+        }
+        """;
+
+    private const string _orchestrationCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #6c47ff; --bm-card: #1e1e2e; }
+            .demo-section { margin-bottom: 3rem; }
+            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
+            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            .demo-card {
+                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                display: flex; align-items: center; justify-content: center;
+            }
+            .box-sm { width: 50px; height: 50px; border-radius: 8px; }
+            .btn-bm {
+                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            }
+        </style>
+
+        <div class="demo-section">
+            <h2>Variant Orchestration</h2>
+            <p>
+                Use <c>staggerChildren</c> and <c>delayChildren</c> in the container's
+                transition to choreograph child animations.
+            </p>
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Variants="_containerVariants"
+                            InitialState="hidden"
+                            State='@(_visible2 ? "visible" : "hidden")'
+                            Transition="Bm.Tween(staggerChildren: 0.12, delayChildren: 0.2)">
+                        <div style="display:flex;gap:.5rem;">
+                            @for (int i = 0; i < 4; i++)
+                            {
+                                <Bmotion Variants="_itemVariants">
+                                    <div class="box box-sm" style="@($"background:hsl({i*60+200},70%,60%)")" />
+                                </Bmotion>
+                            }
+                        </div>
+                    </Bmotion>
+                </div>
+            </div>
+            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible2 = !_visible2)">
+                @(_visible2 ? "Hide" : "Show") boxes
+            </button>
+        </div>
+
+        @code {
+            private bool _visible2 = true;
+
+            private readonly BmVariants _containerVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0),
+                ["visible"] = Bm.To(opacity: 1),
+            };
+
+            private readonly BmVariants _itemVariants = new()
+            {
+                ["hidden"]  = Bm.To(opacity: 0, x: -30),
+                ["visible"] = Bm.To(opacity: 1, x: 0),
+            };
+        }
+        """;
+}

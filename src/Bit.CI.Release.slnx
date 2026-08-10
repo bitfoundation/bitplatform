@@ -27,7 +27,8 @@
   </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
-    <Project Path="Bmotion/Bit.Bmotion.Demos/Bit.Bmotion.Demos.csproj" />
+    <Project Path="Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
+    <Project Path="Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
   </Folder>
