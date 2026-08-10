@@ -3,8 +3,11 @@ namespace BitBlazorUI {
         private static _entries = new Map<string, {
             element: HTMLElement,
             scrollHandler: () => void,
+            layoutHandler: () => void,
             focusHandler: () => void,
-            target: HTMLElement | Window,
+            // The scroller is held in a box as well, since it is re-resolved whenever the layout changes
+            // and dispose has to take the scroll listener off the target it is bound to at that moment.
+            target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
@@ -26,14 +29,14 @@ namespace BitBlazorUI {
 
             // The scroller is not always the window: an app shell (and any pane with its own overflow)
             // scrolls its own box, and a scroll event on an element does not bubble to the window.
-            const target = Footers.scrollParent(element);
+            const target = { current: Footers.scrollParent(element) };
 
             // A negative offset would keep the footer hidden at the very top of the scroller, where the
             // first rule below is what has to win.
             const offset = Math.max(0, revealOffset || 0);
 
             let hidden = false;
-            let lastY = Footers.scrollTop(target);
+            let lastY = Footers.scrollTop(target.current);
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
@@ -43,13 +46,16 @@ namespace BitBlazorUI {
 
                 hidden = next;
 
-                dotnetObj.invokeMethodAsync('OnRevealChange', hidden);
+                // The reference is disposed before the listeners are, so a flip of the very last frame can
+                // land on a dead reference. The rejection is consumed here rather than left to surface as an
+                // unhandled one in the console of an application that did nothing wrong.
+                dotnetObj.invokeMethodAsync('OnRevealChange', hidden).catch(() => { });
             };
 
             const evaluate = () => {
                 frame.handle = 0;
 
-                const y = Footers.scrollTop(target);
+                const y = Footers.scrollTop(target.current);
                 const delta = y - lastY;
 
                 let next = hidden;
@@ -63,7 +69,7 @@ namespace BitBlazorUI {
                 // make room for yet, and at the end the footer is the content the user scrolled down to
                 // reach. The offset is what keeps a footer from flickering away on the first few pixels
                 // of a scroll that has barely started.
-                if (y <= offset || Footers.atEnd(target)) {
+                if (y <= offset || Footers.atEnd(target.current)) {
                     next = false;
                     lastY = y;
                 }
@@ -83,36 +89,71 @@ namespace BitBlazorUI {
             // Revealing the footer as soon as anything inside it takes the focus keeps that control
             // visible, and the scroll baseline is re-read so the next scroll is measured from here.
             const focusHandler = () => {
-                lastY = Footers.scrollTop(target);
+                lastY = Footers.scrollTop(target.current);
 
                 apply(false);
             };
 
-            target.addEventListener('scroll', scrollHandler, { passive: true });
-            window.addEventListener('resize', scrollHandler, { passive: true });
+            let observer: ResizeObserver | undefined;
+
+            // The scroller is watched as well as the page, since a pane only becomes the scroller of the
+            // footer once its own content overflows it.
+            const observe = () => {
+                if (!observer) return;
+
+                observer.disconnect();
+                observer.observe(document.documentElement);
+
+                if (target.current !== window) {
+                    observer.observe(target.current as HTMLElement);
+                }
+            };
+
+            // Which box scrolls the footer is not settled once and for all: a pane that had nothing to
+            // scroll at setup time (so the walk landed on the window) becomes the scroller as soon as its
+            // content outgrows it, and the other way round. The scroller is re-resolved whenever the
+            // layout or the content moves, and the scroll listener follows it.
+            const layoutHandler = () => {
+                const next = Footers.scrollParent(element);
+
+                if (next !== target.current) {
+                    target.current.removeEventListener('scroll', scrollHandler);
+
+                    target.current = next;
+
+                    lastY = Footers.scrollTop(next);
+
+                    next.addEventListener('scroll', scrollHandler, { passive: true });
+
+                    observe();
+                }
+
+                scrollHandler();
+            };
+
+            target.current.addEventListener('scroll', scrollHandler, { passive: true });
+            window.addEventListener('resize', layoutHandler, { passive: true });
             element.addEventListener('focusin', focusHandler);
 
             // Whether the scroller sits at its end is a function of how tall its content is, and content that
             // grows or shrinks on its own (a list that loads more rows, an expanding panel) moves that end
             // without any scroll event to announce it. Watching the box that holds the content picks those up,
             // so a footer does not stay hidden below a page that just became shorter than the scroll it had.
-            let observer: ResizeObserver | undefined;
-
             if (typeof ResizeObserver !== 'undefined') {
-                observer = new ResizeObserver(scrollHandler);
+                observer = new ResizeObserver(layoutHandler);
 
-                observer.observe(target === window ? document.documentElement : target as HTMLElement);
+                observe();
             }
 
-            Footers._entries.set(id, { element, scrollHandler, focusHandler, target, observer, frame });
+            Footers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, frame });
         }
 
         public static dispose(id: string) {
             const entry = Footers._entries.get(id);
             if (!entry) return;
 
-            entry.target.removeEventListener('scroll', entry.scrollHandler);
-            window.removeEventListener('resize', entry.scrollHandler);
+            entry.target.current.removeEventListener('scroll', entry.scrollHandler);
+            window.removeEventListener('resize', entry.layoutHandler);
             entry.element.removeEventListener('focusin', entry.focusHandler);
 
             entry.observer?.disconnect();

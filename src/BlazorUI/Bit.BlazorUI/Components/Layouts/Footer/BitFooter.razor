@@ -3,7 +3,7 @@
 
 <footer @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
-        inert="@Hidden"
+        inert="@(Hidden || (Reveal && _hidden))"
         aria-label="@AriaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"

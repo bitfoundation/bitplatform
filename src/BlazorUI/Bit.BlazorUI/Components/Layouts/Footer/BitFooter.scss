@@ -36,6 +36,7 @@
     flex-wrap: var(--bit-ftr-wrap, nowrap);
     align-items: var(--bit-ftr-align, center);
     justify-content: var(--bit-ftr-justify, normal);
+
     // align-content only does anything once the content wraps, where it packs the lines the same way
     // align-items packs a single one, so a wrapped footer stays aligned the way it was asked to be.
     align-content: var(--bit-ftr-align, center);

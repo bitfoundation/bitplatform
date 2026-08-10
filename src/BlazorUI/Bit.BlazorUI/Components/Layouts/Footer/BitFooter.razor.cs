@@ -81,7 +81,8 @@ public partial class BitFooter : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitFooter.
     /// </summary>
-    [Parameter] public BitFooterClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitFooterClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the BitFooter.
@@ -218,7 +219,8 @@ public partial class BitFooter : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitFooter.
     /// </summary>
-    [Parameter] public BitFooterClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitFooterClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Softens the background of the BitFooter and blurs what passes behind it, for the frosted glass look
@@ -446,7 +448,9 @@ public partial class BitFooter : BitComponentBase
         // those alone. Toggling any of these parameters at runtime attaches or detaches it accordingly.
         // The attached flag keeps every other render (including the ones the reveal itself causes) from
         // tearing the listener down and setting it up again.
-        var shouldAttach = Reveal && (Fixed || Sticky);
+        // Absolute is skipped: it scrolls away with its container, and the position classes give it
+        // precedence over Sticky, so a footer rendered as bit-ftr-abs has nothing to reveal itself over.
+        var shouldAttach = Reveal && (Fixed || (Sticky && Absolute is false));
 
         // The offset is read by the script when it is set up, so a change of it has to set the listener
         // up again. -1 is not a reachable offset (it is clamped at 0), which keeps the detached state
@@ -515,7 +519,10 @@ public partial class BitFooter : BitComponentBase
 
         try
         {
-            await _js.BitFootersDispose(_Id);
+            // The listener is keyed by the id it was attached under, which is not the current one
+            // anymore when the Id changed after the setup and the component went away before the
+            // next render could move the registration over.
+            await _js.BitFootersDispose(_attachedId ?? _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
