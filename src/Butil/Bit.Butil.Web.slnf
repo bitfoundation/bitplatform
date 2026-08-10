@@ -5,8 +5,8 @@
       "Bit.Butil\\Bit.Butil.csproj",
       "Bit.Butil.Demo\\Client\\Bit.Butil.Demo.Client.csproj",
       "Bit.Butil.Demo\\Server\\Bit.Butil.Demo.Server.csproj",
-      "Demo\\Bit.Butil.Demo.Core\\Bit.Butil.Demo.Core.csproj",
-      "Demo\\Bit.Butil.Demo.Web\\Bit.Butil.Demo.Web.csproj"
+      "Samples\\Bit.Butil.Samples.Core\\Bit.Butil.Samples.Core.csproj",
+      "Samples\\Bit.Butil.Samples.Web\\Bit.Butil.Samples.Web.csproj"
     ]
   }
 }

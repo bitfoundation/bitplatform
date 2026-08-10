@@ -79,9 +79,9 @@
     <File Path="Butil/README.md" />
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
   </Folder>
-  <Folder Name="/Butil/Demo/">
-    <Project Path="Butil/Demo/Bit.Butil.Demo.Core/Bit.Butil.Demo.Core.csproj" />
-    <Project Path="Butil/Demo/Bit.Butil.Demo.Web/Bit.Butil.Demo.Web.csproj" />
+  <Folder Name="/Butil/Samples/">
+    <Project Path="Butil/Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />
+    <Project Path="Butil/Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
   </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />
