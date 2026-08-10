@@ -25,8 +25,7 @@ public static partial class Program
             var configuration = app.Configuration;
             var env = app.Environment;
 
-            ServerWebSettings settings = new();
-            configuration.Bind(settings);
+            var settings = app.Services.GetRequiredService<ServerWebSettings>();
 
             app.UseAppForwardedHeaders();
 
@@ -166,9 +165,12 @@ public static partial class Program
                 .AddInteractiveWebAssemblyRenderMode()
                 .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true).ToArray());
 
-            if (settings.WebAppRender.PrerenderEnabled is false)
+            if (settings.WebAppRender.RenderMode is not null && settings.WebAppRender.PrerenderEnabled is false)
             {
-                blazorApp.AllowAnonymous(); // Server may not check authorization for pages when there's no pre rendering, let the client handle it.
+                // In the interactive modes with pre-rendering off, nothing of the page is produced on the server -
+                // blazor emits only a marker comment and the client renders everything - so endpoint authorization has
+                // nothing to protect here and the client handles it.
+                blazorApp.AllowAnonymous();
             }
         }
 
@@ -187,7 +189,7 @@ public static partial class Program
                 if (context.Request.Path.HasValue)
                 {
                     if (context.Request.Path.Value.Contains(PageUrls.NotFound, StringComparison.InvariantCultureIgnoreCase))
-                    {
+              {
                         context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     }
                     if (context.Request.Path.Value.Contains(PageUrls.NotAuthorized, StringComparison.InvariantCultureIgnoreCase))
@@ -226,7 +228,7 @@ public static partial class Program
                     else if (httpContext.Response.StatusCode is 404 &&
                         httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */)
                     {
-                        httpContext.Response.Redirect($"{PageUrls.NotFound}?url={httpContext.Request.GetEncodedPathAndQuery()}");
+                        httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
                     }
                 }
             });

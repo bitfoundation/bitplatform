@@ -118,7 +118,12 @@ The project supports multiple Blazor hosting models, all configured in a single 
 
 ### Configuration Location
 
+<!--#if (api == "Standalone")-->
+**File**: [`/src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json)
+<!--#endif-->
+<!--#if (api == "Integrated")-->
 **File**: [`/src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
+<!--#endif-->
 
 ```json
 "WebAppRender": {
