@@ -943,12 +943,41 @@ public partial class BitCircularTimePickerDemo
     }
 
     // The short time pattern of a culture spells the hour with an "h" where its readers expect a 12-hour clock
-    // and with an "H" where they expect a 24-hour one.
+    // and with an "H" where they expect a 24-hour one. Only the format tokens of the pattern say so: the "HH 'h' mm"
+    // of fr-CA carries an h of its own, as a quoted literal that is text of the culture rather than an hour token.
     private static BitTimeFormat GetTimeFormatOf(CultureInfo culture)
     {
-        return culture.DateTimeFormat.ShortTimePattern.Contains('h')
-            ? BitTimeFormat.TwelveHours
-            : BitTimeFormat.TwentyFourHours;
+        var pattern = culture.DateTimeFormat.ShortTimePattern;
+
+        char? quote = null;
+
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var current = pattern[i];
+
+            // An escaped character stands for itself, so it is skipped along with the backslash escaping it.
+            if (current == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            if (quote.HasValue)
+            {
+                if (current == quote) quote = null;
+                continue;
+            }
+
+            if (current is '\'' or '"')
+            {
+                quote = current;
+                continue;
+            }
+
+            if (current == 'h') return BitTimeFormat.TwelveHours;
+        }
+
+        return BitTimeFormat.TwentyFourHours;
     }
 
     private async Task OpenCallout()

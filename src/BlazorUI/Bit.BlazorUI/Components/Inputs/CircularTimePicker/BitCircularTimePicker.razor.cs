@@ -1053,50 +1053,62 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // above the maximum. Searching both ways would wrap the long way round the ring instead: a minute of :00
     // under a minimum of :30 is one step from :59 going backwards, which is the far end of the range rather
     // than the near one.
+    // A part that has not been picked yet still reaches the value as a zero (see UpdateCurrentValue), so it is
+    // corrected like a picked one rather than left to carry the value outside of the range.
     private void PullMinuteIntoRange()
     {
-        if (_minute.HasValue is false || IsMinuteAllowed(_minute.Value)) return;
+        var minute = _minute.GetValueOrDefault();
 
         var min = MinBound;
         var max = MaxBound;
 
-        if (min.HasValue && _hour == min.Value.Hours && _minute < min.Value.Minutes)
+        var isUnderMin = min.HasValue && _hour == min.Value.Hours && minute < min.Value.Minutes;
+        var isOverMax = max.HasValue && _hour == max.Value.Hours && minute > max.Value.Minutes;
+
+        if (isUnderMin is false && isOverMax is false && IsMinuteAllowed(minute)) return;
+
+        if (isUnderMin)
         {
-            _minute = FindNearestAllowedMinute(min.Value.Minutes, 1);
+            _minute = FindNearestAllowedMinute(min!.Value.Minutes, 1);
         }
-        else if (max.HasValue && _hour == max.Value.Hours && _minute > max.Value.Minutes)
+        else if (isOverMax)
         {
-            _minute = FindNearestAllowedMinute(max.Value.Minutes, -1);
+            _minute = FindNearestAllowedMinute(max!.Value.Minutes, -1);
         }
         else
         {
-            _minute = FindNearestAllowedMinute(_minute.Value);
+            _minute = FindNearestAllowedMinute(minute);
         }
     }
 
     /// <inheritdoc cref="PullMinuteIntoRange"/>
     private void PullSecondIntoRange()
     {
-        if (_second.HasValue is false || IsSecondAllowed(_second.Value)) return;
-
-        var isBoundaryMinute = _hour.HasValue && _minute.HasValue;
+        var hour = _hour.GetValueOrDefault();
+        var minute = _minute.GetValueOrDefault();
+        var second = _second.GetValueOrDefault();
 
         var min = MinBound;
         var max = MaxBound;
 
-        if (isBoundaryMinute && min.HasValue && _hour == min.Value.Hours
-                             && _minute == min.Value.Minutes && _second < min.Value.Seconds)
+        var isUnderMin = min.HasValue && hour == min.Value.Hours
+                                      && minute == min.Value.Minutes && second < min.Value.Seconds;
+        var isOverMax = max.HasValue && hour == max.Value.Hours
+                                     && minute == max.Value.Minutes && second > max.Value.Seconds;
+
+        if (isUnderMin is false && isOverMax is false && IsSecondAllowed(second)) return;
+
+        if (isUnderMin)
         {
-            _second = FindNearestAllowedSecond(min.Value.Seconds, 1);
+            _second = FindNearestAllowedSecond(min!.Value.Seconds, 1);
         }
-        else if (isBoundaryMinute && max.HasValue && _hour == max.Value.Hours
-                                  && _minute == max.Value.Minutes && _second > max.Value.Seconds)
+        else if (isOverMax)
         {
-            _second = FindNearestAllowedSecond(max.Value.Seconds, -1);
+            _second = FindNearestAllowedSecond(max!.Value.Seconds, -1);
         }
         else
         {
-            _second = FindNearestAllowedSecond(_second.Value);
+            _second = FindNearestAllowedSecond(second);
         }
     }
 

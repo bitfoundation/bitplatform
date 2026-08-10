@@ -844,6 +844,15 @@ span.bit-ctp-txt {
         color: GrayText;
     }
 
+    // A selection that cannot be acted on - the picker is disabled, or the constraints have since ruled the
+    // value out - takes the GrayText of the rules above, which would be left sitting on the Highlight the
+    // selection paints. The background goes back to the one of the surface around it so the pair still reads.
+    .bit-ctp-dis.bit-ctp-sel,
+    .bit-ctp-cal.bit-dis .bit-ctp-sel,
+    .bit-ctp-cal.bit-dis .bit-ctp-apk .bit-ctp-aps {
+        background-color: Canvas;
+    }
+
     .bit-ctp-ina {
         color: GrayText;
     }
