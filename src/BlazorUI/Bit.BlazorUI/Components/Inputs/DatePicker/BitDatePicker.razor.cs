@@ -33,9 +33,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private DotNetObjectReference<BitDatePicker>? _dotnetObj;
     private readonly DateTime?[,] _daysOfCurrentMonth = new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
-    private bool _focusAfterRender;
     private bool _focusDayOnOpen;
+    private bool _focusTimePickerAfterRender;
+    private int? _focusedYearCell;
+    private int? _focusedMonthCell;
     private DateTime? _focusedDate;
+    private string? _focusElementIdAfterRender;
     private HashSet<DateTime> _disabledDates = [];
     private HashSet<DateTime> _highlightedDates = [];
     private HashSet<DayOfWeek> _disabledDaysOfWeek = [];
@@ -72,17 +75,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
         set
         {
-            if (value > 23)
+            if (TimeFormat == BitTimeFormat.TwelveHours)
             {
-                _hour = 23;
-            }
-            else if (value < 0)
-            {
-                _hour = 0;
+                // The input of a 12-hour clock carries no meridiem of its own, so the one already
+                // selected is kept: typing 5 while the time reads 15:30 gives 17:30, not 05:30.
+                var isPm = _hour >= 12;
+
+                _hour = (Math.Clamp(value, 0, 12) % 12) + (isPm ? 12 : 0);
             }
             else
             {
-                _hour = value;
+                _hour = Math.Clamp(value, 0, 23);
             }
 
             _ = UpdateCurrentValue();
@@ -200,6 +203,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Custom template to render the day cells of the DatePicker.
     /// </summary>
     [Parameter] public RenderFragment<DateTimeOffset>? DayCellTemplate { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a typed value that the DatePicker does not allow to be
+    /// selected, through <see cref="DisabledDates"/>, <see cref="DisabledDaysOfWeek"/> or
+    /// <see cref="IsDateDisabled"/>.
+    /// </summary>
+    [Parameter] public string? DisabledDateErrorMessage { get; set; }
 
     /// <summary>
     /// The list of dates that are disabled (not selectable) in the DatePicker, in addition to
@@ -770,23 +780,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         StateHasChanged();
     }
 
+    // The swipe of the responsive mode only reports its end, but the JS side of it calls the whole set,
+    // so the three that carry nothing here still have to be there to be called.
     [JSInvokable("OnStart")]
-    public async Task _OnStart(decimal startX, decimal startY)
-    {
-
-    }
+    public Task _OnStart(decimal startX, decimal startY) => Task.CompletedTask;
 
     [JSInvokable("OnMove")]
-    public async Task _OnMove(decimal diffX, decimal diffY)
-    {
-
-    }
+    public Task _OnMove(decimal diffX, decimal diffY) => Task.CompletedTask;
 
     [JSInvokable("OnEnd")]
-    public async Task _OnEnd(decimal diffX, decimal diffY)
-    {
-
-    }
+    public Task _OnEnd(decimal diffX, decimal diffY) => Task.CompletedTask;
 
     [JSInvokable("OnClose")]
     public async Task _OnClose()
@@ -887,9 +890,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
             try
             {
-                // Prevents the default behavior (scrolling) of the navigation keys handled by the
-                // day buttons' keydown handlers, since Blazor cannot conditionally preventDefault per key.
-                await _js.BitCalendarsSetup(_calloutId);
+                // Prevents the default behavior (scrolling) of the navigation keys handled by the grid
+                // cells' keydown handlers, since Blazor cannot conditionally preventDefault per key, and
+                // keeps the focus inside the callout while it is the modal dialog it reports itself to be.
+                await _js.BitCalendarsSetup(_calloutId, Standalone is false);
 
                 if (Responsive)
                 {
@@ -899,13 +903,25 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        if (_focusAfterRender && _focusedDate.HasValue)
+        if (_focusElementIdAfterRender.HasValue())
         {
-            _focusAfterRender = false;
+            var elementId = _focusElementIdAfterRender!;
+            _focusElementIdAfterRender = null;
 
             try
             {
-                await _js.BitCalendarsFocusDay(GetDayButtonId(_focusedDate.Value));
+                await _js.BitCalendarsFocusCell(elementId);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+        }
+
+        if (_focusTimePickerAfterRender)
+        {
+            _focusTimePickerAfterRender = false;
+
+            try
+            {
+                await _inputTimeHourRef.FocusAsync();
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
@@ -950,6 +966,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 return false;
             }
 
+            // The same goes for the days the calendar disables one by one: typing one of them would
+            // otherwise be the way around a rule the picker itself enforces.
+            if (IsDayDisabled(parsedValue.Date))
+            {
+                result = default;
+                validationErrorMessage = DisabledDateErrorMessage.HasValue()
+                    ? DisabledDateErrorMessage!
+                    : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not an allowed date.";
+                return false;
+            }
+
             result = new DateTimeOffset(parsedValue, _timeZone.GetUtcOffset(parsedValue));
             validationErrorMessage = null;
             return true;
@@ -964,7 +991,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (value.HasValue is false) return null;
 
-        return value.Value.ToString(DateFormat ?? GetDefaultDateFormat(), _culture);
+        // The text of the input is the same wall clock the calendar shows, so it is read in the TimeZone
+        // of the component rather than in whatever offset the value happens to carry.
+        return GetDateTime(value.Value).ToString(DateFormat ?? GetDefaultDateFormat(), _culture);
     }
 
     private string GetDefaultDateFormat()
@@ -1120,10 +1149,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         // Only a callout opened from the keyboard takes the focus with it: a pointer press leaves the
         // focus on the input, where a user typing a date (AllowTextInput) expects to keep it.
-        if (wasOpen is false && _focusDayOnOpen && ShowDayPicker())
+        if (wasOpen is false && _focusDayOnOpen)
         {
-            _focusedDate = GetFocusableDay();
-            _focusAfterRender = true;
+            if (ShowDayPicker())
+            {
+                _focusedDate = GetFocusableDay();
+                _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
+            }
+            else if (ShowMonthPicker())
+            {
+                // With no day picker on screen (the MonthPicker mode, or the month picker as an overlay)
+                // the month grid is what the keyboard opens onto.
+                _focusedMonthCell = GetFocusableMonth();
+                _focusElementIdAfterRender = GetMonthButtonId(_focusedMonthCell.Value);
+            }
         }
 
         _focusDayOnOpen = false;
@@ -1415,9 +1454,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ChangeYearRanges(_currentYear - 1);
 
+        ClampCurrentMonthToYear();
+
         GenerateMonthData(_currentYear, _currentMonth);
 
         ToggleBetweenMonthAndYearPicker();
+
+        // The year that was activated goes away with the year grid, so the focus is handed to the month
+        // grid that replaces it - otherwise a keyboard selection drops the focus onto the body.
+        FocusMonthCell(GetFocusableMonth());
 
         await NotifyMonthChange(previousYear, previousMonth);
     }
@@ -1427,6 +1472,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return;
 
         _showMonthPicker = !_showMonthPicker;
+
+        // The grid that comes into view starts its roving tabindex over, on the month or the year the
+        // calendar is actually displaying, rather than on wherever the keyboard left it last time.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
     }
 
     private async Task HandleMonthChange(bool isNext)
@@ -1439,7 +1489,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (isNext)
         {
-            if (_currentMonth < 12)
+            if (_currentMonth < GetMonthsInCurrentYear())
             {
                 _currentMonth++;
             }
@@ -1458,7 +1508,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             else
             {
                 _currentYear--;
-                _currentMonth = 12;
+                _currentMonth = GetMonthsInCurrentYear();
             }
         }
 
@@ -1476,6 +1526,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var previousMonth = _currentMonth;
 
         _currentYear += isNext ? +1 : -1;
+
+        ClampCurrentMonthToYear();
 
         GenerateMonthData(_currentYear, _currentMonth);
 
@@ -1538,26 +1590,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // Adjust dayOfWeek to match the culture's first day of week
         dayOfWeek = (dayOfWeek - firstDayOfWeek + 7) % 7;
 
-        DateTime previousMonth;
-        if (month == 1)
-        {
-            previousMonth = new(year - 1, 12, 1);
-        }
-        else
-        {
-            previousMonth = new(year, month - 1, 1);
-        }
-        int daysInPreviousMonth = calendar.GetDaysInMonth(previousMonth.Year, previousMonth.Month);
+        // The adjacent months are kept as plain year/month numbers of the culture's own calendar: a
+        // DateTime built out of them would be a Gregorian date of a year that calendar never had, and a
+        // thirteenth month - which a leap year of the Hebrew calendar does have - has no Gregorian
+        // counterpart to build at all.
+        int monthsInYear = calendar.GetMonthsInYear(year);
 
-        DateTime nextMonth;
-        if (month == 12)
-        {
-            nextMonth = new(year + 1, 1, 1);
-        }
-        else
-        {
-            nextMonth = new(year, month + 1, 1);
-        }
+        int previousYear = month == 1 ? year - 1 : year;
+        int previousMonth = month == 1 ? calendar.GetMonthsInYear(previousYear) : month - 1;
+        int daysInPreviousMonth = calendar.GetDaysInMonth(previousYear, previousMonth);
+
+        int nextYear = month == monthsInYear ? year + 1 : year;
+        int nextMonth = month == monthsInYear ? 1 : month + 1;
 
         int day = daysInPreviousMonth - dayOfWeek + 1;
 
@@ -1565,7 +1609,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             for (int j = 0; j < dayOfWeek; j++)
             {
-                _daysOfCurrentMonth[i, j] = new(previousMonth.Year, previousMonth.Month, day, calendar);
+                _daysOfCurrentMonth[i, j] = new(previousYear, previousMonth, day, calendar);
                 day++;
             }
         }
@@ -1589,10 +1633,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                     {
                         ended = true;
                     }
-                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
+                    _daysOfCurrentMonth[i, j] = ended ? null : new(nextYear, nextMonth, day - daysInMonth, calendar);
                     day++;
                 }
             }
+        }
+    }
+
+    // Moving to another year of a calendar whose years do not all have the same number of months (the
+    // Hebrew one) can leave the displayed month past the end of the year that is now displayed.
+    private void ClampCurrentMonthToYear()
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+
+        if (_currentMonth > monthsInYear)
+        {
+            _currentMonth = monthsInYear;
         }
     }
 
@@ -1650,11 +1706,42 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private void ToggleMonthPickerOverlay()
     {
         _isMonthPickerOverlayOnTop = !_isMonthPickerOverlayOnTop;
+
+        // Each toggle swaps one whole picker for another, taking the button that was activated out of
+        // the DOM with it, so the focus has to be handed over to the picker that takes its place.
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
+
+        MoveFocusToTheVisiblePicker();
     }
 
     private void ToggleTimePickerOverlay()
     {
         _isTimePickerOverlayOnTop = !_isTimePickerOverlayOnTop;
+
+        MoveFocusToTheVisiblePicker();
+    }
+
+    private void MoveFocusToTheVisiblePicker()
+    {
+        if (ShowDayPicker())
+        {
+            _focusedDate = GetFocusableDay();
+            _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
+        }
+        else if (ShowMonthPicker() && _showMonthPicker)
+        {
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else if (ShowMonthPicker())
+        {
+            FocusYearCell(GetFocusableYear());
+        }
+        else if (ShowTimePicker)
+        {
+            // Nothing but the time picker is left on screen, so its hour input is where the focus goes.
+            _focusTimePickerAfterRender = true;
+        }
     }
 
     private bool CanChangeMonth(bool isNext)
@@ -1663,19 +1750,21 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (isNext && MaxDate.HasValue)
         {
-            var MaxDateYear = _culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = _culture.Calendar.GetMonth(MaxDate.Value.DateTime);
+            var maxDate = GetDateTime(MaxDate.Value);
+            var maxDateYear = _culture.Calendar.GetYear(maxDate);
+            var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
-            if (MaxDateYear == _currentYear && MaxDateMonth == _currentMonth) return false;
+            if (maxDateYear == _currentYear && maxDateMonth == _currentMonth) return false;
         }
 
 
         if (isNext is false && MinDate.HasValue)
         {
-            var MinDateYear = _culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = _culture.Calendar.GetMonth(MinDate.Value.DateTime);
+            var minDate = GetDateTime(MinDate.Value);
+            var minDateYear = _culture.Calendar.GetYear(minDate);
+            var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
-            if (MinDateYear == _currentYear && MinDateMonth == _currentMonth) return false;
+            if (minDateYear == _currentYear && minDateMonth == _currentMonth) return false;
         }
 
         return true;
@@ -1686,8 +1775,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return false;
 
         return (
-                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) == _currentYear) ||
-                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) == _currentYear)
+                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) == _currentYear) ||
+                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MinDate.Value)) == _currentYear)
                ) is false;
     }
 
@@ -1696,8 +1785,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (IsEnabled is false) return false;
 
         return (
-                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(MaxDate.Value.DateTime) < _yearPickerStartYear + 12) ||
-                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(MinDate.Value.DateTime) >= _yearPickerStartYear)
+                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) < _yearPickerStartYear + 12) ||
+                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MinDate.Value)) >= _yearPickerStartYear)
                ) is false;
     }
 
@@ -1720,18 +1809,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (MaxDate.HasValue)
         {
-            var MaxDateYear = _culture.Calendar.GetYear(MaxDate.Value.DateTime);
-            var MaxDateMonth = _culture.Calendar.GetMonth(MaxDate.Value.DateTime);
+            var maxDate = GetDateTime(MaxDate.Value);
+            var maxDateYear = _culture.Calendar.GetYear(maxDate);
+            var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
-            if (_currentYear > MaxDateYear || (_currentYear == MaxDateYear && month > MaxDateMonth)) return true;
+            if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
         }
 
         if (MinDate.HasValue)
         {
-            var MinDateYear = _culture.Calendar.GetYear(MinDate.Value.DateTime);
-            var MinDateMonth = _culture.Calendar.GetMonth(MinDate.Value.DateTime);
+            var minDate = GetDateTime(MinDate.Value);
+            var minDateYear = _culture.Calendar.GetYear(minDate);
+            var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
-            if (_currentYear < MinDateYear || (_currentYear == MinDateYear && month < MinDateMonth)) return true;
+            if (_currentYear < minDateYear || (_currentYear == minDateYear && month < minDateMonth)) return true;
         }
 
         return false;
@@ -1739,8 +1830,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsYearOutOfMinAndMaxDate(int year)
     {
-        return (MaxDate.HasValue && year > _culture.Calendar.GetYear(MaxDate.Value.DateTime))
-            || (MinDate.HasValue && year < _culture.Calendar.GetYear(MinDate.Value.DateTime));
+        return (MaxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)))
+            || (MinDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(MinDate.Value)));
     }
 
     private void CheckCurrentCalendarMatchesCurrentValue()
@@ -1853,8 +1944,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
         else if (Mode == BitDatePickerMode.MonthPicker && CurrentValue.HasValue)
         {
-            var selectedYear = _culture.Calendar.GetYear(CurrentValue.Value.DateTime);
-            var selectedMonth = _culture.Calendar.GetMonth(CurrentValue.Value.DateTime);
+            var selectedValue = GetDateTime(CurrentValue.Value);
+            var selectedYear = _culture.Calendar.GetYear(selectedValue);
+            var selectedMonth = _culture.Calendar.GetMonth(selectedValue);
 
             if (selectedYear == _currentYear && selectedMonth == monthIndex)
             {
@@ -1923,6 +2015,225 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return FormattableString.Invariant($"{_datePickerId}-day-{date.Year:D4}-{date.Month:D2}-{date.Day:D2}");
     }
 
+    private string GetMonthButtonId(int month)
+    {
+        return FormattableString.Invariant($"{_datePickerId}-month-{month:D2}");
+    }
+
+    private string GetYearButtonId(int year)
+    {
+        return FormattableString.Invariant($"{_datePickerId}-year-{year:D4}");
+    }
+
+    private int GetMonthsInCurrentYear()
+    {
+        // Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen.
+        return _culture.Calendar.GetMonthsInYear(_currentYear);
+    }
+
+    // The single month of the month grid that is in the tab sequence (the roving tabindex of the APG
+    // grid pattern): the one the keyboard last landed on, otherwise the month the calendar displays,
+    // and as a last resort the first month the Min/Max range allows - the grid must never be
+    // unreachable, so a month is always returned even when every one of them is disabled.
+    private int GetFocusableMonth()
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+
+        if (_focusedMonthCell.HasValue &&
+            _focusedMonthCell.Value >= 1 && _focusedMonthCell.Value <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_focusedMonthCell.Value) is false) return _focusedMonthCell.Value;
+
+        if (_currentMonth >= 1 && _currentMonth <= monthsInYear &&
+            IsMonthOutOfMinAndMaxDate(_currentMonth) is false) return _currentMonth;
+
+        for (var month = 1; month <= monthsInYear; month++)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+        }
+
+        return Math.Clamp(_currentMonth, 1, monthsInYear);
+    }
+
+    // The same roving tabindex for the year grid. The displayed year is not always inside the range the
+    // year picker shows (browsing the ranges moves the range alone), so the first year of the range is
+    // what the tab sequence falls back to.
+    private int GetFocusableYear()
+    {
+        if (_focusedYearCell.HasValue &&
+            _focusedYearCell.Value >= _yearPickerStartYear && _focusedYearCell.Value <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_focusedYearCell.Value) is false) return _focusedYearCell.Value;
+
+        if (_currentYear >= _yearPickerStartYear && _currentYear <= _yearPickerEndYear &&
+            IsYearOutOfMinAndMaxDate(_currentYear) is false) return _currentYear;
+
+        for (var year = _yearPickerStartYear; year <= _yearPickerEndYear; year++)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+        }
+
+        return _yearPickerStartYear;
+    }
+
+    // The month grid answers the same keys as the day grid, one row being four months wide, and
+    // PageUp/PageDown moving to the same month of the adjacent year.
+    private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            await CloseCalloutAndRestoreFocus();
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYear(isNext) is false) return;
+
+            await HandleYearChange(isNext);
+
+            FocusMonthCell(GetFocusableMonth());
+            return;
+        }
+
+        var isRtl = IsRtl();
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledMonth(month, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledMonth(month, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledMonth(month, -4),
+            "ArrowDown" => FindEnabledMonth(month, 4),
+            "Home" => FindEnabledMonthFrom(1, 1),
+            "End" => FindEnabledMonthFrom(GetMonthsInCurrentYear(), -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusMonthCell(target.Value);
+    }
+
+    private void FocusMonthCell(int month)
+    {
+        _focusedMonthCell = month;
+        _focusElementIdAfterRender = GetMonthButtonId(month);
+    }
+
+    private int? FindEnabledMonth(int from, int step)
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+        var month = from + step;
+
+        while (month >= 1 && month <= monthsInYear)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+
+            month += step;
+        }
+
+        return null;
+    }
+
+    private int? FindEnabledMonthFrom(int from, int step)
+    {
+        var monthsInYear = GetMonthsInCurrentYear();
+        var month = from;
+
+        while (month >= 1 && month <= monthsInYear)
+        {
+            if (IsMonthOutOfMinAndMaxDate(month) is false) return month;
+
+            month += step;
+        }
+
+        return null;
+    }
+
+    // The year grid answers the same keys, one row being four years wide, and PageUp/PageDown moving to
+    // the adjacent range of years.
+    private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            await CloseCalloutAndRestoreFocus();
+            return;
+        }
+
+        if (e.Key is "PageUp" or "PageDown")
+        {
+            var isNext = e.Key is "PageDown";
+
+            if (CanChangeYearRange(isNext) is false) return;
+
+            HandleYearRangeChange(isNext);
+
+            _focusedYearCell = null;
+            FocusYearCell(GetFocusableYear());
+            return;
+        }
+
+        var isRtl = IsRtl();
+
+        int? target = e.Key switch
+        {
+            "ArrowLeft" => FindEnabledYear(year, isRtl ? 1 : -1),
+            "ArrowRight" => FindEnabledYear(year, isRtl ? -1 : 1),
+            "ArrowUp" => FindEnabledYear(year, -4),
+            "ArrowDown" => FindEnabledYear(year, 4),
+            "Home" => FindEnabledYearFrom(_yearPickerStartYear, 1),
+            "End" => FindEnabledYearFrom(_yearPickerEndYear, -1),
+            _ => null
+        };
+
+        if (target.HasValue is false) return;
+
+        FocusYearCell(target.Value);
+    }
+
+    private void FocusYearCell(int year)
+    {
+        _focusedYearCell = year;
+        _focusElementIdAfterRender = GetYearButtonId(year);
+    }
+
+    private int? FindEnabledYear(int from, int step)
+    {
+        var year = from + step;
+
+        while (year >= _yearPickerStartYear && year <= _yearPickerEndYear)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+
+            year += step;
+        }
+
+        return null;
+    }
+
+    private int? FindEnabledYearFrom(int from, int step)
+    {
+        var year = from;
+
+        while (year >= _yearPickerStartYear && year <= _yearPickerEndYear)
+        {
+            if (IsYearOutOfMinAndMaxDate(year) is false) return year;
+
+            year += step;
+        }
+
+        return null;
+    }
+
+    private bool IsRtl()
+    {
+        return Dir == BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft);
+    }
+
     // The single day of the grid that is in the tab sequence (the roving tabindex of the APG grid
     // pattern): the one the keyboard last landed on, otherwise the selection, otherwise today, and as a
     // last resort the first day that can actually be selected - the grid must never be unreachable.
@@ -1948,7 +2259,19 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             }
         }
 
-        return _daysOfCurrentMonth[0, 0].GetValueOrDefault(today);
+        // A month can be disabled from end to end, and a disabled day is not focusable anyway - but the
+        // tabindex still has to land on a day of the month itself: with ShowOutsideDays turned off the
+        // days around it are not rendered as buttons at all, so pointing at one loses the grid entirely.
+        for (var week = 0; week < DEFAULT_WEEK_COUNT; week++)
+        {
+            for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+            {
+                var date = _daysOfCurrentMonth[week, day];
+                if (date.HasValue && IsInCurrentMonth(date.Value)) return date.Value;
+            }
+        }
+
+        return today;
     }
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
@@ -1961,7 +2284,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = Dir == BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft);
+        var isRtl = IsRtl();
 
         DateTime? target = e.Key switch
         {
@@ -2036,7 +2359,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
 
         _focusedDate = target;
-        _focusAfterRender = true;
+        _focusElementIdAfterRender = GetDayButtonId(target);
 
         await NotifyMonthChange(previousYear, previousMonth);
     }
@@ -2292,6 +2615,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                                             (ShowMonthPickerAsOverlay && IsMonthPickerVisible);
         _isTimePickerOverlayOnTop = false;
         _showTimePickerAsOverlayInternal = ShowTimePickerAsOverlay;
+        _focusedYearCell = null;
+        _focusedMonthCell = null;
     }
 
     private async Task<bool> ToggleCallout()
@@ -2349,7 +2674,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             classes.Add("bit-dtp-res");
         }
 
-        if (Dir is BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft))
+        if (IsRtl())
         {
             classes.Add("bit-dtp-rtl");
         }

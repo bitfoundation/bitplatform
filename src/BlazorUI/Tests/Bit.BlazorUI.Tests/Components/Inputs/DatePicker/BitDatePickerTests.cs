@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components.Web;
@@ -1210,6 +1211,37 @@ public class BitDatePickerTests : BunitTestContext
         Assert.HasCount(1, component.FindAll(".custom-highlighted"));
     }
 
+    [TestMethod]
+    public void BitDatePickerShouldRespectDaysGridClassAndStyle()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { DaysGrid = "custom-days-grid" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { DaysGrid = "padding:2px" });
+        });
+
+        var daysGrid = component.Find(".bit-dtp-grd");
+
+        StringAssert.Contains(daysGrid.ClassName, "custom-days-grid");
+        StringAssert.Contains(daysGrid.GetAttribute("style"), "padding:2px");
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectDayNameHeaderClassAndStyle()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { DayNameHeader = "custom-day-name" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { DayNameHeader = "color:red" });
+        });
+
+        var dayNameHeaders = component.FindAll(".bit-dtp-wlb");
+
+        Assert.HasCount(7, dayNameHeaders);
+        Assert.IsTrue(dayNameHeaders.All(h => h.ClassList.Contains("custom-day-name")));
+        Assert.IsTrue(dayNameHeaders.All(h => h.GetAttribute("style")!.Contains("color:red")));
+    }
+
     // ── Week configuration ────────────────────────────────────────────────────
 
     [TestMethod]
@@ -1301,6 +1333,51 @@ public class BitDatePickerTests : BunitTestContext
         var expected = calendar.GetWeekOfYear(new DateTime(2026, 2, 23), CalendarWeekRule.FirstFullWeek, DayOfWeek.Monday);
 
         Assert.AreEqual(expected.ToString(), component.FindAll(".bit-dtp-wnm")[0].TextContent.Trim());
+    }
+
+    // ── Culture & TimeZone ────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheValueInTheGivenTimeZone()
+    {
+        // 2026-01-20 23:30 UTC is 2026-01-21 04:00 at UTC+04:30, so the input has to read the 21st, which
+        // is the very day the calendar marks as selected.
+        var timeZone = TimeZoneInfo.CreateCustomTimeZone("bit-test-tz", TimeSpan.FromMinutes(270), "bit-test-tz", "bit-test-tz");
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.TimeZone, timeZone);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy/MM/dd HH:mm");
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 20, 23, 30, 0, TimeSpan.Zero));
+        });
+
+        Assert.AreEqual("2026/01/21 04:00", component.Find(".bit-dtp-inp").GetAttribute("value"));
+        Assert.AreEqual("21", component.Find(".bit-dtp-dbs").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderEveryMonthOfANonGregorianCalendar()
+    {
+        // A leap year of the Hebrew calendar has thirteen months, so a grid of twelve would leave one of
+        // them out and the days of the last one out of reach altogether.
+        var calendar = new HebrewCalendar();
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, calendar);
+
+        // 2024-03-15 falls in the Hebrew year 5784, a leap year of thirteen months.
+        var startingValue = GetLocalDate(2024, 3, 15);
+
+        Assert.AreEqual(5784, calendar.GetYear(startingValue.DateTime));
+        Assert.AreEqual(13, calendar.GetMonthsInYear(5784));
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.StartingValue, startingValue);
+        });
+
+        Assert.HasCount(13, component.FindAll(".bit-dtp-mwp .bit-dtp-pkb"));
     }
 
     // ── Today ─────────────────────────────────────────────────────────────────
@@ -1845,6 +1922,160 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(new DateTime(2026, 2, 1), changedMonth!.Value.Date);
     }
 
+    // ── Keyboard navigation of the month and year grids ───────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldMakeExactlyOneMonthFocusable()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        var focusableMonths = component.FindAll(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']");
+
+        Assert.HasCount(1, focusableMonths);
+        Assert.AreEqual("Mar", focusableMonths[0].TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(3, "ArrowRight", "Apr"),
+        DataRow(3, "ArrowLeft", "Feb"),
+        DataRow(3, "ArrowDown", "Jul"),
+        DataRow(7, "ArrowUp", "Mar"),
+        DataRow(3, "Home", "Jan"),
+        DataRow(3, "End", "Dec")]
+    public void BitDatePickerKeyboardNavigationShouldMoveFocusWithinTheMonthGrid(int startingMonth, string key, string expectedMonth)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, startingMonth, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedMonth, component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerKeyboardNavigationShouldNotLeaveTheMonthGrid()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual("Jan", component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerKeyboardNavigationShouldSkipDisabledMonths()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+            parameters.Add(p => p.MaxDate, GetLocalDate(2026, 5, 31));
+        });
+
+        // April is next, May is the last month the range allows, and June onwards is disabled.
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "End" });
+
+        Assert.AreEqual("May", component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerPageKeysInTheMonthGridShouldChangeTheYear()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+
+        Assert.Contains("2027", component.Find(".bit-dtp-mwp .bit-dtp-ptb").TextContent);
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "PageUp" });
+
+        Assert.Contains("2026", component.Find(".bit-dtp-mwp .bit-dtp-ptb").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldMakeExactlyOneYearFocusable()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        var focusableYears = component.FindAll(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']");
+
+        Assert.HasCount(1, focusableYears);
+        Assert.AreEqual("2026", focusableYears[0].TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow("ArrowRight", "2027"),
+        DataRow("ArrowLeft", "2025"),
+        DataRow("ArrowDown", "2030"),
+        DataRow("Home", "2025"),
+        DataRow("End", "2036")]
+    public void BitDatePickerKeyboardNavigationShouldMoveFocusWithinTheYearGrid(string key, string expectedYear)
+    {
+        // The year picker opens on the range that starts one year before the displayed one: 2025 - 2036.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedYear, component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerPageKeysInTheYearGridShouldChangeTheYearRange()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "PageDown" });
+
+        Assert.Contains("2037", component.Find(".bit-dtp-mwp .bit-dtp-ptb").TextContent);
+        Assert.AreEqual("2037", component.Find(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerYearGridShouldStayReachableOutsideTheDisplayedYear()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 3, 15));
+        });
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        // The next range holds no displayed year at all, so the fallback of the roving tabindex is what
+        // keeps the grid in the tab sequence.
+        component.FindAll(".bit-dtp-mwp .bit-dtp-nbt").Last().Click();
+
+        Assert.HasCount(1, component.FindAll(".bit-dtp-mwp .bit-dtp-pkb[tabindex='0']"));
+    }
+
     [TestMethod]
     public void BitDatePickerArrowKeysOnTheInputShouldOpenTheCallout()
     {
@@ -1957,6 +2188,69 @@ public class BitDatePickerTests : BunitTestContext
         component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "20").Click();
 
         Assert.IsTrue(isOpen);
+    }
+
+    // ── Time picker ───────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerTwelveHourClockShouldRenderTheHourOfTheMeridiem()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15, 15, 30));
+        });
+
+        var hourInput = component.FindAll(".bit-dtp-tin")[0];
+
+        Assert.AreEqual("3", hourInput.GetAttribute("value"));
+        Assert.AreEqual("1", hourInput.GetAttribute("min"));
+        Assert.AreEqual("12", hourInput.GetAttribute("max"));
+    }
+
+    [TestMethod,
+        DataRow(15, 30, "5", 17),
+        DataRow(15, 30, "12", 12),
+        DataRow(9, 30, "5", 5),
+        DataRow(9, 30, "12", 0)]
+    public void BitDatePickerTwelveHourClockShouldKeepTheMeridiemOfTheTypedHour(int hour, int minute, string typed, int expectedHour)
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, hour, minute);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-tin")[0].Input(typed);
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(expectedHour, value!.Value.Hour);
+        Assert.AreEqual(minute, value!.Value.Minute);
+    }
+
+    [TestMethod]
+    public void BitDatePickerTwentyFourHourClockShouldTakeTheTypedHourAsItIs()
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 15, 30);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var hourInput = component.FindAll(".bit-dtp-tin")[0];
+
+        Assert.AreEqual("0", hourInput.GetAttribute("min"));
+        Assert.AreEqual("23", hourInput.GetAttribute("max"));
+
+        hourInput.Input("5");
+
+        Assert.AreEqual(5, value!.Value.Hour);
     }
 
     // ── Text input ────────────────────────────────────────────────────────────

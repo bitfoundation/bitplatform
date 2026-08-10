@@ -9,6 +9,7 @@
 <DemoPage Name="DatePicker"
           Description="A BitDatePicker offers a drop-down control that's optimized for picking a single date from a calendar view, where contextual information like the day of the week or the fullness of the calendar is important. It provides day, month, and year views, an optional time picker, and flexible day rules such as min/max dates, disabled and highlighted dates, a custom first day of the week, and week numbers. It works with any culture and time zone, including right-to-left and non-Gregorian calendars, accepts typed input, and is fully keyboard accessible following the WAI-ARIA combobox and grid patterns."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
           GitHubUrl="Inputs/DatePicker/BitDatePicker.razor"
@@ -465,8 +466,8 @@
     <DemoExample Title="Keyboard navigation" RazorCode="@example20RazorCode" Id="example20">
         <div>
             BitDatePicker follows the WAI-ARIA combobox and grid patterns. From the input, <b>↓</b> or <b>↑</b>
-            opens the calendar and moves the focus into the day grid; <b>Esc</b> closes it and brings the focus back
-            to the input. Inside the grid:
+            opens the calendar and moves the focus into the grid it opens on; <b>Esc</b> closes it and brings the
+            focus back to the input. Inside the day grid:
             <br /><br />
             <ul>
                 <li><b>←</b> / <b>→</b>: previous/next day</li>
@@ -477,12 +478,19 @@
                 <li><b>Enter</b> / <b>Space</b>: select the focused day</li>
             </ul>
             <br />
-            Crossing a month boundary navigates the calendar and keeps the focus on the day, and disabled days are
-            skipped.
+            The month and the year grids answer the same keys, four cells to a row: the arrows move between the
+            cells, <b>Home</b> and <b>End</b> jump to the first and the last of them, and
+            <b>PageUp</b>/<b>PageDown</b> move to the adjacent year (in the month grid) or to the adjacent range
+            of years (in the year grid).
+            <br /><br />
+            Crossing a month boundary navigates the calendar and keeps the focus on the day, switching between the
+            pickers takes the focus along with it, and disabled days, months, and years are all skipped.
         </div>
         <br />
         <div class="example-content">
             <BitDatePicker Label="Try the keyboard" ShowWeekNumbers />
+            <br /><br />
+            <BitDatePicker Label="Try the keyboard (month picker)" Mode="BitDatePickerMode.MonthPicker" />
         </div>
     </DemoExample>
 
@@ -515,7 +523,48 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Programmatic control" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+        <div>
+            The callout can be driven from the outside as well: two-way bind <b>IsOpen</b> to open and close
+            it from the code, or call the <b>OpenCallout</b> and <b>CloseCalloutAndFocus</b> methods on a
+            reference to the component - the first opens the callout exactly as clicking the input would, and
+            the second closes it and hands the focus back to the input. A one-way bound <b>IsOpen</b> keeps
+            the callout under the control of the application: the component reports the change but never
+            closes on its own.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitDatePicker @ref="programmaticPicker" @bind-IsOpen="isCalloutOpen" Label="Controlled callout" />
+            <br />
+            <div>IsOpen: @isCalloutOpen</div>
+            <br />
+            <BitButton OnClick="() => programmaticPicker?.OpenCallout()">OpenCallout()</BitButton>
+            <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticPicker?.CloseCalloutAndFocus()">
+                CloseCalloutAndFocus()
+            </BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Appearance" RazorCode="@example23RazorCode" Id="example23">
+        <div>
+            Adapt the input to the surrounding form: <b>Underlined</b> replaces the box with a single
+            underline, <b>HasBorder</b> removes the border altogether, <b>IconLocation</b> moves the calendar
+            icon to the other side of the input, and <b>IconName</b> replaces it with any icon of the built-in
+            Fluent UI set.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitDatePicker Label="Underlined" Underlined />
+            <br /><br />
+            <BitDatePicker Label="HasBorder (false)" HasBorder="false" />
+            <br /><br />
+            <BitDatePicker Label="IconLocation (Left)" IconLocation="BitIconLocation.Left" />
+            <br /><br />
+            <BitDatePicker Label="IconName" IconName="@BitIconName.Calendar" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
         <div>
             Offering a range of specialized color variants with Primary being the default, providing visual cues for
             specific actions or states within your application. The color applies to the today day button, the
@@ -559,7 +608,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
 
         <br />
@@ -627,7 +676,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
         <div>
             The <b>Size</b> parameter scales the input and the whole calendar - the label, the day cells, and the
             navigation buttons - between three sizes, with Medium being the default.
@@ -642,7 +691,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+    <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
         <div>
             Customize the appearance of BitDatePicker: use <b>Style</b> and <b>Class</b> on the root element, or
             target every individual part of the component - the input, the callout, the day cells, the time picker -
@@ -695,7 +744,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26">
+    <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
         <div>
             Render BitDatePicker in right-to-left (RTL) using the <b>Dir</b> parameter. Providing an RTL culture
             (like fa-IR) enables it automatically, and the keyboard navigation of the day grid follows the direction

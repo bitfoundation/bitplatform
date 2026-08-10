@@ -276,7 +276,9 @@
                                      aria-label="@_culture.DateTimeFormat.GetDayName(dayOfWeek)"
                                      style="@Styles?.DayNameHeader"
                                      class="bit-dtp-wlb @Classes?.DayNameHeader">
-                                    @dayOfWeekName[0]
+                                    @* A culture is free to leave the shortest day names empty, and the
+                                       header of the column would then be an index out of range. *@
+                                    @(dayOfWeekName.HasValue() ? dayOfWeekName[0].ToString() : string.Empty)
                                 </div>
                             }
                         </div>
@@ -437,25 +439,34 @@
                                 }
                             </div>
                         </div>
+                        @* Not every calendar has twelve months: a leap year of the Hebrew calendar has thirteen. *@
+                        var monthsInYear = GetMonthsInCurrentYear();
+                        var monthRowCount = (monthsInYear + 3) / 4;
+                        var focusableMonth = GetFocusableMonth();
                         <div style="@Styles?.MonthsContainer" class="bit-dtp-pkc @Classes?.MonthsContainer" role="grid" aria-label="@_currentYear">
-                            @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
+                            @for (var rowIndex = 0; rowIndex < monthRowCount; rowIndex++)
                             {
                                 <div style="@Styles?.MonthsRow" class="bit-dtp-pkr @Classes?.MonthsRow" role="row">
                                     @for (var cellIndex = 1; cellIndex <= 4; cellIndex++)
                                     {
                                         var month = (rowIndex * 4) + cellIndex;
+
+                                        if (month > monthsInYear) continue;
+
                                         var monthName = _culture.DateTimeFormat.GetMonthName(month);
                                         var disabled = IsEnabled is false || IsMonthOutOfMinAndMaxDate(month);
                                         var selected = month == _currentMonth;
                                         <button @onclick="async () => await SelectMonth(month)"
+                                                @onkeydown="e => HandleMonthKeyDown(e, month)"
                                                 type="button"
                                                 role="gridcell"
                                                 title="@monthName"
+                                                id="@GetMonthButtonId(month)"
                                                 aria-readonly="true"
                                                 aria-label="@monthName"
                                                 disabled="@disabled"
                                                 aria-disabled="@(disabled ? "true" : null)"
-                                                tabindex="@(selected ? 0 : -1)"
+                                                tabindex="@(month == focusableMonth ? 0 : -1)"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.MonthButton"
                                                 class="bit-dtp-pkb@(GetMonthCellCssClass(month, todayYear, todayMonth)) @Classes?.MonthButton">
@@ -537,6 +548,9 @@
                                 </button>
                             </div>
                         </div>
+                        @* The displayed year is not always inside the range on screen - browsing the
+                           ranges moves the range alone - so the roving tabindex has its own fallback. *@
+                        var focusableYear = GetFocusableYear();
                         <div style="@Styles?.YearsContainer" class="bit-dtp-pkc @Classes?.YearsContainer" role="grid" aria-label="@_yearPickerStartYear - @_yearPickerEndYear">
                             @for (var rowIndex = 0; rowIndex <= 2; rowIndex++)
                             {
@@ -547,10 +561,12 @@
                                         var disabled = IsEnabled is false || IsYearOutOfMinAndMaxDate(year);
                                         var selected = year == _currentYear;
                                         <button @onclick="() => SelectYear(year)"
+                                                @onkeydown="e => HandleYearKeyDown(e, year)"
                                                 type="button"
                                                 role="gridcell"
+                                                id="@GetYearButtonId(year)"
                                                 disabled="@disabled"
-                                                tabindex="@(selected ? 0 : -1)"
+                                                tabindex="@(year == focusableYear ? 0 : -1)"
                                                 aria-readonly="true"
                                                 aria-disabled="@(disabled ? "true" : null)"
                                                 aria-selected="@(selected ? "true" : "false")"
@@ -632,7 +648,7 @@
                                    @bind="@_hourView"
                                    @bind:event="oninput"
                                    @onfocus="HandleOnTimeHourFocus"
-                                   min="0"
+                                   min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
                                    max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                    type="number"
                                    inputmode="numeric"

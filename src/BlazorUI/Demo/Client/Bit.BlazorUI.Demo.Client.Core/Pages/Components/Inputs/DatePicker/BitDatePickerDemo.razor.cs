@@ -2,6 +2,22 @@
 
 public partial class BitDatePickerDemo
 {
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "OpenCallout",
+            Type = "Task",
+            Description = "Opens the callout of the DatePicker exactly as clicking its input would."
+        },
+        new()
+        {
+            Name = "CloseCalloutAndFocus",
+            Type = "Task",
+            Description = "Closes the callout of the DatePicker and moves the focus back to its input."
+        },
+    ];
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -116,6 +132,13 @@ public partial class BitDatePickerDemo
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
             Description = "Custom template to render the day cells of the DatePicker."
+        },
+        new()
+        {
+            Name = "DisabledDateErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a typed value that the DatePicker does not allow to be selected, through DisabledDates, DisabledDaysOfWeek or IsDateDisabled."
         },
         new()
         {
@@ -1610,6 +1633,9 @@ public partial class BitDatePickerDemo
 
     private bool isMonthPickerVisible = true;
     private bool showMonthPickerAsOverlay;
+
+    private bool isCalloutOpen;
+    private BitDatePicker? programmaticPicker;
 
     private int clickCount;
     private int focusInCount;

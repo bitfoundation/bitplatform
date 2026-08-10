@@ -309,7 +309,9 @@ private DateTimeOffset? displayedMonth;
 private DateTimeOffset? selectedDateEvent;";
 
     private readonly string example20RazorCode = @"
-<BitDatePicker Label=""Try the keyboard"" ShowWeekNumbers />";
+<BitDatePicker Label=""Try the keyboard"" ShowWeekNumbers />
+
+<BitDatePicker Label=""Try the keyboard (month picker)"" Mode=""BitDatePickerMode.MonthPicker"" />";
 
     private readonly string example21RazorCode = @"
 <style>
@@ -345,6 +347,28 @@ private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
     private readonly string example22RazorCode = @"
+<BitDatePicker @ref=""programmaticPicker"" @bind-IsOpen=""isCalloutOpen"" Label=""Controlled callout"" />
+
+<div>IsOpen: @isCalloutOpen</div>
+
+<BitButton OnClick=""() => programmaticPicker?.OpenCallout()"">OpenCallout()</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticPicker?.CloseCalloutAndFocus()"">
+    CloseCalloutAndFocus()
+</BitButton>";
+    private readonly string example22CsharpCode = @"
+private bool isCalloutOpen;
+private BitDatePicker? programmaticPicker;";
+
+    private readonly string example23RazorCode = @"
+<BitDatePicker Label=""Underlined"" Underlined />
+
+<BitDatePicker Label=""HasBorder (false)"" HasBorder=""false"" />
+
+<BitDatePicker Label=""IconLocation (Left)"" IconLocation=""BitIconLocation.Left"" />
+
+<BitDatePicker Label=""IconName"" IconName=""@BitIconName.Calendar"" />";
+
+    private readonly string example24RazorCode = @"
 <BitDatePicker Label=""Primary"" Color=""BitColor.Primary"" HighlightCurrentMonth />
 <BitDatePicker Label=""Secondary"" Color=""BitColor.Secondary"" HighlightCurrentMonth />
 <BitDatePicker Label=""Tertiary"" Color=""BitColor.Tertiary"" HighlightCurrentMonth />
@@ -363,7 +387,7 @@ private void HandleInvalidSubmit() { }";
 <BitDatePicker Label=""SecondaryBorder"" Color=""BitColor.SecondaryBorder"" HighlightCurrentMonth />
 <BitDatePicker Label=""TertiaryBorder"" Color=""BitColor.TertiaryBorder"" HighlightCurrentMonth />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example25RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDatePicker Label=""Icon (string)"" Icon=""@(""fa-solid fa-calendar-days"")"" />
@@ -411,12 +435,12 @@ private void HandleInvalidSubmit() { }";
                NextYearRangeNavIcon=""@BitIconInfo.Bi(""chevron-double-right"")""
                GoToTodayIcon=""@BitIconInfo.Bi(""calendar-event"")"" />";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitDatePicker Label=""Small"" Size=""BitSize.Small"" />
 <BitDatePicker Label=""Medium"" Size=""BitSize.Medium"" />
 <BitDatePicker Label=""Large"" Size=""BitSize.Large"" />";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example27RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -584,7 +608,7 @@ private void HandleInvalidSubmit() { }";
                                   DayPickerHeader = ""custom-day-header"",
                                   DayNameHeader = ""custom-week-header"",
                                   YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
-    private readonly string example25CsharpCode = @"
+    private readonly string example27CsharpCode = @"
 private DateTimeOffset? classesValue;
 
 private readonly DateTimeOffset[] highlightedDates =
@@ -594,6 +618,6 @@ private readonly DateTimeOffset[] highlightedDates =
     DateTimeOffset.Now.AddDays(10)
 ];";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example28RazorCode = @"
 <BitDatePicker Dir=""BitDir.Rtl"" />";
 }
