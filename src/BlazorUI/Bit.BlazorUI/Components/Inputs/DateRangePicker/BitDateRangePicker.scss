@@ -984,6 +984,7 @@
         }
 
         .bit-dtrp-grp {
+            flex-wrap: wrap;
             justify-content: center;
         }
 
@@ -1016,11 +1017,22 @@
             display: flex;
         }
 
-        // The presets no longer fit in a side column on a narrow screen, so they wrap into a row.
+        // The presets no longer fit in a side column on a narrow screen, so they take a full row
+        // of the wrapped group beneath the calendar and wrap their buttons there.
         .bit-dtrp-prc {
+            order: 2;
+            width: 100%;
             max-height: unset;
             flex-flow: row wrap;
+            box-sizing: border-box;
             justify-content: center;
+        }
+
+        .bit-dtrp-dvd {
+            order: 1;
+            width: 100%;
+            border-right: none;
+            border-top: $shp-border-width $shp-border-style $clr-brd-sec;
         }
     }
 }

@@ -1026,15 +1026,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }
 
-        if (_focusAfterRender && _focusedDate.HasValue)
+        if (_focusAfterRender)
         {
+            // Consumed even without a focused date, so it cannot linger and fire on a later render.
             _focusAfterRender = false;
 
-            try
+            if (_focusedDate.HasValue)
             {
-                await _js.BitCalendarsFocusDay(GetDayButtonId(_focusedDate.Value));
+                try
+                {
+                    await _js.BitCalendarsFocusDay(GetDayButtonId(_focusedDate.Value));
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
             }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
         }
     }
 

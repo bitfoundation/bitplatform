@@ -1233,13 +1233,14 @@ public class BitDateRangePickerTests : BunitTestContext
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
             parameters.Add(p => p.Today, new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero));
             parameters.Add(p => p.DisabledDaysOfWeek, new[] { DayOfWeek.Saturday, DayOfWeek.Sunday });
         });
 
         var days = component.FindAll(".bit-dtrp-dbt");
 
-        // June 2024 starts on a Saturday, so the very first rendered cell is a disabled weekend day.
+        // With the week pinned to start on Sunday, the very first rendered cell is a disabled weekend day.
         Assert.IsTrue(days.Count(d => d.HasAttribute("disabled")) > 0);
         Assert.IsTrue(days[0].HasAttribute("disabled"));
     }
@@ -2300,10 +2301,12 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.AutoClose, false);
+            parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        // December 2024 starts on a Sunday, so the only outside days of its grid are those of January 2025.
+        // December 2024 starts on a Sunday, so with a Sunday-starting week the only outside days
+        // of its grid are those of January 2025.
         component.FindAll(".bit-dtrp-dbo")[0].Click();
 
         Assert.AreEqual(2025, value!.EndDate!.Value.Year);
