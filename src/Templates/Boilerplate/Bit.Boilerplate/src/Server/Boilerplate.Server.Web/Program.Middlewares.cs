@@ -68,7 +68,8 @@ public static partial class Program
                     else
                     {
                         // Caching static files on the Browser and CDN's edge servers.
-                        if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase)))
+                        if (context.Request.Query.Any(q => string.Equals(q.Key, "v", StringComparison.InvariantCultureIgnoreCase))
+                            && env.WebRootFileProvider.GetFileInfo(context.Request.Path).Exists)
                         {
                             context.Response.GetTypedHeaders().CacheControl = new()
                             {

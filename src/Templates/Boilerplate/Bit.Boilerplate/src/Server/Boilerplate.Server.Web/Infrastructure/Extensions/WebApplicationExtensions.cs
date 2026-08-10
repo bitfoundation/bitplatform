@@ -20,23 +20,25 @@ public static partial class WebApplicationExtensions
 
             app.MapGet("/sitemap_index.xml", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
             {
-                const string SITEMAP_INDEX_FORMAT = @"<?xml version=""1.0"" encoding=""UTF-8""?>
-<sitemapindex xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
-   <sitemap>
-      <loc>{0}sitemap.xml</loc>
-   </sitemap>
-//#if(module == 'Sales')
-   <sitemap>
-      <loc>{0}products.xml</loc>
-   </sitemap>
-//#endif
-</sitemapindex>";
+                // The conditional may not live inside the xml literal below. A template directive is a line based text
+                // directive, so the engine strips it from generated projects wherever it sits - but in this repo's own
+                // tree, where no engine runs, those two lines are ordinary string content and get served as character
+                // data inside <sitemapindex>, which is not valid against the sitemaps.org schema.
+                List<string> sitemaps = ["sitemap.xml"];
+                //#if(module == "Sales")
+                sitemaps.Add("products.xml");
+                //#endif
 
                 var baseUrl = context.Request.GetBaseUrl();
 
+                var sitemapIndex = @$"<?xml version=""1.0"" encoding=""UTF-8""?>
+<sitemapindex xmlns=""http://www.sitemaps.org/schemas/sitemap/0.9"">
+    {string.Join(Environment.NewLine, sitemaps.Select(sitemap => $"<sitemap><loc>{new Uri(baseUrl, sitemap)}</loc></sitemap>"))}
+</sitemapindex>";
+
                 context.Response.Headers.ContentType = "application/xml";
 
-                await context.Response.WriteAsync(string.Format(SITEMAP_INDEX_FORMAT, baseUrl), context.RequestAborted);
+                await context.Response.WriteAsync(sitemapIndex, context.RequestAborted);
             }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
             app.MapGet("/sitemap.xml", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
@@ -93,8 +95,41 @@ public static partial class WebApplicationExtensions
             app.MapGet("/products.xml", [AppResponseCache(SharedMaxAge = 60 * 5)] async (IProductViewController controller, HttpContext context) =>
             {
                 var baseUrl = context.Request.GetBaseUrl();
-                var products = await controller.WithQuery(new ODataQuery() { Select = $"{nameof(ProductDto.ShortId)},{nameof(ProductDto.Name)}" }).Get(context.RequestAborted);
-                var productsUrls = products.Select(p => p.PageUrl).ToArray();
+
+                // A sitemap file may carry at most 50,000 urls, and every product url is emitted once per supported
+                // culture below, so this is the most products one document can hold. It is also what bounds the read:
+                // ProductViewController.Get sets no PageSize, and EnableQueryFeatures(maxTopValue) only rejects an
+                // oversized explicit $top - it cannot cap a request that sends none - so without a $top of our own an
+                // anonymous request reads the whole Products table and materializes a url per row per culture.
+                // A catalogue larger than this needs the document split into /products-1.xml, /products-2.xml, ...
+                // listed in sitemap_index.xml; until then the tail is not advertised, and the warning below says so.
+                var maxProducts = 50_000 / (CultureInfoManager.InvariantGlobalization ? 1 : CultureInfoManager.SupportedCultures.Length + 1);
+                const int pageSize = 100; // The largest $top Program.Services.cs's EnableQueryFeatures(maxTopValue) accepts.
+
+                List<string> pagedProductsUrls = [];
+
+                while (pagedProductsUrls.Count < maxProducts)
+                {
+                    var page = await controller.WithQuery(new ODataQuery()
+                    {
+                        Select = nameof(ProductDto.ShortId), // All ProductDto.PageUrl needs.
+                        OrderBy = nameof(ProductDto.ShortId), // $skip without an order returns an arbitrary subset.
+                        Top = Math.Min(pageSize, maxProducts - pagedProductsUrls.Count),
+                        Skip = pagedProductsUrls.Count
+                    }).Get(context.RequestAborted);
+
+                    pagedProductsUrls.AddRange(page.Select(p => p.PageUrl));
+
+                    if (page.Count < pageSize)
+                        break;
+                }
+
+                if (pagedProductsUrls.Count >= maxProducts)
+                {
+                    app.Logger.LogWarning("products.xml holds the first {MaxProducts} products only. A sitemap may carry 50,000 urls and each product is listed once per culture, so the rest of the catalogue is not advertised until this document is split into several.", maxProducts);
+                }
+
+                var productsUrls = pagedProductsUrls.ToArray();
 
                 productsUrls = CultureInfoManager.InvariantGlobalization is false
                     ? productsUrls.Union(CultureInfoManager.SupportedCultures.SelectMany(sc => productsUrls.Select(url => $"{sc.Culture.Name}{url}"))).ToArray()
