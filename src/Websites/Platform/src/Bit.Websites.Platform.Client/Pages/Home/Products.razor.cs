@@ -2,9 +2,13 @@
 
 public partial class Products
 {
-    private bool _boilerplateExpanded = true;
-    private bool _butilExpanded;
-    private bool _bswupExpanded;
-    private bool _besqlExpanded;
-    private bool _blazoruiExpanded;
+    private sealed class ProductAccordionItem
+    {
+        public required string Title { get; init; }
+        public required string Subtitle { get; init; }
+        public required string LinkUrl { get; init; }
+        public bool External { get; init; }
+        public bool IsExpanded { get; set; }
+        public required RenderFragment Body { get; init; }
+    }
 }

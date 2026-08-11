@@ -27,7 +27,7 @@
     <section class="page-section mid-section page-section-content">
         <BitStack Alignment="BitAlignment.Center">
             <BitStack Horizontal Wrap Alignment="BitAlignment.Center" Style="max-width:1000px">
-                <BitTag Size="BitSize.Large" Color="BitColor.SecondaryForeground"><b>Open source</b>❤️</BitTag>
+                <BitTag Size="BitSize.Large" Color="BitColor.SecondaryForeground"><b>Open source</b> ❤️</BitTag>
                 <BitTag Size="BitSize.Large" Color="BitColor.SecondaryForeground">Full stack</BitTag>
                 <BitTag Size="BitSize.Large" Color="BitColor.SecondaryForeground">Cross platform</BitTag>
                 <BitTag Size="BitSize.Large" Color="BitColor.SecondaryForeground">Multi-Tenant</BitTag>
@@ -68,7 +68,7 @@
 
     <section class="page-section">
         <div class="page-content page-section-content">
-            <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
+            <BitText Typography="BitTypography.H6" Element="p" Align="BitTextAlign.Center">
                 From active shovels in Canadian mines to logistics drivers in Sweden, over 450K students in India,
                 platform to maintain 3D information of 4M house units, these are just a few of the groundbreaking software
                 projects built on the bitplatform!
@@ -77,34 +77,29 @@
     </section>
 
     <div class="page-content">
-        <BitText id="boilerplate" Style="scroll-margin-top:100px" Typography="BitTypography.H3">
+        <BitText id="boilerplate" Style="scroll-margin-top:100px" Typography="BitTypography.H3" Element="h2">
             Boilerplate
         </BitText>
         <div class="section-title-line boilerplate"></div>
         <br />
-        <BitText Typography="BitTypography.H6">
+        <BitText Typography="BitTypography.H6" Element="p">
             The bit Boilerplate is a feature-packed project template that accelerates your development.
         </BitText>
 
         <br /><br />
 
         <div class="video-container">
-            <iframe width="800" height="450"
+            <iframe loading="lazy" width="800" height="450"
                     allowfullscreen frameborder="0"
                     title="Bit Boilerplate features overview"
                     src="https://www.youtube.com/embed/-3viBEtJHLo"
                     referrerpolicy="strict-origin-when-cross-origin"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-            @* <div class="video-wrapper">
-                <video controls
-                       title="bitplatform intro"
-                       src="https://videos.bitplatform.dev/bitplatform-intro.mp4" />
-                </div> *@
         </div>
 
         <br /><br /><br /><br />
 
-        <BitText Typography="BitTypography.H6" Color="BitColor.SecondaryForeground" Gutter>
+        <BitText Typography="BitTypography.H6" Element="p" Color="BitColor.SecondaryForeground" Gutter>
             The source code is yours to explore and modify! Deploy it on your own server or any cloud platform you choose.
             <br />
             Check out the following fully functional demo apps to see the Boilerplate in action across various platforms.
@@ -114,7 +109,7 @@
 
         <br /><br /><br /><br />
 
-        <BitText id="adminpanel" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>AdminPanel</BitText>
+        <BitText id="adminpanel" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Element="h3" Gutter>AdminPanel</BitText>
         <BitText>
             Need a robust back-office or admin panel?
             <br />
@@ -123,64 +118,64 @@
         <br />
         <div class="page-flex-container">
             <div class="page-content-container">
-                <img class="template-img dark-image" src="/images/demos/admin-dark.webp" alt="AdminPanel sample" />
-                <img class="template-img light-image" src="/images/demos/admin-light.webp" alt="AdminPanel sample" />
+                <img loading="lazy" class="template-img dark-image" src="/images/demos/admin-dark.webp" alt="AdminPanel sample" />
+                <img loading="lazy" class="template-img light-image" src="/images/demos/admin-light.webp" alt="AdminPanel sample" />
             </div>
 
             <div class="page-content-container">
-                <a class="primary-btn" href="@Urls.AdminPanelPwa" target="_blank" title="PWA">PWA</a>
-                <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
-                <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
-                <a class="secondary-btn" href="@Urls.AdminPanelWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
-                <a class="secondary-btn" href="@Urls.AdminPanelPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
+                <a class="primary-btn" href="@Urls.AdminPanelPwa" target="_blank" rel="noopener" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelGooglePlay" target="_blank" rel="noopener" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelAppleStore" target="_blank" rel="noopener" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelWindows" target="_blank" rel="noopener" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.AdminPanelPlayground" target="_blank" rel="noopener" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
             </div>
         </div>
 
-        <BitText id="sales" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Sales (still shaping up)</BitText>
+        <BitText id="sales" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Element="h3" Gutter>Sales (preview)</BitText>
         <BitText>
             See the speed of a website built with our Boilerplate.
         </BitText>
         <br />
         <div class="page-flex-container">
             <div class="page-content-container">
-                <img class="template-img dark-image" src="/images/demos/sales-dark.webp" alt="Sales sample" />
-                <img class="template-img light-image" src="/images/demos/sales-light.webp" alt="Sales sample" />
+                <img loading="lazy" class="template-img dark-image" src="/images/demos/sales-dark.webp" alt="Sales sample" />
+                <img loading="lazy" class="template-img light-image" src="/images/demos/sales-light.webp" alt="Sales sample" />
             </div>
 
             <div class="page-content-container">
-                <a class="primary-btn" href="@Urls.SalesPwa" target="_blank" title="PWA">PWA</a>
-                <a class="secondary-btn disabled" title="Google Play (Coming soon)"><span class="btn-img google-play"></span>Android</a>
-                <a class="secondary-btn disabled" title="Apple Store (Coming soon)"><span class="btn-img apple-store"></span>iOS - macOS</a>
-                <a class="secondary-btn" href="@Urls.SalesWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="primary-btn" href="@Urls.SalesPwa" target="_blank" rel="noopener" title="PWA">PWA</a>
+                <span class="secondary-btn disabled" title="Google Play (Coming soon)"><span class="btn-img google-play"></span>Android</span>
+                <span class="secondary-btn disabled" title="Apple Store (Coming soon)"><span class="btn-img apple-store"></span>iOS - macOS</span>
+                <a class="secondary-btn" href="@Urls.SalesWindows" target="_blank" rel="noopener" title="Windows"><span class="btn-img windows"></span>Windows</a>
             </div>
         </div>
 
-        <BitText id="todo" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Gutter>Todo</BitText>
+        <BitText id="todo" Style="scroll-margin-top:100px" Typography="BitTypography.H4" Element="h3" Gutter>Todo</BitText>
         <BitText Gutter>
             Experience the rapid performance of our sample app on mobile, desktop, and web, all built with our Boilerplate.
         </BitText>
         <br />
         <div class="page-flex-container">
             <div class="page-content-container">
-                <img class="template-img dark-image" src="/images/demos/todo-dark.webp" alt="Todo sample" />
-                <img class="template-img light-image" src="/images/demos/todo-light.webp" alt="Todo sample" />
+                <img loading="lazy" class="template-img dark-image" src="/images/demos/todo-dark.webp" alt="Todo sample" />
+                <img loading="lazy" class="template-img light-image" src="/images/demos/todo-light.webp" alt="Todo sample" />
             </div>
 
             <div class="page-content-container">
-                <a class="primary-btn" href="@Urls.TodoTemplatePwa" target="_blank" title="PWA">PWA</a>
-                <a class="secondary-btn" href="@Urls.TodoOfflineWebApp" target="_blank" title="SQLite db inside browser">SQLite db inside browser</a>
-                <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" title="Google Play"><i class="btn-img google-play" />Android</a>
-                <a class="secondary-btn" href="@Urls.TodoTemplateAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
-                <a class="secondary-btn" href="@Urls.TodoTemplateWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="primary-btn" href="@Urls.TodoTemplatePwa" target="_blank" rel="noopener" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.TodoOfflineWebApp" target="_blank" rel="noopener" title="SQLite db inside browser">SQLite db inside browser</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateGooglePlay" target="_blank" rel="noopener" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateAppleStore" target="_blank" rel="noopener" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.TodoTemplateWindows" target="_blank" rel="noopener" title="Windows"><span class="btn-img windows"></span>Windows</a>
             </div>
         </div>
 
-        <BitText id="platform" Style="scroll-margin-top:100px" Typography="BitTypography.H3">
+        <BitText id="platform" Style="scroll-margin-top:100px" Typography="BitTypography.H3" Element="h2">
             Platform website
         </BitText>
         <div class="section-title-line platform"></div>
         <br />
-        <BitText Style="max-width:920px" Typography="BitTypography.H6">
+        <BitText Style="max-width:920px" Typography="BitTypography.H6" Element="p">
             Experience the blazing speed of bitplatform.dev.
             <br />
             This site was built using our own product, showcasing the exceptional performance you can achieve for your projects.
@@ -188,40 +183,40 @@
         <br />
         <div class="page-flex-container">
             <div class="page-content-container">
-                <img class="template-img dark-image" src="/images/demos/platform-dark.webp" alt="bitplatform website" />
-                <img class="template-img light-image" src="/images/demos/platform-light.webp" alt="bitplatform website" />
+                <img loading="lazy" class="template-img dark-image" src="/images/demos/platform-dark.webp" alt="bitplatform website" />
+                <img loading="lazy" class="template-img light-image" src="/images/demos/platform-light.webp" alt="bitplatform website" />
             </div>
 
             <div class="page-content-container">
-                <a class="primary-btn" href="@Urls.PlatformPwa" target="_blank" title="PWA">PWA</a>
-                <a class="secondary-btn" href="@Urls.PlatformPageSpeed" target="_blank" title="PageSpeed Insights">PageSpeed Insights</a>
+                <a class="primary-btn" href="@Urls.PlatformPwa" target="_blank" rel="noopener" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.PlatformPageSpeed" target="_blank" rel="noopener" title="PageSpeed Insights">PageSpeed Insights</a>
             </div>
         </div>
 
-        <BitText id="blazorui" Style="scroll-margin-top:100px" Typography="BitTypography.H3">
+        <BitText id="blazorui" Style="scroll-margin-top:100px" Typography="BitTypography.H3" Element="h2">
             BlazorUI
         </BitText>
         <div class="section-title-line blazorui"></div>
         <br />
-        <BitText Style="max-width:920px" Typography="BitTypography.H6">
+        <BitText Style="max-width:920px" Typography="BitTypography.H6" Element="p">
             A lightweight yet powerful component library for C# developers.
             <br />
-            It’s ideal for building consumer-facing apps and websites that are fast, responsive, and optimized for both desktop and mobile.
+            It's ideal for building consumer-facing apps and websites that are fast, responsive, and optimized for both desktop and mobile.
         </BitText>
         <br />
         <div class="page-flex-container">
             <div class="page-content-container">
-                <img class="template-img dark-image" src="/images/demos/blazorui-dark.webp" alt="BlazorUI sample" />
-                <img class="template-img light-image" src="/images/demos/blazorui-light.webp" alt="BlazorUI sample" />
+                <img loading="lazy" class="template-img dark-image" src="/images/demos/blazorui-dark.webp" alt="BlazorUI sample" />
+                <img loading="lazy" class="template-img light-image" src="/images/demos/blazorui-light.webp" alt="BlazorUI sample" />
             </div>
 
             <div class="page-content-container">
-                <a class="primary-btn" href="@Urls.BlazorUiPwa" target="_blank" title="PWA">PWA</a>
-                <a class="secondary-btn" href="@Urls.BlazorUiGooglePlay" target="_blank" title="Google Play"><span class="btn-img google-play"></span>Android</a>
-                <a class="secondary-btn" href="@Urls.BlazorUiAppleStore" target="_blank" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
-                <a class="secondary-btn" href="@Urls.BlazorUiWindows" target="_blank" title="Windows"><span class="btn-img windows"></span>Windows</a>
-                <a class="secondary-btn" href="@Urls.BlazorUiPlayground" target="_blank" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
-                <a class="secondary-btn" href="@Urls.BlazorUiBenchmarks" target="_blank" title="Benchmark repo"><span class="btn-img github"></span>Benchmarks</a>
+                <a class="primary-btn" href="@Urls.BlazorUiPwa" target="_blank" rel="noopener" title="PWA">PWA</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiGooglePlay" target="_blank" rel="noopener" title="Google Play"><span class="btn-img google-play"></span>Android</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiAppleStore" target="_blank" rel="noopener" title="Apple Store"><span class="btn-img apple-store"></span>iOS - macOS</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiWindows" target="_blank" rel="noopener" title="Windows"><span class="btn-img windows"></span>Windows</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiPlayground" target="_blank" rel="noopener" title="GitHub codespace"><span class="btn-img github"></span>Playground</a>
+                <a class="secondary-btn" href="@Urls.BlazorUiBenchmarks" target="_blank" rel="noopener" title="Benchmark repo"><span class="btn-img github"></span>Benchmarks</a>
             </div>
         </div>
     </div>

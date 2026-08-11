@@ -11,7 +11,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddSharedServices();
 
-        services.AddScoped<NavManuService>();
+        services.AddScoped<NavMenuService>();
 
         services.AddTransient<IPrerenderStateService, PrerenderStateService>();
         services.AddTransient<IExceptionHandler, ExceptionHandler>();
