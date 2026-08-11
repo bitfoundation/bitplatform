@@ -25,6 +25,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddScoped<ThemeService>();
             services.AddScoped<CultureService>();
+            services.AddScoped<AppAccentColorService>();
             services.AddScoped<LazyAssemblyLoader>();
             services.AddScoped<SignInModalService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();

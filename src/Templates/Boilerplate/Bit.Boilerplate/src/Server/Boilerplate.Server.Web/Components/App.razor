@@ -55,6 +55,17 @@
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
+
+    @{
+        // Paints the visitor's persisted accent (main theme) color into the first response, so the
+        // prerendered page does not flash the packaged palette before the client applies the accent.
+        // Null unless a non-default accent is stored - see AppAccentColorService.BuildPrerenderCss.
+        var accentCss = AppAccentColorService.BuildPrerenderCss(HttpContext.Request.Cookies[AppAccentColorService.CookieName]);
+    }
+    @if (accentCss is not null)
+    {
+        <style id="@AppAccentColorService.PrerenderStyleElementId">@((MarkupString)accentCss)</style>
+    }
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">
