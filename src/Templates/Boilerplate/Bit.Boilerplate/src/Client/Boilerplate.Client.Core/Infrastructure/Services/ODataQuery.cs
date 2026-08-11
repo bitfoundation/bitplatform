@@ -18,7 +18,12 @@ public partial class ODataQuery
     /// </remarks>
     public string AndFilter
     {
-        set => Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) and ({value})";
+        set
+        {
+            if (string.IsNullOrEmpty(value)) return;
+
+            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) and ({value})";
+        }
     }
 
     /// <remarks>
@@ -26,7 +31,12 @@ public partial class ODataQuery
     /// </remarks>
     public string OrFilter
     {
-        set => Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) or ({value})";
+        set
+        {
+            if (string.IsNullOrEmpty(value)) return;
+
+            Filter = string.IsNullOrEmpty(Filter) ? value : $"({Filter}) or ({value})";
+        }
     }
 
     public string? OrderBy { get; set; }

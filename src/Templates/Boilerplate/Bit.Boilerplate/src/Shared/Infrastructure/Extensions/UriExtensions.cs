@@ -91,7 +91,9 @@ public static partial class UriExtensions
 
             // Composed by hand rather than through AppQueryStringCollection.ToString(), which would escape the mask
             // into %2A%2A%2A. The result is a log string, never something to navigate to.
-            return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{key}=***"))}";
+            // The keys are re-escaped: Parse hands them back DECODED, so emitting one raw would let a key such as
+            // `%0AInjected` put a newline into the log record, or `%26fake` invent a parameter that was never sent.
+            return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{Uri.EscapeDataString(key)}=***"))}";
         }
 
         public string GetPath()

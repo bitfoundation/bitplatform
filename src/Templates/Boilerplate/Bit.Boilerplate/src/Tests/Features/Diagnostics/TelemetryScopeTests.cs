@@ -46,4 +46,30 @@ public class TelemetryScopeTests
     {
         Assert.AreEqual("https://localhost/products", new Uri("https://localhost/products").GetUrlWithMaskedQueryValues());
     }
+
+    /// <summary>
+    /// The mask is only worth having if the masked value cannot become syntax. An encoded delimiter inside a value
+    /// must stay inside that value: were the url decoded before its query was split, <c>?token=abc%26secret</c> would
+    /// read as two parameters and the mask would publish <c>secret</c> as a parameter name.
+    /// </summary>
+    [TestMethod]
+    public void AMaskedUrl_Should_NotLetAnEncodedDelimiterInAValueBecomeAParameter()
+    {
+        var masked = new Uri("https://localhost/reset-password?token=abc%26secret%3Dshhh").GetUrlWithMaskedQueryValues();
+
+        Assert.AreEqual("https://localhost/reset-password?token=***", masked);
+    }
+
+    /// <summary>
+    /// Keys come back from <c>AppQueryStringCollection.Parse</c> decoded, so emitting one raw would let a key such as
+    /// <c>%0AInjected</c> write a newline into <c>PageUrl</c> and into every diagnostic record that carries it.
+    /// </summary>
+    [TestMethod]
+    public void AMaskedUrl_Should_ReEscapeTheParameterNames()
+    {
+        var masked = new Uri("https://localhost/products?%0AInjected=1&%26fake=2").GetUrlWithMaskedQueryValues();
+
+        Assert.DoesNotContain("\n", masked, "A decoded key put a line break into a value that is written straight into log records.");
+        Assert.AreEqual("https://localhost/products?%0AInjected=***&%26fake=***", masked);
+    }
 }

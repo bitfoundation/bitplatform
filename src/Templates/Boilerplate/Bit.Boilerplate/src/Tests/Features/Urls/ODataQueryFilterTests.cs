@@ -32,6 +32,30 @@ public class ODataQueryFilterTests
         Assert.AreEqual("(IsActive eq true) or (IsPinned eq true)", query.Filter);
     }
 
+    /// <summary>
+    /// Callers build their clauses conditionally, so an empty operand is normal. Appending it would produce
+    /// <c>(X) and ()</c>, which the server rejects outright - a 400 on a grid that merely had one filter box empty.
+    /// </summary>
+    [TestMethod]
+    public void AnEmptyOperand_Should_LeaveTheFilterUntouched()
+    {
+        var query = new ODataQuery { Filter = "IsActive eq true" };
+
+        query.AndFilter = "";
+        query.OrFilter = "";
+        query.AndFilter = null!;
+
+        Assert.AreEqual("IsActive eq true", query.Filter);
+    }
+
+    [TestMethod]
+    public void AnEmptyOperand_Should_NotSeedAnEmptyFilter()
+    {
+        var query = new ODataQuery { AndFilter = "" };
+
+        Assert.IsNull(query.Filter);
+    }
+
     [TestMethod]
     public void TheFirstFilter_Should_BeSetAsIs()
     {

@@ -637,7 +637,6 @@
                     "condition": "(advancedTests != true || signalR != true)",
                     "exclude": [
                         "src/Tests/Features/SignalR/ProfileRealtimeUpdateUITests.cs",
-                        "src/Tests/Features/SignalR/SignalRRetryPolicyTests.cs",
                         "src/Tests/Features/Mcp/GetCurrentDateTimeMcpIntegrationTests.cs",
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
