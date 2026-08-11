@@ -60,6 +60,20 @@ public partial class AppAccentColorService : IDisposable
     private bool initialized;
 
     /// <summary>
+    /// Serializes the persist + theme-lookup + apply sequence of an accent transition, so
+    /// overlapping restore / pick / scheme-switch work cannot land out of order and leave a stale
+    /// palette as the final applied state.
+    /// </summary>
+    private readonly SemaphoreSlim transitionGate = new(1, 1);
+
+    /// <summary>
+    /// Monotonic stamp of the latest requested transition. A transition that finds a newer stamp
+    /// once it holds <see cref="transitionGate"/> abandons itself: the newer request is already
+    /// queued behind it and will apply the up-to-date accent and scheme.
+    /// </summary>
+    private int transitionVersion;
+
+    /// <summary>
     /// True once an inline overlay has been applied in this session. From then on every dark/light
     /// switch (and a switch back to <see cref="BitAccentColorPresets.Blue"/>) must re-apply a full
     /// seeded theme, because the packaged stylesheet alone no longer describes what is on screen.
@@ -89,28 +103,41 @@ public partial class AppAccentColorService : IDisposable
             // the JS notifier registration, which can only succeed once the client is live.
             bitThemeNotifications.ThemeChanged += OnThemeChanged;
 
-            // Storage first, cookie second: they are written together, so they only diverge when one
-            // of them is unavailable or was cleared alone. Either one on its own restores the accent.
-            var fromStorage = NormalizeAccent(await TryReadStorageAsync());
-            var stored = fromStorage;
+            var version = ++transitionVersion;
 
-            if (AppPlatform.IsBlazorHybrid is false)
-            {
-                stored ??= NormalizeAccent(await TryReadCookieAsync());
-            }
+            // Both stores are read (they are written together, so they only diverge when one of
+            // them was unavailable or cleared alone): storage is authoritative, and the cookie both
+            // backfills a cleared storage and reveals what the server prerendered.
+            var fromStorage = NormalizeAccent(await TryReadStorageAsync());
+            var fromCookie = AppPlatform.IsBlazorHybrid ? null : NormalizeAccent(await TryReadCookieAsync());
+
+            var stored = fromStorage ?? fromCookie;
 
             if (stored is null) return; // Nothing persisted: the packaged palette is already correct.
 
-            ActiveAccent = stored;
+            await transitionGate.WaitAsync();
+            try
+            {
+                if (version != transitionVersion) return; // The user already picked an accent; this restore is stale.
 
-            // Rewrite both stores from whichever one answered, so a divergence (e.g. the cookie's
-            // absolute ~400-day cap expiring, or storage cleared alone) does not keep the server
-            // prerendering the packaged Blue while the client repaints the accent on every load.
-            await PersistAsync(stored, rewriteStorage: fromStorage is null);
+                ActiveAccent = stored;
 
-            if (stored == BitAccentColorPresets.Blue) return; // The packaged palette's own primary; nothing to override.
+                // Rewrite both stores from whichever one answered, so a divergence (e.g. the cookie's
+                // absolute ~400-day cap expiring, or storage cleared alone) does not keep the server
+                // prerendering the packaged Blue while the client repaints the accent on every load.
+                await PersistAsync(stored, rewriteStorage: fromStorage is null);
 
-            await ApplyForThemeAsync(stored, await bitThemeManager.GetCurrentThemeAsync());
+                // Blue is the packaged palette's own primary, so normally there is nothing to
+                // override - unless the stores diverged and the server prerendered another accent
+                // from the cookie, which the seeded Blue theme must then overwrite.
+                if (stored == BitAccentColorPresets.Blue && (fromCookie is null || fromCookie == BitAccentColorPresets.Blue)) return;
+
+                await ApplyForThemeAsync(stored, await bitThemeManager.GetCurrentThemeAsync());
+            }
+            finally
+            {
+                transitionGate.Release();
+            }
 
             pubSubService.Publish(ClientAppMessages.ACCENT_COLOR_CHANGED, stored);
         }
@@ -128,18 +155,30 @@ public partial class AppAccentColorService : IDisposable
     {
         if (Presets.Any(p => p.Hex == hex) is false) return;
 
+        var version = ++transitionVersion;
+
         ActiveAccent = hex;
 
-        await PersistAsync(hex, rewriteStorage: true);
+        await transitionGate.WaitAsync();
+        try
+        {
+            if (version != transitionVersion) return; // A newer pick supersedes this one.
 
-        if (hex == BitAccentColorPresets.Blue && overlayApplied is false)
-        {
-            // No overlay and no prerendered accent rule can be in the document, so the packaged
-            // palette is already showing - skip pushing ~200 custom properties for a no-op.
+            await PersistAsync(hex, rewriteStorage: true);
+
+            if (hex == BitAccentColorPresets.Blue && overlayApplied is false)
+            {
+                // No overlay and no prerendered accent rule can be in the document, so the packaged
+                // palette is already showing - skip pushing ~200 custom properties for a no-op.
+            }
+            else
+            {
+                await ApplyForThemeAsync(hex, await bitThemeManager.GetCurrentThemeAsync());
+            }
         }
-        else
+        finally
         {
-            await ApplyForThemeAsync(hex, await bitThemeManager.GetCurrentThemeAsync());
+            transitionGate.Release();
         }
 
         pubSubService.Publish(ClientAppMessages.ACCENT_COLOR_CHANGED, hex);
@@ -296,7 +335,19 @@ public partial class AppAccentColorService : IDisposable
     {
         try
         {
-            await ApplyForThemeAsync(ActiveAccent, themeName);
+            var version = ++transitionVersion;
+
+            await transitionGate.WaitAsync();
+            try
+            {
+                if (version != transitionVersion) return; // The newer transition re-reads the current theme itself.
+
+                await ApplyForThemeAsync(ActiveAccent, themeName);
+            }
+            finally
+            {
+                transitionGate.Release();
+            }
         }
         catch (Exception ex)
         {
