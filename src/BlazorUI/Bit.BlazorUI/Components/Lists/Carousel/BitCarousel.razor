@@ -23,7 +23,6 @@
          @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
-         @onpointerdown:preventDefault="NoDrag is false"
          aria-live="@(IsPlaying ? "off" : "polite")"
          class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
@@ -62,9 +61,7 @@
 
     @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
-        <div role="group"
-             aria-label="@DotsAriaLabel"
-             class="bit-csl-dcn @Classes?.DotsContainer"
+        <div class="bit-csl-dcn @Classes?.DotsContainer"
              style="@_directionStyle @Styles?.DotsContainer">
             @if (AutoPlay && ShowPlayPause)
             {
@@ -84,17 +81,21 @@
             }
             @if (HideDots is false && _pagesCount > 1)
             {
-                @for (int i = 0; i < _pagesCount; i++)
-                {
-                    int index = i;
-                    <button @onclick="(() => HandleGotoPage(index))"
-                            type="button"
-                            aria-label="@($"{DotAriaLabel} {index + 1}")"
-                            aria-disabled="@(_currentPage == index ? "true" : null)"
-                            disabled="@(IsEnabled is false)"
-                            style="@Styles?.Dots @(_currentPage == index ? Styles?.GetCurrentDot() : null)"
-                            class="bit-csl-dot @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots"></button>
-                }
+                @* The group holds the dots alone (not the play/pause button), so its accessible label
+                   describes exactly what it contains. *@
+                <div role="group" aria-label="@DotsAriaLabel" class="bit-csl-dts">
+                    @for (int i = 0; i < _pagesCount; i++)
+                    {
+                        int index = i;
+                        <button @onclick="(() => HandleGotoPage(index))"
+                                type="button"
+                                aria-label="@($"{DotAriaLabel} {index + 1}")"
+                                aria-current="@(_currentPage == index ? "true" : null)"
+                                disabled="@(IsEnabled is false)"
+                                style="@Styles?.Dots @(_currentPage == index ? Styles?.GetCurrentDot() : null)"
+                                class="bit-csl-dot @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots"></button>
+                    }
+                </div>
             }
         </div>
     }

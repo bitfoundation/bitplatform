@@ -58,11 +58,15 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
+            var dotsGroup = component.Find(".bit-csl-dts");
+            Assert.AreEqual("group", dotsGroup.GetAttribute("role"));
+            Assert.AreEqual("Choose slide to display", dotsGroup.GetAttribute("aria-label"));
+
             var dots = component.FindAll("button.bit-csl-dot");
             Assert.AreEqual(3, dots.Count);
             Assert.AreEqual("Slide 1", dots[0].GetAttribute("aria-label"));
-            Assert.AreEqual("true", dots[0].GetAttribute("aria-disabled"));
-            Assert.IsNull(dots[1].GetAttribute("aria-disabled"));
+            Assert.AreEqual("true", dots[0].GetAttribute("aria-current"));
+            Assert.IsNull(dots[1].GetAttribute("aria-current"));
         });
     }
 
@@ -436,7 +440,7 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitCarouselShouldRespectDefaultPage()
+    public void BitCarouselShouldRespectDefaultPage()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
@@ -444,8 +448,6 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.CurrentPage));
-
-        await Task.CompletedTask;
     }
 
     [TestMethod]
@@ -534,5 +536,431 @@ public partial class BitCarouselTests : BunitTestContext
 
         // 2 items shown at once (clamped from 5) leaves a single page.
         component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.PagesCount));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNavigateWithKeyboard()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+        var carousel = component.Instance.Carousel;
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "End" });
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Home" });
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldFlipKeyboardNavigationInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+        var carousel = component.Instance.Carousel;
+
+        // In a right-to-left carousel the next slide sits on the left, so ArrowLeft moves forwards.
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight" });
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNavigateWithKeyboardVertically()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+        var carousel = component.Instance.Carousel;
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowDown" });
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowUp" });
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldIgnoreModifiedNavigationKeys()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var root = component.Find(".bit-csl");
+        var carousel = component.Instance.Carousel;
+
+        root.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+
+        Assert.AreEqual(0, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNavigateWithWheel()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Wheel, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var container = component.Find(".bit-csl-cnt");
+        var carousel = component.Instance.Carousel;
+
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldIgnoreWheelWhenWheelNotEnabled()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var container = component.Find(".bit-csl-cnt");
+
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
+
+        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldClampDefaultPageToLastPage()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.DefaultPage, 99);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.Carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldKeepLastPageFullWithUnevenItems()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 5);
+            parameters.Add(p => p.VisibleItemsCount, 2);
+            parameters.Add(p => p.ScrollItemsCount, 2);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
+        var carousel = component.Instance.Carousel;
+
+        await component.InvokeAsync(carousel.GoNext);
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        // The last move only advances by one item (instead of two), so the last page holds the last
+        // two items instead of the last item and a blank space.
+        await component.InvokeAsync(carousel.GoNext);
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+
+        await component.InvokeAsync(carousel.GoNext);
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldWrapPartialLastPageWithInfiniteScrolling()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 5);
+            parameters.Add(p => p.VisibleItemsCount, 2);
+            parameters.Add(p => p.InfiniteScrolling, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
+        var carousel = component.Instance.Carousel;
+
+        // The last page holds a single item, so its second slot borrows the first item of the carousel.
+        await component.InvokeAsync(() => carousel.GoTo(3));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+
+        await component.InvokeAsync(() => carousel.GoTo(1));
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldAutoPlayAdvancePages()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.CurrentPage > 0), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldAutoPlayBackwardsWithAutoPlayReverse()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayReverse, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+            parameters.Add(p => p.InfiniteScrolling, true);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        // Playing backwards from the first page of an infinite carousel wraps around to the last one.
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldStopAutoPlayOnLastSlide()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.StopOnLastSlide, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage), TimeSpan.FromSeconds(5));
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPaused), TimeSpan.FromSeconds(5));
+
+        Assert.IsFalse(carousel.IsPlaying);
+        Assert.AreEqual(2, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldNotAutoPlayWhilePaused()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        await component.InvokeAsync(carousel.Pause);
+
+        Assert.IsFalse(carousel.IsPlaying);
+
+        // A few intervals worth of quiet proves the timer is not ticking behind the paused state.
+        await Task.Delay(250);
+
+        Assert.AreEqual(0, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldSurviveOnChangeThrowingDuringAutoPlay()
+    {
+        // The timer elapses on a thread pool thread, so an exception the navigation lets through used
+        // to escape the async void handler and take the whole process (this test host included) down.
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+            parameters.Add(p => p.InfiniteScrolling, true);
+            parameters.Add(p => p.OnChange, (int _) => throw new InvalidOperationException("boom"));
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        // The instance is polled directly (instead of through WaitForAssertion) because the thrown
+        // exception ends up at the renderer, which rethrows it from the render-tree helpers.
+        for (var i = 0; i < 100 && carousel.CurrentPage == 0; i++)
+        {
+            await Task.Delay(50);
+        }
+
+        Assert.IsTrue(carousel.CurrentPage > 0);
+
+        // The test (and the test host) surviving a few more failing ticks is the actual assertion here.
+        await Task.Delay(250);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldHandleEmptyCarouselSafely()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 0);
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        Assert.AreEqual(0, carousel.ItemsCount);
+        Assert.AreEqual(0, carousel.PagesCount);
+        Assert.IsFalse(carousel.IsPlaying);
+
+        await component.InvokeAsync(carousel.GoNext);
+        await component.InvokeAsync(carousel.GoPrev);
+        await component.InvokeAsync(() => carousel.GoTo(2));
+
+        // A few intervals worth of quiet proves the timer never starts against an empty carousel.
+        await Task.Delay(250);
+
+        Assert.AreEqual(0, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldDropNavigationStartedMidMove()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var carousel = component.Instance.Carousel;
+
+        // The second move starts while the first one is still animating, so it is dropped rather than
+        // applied on top of the half-applied state of the first one.
+        await component.InvokeAsync(() => Task.WhenAll(carousel.GoNext(), carousel.GoNext()));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        Assert.AreEqual(1, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldClampStateWhenItemsRemoved()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var carousel = component.Instance.Carousel;
+
+        await component.InvokeAsync(() => carousel.GoTo(3));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+
+        component.Render(parameters => parameters.Add(p => p.ItemsCount, 1));
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, carousel.ItemsCount);
+            Assert.AreEqual(1, carousel.PagesCount);
+            Assert.AreEqual(0, carousel.CurrentPage);
+        });
+
+        // A single page has nowhere to rotate to, so losing the items also stops the auto play.
+        Assert.IsFalse(carousel.IsPlaying);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldKeepWrappedPageAcrossRefreshWithInfiniteScrolling()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 5);
+            parameters.Add(p => p.VisibleItemsCount, 2);
+            parameters.Add(p => p.InfiniteScrolling, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
+        var carousel = component.Instance.Carousel;
+
+        // The last page holds the last item and the first one it borrowed from the other end.
+        await component.InvokeAsync(() => carousel.GoTo(3));
+
+        component.WaitForAssertion(() =>
+        {
+            var items = component.FindAll(".bit-crsi");
+            Assert.IsNull(items[4].GetAttribute("aria-hidden"));
+            Assert.IsNull(items[0].GetAttribute("aria-hidden"));
+        });
+
+        await component.InvokeAsync(carousel.Refresh);
+
+        // A re-layout keeps the borrowed slide on the page instead of cutting it off.
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(2, carousel.CurrentPage);
+
+            var items = component.FindAll(".bit-crsi");
+            Assert.IsNull(items[4].GetAttribute("aria-hidden"));
+            Assert.IsNull(items[0].GetAttribute("aria-hidden"));
+            Assert.AreEqual("true", items[2].GetAttribute("aria-hidden"));
+        });
+    }
+
+    [TestMethod]
+    [DataRow(0d)]
+    [DataRow(-100d)]
+    [DataRow(double.MaxValue)]
+    public void BitCarouselShouldSurviveUnusableAutoPlayInterval(double interval)
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, interval);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        // The unusable interval is replaced instead of being handed to the timer (which throws on it),
+        // so the auto play still comes up.
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldAlignLastPageToLastItemOnGoTo()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 5);
+            parameters.Add(p => p.VisibleItemsCount, 2);
+            parameters.Add(p => p.ScrollItemsCount, 2);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
+        var carousel = component.Instance.Carousel;
+
+        await component.InvokeAsync(() => carousel.GoTo(3));
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+
+        await component.InvokeAsync(() => carousel.GoTo(1));
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
     }
 }

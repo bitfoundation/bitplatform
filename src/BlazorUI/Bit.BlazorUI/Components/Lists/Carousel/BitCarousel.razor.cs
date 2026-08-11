@@ -33,6 +33,7 @@ public partial class BitCarousel : BitComponentBase
     private string _layoutSignature = string.Empty;
     private int[] _othersIndices = [];
     private int[] _currentIndices = [];
+    private DateTime _lastWheel = DateTime.MinValue;
     private int _internalScrollItemsCount = 1;
     private int _internalVisibleItemsCount = 1;
     private System.Timers.Timer? _autoPlayTimer;
@@ -46,8 +47,10 @@ public partial class BitCarousel : BitComponentBase
     // The keys the carousel acts on are also the keys the browser scrolls the page with, so they are
     // swallowed on the way in. They are handled in the browser rather than with Blazor's preventDefault
     // directive, because the directive is static while the carousel only owns these keys while the
-    // keyboard is enabled.
-    private static readonly string[] _navigationKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
+    // keyboard is enabled. Only the keys of the axis the carousel actually scrolls on are taken, so a
+    // horizontal carousel does not keep the page from being scrolled with the up/down arrow keys.
+    private static readonly string[] _horizontalNavigationKeys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+    private static readonly string[] _verticalNavigationKeys = ["ArrowUp", "ArrowDown", "Home", "End"];
 
 
 
@@ -126,7 +129,8 @@ public partial class BitCarousel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is only read while the carousel is being laid out for the first time, so changing it afterwards
-    /// does not move the carousel. Use <see cref="GoTo(int)"/> for that.
+    /// does not move the carousel. Use <see cref="GoTo(int)"/> for that. Values outside of the range of
+    /// the carousel are clamped to its first or last page.
     /// </remarks>
     [Parameter] public int DefaultPage { get; set; } = 1;
 
@@ -335,7 +339,8 @@ public partial class BitCarousel : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is clamped to <see cref="VisibleItemsCount"/>, since a carousel cannot skip over slides that were
-    /// never shown.
+    /// never shown. A non-infinite carousel also moves by fewer items near its ends when a full move would
+    /// overshoot them, so its first and last pages always stay full.
     /// </remarks>
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
 
@@ -499,8 +504,6 @@ public partial class BitCarousel : BitComponentBase
         {
             Pause();
         }
-
-        StateHasChanged();
     }
 
     /// <summary>
@@ -632,7 +635,7 @@ public partial class BitCarousel : BitComponentBase
         // Everything that changes where the slides sit is folded into one signature, so a single
         // comparison decides whether the carousel has to be measured and laid out again.
         var signature = FormattableString.Invariant(
-            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{IsEnabled}");
+            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{IsEnabled}");
 
         if (_layoutSignature != signature)
         {
@@ -658,14 +661,19 @@ public partial class BitCarousel : BitComponentBase
             _needsReset = false;
 
             // The page the carousel starts on is applied before the first measurement, so it is laid
-            // out on that page instead of sliding over to it after the fact.
-            var startPage = Math.Max(0, DefaultPage - 1);
+            // out on that page instead of sliding over to it after the fact. The counts are clamped
+            // here because the items were not registered yet when the parameters were set.
+            ClampCounts();
 
-            _currentIndices = [startPage * Math.Max(1, _internalVisibleItemsCount)];
+            var visible = Math.Max(1, _internalVisibleItemsCount);
+            var pages = (int)Math.Ceiling((decimal)_allItems.Count / visible);
+            var startPage = Math.Clamp(DefaultPage - 1, 0, Math.Max(0, pages - 1));
+
+            _currentIndices = [startPage * visible];
 
             await ResetDimensionsAsync();
 
-            await RegisterPreventKeysAsync();
+            await RegisterPreventDefaultsAsync();
 
             await _pageVisibility.Init();
 
@@ -677,7 +685,7 @@ public partial class BitCarousel : BitComponentBase
 
             await ResetDimensionsAsync();
 
-            await RegisterPreventKeysAsync();
+            await RegisterPreventDefaultsAsync();
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -685,9 +693,16 @@ public partial class BitCarousel : BitComponentBase
 
 
 
-    private async Task RegisterPreventKeysAsync()
+    private async Task RegisterPreventDefaultsAsync()
     {
-        await _js.BitUtilsRegisterPreventKeys(RootElement, (NoKeyboard || IsEnabled is false) ? [] : _navigationKeys);
+        var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+
+        await _js.BitUtilsRegisterPreventKeys(RootElement, keys);
+
+        // Dragging a slide must not start the browser's own drag of an image inside it, but it is
+        // suppressed in the browser rather than with Blazor's static preventDefault directive, so a
+        // pointerdown on the next/prev buttons is left alone and they can still take the focus.
+        await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled);
     }
 
     // Both counts have to make sense on their own (a carousel showing zero items would divide by zero) and
@@ -742,14 +757,32 @@ public partial class BitCarousel : BitComponentBase
             first = Math.Min(first, Math.Max(0, itemsCount - visible));
         }
 
-        _currentIndices = Enumerable.Range(first, visible).Where(i => i < itemsCount).ToArray();
+        // A page of an infinite carousel can borrow slides from the other end (GotoPage wraps the
+        // indices that run past the last item around to the first one), so a re-layout wraps them
+        // the same way instead of cutting the borrowed slides off.
+        _currentIndices = InfiniteScrolling && itemsCount > 0
+            ? Enumerable.Range(first, visible).Select(i => i % itemsCount).ToArray()
+            : Enumerable.Range(first, visible).Where(i => i < itemsCount).ToArray();
         _othersIndices = [];
 
         _pagesCount = visible > 0 ? (int)Math.Ceiling((decimal)itemsCount / visible) : 0;
-        _currentPage = visible > 0 ? (int)Math.Floor((decimal)first / visible) : 0;
+        _currentPage = CalculateCurrentPage(_currentIndices, visible);
 
         SetNavigationButtonsVisibility();
         UpdateItemsCurrentState();
+
+        // The page count above is what the auto play hinges on, so the timer is re-evaluated here:
+        // a carousel that only just received enough items to have somewhere to rotate to starts, and
+        // one whose items were taken away stops.
+        UpdateAutoPlayTimer();
+
+        // The transform of a slide and the opacity of the fade effect belong to a layout, so they
+        // are cleared up front rather than left behind stale when the measurement below fails.
+        foreach (var item in _allItems)
+        {
+            item.InternalFadeStyle = string.Empty;
+            item.InternalTransformStyle = string.Empty;
+        }
 
         var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
 
@@ -883,7 +916,15 @@ public partial class BitCarousel : BitComponentBase
 
         if (itemsCount == 0 || _currentIndices.Length == 0) return;
 
-        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
+        // Moving back by fewer items than asked for keeps the first page full, instead of leaving a
+        // blank space before the first item when the items do not divide evenly into pages.
+        var count = InfiniteScrolling
+            ? _internalScrollItemsCount
+            : Math.Min(_internalScrollItemsCount, _currentIndices[0]);
+
+        if (count < 1) return;
+
+        _othersIndices = Enumerable.Range(0, count).Select(i =>
         {
             var idx = _currentIndices[0] - (i + 1);
             if (InfiniteScrolling && idx < 0)
@@ -893,7 +934,7 @@ public partial class BitCarousel : BitComponentBase
             return idx;
         }).Where(i => i >= 0 && i < itemsCount).Reverse().ToArray();
 
-        await Go();
+        await Go(false, count);
     }
 
     private async Task Next()
@@ -904,7 +945,15 @@ public partial class BitCarousel : BitComponentBase
 
         if (itemsCount == 0 || _currentIndices.Length == 0) return;
 
-        _othersIndices = Enumerable.Range(0, _internalScrollItemsCount).Select(i =>
+        // Moving forward by fewer items than asked for keeps the last page full, instead of leaving a
+        // blank space after the last item when the items do not divide evenly into pages.
+        var count = InfiniteScrolling
+            ? _internalScrollItemsCount
+            : Math.Min(_internalScrollItemsCount, itemsCount - 1 - _currentIndices[^1]);
+
+        if (count < 1) return;
+
+        _othersIndices = Enumerable.Range(0, count).Select(i =>
         {
             var idx = _currentIndices[^1] + (i + 1);
             if (InfiniteScrolling && idx > itemsCount - 1)
@@ -914,7 +963,7 @@ public partial class BitCarousel : BitComponentBase
             return idx;
         }).Where(i => i >= 0 && i < itemsCount).ToArray();
 
-        await Go(true);
+        await Go(true, count);
     }
 
     private async Task Go(bool isNext = false, int scrollCount = 0)
@@ -983,47 +1032,63 @@ public partial class BitCarousel : BitComponentBase
 
         _navigating = true;
 
-        StateHasChanged();
-
-        // The placement above has to reach the browser as a frame of its own, otherwise it is coalesced
-        // with the move below into a single style change and there is nothing left to animate.
+        // The flag covers the whole move, up to and including the bookkeeping of the new indices.
         try
         {
+            StateHasChanged();
+
+            // The placement above has to reach the browser as a frame of its own, otherwise it is coalesced
+            // with the move below into a single style change and there is nothing left to animate.
             await Task.Delay(50);
+
+            if (IsDisposed) return;
+
+            offset = isNext ? visible - scrollCount : 0;
+
+            var transitionStyle = Transition();
+
+            for (int i = 0; i < currents.Length; i++)
+            {
+                var c = currents[i];
+                c.InternalTransitionStyle = transitionStyle;
+                var x = -sign * 100 * (scrollCount + (-sign * i));
+                x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
+                c.InternalTransformStyle = Translate(x);
+            }
+
+            for (int i = 0; i < others.Length; i++)
+            {
+                var o = others[i];
+                o.InternalTransitionStyle = transitionStyle;
+                var x = 100 * (offset + i);
+                x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
+                o.InternalTransformStyle = Translate(x);
+            }
+
+            await ApplyNewIndices(newIndices);
         }
         finally
         {
             _navigating = false;
         }
-
-        if (IsDisposed) return;
-
-        offset = isNext ? visible - scrollCount : 0;
-
-        var transitionStyle = Transition();
-
-        for (int i = 0; i < currents.Length; i++)
-        {
-            var c = currents[i];
-            c.InternalTransitionStyle = transitionStyle;
-            var x = -sign * 100 * (scrollCount + (-sign * i));
-            x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
-            c.InternalTransformStyle = Translate(x);
-        }
-
-        for (int i = 0; i < others.Length; i++)
-        {
-            var o = others[i];
-            o.InternalTransitionStyle = transitionStyle;
-            var x = 100 * (offset + i);
-            x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
-            o.InternalTransformStyle = Translate(x);
-        }
-
-        await ApplyNewIndices(newIndices);
     }
 
     private bool IsValidIndex(int index) => index >= 0 && index < _allItems.Count;
+
+    // The page is where the first visible item falls, except at the end of a non-infinite carousel: its
+    // last page is aligned to the last item when the items do not divide evenly into pages, so standing
+    // on the last item is what standing on the last page means there.
+    private int CalculateCurrentPage(int[] indices, int visible)
+    {
+        if (visible < 1 || indices.Length == 0) return 0;
+
+        if (InfiniteScrolling is false && _pagesCount > 0 && indices[^1] == _allItems.Count - 1)
+        {
+            return _pagesCount - 1;
+        }
+
+        return (int)Math.Floor((decimal)indices[0] / visible);
+    }
 
     private async Task ApplyNewIndices(int[] newIndices)
     {
@@ -1031,9 +1096,7 @@ public partial class BitCarousel : BitComponentBase
         var previousPage = _currentPage;
 
         _currentIndices = newIndices;
-        _currentPage = (visible > 0 && newIndices.Length > 0)
-            ? (int)Math.Floor((decimal)newIndices[0] / visible)
-            : 0;
+        _currentPage = CalculateCurrentPage(newIndices, visible);
 
         UpdateItemsCurrentState();
         SetNavigationButtonsVisibility();
@@ -1066,25 +1129,29 @@ public partial class BitCarousel : BitComponentBase
         }
 
         var visible = _internalVisibleItemsCount;
-
-        if (_currentIndices[0] == index * visible) return;
-
         var itemsCount = _allItems.Count;
-        var indices = Enumerable.Range(index * visible, visible);
+
+        var firstIndex = index * visible;
+
+        if (InfiniteScrolling is false)
+        {
+            // The last page of a carousel whose items do not divide evenly into pages is aligned to its
+            // last item, so navigating to it never leaves a blank space after the item.
+            firstIndex = Math.Min(firstIndex, Math.Max(0, itemsCount - visible));
+        }
+
+        if (_currentIndices[0] == firstIndex) return;
+
         var isNext = index > _currentPage;
 
-        if (isNext)
+        // The indices past the end wrap around to the start of an infinite carousel, so a page that is
+        // only partially filled by the items borrows the missing slides from the other end instead of
+        // being rendered with a blank space.
+        _othersIndices = Enumerable.Range(firstIndex, visible).Select(idx =>
         {
-            _othersIndices = indices.Select(idx =>
-            {
-                if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
-                return idx;
-            }).Where(IsValidIndex).ToArray();
-        }
-        else
-        {
-            _othersIndices = indices.Where(IsValidIndex).ToArray();
-        }
+            if (InfiniteScrolling && idx > itemsCount - 1) idx -= itemsCount;
+            return idx;
+        }).Where(IsValidIndex).ToArray();
 
         await Go(isNext, visible);
     }
@@ -1120,7 +1187,6 @@ public partial class BitCarousel : BitComponentBase
         }
     }
 
-    private DateTime _lastWheel = DateTime.MinValue;
     private async Task HandleWheel(WheelEventArgs e)
     {
         if (Wheel is false) return;
@@ -1183,8 +1249,6 @@ public partial class BitCarousel : BitComponentBase
         _pointerY = e.ClientY;
 
         await _js.BitUtilsSetStyle(_carouselContainer, "cursor", "grabbing");
-
-        StateHasChanged();
     }
 
     private async Task HandlePointerUp(PointerEventArgs e)
@@ -1192,8 +1256,6 @@ public partial class BitCarousel : BitComponentBase
         if (_isPointerDown is false) return;
 
         await EndDrag();
-
-        StateHasChanged();
     }
 
     private async Task EndDrag()
@@ -1248,11 +1310,18 @@ public partial class BitCarousel : BitComponentBase
         if (PauseOnHover && _hovered) return false;
         if (PauseOnFocus && _focused) return false;
 
-        return _pagesCount > 1 || _allItems.Count == 0;
+        // A carousel with a single page has nowhere to rotate to. The timer is re-evaluated from
+        // ResetDimensionsAsync whenever the items (and with them the page count) change.
+        return _pagesCount > 1;
     }
 
     private void UpdateAutoPlayTimer()
     {
+        // The page visibility event can still reach a carousel that was disposed while the event was
+        // being raised (the handlers are snapshotted before they are awaited), and re-creating the
+        // timer here at that point would leak it, ticking, for the rest of the process.
+        if (IsDisposed) return;
+
         // Before the first render there is nothing to rotate yet, and a timer started during
         // prerendering would tick on the server against a carousel that is not on screen.
         if (_afterFirstRender is false) return;
@@ -1260,23 +1329,30 @@ public partial class BitCarousel : BitComponentBase
         if (ShouldAutoPlay() is false)
         {
             _autoPlayTimer?.Stop();
-
-            return;
         }
-
-        var interval = AutoPlayInterval > 0 ? AutoPlayInterval : 2000;
-
-        if (_autoPlayTimer is null)
+        else
         {
-            _autoPlayTimer = new System.Timers.Timer(interval);
-            _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
-        }
-        else if (_autoPlayTimer.Interval != interval)
-        {
-            _autoPlayTimer.Interval = interval;
+            // The timer itself rejects an interval beyond int.MaxValue (and one that is not positive),
+            // so anything unusable falls back to the default instead of throwing in the middle of a render.
+            var interval = AutoPlayInterval > 0 ? Math.Min(AutoPlayInterval, int.MaxValue) : 2000;
+
+            if (_autoPlayTimer is null)
+            {
+                _autoPlayTimer = new System.Timers.Timer(interval);
+                _autoPlayTimer.Elapsed += AutoPlayTimerElapsed;
+            }
+            else if (_autoPlayTimer.Interval != interval)
+            {
+                _autoPlayTimer.Interval = interval;
+            }
+
+            _autoPlayTimer.Start();
         }
 
-        _autoPlayTimer.Start();
+        // The playback state feeds the play/pause button and the aria-live attribute, so it is
+        // rendered right away even when the change came from code (Pause/Resume) rather than
+        // from an event the renderer already follows up on.
+        StateHasChanged();
     }
 
     private void RestartAutoPlayTimer()
@@ -1322,6 +1398,17 @@ public partial class BitCarousel : BitComponentBase
         }
         catch (ObjectDisposedException) { } // the renderer went away between the tick and the dispatch
         catch (JSDisconnectedException) { } // the circuit went away while the slides were being moved
+        catch (Exception ex)
+        {
+            // An exception that escapes an async void handler takes the whole process down, so anything
+            // else (an OnChange callback that threw, for example) is handed back to the renderer, where
+            // it is treated like an exception of any ordinary event handler.
+            try
+            {
+                await DispatchExceptionAsync(ex);
+            }
+            catch { } // the renderer itself went away; there is nothing left to report the exception to
+        }
     }
 
     private Task PageVisibilityChange(bool hidden)

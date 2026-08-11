@@ -19,7 +19,10 @@
               DotAriaLabel="@DotAriaLabel"
               GoLeftAriaLabel="@GoLeftAriaLabel"
               GoRightAriaLabel="@GoRightAriaLabel"
+              StopOnLastSlide="StopOnLastSlide"
+              AutoPlayReverse="AutoPlayReverse"
               ScrollItemsCount="ScrollItemsCount"
+              AutoPlayInterval="AutoPlayInterval"
               VisibleItemsCount="VisibleItemsCount"
               InfiniteScrolling="InfiniteScrolling"
               StopOnInteraction="StopOnInteraction">
@@ -48,8 +51,11 @@
     [Parameter] public bool HideNextPrev { get; set; }
     [Parameter] public bool ShowPlayPause { get; set; }
     [Parameter] public bool InfiniteScrolling { get; set; }
+    [Parameter] public bool StopOnLastSlide { get; set; }
+    [Parameter] public bool AutoPlayReverse { get; set; }
     [Parameter] public bool StopOnInteraction { get; set; }
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public double AutoPlayInterval { get; set; } = 2000;
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
     [Parameter] public BitColorKind? Accent { get; set; }
     [Parameter] public string DotAriaLabel { get; set; } = "Slide";

@@ -17,25 +17,26 @@
         <div>
             The basic carousel shows one slide at a time and renders its default chrome: the next/prev buttons over the sides
             and the navigation dots below the slides. It can also be dragged with the pointer and, since it is focusable,
-            navigated with the arrow keys and the Home/End keys.
+            navigated with the arrow keys and the Home/End keys. Give the carousel an AriaLabel that describes its content,
+            so assistive technologies can announce what the carousel region holds.
         </div>
         <br />
         <BitCarousel>
             <BitCarouselItem>
                 <div class="number">1 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">2 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">3 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="number">4 / 4</div>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
             </BitCarouselItem>
         </BitCarousel>
     </DemoExample>
@@ -49,22 +50,22 @@
         <div>
             <BitCarousel InfiniteScrolling>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
@@ -82,25 +83,25 @@
             <BitCarousel HideDots>
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
@@ -119,30 +120,31 @@
             <BitCarousel HideNextPrev @ref="carousel" OnChange="v => currentPage = v">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
             </BitCarousel>
         </div>
+        <br />
         <div class="buttons-container">
             <div>
                 <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
@@ -168,25 +170,25 @@
             <BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval="2500">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                     <div class="text-title">Aurora</div>
                     <div class="text-description">This is Aurora and it's fantastic</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                     <div class="text-title">Beautiful Mountain</div>
                     <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                     <div class="text-title">Forest In The Valley</div>
                     <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                     <div class="text-title">Road Among The Mountains</div>
                     <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
                 </BitCarouselItem>
@@ -204,20 +206,35 @@
             <BitCarousel InfiniteScrolling AutoPlay AutoPlayInterval="2000" ShowPlayPause StopOnInteraction>
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 </BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>
+            The AutoPlayReverse parameter plays the rotation backwards, from the last slide towards the first one, and
+            StopOnLastSlide (for a non-infinite carousel) stops the rotation on the last page instead of rewinding to
+            the first one.
+        </div>
+        <br />
+        <div>
+            <BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev Style="height: 100px">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
             </BitCarousel>
         </div>
     </DemoExample>
@@ -273,19 +290,19 @@
             <BitCarousel Vertical Style="height: 200px" InfiniteScrolling>
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 </BitCarouselItem>
             </BitCarousel>
         </div>
@@ -301,19 +318,19 @@
             <BitCarousel Fade InfiniteScrolling>
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">2 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">3 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 </BitCarouselItem>
                 <BitCarouselItem>
                     <div class="number">4 / 4</div>
-                    <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 </BitCarouselItem>
             </BitCarousel>
         </div>
@@ -340,7 +357,55 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Animation" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            The AnimationDuration parameter sets how long the slide transition takes, in seconds (0.5 by default).
+            A value of 0 moves the slides at once, with no animation at all, and the same duration also drives the
+            cross-fade speed of the Fade effect.
+        </div>
+        <br />
+        <div>Slow transition (1.5 seconds):</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" AnimationDuration="1.5" InfiniteScrolling>
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br />
+        <div>No animation (0 seconds):</div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" AnimationDuration="0" InfiniteScrolling>
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="DefaultPage" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            The DefaultPage parameter sets the page (1 based, like GoTo) the carousel shows when it first renders.
+            It is only read during the first layout, so changing it afterwards does not move the carousel (use GoTo
+            for that), and values outside of the range of the carousel are clamped to its first or last page.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" DefaultPage="3">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
         <div>
             The Color parameter offers the general colors of the theme for the chrome of the carousel: it colors the dot
             of the current page and the navigation buttons. The Accent parameter is its lighter-weight sibling that only
@@ -383,7 +448,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>GoLeftIcon</b> and <b>GoRightIcon</b> parameters.</div>
 
         <br />
@@ -397,22 +462,22 @@
                      GoLeftIcon="@BitIconInfo.Fa("solid circle-arrow-right")"
                      GoRightIcon="@BitIconInfo.Fa("solid circle-arrow-left")">
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 <div class="text-title">Aurora</div>
                 <div class="text-description">This is Aurora and it's fantastic</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 <div class="text-title">Beautiful Mountain</div>
                 <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 <div class="text-title">Forest In The Valley</div>
                 <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 <div class="text-title">Road Among The Mountains</div>
                 <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
             </BitCarouselItem>
@@ -428,29 +493,29 @@
                      GoLeftIcon="@BitIconInfo.Bi("arrow-right-circle")"
                      GoRightIcon="@BitIconInfo.Bi("arrow-left-circle")">
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
                 <div class="text-title">Aurora</div>
                 <div class="text-description">This is Aurora and it's fantastic</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
                 <div class="text-title">Beautiful Mountain</div>
                 <div class="text-description">This is a Beautiful Mountain and it's gorgeous</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
                 <div class="text-title">Forest In The Valley</div>
                 <div class="text-description">This is a Forest In The Valley and it's beautiful</div>
             </BitCarouselItem>
             <BitCarouselItem>
-                <img class="image" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
                 <div class="text-title">Road Among The Mountains</div>
                 <div class="text-description">This is a Road Among The Mountains and it's amazing</div>
             </BitCarouselItem>
         </BitCarousel>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
         <div>The Size parameter offers three sizes for the chrome of the carousel: the dots and the navigation buttons.</div>
         <br />
         <div class="colors-container">
@@ -481,7 +546,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             Besides the Style and Class parameters of the root element, the Styles and Classes parameters customize every
             part of the carousel: its container, its items, the navigation buttons and their icons, the dots and the
@@ -502,7 +567,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>
             In right-to-left mode the carousel lays its slides out and navigates from right to left, and the roles of the
             two navigation buttons flip accordingly.

@@ -142,6 +142,30 @@
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventShiftWheel:", e); }
         }
 
+        // Registers a pointerdown listener on the element that suppresses the browser's default
+        // action (dragging an image, selecting text) so the element can be dragged by the pointer
+        // instead. A pointerdown on a button inside the element is left alone, since preventing it
+        // would keep the button from taking the focus. Calling it again updates the active flag in
+        // place, so no separate unregister call is needed - the listener is garbage-collected with
+        // the element itself.
+        public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitPreventPointerDown = active;
+
+                if (el.__bitPreventPointerDownRegistered) return;
+                el.__bitPreventPointerDownRegistered = true;
+
+                element.addEventListener('pointerdown', (e: PointerEvent) => {
+                    if (!(element as any).__bitPreventPointerDown) return;
+                    if (e.target instanceof Element && e.target.closest('button')) return;
+                    e.preventDefault();
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
+        }
+
         // Registers a keydown listener on the element that suppresses the browser's default action
         // for the given keys (e.g. PageUp/PageDown scrolling the page while a spinbutton handles
         // them as value changes). Calling it again updates the key list in place, and an empty list

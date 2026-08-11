@@ -71,7 +71,7 @@ public partial class BitCarouselDemo
             Name = "DefaultPage",
             Type = "int",
             DefaultValue = "1",
-            Description = "The page (1 based, like GoTo) the carousel shows when it first renders."
+            Description = "The page (1 based, like GoTo) the carousel shows when it first renders. Values outside of the range of the carousel are clamped to its first or last page."
         },
         new()
         {
@@ -268,7 +268,7 @@ public partial class BitCarouselDemo
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount."
+            Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full."
         },
         new()
         {

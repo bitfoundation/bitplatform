@@ -21,19 +21,19 @@ public partial class BitCarouselDemo
 <BitCarousel>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"">
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"">
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
     </BitCarouselItem>
 </BitCarousel>";
 
@@ -65,22 +65,22 @@ public partial class BitCarouselDemo
 
 <BitCarousel InfiniteScrolling>
     <BitCarouselItem>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -90,25 +90,25 @@ public partial class BitCarouselDemo
 <BitCarousel HideDots>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -118,25 +118,25 @@ public partial class BitCarouselDemo
 <BitCarousel HideNextPrev @ref=""carousel"" OnChange=""v => currentPage = v"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -173,25 +173,25 @@ private async Task GoTo()
 <BitCarousel HideNextPrev InfiniteScrolling AutoPlay AutoPlayInterval=""2500"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -200,20 +200,27 @@ private async Task GoTo()
 <BitCarousel InfiniteScrolling AutoPlay AutoPlayInterval=""2000"" ShowPlayPause StopOnInteraction>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
     </BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev Style=""height: 100px"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
     private readonly string example6RazorCode = @"
@@ -262,19 +269,19 @@ private async Task GoTo()
 <BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
     </BitCarouselItem>
 </BitCarousel>";
 
@@ -282,19 +289,19 @@ private async Task GoTo()
 <BitCarousel Fade InfiniteScrolling>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
-        <img class=""image"" src=""img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">2 / 4</div>
-        <img class=""image"" src=""img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">3 / 4</div>
-        <img class=""image"" src=""img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
     </BitCarouselItem>
     <BitCarouselItem>
         <div class=""number"">4 / 4</div>
-        <img class=""image"" src=""img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
     </BitCarouselItem>
 </BitCarousel>";
 
@@ -309,6 +316,43 @@ private async Task GoTo()
 </BitCarousel>";
 
     private readonly string example11RazorCode = @"
+<style>
+    .item {
+        text-align: center;
+        color: black;
+        border: 1px solid blue;
+        background-color: lightblue;
+    }
+
+    .item div {
+        transform: translate(0, 80%);
+    }
+</style>
+
+<BitCarousel Style=""height: 100px"" AnimationDuration=""1.5"" InfiniteScrolling>
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" AnimationDuration=""0"" InfiniteScrolling>
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example12RazorCode = @"
+<BitCarousel Style=""height: 100px"" DefaultPage=""3"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example13RazorCode = @"
 <BitCarousel Color=""BitColor.Primary"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -333,7 +377,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome (circle-arrow icons):</div>
@@ -341,22 +385,22 @@ private async Task GoTo()
              GoLeftIcon=""@BitIconInfo.Fa(""solid circle-arrow-right"")""
              GoRightIcon=""@BitIconInfo.Fa(""solid circle-arrow-left"")"">
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
@@ -369,28 +413,28 @@ private async Task GoTo()
              GoLeftIcon=""@BitIconInfo.Bi(""arrow-right-circle"")""
              GoRightIcon=""@BitIconInfo.Bi(""arrow-left-circle"")"">
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
+        <img class=""image"" alt=""Aurora"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"" />
         <div class=""text-title"">Aurora</div>
         <div class=""text-description"">This is Aurora and it's fantastic</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
+        <img class=""image"" alt=""Beautiful mountain"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"" />
         <div class=""text-title"">Beautiful Mountain</div>
         <div class=""text-description"">This is a Beautiful Mountain and it's gorgeous</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
+        <img class=""image"" alt=""Forest in the valley"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" />
         <div class=""text-title"">Forest In The Valley</div>
         <div class=""text-description"">This is a Forest In The Valley and it's beautiful</div>
     </BitCarouselItem>
     <BitCarouselItem>
-        <img class=""image"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
+        <img class=""image"" alt=""Road among the mountains"" src=""_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" />
         <div class=""text-title"">Road Among The Mountains</div>
         <div class=""text-description"">This is a Road Among The Mountains and it's amazing</div>
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitCarousel Size=""BitSize.Small"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -409,7 +453,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-item {
         color: white;
@@ -430,7 +474,7 @@ private async Task GoTo()
     <BitCarouselItem><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example17RazorCode = @"
 <style>
     .item {
         text-align: center;

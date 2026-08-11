@@ -102,10 +102,6 @@ public partial class BitCarouselItem : BitComponentBase
         }
     }
 
-    internal void Refresh() => StateHasChanged();
-
-
-
     protected override string RootElementClass => "bit-crsi";
 
     protected override void RegisterCssClasses()

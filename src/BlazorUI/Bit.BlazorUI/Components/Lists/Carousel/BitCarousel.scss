@@ -158,6 +158,17 @@
     font-size: calc(var(--bit-csl-dot-size) + #{spacing(0.5)});
 }
 
+// The dots group scopes the accessible label to the dots alone (the play/pause button lives outside
+// of it). It lays the dots out exactly like its container does, so the row looks the same with or
+// without the button next to it.
+.bit-csl-dts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: spacing(0.5);
+}
+
 .bit-csl-dot {
     border: 0;
     padding: 0;
