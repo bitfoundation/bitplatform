@@ -1719,6 +1719,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             // A gap of disabled days right after today: the arrow key has to jump over it,
             // not stop at its edge.
             parameters.Add(p => p.DisabledDates, new[]
@@ -1749,6 +1750,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.MinRange, TimeSpan.FromDays(4));
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = today });
         });
@@ -1776,6 +1778,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.MaxDate, today);
         });
 
@@ -3298,6 +3301,7 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
         // The initial year picker range is 2023-2034, so 12 next-year steps land outside of it.
@@ -3381,6 +3385,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             // June 12, 2024 is a Wednesday; with the invariant Sunday-first week its week runs June 9 to June 15.
             parameters.Add(p => p.Today, FixedDate(2024, 6, 12));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
         var focused = component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0");
