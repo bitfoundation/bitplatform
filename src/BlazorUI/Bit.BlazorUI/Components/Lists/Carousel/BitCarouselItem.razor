@@ -1,9 +1,15 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-<div @ref="RootElement"
+<div role="group"
+     aria-roledescription="slide"
+     aria-label="@GetAriaLabel()"
      @attributes="HtmlAttributes"
+     @ref="RootElement"
+     id="@_Id"
      style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value">
+     class="@ClassBuilder.Value"
+     inert="@(InternalIsCurrent is false)"
+     aria-hidden="@(InternalIsCurrent ? null : "true")">
     @ChildContent
 </div>
