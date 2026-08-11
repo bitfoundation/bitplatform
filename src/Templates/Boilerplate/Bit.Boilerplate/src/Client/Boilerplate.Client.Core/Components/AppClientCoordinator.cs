@@ -87,7 +87,7 @@ public partial class AppClientCoordinator : AppComponentBase
             }
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
+            TelemetryContext.PageUrl = new Uri(HttpUtility.UrlDecode(NavigationManager.Uri)).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
             _ = appInsights.AddTelemetryInitializer(new()
@@ -139,7 +139,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
+        TelemetryContext.PageUrl = new Uri(HttpUtility.UrlDecode(e.Location)).GetUrlWithMaskedQueryValues();
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 

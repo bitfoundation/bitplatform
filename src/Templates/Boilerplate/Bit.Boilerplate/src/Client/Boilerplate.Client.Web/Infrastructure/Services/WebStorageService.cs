@@ -37,8 +37,8 @@ public partial class WebStorageService : IStorageService
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
-        // the previous value where GetItem still reads it - and since Preferences wins there (it is the value, the temp
-        // entry is only the default), a temporary write would be shadowed by the persistent value it supersedes.
+        // the previous value where GetItem still reads it - and since GetItem reads localStorage first, a temporary
+        // write would be shadowed by the persistent value it supersedes.
         if (persistent)
         {
             await sessionStorage.RemoveItem(key);
