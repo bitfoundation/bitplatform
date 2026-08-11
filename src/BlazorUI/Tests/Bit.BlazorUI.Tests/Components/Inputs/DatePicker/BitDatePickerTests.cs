@@ -2491,6 +2491,218 @@ public class BitDatePickerTests : BunitTestContext
         await Context.DisposeComponentsAsync();
     }
 
+    // ── DisablePast & DisableFuture ───────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectDisablePast()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.DisablePast, true);
+        });
+
+        var dayButtons = component.FindAll(".bit-dtp-dbt").Where(b => b.ClassList.Contains("bit-dtp-dbo") is false).ToList();
+
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) < 15).All(b => b.HasAttribute("disabled")));
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) >= 15).All(b => b.HasAttribute("disabled") is false));
+
+        // The calendar opens on today's month, and the navigation cannot go into the fully disabled past.
+        Assert.IsTrue(component.Find("button[title='Go to previous month']").HasAttribute("disabled"));
+        Assert.IsFalse(component.Find("button[title='Go to next month']").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectDisableFuture()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.DisableFuture, true);
+        });
+
+        var dayButtons = component.FindAll(".bit-dtp-dbt").Where(b => b.ClassList.Contains("bit-dtp-dbo") is false).ToList();
+
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) > 15).All(b => b.HasAttribute("disabled")));
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) <= 15).All(b => b.HasAttribute("disabled") is false));
+
+        Assert.IsFalse(component.Find("button[title='Go to previous month']").HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("button[title='Go to next month']").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDisablePastShouldCombineWithMinDate()
+    {
+        // The later of the two bounds wins: a MinDate ahead of today is the effective bound.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.MinDate, GetLocalDate(2026, 1, 20));
+            parameters.Add(p => p.DisablePast, true);
+        });
+
+        var dayButtons = component.FindAll(".bit-dtp-dbt").Where(b => b.ClassList.Contains("bit-dtp-dbo") is false).ToList();
+
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) < 20).All(b => b.HasAttribute("disabled")));
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) >= 20).All(b => b.HasAttribute("disabled") is false));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDisableFutureShouldCombineWithMaxDate()
+    {
+        // The earlier of the two bounds wins: a MaxDate before today is the effective bound.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.MaxDate, GetLocalDate(2026, 1, 10));
+            parameters.Add(p => p.DisableFuture, true);
+        });
+
+        var dayButtons = component.FindAll(".bit-dtp-dbt").Where(b => b.ClassList.Contains("bit-dtp-dbo") is false).ToList();
+
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) > 10).All(b => b.HasAttribute("disabled")));
+        Assert.IsTrue(dayButtons.Where(b => int.Parse(b.TextContent.Trim()) <= 10).All(b => b.HasAttribute("disabled") is false));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDisableFutureShouldRejectATypedFutureDate()
+    {
+        DateTimeOffset? value = null;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, new CultureInfo("en-US"));
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "dd/MM/yyyy");
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.DisableFuture, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-inp").Input("16/01/2026");
+
+        Assert.IsNull(value);
+
+        component.Find(".bit-dtp-inp").Input("15/01/2026");
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(new DateTime(2026, 1, 15), value!.Value.Date);
+    }
+
+    // ── HighlightToday ────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectHighlightToday()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Today, GetLocalDate(2021, 3, 15));
+            parameters.Add(p => p.HighlightToday, false);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtp-dtd"));
+
+        // Only the visual accent turns off; the day still reports itself as the current date.
+        var todayButton = component.FindAll(".bit-dtp-dbt").Single(b => b.GetAttribute("aria-current") == "date");
+        Assert.AreEqual("15", todayButton.TextContent.Trim());
+    }
+
+    // ── AllowDeselect ─────────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectAllowDeselect()
+    {
+        var selectCount = 0;
+        DateTimeOffset? selectedDateArg = null;
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.AllowDeselect, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnSelectDate, (DateTimeOffset? date) => { selectedDateArg = date; selectCount++; });
+        });
+
+        component.Find(".bit-dtp-dbs").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, selectCount);
+        Assert.IsNull(selectedDateArg);
+
+        // A deselection empties the value, so no day is marked as selected anymore.
+        Assert.IsEmpty(component.FindAll(".bit-dtp-dbs"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDeselectingShouldKeepTheDisplayedMonth()
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.AllowDeselect, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-dbs").Click();
+
+        Assert.IsNull(value);
+
+        // Clearing the value must not fling the calendar back onto today's month: the user is still
+        // looking at the month of the day they just deselected.
+        Assert.Contains("January 2026", component.Find(".bit-dtp-pkt, .bit-dtp-ptb").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithoutAllowDeselectReselectingShouldKeepTheValue()
+    {
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtp-dbs").Click();
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(new DateTime(2026, 1, 15), value!.Value.Date);
+    }
+
+    // ── Callout header & footer templates ─────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderCalloutHeaderAndFooterTemplates()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.CalloutHeaderTemplate, "<div class=\"my-header\">header</div>");
+            parameters.Add(p => p.CalloutFooterTemplate, "<div class=\"my-footer\">footer</div>");
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { CalloutHeader = "header-cls", CalloutFooter = "footer-cls" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { CalloutHeader = "color: red", CalloutFooter = "color: blue" });
+        });
+
+        var header = component.Find(".header-cls");
+        var footer = component.Find(".footer-cls");
+
+        Assert.IsNotNull(header.QuerySelector(".my-header"));
+        Assert.IsNotNull(footer.QuerySelector(".my-footer"));
+
+        Assert.AreEqual("color: red", header.GetAttribute("style"));
+        Assert.AreEqual("color: blue", footer.GetAttribute("style"));
+
+        // The header sits above the pickers of the callout, and the footer below them.
+        Assert.IsTrue(header.NextElementSibling!.ClassList.Contains("bit-dtp-grp"));
+        Assert.IsTrue(footer.PreviousElementSibling!.ClassList.Contains("bit-dtp-grp"));
+    }
+
     private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)
     {
         var dateTime = new DateTime(year, month, day, hour, minute, 0);

@@ -7,7 +7,7 @@
             Description="A BitDatePicker offers a drop-down calendar for picking a date, or a date and time, with any culture and time zone and full keyboard accessibility." />
 
 <DemoPage Name="DatePicker"
-          Description="A BitDatePicker offers a drop-down control that's optimized for picking a single date from a calendar view, where contextual information like the day of the week or the fullness of the calendar is important. It provides day, month, and year views, an optional time picker, and flexible day rules such as min/max dates, disabled and highlighted dates, a custom first day of the week, and week numbers. It works with any culture and time zone, including right-to-left and non-Gregorian calendars, accepts typed input, and is fully keyboard accessible following the WAI-ARIA combobox and grid patterns."
+          Description="A BitDatePicker offers a drop-down control that's optimized for picking a single date from a calendar view, where contextual information like the day of the week or the fullness of the calendar is important. It provides day, month, and year views, an optional time picker, and flexible day rules such as min/max dates, disabled and highlighted dates, a custom first day of the week, and week numbers. It works with any culture and time zone, including right-to-left and non-Gregorian calendars, accepts typed input, can be customized through templates for its label, icon, cells, and callout header and footer, and is fully keyboard accessible following the WAI-ARIA combobox and grid patterns."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -19,7 +19,8 @@
             The essential BitDatePicker configurations: the default picker, the disabled and required states,
             a placeholder, week numbers, the highlighting of the current and the selected month, the built-in
             time picker, the clear and close buttons, keeping the callout open after a selection
-            (<b>AutoClose</b>), the date the calendar opens on when there is no value yet
+            (<b>AutoClose</b>), clearing the value by selecting the selected day again (<b>AllowDeselect</b>),
+            the date the calendar opens on when there is no value yet
             (<b>StartingValue</b>), and overriding the current date with <b>Today</b>.
         </div>
         <br />
@@ -44,6 +45,8 @@
             <br /><br />
             <BitDatePicker Label="AutoClose (false)" AutoClose="false" />
             <br /><br />
+            <BitDatePicker Label="AllowDeselect (re-select the selected day to clear)" AllowDeselect AutoClose="false" />
+            <br /><br />
             <BitDatePicker Label="StartingValue: December 2020, 20:45" ShowTimePicker StartingValue="startingValue" />
             <br /><br />
             <BitDatePicker Label="Custom Today (March 2021)" Today="customToday" />
@@ -55,6 +58,8 @@
             Limit the selectable dates using <b>MinDate</b> and <b>MaxDate</b>. Days outside of the range are
             disabled, the month, year, and year-range navigation stops at the boundaries, and a date typed into
             the input outside of the range (when <b>AllowTextInput</b> is enabled) is reported as a validation error.
+            The <b>DisablePast</b> and <b>DisableFuture</b> shortcuts bound the range by today, exactly as a
+            MinDate or MaxDate of today would, and combine with them (the narrower bound wins).
         </div>
         <br /><br />
         <div class="example-content">
@@ -69,6 +74,10 @@
             <div>Min: Now.AddYears(-5)</div>
             <div>Max: Now.AddYears(+1)</div>
             <BitDatePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
+            <br /><br />
+            <BitDatePicker Label="DisablePast (from today on)" DisablePast />
+            <br /><br />
+            <BitDatePicker Label="DisableFuture (up to today)" DisableFuture />
         </div>
     </DemoExample>
 
@@ -93,12 +102,16 @@
         <div>
             Mark important dates using <b>HighlightedDates</b>, or provide custom CSS classes for any day using
             the <b>GetDayClass</b> function, which receives each rendered day and returns the classes to add to it.
+            The highlight of today's day can also be turned off using <b>HighlightToday</b>; the day keeps its
+            accessibility semantics and only loses the visual accent.
         </div>
         <br />
         <div class="example-content">
             <BitDatePicker Label="HighlightedDates" HighlightedDates="@highlightedDates" />
             <br /><br />
             <BitDatePicker Label="GetDayClass (Sundays)" GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)' />
+            <br /><br />
+            <BitDatePicker Label="HighlightToday (false)" HighlightToday="false" />
         </div>
     </DemoExample>
 
@@ -379,7 +392,9 @@
         <div>
             Take full control of the rendering using <b>LabelTemplate</b> for the label, <b>IconTemplate</b> for the
             icon of the input, and <b>DayCellTemplate</b>, <b>MonthCellTemplate</b>, and <b>YearCellTemplate</b> for
-            the content of the day, month, and year cells.
+            the content of the day, month, and year cells. Arbitrary content can also be rendered above and below
+            the pickers of the callout using <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> - the
+            footer is a natural place for preset buttons that set the value from the code.
         </div>
         <br />
         <div class="example-content">
@@ -417,6 +432,19 @@
                         <span class="year-suffix">AC</span>
                     </span>
                 </YearCellTemplate>
+            </BitDatePicker>
+            <br /><br /><br />
+            <BitDatePicker @ref="presetsPicker" @bind-Value="presetsValue" Label="Callout header & footer (presets)">
+                <CalloutHeaderTemplate>
+                    <div class="callout-header">Pick your appointment</div>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <div class="callout-footer">
+                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(0)">Today</BitButton>
+                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(1)">Tomorrow</BitButton>
+                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(7)">In a week</BitButton>
+                    </div>
+                </CalloutFooterTemplate>
             </BitDatePicker>
         </div>
     </DemoExample>

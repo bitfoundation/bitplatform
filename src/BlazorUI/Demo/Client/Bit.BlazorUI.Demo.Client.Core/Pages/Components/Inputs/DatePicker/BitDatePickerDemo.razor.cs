@@ -22,6 +22,13 @@ public partial class BitDatePickerDemo
     [
         new()
         {
+            Name = "AllowDeselect",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether selecting the already selected date deselects it, clearing the value. The callout stays open after a deselection, so another date can be picked right away."
+        },
+        new()
+        {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
@@ -40,6 +47,20 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "Calendar",
             Description = "Aria label of the DatePicker's callout for screen readers."
+        },
+        new()
+        {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the bottom of the DatePicker's callout, below the pickers (e.g. preset buttons that set the value from the code)."
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the top of the DatePicker's callout, above the pickers."
         },
         new()
         {
@@ -153,6 +174,20 @@ public partial class BitDatePickerDemo
             Type = "IEnumerable<DayOfWeek>?",
             DefaultValue = "null",
             Description = "The days of the week that are disabled (not selectable) in the DatePicker (e.g. weekends)."
+        },
+        new()
+        {
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables all days after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins."
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables all days before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins."
         },
         new()
         {
@@ -313,6 +348,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the month picker should highlight the selected month."
+        },
+        new()
+        {
+            Name = "HighlightToday",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the day picker should highlight today's day. It only affects the visual style of the day cell; the accessibility attributes still report the day as the current date."
         },
         new()
         {
@@ -939,6 +981,20 @@ public partial class BitDatePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the callout container of the BitDatePicker."
+                },
+                new()
+                {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the header wrapper of the callout of the BitDatePicker, rendered when a CalloutHeaderTemplate is provided."
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the footer wrapper of the callout of the BitDatePicker, rendered when a CalloutFooterTemplate is provided."
                 },
                 new()
                 {
@@ -1637,6 +1693,9 @@ public partial class BitDatePickerDemo
     private bool isCalloutOpen;
     private BitDatePicker? programmaticPicker;
 
+    private DateTimeOffset? presetsValue;
+    private BitDatePicker? presetsPicker;
+
     private int clickCount;
     private int focusInCount;
     private int focusOutCount;
@@ -1676,5 +1735,15 @@ public partial class BitDatePickerDemo
     private void HandleInvalidSubmit()
     {
         SuccessMessage = string.Empty;
+    }
+
+    private async Task SelectPreset(int days)
+    {
+        presetsValue = DateTimeOffset.Now.Date.AddDays(days);
+
+        if (presetsPicker is not null)
+        {
+            await presetsPicker.CloseCalloutAndFocus();
+        }
     }
 }

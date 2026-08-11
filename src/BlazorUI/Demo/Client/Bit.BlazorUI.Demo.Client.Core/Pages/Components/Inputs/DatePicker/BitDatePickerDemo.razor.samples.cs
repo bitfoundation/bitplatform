@@ -13,6 +13,7 @@ public partial class BitDatePickerDemo
 <BitDatePicker Label=""Show clear button when has a value"" ShowClearButton />
 <BitDatePicker Label=""Show close button"" ShowCloseButton />
 <BitDatePicker Label=""AutoClose (false)"" AutoClose=""false"" />
+<BitDatePicker Label=""AllowDeselect (re-select the selected day to clear)"" AllowDeselect AutoClose=""false"" />
 <BitDatePicker Label=""StartingValue: December 2020, 20:45"" ShowTimePicker StartingValue=""startingValue"" />
 <BitDatePicker Label=""Custom Today (March 2021)"" Today=""customToday"" />";
 
@@ -23,7 +24,10 @@ private DateTimeOffset? startingValue = new DateTimeOffset(2020, 12, 4, 20, 45, 
     private readonly string example2RazorCode = @"
 <BitDatePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
 <BitDatePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
-<BitDatePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />";
+<BitDatePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
+
+<BitDatePicker Label=""DisablePast (from today on)"" DisablePast />
+<BitDatePicker Label=""DisableFuture (up to today)"" DisableFuture />";
 
     private readonly string example3RazorCode = @"
 <BitDatePicker Label=""DisabledDaysOfWeek (weekends)"" DisabledDaysOfWeek=""@weekendDays"" />
@@ -52,7 +56,9 @@ private readonly DateTimeOffset[] disabledDates =
 <BitDatePicker Label=""HighlightedDates"" HighlightedDates=""@highlightedDates"" />
 
 <BitDatePicker Label=""GetDayClass (Sundays)""
-               GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)' />";
+               GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)' />
+
+<BitDatePicker Label=""HighlightToday (false)"" HighlightToday=""false"" />";
     private readonly string example4CsharpCode = @"
 private readonly DateTimeOffset[] highlightedDates =
 [
@@ -240,6 +246,20 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
         color: gray;
         font-size: 8px;
     }
+
+    .callout-header {
+        font-weight: 600;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid gray;
+    }
+
+    .callout-footer {
+        display: flex;
+        padding: 0.25rem;
+        justify-content: space-around;
+        border-top: 1px solid gray;
+    }
 </style>
 
 
@@ -277,9 +297,35 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
             <span class=""year-suffix"">AC</span>
         </span>
     </YearCellTemplate>
+</BitDatePicker>
+
+<BitDatePicker @ref=""presetsPicker"" @bind-Value=""presetsValue"" Label=""Callout header & footer (presets)"">
+    <CalloutHeaderTemplate>
+        <div class=""callout-header"">Pick your appointment</div>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <div class=""callout-footer"">
+            <BitButton Variant=""BitVariant.Text"" OnClick=""() => SelectPreset(0)"">Today</BitButton>
+            <BitButton Variant=""BitVariant.Text"" OnClick=""() => SelectPreset(1)"">Tomorrow</BitButton>
+            <BitButton Variant=""BitVariant.Text"" OnClick=""() => SelectPreset(7)"">In a week</BitButton>
+        </div>
+    </CalloutFooterTemplate>
 </BitDatePicker>";
     private readonly string example17CsharpCode = @"
-private CultureInfo culture = CultureInfo.CurrentUICulture;";
+private CultureInfo culture = CultureInfo.CurrentUICulture;
+
+private DateTimeOffset? presetsValue;
+private BitDatePicker? presetsPicker;
+
+private async Task SelectPreset(int days)
+{
+    presetsValue = DateTimeOffset.Now.Date.AddDays(days);
+
+    if (presetsPicker is not null)
+    {
+        await presetsPicker.CloseCalloutAndFocus();
+    }
+}";
 
     private readonly string example18RazorCode = @"
 <BitDatePicker Label=""Responsive DatePicker""

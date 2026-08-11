@@ -129,6 +129,12 @@
          role="@(Standalone ? null : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
          @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">
+                @CalloutHeaderTemplate
+            </div>
+        }
         <div style="@Styles?.Group" class="bit-dtp-grp @Classes?.Group" role="group">
             <div class="bit-dtp-sdt" aria-live="polite" aria-atomic="true">
                 @(CurrentValue.HasValue ? string.Format(SelectedDateAriaAtomic, CurrentValueAsString) : null)
@@ -751,5 +757,11 @@
                 </div>
             }
         </div>
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">
+                @CalloutFooterTemplate
+            </div>
+        }
     </div>
 </div>

@@ -47,6 +47,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string? _inputId;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
+    private string _headerId = string.Empty;
+    private string _footerId = string.Empty;
     private string _datePickerId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -122,6 +124,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
 
     /// <summary>
+    /// Whether selecting the already selected date deselects it, clearing the value.
+    /// The callout stays open after a deselection, so another date can be picked right away.
+    /// </summary>
+    [Parameter] public bool AllowDeselect { get; set; }
+
+    /// <summary>
     /// Whether or not the DatePicker allows a string date input.
     /// </summary>
     [Parameter] public bool AllowTextInput { get; set; }
@@ -137,6 +145,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Aria label of the DatePicker's callout for screen readers.
     /// </summary>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Calendar";
+
+    /// <summary>
+    /// Custom template to render at the bottom of the DatePicker's callout, below the pickers
+    /// (e.g. preset buttons that set the value from the code).
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
+
+    /// <summary>
+    /// Custom template to render at the top of the DatePicker's callout, above the pickers.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
 
     /// <summary>
     /// Capture and render additional html attributes for the DatePicker's callout.
@@ -221,6 +240,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The days of the week that are disabled (not selectable) in the DatePicker (e.g. weekends).
     /// </summary>
     [Parameter] public IEnumerable<DayOfWeek>? DisabledDaysOfWeek { get; set; }
+
+    /// <summary>
+    /// Disables all days after today, exactly as a <see cref="MaxDate"/> of today would.
+    /// When both are set, the earlier of the two bounds wins.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisableFuture { get; set; }
+
+    /// <summary>
+    /// Disables all days before today, exactly as a <see cref="MinDate"/> of today would.
+    /// When both are set, the later of the two bounds wins.
+    /// </summary>
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisablePast { get; set; }
 
     /// <summary>
     /// Overrides the first day of the week of the day picker. If not set, the first day of the week
@@ -341,6 +376,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Whether the month picker should highlight the selected month.
     /// </summary>
     [Parameter] public bool HighlightSelectedMonth { get; set; }
+
+    /// <summary>
+    /// Whether the day picker should highlight today's day. It only affects the visual style of the
+    /// day cell; the accessibility attributes still report the day as the current date.
+    /// </summary>
+    [Parameter] public bool HighlightToday { get; set; } = true;
 
     /// <summary>
     /// Determines increment/decrement steps for date-picker's hour.
@@ -862,6 +903,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _labelId = $"{_datePickerId}-label";
         _calloutId = $"{_datePickerId}-callout";
         _overlayId = $"{_datePickerId}-overlay";
+        _headerId = $"{_datePickerId}-header";
+        _footerId = $"{_datePickerId}-footer";
         _inputId = $"{_datePickerId}-input";
 
         SetDefaultValue();
@@ -1316,14 +1359,16 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         var value = CurrentValue.GetValueOrDefault(StartingValue.GetValueOrDefault(GetNow()));
 
-        if (MinDate.HasValue && MinDate > value)
+        var minDate = GetMinDate();
+        if (minDate.HasValue && minDate > value)
         {
-            value = MinDate.Value;
+            value = minDate.Value;
         }
 
-        if (MaxDate.HasValue && MaxDate < value)
+        var maxDate = GetMaxDate();
+        if (maxDate.HasValue && maxDate < value)
         {
-            value = MaxDate.Value;
+            value = maxDate.Value;
         }
 
         // Everything the calendar shows - the month it opens on, the time in the time picker - belongs
@@ -1361,6 +1406,28 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
         if (IsDayDisabled(selectedDate)) return;
+
+        // Selecting the selected day again deselects it (AllowDeselect). The callout stays open - the
+        // user just emptied the value, so the calendar is exactly what they need to pick another one.
+        if (AllowDeselect && IsSelectedDate(selectedDate))
+        {
+            var year = _culture.Calendar.GetYear(selectedDate);
+            var month = _culture.Calendar.GetMonth(selectedDate);
+
+            _focusedDate = selectedDate;
+
+            CurrentValue = null;
+
+            // Clearing the value resets the calendar onto today (OnSetParameters), but the user is
+            // still looking at the month of the day they just deselected, so it is put back on screen.
+            _currentYear = year;
+            _currentMonth = month;
+            GenerateMonthData(_currentYear, _currentMonth);
+
+            await OnSelectDate.InvokeAsync(null);
+
+            return;
+        }
 
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
@@ -1440,15 +1507,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // The bounds are truncated to their day: what this returns is a day of the calendar, and a time of
         // day carried over from MinDate would both miss the day cell _focusedDate is matched against and
         // be added on top of the hour and minute the time picker contributes in SelectDate.
-        if (MinDate.HasValue)
+        var min = GetMinDate();
+        if (min.HasValue)
         {
-            var minDate = GetDateTime(MinDate.Value).Date;
+            var minDate = GetDateTime(min.Value).Date;
             if (date < minDate && _culture.Calendar.GetMonth(minDate) == month) return minDate;
         }
 
-        if (MaxDate.HasValue)
+        var max = GetMaxDate();
+        if (max.HasValue)
         {
-            var maxDate = GetDateTime(MaxDate.Value).Date;
+            var maxDate = GetDateTime(max.Value).Date;
             if (date > maxDate && _culture.Calendar.GetMonth(maxDate) == month) return maxDate;
         }
 
@@ -1874,9 +1943,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
             if (_currentYear == maxCalendarYear && _currentMonth >= maxCalendarMonth) return false;
 
-            if (MaxDate.HasValue)
+            var max = GetMaxDate();
+            if (max.HasValue)
             {
-                var maxDate = GetDateTime(MaxDate.Value);
+                var maxDate = GetDateTime(max.Value);
                 var maxDateYear = _culture.Calendar.GetYear(maxDate);
                 var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
@@ -1888,9 +1958,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             var (minCalendarYear, minCalendarMonth) = GetMinCalendarYearMonth();
             if (_currentYear == minCalendarYear && _currentMonth <= minCalendarMonth) return false;
 
-            if (MinDate.HasValue)
+            var min = GetMinDate();
+            if (min.HasValue)
             {
-                var minDate = GetDateTime(MinDate.Value);
+                var minDate = GetDateTime(min.Value);
                 var minDateYear = _culture.Calendar.GetYear(minDate);
                 var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
@@ -1908,9 +1979,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (isNext && _currentYear >= GetMaxCalendarYearMonth().Year) return false;
         if (isNext is false && _currentYear <= GetMinCalendarYearMonth().Year) return false;
 
+        var maxDate = GetMaxDate();
+        var minDate = GetMinDate();
+
         return (
-                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) == _currentYear) ||
-                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MinDate.Value)) == _currentYear)
+                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) == _currentYear) ||
+                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) == _currentYear)
                ) is false;
     }
 
@@ -1921,24 +1995,49 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (isNext && GetMaxCalendarYearMonth().Year < _yearPickerStartYear + 12) return false;
         if (isNext is false && GetMinCalendarYearMonth().Year >= _yearPickerStartYear) return false;
 
+        var maxDate = GetMaxDate();
+        var minDate = GetMinDate();
+
         return (
-                (isNext && MaxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)) < _yearPickerStartYear + 12) ||
-                (isNext is false && MinDate.HasValue && _culture.Calendar.GetYear(GetDateTime(MinDate.Value)) >= _yearPickerStartYear)
+                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) < _yearPickerStartYear + 12) ||
+                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) >= _yearPickerStartYear)
                ) is false;
+    }
+
+    // DisablePast and DisableFuture bound the selectable days by today exactly the way MinDate and
+    // MaxDate do, so every consumer of the allowed range reads the bounds through these two accessors.
+    private DateTimeOffset? GetMinDate()
+    {
+        if (DisablePast is false) return MinDate;
+
+        var now = GetNow();
+
+        return MinDate.HasValue && MinDate.Value > now ? MinDate : now;
+    }
+
+    private DateTimeOffset? GetMaxDate()
+    {
+        if (DisableFuture is false) return MaxDate;
+
+        var now = GetNow();
+
+        return MaxDate.HasValue && MaxDate.Value < now ? MaxDate : now;
     }
 
     // Every caller weighs a day of the calendar, so the comparison is day against day: a MinDate that
     // carries a time of day rules out the days before it, not the day it itself falls on.
     private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)
     {
-        if (MaxDate.HasValue)
+        var maxDate = GetMaxDate();
+        if (maxDate.HasValue)
         {
-            if (date.Date > GetDateTime(MaxDate.Value).Date) return true;
+            if (date.Date > GetDateTime(maxDate.Value).Date) return true;
         }
 
-        if (MinDate.HasValue)
+        var minDate = GetMinDate();
+        if (minDate.HasValue)
         {
-            if (date.Date < GetDateTime(MinDate.Value).Date) return true;
+            if (date.Date < GetDateTime(minDate.Value).Date) return true;
         }
 
         return false;
@@ -1954,18 +2053,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         var (maxCalendarYear, maxCalendarMonth) = GetMaxCalendarYearMonth();
         if (_currentYear > maxCalendarYear || (_currentYear == maxCalendarYear && month > maxCalendarMonth)) return true;
 
-        if (MaxDate.HasValue)
+        var max = GetMaxDate();
+        if (max.HasValue)
         {
-            var maxDate = GetDateTime(MaxDate.Value);
+            var maxDate = GetDateTime(max.Value);
             var maxDateYear = _culture.Calendar.GetYear(maxDate);
             var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
 
             if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
         }
 
-        if (MinDate.HasValue)
+        var min = GetMinDate();
+        if (min.HasValue)
         {
-            var minDate = GetDateTime(MinDate.Value);
+            var minDate = GetDateTime(min.Value);
             var minDateYear = _culture.Calendar.GetYear(minDate);
             var minDateMonth = _culture.Calendar.GetMonth(minDate);
 
@@ -1977,12 +2078,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsYearOutOfMinAndMaxDate(int year)
     {
+        var maxDate = GetMaxDate();
+        var minDate = GetMinDate();
+
         // The years outside of the calendar's own supported range are as unselectable as the ones
         // outside of MinDate and MaxDate - the year picker can show them at the edges of its ranges.
         return year < GetMinCalendarYearMonth().Year
             || year > GetMaxCalendarYearMonth().Year
-            || (MaxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(MaxDate.Value)))
-            || (MinDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(MinDate.Value)));
+            || (maxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(maxDate.Value)))
+            || (minDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(minDate.Value)));
     }
 
     private void CheckCurrentCalendarMatchesCurrentValue()
@@ -2041,7 +2145,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         }
 
         //Is today
-        if (month == _currentMonth && date == GetToday().Date)
+        if (HighlightToday && month == _currentMonth && date == GetToday().Date)
         {
             klass.Append(" bit-dtp-dtd");
 
@@ -2807,8 +2911,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             isRtl: IsRtl(),
             scrollContainerId: "",
             scrollOffset: 0,
-            headerId: "",
-            footerId: "",
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: MAX_WIDTH);

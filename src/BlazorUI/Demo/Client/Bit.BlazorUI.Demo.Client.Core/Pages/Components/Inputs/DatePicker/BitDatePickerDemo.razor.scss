@@ -41,6 +41,20 @@
         color: red;
     }
 
+    .callout-header {
+        font-weight: 600;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    .callout-footer {
+        display: flex;
+        padding: 0.25rem;
+        justify-content: space-around;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;

@@ -53,6 +53,18 @@ public class BitDatePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header wrapper of the callout of the BitDatePicker,
+    /// rendered when a CalloutHeaderTemplate is provided.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer wrapper of the callout of the BitDatePicker,
+    /// rendered when a CalloutFooterTemplate is provided.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the group of the BitDatePicker.
     /// </summary>
     public string? Group { get; set; }
