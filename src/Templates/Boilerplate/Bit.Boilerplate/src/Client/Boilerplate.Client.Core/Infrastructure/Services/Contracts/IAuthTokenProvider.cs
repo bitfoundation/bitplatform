@@ -42,6 +42,9 @@ public interface IAuthTokenProvider
     {
         var parsedClaims = DeserializeAccessToken(accessToken);
 
+        if (parsedClaims is null)
+            return null;
+
         if (validateExpiry)
         {
             if (parsedClaims.TryGetValue("exp", out var exp) is false ||
@@ -82,7 +85,7 @@ public interface IAuthTokenProvider
         return claims;
     }
 
-    private static Dictionary<string, JsonElement> DeserializeAccessToken(string accessToken)
+    private static Dictionary<string, JsonElement>? DeserializeAccessToken(string accessToken)
     {
         // Split the token to get the payload
         string base64UrlPayload = accessToken.Split('.')[1];
@@ -94,7 +97,7 @@ public interface IAuthTokenProvider
         string jsonPayload = Encoding.UTF8.GetString(Convert.FromBase64String(base64Payload));
 
         // Deserialize the JSON string to a dictionary
-        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.Options.GetTypeInfo<Dictionary<string, JsonElement>>())!;
+        var claims = JsonSerializer.Deserialize(jsonPayload, AppJsonContext.Default.Options.GetTypeInfo<Dictionary<string, JsonElement>>());
 
         return claims;
     }

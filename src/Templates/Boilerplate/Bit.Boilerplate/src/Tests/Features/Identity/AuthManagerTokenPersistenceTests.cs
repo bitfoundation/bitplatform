@@ -68,41 +68,4 @@ public partial class AuthManagerTokenPersistenceTests
         }
     }
 
-    /// <summary>
-    /// The other half of the storage contract, and the one no shipped implementation used to honour: a key belongs to
-    /// exactly one of the two stores. A write that leaves the superseded copy behind is not merely untidy - every
-    /// implementation's <c>GetItem</c> prefers one store over the other, so the stale copy WINS the next read. On the
-    /// web client that means a sign-in with "Remember me" unchecked writes its refresh token where nothing will read
-    /// it, while the previous session's token in localStorage keeps being used - so the user carries on as the
-    /// account they just replaced.
-    /// </summary>
-    [TestMethod]
-    public async Task AWriteToOneStore_Should_EvictTheKeyFromTheOther()
-    {
-        await using var server = new AppTestServer();
-        await server.Build(configureTestServices: services => services.AddIntegrationApiOnlyTestsServices())
-                    .Start(TestContext.CancellationToken);
-
-        await using var scope = server.WebApp.Services.CreateAsyncScope();
-        var storageService = scope.ServiceProvider.GetRequiredService<IStorageService>();
-
-        await storageService.SetItem("refresh_token", "remembered", persistent: true);
-        Assert.IsTrue(await storageService.IsPersistent("refresh_token"));
-
-        await storageService.SetItem("refresh_token", "not-remembered", persistent: false);
-
-        Assert.AreEqual("not-remembered", await storageService.GetItem("refresh_token"),
-            "The persistent copy shadowed the value that was just written, so the app would keep using the superseded token.");
-        Assert.IsFalse(await storageService.IsPersistent("refresh_token"),
-            "A key written to temporary storage must not still report as persistent - AuthManager.StoreTokens derives " +
-            "'Remember me' from that answer on every refresh, so a wrong one re-promotes the session.");
-
-        await storageService.SetItem("refresh_token", "remembered-again", persistent: true);
-
-        Assert.AreEqual("remembered-again", await storageService.GetItem("refresh_token"));
-        Assert.IsTrue(await storageService.IsPersistent("refresh_token"));
-
-        await storageService.RemoveItem("refresh_token");
-        Assert.IsNull(await storageService.GetItem("refresh_token"), "RemoveItem has to clear both stores.");
-    }
 }

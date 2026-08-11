@@ -48,7 +48,35 @@ public partial class ResponseCachePolicyClientCacheTests
             "A response the server filtered by the caller's tenant claim must not be storable in a URL keyed private " +
             "cache, or the next person to use this browser profile is served this tenant's rows.");
 
-        Assert.Contains("Client:-1", httpContext.Response.Headers["App-Cache-Response"].ToString());
+        Assert.IsNull(httpContext.Response.GetTypedHeaders().CacheControl?.SharedMaxAge,
+            "Nor in the CDN edge: the Tenant dimension is a VaryByValues entry, which never becomes a response " +
+            "header, so an edge keyed on the URL would hand this tenant's rows to the next one.");
+
+        var decision = httpContext.Response.Headers["App-Cache-Response"].ToString();
+        Assert.Contains("Client:-1", decision);
+        Assert.Contains("Edge:-1", decision);
+        // The output cache is the one cache that CAN see the Tenant dimension, so it stays enabled - otherwise this
+        // rule would be a blanket pessimisation rather than a carve-out.
+        Assert.DoesNotContain("Output:-1", decision);
+    }
+
+    /// <summary>
+    /// The same reasoning one step out: <c>UserAgnostic = false</c> declares that the body depends on the caller, and
+    /// the two private caches are no more per-user than the shared ones - one browser profile and one running app each
+    /// span every user who signs in on that device. No shipped endpoint sets that combination today; this pins the
+    /// decision surface the attribute's own documentation points template consumers at.
+    /// </summary>
+    [TestMethod]
+    public async Task AnAuthenticatedCallerOfANonUserAgnosticEndpoint_Should_NotGetAClientMaxAge()
+    {
+        var httpContext = await RunPolicy(tenantId: null, authenticated: true, userAgnostic: false);
+
+        Assert.IsNull(httpContext.Response.GetTypedHeaders().CacheControl?.MaxAge);
+
+        var decision = httpContext.Response.Headers["App-Cache-Response"].ToString();
+        Assert.Contains("Client:-1", decision);
+        Assert.Contains("Edge:-1", decision);
+        Assert.Contains("Output:-1", decision);
     }
 
     /// <summary>
@@ -56,7 +84,7 @@ public partial class ResponseCachePolicyClientCacheTests
     /// was found on: <c>UserAgnostic</c> (so the authenticated downgrade for the shared caches does not fire) with a
     /// five minute <c>MaxAge</c>, outside Development (which would zero every client ttl on its own).
     /// </summary>
-    private static async Task<HttpContext> RunPolicy(Guid? tenantId)
+    private static async Task<HttpContext> RunPolicy(Guid? tenantId, bool authenticated = false, bool userAgnostic = true)
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "https";
@@ -65,13 +93,13 @@ public partial class ResponseCachePolicyClientCacheTests
 
         httpContext.SetEndpoint(new Endpoint(
             requestDelegate: null,
-            new EndpointMetadataCollection(new AppResponseCacheAttribute { MaxAge = MaxAgeSeconds, UserAgnostic = true }),
+            new EndpointMetadataCollection(new AppResponseCacheAttribute { MaxAge = MaxAgeSeconds, UserAgnostic = userAgnostic }),
             displayName: nameof(ResponseCachePolicyClientCacheTests)));
 
-        if (tenantId is not null)
+        if (tenantId is not null || authenticated)
         {
-            httpContext.User = new(new ClaimsIdentity(
-                [new Claim(AppClaimTypes.TENANT_ID, tenantId.Value.ToString())], authenticationType: "Bearer"));
+            Claim[] claims = tenantId is null ? [] : [new Claim(AppClaimTypes.TENANT_ID, tenantId.Value.ToString())];
+            httpContext.User = new(new ClaimsIdentity(claims, authenticationType: "Bearer"));
         }
 
         var policy = new AppResponseCachePolicy(new ProductionEnvironment(), new ServerSharedSettings());

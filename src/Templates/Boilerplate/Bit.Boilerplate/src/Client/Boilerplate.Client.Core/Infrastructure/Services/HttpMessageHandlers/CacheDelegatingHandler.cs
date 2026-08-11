@@ -77,7 +77,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, IAuthTokenProvid
         if (user.IsAuthenticated())
         {
             //#if (multitenant == true)
-            identity = FormattableString.Invariant($"{identity}-{user.GetTenantId()}");
+            identity = FormattableString.Invariant($"{user.GetUserId()}-{user.GetTenantId()}");
             //#else
             identity = user.GetUserId().ToString();
             //#endif
