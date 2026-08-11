@@ -37,6 +37,24 @@
 }
 
 ::deep {
+    .sunday-cell {
+        color: red;
+    }
+
+    .callout-header {
+        font-weight: 600;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid $bit-color-border-secondary;
+    }
+
+    .callout-footer {
+        display: flex;
+        padding: 0.25rem;
+        justify-content: space-around;
+        border-top: 1px solid $bit-color-border-secondary;
+    }
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;
@@ -132,6 +150,11 @@
     .custom-today-day {
         color: #211e1b;
         background-color: blueviolet;
+    }
+
+    .custom-highlighted-day {
+        border-color: violet;
+        background-color: #ee82ee40;
     }
 
     .custom-selected-day {
