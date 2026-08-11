@@ -1789,6 +1789,26 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerClearButtonShouldClearTheValueAndFireOnClear()
+    {
+        var onClearCount = 0;
+        DateTimeOffset? value = DateTimeOffset.Now;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, v => value = v);
+            parameters.Add(p => p.OnClear, () => onClearCount++);
+        });
+
+        component.Find(".bit-dtp-clr").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, onClearCount);
+    }
+
+    [TestMethod]
     public void BitDatePickerTimePickerInputsShouldHaveAccessibleNames()
     {
         var component = RenderComponent<BitDatePicker>(parameters =>

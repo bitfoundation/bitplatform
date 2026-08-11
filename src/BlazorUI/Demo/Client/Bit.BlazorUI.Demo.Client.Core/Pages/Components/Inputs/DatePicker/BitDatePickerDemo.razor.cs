@@ -191,6 +191,15 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum"
+        },
+        new()
+        {
             Name = "FirstDayOfWeek",
             Type = "DayOfWeek?",
             DefaultValue = "null",
@@ -528,6 +537,12 @@ public partial class BitDatePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the next-year-range navigation button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "The callback that is called when the value gets cleared by the clear button."
         },
         new()
         {
@@ -1651,6 +1666,27 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Description = "The direction determined automatically based on the available spaces in all directions.",
+                    Value = "0"
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Description = "Show the callout at the top or bottom side.",
+                    Value = "1"
+                }
+            ]
+        },
+        new()
+        {
             Id = "datepicker-mode-enum",
             Name = "BitDatePickerMode",
             Description = "",
@@ -1697,6 +1733,7 @@ public partial class BitDatePickerDemo
     private BitDatePicker? presetsPicker;
 
     private int clickCount;
+    private int clearCount;
     private int focusInCount;
     private int focusOutCount;
     private DateTimeOffset? displayedMonth;

@@ -7,7 +7,7 @@
             Description="A BitDatePicker offers a drop-down calendar for picking a date, or a date and time, with any culture and time zone and full keyboard accessibility." />
 
 <DemoPage Name="DatePicker"
-          Description="A BitDatePicker offers a drop-down control that's optimized for picking a single date from a calendar view, where contextual information like the day of the week or the fullness of the calendar is important. It provides day, month, and year views, an optional time picker, and flexible day rules such as min/max dates, disabled and highlighted dates, a custom first day of the week, and week numbers. It works with any culture and time zone, including right-to-left and non-Gregorian calendars, accepts typed input, can be customized through templates for its label, icon, cells, and callout header and footer, and is fully keyboard accessible following the WAI-ARIA combobox and grid patterns."
+          Description="A BitDatePicker offers a drop-down control that's optimized for picking a single date from a calendar view, where contextual information like the day of the week or the fullness of the calendar is important. It provides day, month, and year views, an optional time picker, and flexible day rules such as min/max dates and disabled or highlighted dates. It works with any culture and time zone, including right-to-left and non-Gregorian calendars, accepts typed input, is customizable through templates, and is fully keyboard accessible following the WAI-ARIA combobox and grid patterns."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -468,8 +468,9 @@
         <div>
             <b>OnSelectDate</b> reports every date the user picks, <b>OnMonthChange</b> reports the first day of the
             month the calendar navigates to (through the nav buttons, the month/year pickers, GoToToday, or the
-            keyboard), which is ideal for lazy-loading the data of the visible month, and <b>OnClick</b>,
-            <b>OnFocusIn</b>, and <b>OnFocusOut</b> report the interactions with the input.
+            keyboard), which is ideal for lazy-loading the data of the visible month, <b>OnClick</b>,
+            <b>OnFocusIn</b>, and <b>OnFocusOut</b> report the interactions with the input, and <b>OnClear</b>
+            reports the value getting cleared by the clear button.
         </div>
         <br />
         <div class="example-content">
@@ -480,14 +481,17 @@
             <div>Selected date: @(selectedDateEvent?.ToString() ?? "-")</div>
             <div>Displayed month: @(displayedMonth?.ToString("MMMM yyyy") ?? "-")</div>
             <br /><br />
-            <BitDatePicker Label="OnClick & OnFocusIn & OnFocusOut"
+            <BitDatePicker Label="OnClick & OnFocusIn & OnFocusOut & OnClear"
+                           ShowClearButton
                            OnClick="() => clickCount++"
                            OnFocusIn="() => focusInCount++"
-                           OnFocusOut="() => focusOutCount++" />
+                           OnFocusOut="() => focusOutCount++"
+                           OnClear="() => clearCount++" />
             <br />
             <div>Clicked: @clickCount times</div>
             <div>Focused in: @focusInCount times</div>
             <div>Focused out: @focusOutCount times</div>
+            <div>Cleared: @clearCount times</div>
         </div>
     </DemoExample>
 

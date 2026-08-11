@@ -258,6 +258,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public bool DisablePast { get; set; }
 
     /// <summary>
+    /// Determines the allowed drop directions of the callout.
+    /// </summary>
+    [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
+
+    /// <summary>
     /// Overrides the first day of the week of the day picker. If not set, the first day of the week
     /// of the <see cref="Culture"/> is used.
     /// </summary>
@@ -525,6 +530,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The name of the next-year-range navigation button's icon from the built-in Fluent UI icon set.
     /// </summary>
     [Parameter] public string? NextYearRangeNavIconName { get; set; }
+
+    /// <summary>
+    /// The callback that is called when the value gets cleared by the clear button.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
 
     /// <summary>
     /// The callback for clicking on the DatePicker's input.
@@ -1344,7 +1354,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _minute = 0;
         _focusedDate = null;
 
-        await InputElement.FocusAsync();
+        try
+        {
+            await InputElement.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        await OnClear.InvokeAsync();
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -2241,7 +2257,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         // A day the calendar itself cannot represent is not selectable (nor focusable) at all - the
         // supported range of a calendar does not have to cover the whole range of DateTime.
-        if (date < _culture.Calendar.MinSupportedDateTime.Date || date > _culture.Calendar.MaxSupportedDateTime) return true;
+        if (date < _culture.Calendar.MinSupportedDateTime.Date || date > _culture.Calendar.MaxSupportedDateTime.Date) return true;
 
         if (IsWeekDayOutOfMinAndMaxDate(date)) return true;
 
@@ -2693,14 +2709,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
-        await _js.BitUtilsSelectText(_inputTimeHourRef);
+        try
+        {
+            await _js.BitUtilsSelectText(_inputTimeHourRef);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnTimeMinuteFocus()
     {
         if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
 
-        await _js.BitUtilsSelectText(_inputTimeMinuteRef);
+        try
+        {
+            await _js.BitUtilsSelectText(_inputTimeMinuteRef);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnAmClick()
@@ -2905,7 +2929,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             overlayId: _overlayId,
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
-            dropDirection: BitDropDirection.TopAndBottom,
+            dropDirection: DropDirection,
             // The same direction the callout renders in (bit-dtp-rtl covers the culture-implied RTL
             // as well), so the positioning matches the layout.
             isRtl: IsRtl(),

@@ -340,15 +340,19 @@ private async Task SelectPreset(int days)
 <div>Selected date: @(selectedDateEvent?.ToString() ?? ""-"")</div>
 <div>Displayed month: @(displayedMonth?.ToString(""MMMM yyyy"") ?? ""-"")</div>
 
-<BitDatePicker Label=""OnClick & OnFocusIn & OnFocusOut""
+<BitDatePicker Label=""OnClick & OnFocusIn & OnFocusOut & OnClear""
+               ShowClearButton
                OnClick=""() => clickCount++""
                OnFocusIn=""() => focusInCount++""
-               OnFocusOut=""() => focusOutCount++"" />
+               OnFocusOut=""() => focusOutCount++""
+               OnClear=""() => clearCount++"" />
 <div>Clicked: @clickCount times</div>
 <div>Focused in: @focusInCount times</div>
-<div>Focused out: @focusOutCount times</div>";
+<div>Focused out: @focusOutCount times</div>
+<div>Cleared: @clearCount times</div>";
     private readonly string example19CsharpCode = @"
 private int clickCount;
+private int clearCount;
 private int focusInCount;
 private int focusOutCount;
 private DateTimeOffset? displayedMonth;
