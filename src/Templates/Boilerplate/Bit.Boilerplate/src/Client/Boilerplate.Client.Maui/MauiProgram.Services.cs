@@ -8,6 +8,7 @@ using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Options;
 using Boilerplate.Client.Maui.Infrastructure.Services;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -49,10 +50,7 @@ public static partial class MauiProgram
             services.AddSingleton<IStorageService, MauiStorageService>();
             var settings = new ClientMauiSettings();
             configuration.Bind(settings);
-            services.AddSingleton(sp =>
-            {
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientMauiSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             services.AddSingleton<ILocalHttpServer, MauiLocalHttpServer>();
 

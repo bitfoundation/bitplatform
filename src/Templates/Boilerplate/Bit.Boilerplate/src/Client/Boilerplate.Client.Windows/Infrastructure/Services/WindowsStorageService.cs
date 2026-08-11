@@ -47,8 +47,8 @@ public partial class WindowsStorageService : IStorageService
         persistentStorage ??= await Restore();
 
         // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
-        // the previous value where GetItem still reads it - and since Preferences wins there (it is the value, the temp
-        // entry is only the default), a temporary write would be shadowed by the persistent value it supersedes.
+        // the previous value where GetItem still reads it - and since GetItem reads tempStorage first, a persistent
+        // write would be shadowed by the temporary value it supersedes.
         if (persistent)
         {
             tempStorage.Remove(key);

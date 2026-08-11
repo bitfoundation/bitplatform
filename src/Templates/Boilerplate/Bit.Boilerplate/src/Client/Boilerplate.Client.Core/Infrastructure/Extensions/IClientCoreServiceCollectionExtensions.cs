@@ -4,6 +4,7 @@ using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Boilerplate.Client.Core;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 //#if (signalR == true)
@@ -63,12 +64,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
             services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-            services.AddSingleton(sp =>
-            {
-                ClientCoreSettings settings = new();
-                configuration.Bind(settings);
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
