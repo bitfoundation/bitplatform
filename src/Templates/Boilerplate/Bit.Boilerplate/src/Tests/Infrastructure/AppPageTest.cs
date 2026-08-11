@@ -1,3 +1,5 @@
+using Microsoft.Playwright.TestAdapter;
+
 namespace Boilerplate.Tests.Infrastructure;
 
 // Every UI test drives a real browser, so running them concurrently starves weak CI runners and shows up as Playwright timeouts.
@@ -20,6 +22,30 @@ public class AppPageTest : PageTest
     protected async Task SetBlazorWebAssemblyServerAddress(Uri serverAddress, IBrowserContext context)
     {
         await context.AddInitScriptAsync($"window.startupParams = function() {{ return [ 'ServerAddress={serverAddress}' ]; }};");
+    }
+
+    /// <summary>
+    /// Runs the headless tests on <c>chromium-headless-shell</c> - the small headless-only build that plain
+    /// <c>Headless = true</c> used to mean before Playwright 1.49 made the <c>chromium</c> channel launch the real Chrome
+    /// browser in its new headless mode. The shell is what the suite actually needs and is markedly cheaper.
+    /// </summary>
+    public override async Task<BrowserTypeLaunchOptions?> LaunchOptionsAsync()
+    {
+        var options = new BrowserTypeLaunchOptions(PlaywrightSettingsProvider.LaunchOptions);
+
+        // The shell has no UI at all, so a debugging run must keep the full browser. .runsettings documents both switches.
+        var isHeadedRun = options.Headless is false
+            || Environment.GetEnvironmentVariable("HEADED") is "1"
+            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PWDEBUG")) is false;
+
+        // The channel names a chromium build, so it must not be handed to a firefox / webkit run (See .runsettings' BROWSER).
+        // Qualified because the inherited BrowserType property (an IBrowserType) shadows the type of the same name.
+        if (isHeadedRun is false && PlaywrightSettingsProvider.BrowserName is Microsoft.Playwright.BrowserType.Chromium)
+        {
+            options.Channel = "chromium-headless-shell";
+        }
+
+        return options;
     }
 
     /// <summary>

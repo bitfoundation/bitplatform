@@ -452,6 +452,102 @@ public class TemplateConfigurationTests
     private static readonly string[] toolingOnlyDirectories = [".vs", ".vscode", ".idea", ".playwright-mcp", "App_Data", "node_modules"];
 
     /// <summary>
+    /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
+    /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
+    /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one
+    /// such line anywhere in the tree means <c>dotnet new bit-bp</c> produces no project at all, and the local build
+    /// and the local test run both stay green because inside the template every directive is just a comment.
+    /// <para>
+    /// This has now happened twice: once in a doc comment that quoted a directive (the file shipped truncated at that
+    /// line), and once in <c>Assert.DoesNotContain("#if", ...)</c>, which took the whole generation down. Measured
+    /// with one-file throwaway templates: <c>"#if"</c> is fatal, <c>"//#if"</c> is fatal, a bare <c>"#endif"</c> is
+    /// harmless, and both <c>"#" + "if"</c> and a <c>-:cnd:noEmit</c> region are safe.
+    /// </para>
+    /// <para>
+    /// The escape hatch is the marker pair - <c>-:cnd:noEmit</c> turns conditional processing off and
+    /// <c>+:cnd:noEmit</c> turns it back on - which is what <c>ServerSharedSettings.cs</c> already uses around its
+    /// real C# <c>#if Development</c> block, and what the top of this very file uses for the whole file.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void NoFileMayCarryALiteralHashIfOutsideAConditionalProcessingOffRegion()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+        template?.Dispose();
+
+        List<string> offenders = [];
+
+        foreach (var file in EnumerateTemplateFiles(templateRoot))
+        {
+            var lines = File.ReadAllLines(file);
+            var processingOn = true;
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+
+                // A marker occupies its own line, after the host's comment opener and nothing else - which is what
+                // keeps prose that merely NAMES a marker (like the doc comment above) from flipping the state.
+                var marker = processingMarker.Match(line);
+                if (marker.Success)
+                {
+                    processingOn = marker.Groups["onOff"].Value is "+";
+                    continue;
+                }
+
+                if (processingOn is false)
+                    continue;
+
+                var firstOccurrence = line.IndexOf(OpenDirectiveText, StringComparison.Ordinal);
+                if (firstOccurrence < 0)
+                    continue;
+
+                // The engine stops at the FIRST occurrence, so it is that one which has to be a real directive: a line
+                // that opens with the literal inside a string and only then carries a valid conditional is still fatal,
+                // and the valid one must not excuse it. A real template conditional also carries a non-blank
+                // parenthesized condition - an empty one is as fatal as no parentheses at all - while a real C#
+                // preprocessor directive is the bare keyword plus a symbol at the start of a line.
+                var conditional = conditionalDirective.Match(line, firstOccurrence);
+                if (conditional.Success && conditional.Index == firstOccurrence
+                    && string.IsNullOrWhiteSpace(conditional.Groups["condition"].Value) is false)
+                    continue;
+
+                var preprocessor = csharpPreprocessorDirective.Match(line);
+                if (preprocessor.Success && preprocessor.Index + preprocessor.Value.IndexOf(OpenDirectiveText, StringComparison.Ordinal) == firstOccurrence)
+                    continue;
+
+                offenders.Add($"{Path.GetRelativePath(templateRoot, file)}:{i + 1}: {line.Trim()}");
+            }
+        }
+
+        Assert.IsEmpty(offenders,
+            $"""
+             These lines carry the literal directive-opening text outside a `-:cnd:noEmit` region. Each one either
+             aborts `dotnet new` or silently truncates its file from that point on. Wrap the line in a
+             `-:cnd:noEmit` / `+:cnd:noEmit` pair, or split the literal so the two characters are never adjacent:
+             {string.Join(Environment.NewLine, offenders)}
+             """);
+    }
+
+    /// <summary>
+    /// Assembled at runtime so that this file - which is the one place that must talk about the directive - does not
+    /// itself contain the literal text and trip the very rule it enforces. The whole file is already covered by the
+    /// <c>-:cnd:noEmit</c> on line 1, but this keeps the guard true even if that marker is ever removed.
+    /// </summary>
+    private static readonly string OpenDirectiveText = "#" + "if";
+
+    /// <summary>
+    /// Matches C#'s own preprocessor directives, which are never parenthesized, unlike template conditionals.
+    /// </summary>
+    private static readonly Regex csharpPreprocessorDirective = new(@"^\s*#(?:if|elif)\s+[A-Za-z_!(]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// A conditional-processing marker on a line of its own: an optional host comment opener, then <c>-</c> or
+    /// <c>+</c>, then the marker text. Anchored so that prose mentioning a marker is not mistaken for one.
+    /// </summary>
+    private static readonly Regex processingMarker = new(@"^\s*(?://|/\*|@\*|<!--|#)?\s*(?<onOff>[-+]):cnd:noEmit\s*(?:\*/|\*@|-->)?\s*$", RegexOptions.Compiled);
+
+    /// <summary>
     /// True when the entry is a wildcard glob this test deliberately does not judge, or when it names something that
     /// is really there.
     /// </summary>
