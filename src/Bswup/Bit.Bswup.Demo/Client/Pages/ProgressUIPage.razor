@@ -1,0 +1,176 @@
+﻿@page "/progress-ui"
+
+<PageTitle>Progress UI - bit Bswup</PageTitle>
+
+<h1>The Built-in Progress UI</h1>
+<p class="docs-lead">
+    Instead of writing a handler yourself, use the built-in splash/progress UI: the
+    <code>BswupProgress</code> Razor component (the markup) plus <code>bit-bswup.progress.js</code>
+    (the behavior). It registered the splash you saw when this site first installed.
+</p>
+
+<p>Reference both in your host document:</p>
+<CodeBlock Language="html" Code="@HostReferencesCode" />
+<p>Then render the component:</p>
+<CodeBlock Language="razor" Code="@ComponentCode" />
+
+<h2>Component parameters</h2>
+<p>
+    Each parameter maps to a <code>data-bit-bswup-*</code> attribute that the script reads at load time.
+    The component emits no inline <code>&lt;script&gt;</code>, so it works under a strict
+    Content-Security-Policy and when rendered by an interactive Blazor renderer.
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>AutoReload</code></td><td><code>false</code></td><td>Reload automatically when an update finishes instead of showing the reload button. <strong>Changed in v-10-6-0</strong> - previously defaulted to <code>true</code>.</td></tr>
+            <tr><td><code>ShowLogs</code></td><td><code>false</code></td><td>Log lifecycle messages to the console.</td></tr>
+            <tr><td><code>ShowAssets</code></td><td><code>false</code></td><td>List each downloaded asset inside the splash.</td></tr>
+            <tr><td><code>AppContainer</code></td><td><code>#app</code></td><td>Selector of the element to hide while installing (used with <code>HideApp</code>). An invalid selector is tolerated - only the hiding is skipped.</td></tr>
+            <tr><td><code>HideApp</code></td><td><code>false</code></td><td>Hide the app container while the first install downloads.</td></tr>
+            <tr><td><code>AutoHide</code></td><td><code>false</code></td><td>Hide the splash automatically when the download finishes.</td></tr>
+            <tr><td><code>Handler</code></td><td>-</td><td>Name of an additional custom handler invoked <em>after</em> the built-in handling, so you can layer your own behavior without replacing the UI. (Do not point it at <code>bitBswupHandler</code> itself - self-references are detected and ignored.)</td></tr>
+            <tr><td><code>ChildContent</code></td><td>-</td><td>Replaces the default splash markup with your own - see <a href="#custom-markup">below</a>.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Behavior worth knowing</h2>
+<ul>
+    <li>
+        The full-screen splash is <strong>first-install only</strong>. A background update downloads
+        silently behind the running app; when it finishes - or when an update is already staged at page
+        load - the reload button appears on its own, with a screen-reader announcement through a
+        <code>role="status"</code> region.
+    </li>
+    <li>
+        Clicks outside the splash content pass through the overlay, so an app force-started under a failure
+        panel stays usable.
+    </li>
+    <li>
+        A failure panel with retry appears for fatal first-install errors; deterministic failures
+        (an unparseable manifest, an integrity mismatch) hide the retry button since reloading would fail
+        identically.
+    </li>
+    <li>
+        Runtime toggles are available via
+        <code>BitBswupProgress.config({ autoReload, showLogs, showAssets, hideApp, autoHide })</code>.
+    </li>
+</ul>
+
+<h2 id="custom-markup">Custom splash content</h2>
+<p>
+    Pass <code>ChildContent</code> to replace the default splash markup. The component keeps initializing
+    automatically, and the built-in behavior drives your markup through the documented element ids -
+    include whichever you want driven:
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>Element id</th><th>Driven as</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>bit-bswup-progress-bar</code></td><td>Width + <code>aria-valuenow</code> set to the download percentage; the splash root also gets <code>--bit-bswup-percent</code> / <code>--bit-bswup-percent-text</code> CSS variables.</td></tr>
+            <tr><td><code>bit-bswup-percent</code></td><td>Text content set to <code>NN%</code>.</td></tr>
+            <tr><td><code>bit-bswup-assets</code></td><td>Each downloaded asset prepended as a list item.</td></tr>
+            <tr><td><code>bit-bswup-error</code> (+ <code>-message</code>, <code>-details</code>, <code>-retry</code>)</td><td>The failure panel for fatal first-install errors.</td></tr>
+            <tr><td><code>bit-bswup-reload</code> / <code>bit-bswup-reload-status</code></td><td>The update-ready button and its screen-reader status region.</td></tr>
+        </tbody>
+    </table>
+</div>
+<Callout Type="warning" Title="Don't render your own reload button">
+    The update-ready button (<code>#bit-bswup-reload</code>) and its status region are always rendered by
+    the component itself, <em>outside</em> the overlay, even with custom content - they are the only way a
+    finished update surfaces under the default <code>AutoReload="false"</code>. A custom splash should not
+    render its own copy of those two; restyle them by id instead.
+</Callout>
+
+<h2>Standalone WebAssembly apps</h2>
+<p>
+    In a standalone Blazor WebAssembly app the splash must exist <em>before</em> Blazor starts - on a first
+    install, Blazor only boots after the download completes - so the <code>BswupProgress</code> component
+    (which renders as part of the app) cannot paint the first-install splash. Hand-write the same markup in
+    <code>index.html</code> instead; <code>bit-bswup.progress.js</code> self-initializes from the
+    <code>data-bit-bswup-*</code> attributes exactly as it does for the component:
+</p>
+<CodeBlock Language="html" Code="@HandWrittenCode" />
+<Callout Type="note" Title="Two placement rules">
+    Keep <code>#bit-bswup-reload</code> and its status region <em>outside</em> the <code>#bit-bswup</code>
+    overlay (a finished background update must surface the button without revealing the splash), and give
+    the button its own <code>z-index</code> if your app has fixed chrome in the top-right corner.
+</Callout>
+
+<h2>Prerendered Blazor Web Apps (like this site)</h2>
+<p>
+    A Blazor Web App renders its host document (<code>Components/App.razor</code>) on the server, so the
+    hand-written workaround above is unnecessary: drop <code>&lt;BswupProgress /&gt;</code> straight into
+    <code>App.razor</code>, outside the interactive render-mode boundary. It is statically rendered, which
+    puts its markup - and the <code>data-bit-bswup-*</code> configuration
+    <code>bit-bswup.progress.js</code> reads - in the very first HTML the browser receives, before any
+    script runs. This is what this site does; view source on any page for a complete working example.
+</p>
+<CodeBlock Language="html" Code="@HostComponentCode" />
+
+<div class="pager">
+    <a href="events">
+        <span class="pager-label">Previous</span>
+        <b>← Events &amp; Handler</b>
+    </a>
+    <a class="pager-next" href="javascript-api">
+        <span class="pager-label">Next</span>
+        <b>JavaScript API →</b>
+    </a>
+</div>
+
+@code {
+    private const string HostReferencesCode = @"<link rel=""stylesheet"" href=""_content/Bit.Bswup/bit-bswup.progress.css"" />
+...
+<script src=""_content/Bit.Bswup/bit-bswup.js"" ...></script>
+<script src=""_content/Bit.Bswup/bit-bswup.progress.js""></script>";
+
+    private const string ComponentCode = @"<BswupProgress AutoReload=""false"" ShowAssets=""true"" HideApp=""true"" AutoHide=""true"" />";
+
+    // The '@' in the @rendermode attribute below needs no escaping: this is a C# verbatim
+    // string inside a @code block, which Razor hands to the C# tokenizer as-is (an '@@' here
+    // would render as two literal '@' characters, not one).
+    private const string HostComponentCode = @"<body>
+    <!-- Statically rendered: present before blazor.web.js (and the app) start. -->
+    <BswupProgress AutoReload=""false"" HideApp=""true"" AutoHide=""true"" AppContainer=""#app"" />
+
+    <div id=""app"">
+        <Routes @rendermode=""renderMode"" />
+    </div>
+
+    <script src=""_framework/blazor.web.js"" autostart=""false""></script>
+    <script src=""_content/Bit.Bswup/bit-bswup.js"" scope=""/"" sw=""service-worker.js""></script>
+    <script src=""_content/Bit.Bswup/bit-bswup.progress.js""></script>
+</body>";
+
+    private const string HandWrittenCode = @"<div id=""bit-bswup""
+     data-bit-bswup-config=""true""
+     data-bit-bswup-auto-reload=""false""
+     data-bit-bswup-hide-app=""true""
+     data-bit-bswup-auto-hide=""true""
+     data-bit-bswup-handler=""myExtraHandler"">
+    <div class=""bit-bswup-container"">
+        <p class=""bit-bswup-title"">Installing the app</p>
+        <div class=""bit-bswup-progress"">
+            <div id=""bit-bswup-progress-bar"" role=""progressbar"" aria-label=""Update download progress""
+                 aria-valuemin=""0"" aria-valuemax=""100"" aria-valuenow=""0"" style=""width: 0%""></div>
+        </div>
+        <p id=""bit-bswup-percent"">0%</p>
+        <div id=""bit-bswup-error"" class=""bit-bswup-error"" style=""display: none;"" role=""alert"">
+            <p class=""bit-bswup-error-title"">Update failed to install</p>
+            <p id=""bit-bswup-error-message"" class=""bit-bswup-error-message""></p>
+            <pre id=""bit-bswup-error-details"" class=""bit-bswup-error-details""></pre>
+            <button id=""bit-bswup-error-retry"" type=""button"">Retry</button>
+        </div>
+    </div>
+</div>
+<!-- OUTSIDE the overlay: -->
+<button id=""bit-bswup-reload"" type=""button"" style=""display: none;"">Update ready - reload</button>
+<span id=""bit-bswup-reload-status"" role=""status"" class=""bit-bswup-visually-hidden""></span>";
+}

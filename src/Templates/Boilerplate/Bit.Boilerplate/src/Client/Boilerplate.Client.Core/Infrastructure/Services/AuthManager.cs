@@ -84,21 +84,60 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     private SemaphoreSlim semaphore = new(1, 1);
     private TaskCompletionSource<string?>? accessTokenTsc = null;
 
-    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreServerConnectionException = false
+    /// <summary>
+    /// Gets a new access token from the server, and is the way the app performs <b>anything that changes the user's
+    /// claims without signing in again</b> - not only renewing an expired token:
+    /// <list type="bullet">
+    /// <item>a plain renewal, when the current access token is expired or about to be (See AuthDelegatingHandler).</item>
+    /// <item>raising the session to an <b>elevated (privileged)</b> one, by passing the token the user received by
+    /// e-mail / sms (See <see cref="RequestElevatedAccess"/>).</item>
+    /// <item><b>switching the active tenant</b>, by passing the id of the tenant to enter (See SwitchTenant).</item>
+    /// </list>
+    /// They all go through this one method because the server answers all of them from the same endpoint: it validates
+    /// the refresh token, applies whatever the request asked for, and returns a new access token carrying the resulting
+    /// claims - which is also why the returned token, not the boolean the caller gets back, is the source of truth for
+    /// what actually happened. Anything added later that changes the claims of a signed-in user belongs here too.
+    /// <para>
+    /// Concurrent callers are de-duplicated: while a plain refresh is in flight, another plain refresh joins it instead
+    /// of issuing a second request. A call that carries arguments of its own never joins one, because it would
+    /// otherwise be handed an answer to somebody else's question - reporting success while its arguments were silently
+    /// dropped.
+    /// </para>
+    /// </summary>
+    /// <param name="requestedBy">Free text, for logs and error reports only. It has no effect on the request.</param>
+    public Task<string?> RefreshToken(string requestedBy, string? elevatedAccessToken = null, bool ignoreTransientException = false
         //#if (multitenant == true)
         , Guid? requestedTenantId = null // The id of the tenant the user is trying to switch into.
                                          //#endif
         )
     {
-        if (accessTokenTsc is null)
+        // Only an argument-less refresh may be de-duplicated. A caller asking for something SPECIFIC - a tenant to
+        // switch into, or an elevated access token - must get its own request, otherwise its arguments are silently
+        // dropped and it is handed the result of somebody else's plain refresh (and told it succeeded).
+        var hasRequestOfItsOwn = elevatedAccessToken is not null
+            //#if (multitenant == true)
+            || requestedTenantId is not null
+            //#endif
+            ;
+
+        if (hasRequestOfItsOwn is false && accessTokenTsc is not null)
+            return accessTokenTsc.Task;
+
+        // RunContinuationsAsynchronously is load bearing: without it SetResult below resumes the awaiting caller
+        // synchronously, in the middle of this method, so the `finally` that clears the field has not run yet - and a
+        // caller that awaits one refresh and immediately starts another finds a non-null, already-completed field.
+        var tsc = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        if (hasRequestOfItsOwn is false)
         {
-            accessTokenTsc = new();
-            _ = RefreshTokenImplementation();
+            accessTokenTsc = tsc;
         }
 
-        return accessTokenTsc.Task;
+        _ = RefreshTokenImplementation(tsc);
 
-        async Task RefreshTokenImplementation()
+        return tsc.Task;
+
+        async Task RefreshTokenImplementation(TaskCompletionSource<string?> currentTsc)
         {
             try
             {
@@ -119,11 +158,11 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         //#endif
                     }, default);
                     await StoreTokens(refreshTokenResponse);
-                    accessTokenTsc.SetResult(refreshTokenResponse.AccessToken!);
+                    currentTsc.SetResult(refreshTokenResponse.AccessToken!);
                 }
                 catch (Exception exp)
                 {
-                    if (exp is not TransientException || ignoreServerConnectionException is false)
+                    if (exp is not TransientException || ignoreTransientException is false)
                     {
                         exceptionHandler.Handle(exp, parameters: new()
                         {
@@ -137,12 +176,17 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         await ClearTokens();
                     }
 
-                    accessTokenTsc.SetResult(null);
+                    currentTsc.SetResult(null);
                 }
             }
             finally
             {
-                accessTokenTsc = null;
+                // Only if this call is still the one the field points at - a request with arguments of its own never
+                // owned the field, and must not clear a plain refresh that started in the meantime.
+                if (ReferenceEquals(accessTokenTsc, currentTsc))
+                {
+                    accessTokenTsc = null;
+                }
                 semaphore.Release();
             }
         }
@@ -192,10 +236,6 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
         if (string.IsNullOrEmpty(token))
             return false;
 
-        if (accessTokenTsc != null)
-        {
-            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
-        }
         var accessToken = await RefreshToken(requestedBy: "RequestElevatedAccess", token);
         return string.IsNullOrEmpty(accessToken) is false;
     }
@@ -207,18 +247,13 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
     /// </summary>
     public async Task<bool> SwitchTenant(Guid tenantId, CancellationToken cancellationToken)
     {
-        if (accessTokenTsc != null)
-        {
-            await accessTokenTsc.Task; // Wait for any ongoing token refresh to complete.
-        }
-
         var accessToken = await RefreshToken(requestedBy: "SwitchTenant", requestedTenantId: tenantId);
 
         return string.IsNullOrEmpty(accessToken) is false;
     }
     //#endif
 
-    public async Task<string?> GetFreshAccessToken(string requestedBy, bool ignoreServerConnectionException = false)
+    public async Task<string?> GetFreshAccessToken(string requestedBy, bool ignoreTransientException = false)
     {
         var accessToken = await tokenProvider.GetAccessToken();
 
@@ -229,7 +264,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         if (isValid) return accessToken;
 
-        return await RefreshToken(requestedBy, ignoreServerConnectionException: ignoreServerConnectionException);
+        return await RefreshToken(requestedBy, ignoreTransientException: ignoreTransientException);
     }
 
     private async Task ClearTokens()

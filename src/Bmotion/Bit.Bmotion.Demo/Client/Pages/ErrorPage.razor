@@ -1,0 +1,15 @@
+﻿@page "/Error"
+
+@* Target of app.UseExceptionHandler("/Error") in the host's Program.cs. It lives in the client
+   project on purpose: Routes.razor binds the router to this assembly only, so a page placed in
+   the host project would never be matched and the re-executed request would end in a 404. *@
+
+<PageTitle>Error - Bit.Bmotion</PageTitle>
+
+<div class="page-hero">
+    <h1>500</h1>
+    <p role="alert">
+        An error occurred while processing your request. Head back to the
+        <a href="/">demos home</a> and try again.
+    </p>
+</div>

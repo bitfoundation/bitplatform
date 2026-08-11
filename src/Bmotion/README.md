@@ -635,7 +635,7 @@ Scroll-linked animations compose end-to-end:
 
 ## Examples
 
-See the `Demos` samples app for runnable examples of basic animations, gestures, springs,
+See the `Demo` samples app for runnable examples of basic animations, gestures, springs,
 drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
 (FLIP) animations, scroll-linked motion values and programmatic control.
 

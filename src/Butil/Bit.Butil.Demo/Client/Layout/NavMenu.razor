@@ -1,0 +1,56 @@
+﻿@if (_open)
+{
+    <div class="scrim" @onclick="Close"></div>
+}
+
+<nav class="sidebar @(_open ? "open" : "")">
+    <a class="sidebar-brand" href="" @onclick="Close">
+        <img src="icon-512.png" alt="bit platform logo">
+        <span>
+            <span class="title">Butil</span><br />
+        </span>
+    </a>
+
+    <div class="sidebar-search">
+        <input aria-label="Filter APIs" placeholder="Filter APIs..." @bind="_filter" @bind:event="oninput" />
+    </div>
+
+    <div class="sidebar-nav">
+        <div class="group-label">Overview</div>
+        <NavLink href="" Match="NavLinkMatch.All" @onclick="Close">
+            <span class="ico">🏠</span>
+            <span>Home</span>
+        </NavLink>
+        <NavLink href="getting-started" Match="NavLinkMatch.All" @onclick="Close">
+            <span class="ico">🚀</span>
+            <span>Getting started</span>
+        </NavLink>
+
+        @foreach (var group in DocsNav.Groups)
+        {
+            var links = group.Links.Where(Match).ToList();
+            if (links.Count == 0) continue;
+
+            <div class="group-label">@group.Title</div>
+            @foreach (var link in links)
+            {
+                <NavLink href="@link.Url" Match="NavLinkMatch.All" @onclick="Close">
+                    <span class="ico">@link.Icon</span>
+                    <span>@link.Title</span>
+                </NavLink>
+            }
+        }
+    </div>
+</nav>
+
+@code {
+    private bool _open;
+    private string _filter = "";
+
+    public void Toggle() { _open = !_open; StateHasChanged(); }
+    public void Close() { _open = false; StateHasChanged(); }
+
+    private bool Match(DocLink link) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+}

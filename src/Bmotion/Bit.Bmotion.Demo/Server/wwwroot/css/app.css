@@ -1,0 +1,53 @@
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1:focus {
+    outline: none;
+}
+
+h1:focus-visible {
+    outline: 2px solid #0071c1;
+    outline-offset: 2px;
+}
+
+a, .btn-link {
+    color: #0071c1;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+/* No .loading-progress rules here on purpose: the app is prerendered, so the first paint is the
+   real page rather than a boot spinner. The nav shows a "loading" hint while the WebAssembly
+   runtime downloads - see .bm-hydrating in motion-samples.css. */
+
+code {
+    color: #c02d76;
+}

@@ -41,14 +41,15 @@ public sealed class FileWatcherService : IDisposable
 
         var logger = app.Services.GetRequiredService<ILogger<FileWatcherService>>();
 
-        // Environment.CurrentDirectory is the Server.Web project's directory during development, so ../../ is the solution's src directory.
-        var srcDirectory = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, "../../"));
+        var srcDirectory = FindSrcDirectory();
 
-        if (Directory.Exists(srcDirectory) is false)
+        if (srcDirectory is null)
         {
-            logger.LogWarning("{Directory} not found, no source file is watched", srcDirectory);
+            logger.LogWarning("No src directory was found above {Directory}, so no source file is watched", AppContext.BaseDirectory);
             return;
         }
+
+        var watchedProjects = 0;
 
         foreach (var projectPath in Directory.EnumerateFiles(srcDirectory, "*.csproj", SearchOption.AllDirectories))
         {
@@ -73,8 +74,44 @@ public sealed class FileWatcherService : IDisposable
                 watcherService.Watch(pattern, targets);
             }
 
+            watchedProjects++;
+
             logger.LogInformation("Watching {Patterns} of {Project}", string.Join(", ", watchList.Select(item => item.Pattern)), projectPath);
         }
+
+        if (watchedProjects is 0)
+        {
+            // Otherwise this service says nothing at all and the developer's scss / ts / resx edits simply stop being
+            // compiled, which looks like a broken build rather than a watcher that found nothing to watch.
+            logger.LogWarning("No project under {Directory} declares any of the {Targets} targets, so no source file is watched", srcDirectory, string.Join(", ", orderedTargets));
+        }
+    }
+
+    /// <summary>
+    /// The solution's src directory, found by walking up from this assembly's own location.
+    /// <para>
+    /// <see cref="Environment.CurrentDirectory"/> is not usable for this: <c>dotnet run --project</c> leaves it at the
+    /// invoking shell's directory, so a path derived from it can land on an arbitrary ancestor - and this service would
+    /// then walk that tree and run <c>dotnet build</c> against whatever projects it found there.
+    /// <see cref="AppContext.BaseDirectory"/> is always <c>&lt;project&gt;/bin/&lt;configuration&gt;/&lt;tfm&gt;</c>,
+    /// under every launch, which is why Program.cs takes the content root from it too.
+    /// </para>
+    /// </summary>
+    private static string? FindSrcDirectory()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            // Identified by the file only that directory carries, so a project directory that happens to be named src cannot match.
+            if (string.Equals(directory.Name, "src", StringComparison.OrdinalIgnoreCase) &&
+                File.Exists(Path.Combine(directory.FullName, "Directory.Build.props")))
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 
     private readonly ILogger<FileWatcherService> logger;

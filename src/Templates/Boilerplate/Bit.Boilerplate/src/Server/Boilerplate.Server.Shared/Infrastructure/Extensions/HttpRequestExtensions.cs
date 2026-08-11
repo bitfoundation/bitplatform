@@ -32,11 +32,22 @@ public static partial class HttpRequestExtensions
 
         public bool IsLightHouseRequest()
         {
+            return GetLoweredUserAgent(request).Contains("lighthouse");
+        }
+
+        public bool IsCrawlerClient()
+        {
             var agent = GetLoweredUserAgent(request);
 
             if (agent.Contains("google")) return true;
 
-            if (agent.Contains("lighthouse")) return true;
+            if (agent.Contains("bing")) return true;
+
+            if (agent.Contains("yahoo")) return true;
+
+            if (agent.Contains("duckduck")) return true;
+
+            if (agent.Contains("yandex")) return true;
 
             return false;
         }

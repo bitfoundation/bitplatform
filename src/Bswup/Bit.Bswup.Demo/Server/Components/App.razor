@@ -1,0 +1,116 @@
+@code {
+    [CascadingParameter] HttpContext HttpContext { get; set; } = default!;
+}
+
+@{
+    // Honors the Bswup service-worker "no-prerender" escape hatch (self.noPrerenderQuery in
+    // wwwroot/service-worker*.js): the worker fetches the app shell with this query attached so
+    // the copy it caches is route-agnostic. Without it the cached shell would be the prerendered
+    // HOME page, and every offline deep link would flash home content before the router
+    // corrected it. Interactive WebAssembly either way - only the prerendered pass is skipped.
+    var noPrerender = HttpContext.Request.Query["no-prerender"].Count > 0;
+    var renderMode = new InteractiveWebAssemblyRenderMode(prerender: !noPrerender);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <title>bit Bswup - Blazor Service Worker Update Progress</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps." />
+    <meta name="theme-color" content="#03173d" />
+    <link href="manifest.json" rel="manifest" />
+    <link rel="icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <script>
+        // Applied before first paint so the persisted theme never flashes.
+        (function () {
+            try {
+                var theme = localStorage.getItem('bswup-demo-theme');
+                if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            } catch (e) { }
+        })();
+    </script>
+    <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />
+    <link rel="stylesheet" href="app.css" />
+    <HeadOutlet @rendermode="@renderMode" />
+</head>
+
+<body>
+    @* The splash is the BswupProgress component rather than the hand-written markup the
+       standalone index.html carried. That workaround existed because a standalone Blazor
+       WebAssembly app has no server-rendered host document: on a first install Blazor only
+       boots after the download finishes, so a component-rendered splash would have appeared
+       too late. Here App.razor IS the host document and is rendered statically on the server,
+       so the component's markup - and the data-bit-bswup-* configuration bit-bswup.progress.js
+       self-initializes from - is in the first byte of HTML, before any script runs.
+
+       Rendered before the scripts below on purpose (the script's MutationObserver would pick
+       up a late element, but that is the fallback path). The parameters mirror the data-*
+       attributes index.html used, so behavior is unchanged. #bit-bswup-reload and its
+       screen-reader status region are NOT hand-written here: BswupProgress always renders
+       them itself, outside the overlay, and a second copy would be a duplicate id shadowing
+       the component's working button. *@
+    <BswupProgress AutoReload="false"
+                   ShowLogs="false"
+                   ShowAssets="false"
+                   AppContainer="#app"
+                   HideApp="true"
+                   AutoHide="true"
+                   Handler="bswupDemoHandler">
+        <div class="bit-bswup-container splash-container">
+            <img class="splash-logo" src="icon-512.png" alt="bit Bswup" width="80" height="80" />
+            <p class="bit-bswup-title">bit Bswup</p>
+            <p class="bit-bswup-description">Preparing the app for offline use, please wait...</p>
+            <div class="bit-bswup-progress">
+                <div id="bit-bswup-progress-bar"
+                     role="progressbar"
+                     aria-label="Update download progress"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     aria-valuenow="0"
+                     style="width: 0%"></div>
+            </div>
+            <p id="bit-bswup-percent">0%</p>
+            <ul id="bit-bswup-assets" style="display: none;"></ul>
+            <div id="bit-bswup-error" class="bit-bswup-error" style="display: none;" role="alert">
+                <p class="bit-bswup-error-title">Update failed to install</p>
+                <p id="bit-bswup-error-message" class="bit-bswup-error-message"></p>
+                <pre id="bit-bswup-error-details" class="bit-bswup-error-details"></pre>
+                <button id="bit-bswup-error-retry" type="button">Retry</button>
+            </div>
+        </div>
+    </BswupProgress>
+
+    @* Kept as a plain element (not the render-mode boundary itself) because BswupProgress
+       toggles its visibility by selector during a first install - see AppContainer above. *@
+    <div id="app">
+        <Routes @rendermode="@renderMode" />
+    </div>
+
+    <script src="demo.js"></script>
+    <script src="_framework/blazor.web.js" autostart="false"></script>
+    @* blazorScript is omitted on purpose: bit-bswup.js auto-detects both default entry scripts
+       (blazor.web.js and blazor.webassembly.js), fingerprints and query strings included - the
+       attribute is only needed for non-default script paths.
+
+       The docs site dogfoods Bswup itself: hourly update polling plus a check every time the
+       tab returns to the foreground. bit-bswup.progress.js registers the default
+       bitBswupHandler and drives the splash above; bswupDemoHandler (demo.js) is chained after
+       it - via the Handler parameter - to feed the Live Playground event log. *@
+    <script src="_content/Bit.Bswup/bit-bswup.js"
+            scope="/"
+            log="none"
+            sw="service-worker.js"
+            handler="bitBswupHandler"
+            updateInterval="3600"
+            updateOnVisibility="true"></script>
+    <script src="_content/Bit.Bswup/bit-bswup.progress.js"></script>
+</body>
+
+</html>

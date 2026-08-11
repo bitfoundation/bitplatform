@@ -1,6 +1,6 @@
 # Bit.Butil end-to-end tests
 
-NUnit + Microsoft.Playwright suite that boots `Bit.Butil.Demo.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via NUnit's MTP runner.
+NUnit + Microsoft.Playwright suite that boots `Bit.Butil.Samples.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via NUnit's MTP runner.
 
 ## First-time setup
 
@@ -46,7 +46,7 @@ dotnet test .\Bit.Butil.E2ETests.csproj
 
 ## Harness pages
 
-Two deterministic pages live in `Bit.Butil.Demo.Core/Pages`:
+Two deterministic pages live in `Bit.Butil.Samples.Core/Pages`:
 
 * `/e2e` - storage (round-trip, typed JSON, removeItem, length/key/containsKey, clear), cookie, crypto (UUID, random bytes, SHA-256, AES-GCM, AES-CBC, HMAC, ECDSA, PBKDF2), performance.now, window (base64, inner size, secure context, matchMedia), document (title, visibility/charset/url), location (href + protocol/pathname/origin), history (pushState, replaceState + state, scrollRestoration).
 * `/e2e-observers` - PerformanceObserver, performance mark/measure/getEntries/clearMarks, StorageManager, NetworkInformation, IntersectionObserver, ResizeObserver, MutationObserver, BroadcastChannel, IndexedDB, CacheStorage, Web Locks, Object URLs, CookieStore, navigator/userAgent/screen platform getters.

@@ -6,13 +6,16 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Demos/">
-    <Project Path="Demos/BasicDemo/Bit.Bswup.BasicDemo.csproj" />
+  <Folder Name="/Bit.Bswup.Demo/">
+    <Project Path="Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
+    <Project Path="Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
   </Folder>
-  <Folder Name="/Demos/FullDemo/">
-    <Project Path="Demos/FullDemo/Client/Bit.Bswup.FullDemo.Client.csproj" />
-    <Project Path="Demos/FullDemo/Server/Bit.Bswup.FullDemo.Server.csproj" />
+  <Folder Name="/Samples/">
+    <Project Path="Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />
+  </Folder>
+  <Folder Name="/Samples/FullSample/">
+    <Project Path="Samples/FullSample/Client/Bit.Bswup.FullSample.Client.csproj" />
+    <Project Path="Samples/FullSample/Server/Bit.Bswup.FullSample.Server.csproj" />
   </Folder>
   <Project Path="Bit.Bswup/Bit.Bswup.csproj" />
-  <Project Path="Bit.Bswup.Demo/Bit.Bswup.Demo.csproj" />
 </Solution>

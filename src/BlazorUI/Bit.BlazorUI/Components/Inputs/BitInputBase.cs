@@ -129,7 +129,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// <summary>
     /// Gives focus to the input element.
     /// </summary>
-    public ValueTask FocusAsync() => InputElement.FocusAsync();
+    /// <remarks>
+    /// Virtual so that an input whose value travels through an element the user never sees - a hidden field
+    /// standing in for a widget that is operated somewhere else entirely - can point the focus at the part
+    /// that is actually on the screen.
+    /// </remarks>
+    public virtual ValueTask FocusAsync() => InputElement.FocusAsync();
 
     /// <summary>
     /// Gives focus to the input element.
@@ -138,7 +143,8 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// the document to bring the newly-focused element into view. A value of false for preventScroll (the default)
     /// means that the browser will scroll the element into view after focusing it.
     /// If preventScroll is set to true, no scrolling will occur.</param>
-    public ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
+    /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
+    public virtual ValueTask FocusAsync(bool preventScroll) => InputElement.FocusAsync(preventScroll);
 
 
 

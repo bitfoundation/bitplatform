@@ -1,0 +1,711 @@
+@page "/element"
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<PageTitle>Element - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="Element"
+            Lead="Every Element and HTMLElement API as C# extension methods on Blazor's own ElementReference - no service to inject, no ids to invent. Capture a reference and call attributes, scrolling, layout metrics, pointer capture, fullscreen and DOM events straight from C#."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Element" />
+
+<Callout Type="info" Title="Extension methods, not a service">
+    Unlike most Butil APIs there is no <code>Element</code> class to inject. Capture any rendered element
+    with <code>@@ref</code> and the extension methods light up on the <code>ElementReference</code> itself.
+    Only the event subscription and observer extensions additionally need an <code>IJSRuntime</code> argument.
+</Callout>
+
+<div class="stack">
+<DemoSection Title="Attributes"
+             Api="GetAttribute / SetAttribute / HasAttribute / ToggleAttribute / RemoveAttribute / GetAttributeNames"
+             Description="Read, write, toggle and enumerate the attributes of the target element. ToggleAttribute is handy for boolean attributes such as hidden or disabled; pass force to pin the state instead of flipping it."
+             Code=@("""
+<div @ref="box" data-demo="butil">...</div>
+
+@code {
+    private ElementReference box;
+
+    private async Task InspectAttributes()
+    {
+        var has = await box.HasAttribute("data-demo");
+        var value = await box.GetAttribute("data-demo");
+        var names = await box.GetAttributeNames();
+
+        await box.SetAttribute("data-demo", "updated");
+        await box.ToggleAttribute("hidden", force: null);
+        await box.RemoveAttribute("data-demo");
+    }
+}
+""")
+             Language="razor">
+    <div @ref="targetRef" @onpointerdown="CapturePointerId" data-demo="butil"
+         style="padding:0.8rem 1rem;border:2px solid #6366f1;border-radius:8px;max-width:20rem;">
+        I am the target element - click me to record a pointer id.
+    </div>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">Attribute name</span>
+            <input @bind-value="attributeName" />
+        </div>
+        <div class="field">
+            <span class="field-label">Attribute value</span>
+            <input @bind-value="attributeValue" />
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="GetAttribute">GetAttribute</button>
+        <button @onclick="SetAttribute">SetAttribute</button>
+        <button class="secondary" @onclick="HasAttribute">HasAttribute</button>
+        <button class="secondary" @onclick="HasAttributes">HasAttributes</button>
+        <button class="secondary" @onclick="GetAttributeNames">GetAttributeNames</button>
+        <button class="secondary" @onclick="ToggleAttribute">ToggleAttribute</button>
+        <button class="danger" @onclick="RemoveAttribute">RemoveAttribute</button>
+    </div>
+    <DemoConsole @ref="attributesOutput" Title="attributes output" />
+</DemoSection>
+
+<DemoSection Title="Scrolling"
+             Api="Scroll / ScrollBy / ScrollIntoView"
+             Description="Scroll inside an element to absolute coordinates, scroll by a relative amount, or bring the element itself into the viewport. All three accept an options object with smooth, instant or auto behavior; ScrollIntoView additionally takes block and inline logical positions."
+             Code=@("""
+await box.Scroll(new ScrollOptions { Top = 120, Behavior = ScrollBehavior.Smooth });
+
+await box.ScrollBy(0, 48);
+
+await box.ScrollIntoView(new ScrollIntoViewOptions
+{
+    Behavior = ScrollBehavior.Smooth,
+    Block = ScrollLogicalPosition.Center,
+    Inline = ScrollLogicalPosition.Nearest,
+});
+""")>
+    <div @ref="scrollBoxRef"
+         style="height:8rem;max-width:20rem;overflow:auto;border:1px dashed #6366f1;border-radius:8px;padding:0.6rem;">
+        <div style="height:40rem;">
+            This box is 40rem tall on the inside - use the buttons below to scroll it from C#.
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="ScrollToTop">Scroll(top: 0)</button>
+        <button @onclick="ScrollToBottom">Scroll(top: 9999)</button>
+        <button class="secondary" @onclick="ScrollByAmount">ScrollBy(+48px)</button>
+        <button class="secondary" @onclick="ScrollIntoView">ScrollIntoView (center)</button>
+    </div>
+    <DemoConsole @ref="scrollingOutput" Title="scrolling output" />
+</DemoSection>
+
+<DemoSection Title="Layout metrics"
+             Api="GetBoundingClientRect / Client* / Offset* / Scroll* / GetTagName"
+             Description="Read the element's box-model geometry: the viewport-relative bounding rect, client sizes (padding box), offset sizes (border box and position within the offset parent), scroll sizes and offsets, and the tag name."
+             Code=@("""
+var rect = await box.GetBoundingClientRect(); // Rect { X, Y, Width, Height }
+
+var clientWidth = await box.GetClientWidth();
+var offsetHeight = await box.GetOffsetHeight();
+var scrollHeight = await box.GetScrollHeight();
+var scrollTop = await box.GetScrollTop();
+var tagName = await box.GetTagName();
+""")>
+    <div class="controls">
+        <button @onclick="GetBoundingClientRect">GetBoundingClientRect</button>
+        <button class="secondary" @onclick="GetClientMetrics">Client W/H/T/L</button>
+        <button class="secondary" @onclick="GetOffsetMetrics">Offset W/H/T/L</button>
+        <button class="secondary" @onclick="GetScrollMetrics">Scroll W/H/T/L</button>
+        <button class="secondary" @onclick="GetTagName">GetTagName</button>
+    </div>
+    <DemoConsole @ref="metricsOutput" Title="layout metrics output" />
+</DemoSection>
+
+<DemoSection Title="Focus and pointer capture"
+             Api="Blur / SetPointerCapture / HasPointerCapture / ReleasePointerCapture / RequestPointerLock"
+             Description="Blur removes keyboard focus from an element (for setting focus, Blazor's built-in ElementReference.FocusAsync already covers it). Pointer capture routes all subsequent pointer events to one element - the building block for custom drag interactions. RequestPointerLock hides the cursor and streams raw movement deltas, as games do."
+             Code=@("""
+await input.Blur();
+
+await box.SetPointerCapture(pointerId);
+var captured = await box.HasPointerCapture(pointerId);
+await box.ReleasePointerCapture(pointerId);
+
+await box.RequestPointerLock();
+""")>
+    <div class="field">
+        <span class="field-label">Focus this input, then press the Blur button</span>
+        <input @ref="blurInputRef" placeholder="focus me..." style="max-width:20rem;" />
+    </div>
+    <p class="section-desc">
+        Pointer id: <span class="kbd">@(pointerId == 0 ? "click the target element above first" : pointerId.ToString())</span>
+    </p>
+    <div class="controls">
+        <button @onclick="BlurInput">Blur</button>
+        <button class="secondary" @onclick="SetPointerCapture" disabled="@(pointerId == 0)">SetPointerCapture</button>
+        <button class="secondary" @onclick="HasPointerCapture" disabled="@(pointerId == 0)">HasPointerCapture</button>
+        <button class="secondary" @onclick="ReleasePointerCapture" disabled="@(pointerId == 0)">ReleasePointerCapture</button>
+        <button class="danger" @onclick="RequestPointerLock">RequestPointerLock</button>
+    </div>
+    <DemoConsole @ref="pointerOutput" Title="focus and pointer output" />
+</DemoSection>
+
+<DemoSection Title="Fullscreen"
+             Api="RequestFullScreen"
+             Description="Ask the browser to present the element fullscreen. The options object controls whether the browser keeps its navigation UI visible; press Escape to leave fullscreen again. Browsers only honor the request from a user gesture such as a click."
+             Code=@("""
+await box.RequestFullScreen(new FullScreenOptions
+{
+    NavigationUI = FullScreenNavigationUI.Show,
+});
+""")>
+    <div @ref="fullscreenRef"
+         style="padding:1rem;border:1px solid #6366f1;border-radius:8px;max-width:20rem;background:#1e1b4b;color:#e0e7ff;">
+        This panel goes fullscreen.
+    </div>
+    <div class="controls">
+        <button @onclick="RequestFullScreen">RequestFullScreen</button>
+    </div>
+    <DemoConsole @ref="fullscreenOutput" Title="fullscreen output" />
+</DemoSection>
+
+<DemoSection Title="Content and identity"
+             Api="Id / ClassName / InnerHtml / OuterHtml / InnerText / AccessKey / TabIndex"
+             Description="Get and set the element's id, class list, rendered text, raw markup, access key and tab order position. The InnerHtml and OuterHtml setters write markup verbatim - never feed them untrusted input."
+             Code=@("""
+await box.SetId("hero");
+await box.SetClassName("card highlighted");
+await box.SetInnerText("Hello from C#");
+await box.SetTabIndex(2);
+await box.SetAccessKey("k");
+
+var html = await box.GetInnerHtml();
+await box.SetInnerHtml("<strong>Trusted markup only!</strong>");
+var outer = await box.GetOuterHtml();
+""")>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">Id</span>
+            <input @bind-value="idValue" />
+        </div>
+        <div class="field">
+            <span class="field-label">ClassName</span>
+            <input @bind-value="className" />
+        </div>
+        <div class="field">
+            <span class="field-label">InnerText</span>
+            <input @bind-value="innerText" />
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="SetId">SetId</button>
+        <button @onclick="SetClassName">SetClassName</button>
+        <button @onclick="SetInnerText">SetInnerText</button>
+        <button class="secondary" @onclick="GetId">GetId</button>
+        <button class="secondary" @onclick="GetClassName">GetClassName</button>
+        <button class="secondary" @onclick="GetInnerText">GetInnerText</button>
+        <button class="secondary" @onclick="GetInnerHtml">GetInnerHtml</button>
+        <button class="secondary" @onclick="GetOuterHtml">GetOuterHtml</button>
+        <button class="secondary" @onclick="GetAccessKey">GetAccessKey</button>
+        <button class="secondary" @onclick="GetTabIndex">GetTabIndex</button>
+    </div>
+    <DemoConsole @ref="contentOutput" Title="content and identity output" />
+</DemoSection>
+
+<DemoSection Title="Editing and interaction modes"
+             Api="ContentEditable / IsContentEditable / Dir / EnterKeyHint / InputMode / Hidden / Inert"
+             Description="Toggle in-place editing, text direction, virtual-keyboard hints, visibility and inertness on the target element. After setting ContentEditable to True, click into the target element above and type."
+             Code=@("""
+await box.SetContentEditable(ContentEditable.True);
+var editable = await box.IsContentEditable();
+
+await box.SetDir(ElementDir.Rtl);
+await box.SetEnterKeyHint(EnterKeyHint.Send);
+await box.SetInputMode(InputMode.Numeric);
+await box.SetHidden(Hidden.UntilFound);
+await box.SetInert(true);
+""")>
+    <div class="field-row">
+        <div class="field">
+            <span class="field-label">ContentEditable</span>
+            <select @bind="contentEditable">
+                @foreach (ContentEditable option in Enum.GetValues<ContentEditable>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">Dir</span>
+            <select @bind="dir">
+                @foreach (ElementDir option in Enum.GetValues<ElementDir>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">EnterKeyHint</span>
+            <select @bind="enterKeyHint">
+                @foreach (EnterKeyHint option in Enum.GetValues<EnterKeyHint>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">InputMode</span>
+            <select @bind="inputMode">
+                @foreach (InputMode option in Enum.GetValues<InputMode>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+        <div class="field">
+            <span class="field-label">Hidden</span>
+            <select @bind="hidden">
+                @foreach (Hidden option in Enum.GetValues<Hidden>())
+                {
+                    <option value="@option">@option</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="controls">
+        <button @onclick="SetContentEditable">SetContentEditable</button>
+        <button @onclick="SetDir">SetDir</button>
+        <button @onclick="SetEnterKeyHint">SetEnterKeyHint</button>
+        <button @onclick="SetInputMode">SetInputMode</button>
+        <button @onclick="SetHidden">SetHidden</button>
+        <button class="secondary" @onclick="IsContentEditable">IsContentEditable</button>
+        <button class="secondary" @onclick="GetEditingState">Read all back</button>
+        <button class="secondary" @onclick="ToggleInert">Toggle Inert (now: @isInert)</button>
+    </div>
+    <DemoConsole @ref="editingOutput" Title="editing modes output" />
+</DemoSection>
+
+<DemoSection Title="DOM events"
+             Api="SubscribeEvent"
+             Description="Subscribe to any DOM event on the element with a strongly typed args class per event family - mouse, keyboard, pointer, touch, wheel, focus, input, drag, clipboard and composition. The generic argument must match the event: ButilEvents.Click pairs with ButilMouseEventArgs, ButilEvents.KeyDown with ButilKeyboardEventArgs, and so on. A second overload takes ButilEventListenerOptions for capture, passive and once semantics."
+             Code=@("""
+@inject IJSRuntime js
+
+private ButilSubscription? clickSub;
+
+clickSub = await box.SubscribeEvent<ButilMouseEventArgs>(
+    js, ButilEvents.Click, args => Console.WriteLine(args.OffsetX));
+
+// capture / passive / once via options:
+await input.SubscribeEvent<ButilKeyboardEventArgs>(
+    js, ButilEvents.KeyDown, args => Console.WriteLine(args.Key),
+    new ButilEventListenerOptions { Once = true });
+
+// element subscriptions must be disposed:
+await clickSub.DisposeAsync();
+""")>
+    <div @ref="eventsBoxRef"
+         style="padding:0.8rem 1rem;border:1px dashed #6366f1;border-radius:8px;max-width:20rem;">
+        Click target - subscribe below, then click me.
+    </div>
+    <div class="field">
+        <span class="field-label">Keydown target (the once listener fires a single time)</span>
+        <input @ref="eventsInputRef" placeholder="type here after subscribing..." style="max-width:20rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="SubscribeClick">Subscribe click</button>
+        <button @onclick="SubscribeKeyDownOnce">Subscribe keydown (once)</button>
+        <button class="danger" @onclick="UnsubscribeEvents">Dispose subscriptions</button>
+    </div>
+    <DemoConsole @ref="eventsOutput" Title="DOM events output" />
+</DemoSection>
+
+<DemoSection Title="Selector matching and removal"
+             Api="Matches / Remove"
+             Description="Matches tests the element against any CSS selector. Remove detaches the element from the DOM - reload the page to bring the demo target back."
+             Code=@("""
+var isMatch = await box.Matches("[data-demo]");
+
+await box.Remove(); // detaches the element from the DOM
+""")>
+    <div class="field">
+        <span class="field-label">CSS selector</span>
+        <input @bind-value="selector" style="max-width:20rem;" />
+    </div>
+    <div class="controls">
+        <button @onclick="Matches">Matches</button>
+        <button class="danger" @onclick="RemoveElement">Remove target element</button>
+    </div>
+    <DemoConsole @ref="selectorOutput" Title="selector output" />
+</DemoSection>
+</div>
+
+<Callout Type="warning" Title="Dispose element event subscriptions">
+    <code>SubscribeEvent</code> has no owning service to clean up after you: every subscription holds a
+    .NET object reference and a JS-side handler until its <code>ButilSubscription</code> is disposed.
+    Store the handle and dispose it in <code>DisposeAsync</code>, exactly as this page does.
+</Callout>
+
+<ApiTable Title="API reference (extension methods on ElementReference)">
+    <ApiMember Name="GetAttribute" Signature="ValueTask<string> GetAttribute(string name)" Description="Returns the value of the named attribute." />
+    <ApiMember Name="SetAttribute" Signature="ValueTask SetAttribute(string name, string value)" Description="Sets the named attribute. Values are written verbatim - validate untrusted input." />
+    <ApiMember Name="GetAttributeNames" Signature="ValueTask<string[]> GetAttributeNames()" Description="Returns the names of all attributes present on the element." />
+    <ApiMember Name="HasAttribute" Signature="ValueTask<bool> HasAttribute(string name)" Description="Whether the named attribute is present." />
+    <ApiMember Name="HasAttributes" Signature="ValueTask<bool> HasAttributes()" Description="Whether the element has any attributes at all." />
+    <ApiMember Name="ToggleAttribute" Signature="ValueTask<bool> ToggleAttribute(string name, bool? force)" Description="Toggles a boolean attribute; force pins it on (true) or off (false). Returns the resulting presence." />
+    <ApiMember Name="RemoveAttribute" Signature="ValueTask RemoveAttribute(string name)" Description="Removes the named attribute." />
+    <ApiMember Name="GetBoundingClientRect" Signature="ValueTask<Rect> GetBoundingClientRect()" Description="Size and viewport-relative position of the element." />
+    <ApiMember Name="Scroll" Signature="ValueTask Scroll(ScrollOptions? options)" Description="Scrolls the element to absolute coordinates with optional smooth behavior." />
+    <ApiMember Name="Scroll" Signature="ValueTask Scroll(double? x, double? y)" Description="Scrolls the element to the given coordinates." />
+    <ApiMember Name="ScrollBy" Signature="ValueTask ScrollBy(ScrollOptions? options)" Description="Scrolls the element by a relative amount with optional smooth behavior." />
+    <ApiMember Name="ScrollBy" Signature="ValueTask ScrollBy(double? x, double? y)" Description="Scrolls the element by the given relative amount." />
+    <ApiMember Name="ScrollIntoView" Signature="ValueTask ScrollIntoView()" Description="Scrolls the page until the element is visible." />
+    <ApiMember Name="ScrollIntoView" Signature="ValueTask ScrollIntoView(bool alignToTop)" Description="Scrolls the element into view, aligned to the top or bottom of the scrollport." />
+    <ApiMember Name="ScrollIntoView" Signature="ValueTask ScrollIntoView(ScrollIntoViewOptions options)" Description="Scrolls the element into view with behavior, block and inline positioning." />
+    <ApiMember Name="Blur" Signature="ValueTask Blur()" Description="Removes keyboard focus from the element." />
+    <ApiMember Name="SetPointerCapture" Signature="ValueTask SetPointerCapture(int pointerId)" Description="Routes future events of the given pointer to this element." />
+    <ApiMember Name="HasPointerCapture" Signature="ValueTask<bool> HasPointerCapture(int pointerId)" Description="Whether this element currently captures the given pointer." />
+    <ApiMember Name="ReleasePointerCapture" Signature="ValueTask ReleasePointerCapture(int pointerId)" Description="Releases a previously set pointer capture." />
+    <ApiMember Name="RequestPointerLock" Signature="ValueTask RequestPointerLock()" Description="Asynchronously asks for the pointer to be locked on the element." />
+    <ApiMember Name="RequestFullScreen" Signature="ValueTask RequestFullScreen(FullScreenOptions? options)" Description="Asks the browser to present the element fullscreen. The options parameter is required (pass null for defaults)." />
+    <ApiMember Name="Matches" Signature="ValueTask<bool> Matches(string selectors)" Description="Whether the element would be selected by the given CSS selector." />
+    <ApiMember Name="Remove" Signature="ValueTask Remove()" Description="Removes the element from its parent in the DOM." />
+    <ApiMember Name="GetId / SetId" Signature="ValueTask<string> GetId() · ValueTask SetId(string id)" Description="The element's id." />
+    <ApiMember Name="GetClassName / SetClassName" Signature="ValueTask<string> GetClassName() · ValueTask SetClassName(string className)" Description="The element's class attribute as a single string." />
+    <ApiMember Name="GetInnerHtml / SetInnerHtml" Signature="ValueTask<string> GetInnerHtml() · ValueTask SetInnerHtml(string innerHtml)" Description="The element's content markup. The setter bypasses Blazor encoding - trusted input only." />
+    <ApiMember Name="GetOuterHtml / SetOuterHtml" Signature="ValueTask<string> GetOuterHtml() · ValueTask SetOuterHtml(string outerHtml)" Description="The element's markup including itself. The setter replaces the element - trusted input only." />
+    <ApiMember Name="GetInnerText / SetInnerText" Signature="ValueTask<string> GetInnerText() · ValueTask SetInnerText(string value)" Description="The rendered text content of the element and its descendants." />
+    <ApiMember Name="GetAccessKey / SetAccessKey" Signature="ValueTask<string> GetAccessKey() · ValueTask SetAccessKey(string key)" Description="The keyboard access key assigned to the element." />
+    <ApiMember Name="GetTabIndex / SetTabIndex" Signature="ValueTask<int> GetTabIndex() · ValueTask SetTabIndex(int value)" Description="The element's position in the tabbing order." />
+    <ApiMember Name="GetClientHeight" Signature="ValueTask<float> GetClientHeight()" Description="Inner height (padding box) in px." />
+    <ApiMember Name="GetClientWidth" Signature="ValueTask<float> GetClientWidth()" Description="Inner width (padding box) in px." />
+    <ApiMember Name="GetClientTop" Signature="ValueTask<float> GetClientTop()" Description="Top border width in px." />
+    <ApiMember Name="GetClientLeft" Signature="ValueTask<float> GetClientLeft()" Description="Left border width in px." />
+    <ApiMember Name="GetOffsetHeight" Signature="ValueTask<float> GetOffsetHeight()" Description="Height including padding and borders in px." />
+    <ApiMember Name="GetOffsetWidth" Signature="ValueTask<float> GetOffsetWidth()" Description="Layout width including padding and borders in px." />
+    <ApiMember Name="GetOffsetTop" Signature="ValueTask<float> GetOffsetTop()" Description="Distance to the top of the offset parent in px." />
+    <ApiMember Name="GetOffsetLeft" Signature="ValueTask<float> GetOffsetLeft()" Description="Distance to the left of the offset parent in px." />
+    <ApiMember Name="GetScrollHeight" Signature="ValueTask<float> GetScrollHeight()" Description="Total scrollable height in px." />
+    <ApiMember Name="GetScrollWidth" Signature="ValueTask<float> GetScrollWidth()" Description="Total scrollable width in px." />
+    <ApiMember Name="GetScrollTop" Signature="ValueTask<float> GetScrollTop()" Description="Current vertical scroll offset in px." />
+    <ApiMember Name="GetScrollLeft" Signature="ValueTask<float> GetScrollLeft()" Description="Current horizontal scroll offset in px." />
+    <ApiMember Name="GetTagName" Signature="ValueTask<string> GetTagName()" Description="The element's tag name (uppercase for HTML elements)." />
+    <ApiMember Name="GetContentEditable / SetContentEditable" Signature="ValueTask<ContentEditable> GetContentEditable() · ValueTask SetContentEditable(ContentEditable value)" Description="Whether the element is editable: Inherit, True, False or PlainTextOnly." />
+    <ApiMember Name="IsContentEditable" Signature="ValueTask<bool> IsContentEditable()" Description="The effective (inherited) editability of the element." />
+    <ApiMember Name="GetDir / SetDir" Signature="ValueTask<ElementDir> GetDir() · ValueTask SetDir(ElementDir value)" Description="Text writing directionality: NotSet, Ltr, Rtl or Auto." />
+    <ApiMember Name="GetEnterKeyHint / SetEnterKeyHint" Signature="ValueTask<EnterKeyHint> GetEnterKeyHint() · ValueTask SetEnterKeyHint(EnterKeyHint value)" Description="The action label the virtual keyboard shows for the Enter key." />
+    <ApiMember Name="GetInputMode / SetInputMode" Signature="ValueTask<InputMode> GetInputMode() · ValueTask SetInputMode(InputMode value)" Description="The virtual keyboard type hint (numeric, email, tel, ...)." />
+    <ApiMember Name="GetHidden / SetHidden" Signature="ValueTask<Hidden> GetHidden() · ValueTask SetHidden(Hidden value)" Description="The hidden attribute: False, True or UntilFound." />
+    <ApiMember Name="GetInert / SetInert" Signature="ValueTask<bool> GetInert() · ValueTask SetInert(bool value)" Description="When true, the browser ignores all user input events for the element." />
+    <ApiMember Name="SubscribeEvent&lt;T&gt;" Signature="Task<ButilSubscription> SubscribeEvent<T>(IJSRuntime js, string domEvent, Action<T> listener, bool useCapture = false, bool preventDefault = false, bool stopPropagation = false)" Description="Subscribes a typed listener to a DOM event on the element. Dispose the returned handle to detach." />
+    <ApiMember Name="SubscribeEvent&lt;T&gt;" Signature="Task<ButilSubscription> SubscribeEvent<T>(IJSRuntime js, string domEvent, Action<T> listener, ButilEventListenerOptions options, bool preventDefault = false, bool stopPropagation = false)" Description="Overload with addEventListener options: Capture, Passive and Once." />
+</ApiTable>
+
+@code {
+    private DemoConsole attributesOutput = default!;
+    private DemoConsole scrollingOutput = default!;
+    private DemoConsole metricsOutput = default!;
+    private DemoConsole pointerOutput = default!;
+    private DemoConsole fullscreenOutput = default!;
+    private DemoConsole contentOutput = default!;
+    private DemoConsole editingOutput = default!;
+    private DemoConsole eventsOutput = default!;
+    private DemoConsole selectorOutput = default!;
+
+    private ElementReference targetRef;
+    private ElementReference scrollBoxRef;
+    private ElementReference fullscreenRef;
+    private ElementReference eventsBoxRef;
+    private ElementReference eventsInputRef;
+    private ElementReference blurInputRef;
+
+    private ButilSubscription? clickSub;
+    private ButilSubscription? keydownOnceSub;
+
+    private int pointerId;
+    private bool isInert;
+
+    private string attributeName = "data-demo";
+    private string attributeValue = "updated";
+    private string idValue = "butil-target";
+    private string className = "target-box";
+    private string innerText = "Rewritten from C#!";
+    private string selector = "[data-demo]";
+
+    private ContentEditable contentEditable = ContentEditable.True;
+    private ElementDir dir = ElementDir.Rtl;
+    private EnterKeyHint enterKeyHint = EnterKeyHint.Send;
+    private InputMode inputMode = InputMode.Numeric;
+    private Hidden hidden = Hidden.False;
+
+    private async Task Run(DemoConsole output, Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            await output.Error(ex.Message);
+        }
+    }
+
+    private void CapturePointerId(PointerEventArgs e) => pointerId = (int)e.PointerId;
+
+    // ─── Attributes ───────────────────────────────────────────────────────
+
+    private Task GetAttribute() => Run(attributesOutput, async () =>
+        await attributesOutput.Success($"GetAttribute(\"{attributeName}\") →", await targetRef.GetAttribute(attributeName)));
+
+    private Task SetAttribute() => Run(attributesOutput, async () =>
+    {
+        await targetRef.SetAttribute(attributeName, attributeValue);
+        await attributesOutput.Log($"SetAttribute(\"{attributeName}\", \"{attributeValue}\") done");
+    });
+
+    private Task HasAttribute() => Run(attributesOutput, async () =>
+        await attributesOutput.Success($"HasAttribute(\"{attributeName}\") →", await targetRef.HasAttribute(attributeName)));
+
+    private Task HasAttributes() => Run(attributesOutput, async () =>
+        await attributesOutput.Success("HasAttributes →", await targetRef.HasAttributes()));
+
+    private Task GetAttributeNames() => Run(attributesOutput, async () =>
+        await attributesOutput.Success("GetAttributeNames →", string.Join(", ", await targetRef.GetAttributeNames())));
+
+    private Task ToggleAttribute() => Run(attributesOutput, async () =>
+        await attributesOutput.Success($"ToggleAttribute(\"{attributeName}\") →", await targetRef.ToggleAttribute(attributeName, null)));
+
+    private Task RemoveAttribute() => Run(attributesOutput, async () =>
+    {
+        await targetRef.RemoveAttribute(attributeName);
+        await attributesOutput.Warn($"Attribute \"{attributeName}\" removed");
+    });
+
+    // ─── Scrolling ────────────────────────────────────────────────────────
+
+    private Task ScrollToTop() => Run(scrollingOutput, async () =>
+        await scrollBoxRef.Scroll(new ScrollOptions { Top = 0, Behavior = ScrollBehavior.Smooth }));
+
+    private Task ScrollToBottom() => Run(scrollingOutput, async () =>
+        await scrollBoxRef.Scroll(new ScrollOptions { Top = 9999, Behavior = ScrollBehavior.Smooth }));
+
+    private Task ScrollByAmount() => Run(scrollingOutput, async () =>
+        await scrollBoxRef.ScrollBy(new ScrollOptions { Top = 48, Behavior = ScrollBehavior.Smooth }));
+
+    private Task ScrollIntoView() => Run(scrollingOutput, async () =>
+        await scrollBoxRef.ScrollIntoView(new ScrollIntoViewOptions
+        {
+            Behavior = ScrollBehavior.Smooth,
+            Block = ScrollLogicalPosition.Center,
+            Inline = ScrollLogicalPosition.Nearest,
+        }));
+
+    // ─── Layout metrics ───────────────────────────────────────────────────
+
+    private Task GetBoundingClientRect() => Run(metricsOutput, async () =>
+        await metricsOutput.Success("GetBoundingClientRect →", await targetRef.GetBoundingClientRect()));
+
+    private Task GetClientMetrics() => Run(metricsOutput, async () =>
+        await metricsOutput.Success("Client →",
+            $"width={await targetRef.GetClientWidth()}, height={await targetRef.GetClientHeight()}, " +
+            $"top={await targetRef.GetClientTop()}, left={await targetRef.GetClientLeft()}"));
+
+    private Task GetOffsetMetrics() => Run(metricsOutput, async () =>
+        await metricsOutput.Success("Offset →",
+            $"width={await targetRef.GetOffsetWidth()}, height={await targetRef.GetOffsetHeight()}, " +
+            $"top={await targetRef.GetOffsetTop()}, left={await targetRef.GetOffsetLeft()}"));
+
+    private Task GetScrollMetrics() => Run(metricsOutput, async () =>
+        await metricsOutput.Success("Scroll →",
+            $"width={await scrollBoxRef.GetScrollWidth()}, height={await scrollBoxRef.GetScrollHeight()}, " +
+            $"top={await scrollBoxRef.GetScrollTop()}, left={await scrollBoxRef.GetScrollLeft()}"));
+
+    private Task GetTagName() => Run(metricsOutput, async () =>
+        await metricsOutput.Success("GetTagName →", await targetRef.GetTagName()));
+
+    // ─── Focus & pointer ──────────────────────────────────────────────────
+
+    private Task BlurInput() => Run(pointerOutput, async () =>
+    {
+        await blurInputRef.Blur();
+        await pointerOutput.Log("Blur() called on the input");
+    });
+
+    private Task SetPointerCapture() => Run(pointerOutput, async () =>
+    {
+        await targetRef.SetPointerCapture(pointerId);
+        await pointerOutput.Log($"Pointer {pointerId} captured");
+    });
+
+    private Task HasPointerCapture() => Run(pointerOutput, async () =>
+        await pointerOutput.Success($"HasPointerCapture({pointerId}) →", await targetRef.HasPointerCapture(pointerId)));
+
+    private Task ReleasePointerCapture() => Run(pointerOutput, async () =>
+    {
+        await targetRef.ReleasePointerCapture(pointerId);
+        await pointerOutput.Log($"Pointer {pointerId} capture released");
+    });
+
+    private Task RequestPointerLock() => Run(pointerOutput, async () =>
+    {
+        await targetRef.RequestPointerLock();
+        await pointerOutput.Log("Pointer locked - press Escape to release");
+    });
+
+    // ─── Fullscreen ───────────────────────────────────────────────────────
+
+    private Task RequestFullScreen() => Run(fullscreenOutput, async () =>
+    {
+        await fullscreenRef.RequestFullScreen(new FullScreenOptions { NavigationUI = FullScreenNavigationUI.Show });
+        await fullscreenOutput.Log("Fullscreen requested - press Escape to exit");
+    });
+
+    // ─── Content & identity ───────────────────────────────────────────────
+
+    private Task SetId() => Run(contentOutput, async () =>
+    {
+        await targetRef.SetId(idValue);
+        await contentOutput.Log($"Id set to \"{idValue}\"");
+    });
+
+    private Task GetId() => Run(contentOutput, async () => await contentOutput.Success("GetId →", await targetRef.GetId()));
+
+    private Task SetClassName() => Run(contentOutput, async () =>
+    {
+        await targetRef.SetClassName(className);
+        await contentOutput.Log($"ClassName set to \"{className}\"");
+    });
+
+    private Task GetClassName() => Run(contentOutput, async () => await contentOutput.Success("GetClassName →", await targetRef.GetClassName()));
+
+    private Task SetInnerText() => Run(contentOutput, async () =>
+    {
+        await targetRef.SetInnerText(innerText);
+        await contentOutput.Log("InnerText set");
+    });
+
+    private Task GetInnerText() => Run(contentOutput, async () => await contentOutput.Success("GetInnerText →", await targetRef.GetInnerText()));
+
+    private Task GetInnerHtml() => Run(contentOutput, async () => await contentOutput.Success("GetInnerHtml →", await targetRef.GetInnerHtml()));
+
+    private Task GetOuterHtml() => Run(contentOutput, async () => await contentOutput.Success("GetOuterHtml →", await targetRef.GetOuterHtml()));
+
+    private Task GetAccessKey() => Run(contentOutput, async () => await contentOutput.Success("GetAccessKey →", await targetRef.GetAccessKey()));
+
+    private Task GetTabIndex() => Run(contentOutput, async () => await contentOutput.Success("GetTabIndex →", await targetRef.GetTabIndex()));
+
+    // ─── Editing & modes ──────────────────────────────────────────────────
+
+    private Task SetContentEditable() => Run(editingOutput, async () =>
+    {
+        await targetRef.SetContentEditable(contentEditable);
+        await editingOutput.Log($"ContentEditable set to {contentEditable} - click the target and type");
+    });
+
+    private Task IsContentEditable() => Run(editingOutput, async () =>
+        await editingOutput.Success("IsContentEditable →", await targetRef.IsContentEditable()));
+
+    private Task SetDir() => Run(editingOutput, async () =>
+    {
+        await targetRef.SetDir(dir);
+        await editingOutput.Log($"Dir set to {dir}");
+    });
+
+    private Task SetEnterKeyHint() => Run(editingOutput, async () =>
+    {
+        await targetRef.SetEnterKeyHint(enterKeyHint);
+        await editingOutput.Log($"EnterKeyHint set to {enterKeyHint}");
+    });
+
+    private Task SetInputMode() => Run(editingOutput, async () =>
+    {
+        await targetRef.SetInputMode(inputMode);
+        await editingOutput.Log($"InputMode set to {inputMode}");
+    });
+
+    private Task SetHidden() => Run(editingOutput, async () =>
+    {
+        await targetRef.SetHidden(hidden);
+        await editingOutput.Log($"Hidden set to {hidden}");
+    });
+
+    private Task ToggleInert() => Run(editingOutput, async () =>
+    {
+        isInert = !isInert;
+        await targetRef.SetInert(isInert);
+        await editingOutput.Log($"Inert set to {isInert}");
+    });
+
+    private Task GetEditingState() => Run(editingOutput, async () =>
+        await editingOutput.Success("State →",
+            $"contentEditable={await targetRef.GetContentEditable()}, dir={await targetRef.GetDir()}, " +
+            $"enterKeyHint={await targetRef.GetEnterKeyHint()}, inputMode={await targetRef.GetInputMode()}, " +
+            $"hidden={await targetRef.GetHidden()}, inert={await targetRef.GetInert()}"));
+
+    // ─── DOM events ───────────────────────────────────────────────────────
+
+    private Task SubscribeClick() => Run(eventsOutput, async () =>
+    {
+        if (clickSub is not null)
+        {
+            await eventsOutput.Warn("Click listener is already attached");
+            return;
+        }
+
+        clickSub = await eventsBoxRef.SubscribeEvent<ButilMouseEventArgs>(js, ButilEvents.Click,
+            args => _ = eventsOutput.Log($"click → offset=({args.OffsetX:F0}, {args.OffsetY:F0}), ctrl={args.CtrlKey}, shift={args.ShiftKey}"));
+
+        await eventsOutput.Log("Subscribed to click - now click the target box");
+    });
+
+    private Task SubscribeKeyDownOnce() => Run(eventsOutput, async () =>
+    {
+        if (keydownOnceSub is not null)
+        {
+            await eventsOutput.Warn("Keydown listener is already attached");
+            return;
+        }
+
+        keydownOnceSub = await eventsInputRef.SubscribeEvent<ButilKeyboardEventArgs>(js, ButilEvents.KeyDown,
+            args => _ = eventsOutput.Log($"keydown (once) → key={args.Key}, code={args.Code}"),
+            new ButilEventListenerOptions { Once = true });
+
+        await eventsOutput.Log("Subscribed to keydown with Once = true - type in the input");
+    });
+
+    private Task UnsubscribeEvents() => Run(eventsOutput, async () =>
+    {
+        if (clickSub is not null)
+        {
+            await clickSub.DisposeAsync();
+            clickSub = null;
+        }
+
+        if (keydownOnceSub is not null)
+        {
+            await keydownOnceSub.DisposeAsync();
+            keydownOnceSub = null;
+        }
+
+        await eventsOutput.Warn("Event subscriptions disposed");
+    });
+
+    // ─── Matches & Remove ─────────────────────────────────────────────────
+
+    private Task Matches() => Run(selectorOutput, async () =>
+        await selectorOutput.Success($"Matches(\"{selector}\") →", await targetRef.Matches(selector)));
+
+    private Task RemoveElement() => Run(selectorOutput, async () =>
+    {
+        await targetRef.Remove();
+        await selectorOutput.Warn("Target element removed from the DOM - reload the page to restore it");
+    });
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (clickSub is not null) await clickSub.DisposeAsync();
+            if (keydownOnceSub is not null) await keydownOnceSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+}
