@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 using System.Text.Json;
 using System.Globalization;
 using Boilerplate.Shared.Infrastructure.Services;
@@ -39,6 +40,13 @@ public class DevRealmContractTests
 
         foreach (var groupName in groupNames)
         {
+            //#if (multitenant != true)
+            // One development realm is shared by every configuration, so it always carries the tenant-admin group.
+            // Without multi-tenancy AppRoles declares no TenantAdmin and that group simply grants nothing, which is
+            // harmless - not worth maintaining a second realm file for.
+            if (groupName is "t-admin") continue;
+            //#endif
+
             Assert.IsTrue(AppRoles.IsBuiltInRole(groupName),
                 $"The realm seeds users into the group '{groupName}', which is not a role this application declares "
                 + $"(see AppRoles). Those users would sign in with no permissions and no error.");

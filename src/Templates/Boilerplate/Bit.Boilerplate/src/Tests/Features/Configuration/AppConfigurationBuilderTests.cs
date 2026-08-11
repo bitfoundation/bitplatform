@@ -1,5 +1,6 @@
 using System.Reflection;
 
+//+:cnd:noEmit
 namespace Boilerplate.Tests.Features.Configuration;
 
 /// <summary>
