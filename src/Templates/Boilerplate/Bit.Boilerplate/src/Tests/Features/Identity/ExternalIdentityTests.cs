@@ -51,8 +51,6 @@ public partial class ExternalIdentityTests : AppPageTest
         {
             await Page.GetByTitle(AppStrings.KeycloakSignInButtonText).ClickAsync();
         });
-        keycloakLogin.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
-
         // Keycloak's standard username/password login form uses these stable element ids.
         await keycloakLogin.Locator("#username").FillAsync(RealmUserName);
         await keycloakLogin.Locator("#password").FillAsync(RealmPassword);
@@ -61,8 +59,7 @@ public partial class ExternalIdentityTests : AppPageTest
         // With valid credentials (this realm user has no required actions and the client needs no consent), Keycloak
         // redirects the popup back to the server's external sign-in callback, which hands the result to the opener window
         // through the web-interop page and closes the popup. The main page then completes the sign-in and redirects home.
-        await Expect(Page).ToHaveURLAsync(serverAddress.ToString(),
-            new() { Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        await Expect(Page).ToHaveURLAsync(serverAddress.ToString());
 
         // Keycloak users are created with their username as the full name (See IdentityController.ExternalSignInCallback),
         // so the header persona shows "alice" and the Sign in button is gone.
