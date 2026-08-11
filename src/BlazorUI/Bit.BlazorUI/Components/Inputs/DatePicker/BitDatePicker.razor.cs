@@ -2248,8 +2248,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private void BuildDatesLookups()
     {
-        _disabledDates = DisabledDates is null ? [] : DisabledDates.Select(d => GetDateTime(d).Date).ToHashSet();
-        _highlightedDates = HighlightedDates is null ? [] : HighlightedDates.Select(d => GetDateTime(d).Date).ToHashSet();
+        // Only the date part of each value counts, as supplied by the caller - converting the value
+        // into the picker's time zone first could shift it to the adjacent day and disable (or
+        // highlight) a different date than the one that was configured.
+        _disabledDates = DisabledDates is null ? [] : DisabledDates.Select(d => d.Date).ToHashSet();
+        _highlightedDates = HighlightedDates is null ? [] : HighlightedDates.Select(d => d.Date).ToHashSet();
         _disabledDaysOfWeek = DisabledDaysOfWeek is null ? [] : DisabledDaysOfWeek.ToHashSet();
     }
 

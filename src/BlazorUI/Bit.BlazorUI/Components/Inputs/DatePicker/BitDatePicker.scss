@@ -393,7 +393,7 @@
     position: relative;
     height: var(--bit-dtp-cell-size);
     display: inline-flex;
-    line-height: spacing(5.5);
+    line-height: var(--bit-dtp-cell-size);
 }
 
 .bit-dtp-tph {
