@@ -33,6 +33,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
+    [AutoInject] private AppAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
@@ -100,6 +101,8 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
             });
             //#endif
+
+            await accentColorService.InitializeAsync(); // Restores the persisted accent (main theme) color, if any.
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
