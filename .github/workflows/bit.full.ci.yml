@@ -103,7 +103,7 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
-      run: dotnet test --no-build
+      run: dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -216,7 +216,7 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-mssql-blazorserver
       working-directory: TestSqlServer/src/Tests
-      run: dotnet test --no-build
+      run: dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
