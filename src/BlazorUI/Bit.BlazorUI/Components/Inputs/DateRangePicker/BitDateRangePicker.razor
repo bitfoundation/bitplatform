@@ -187,7 +187,7 @@
 
                     <div style="@Styles?.DayPickerWrapper" class="bit-dtrp-dwp @Classes?.DayPickerWrapper">
                         <div style="@Styles?.DayPickerHeader" class="bit-dtrp-pkh @Classes?.DayPickerHeader">
-                            @if (isFirstMonth && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && ShowTimePickerAsOverlay is false)))
+                            @if (isFirstMonth && IsMonthPickerVisible && (_showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                             {
                                 var title = string.Format(MonthPickerToggleTitle, monthTitle);
                                 <button @onclick="@ToggleMonthPickerOverlay"

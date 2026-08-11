@@ -1408,6 +1408,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.Today, new DateTimeOffset(2020, 12, 4, 0, 0, 0, TimeSpan.Zero));
         });
@@ -1476,6 +1477,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.SelectedDateAriaAtomic, "Picked {0}");
             parameters.Add(p => p.ValueFormat, "{0}~{1}");
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
@@ -1513,6 +1515,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -1531,6 +1534,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -1548,6 +1552,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -1571,6 +1576,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -1589,6 +1595,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -1605,6 +1612,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
         });
@@ -1619,11 +1627,14 @@ public class BitDateRangePickerTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var isOpen = true;
-        var startDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(-15), DateTimeOffset.Now.Offset);
+        var today = FixedDate(2024, 3, 20);
+        var startDate = today.AddDays(-15);
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.Today, today);
             parameters.Add(p => p.MinRange, TimeSpan.FromDays(3));
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = startDate });
         });
@@ -2032,6 +2043,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.AutoClose, false);
             parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
@@ -2050,8 +2062,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         component.Find(".bit-dtrp-prb").Click();
 
-        Assert.IsTrue(component.Find(".bit-dtrp-pkt, .bit-dtrp-ptb").TextContent.Contains("2024"));
-        Assert.IsTrue(component.Find(".bit-dtrp-pkt, .bit-dtrp-ptb").TextContent.Contains("March"));
+        Assert.IsTrue(component.Find(".bit-dtrp-pkt, .bit-dtrp-ptb").TextContent.Contains(MonthTitle(2024, 3)));
     }
 
     [TestMethod]
@@ -2186,6 +2197,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = FixedDate(2024, 3, 10) });
@@ -2231,6 +2243,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = FixedDate(2024, 3, 10) });
@@ -2273,6 +2286,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.AutoClose, false);
             parameters.Add(p => p.MonthCount, 2);
@@ -2299,6 +2313,7 @@ public class BitDateRangePickerTests : BunitTestContext
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.AutoClose, false);
             parameters.Add(p => p.FirstDayOfWeek, DayOfWeek.Sunday);
@@ -2734,6 +2749,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2751,6 +2767,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2769,6 +2786,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2791,6 +2809,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2817,6 +2836,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2834,6 +2854,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2852,6 +2873,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
             parameters.Add(p => p.ValueFormat, "{0} - {1}");
@@ -2950,6 +2972,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.PagedNavigation, true);
@@ -2977,6 +3000,7 @@ public class BitDateRangePickerTests : BunitTestContext
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MonthCount, 2);
             parameters.Add(p => p.PagedNavigation, true);
@@ -3236,6 +3260,6 @@ public class BitDateRangePickerTests : BunitTestContext
 
     private static string MonthTitle(int year, int month)
     {
-        return $"{System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat.GetMonthName(month)} {year}";
+        return $"{CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(month)} {year}";
     }
 }

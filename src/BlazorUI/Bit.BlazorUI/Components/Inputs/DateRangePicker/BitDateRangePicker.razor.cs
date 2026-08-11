@@ -2507,7 +2507,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             }
         }
 
-        return _daysOfMonths[0][0, 0].GetValueOrDefault(today);
+        // Only an in-month cell can carry the tabindex, so the last resort still has to be one of them.
+        for (var week = 0; week < DEFAULT_WEEK_COUNT; week++)
+        {
+            for (var day = 0; day < DEFAULT_DAY_COUNT_PER_WEEK; day++)
+            {
+                var date = _daysOfMonths[0][week, day];
+                if (date.HasValue && IsInMonth(date.Value, 0)) return date.Value;
+            }
+        }
+
+        return today;
     }
 
     private bool IsFocusable(DateTime date)

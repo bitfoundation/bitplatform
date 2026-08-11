@@ -1,6 +1,20 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+// The root and the callout each carry their own disabled marker, so both dim the same content.
+@mixin dtrp-disabled-content {
+    .bit-dtrp-pkt,
+    .bit-dtrp-nbt,
+    .bit-dtrp-wlb,
+    .bit-dtrp-dbt,
+    .bit-dtrp-pkb,
+    .bit-dtrp-prb,
+    .bit-dtrp-ptb,
+    .bit-dtrp-tdv {
+        color: $clr-fg-dis;
+    }
+}
+
 .bit-dtrp {
     margin: 0;
     padding: 0;
@@ -35,16 +49,7 @@
             background: none $clr-bg-dis;
         }
 
-        .bit-dtrp-pkt,
-        .bit-dtrp-nbt,
-        .bit-dtrp-wlb,
-        .bit-dtrp-dbt,
-        .bit-dtrp-pkb,
-        .bit-dtrp-prb,
-        .bit-dtrp-ptb,
-        .bit-dtrp-tdv {
-            color: $clr-fg-dis;
-        }
+        @include dtrp-disabled-content;
     }
 
     &.bit-inv {
@@ -73,16 +78,7 @@
 
 // The callout is rendered outside of the root element, so it carries its own disabled marker.
 .bit-dtrp-cal.bit-dis {
-    .bit-dtrp-pkt,
-    .bit-dtrp-nbt,
-    .bit-dtrp-wlb,
-    .bit-dtrp-dbt,
-    .bit-dtrp-pkb,
-    .bit-dtrp-prb,
-    .bit-dtrp-ptb,
-    .bit-dtrp-tdv {
-        color: $clr-fg-dis;
-    }
+    @include dtrp-disabled-content;
 }
 
 .bit-dtrp-cal.bit-dtrp-rtl {
@@ -415,11 +411,15 @@
 
     @media (hover: hover) {
         &:hover {
+            // The hover and active states swap the light range body for the full-strength color,
+            // so the text has to switch to the color's own foreground along with it.
+            color: var(--bit-dtrp-clr-txt);
             background-color: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
+        color: var(--bit-dtrp-clr-txt);
         background-color: var(--bit-dtrp-clr-active);
     }
 }
@@ -630,6 +630,7 @@
 .bit-dtrp-prb {
     border: none;
     cursor: pointer;
+    overflow: hidden;
     text-align: start;
     white-space: nowrap;
     color: $clr-fg-pri;
