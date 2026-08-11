@@ -77,8 +77,13 @@ public static class Services
             // loopback-only trust lists, UseForwardedHeaders ignores X-Forwarded-For and
             // RemoteIpAddress stays the proxy address, collapsing the rate limiter above
             // into a single partition shared by all visitors.
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
+            // With the trust lists cleared, only the RIGHTMOST X-Forwarded-For entry is consumed, which
+            // the front end appends itself; anything a client puts in the header stays to its left and is
+            // never read. Raising this limit would let a client pick its own rate-limiter partition, so it
+            // is pinned here rather than left at the (currently identical) default.
+            options.ForwardLimit = 1;
         });
 
         if (string.IsNullOrEmpty(appSettings?.OpenAI?.ChatApiKey) is false)

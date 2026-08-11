@@ -411,7 +411,9 @@
     }
 }
 
-.hero-section-content {
+// animate-intro is off on the render that replaces the prerendered markup: that DOM already played the
+// intro, so replaying it there would show the whole hero fade in twice (see HomePage.razor.cs).
+.hero-section-content.animate-intro {
 
     ::deep .hero-title,
     ::deep .hero-subtitle,

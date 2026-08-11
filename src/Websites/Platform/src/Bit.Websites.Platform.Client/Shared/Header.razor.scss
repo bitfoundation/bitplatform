@@ -336,6 +336,7 @@
     border: 1px solid $bit-color-border-secondary;
     background-color: $bit-color-background-secondary;
     box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+
     // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
     transition: opacity 180ms $MotionEase 0ms,
         transform 180ms $MotionEase 0ms,

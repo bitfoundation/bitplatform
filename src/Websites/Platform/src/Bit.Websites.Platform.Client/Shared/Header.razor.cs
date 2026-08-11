@@ -68,9 +68,9 @@ public partial class Header : IDisposable
         }
     }
 
-    private void ToggleMenu()
+    private async Task ToggleMenu()
     {
-        navMenuService.ToggleMenu();
+        await navMenuService.ToggleMenu();
     }
 
     private async Task ToggleProductsMenu()

@@ -91,7 +91,7 @@
         <div class="header-nav-item">
             <button type="button"
                     class="header-nav-link header-nav-products-trigger @(navMenuService.IsProductsRoute ? "header-nav-link--active" : null)"
-                    aria-controls="header-nav-products"
+                    aria-controls="@(isMobileProductsOpen ? "header-nav-products" : null)"
                     aria-expanded="@(isMobileProductsOpen ? "true" : "false")"
                     @onclick=@WrapHandled(ToggleMobileProducts)>
                 Products

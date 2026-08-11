@@ -29,7 +29,13 @@
 
 .image {
     @include Image;
+    // The Image mixin's fixed 85% height distorts these diagrams inside the 350px-tall
+    // .api-image-container; scale the height from the intrinsic ratio instead and cap both axes
+    // (the max-height leaves room for the mixin's 25px vertical margins).
+    height: auto;
     width: rem2(600px);
+    max-width: 100%;
+    max-height: calc(100% - #{rem2(50px)});
 }
 
 ::deep a {

@@ -158,15 +158,26 @@ public class Middlewares
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
         // Keyed by the serving host so staging/test deployments emit their own URLs, not production's.
+        // The base URL comes from the (proxy-forwarded) Host header, which any client can set, so the
+        // cache is capped at the handful of hosts this app is actually deployed under: once it is full,
+        // sitemaps for further hosts are still served, just rebuilt per request instead of retained.
+        const int maxCachedHosts = 8;
         ConcurrentDictionary<string, string> siteMapPerHost = new();
 
         app.MapGet("/sitemap.xml", async context =>
         {
-            var siteMap = siteMapPerHost.GetOrAdd(context.Request.GetBaseUrl(), baseUrlString =>
+            var baseUrlString = context.Request.GetBaseUrl();
+
+            if (siteMapPerHost.TryGetValue(baseUrlString, out var siteMap) is false)
             {
                 var baseUrl = new Uri(baseUrlString);
-                return $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
-            });
+                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+
+                if (siteMapPerHost.Count < maxCachedHosts)
+                {
+                    siteMapPerHost.TryAdd(baseUrlString, siteMap);
+                }
+            }
 
             context.Response.Headers.ContentType = "application/xml";
 

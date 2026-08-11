@@ -286,7 +286,7 @@
 
     .dark-theme,
     .dark-image {
-        display: unset;
+        display: revert;
     }
 }
 
@@ -294,7 +294,7 @@
 
     .light-theme,
     .light-image {
-        display: unset;
+        display: revert;
     }
 }
 

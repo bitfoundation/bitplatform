@@ -42,7 +42,7 @@ public partial class Templates02GettingStartedPage
             (text:@"echo 'Install Aspire CLI tool';",
             command:"dotnet tool install -g Aspire.Cli"),
 
-            (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
+            (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Bit.Boilerplate';",
             command:"dotnet new install Bit.Boilerplate;")
         ];
 

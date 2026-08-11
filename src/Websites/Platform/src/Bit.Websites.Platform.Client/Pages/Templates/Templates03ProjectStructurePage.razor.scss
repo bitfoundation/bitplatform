@@ -36,6 +36,10 @@
 
 .row-section-container{
     display:flex;
+
+    @include sm {
+        flex-direction: column;
+    }
 }
 
 .image {

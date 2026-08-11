@@ -7,11 +7,15 @@
 /// </summary>
 public class NavMenuService
 {
-    public event Func<Task> OnToggleMenu = default!;
+    public event Func<Task>? OnToggleMenu;
 
-    public void ToggleMenu()
+    /// <summary>
+    /// No-ops when NavMenu is not mounted (Header renders the trigger on docs routes before
+    /// NavMenu subscribes), and awaits the handler so its exceptions surface instead of being lost.
+    /// </summary>
+    public Task ToggleMenu()
     {
-        OnToggleMenu.Invoke();
+        return OnToggleMenu?.Invoke() ?? Task.CompletedTask;
     }
 
 
