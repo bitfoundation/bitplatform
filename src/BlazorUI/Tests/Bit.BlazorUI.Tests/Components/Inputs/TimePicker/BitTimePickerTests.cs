@@ -525,9 +525,15 @@ public class BitTimePickerTests : BunitTestContext
 
         await button.TriggerEventAsync("onpointerup", new PointerEventArgs());
 
-        await Task.WhenAny(downTask, Task.Delay(5000));
+        Assert.AreSame(downTask, await Task.WhenAny(downTask, Task.Delay(5000)), "The press did not stop stepping after the release.");
+        await downTask;
 
         Assert.IsTrue(value >= new TimeSpan(11, 30, 0));
+
+        // The loop steps every 75ms, so a value that is still the same well after the release is one nothing is stepping anymore.
+        var valueOnRelease = value;
+        await Task.Delay(300);
+        Assert.AreEqual(valueOnRelease, value);
     }
 
     [TestMethod]

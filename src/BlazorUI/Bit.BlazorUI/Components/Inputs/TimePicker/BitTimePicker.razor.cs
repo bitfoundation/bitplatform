@@ -374,7 +374,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Whether or not this TimePicker is open
     /// </summary>
-    [Parameter, ResetClassBuilder, TwoWayBound]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
