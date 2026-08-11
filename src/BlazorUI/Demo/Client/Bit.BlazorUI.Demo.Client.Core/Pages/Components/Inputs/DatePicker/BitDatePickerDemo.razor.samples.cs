@@ -584,13 +584,13 @@ private BitDatePicker? programmaticPicker;";
         background-color: blueviolet;
     }
 
-    .custom-selected-day {
-        background-color: violet;
-    }
-
     .custom-highlighted-day {
         border-color: violet;
         background-color: #ee82ee40;
+    }
+
+    .custom-selected-day {
+        background-color: violet;
     }
 
     .custom-week-header {

@@ -1366,14 +1366,8 @@ public class BitDatePickerTests : BunitTestContext
     {
         // A leap year of the Hebrew calendar has thirteen months, so a grid of twelve would leave one of
         // them out and the days of the last one out of reach altogether.
-        var calendar = new HebrewCalendar();
-        var culture = CultureInfo.CreateSpecificCulture("he-IL");
-        // The component counts months with CultureInfo.Calendar, which has no public setter and is not
-        // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
-        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
-                                        "update this test if the field is renamed or removed.");
-        calendarField.SetValue(culture, calendar);
+        var culture = CreateHebrewCulture();
+        var calendar = culture.Calendar;
 
         // 2024-03-15 falls in the Hebrew year 5784, a leap year of thirteen months.
         var startingValue = GetLocalDate(2024, 3, 15);
@@ -2431,12 +2425,8 @@ public class BitDatePickerTests : BunitTestContext
     {
         // The supported range of the Hebrew calendar starts in the middle of a month, so even the first
         // day of its first supported month cannot be represented as a DateTime.
-        var calendar = new HebrewCalendar();
-        var culture = CultureInfo.CreateSpecificCulture("he-IL");
-        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
-                                        "update this test if the field is renamed or removed.");
-        calendarField.SetValue(culture, calendar);
+        var culture = CreateHebrewCulture();
+        var calendar = culture.Calendar;
 
         var value = calendar.MinSupportedDateTime.AddDays(10);
 
@@ -2701,6 +2691,20 @@ public class BitDatePickerTests : BunitTestContext
         // The header sits above the pickers of the callout, and the footer below them.
         Assert.IsTrue(header.NextElementSibling!.ClassList.Contains("bit-dtp-grp"));
         Assert.IsTrue(footer.PreviousElementSibling!.ClassList.Contains("bit-dtp-grp"));
+    }
+
+    // The component counts months with CultureInfo.Calendar, which has no public setter and is not
+    // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
+    private static CultureInfo CreateHebrewCulture()
+    {
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+
+        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
+                                        "update this test if the field is renamed or removed.");
+        calendarField.SetValue(culture, new HebrewCalendar());
+
+        return culture;
     }
 
     private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)
