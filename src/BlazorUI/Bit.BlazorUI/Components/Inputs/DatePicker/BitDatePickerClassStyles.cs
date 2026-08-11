@@ -53,6 +53,18 @@ public class BitDatePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the header wrapper of the callout of the BitDatePicker,
+    /// rendered when a CalloutHeaderTemplate is provided.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the footer wrapper of the callout of the BitDatePicker,
+    /// rendered when a CalloutFooterTemplate is provided.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the group of the BitDatePicker.
     /// </summary>
     public string? Group { get; set; }
@@ -138,6 +150,11 @@ public class BitDatePickerClassStyles
     public string? NextMonthNavIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the grid of the days of the BitDatePicker.
+    /// </summary>
+    public string? DaysGrid { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the header row of the days of the BitDatePicker.
     /// </summary>
     public string? DaysHeaderRow { get; set; }
@@ -146,6 +163,11 @@ public class BitDatePickerClassStyles
     /// Custom CSS classes/styles for the header of the week numbers of the BitDatePicker.
     /// </summary>
     public string? WeekNumbersHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the header cells of the day names of the BitDatePicker.
+    /// </summary>
+    public string? DayNameHeader { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each row of the days of the BitDatePicker.
@@ -171,6 +193,11 @@ public class BitDatePickerClassStyles
     /// Custom CSS classes/styles for selected day button of the BitDatePicker.
     /// </summary>
     public string? SelectedDayButton { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the highlighted day buttons of the BitDatePicker.
+    /// </summary>
+    public string? HighlightedDayButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the time-picker's input container of the BitDatePicker.
