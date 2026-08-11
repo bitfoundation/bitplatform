@@ -18,7 +18,7 @@ public partial class BitCarouselDemo
     }
 </style>
 
-<BitCarousel>
+<BitCarousel AriaLabel=""Landscape photos"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"">
@@ -221,6 +221,13 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel AutoPlay StopOnLastSlide HideNextPrev Style=""height: 100px"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
     private readonly string example6RazorCode = @"
@@ -265,6 +272,7 @@ private async Task GoTo()
 <style>
     .gap-item {
         height: 100%;
+        box-sizing: border-box;
     }
 </style>
 

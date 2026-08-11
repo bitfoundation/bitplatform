@@ -21,7 +21,7 @@
             so assistive technologies can announce what the carousel region holds.
         </div>
         <br />
-        <BitCarousel>
+        <BitCarousel AriaLabel="Landscape photos">
             <BitCarouselItem>
                 <div class="number">1 / 4</div>
                 <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
@@ -226,13 +226,25 @@
         </div>
         <br /><br />
         <div>
-            The AutoPlayReverse parameter plays the rotation backwards, from the last slide towards the first one, and
-            StopOnLastSlide (for a non-infinite carousel) stops the rotation on the last page instead of rewinding to
-            the first one.
+            The AutoPlayReverse parameter plays the rotation backwards, from the last slide towards the first one.
         </div>
         <br />
         <div>
             <BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev Style="height: 100px">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+        <br /><br />
+        <div>
+            StopOnLastSlide stops the rotation on the last page instead of rewinding to the first one, which only
+            applies to a carousel that does not scroll infinitely, since an infinite one never reaches an end.
+        </div>
+        <br />
+        <div>
+            <BitCarousel AutoPlay StopOnLastSlide HideNextPrev Style="height: 100px">
                 <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
                 <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
                 <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
