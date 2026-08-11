@@ -21,6 +21,15 @@ public class BitCarouselClassStyles
     public string? Item { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the items (slides) of the BitCarousel that are currently on screen.
+    /// </summary>
+    /// <remarks>
+    /// A carousel that shows several slides at a time marks every one of them, so this is the way to make
+    /// the slides of the current page stand out from the ones waiting outside of the view.
+    /// </remarks>
+    public string? CurrentItem { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the next/prev buttons of the BitCarousel.
     /// </summary>
     public string? Buttons { get; set; }

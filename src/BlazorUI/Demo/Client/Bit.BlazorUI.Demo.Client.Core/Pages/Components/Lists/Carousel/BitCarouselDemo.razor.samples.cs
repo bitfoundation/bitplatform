@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Carousel;
 
 public partial class BitCarouselDemo
 {
@@ -247,6 +247,18 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" VisibleItemsCount=""3"" ScrollItemsCount=""1"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
 </BitCarousel>";
 
     private readonly string example7RazorCode = @"
@@ -353,6 +365,101 @@ private async Task GoTo()
 </BitCarousel>";
 
     private readonly string example13RazorCode = @"
+<BitCarousel Style=""height: 100px""
+             VisibleItemsCount=""4""
+             ScrollItemsCount=""4""
+             InfiniteScrolling
+             ResponsiveOptions=""@([new() { Breakpoint = 640, VisibleItemsCount = 1, ScrollItemsCount = 1 },
+                                   new() { Breakpoint = 960, VisibleItemsCount = 2, ScrollItemsCount = 2 },
+                                   new() { Breakpoint = 1280, VisibleItemsCount = 3, ScrollItemsCount = 3 }])"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example14RazorCode = @"
+<style>
+    .thumb-dot {
+        width: 3rem;
+        height: 2rem;
+        padding: 0;
+        overflow: hidden;
+        border-radius: 0.25rem;
+        opacity: 0.5;
+    }
+
+    .thumb-dot-current {
+        opacity: 1;
+        outline: 2px solid var(--bit-clr-pri);
+    }
+
+    .thumb {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+
+<BitCarousel Style=""height: 100px"" InfiniteScrolling>
+    <DotTemplate Context=""index""><span>@(index + 1)</span></DotTemplate>
+    <ChildContent>
+        <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+        <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    </ChildContent>
+</BitCarousel>
+
+<BitCarousel InfiniteScrolling
+             Classes=""@(new() { Dots = ""thumb-dot"", CurrentDot = ""thumb-dot-current"" })"">
+    <DotTemplate Context=""index"">
+        <img class=""thumb"" alt="""" src=""@($""img{index + 1}.jpg"")"" />
+    </DotTemplate>
+    <ChildContent>
+        <BitCarouselItem>
+            <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
+        </BitCarouselItem>
+        <BitCarouselItem>
+            <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
+        </BitCarouselItem>
+    </ChildContent>
+</BitCarousel>";
+
+    private readonly string example15RazorCode = @"
+<BitCarousel AutoPlay
+             ShowPlayPause
+             InfiniteScrolling
+             AriaLabel=""Landscape photos""
+             ItemAriaLabelFormat=""Photo {0} of {1}""
+             DotAriaLabel=""Photo""
+             DotsAriaLabel=""Choose a photo to display""
+             GoLeftAriaLabel=""Next photo""
+             GoRightAriaLabel=""Previous photo""
+             PlayButtonAriaLabel=""Start the photo slide show""
+             PauseButtonAriaLabel=""Stop the photo slide show"">
+    <BitCarouselItem AriaLabel=""Aurora over a frozen lake"">
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example16RazorCode = @"
 <BitCarousel Color=""BitColor.Primary"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -377,7 +484,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome (circle-arrow icons):</div>
@@ -434,7 +541,7 @@ private async Task GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitCarousel Size=""BitSize.Small"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -453,7 +560,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-item {
         color: white;
@@ -474,7 +581,7 @@ private async Task GoTo()
     <BitCarouselItem><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .item {
         text-align: center;

@@ -89,6 +89,13 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "DotTemplate",
+            Type = "RenderFragment<int>?",
+            DefaultValue = "null",
+            Description = "The custom content of a dot of the carousel, receiving the zero based index of the page the dot navigates to. A dot that holds content is laid out around it instead of being drawn as the default circle."
+        },
+        new()
+        {
             Name = "DragThreshold",
             Type = "int",
             DefaultValue = "20",
@@ -181,6 +188,13 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "ItemAriaLabelFormat",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The accessible label of a slide of the carousel, as a composite format string whose {0} is the 1 based position of the slide and whose {1} is the number of slides (\"{0} of {1}\" when not set). It is only used for the slides that were not given an AriaLabel of their own."
+        },
+        new()
+        {
             Name = "NoDrag",
             Type = "bool",
             DefaultValue = "false",
@@ -265,10 +279,19 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "ResponsiveOptions",
+            Type = "IEnumerable<BitCarouselResponsiveOption>?",
+            DefaultValue = "null",
+            Description = "Adapts VisibleItemsCount and ScrollItemsCount to the width of the carousel. Each option applies while the carousel is no wider than its Breakpoint, and the narrowest matching one wins.",
+            LinkType = LinkType.Link,
+            Href = "#responsive-option",
+        },
+        new()
+        {
             Name = "ScrollItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full."
+            Description = "Number of items that is going to be changed on navigation. It is clamped to VisibleItemsCount, and a non-infinite carousel moves by fewer items near its ends so its first and last pages always stay full. Together with VisibleItemsCount it also decides where the carousel stops, which is what the dots stand for and what OnChange reports."
         },
         new()
         {
@@ -359,6 +382,36 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Id = "responsive-option",
+            Title = "BitCarouselResponsiveOption",
+            Description = "The layout a BitCarousel takes while it is no wider than a given breakpoint. A member that is left unset keeps the value of the matching parameter of the carousel.",
+            Parameters =
+            [
+               new()
+               {
+                   Name = "Breakpoint",
+                   Type = "double",
+                   DefaultValue = "0",
+                   Description = "The largest width (in pixels) of the carousel this option applies to."
+               },
+               new()
+               {
+                   Name = "VisibleItemsCount",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The number of items that is visible in the carousel while this option applies."
+               },
+               new()
+               {
+                   Name = "ScrollItemsCount",
+                   Type = "int?",
+                   DefaultValue = "null",
+                   Description = "The number of items a navigation moves while this option applies."
+               },
+            ]
+        },
+        new()
+        {
             Id = "class-styles",
             Title = "BitCarouselClassStyles",
             Description = "The custom CSS classes and styles of the different parts of the BitCarousel.",
@@ -384,6 +437,13 @@ public partial class BitCarouselDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the items (slides) of the BitCarousel."
+               },
+               new()
+               {
+                   Name = "CurrentItem",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the items (slides) of the BitCarousel that are currently on screen."
                },
                new()
                {

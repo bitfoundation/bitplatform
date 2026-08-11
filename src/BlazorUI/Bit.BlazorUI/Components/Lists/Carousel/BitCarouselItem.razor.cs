@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -88,7 +90,8 @@ public partial class BitCarouselItem : BitComponentBase
 
     // Whether the slide is one of the ones currently on screen. It drives the inert/aria-hidden
     // state, so the slides that are scrolled out of the view are not reachable with the keyboard
-    // and are not read out by screen readers.
+    // and are not read out by screen readers, and it is also what the current item class and style
+    // of the carousel hang on.
     private bool internalIsCurrent = true;
     internal bool InternalIsCurrent
     {
@@ -98,8 +101,17 @@ public partial class BitCarouselItem : BitComponentBase
             if (internalIsCurrent == value) return;
 
             internalIsCurrent = value;
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
             StateHasChanged();
         }
+    }
+
+    // The accessible name a slide falls back to counts the slides around it, so the carousel asks its
+    // items to render again when it gains or loses one of them.
+    internal void Refresh()
+    {
+        StateHasChanged();
     }
 
     protected override string RootElementClass => "bit-crsi";
@@ -107,6 +119,10 @@ public partial class BitCarouselItem : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Carousel?.Classes?.Item);
+
+        ClassBuilder.Register(() => InternalIsCurrent
+                                    ? $"bit-crsi-cur {Carousel?.Classes?.CurrentItem}".Trim()
+                                    : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -118,6 +134,7 @@ public partial class BitCarouselItem : BitComponentBase
         StyleBuilder.Register(() => InternalTransitionStyle);
         StyleBuilder.Register(() => InternalFadeStyle);
         StyleBuilder.Register(() => Carousel?.Styles?.Item);
+        StyleBuilder.Register(() => InternalIsCurrent ? Carousel?.Styles?.CurrentItem : null);
     }
 
     protected override Task OnInitializedAsync()
@@ -137,7 +154,11 @@ public partial class BitCarouselItem : BitComponentBase
 
         var count = Carousel?.ItemsCount ?? 0;
 
-        return count > 0 ? $"{Index + 1} of {count}" : null;
+        if (count < 1) return null;
+
+        var format = Carousel?.ItemAriaLabelFormat;
+
+        return string.Format(CultureInfo.CurrentCulture, format.HasValue() ? format! : "{0} of {1}", Index + 1, count);
     }
 
 
