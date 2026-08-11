@@ -2162,6 +2162,76 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(isOpen);
     }
 
+    [TestMethod]
+    public void BitDatePickerShouldMarkTheInputAsOpenedWhileTheCalloutIsOpen()
+    {
+        var isOpen = false;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-opn"));
+
+        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.IsTrue(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-opn"));
+
+        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-opn"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldNotBeMarkedAsOpened()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-opn"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerPointerOpenedCalloutShouldTakeTheFocusWithIt()
+    {
+        var isOpen = false;
+
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dtp-wrp").Click();
+
+        Assert.IsTrue(isOpen);
+        Assert.ContainsSingle(Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"]);
+    }
+
+    [TestMethod]
+    public void BitDatePickerPointerOpenedCalloutShouldLeaveTheFocusOnAnInputAcceptingText()
+    {
+        var isOpen = false;
+
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dtp-wrp").Click();
+
+        Assert.IsTrue(isOpen);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"]);
+    }
+
     // ── AutoClose ─────────────────────────────────────────────────────────────
 
     [TestMethod]

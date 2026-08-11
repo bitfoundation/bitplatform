@@ -193,6 +193,19 @@
     }
 }
 
+// The focus itself moves into the callout, so the input is left with no focus ring to show which
+// control the callout belongs to. Its own color marks it as the active one for as long as the
+// callout is on screen.
+.bit-dtp-opn {
+    .bit-dtp-icn {
+        border-color: var(--bit-dtp-clr);
+    }
+
+    .bit-dtp-ico {
+        color: var(--bit-dtp-clr);
+    }
+}
+
 .bit-dtp-cal {
     display: none;
     position: fixed;
@@ -761,6 +774,12 @@
         .bit-dtp-icn {
             @include focus-underline-ring;
         }
+    }
+
+    // The underlined variant has no border of its own to color, so the open state is carried by the
+    // underline the wrapper draws.
+    &.bit-dtp-opn .bit-dtp-wrp {
+        border-bottom-color: var(--bit-dtp-clr);
     }
 }
 

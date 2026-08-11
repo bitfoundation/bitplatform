@@ -449,7 +449,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Whether or not the DatePicker's callout is open
     /// </summary>
-    [Parameter, TwoWayBound]
+    [Parameter, ResetClassBuilder, TwoWayBound]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -895,6 +895,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ClassBuilder.Register(() => Standalone ? "bit-dtp-sta" : string.Empty);
 
+        // The callout takes the focus with it when it opens, leaving the input with no focus ring to
+        // show which control the callout belongs to - so the input carries the open state itself.
+        ClassBuilder.Register(() => (Standalone is false && IsOpen) ? "bit-dtp-opn" : string.Empty);
+
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtp-foc {Classes?.Focused}" : string.Empty);
 
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtp-req" : string.Empty);
@@ -1213,9 +1217,10 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         await ToggleCallout();
 
-        // Only a callout opened from the keyboard takes the focus with it: a pointer press leaves the
-        // focus on the input, where a user typing a date (AllowTextInput) expects to keep it.
-        if (wasOpen is false && _focusDayOnOpen)
+        // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
+        // the date from inside it. The exception is a pointer press on a picker whose input accepts
+        // text: there the user is about to type the date, and the focus has to stay where they typed.
+        if (wasOpen is false && (_focusDayOnOpen || AllowTextInput is false || ReadOnly))
         {
             if (ShowDayPicker())
             {
@@ -1225,7 +1230,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             else if (ShowMonthPicker())
             {
                 // With no day picker on screen (the MonthPicker mode, or the month picker as an overlay)
-                // the month grid is what the keyboard opens onto.
+                // the month grid is what the callout opens onto.
                 _focusedMonthCell = GetFocusableMonth();
                 _focusElementIdAfterRender = GetMonthButtonId(_focusedMonthCell.Value);
             }
