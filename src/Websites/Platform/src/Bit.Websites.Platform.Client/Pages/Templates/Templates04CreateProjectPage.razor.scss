@@ -29,6 +29,7 @@
 
 .image {
     @include Image;
+
     // The Image mixin's fixed 85% height distorts these diagrams inside the 350px-tall
     // .api-image-container; scale the height from the intrinsic ratio instead and cap both axes
     // (the max-height leaves room for the mixin's 25px vertical margins).

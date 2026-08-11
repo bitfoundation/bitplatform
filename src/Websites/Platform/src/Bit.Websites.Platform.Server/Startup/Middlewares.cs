@@ -162,6 +162,7 @@ public class Middlewares
         // cache is capped at the handful of hosts this app is actually deployed under: once it is full,
         // sitemaps for further hosts are still served, just rebuilt per request instead of retained.
         const int maxCachedHosts = 8;
+        Lock siteMapCacheLock = new();
         ConcurrentDictionary<string, string> siteMapPerHost = new();
 
         app.MapGet("/sitemap.xml", async context =>
@@ -173,9 +174,15 @@ public class Middlewares
                 var baseUrl = new Uri(baseUrlString);
                 siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
 
-                if (siteMapPerHost.Count < maxCachedHosts)
+                // Count and TryAdd are each atomic, but not atomic together: without this lock, requests
+                // for distinct hosts arriving concurrently could all read a below-cap Count and then all
+                // add, pushing the cache past maxCachedHosts.
+                lock (siteMapCacheLock)
                 {
-                    siteMapPerHost.TryAdd(baseUrlString, siteMap);
+                    if (siteMapPerHost.Count < maxCachedHosts)
+                    {
+                        siteMapPerHost.TryAdd(baseUrlString, siteMap);
+                    }
                 }
             }
 
