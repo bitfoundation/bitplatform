@@ -62,7 +62,7 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         context.CacheVaryByRules.HeaderNames = new[] { HeaderNames.Origin, "X-Origin" };
         if (CultureInfoManager.InvariantGlobalization is false)
         {
-            context.CacheVaryByRules.VaryByValues.Add("Culture", CultureInfo.CurrentUICulture.Name);
+            context.CacheVaryByRules.VaryByValues.Add("Culture", FormattableString.Invariant($"{CultureInfo.CurrentCulture.Name}|{CultureInfo.CurrentUICulture.Name}"));
         }
 
         //#if (multitenant == true)
@@ -119,8 +119,18 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             clientCacheTtl = -1;
         }
 
-        if (context.HttpContext.Request.IsLightHouseRequest())
+        if (context.HttpContext.IsBlazorPageContext() &&
+            (context.HttpContext.Request.IsLightHouseRequest() || context.HttpContext.Request.IsCrawlerClient()))
         {
+            // These callers get a DIFFERENT document: App.razor omits every script tag for them, so a benchmark is not
+            // charged for the blazor bundle and a crawler is not handed one it has no use for. Nothing in the cache key
+            // varies by user agent (See CacheVaryByRules above), so storing that response would hand the next ordinary
+            // visitor a page with no scripts - a shell that can never boot. Their responses are therefore theirs alone:
+            // never written to the output cache, never offered to a CDN.
+            // The page check is part of the condition because the script omission only happens in App.razor: every other
+            // cacheable endpoint - the sitemaps, llms.txt, products.xml, the api - produces the same bytes for every
+            // user agent, and those are the documents crawlers request most, so excluding them would mean the one caller
+            // the 7 day sitemap cache exists for is the one caller never served from it.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
         }
@@ -134,6 +144,16 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             edgeCacheTtl = -1;
         }
 
+        if (clientCacheTtl == -1 && edgeCacheTtl == -1 && outputCacheTtl == -1)
+        {
+            // Neither block below runs for this response, so nothing would tell caches anything at all - while one of
+            // the reasons above may be that it must not be SHARED (an authenticated caller on an endpoint that is not
+            // UserAgnostic), and a directive-less 200 is free to be stored by a shared cache on the way out. When a
+            // client ttl IS set, the header below already says `private` next to its max-age, so this covers only the
+            // case where no Cache-Control is written at all.
+            context.HttpContext.Response.GetTypedHeaders().CacheControl = new() { Private = true };
+        }
+
         // Edge - Client Cache
         if (clientCacheTtl != -1 || edgeCacheTtl != -1)
         {
@@ -144,7 +164,6 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
                 MaxAge = clientCacheTtl == -1 ? null : TimeSpan.FromSeconds(clientCacheTtl),
                 SharedMaxAge = edgeCacheTtl == -1 ? null : TimeSpan.FromSeconds(edgeCacheTtl)
             };
-            context.HttpContext.Response.Headers.Remove("Pragma");
             // Note: a CDN may ignore this. Cloudflare, for one, does not consider Vary in caching decisions unless the
             // header is Accept-Encoding or a Cache Rules Vary setting naming origin/x-origin has been configured on the
             // zone. Without that rule the edge keeps a single variant per URL and hands it to callers of every origin.
@@ -161,6 +180,8 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
             context.HttpContext.Response.OnStarting(static state =>
             {
                 var response = (HttpResponse)state;
+
+                response.Headers.Remove("Pragma");
 
                 if (IsResponseCacheable(response) is false)
                 {

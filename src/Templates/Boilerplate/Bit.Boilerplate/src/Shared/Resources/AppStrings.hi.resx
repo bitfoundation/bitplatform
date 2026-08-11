@@ -174,7 +174,7 @@
   <data name="TooManyRequestsException" xml:space="preserve">
     <value>बहुत अधिक अनुरोध</value>
   </data>
-  <data name="ServerConnectionException" xml:space="preserve">
+  <data name="TransientException" xml:space="preserve">
     <value>सर्वर से कनेक्ट करने में असमर्थ।</value>
   </data>
   <!-- Boilerplate strings -->

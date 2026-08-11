@@ -39,10 +39,18 @@ Each project in the solution has its own set of `appsettings.json` files:
   - [`src/Server/Boilerplate.Server.Api/appsettings.json`](/src/Server/Boilerplate.Server.Api/appsettings.json)
   - [`src/Server/Boilerplate.Server.Api/appsettings.Development.json`](/src/Server/Boilerplate.Server.Api/appsettings.Development.json)
   - [`src/Server/Boilerplate.Server.Api/appsettings.Production.json`](/src/Server/Boilerplate.Server.Api/appsettings.Production.json)
+<!--#if (api == "Standalone")-->
 - **Web Server**:
   - [`src/Server/Boilerplate.Server.Web/appsettings.json`](/src/Server/Boilerplate.Server.Web/appsettings.json)
   - [`src/Server/Boilerplate.Server.Web/appsettings.Development.json`](/src/Server/Boilerplate.Server.Web/appsettings.Development.json)
   - [`src/Server/Boilerplate.Server.Web/appsettings.Production.json`](/src/Server/Boilerplate.Server.Web/appsettings.Production.json)
+<!--#endif-->
+<!--#if (api == "Integrated")-->
+- **Web Server**: has no appsettings files of its own. `Boilerplate.Server.Web.csproj` links the API Server's
+  `appsettings*.json` above into its output directory, so those are the files it reads at runtime. Do not create
+  `src/Server/Boilerplate.Server.Web/appsettings.json` - it would be copied to the same output path and which of the
+  two wins depends on build order.
+<!--#endif-->
 - **AppHost**: 
   - [`src/Server/Boilerplate.Server.AppHost/appsettings.json`](/src/Server/Boilerplate.Server.AppHost/appsettings.json)
   - [`src/Server/Boilerplate.Server.AppHost/appsettings.Development.json`](/src/Server/Boilerplate.Server.AppHost/appsettings.Development.json)
