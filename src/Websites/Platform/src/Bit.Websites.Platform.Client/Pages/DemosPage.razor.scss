@@ -81,22 +81,10 @@
     }
 }
 
+// Visibility (dark-image/light-image classes) is owned by the global themed utilities in app.scss.
 .template-img {
     width: 100%;
-    display: none;
     border: 1px solid $bit-color-border-secondary;
-}
-
-:root[bit-theme="dark"] {
-    .dark-image {
-        display: unset;
-    }
-}
-
-:root[bit-theme="light"] {
-    .light-image {
-        display: unset;
-    }
 }
 
 .primary-btn {

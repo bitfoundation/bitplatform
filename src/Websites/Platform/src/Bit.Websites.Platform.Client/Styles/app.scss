@@ -1,4 +1,4 @@
-// Brand palette overrides on top of the Fluent theme. Light mode swaps the default Fluent
+﻿// Brand palette overrides on top of the Fluent theme. Light mode swaps the default Fluent
 // blue/orange for the bit brand blue (see $B* in abstracts/_colors.scss) and the indigo of the
 // home page hero gradients, and cools the neutral ramps toward the same hue so surfaces, text
 // and strokes read as one family. Dark mode does the same over the existing navy surfaces.
@@ -270,6 +270,40 @@
     --bit-clr-brd-ter-dis: #131C3C;
     --bit-clr-brd-ter-dis-text: #6C7A9C;
     --bit-clr-brd-dis: #1D2748;
+}
+
+// Themed visibility utilities: an element carrying one of these classes renders only in the
+// matching theme. These rules own the element's display entirely (hidden by default, shown in
+// the matching theme), so components must not set their own `display` on such elements.
+.dark-theme,
+.dark-image,
+.light-theme,
+.light-image {
+    display: none;
+}
+
+:root[bit-theme="dark"] {
+
+    .dark-theme,
+    .dark-image {
+        display: unset;
+    }
+}
+
+:root[bit-theme="light"] {
+
+    .light-theme,
+    .light-image {
+        display: unset;
+    }
+}
+
+// Shared layout of the six Lcnc placeholder pages, which have no page-specific styling of their
+// own (replaces six identical per-page scss files).
+.lcnc-page-container {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
 * {

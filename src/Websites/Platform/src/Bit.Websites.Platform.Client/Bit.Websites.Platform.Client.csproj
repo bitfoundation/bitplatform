@@ -33,9 +33,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
-
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
         <PackageReference Include="Bit.Bswup" Version="10.6.0-pre-01" />

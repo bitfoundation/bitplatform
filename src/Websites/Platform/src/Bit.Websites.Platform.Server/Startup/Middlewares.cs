@@ -1,6 +1,8 @@
-﻿using System.Net;
+﻿using System.Collections.Concurrent;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
+using Bit.Websites.Platform.Client.Shared;
 using Bit.Websites.Platform.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components;
@@ -26,6 +28,8 @@ public class Middlewares
 
             app.UseSecurityHeaders();
         }
+
+        UseMovedDocsRedirects(app);
 
         Configure_404_Page(app);
 
@@ -86,6 +90,21 @@ public class Middlewares
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Websites.Platform") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
     }
 
+    private static void UseMovedDocsRedirects(WebApplication app)
+    {
+        // These doc sections used to live on this site and are still search-indexed and linked from
+        // READMEs/NuGet pages; permanent redirects transfer that ranking to their new homes instead
+        // of dropping visitors on the 404 page.
+        app.MapGet("/bswup", () => Results.Redirect(Urls.Bswup, permanent: true));
+        app.MapGet("/bswup/{**rest}", () => Results.Redirect(Urls.Bswup, permanent: true));
+
+        app.MapGet("/butil", () => Results.Redirect(Urls.Butil, permanent: true));
+        app.MapGet("/butil/{**rest}", () => Results.Redirect(Urls.Butil, permanent: true));
+
+        app.MapGet("/templates/samples", () => Results.Redirect(Urls.Demos, permanent: true));
+        app.MapGet("/boilerplate/samples", () => Results.Redirect(Urls.Demos, permanent: true));
+    }
+
     private static void Configure_404_Page(WebApplication app)
     {
         app.Use(async (context, next) =>
@@ -126,29 +145,29 @@ public class Middlewares
 
     private static void UseSiteMap(WebApplication app)
     {
-        string[] excludedUrls =
-        [
-            "/not-found", "/demo", "/templates/development-prerequisites",
-            "/lowcode-nocode/overview", "/lowcode-nocode/benefits", "/lowcode-nocode/specs",
-            "/lowcode-nocode/customizations", "/lowcode-nocode/comparison", "/lowcode-nocode/stats"
-        ];
-
         var urls = Assembly.Load("Bit.Websites.Platform.Client")
             .ExportedTypes
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
             .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
             .Select(r => r.Template)
-            .Where(t => excludedUrls.Contains(t) is false && t.StartsWith("/boilerplate") is false)
+            .Where(t => SiteMapUrls.NoIndexUrls.Contains(t) is false
+                     && SiteMapUrls.NonCanonicalUrls.Contains(t) is false
+                     && t.StartsWith("/boilerplate") is false)
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
-        var baseUrl = new Uri("https://bitplatform.dev");
-
-        var siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+        // Keyed by the serving host so staging/test deployments emit their own URLs, not production's.
+        ConcurrentDictionary<string, string> siteMapPerHost = new();
 
         app.MapGet("/sitemap.xml", async context =>
         {
+            var siteMap = siteMapPerHost.GetOrAdd(context.Request.GetBaseUrl(), baseUrlString =>
+            {
+                var baseUrl = new Uri(baseUrlString);
+                return $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+            });
+
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);

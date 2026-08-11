@@ -23,8 +23,9 @@ public partial class ContactUsPage
 
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/ContactUs/SendMessage", contactUsModel, AppJsonContext.Default.ContactUsDto);
-            response.EnsureSuccessStatusCode();
+            // ExceptionDelegatingHandler in the HttpClient pipeline throws a typed exception on any
+            // non-success response; WrapHandled on the form's OnValidSubmit surfaces its message.
+            await HttpClient.PostAsJsonAsync("api/ContactUs/SendMessage", contactUsModel, AppJsonContext.Default.ContactUsDto);
             contactUsModel = new();
             isSent = true;
         }

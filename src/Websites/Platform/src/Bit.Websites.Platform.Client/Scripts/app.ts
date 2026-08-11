@@ -1,4 +1,4 @@
-function toggleBodyOverflow(isMenuOpen: boolean) {
+﻿function toggleBodyOverflow(isMenuOpen: boolean) {
     if (window.innerWidth <= 900) {
         if (isMenuOpen) {
             document.body.style.overflow = "hidden";
@@ -33,6 +33,8 @@ BitBlazorUI.Theme.init({
     // to guessing and the page would flash the wrong theme for visitors who picked one.
     persistCookie: true,
     onChange: (newTheme: string, oldTheme: string) => {
+        // Same dark-name predicate and hex values (--bit-clr-bg-pri of each palette) as the
+        // first-paint bootstrap in the server's App.razor - keep the two in sync.
         const name = (newTheme ?? '').toLowerCase();
         const isDark = name === 'dark' || name.endsWith('-dark');
         document.querySelector("meta[name=theme-color]")?.setAttribute('content', isDark ? '#060E2D' : '#FFFFFF');

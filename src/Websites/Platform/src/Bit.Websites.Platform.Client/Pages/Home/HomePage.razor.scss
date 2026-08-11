@@ -1,5 +1,6 @@
 ﻿@import '../../Styles/abstracts/_vars.scss';
 @import '../../Styles/abstracts/_colors.scss';
+@import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
 @import '../../Styles/abstracts/_media-queries.scss';
 @import '../../Styles/abstracts/_bit-css-variables.scss';
@@ -13,10 +14,10 @@
     flex-flow: column nowrap;
     justify-content: flex-start;
 
+    // Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
     .hero-gradient {
         top: 0;
         left: 50%;
-        display: none;
         max-width: 70rem;
         position: absolute;
         transform: translate(-50%, -10%);
@@ -46,18 +47,6 @@
         padding: 1rem;
         max-width: rem2(800px);
         filter: drop-shadow(0 24px 48px rgba(24, 120, 253, 0.18));
-    }
-}
-
-:root[bit-theme="dark"] {
-    .dark-theme {
-        display: unset;
-    }
-}
-
-:root[bit-theme="light"] {
-    .light-theme {
-        display: unset;
     }
 }
 
@@ -172,43 +161,7 @@
         }
 
         .hero-cta {
-            line-height: 1;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 1rem 2rem;
-            border-radius: 2rem;
-            white-space: nowrap;
-            text-decoration: none;
-            box-sizing: border-box;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-
-            &.primary {
-                color: #fff;
-                background-image: linear-gradient(96deg, #524add 10%, #1878fd 90%);
-                box-shadow: 0 8px 24px -8px rgba(82, 74, 221, 0.6);
-
-                &:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 12px 28px -8px rgba(82, 74, 221, 0.8);
-                }
-            }
-
-            &.secondary {
-                color: $bit-color-foreground-primary;
-                border: 1px solid $bit-color-border-secondary;
-
-                &:hover {
-                    transform: translateY(-2px);
-                    border-color: $bit-color-border-primary;
-                    background-color: $bit-color-background-secondary;
-                }
-            }
-
-            &:focus-visible {
-                outline: 2px solid $bit-color-primary;
-                outline-offset: 2px;
-            }
+            @include GradientCtaButton;
         }
 
         @include lt-lg {
@@ -371,43 +324,7 @@
     }
 
     .cta-btn {
-        line-height: 1;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        padding: 1rem 2rem;
-        border-radius: 2rem;
-        white-space: nowrap;
-        text-decoration: none;
-        box-sizing: border-box;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-
-        &.primary {
-            color: #fff;
-            background-image: linear-gradient(96deg, #524add 10%, #1878fd 90%);
-            box-shadow: 0 8px 24px -8px rgba(82, 74, 221, 0.6);
-
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 28px -8px rgba(82, 74, 221, 0.8);
-            }
-        }
-
-        &.secondary {
-            color: $bit-color-foreground-primary;
-            border: 1px solid $bit-color-border-secondary;
-
-            &:hover {
-                transform: translateY(-2px);
-                border-color: $bit-color-border-primary;
-                background-color: $bit-color-background-secondary;
-            }
-        }
-
-        &:focus-visible {
-            outline: 2px solid $bit-color-primary;
-            outline-offset: 2px;
-        }
+        @include GradientCtaButton;
     }
 }
 
@@ -453,7 +370,7 @@
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
-        transition: transform 0.2s ease, filter 0.2s ease;
+        transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase;
 
         &:hover,
         &:focus-visible {
@@ -494,33 +411,30 @@
     }
 }
 
-// Motion: entrance stagger for the hero and a scroll-linked reveal for the rest of the page.
-// Both are progressive enhancements guarded by prefers-reduced-motion (and @supports for the
-// scroll-linked part), so unsupported browsers and reduced-motion users get the static page.
-@media (prefers-reduced-motion: no-preference) {
-    .hero-section-content {
-        ::deep .hero-title,
-        ::deep .hero-subtitle,
-        .hero-cta-container {
-            animation: hero-enter 0.7s ease-out both;
-        }
+.hero-section-content {
 
-        ::deep .hero-subtitle {
-            animation-delay: 0.15s;
-        }
-
-        .hero-cta-container {
-            animation-delay: 0.3s;
-        }
+    ::deep .hero-title,
+    ::deep .hero-subtitle,
+    .hero-cta-container {
+        animation: hero-enter 0.7s ease-out both;
     }
 
-    @supports (animation-timeline: view()) {
-        .page-container .hero-image,
-        .page-section:not(.hero-section) .page-section-content {
-            animation: section-reveal linear both;
-            animation-timeline: view();
-            animation-range: entry 5% entry 45%;
-        }
+    ::deep .hero-subtitle {
+        animation-delay: 0.15s;
+    }
+
+    .hero-cta-container {
+        animation-delay: 0.3s;
+    }
+}
+
+@supports (animation-timeline: view()) {
+
+    .page-container .hero-image,
+    .page-section:not(.hero-section) .page-section-content {
+        animation: section-reveal linear both;
+        animation-timeline: view();
+        animation-range: entry 5% entry 45%;
     }
 }
 

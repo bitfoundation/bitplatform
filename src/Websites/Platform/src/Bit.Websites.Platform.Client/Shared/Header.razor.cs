@@ -1,20 +1,14 @@
-using Microsoft.AspNetCore.Components.Routing;
+﻿using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class Header : IDisposable
 {
-    private bool isDocsRoute;
-    private bool isLcncDocRoute;
-    private bool isProductsRoute;
-    private bool isBesqlDocRoute;
     private bool isHeaderMenuOpen;
-    private bool isTemplateDocRoute;
     private bool isProductsMenuOpen;
     private bool isMobileProductsOpen;
     private bool isProductsMenuForceClosed;
-    private string currentUrl = string.Empty;
 
 
     private sealed record ProductMenuItem(string Title, string Description, string Url, bool External = false, bool Disabled = false);
@@ -59,22 +53,7 @@ public partial class Header : IDisposable
 
     private void HandleActiveRoutes()
     {
-        currentUrl = $"/{NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}";
-        var fragmentIndex = currentUrl.IndexOfAny(['?', '#']);
-        if (fragmentIndex >= 0)
-        {
-            currentUrl = currentUrl[..fragmentIndex];
-        }
-
-        isBesqlDocRoute = currentUrl.Contains("besql");
-        isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
-        isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("boilerplate") ||
-                             currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
-
-        // Docs routes get the docs nav menu (hamburger); Lcnc has no docs, so it is excluded there,
-        // but it still counts as a product route for highlighting the Products menu trigger.
-        isDocsRoute = isTemplateDocRoute || isBesqlDocRoute;
-        isProductsRoute = isDocsRoute || isLcncDocRoute;
+        navMenuService.UpdateRouteFlags($"/{NavigationManager.ToBaseRelativePath(NavigationManager.Uri)}");
     }
 
     private void CloseMenus()
@@ -104,9 +83,7 @@ public partial class Header : IDisposable
         }
         else
         {
-            // The popup is also held open by the :hover / :focus-within CSS rules, and after a tap or
-            // an Enter press the trigger keeps focus; dropping it is what actually dismisses the popup.
-            await JSRuntime.BlurActiveElement();
+            await SuppressProductsMenu();
         }
     }
 
@@ -115,6 +92,16 @@ public partial class Header : IDisposable
         if (e.Key is not "Escape") return;
 
         isProductsMenuOpen = false;
+        await SuppressProductsMenu();
+    }
+
+    // The popup is also held open by the :hover / :focus-within CSS rules, so closing takes both:
+    // force-closed suppresses them (a sticky :hover after a tap on a touch device, or the cursor
+    // still parked on the trigger; lifted on the next mouseenter), and the blur drops the focus a
+    // tap or an Enter press left on the trigger.
+    private async Task SuppressProductsMenu()
+    {
+        isProductsMenuForceClosed = true;
         await JSRuntime.BlurActiveElement();
     }
 
@@ -133,29 +120,26 @@ public partial class Header : IDisposable
     private async Task HandleProductMenuItemClick()
     {
         isProductsMenuOpen = false;
-        // The :hover CSS would hold the popup open while the cursor is still parked on the clicked
-        // item; force-closed suppresses it (see the scss) and is lifted once the pointer leaves.
-        isProductsMenuForceClosed = true;
-        await JSRuntime.BlurActiveElement();
+        await SuppressProductsMenu();
     }
 
-    private void HandleProductsMenuMouseLeave()
+    private void HandleProductsMenuMouseEnter()
     {
         isProductsMenuForceClosed = false;
     }
 
     private bool IsMenuItemActive(ProductMenuItem item)
     {
-        if (item.Url == Urls.LowCodeNoCode) return isLcncDocRoute;
-        if (item.Url == Urls.Templates) return isTemplateDocRoute;
-        if (item.Url == Urls.Besql) return isBesqlDocRoute;
+        if (item.Url == Urls.LowCodeNoCode) return navMenuService.IsLcncDocRoute;
+        if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
+        if (item.Url == Urls.Besql) return navMenuService.IsBesqlDocRoute;
 
         return false;
     }
 
     private string GetActiveRouteName()
     {
-        var routeName = currentUrl switch
+        var routeName = navMenuService.CurrentUrl switch
         {
             Urls.Home => "Home",
             Urls.Demos => "Demos",
@@ -167,7 +151,7 @@ public partial class Header : IDisposable
 
         if (routeName is not null) return routeName;
 
-        if (currentUrl.StartsWith(Urls.NotFound)) return "404";
+        if (navMenuService.CurrentUrl.StartsWith(Urls.NotFound)) return "404";
 
         return "Products";
     }

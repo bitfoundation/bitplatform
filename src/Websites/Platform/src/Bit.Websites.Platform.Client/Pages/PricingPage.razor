@@ -1,4 +1,4 @@
-@page "/pricing"
+﻿@page "/pricing"
 @inherits AppComponentBase
 
 <PageOutlet Url="pricing"
@@ -128,7 +128,7 @@
         else
         {
 
-            <EditForm Model="buyPackageModel" OnValidSubmit="SendMessage" class="form" novalidate>
+            <EditForm Model="buyPackageModel" OnValidSubmit="WrapHandled(SendMessage)" class="form" novalidate>
                 <DataAnnotationsValidator />
                 <BitText Typography="BitTypography.H4" Gutter>Contact sale team</BitText>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>Buying the commercial package</BitText>

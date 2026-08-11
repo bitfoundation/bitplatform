@@ -1,10 +1,10 @@
-@inherits AppComponentBase
+﻿@inherits AppComponentBase
 
 <header class="main-header">
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="header-main-container">
         <div class="header-content-container">
-            @if (isDocsRoute)
+            @if (navMenuService.IsDocsRoute)
             {
                 <BitButton Class="header-menu-btn"
                            Variant="BitVariant.Text"
@@ -18,8 +18,10 @@
                 </BitButton>
             }
             <a class="header-logo" href="@Urls.Home" aria-label="bit platform home page" />
-            <div class="header-link header-ps-btn @(isProductsRoute ? "header-link--active" : null) @(isProductsMenuOpen ? "open" : null) @(isProductsMenuForceClosed ? "force-closed" : null)"
-                 @onmouseleave="WrapHandled(HandleProductsMenuMouseLeave)"
+            @* The mouseenter handler is attached only while force-closed is set (it just lifts that
+               flag), so the common hover path stays pure CSS with no interop roundtrip or re-render. *@
+            <div class="header-link header-ps-btn @(navMenuService.IsProductsRoute ? "header-link--active" : null) @(isProductsMenuOpen ? "open" : null) @(isProductsMenuForceClosed ? "force-closed" : null)"
+                 @onmouseenter="@(isProductsMenuForceClosed ? WrapHandled(HandleProductsMenuMouseEnter) : null)"
                  @onkeydown="WrapHandled<KeyboardEventArgs>(HandleProductsMenuKeyDown)">
                 <button type="button"
                         class="header-ps-trigger"
@@ -38,37 +40,16 @@
                         <div class="col">
                             @foreach (var item in column)
                             {
-                                @if (item.Disabled)
-                                {
-                                    <div class="menu-item menu-item--disabled" aria-disabled="true">
-                                        <div class="menu-item-content">
-                                            <div class="item-title">@((MarkupString)item.Title)</div>
-                                            <div class="item-desc">@item.Description</div>
-                                        </div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <a class="menu-item @(IsMenuItemActive(item) ? "active" : null)"
-                                       href="@item.Url"
-                                       target="@(item.External ? "_blank" : null)"
-                                       rel="@(item.External ? "noopener" : null)"
-                                       @onclick="WrapHandled(HandleProductMenuItemClick)">
-                                        <div class="menu-item-content">
-                                            <div class="item-title">@((MarkupString)item.Title)</div>
-                                            <div class="item-desc">@item.Description</div>
-                                        </div>
-                                    </a>
-                                }
+                                @ProductMenuItemTemplate(item, HandleProductMenuItemClick)
                             }
                         </div>
                     }
                 </div>
             </div>
-            <a class="header-link @(currentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
-            <a class="header-link @(currentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
-            <a class="header-link @(currentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
-            <a class="header-link @(currentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-link--active" : null)" href="@Urls.Demos">Demos</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-link--active" : null)" href="@Urls.Pricing">Pricing</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-link--active" : null)" href="@Urls.AboutUs">About us</a>
+            <a class="header-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-link--active" : null)" href="@Urls.ContactUs">Contact us</a>
         </div>
         <div class="right-section">
             <a class="github-container" target="_blank" rel="noopener" aria-label="GitHub repository" title="GitHub repository" href="@Urls.GithubRepo">
@@ -109,7 +90,7 @@
                    OnClick="@WrapHandled(ToggleHeaderMenu)" />
         <div class="header-nav-item">
             <button type="button"
-                    class="header-nav-link header-nav-products-trigger @(isProductsRoute ? "header-nav-link--active" : null)"
+                    class="header-nav-link header-nav-products-trigger @(navMenuService.IsProductsRoute ? "header-nav-link--active" : null)"
                     aria-controls="header-nav-products"
                     aria-expanded="@(isMobileProductsOpen ? "true" : "false")"
                     @onclick=@WrapHandled(ToggleMobileProducts)>
@@ -123,35 +104,44 @@
                 <div class="header-nav-products" id="header-nav-products">
                     @foreach (var item in productMenuColumns.SelectMany(c => c))
                     {
-                        @if (item.Disabled)
-                        {
-                            <div class="menu-item menu-item--disabled" aria-disabled="true">
-                                <div class="menu-item-content">
-                                    <div class="item-title">@((MarkupString)item.Title)</div>
-                                    <div class="item-desc">@item.Description</div>
-                                </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <a class="menu-item @(IsMenuItemActive(item) ? "active" : null)"
-                               href="@item.Url"
-                               target="@(item.External ? "_blank" : null)"
-                               rel="@(item.External ? "noopener" : null)"
-                               @onclick=@WrapHandled(ToggleHeaderMenu)>
-                                <div class="menu-item-content">
-                                    <div class="item-title">@((MarkupString)item.Title)</div>
-                                    <div class="item-desc">@item.Description</div>
-                                </div>
-                            </a>
-                        }
+                        @ProductMenuItemTemplate(item, ToggleHeaderMenu)
                     }
                 </div>
             }
         </div>
-        <a class="header-nav-link @(currentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
-        <a class="header-nav-link @(currentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
-        <a class="header-nav-link @(currentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
-        <a class="header-nav-link @(currentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Demos ? "header-nav-link--active" : null)" href="@Urls.Demos" @onclick=@WrapHandled(ToggleHeaderMenu)>Demos</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.Pricing ? "header-nav-link--active" : null)" href="@Urls.Pricing" @onclick=@WrapHandled(ToggleHeaderMenu)>Pricing</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.AboutUs ? "header-nav-link--active" : null)" href="@Urls.AboutUs" @onclick=@WrapHandled(ToggleHeaderMenu)>About us</a>
+        <a class="header-nav-link @(navMenuService.CurrentUrl == Urls.ContactUs ? "header-nav-link--active" : null)" href="@Urls.ContactUs" @onclick=@WrapHandled(ToggleHeaderMenu)>Contact us</a>
     </nav>
+}
+
+@code {
+    // Shared between the desktop popup columns and the flattened mobile list; only the click
+    // behavior differs.
+    private RenderFragment ProductMenuItemTemplate(ProductMenuItem item, Func<Task> onClick) =>
+        @<text>
+            @if (item.Disabled)
+            {
+                <div class="menu-item menu-item--disabled" aria-disabled="true">
+                    <div class="menu-item-content">
+                        <div class="item-title">@((MarkupString)item.Title)</div>
+                        <div class="item-desc">@item.Description</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a class="menu-item @(IsMenuItemActive(item) ? "active" : null)"
+                   href="@item.Url"
+                   target="@(item.External ? "_blank" : null)"
+                   rel="@(item.External ? "noopener" : null)"
+                   @onclick="WrapHandled(onClick)">
+                    <div class="menu-item-content">
+                        <div class="item-title">@((MarkupString)item.Title)</div>
+                        <div class="item-desc">@item.Description</div>
+                    </div>
+                </a>
+            }
+        </text>;
 }

@@ -4,12 +4,8 @@ namespace Bit.Websites.Platform.Client.Shared;
 
 public partial class MainLayout : IDisposable
 {
+    [AutoInject] private NavMenuService navMenuService = default!;
     [AutoInject] private NavigationManager navigationManager = default!;
-
-    private bool isDocsRoute;
-    private bool isLcncDocRoute;
-    private bool isTemplateDocRoute;
-    private bool isBesqlDocRoute;
 
     private List<BitNavItem> navItems = [];
 
@@ -91,16 +87,13 @@ public partial class MainLayout : IDisposable
 
     private void SetNavItems()
     {
-        var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
+        // The flags live in NavMenuService so this component and Header (which renders the docs
+        // hamburger that toggles the NavMenu mounted here) always agree on what a docs route is.
+        navMenuService.UpdateRouteFlags($"/{navigationManager.ToBaseRelativePath(navigationManager.Uri)}");
 
-        isTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
-        isBesqlDocRoute = currentUrl.Contains("/besql");
-        isLcncDocRoute = currentUrl.Contains("/lowcode-nocode");
-        isDocsRoute = isTemplateDocRoute || isBesqlDocRoute /*|| isLcncDocRoute*/;
-
-        navItems = isTemplateDocRoute ? templatesNavItems
-                 : isBesqlDocRoute ? besqlNavItems
-                 //: isLcncDocRoute ? lcncNavItems
+        navItems = navMenuService.IsTemplateDocRoute ? templatesNavItems
+                 : navMenuService.IsBesqlDocRoute ? besqlNavItems
+                 //: navMenuService.IsLcncDocRoute ? lcncNavItems
                  : [];
     }
 

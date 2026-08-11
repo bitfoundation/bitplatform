@@ -1,3 +1,4 @@
+﻿@import '../../Styles/abstracts/_vars.scss';
 @import '../../Styles/abstracts/_mixins.scss';
 @import '../../Styles/abstracts/_functions.scss';
 
@@ -5,7 +6,7 @@
     overflow: hidden;
     border-radius: 0.75rem;
     border: 1px solid $bit-color-border-secondary;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    transition: border-color 0.2s $MotionEase, box-shadow 0.2s $MotionEase, background-color 0.2s $MotionEase;
 
     .bit-acd-hdr,
     .bit-acd-con {
@@ -40,7 +41,7 @@
             font-size: 1.25rem;
             margin-top: 0.8rem;
             margin-right: 0.625rem;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s $MotionEase;
 
             @include lt-lg {
                 font-size: 1rem;
@@ -201,16 +202,6 @@
         52% {
             opacity: 0;
             transform: translateY(15px);
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .animated {
-            animation: none;
-        }
-
-        .delayed {
-            display: none;
         }
     }
 }

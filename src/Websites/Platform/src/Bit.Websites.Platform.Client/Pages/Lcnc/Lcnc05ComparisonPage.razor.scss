@@ -1,7 +1,0 @@
-@import '../../Styles/abstracts/_mixins.scss';
-
-.page-container {
-    @include PageContainer;
-    display: flex;
-    flex-flow: column;
-}

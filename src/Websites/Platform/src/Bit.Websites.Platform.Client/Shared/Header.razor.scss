@@ -84,7 +84,7 @@
     box-sizing: border-box;
     padding: rem2(10px) rem2(16px);
     color: $bit-color-foreground-secondary;
-    transition: color 150ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    transition: color 150ms $MotionEase 0ms;
 
     // Animated underline: grows from the center on hover, stays put on the active route.
     &::after {
@@ -97,7 +97,7 @@
         transform: scaleX(0);
         border-radius: rem2(1px);
         background-color: $bit-color-primary;
-        transition: transform 200ms cubic-bezier(.4, 0, .2, 1) 0ms;
+        transition: transform 200ms $MotionEase 0ms;
     }
 
     &:hover {
@@ -138,7 +138,7 @@
     height: rem2(40px);
     border-radius: 50%;
     margin-left: rem2(5px);
-    transition: transform 200ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    transition: transform 200ms $MotionEase 0ms;
 }
 
 .github-container {
@@ -151,17 +151,17 @@
     }
 }
 
+// Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
 .toggle-theme-btn {
     padding: 0;
     border: none;
-    display: none;
     cursor: pointer;
     height: rem2(35px);
     border-radius: 50%;
     min-width: rem2(35px);
     color: $bit-color-primary-text;
     background-color: $bit-color-primary;
-    transition: transform 200ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    transition: transform 200ms $MotionEase 0ms;
 
     .icon-container {
         height: 100%;
@@ -173,7 +173,7 @@
         img {
             width: 19px;
             height: 19px;
-            transition: transform 300ms cubic-bezier(.4, 0, .2, 1) 0ms;
+            transition: transform 300ms $MotionEase 0ms;
         }
     }
 
@@ -190,21 +190,15 @@
     }
 }
 
+// The dark-theme/light-theme visibility of the two toggle buttons comes from the global
+// utilities in app.scss.
 :root[bit-theme="dark"] {
-    .dark-theme {
-        display: unset;
-    }
-
     .github-btn {
         background-image: url('images/github-icon-dark.svg');
     }
 }
 
 :root[bit-theme="light"] {
-    .light-theme {
-        display: unset;
-    }
-
     .github-btn {
         background-image: url('images/github-icon-light.svg');
     }
@@ -240,12 +234,12 @@
     background-color: $bit-color-background-primary;
     top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
     height: calc(100vh - #{rem2(calc($HeaderHeight + $HeaderSecondRowHeight))});
-    animation: header-fade-slide-in 250ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    animation: header-fade-slide-in 250ms $MotionEase 0ms;
 
     // Staggered entry for the nav entries; `backwards` keeps each one invisible until its delay hits.
     >.header-nav-item,
     >.header-nav-link {
-        animation: header-fade-slide-in 300ms cubic-bezier(.4, 0, .2, 1) backwards;
+        animation: header-fade-slide-in 300ms $MotionEase backwards;
 
         @for $i from 1 through 7 {
             &:nth-child(#{$i + 1}) {
@@ -305,7 +299,7 @@
     margin-bottom: rem2(16px);
     border: 1px solid $bit-color-border-secondary;
     background-color: $bit-color-background-secondary;
-    animation: header-fade-slide-in 200ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    animation: header-fade-slide-in 200ms $MotionEase 0ms;
 }
 
 ::deep {
@@ -343,8 +337,8 @@
     background-color: $bit-color-background-secondary;
     box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
     // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
-    transition: opacity 180ms cubic-bezier(.4, 0, .2, 1) 0ms,
-        transform 180ms cubic-bezier(.4, 0, .2, 1) 0ms,
+    transition: opacity 180ms $MotionEase 0ms,
+        transform 180ms $MotionEase 0ms,
         visibility 0s linear 180ms;
 
     ::-webkit-scrollbar {
@@ -371,8 +365,8 @@
     border-radius: rem2(4px);
     justify-content: flex-start;
     padding: rem2(8px) rem2(16px);
-    transition: background-color 150ms cubic-bezier(.4, 0, .2, 1) 0ms,
-        transform 150ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    transition: background-color 150ms $MotionEase 0ms,
+        transform 150ms $MotionEase 0ms;
 
     &:hover {
         transform: translateX(rem2(3px));
@@ -438,15 +432,16 @@
 
 .ps-chevron {
     flex-shrink: 0;
-    transition: transform 200ms cubic-bezier(.4, 0, .2, 1) 0ms;
+    transition: transform 200ms $MotionEase 0ms;
 }
 
 .header-ps-btn {
     position: relative;
     cursor: pointer;
 
-    // force-closed suppresses the hover/focus opening right after a menu item is clicked, so the
-    // popup does not linger under the still-parked cursor; the flag lifts on mouseleave.
+    // force-closed suppresses the hover/focus opening after a menu item is clicked, a second tap on
+    // a touch device, or an Escape press, so the popup does not linger under a still-parked cursor
+    // or a sticky :hover; the flag lifts on the next mouseenter.
     &:not(.force-closed):hover,
     &:not(.force-closed):focus-within,
     &.open {
@@ -455,8 +450,8 @@
             visibility: visible;
             pointer-events: auto;
             transform: translateY(0);
-            transition: opacity 180ms cubic-bezier(.4, 0, .2, 1) 0ms,
-                transform 180ms cubic-bezier(.4, 0, .2, 1) 0ms,
+            transition: opacity 180ms $MotionEase 0ms,
+                transform 180ms $MotionEase 0ms,
                 visibility 0s linear 0s;
         }
 

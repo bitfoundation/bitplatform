@@ -10,36 +10,27 @@
     // watched the whole page flip once the client came up.
     var themePreference = HttpContext.Request.Cookies["bit-theme-preference"]?.Trim().ToLowerInvariant();
     // Tampered values are rejected and treated as "nothing stored", so a cookie cannot inject markup.
-    if (themePreference is not null && System.Text.RegularExpressions.Regex.IsMatch(themePreference, "^[a-z0-9-]+$") is false)
+    if (themePreference is not null && themePreference.All(c => char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c) || c is '-') is false)
     {
         themePreference = null;
     }
     // Null while the visitor follows the OS (nothing stored or explicit "system"), which the server
-    // cannot read. The theme-color tag then has to guess, and the script under it carries the
+    // cannot read. The theme-color tag then has to guess, and the inline script under it carries the
     // client's answer back - see there.
     var resolvedTheme = themePreference == "system" ? null : themePreference;
     // bit-theme="<name>" for a concrete choice paints the right theme with no flash; the
     // bit-theme-system marker defers the light/dark resolution to the inline head script below.
-    var rootThemeAttributes = resolvedTheme is not null
-        ? new Dictionary<string, object> { ["bit-theme"] = resolvedTheme }
-        : new Dictionary<string, object> { ["bit-theme-system"] = true };
-    const string darkThemeColor = "#060E2D";
-    const string lightThemeColor = "#FFFFFF";
-    var themeColor = resolvedTheme?.EndsWith("dark", StringComparison.Ordinal) is false ? lightThemeColor : darkThemeColor;
-
-    // First-paint bootstrap, equivalent to BitThemeSsr.InlineHeadScript: re-resolves bit-theme from
-    // the OS preference / localStorage / the preference cookie with the same precedence as the
-    // theme runtime's init, so the attribute is correct before anything is painted.
-    const string themeInlineScript =
-        "<script>(function(){var r=document.documentElement,k='bit-current-theme',ck='bit-theme-preference'," +
-        "m=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches," +
-        "base=r.getAttribute('bit-theme')||'light';" +
-        "if(r.hasAttribute('bit-theme-system')){base=m?'dark':'light';}" +
-        "var cur=base,got=false;" +
-        "try{var s=localStorage.getItem(k);if(s){cur=s;got=true;}}catch(e){}" +
-        "if(!got){var cm=('; '+document.cookie).match('; '+ck+'=([^;]*)');if(cm){try{cur=decodeURIComponent(cm[1]);}catch(e){cur=cm[1];}}}" +
-        "if(cur==='system'){cur=m?'dark':'light';}" +
-        "r.setAttribute('bit-theme',cur);})();</script>";
+    var rootThemeAttributes = resolvedTheme switch
+    {
+        null => systemThemeAttributes,
+        "dark" => darkThemeAttributes,
+        "light" => lightThemeAttributes,
+        _ => new Dictionary<string, object> { ["bit-theme"] = resolvedTheme }
+    };
+    // Dark is the guess while the visitor follows the OS; the inline script corrects it before first
+    // paint. Same dark-name predicate as app.ts's onChange.
+    var isDarkTheme = resolvedTheme is null || resolvedTheme is "dark" || resolvedTheme.EndsWith("-dark", StringComparison.Ordinal);
+    var themeColor = isDarkTheme ? DarkThemeColor : LightThemeColor;
 }
 
 <!DOCTYPE html>
@@ -50,29 +41,16 @@
 <html lang="en" @attributes="rootThemeAttributes" bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
 
 <head>
-    @* First thing in the document: re-resolves bit-theme from localStorage / the preference cookie
-       before anything is painted. The attributes above are already correct for a visitor whose cookie
-       reached us, so this is what covers the rest - following the OS (which the server cannot read),
-       and a localStorage value newer than the cookie. *@
-    @((MarkupString)themeInlineScript)
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />
-    <meta name="theme-color" content="@themeColor"><!-- Kept as a single tag: app.ts (BitBlazorUI.Theme.init onChange) updates this content dynamically via querySelector based on the active theme. -->
-    @if (resolvedTheme is null)
-    {
-        @* The tag above had to guess (the dark default), because this visitor follows the OS and only
-           the client can resolve that - which the inline script at the top of <head> has already done,
-           onto <html>. Read it back and correct the tag here, while the browser is still parsing
-           <head>. app.ts does this same job on every later toggle, but it cannot cover the first paint:
-           app.js loads at the end of <body>, long after the address bar has been painted. *@
-        <Script>
-            document.querySelector('meta[name="theme-color"]').content =
-                (document.documentElement.getAttribute('bit-theme') || '').endsWith('dark')
-                    ? '@darkThemeColor'
-                    : '@lightThemeColor';
-        </Script>
-    }
+    <meta name="theme-color" content="@themeColor"><!-- Kept as a single tag: the inline script below corrects it pre-paint and app.ts (BitBlazorUI.Theme.init onChange) updates it on later toggles, both via querySelector. -->
+    @* Runs while the browser is still parsing <head>, before anything is painted: re-resolves
+       bit-theme from the OS preference / localStorage / the preference cookie (the server can only
+       see the cookie, which may be stale or absent) and corrects the theme-color guess above.
+       app.ts takes over for later toggles; it cannot cover the first paint because app.js loads at
+       the end of <body>, long after the address bar has been painted. *@
+    @((MarkupString)ThemeInlineScript)
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <script type="application/ld+json">
@@ -131,4 +109,33 @@
 </body>
 
 </html>
+
+@code {
+    // The two values of --bit-clr-bg-pri in app.scss's palettes (also repeated in app.ts's onChange).
+    private const string DarkThemeColor = "#060E2D";
+    private const string LightThemeColor = "#FFFFFF";
+
+    private static readonly Dictionary<string, object> systemThemeAttributes = new() { ["bit-theme-system"] = true };
+    private static readonly Dictionary<string, object> darkThemeAttributes = new() { ["bit-theme"] = "dark" };
+    private static readonly Dictionary<string, object> lightThemeAttributes = new() { ["bit-theme"] = "light" };
+
+    // First-paint bootstrap, equivalent to BitThemeSsr.InlineHeadScript: re-resolves bit-theme from
+    // the OS preference / localStorage / the preference cookie with the same precedence as the theme
+    // runtime's init, then fixes the theme-color meta tag rendered right above it - so both the page
+    // and the browser chrome are correct before anything is painted, even when the cookie disagrees
+    // with localStorage.
+    private const string ThemeInlineScript =
+        "<script>(function(){var r=document.documentElement,k='bit-current-theme',ck='bit-theme-preference'," +
+        "m=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches," +
+        "base=r.getAttribute('bit-theme')||'light';" +
+        "if(r.hasAttribute('bit-theme-system')){base=m?'dark':'light';}" +
+        "var cur=base,got=false;" +
+        "try{var s=localStorage.getItem(k);if(s){cur=s;got=true;}}catch(e){}" +
+        "if(!got){var cm=('; '+document.cookie).match('; '+ck+'=([^;]*)');if(cm){try{cur=decodeURIComponent(cm[1]);}catch(e){cur=cm[1];}}}" +
+        "if(cur==='system'){cur=m?'dark':'light';}" +
+        "r.setAttribute('bit-theme',cur);" +
+        "var dk=cur==='dark'||/-dark$/.test(cur);" +
+        "document.querySelector('meta[name=theme-color]').content=dk?'" + DarkThemeColor + "':'" + LightThemeColor + "';" +
+        "})();</script>";
+}
 
