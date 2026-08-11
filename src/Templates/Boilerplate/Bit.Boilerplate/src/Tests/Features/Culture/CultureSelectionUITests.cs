@@ -54,6 +54,12 @@ public partial class CultureSelectionUITests : AppPageTest
         // Pick Persian. This writes the culture cookie and force-reloads the page (See CultureService.ChangeCulture).
         await Page.GetByText(faDisplayName, new() { Exact = true }).ClickAsync();
 
+        // Wait for the reloaded page to finish booting before touching the menu again. With pre-rendering on, the
+        // Persian markup is on screen while the app is still downloading, and a click landing on that not-yet-interactive
+        // DOM is simply lost - the menu never opens and the assertion below waits out its whole timeout. The text
+        // assertions in between would not have caught it: they are satisfied by the pre-rendered html.
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
         // After the reload the home message is now in Persian and the English one is gone.
         await Expect(Page.GetByText(faHomeMessage)).ToBeVisibleAsync();
         await Expect(Page.GetByText(defaultHomeMessage)).ToBeHiddenAsync();

@@ -70,9 +70,10 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
         // and tenant scoped entities are filtered by that tenant (See AppDbContext.ConfigureTenantAwareEntity). Without this
         // rule two users of different tenants on the same host would share a single entry, so a UserAgnostic endpoint like
         // ProductViewController would serve one tenant's rows to another.
-        if (context.HttpContext.User.GetTenantId() is Guid currentTenantId)
+        var currentTenantId = context.HttpContext.User.GetTenantId();
+        if (currentTenantId is not null)
         {
-            context.CacheVaryByRules.VaryByValues.Add("Tenant", currentTenantId.ToString());
+            context.CacheVaryByRules.VaryByValues.Add("Tenant", currentTenantId.Value.ToString());
         }
         //#endif
 
@@ -105,10 +106,27 @@ public class AppResponseCachePolicy(IHostEnvironment env, ServerSharedSettings s
 
         if (context.HttpContext.User.IsAuthenticated() && responseCacheAtt.UserAgnostic is false)
         {
-            // See UserAgnostic's comment.
+            // See UserAgnostic's comment. The private caches are no more per-user than the shared ones: one browser
+            // profile and one running app each span every user who signs in on that device, and both key on the URL.
+            // So a body that depends on who asked for it may not carry a client max-age either.
             edgeCacheTtl = -1;
             outputCacheTtl = -1;
+            clientCacheTtl = -1;
         }
+
+        //#if (multitenant == true)
+        if (currentTenantId is not null)
+        {
+            // The Tenant rule above is a VaryByValues entry, and that is an output cache concept: it never becomes a
+            // response header, so the output cache is the only cache that can see it. Every other cache keys on the
+            // URL, which for an authenticated caller is identical across tenants - a CDN would hand tenant A's body
+            // to tenant B, and the browser's own cache would replay it to whoever signs in next on that profile,
+            // across a restart. Anonymous callers are unaffected: their tenant comes from the host, so it is already
+            // in the URL, and that is the traffic these caches exist for.
+            clientCacheTtl = -1;
+            edgeCacheTtl = -1;
+        }
+        //#endif
 
         if (context.HttpContext.IsBlazorPageContext() && CultureInfoManager.InvariantGlobalization is false)
         {

@@ -40,10 +40,8 @@ public partial class TenantInvitationUITests : AppPageTest
         await InviteUserToCurrentTenant(Page, server, invitedEmail);
 
         // ---- Browser 2: the invited user, in her own isolated browser context ----
-        await using var invitedContext = await Browser.NewContextAsync(ContextOptions());
-        await SetBlazorWebAssemblyServerAddress(serverAddress, invitedContext);
+        await using var invitedContext = await NewBrowserContext(serverAddress);
         var invitedPage = await invitedContext.NewPageAsync();
-        invitedPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
 
         // The account the invitation just created signs in for the very first time with the magic link OTP, exactly the
         // way a self-registered user would (the same flow as MagicLinkSignInTests). Getting signed in proves that a user
@@ -105,7 +103,7 @@ public partial class TenantInvitationUITests : AppPageTest
         // The create and the rename forms share the same "tenant name" placeholder; the create one comes first in the DOM.
         // Expanding the create section resets its form (See ManageMyTenantsPage.OnSectionExpand); that async re-render can
         // wipe a value filled too eagerly, so fill and confirm it stuck before submitting.
-        await FillEnsuringStable(page.GetByPlaceholder(AppStrings.EnterTenantName).First, tenantName);
+        await page.GetByPlaceholder(AppStrings.EnterTenantName).First.FillEnsuringStable(tenantName);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true }).First.ClickAsync();
 
         // Creating a tenant needs elevated access: an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
@@ -129,7 +127,8 @@ public partial class TenantInvitationUITests : AppPageTest
         var inviteHeaderPrefix = AppStrings.InviteUserToTenant.Replace("{0}", "").Trim();
         await page.GetByText(inviteHeaderPrefix).First.ClickAsync();
 
-        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillAsync(email);
+        // Expanding this section resets its form the same way the create one does, so the value has to be confirmed.
+        await page.GetByPlaceholder(AppStrings.EmailPlaceholder).FillEnsuringStable(email);
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Invite, Exact = true }).ClickAsync();
 
         // Inviting also needs elevated access, but she is still elevated from creating the tenant, so no new prompt shows.
@@ -210,24 +209,4 @@ public partial class TenantInvitationUITests : AppPageTest
         await Expect(page).ToHaveTitleAsync(accessible ? AppStrings.DashboardPageTitle : AppStrings.NotAuthorizedPageTitle);
     }
     //#endif
-
-    /// <summary>
-    /// Fills a text field and makes sure the value survives, retrying if an async re-render (e.g. a form that resets
-    /// itself when its accordion section finishes expanding) wipes a value that was filled a moment too early.
-    /// </summary>
-    private static async Task FillEnsuringStable(ILocator field, string value)
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            await field.FillAsync(value);
-
-            // Give any pending reset a moment to land, then confirm our value is still there.
-            await field.Page.WaitForTimeoutAsync((float)TimeSpan.FromMilliseconds(500).TotalMilliseconds);
-
-            if (await field.InputValueAsync() == value)
-                return;
-        }
-
-        throw new InvalidOperationException($"Could not keep the field filled with '{value}'.");
-    }
 }

@@ -1,7 +1,11 @@
+using Bunit;
+using AngleSharp.Dom;
+
 namespace Boilerplate.Tests.Infrastructure.Components;
 
 /// <summary>
-/// Playwright helpers for driving the Bit.BlazorUI <c>BitOtpInput</c> component (its boxes render as <c>.bit-otp-inp</c>) in UI tests.
+/// Helpers for driving the Bit.BlazorUI <c>BitOtpInput</c> component (its boxes render as <c>.bit-otp-inp</c>) in UI tests,
+/// through a real browser (Playwright) and in-memory (bUnit) alike.
 /// </summary>
 public static class BitOtpInputUtils
 {
@@ -21,5 +25,18 @@ public static class BitOtpInputUtils
         await firstInput.WaitForAsync();
 
         await firstInput.FillAsync(code);
+    }
+
+    /// <summary>
+    /// The bUnit counterpart of <see cref="FillOtpInputs(IPage, string)"/>: raises a single <c>input</c> event carrying
+    /// the whole <paramref name="code"/> on the first box, which is the very same path the browser test drives.
+    /// <c>BitOtpInput.HandleOnInput</c> sees a diff longer than one character, spreads it across the boxes (the path it
+    /// shares with a paste) and then fires its <c>OnFill</c> - so the code lands and the panel submits in one step,
+    /// with no per-box focus-advance to race.
+    /// </summary>
+    /// <param name="firstOtpInput">The first <c>.bit-otp-inp</c> element, e.g. <c>cut.Find(".bit-otp-inp")</c>.</param>
+    public static void FillOtpInputs(IElement firstOtpInput, string code)
+    {
+        firstOtpInput.Input(code);
     }
 }

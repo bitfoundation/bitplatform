@@ -1,4 +1,4 @@
-﻿@using Bit.Websites.Platform.Shared.Dtos.AiChat
+@using Bit.Websites.Platform.Shared.Dtos.AiChat
 @inherits AppComponentBase
 
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => isSmallScreen = isMatched" />
@@ -72,7 +72,7 @@
 
                 @if (chatMessages.Count == 1)
                 {
-                    <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
+                    <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"

@@ -56,7 +56,7 @@ public static class WebApplicationBuilderExtensions
             }
 
             //#if(redis == true)
-            // Add default Redis connection for Hangfire, SignalR backplane, and distributed locking (persistence Redis with AOF)
+            // Add default Redis connection for Hangfire and application-level distributed locking (persistence Redis with AOF)
             builder.AddKeyedRedisClient("redis-persistent", settings => settings.DisableTracing = true);
 
             // Add optional Redis connection for caching (ephemeral Redis without persistence)
@@ -225,7 +225,7 @@ public static class WebApplicationBuilderExtensions
                         })
                         .AddHttpClientInstrumentation()
                         .AddFusionCacheInstrumentation()
-                        .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is false /* Ignore Hangfire */)
+                        .AddEntityFrameworkCoreInstrumentation(options => options.Filter = (providerName, command) => command?.CommandText?.Contains("Hangfire") is not true /* Ignore Hangfire */)
                         .AddHangfireInstrumentation();
                 })
                 .ConfigureResource(resource =>
@@ -278,7 +278,7 @@ public static class WebApplicationBuilderExtensions
         {
             builder.Services.AddOutputCache(configureOptions: static caching =>
                 caching.AddPolicy("HealthChecks",
-                build: static policy => policy.Expire(TimeSpan.FromSeconds(10))));
+                build: static policy => policy.Expire(TimeSpan.FromSeconds(10)).SetVaryByQuery([])));
 
             return builder.Services.AddHealthChecks()
                 .AddDiskStorageHealthCheck(options => options.AddDrive(Path.GetPathRoot(Directory.GetCurrentDirectory())!, minimumFreeMegabytes: 5 * 1024), name: "binStorage", tags: ["live"]);

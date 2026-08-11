@@ -8,7 +8,7 @@ namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
 /// The seeded system prompts are the only description the model gets of what it may do, and nothing anywhere
-/// validates them: they are plain strings assembled with <c>+</c> across <c>//#if</c> arms and stamped into the
+/// validates them: they are plain strings assembled with <c>+</c> across template conditional arms and stamped into the
 /// database with <c>HasData</c>. A wrong tool name, an unsupplied <c>{{Variable}}</c> or a lost newline is
 /// invisible in code review, invisible at build time, and only shows up as the assistant behaving oddly.
 /// <para>
@@ -35,7 +35,9 @@ public partial class SystemPromptContractTests
     [
         SystemPromptConfiguration.GetInitialSystemPromptMarkdown(),
         SystemPromptConfiguration.GetFollowUpSuggestionSystemPromptMarkdown(),
+        //#if (module == "Sales" || module == "Admin")
         SystemPromptConfiguration.GetAnalyzeProductImageSystemPromptMarkdown()
+        //#endif
     ];
 
     /// <summary>
@@ -97,7 +99,7 @@ public partial class SystemPromptContractTests
     }
 
     /// <summary>
-    /// The prompts are built by concatenating verbatim literals across <c>//#if</c> arms. The newline between two
+    /// The prompts are built by concatenating verbatim literals across template conditional arms. The newline between two
     /// literals in the source is C# whitespace, not string content, so a segment that does not end in one welds
     /// the next segment onto its last line - which turned a security instruction, a canned user-facing sentence
     /// and the heading of the next section into a single markdown line in the DEFAULT configuration.

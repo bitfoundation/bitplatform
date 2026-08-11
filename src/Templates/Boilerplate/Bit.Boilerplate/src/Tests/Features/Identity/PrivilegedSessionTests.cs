@@ -44,19 +44,15 @@ public partial class PrivilegedSessionTests : AppPageTest
         // right afterwards - the server-side UserSession persists regardless, keeping its privileged slot taken.
         for (var device = 0; device < maxPrivilegedSessions - 1; device++)
         {
-            await using var deviceContext = await Browser.NewContextAsync(ContextOptions());
-            await SetBlazorWebAssemblyServerAddress(serverAddress, deviceContext);
+            await using var deviceContext = await NewBrowserContext(serverAddress);
             var devicePage = await deviceContext.NewPageAsync();
-            devicePage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
             await MagicLinkSignInUtils.SignInAgainViaMagicLinkOtp(devicePage, server, email, TestContext.CancellationToken);
         }
 
         // The final sign-in (a fourth isolated browser): all the allowed privileged sessions already exist, so this
         // newest session is NOT privileged. Keep its browser open to inspect the session's own state below.
-        await using var newestContext = await Browser.NewContextAsync(ContextOptions());
-        await SetBlazorWebAssemblyServerAddress(serverAddress, newestContext);
+        await using var newestContext = await NewBrowserContext(serverAddress);
         var newestPage = await newestContext.NewPageAsync();
-        newestPage.SetDefaultTimeout((float)TimeSpan.FromSeconds(30).TotalMilliseconds);
         await MagicLinkSignInUtils.SignInAgainViaMagicLinkOtp(newestPage, server, email, TestContext.CancellationToken);
 
         // From the newest session, open the Settings > Sessions page.

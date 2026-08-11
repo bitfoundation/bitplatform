@@ -638,7 +638,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
             try
             {
-                await _js.BitCalendarsFocusDay(GetDayButtonId(_focusedDate.Value));
+                await _js.BitCalendarsFocusCell(GetDayButtonId(_focusedDate.Value));
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

@@ -1,3 +1,5 @@
+using System.Runtime.ExceptionServices;
+
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 public partial class RetryDelegatingHandler(HttpMessageHandler handler)
@@ -10,7 +12,7 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
         const int maxRetries = 3;
         var delays = GetDelaySequence(scaleFirstTry: TimeSpan.FromSeconds(3)).Take(maxRetries - 1).ToArray();
 
-        Exception? lastExp = null;
+        ExceptionDispatchInfo? lastExp = null;
 
         for (int attempt = 0; attempt < maxRetries; attempt++)
         {
@@ -35,7 +37,11 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
                 if (exp is KnownException and not TransientException)
                     throw;
 
-                lastExp = exp;
+                // Captured rather than stored, because `throw lastExp` at the end would reset the stack trace to that
+                // line - discarding where the failure actually came from, on the one path whose whole purpose is to
+                // report an unrecoverable network failure. The retry loop is disabled in Development, so the mangled
+                // trace only ever existed in telemetry from released clients.
+                lastExp = ExceptionDispatchInfo.Capture(exp);
 
                 // Only wait if there are retries left
                 if (attempt < maxRetries - 1)
@@ -46,7 +52,8 @@ public partial class RetryDelegatingHandler(HttpMessageHandler handler)
             }
         }
 
-        throw lastExp!;
+        lastExp!.Throw();
+        throw null; // Unreachable: Throw() above never returns, but the compiler cannot know that.
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Bit.Butil;
@@ -44,6 +45,8 @@ public static partial class Program
         builder.ConfigureServices();
 
         var host = builder.Build();
+
+        host.Services.GetService<IStartupValidator>()?.Validate();
 
         AppDomain.CurrentDomain.UnhandledException += (_, e) => LogException(e.ExceptionObject, reportedBy: nameof(AppDomain.UnhandledException), host);
         TaskScheduler.UnobservedTaskException += (_, e) =>

@@ -5,6 +5,7 @@
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 //#if (appInsights == true)
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -48,10 +49,7 @@ public static partial class Program
 
             ClientWindowsSettings settings = new();
             configuration.Bind(settings);
-            services.AddSingleton(sp =>
-            {
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWindowsSettings>>().Value);
             services.AddSingleton(ITelemetryContext.Current!);
             //#if (notification == true)
             services.AddSingleton<IPushNotificationService, WindowsPushNotificationService>();
