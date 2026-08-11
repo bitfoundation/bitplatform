@@ -1896,6 +1896,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (IsEnabled is false) return;
 
+        // The year navigation of the month picker moves _currentYear without touching the year
+        // picker's range, so the range is realigned whenever it no longer contains the current year.
+        if (_showMonthPicker && (_currentYear < _yearPickerStartYear || _currentYear > _yearPickerEndYear))
+        {
+            ChangeYearRanges(_currentYear - 1);
+        }
+
         _showMonthPicker = !_showMonthPicker;
     }
 
@@ -2192,6 +2199,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             var isInMaxDayRangeYear = MaxRange.HasValue &&
                                       MaxRange.Value.TotalDays > 0 &&
                                       CurrentValue?.StartDate is not null &&
+                                      CurrentValue!.EndDate.HasValue is false &&
                                       (_culture.Calendar.GetYear(GetMaxEndDate()) == _currentYear ||
                                        _culture.Calendar.GetYear(GetMinEndDate()) == _currentYear);
 
