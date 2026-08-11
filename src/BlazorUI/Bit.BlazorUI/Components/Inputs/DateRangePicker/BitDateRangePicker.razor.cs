@@ -499,7 +499,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Whether or not the DateRangePicker's callout is open.
     /// </summary>
-    [Parameter, TwoWayBound]
+    [Parameter, TwoWayBound, ResetClassBuilder]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -1066,6 +1066,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ClassBuilder.Register(() => _hasFocus ? $"bit-dtrp-foc {Classes?.Focused}" : string.Empty);
 
+        // The callout takes the keyboard focus with it, so the input alone cannot mark the picker as
+        // active while its calendar is on screen. Standalone has no input to mark in the first place.
+        ClassBuilder.Register(() => IsOpen && Standalone is false ? "bit-dtrp-opn" : string.Empty);
+
         ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtrp-req" : string.Empty);
     }
 
@@ -1443,6 +1447,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             _focusedDate = GetFocusableDay();
             _focusAfterRender = true;
+        }
+        else
+        {
+            // A click that landed on the icon rather than on the input never moved the focus into the
+            // field, so the picker would open with none of the focus cues the very same click on the
+            // input two pixels away produces.
+            await InputElement.FocusAsync();
         }
 
         StateHasChanged();

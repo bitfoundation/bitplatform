@@ -193,6 +193,19 @@
     }
 }
 
+// The open callout is the active state of the whole component, so the field it hangs off has to read
+// as active too. Kept at two classes of specificity, so the disabled and invalid borders (three) stay
+// on top of it, and the borderless variants still win by coming later in the file.
+.bit-dtrp-opn {
+    .bit-dtrp-icn {
+        border-color: var(--bit-dtrp-clr);
+    }
+
+    .bit-dtrp-ico {
+        color: var(--bit-dtrp-clr);
+    }
+}
+
 .bit-dtrp-cal {
     display: none;
     position: fixed;
@@ -893,6 +906,11 @@
         .bit-dtrp-icn {
             @include focus-underline-ring;
         }
+    }
+
+    // The underlined variant drops the icon border, so its open state colors the underline instead.
+    &.bit-dtrp-opn .bit-dtrp-wrp {
+        border-bottom-color: var(--bit-dtrp-clr);
     }
 }
 
