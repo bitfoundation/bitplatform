@@ -74,8 +74,13 @@ public partial class BitCarousel : BitComponentBase
     /// <remarks>
     /// It is the duration of the slide of a page in and out of the view, and of the cross-fade of the
     /// <see cref="Fade"/> effect. A value of 0 moves the slides at once, with no animation at all.
+    /// <br />
+    /// The animation also collapses to a near-zero duration when the operating system or the browser
+    /// reports 'prefers-reduced-motion: reduce', unless <see cref="BitComponentBase.ForceAnimation"/>
+    /// opts the carousel out of it.
     /// </remarks>
-    [Parameter] public double AnimationDuration { get; set; } = 0.5;
+    [Parameter, ResetStyleBuilder]
+    public double AnimationDuration { get; set; } = 0.5;
 
     /// <summary>
     /// Enables/disables the auto scrolling of the slides.
@@ -617,6 +622,11 @@ public partial class BitCarousel : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-csl-gap:{Gap}" : string.Empty);
+
+        // The duration is handed to the stylesheet as the -full token rather than written into the
+        // transitions directly, so the reduced-motion collapse in the stylesheet can still shorten it
+        // (an inline duration would be out of reach of any media query).
+        StyleBuilder.Register(() => FormattableString.Invariant($"--bit-csl-dur-full:{Math.Max(0, AnimationDuration)}s"));
     }
 
     protected override void OnInitialized()
@@ -730,11 +740,11 @@ public partial class BitCarousel : BitComponentBase
             : FormattableString.Invariant($"transform:translateX({percent}%)");
     }
 
+    // The duration lives in a CSS variable (fed from AnimationDuration in RegisterCssStyles), so the
+    // stylesheet can collapse it under 'prefers-reduced-motion: reduce'.
     private string Transition()
     {
-        var duration = Math.Max(0, AnimationDuration);
-
-        return FormattableString.Invariant($"transition:all {duration}s");
+        return "transition:all var(--bit-csl-dur)";
     }
 
     private async Task ResetDimensionsAsync()
@@ -997,7 +1007,7 @@ public partial class BitCarousel : BitComponentBase
 
         if (Fade)
         {
-            var transition = FormattableString.Invariant($"transition:opacity {Math.Max(0, AnimationDuration)}s");
+            var transition = "transition:opacity var(--bit-csl-dur)";
 
             foreach (var c in currents)
             {

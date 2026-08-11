@@ -19,9 +19,31 @@
     --bit-csl-dot-size: #{spacing(1.25)};
     --bit-csl-btn-size: #{spacing(3)};
 
+    // The duration of the slide/fade of the pages. The AnimationDuration parameter arrives inline as
+    // the -full token and the transitions read this derived one, following the -full pattern of
+    // motion.fluent.scss, so the reduced-motion query below can still collapse a duration that was
+    // set inline. The fallback is the default of the parameter.
+    --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
+
     &:focus-visible {
         @include focus-ring;
     }
+}
+
+// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration transition
+// never fires its transitionend event.
+@media (prefers-reduced-motion: reduce) {
+    .bit-csl {
+        --bit-csl-dur: 0.01ms;
+    }
+}
+
+// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens,
+// so the carousel's own token is restored here, both for a carousel that sets ForceAnimation itself
+// and for one sitting inside an opted-out subtree.
+.bit-csl.bit-fam,
+.bit-fam .bit-csl {
+    --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
 }
 
 .bit-crsi {
