@@ -287,6 +287,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the hour/minute starts changing continuously while an
+    /// increase/decrease button of the time picker is held down.
+    /// </summary>
+    [Parameter] public int ContinuousSpinDelay { get; set; } = 400;
+
+    /// <summary>
     /// CultureInfo for the DateRangePicker.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -3089,19 +3095,23 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         ResetCts();
 
-        var cts = _cancellationTokenSource;
+        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held,
+        // so awaiting it would leave the pointerdown event handler (and the render it drives) pending
+        // for the whole duration of the press. Its lifetime is owned by the cancellation token source
+        // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
+        _ = ContinuousChangeTimeAfterDelay(isNext, isHour, isStartTime, _cancellationTokenSource);
+    }
+
+    private async Task ContinuousChangeTimeAfterDelay(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)
+    {
         try
         {
-            await Task.Run(async () =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await Task.Delay(400);
-                    await ContinuousChangeTime(isNext, isHour, isStartTime, cts);
-                });
-            }, cts.Token);
+            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
+
+            await InvokeAsync(() => ContinuousChangeTime(isNext, isHour, isStartTime, cts));
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) { } // the button was released before the continuous spin started
+        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
     }
 
     private async Task ContinuousChangeTime(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)

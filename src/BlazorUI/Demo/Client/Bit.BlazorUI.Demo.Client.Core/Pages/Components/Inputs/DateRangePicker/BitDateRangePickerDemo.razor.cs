@@ -98,6 +98,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ContinuousSpinDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay in milliseconds before the hour/minute starts changing continuously while an increase/decrease button of the time picker is held down.",
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "null",

@@ -3330,6 +3330,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.HourStep, 3);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so each press contributes
+            // exactly one step no matter how long the test itself takes.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
@@ -3360,6 +3363,9 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MinuteStep, 15);
             parameters.Add(p => p.ShowTimePicker, true);
+            // A long delay keeps the press-and-hold spin out of the picture, so each press contributes
+            // exactly one step no matter how long the test itself takes.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
