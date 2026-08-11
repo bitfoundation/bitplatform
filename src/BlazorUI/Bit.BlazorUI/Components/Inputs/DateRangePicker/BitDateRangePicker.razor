@@ -70,7 +70,7 @@
                        style="@Styles?.Input"
                        class="bit-dtrp-inp@(AllowTextInput ? " bit-dtrp-ein" : null) @Classes?.Input" />
 
-                @if (IsEnabled && ShowClearButton && CurrentValue?.StartDate is not null)
+                @if (IsEnabled && ReadOnly is false && ShowClearButton && (CurrentValue?.StartDate is not null || CurrentValue?.EndDate is not null))
                 {
                     <button @onclick="HandleOnClearButtonClick" @onclick:stopPropagation
                             style="@Styles?.ClearButton"
@@ -127,7 +127,7 @@
      dir="@Dir?.ToString().ToLower()">
     <div style="@Styles?.CalloutContainer"
          class="bit-dtrp-cac @Classes?.CalloutContainer"
-         role="@(Standalone ? null : "dialog")"
+         role="@(Standalone ? "group" : "dialog")"
          @attributes=@CalloutHtmlAttributes
          @onkeydown="HandleOnCalloutKeyDown"
          aria-label="@CalloutAriaLabel">
@@ -221,6 +221,7 @@
                                             type="button"
                                             disabled="@prevDisabled"
                                             title="@GoToPrevMonthTitle"
+                                            aria-label="@GoToPrevMonthTitle"
                                             aria-disabled="@prevDisabled"
                                             style="@Styles?.PrevMonthNavButton"
                                             class="bit-dtrp-nbt @Classes?.PrevMonthNavButton">
@@ -236,6 +237,7 @@
                                     <button @onclick="HandleGoToToday"
                                             type="button"
                                             title="@GoToTodayTitle"
+                                            aria-label="@GoToTodayTitle"
                                             disabled="@goToTodayDisabled"
                                             style="@Styles?.GoToTodayButton"
                                             aria-disabled="@goToTodayDisabled"
@@ -251,6 +253,7 @@
                                             type="button"
                                             disabled="@nextDisabled"
                                             title="@GoToNextMonthTitle"
+                                            aria-label="@GoToNextMonthTitle"
                                             aria-disabled="@nextDisabled"
                                             style="@Styles?.NextMonthNavButton"
                                             class="bit-dtrp-nbt @Classes?.NextMonthNavButton">
@@ -636,6 +639,7 @@
                                 <button @onclick="ToggleTimePickerOverlay"
                                         type="button"
                                         title="@HideTimePickerTitle"
+                                        aria-label="@HideTimePickerTitle"
                                         disabled="@(IsEnabled is false)"
                                         aria-disabled="@(IsEnabled is false)"
                                         style="@Styles?.HideTimePickerButton"
@@ -654,6 +658,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, true, true)"
                                         type="button"
+                                        title="@StartTimeIncreaseHourTitle"
+                                        aria-label="@StartTimeIncreaseHourTitle"
                                         style="@Styles?.StartTimeIncreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeIncreaseHourButton"
                                         disabled="@startTimeIncreaseHourDisabled"
@@ -673,6 +679,7 @@
                                        readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
                                        style="@Styles?.StartTimeHourInput"
+                                       aria-label="@StartTimeHourInputAriaLabel"
                                        aria-disabled="@(IsEnabled is false)"
                                        class="bit-dtrp-tin @Classes?.StartTimeHourInput"
                                        autocomplete="@BitAutoCompleteValue.NewPassword" />
@@ -680,6 +687,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, true, true)"
                                         type="button"
+                                        title="@StartTimeDecreaseHourTitle"
+                                        aria-label="@StartTimeDecreaseHourTitle"
                                         style="@Styles?.StartTimeDecreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeDecreaseHourButton"
                                         disabled="@startTimeDecreaseHourDisabled"
@@ -695,6 +704,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, false, true)"
                                         type="button"
+                                        title="@StartTimeIncreaseMinuteTitle"
+                                        aria-label="@StartTimeIncreaseMinuteTitle"
                                         style="@Styles?.StartTimeIncreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeIncreaseMinuteButton"
                                         disabled="@startTimeIncreaseMinuteDisabled"
@@ -713,6 +724,7 @@
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
+                                       aria-label="@StartTimeMinuteInputAriaLabel"
                                        aria-disabled="@(IsEnabled is false)"
                                        style="@Styles?.StartTimeMinuteInput"
                                        class="bit-dtrp-tin @Classes?.StartTimeMinuteInput"
@@ -721,6 +733,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, false, true)"
                                         type="button"
+                                        title="@StartTimeDecreaseMinuteTitle"
+                                        aria-label="@StartTimeDecreaseMinuteTitle"
                                         style="@Styles?.StartTimeDecreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeDecreaseMinuteButton"
                                         disabled="@startTimeDecreaseMinuteDisabled"
@@ -765,6 +779,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, true, false)"
                                         type="button"
+                                        title="@EndTimeIncreaseHourTitle"
+                                        aria-label="@EndTimeIncreaseHourTitle"
                                         style="@Styles?.EndTimeIncreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeIncreaseHourButton"
                                         disabled="@endTimeIncreaseHourDisabled"
@@ -784,6 +800,7 @@
                                        readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
                                        style="@Styles?.EndTimeHourInput"
+                                       aria-label="@EndTimeHourInputAriaLabel"
                                        aria-disabled="@(IsEnabled is false)"
                                        class="bit-dtrp-tin @Classes?.EndTimeHourInput"
                                        autocomplete="@BitAutoCompleteValue.NewPassword" />
@@ -791,6 +808,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, true, false)"
                                         type="button"
+                                        title="@EndTimeDecreaseHourTitle"
+                                        aria-label="@EndTimeDecreaseHourTitle"
                                         style="@Styles?.EndTimeDecreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeDecreaseHourButton"
                                         disabled="@endTimeDecreaseHourDisabled"
@@ -806,6 +825,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, false, false)"
                                         type="button"
+                                        title="@EndTimeIncreaseMinuteTitle"
+                                        aria-label="@EndTimeIncreaseMinuteTitle"
                                         style="@Styles?.EndTimeIncreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeIncreaseMinuteButton"
                                         disabled="@endTimeIncreaseMinuteDisabled"
@@ -825,6 +846,7 @@
                                        readonly="@ReadOnly"
                                        disabled="@(IsEnabled is false)"
                                        style="@Styles?.EndTimeMinuteInput"
+                                       aria-label="@EndTimeMinuteInputAriaLabel"
                                        aria-disabled="@(IsEnabled is false)"
                                        class="bit-dtrp-tin @Classes?.EndTimeMinuteInput"
                                        autocomplete="@BitAutoCompleteValue.NewPassword" />
@@ -832,6 +854,8 @@
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, false, false)"
                                         type="button"
+                                        title="@EndTimeDecreaseMinuteTitle"
+                                        aria-label="@EndTimeDecreaseMinuteTitle"
                                         style="@Styles?.EndTimeDecreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeDecreaseMinuteButton"
                                         disabled="@endTimeDecreaseMinuteDisabled"

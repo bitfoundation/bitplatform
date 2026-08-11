@@ -9,7 +9,7 @@ public partial class BitDateRangePickerDemo
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the DateRangePicker allows string date inputs.",
+            Description = "Whether or not the DateRangePicker allows string date inputs. A typed range is validated against every restriction the calendar enforces (MinDate, MaxDate, MinRange, MaxRange, the disabled days and ExcludeDisabledDates), so an out-of-bounds range is rejected as an invalid value.",
         },
         new()
         {
@@ -99,9 +99,9 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "Culture",
-            Type = "CultureInfo",
-            DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the DateRangePicker."
+            Type = "CultureInfo?",
+            DefaultValue = "null",
+            Description = "CultureInfo for the DateRangePicker. If not set, CultureInfo.CurrentUICulture is used."
         },
         new()
         {
@@ -149,6 +149,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "EndTimeDecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease end hour",
+            Description = "The title and the aria-label of the end time-picker's decrease-hour button.",
+        },
+        new()
+        {
             Name = "EndTimeDecreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -162,6 +169,20 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the end time-picker's decrease-minute button icon from the built-in Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "EndTimeDecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease end minute",
+            Description = "The title and the aria-label of the end time-picker's decrease-minute button.",
+        },
+        new()
+        {
+            Name = "EndTimeHourInputAriaLabel",
+            Type = "string",
+            DefaultValue = "End hour",
+            Description = "The aria-label of the end time-picker's hour input.",
         },
         new()
         {
@@ -181,6 +202,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "EndTimeIncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase end hour",
+            Description = "The title and the aria-label of the end time-picker's increase-hour button.",
+        },
+        new()
+        {
             Name = "EndTimeIncreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -194,6 +222,20 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the end time-picker's increase-minute button icon from the built-in Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "EndTimeIncreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Increase end minute",
+            Description = "The title and the aria-label of the end time-picker's increase-minute button.",
+        },
+        new()
+        {
+            Name = "EndTimeMinuteInputAriaLabel",
+            Type = "string",
+            DefaultValue = "End minute",
+            Description = "The aria-label of the end time-picker's minute input.",
         },
         new()
         {
@@ -571,6 +613,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "PagedNavigation",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string",
             DefaultValue = "string.Empty",
@@ -765,6 +814,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "StartTimeDecreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Decrease start hour",
+            Description = "The title and the aria-label of the start time-picker's decrease-hour button.",
+        },
+        new()
+        {
             Name = "StartTimeDecreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -778,6 +834,20 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the start time-picker's decrease-minute button icon from the built-in Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "StartTimeDecreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Decrease start minute",
+            Description = "The title and the aria-label of the start time-picker's decrease-minute button.",
+        },
+        new()
+        {
+            Name = "StartTimeHourInputAriaLabel",
+            Type = "string",
+            DefaultValue = "Start hour",
+            Description = "The aria-label of the start time-picker's hour input.",
         },
         new()
         {
@@ -797,6 +867,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "StartTimeIncreaseHourTitle",
+            Type = "string",
+            DefaultValue = "Increase start hour",
+            Description = "The title and the aria-label of the start time-picker's increase-hour button.",
+        },
+        new()
+        {
             Name = "StartTimeIncreaseMinuteIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -810,6 +887,20 @@ public partial class BitDateRangePickerDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the start time-picker's increase-minute button icon from the built-in Fluent UI icon set.",
+        },
+        new()
+        {
+            Name = "StartTimeIncreaseMinuteTitle",
+            Type = "string",
+            DefaultValue = "Increase start minute",
+            Description = "The title and the aria-label of the start time-picker's increase-minute button.",
+        },
+        new()
+        {
+            Name = "StartTimeMinuteInputAriaLabel",
+            Type = "string",
+            DefaultValue = "Start minute",
+            Description = "The aria-label of the start time-picker's minute input.",
         },
         new()
         {

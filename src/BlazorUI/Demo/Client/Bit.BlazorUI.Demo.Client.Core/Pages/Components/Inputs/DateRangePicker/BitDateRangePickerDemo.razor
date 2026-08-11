@@ -72,7 +72,10 @@
             "Last 7 days" correct however long the page has been open. The applied preset stays highlighted until the range
             is changed by any other means, <b>OnPresetSelect</b> reports which one was clicked, and when <b>AutoClose</b> is on
             (and the picker is not <b>Standalone</b>), selecting one closes the callout just like picking the second date
-            does. A preset can also be disabled, titled and styled individually.
+            does. A preset can also be disabled, titled and styled individually. A preset whose range violates the
+            calendar's restrictions (<b>MinDate</b>, <b>MaxDate</b>, <b>MinRange</b>, the disabled days or
+            <b>ExcludeDisabledDates</b>) is rejected when clicked, since a shifted variant of the advertised range would
+            not be the range its button promised.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Common ranges" Presets="presets" @bind-Value="presetsValue"
@@ -190,6 +193,8 @@
             button and only the last one the "next month" button, so navigating moves the whole strip. The days
             of the adjacent months are dropped from the grids, since they would otherwise show up twice, and the
             calendar quietly falls back to a single month whenever the viewport is too narrow to fit them all.
+            By default each navigation click moves the strip by a single month; <b>PagedNavigation</b> makes it
+            move by all of the rendered months at once, so consecutive pages never overlap.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Two months" MonthCount="2" @bind-Value="monthCountValue" />
@@ -197,6 +202,8 @@
             <BitDateRangePicker Label="Two months with presets" MonthCount="2" Presets="presets" />
             <br /><br />
             <BitDateRangePicker Label="Three months with week numbers" MonthCount="3" ShowWeekNumbers />
+            <br /><br />
+            <BitDateRangePicker Label="Two months with paged navigation" MonthCount="2" PagedNavigation />
         </div>
         <br />
         <div>
@@ -250,7 +257,10 @@
             With <b>AllowTextInput</b> the input becomes editable and the typed text is parsed back into a range. The text
             must follow the <b>ValueFormat</b> template with both dates written in the <b>DateFormat</b> pattern; an
             unparsable value raises the validation error of <b>InvalidErrorMessage</b>. Leaving the end date as <code>---</code>
-            (or empty) keeps the range open-ended, and a reversed pair is swapped automatically.
+            (or empty) keeps the range open-ended, and a reversed pair is swapped automatically. A typed range is also
+            validated against every restriction the calendar enforces (<b>MinDate</b>, <b>MaxDate</b>, <b>MinRange</b>,
+            <b>MaxRange</b>, the disabled days and <b>ExcludeDisabledDates</b>), so no range that could not be picked
+            from the day grid can slip in through the text input.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Text input allowed"
@@ -264,6 +274,14 @@
                                 DateFormat="dd/MM/yyyy"
                                 ValueFormat="{0} - {1}"
                                 InvalidErrorMessage="The entered date range is not valid."
+                                Placeholder="dd/MM/yyyy - dd/MM/yyyy" />
+            <br /><br />
+            <div>A typed range longer than the 7-day MaxRange is rejected as invalid:</div>
+            <BitDateRangePicker Label="Text input with MaxRange: 7 days"
+                                AllowTextInput
+                                MaxRange="TimeSpan.FromDays(7)"
+                                DateFormat="dd/MM/yyyy"
+                                ValueFormat="{0} - {1}"
                                 Placeholder="dd/MM/yyyy - dd/MM/yyyy" />
         </div>
     </DemoExample>
@@ -370,8 +388,9 @@
     <DemoExample Title="ReadOnly" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div class="example-desc">
             <b>ReadOnly</b> keeps the component fully rendered and navigable — the callout still opens and the months can
-            still be browsed — but blocks every change: days cannot be selected, the time spinners are inert and the typed
-            text is ignored. Unlike <b>IsEnabled="false"</b>, the value is still submitted with the form.
+            still be browsed — but blocks every change: days cannot be selected, the time spinners are inert, the typed
+            text is ignored and the clear button is not rendered. Unlike <b>IsEnabled="false"</b>, the value is still
+            submitted with the form.
         </div>
         <div class="example-content">
             <BitDateRangePicker Label="Basic" ReadOnly @bind-Value="readOnlyDateRange" />

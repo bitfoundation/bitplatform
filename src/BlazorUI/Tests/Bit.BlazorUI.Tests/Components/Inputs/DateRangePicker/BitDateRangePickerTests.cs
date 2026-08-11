@@ -2728,6 +2728,504 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.AreEqual("background-color: red;", navWrapper.GetAttribute("style"));
     }
 
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldRespectMaxRange()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MaxRange, TimeSpan.FromDays(7));
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-10");
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeAtExactlyMaxRangeShouldBeAccepted()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MaxRange, TimeSpan.FromDays(7));
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-08");
+
+        Assert.IsNotNull(component.Instance.Value);
+        Assert.AreEqual(new DateTime(2024, 3, 8), component.Instance.Value!.EndDate!.Value.DateTime);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldRespectMinRange()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MinRange, TimeSpan.FromDays(3));
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-02");
+
+        Assert.IsNull(component.Instance.Value);
+
+        // A range of exactly MinRange is the shortest allowed one, matching the day grid.
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-04");
+
+        Assert.IsNotNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldRespectMinAndMaxDate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MinDate, FixedDate(2024, 3, 5));
+            parameters.Add(p => p.MaxDate, FixedDate(2024, 3, 20));
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-10");
+
+        Assert.IsNull(component.Instance.Value);
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-10 - 2024-03-25");
+
+        Assert.IsNull(component.Instance.Value);
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-10 - 2024-03-15");
+
+        Assert.IsNotNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldRejectABlockedEndpoint()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 5) });
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-05 - 2024-03-10");
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldSpanDisabledDaysWithoutExcludeDisabledDates()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 3) });
+        });
+
+        // By default a range simply spans over the disabled days between its two ends.
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-05");
+
+        Assert.IsNotNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedRangeShouldRespectExcludeDisabledDates()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.ExcludeDisabledDates, true);
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 3) });
+        });
+
+        component.Find(".bit-dtrp-inp").Change("2024-03-01 - 2024-03-05");
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPresetShorterThanMinRangeShouldNotBeApplied()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MinRange, TimeSpan.FromDays(5));
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Too short", Value = new() { StartDate = FixedDate(2024, 3, 1), EndDate = FixedDate(2024, 3, 3) } },
+            });
+        });
+
+        component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPresetWithABlockedEndShouldNotBeApplied()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 5) });
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Blocked end", Value = new() { StartDate = FixedDate(2024, 3, 1), EndDate = FixedDate(2024, 3, 5) } },
+            });
+        });
+
+        component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPresetCoveringADisabledDayShouldRespectExcludeDisabledDates()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ExcludeDisabledDates, true);
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 3) });
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Covers a blocked day", Value = new() { StartDate = FixedDate(2024, 3, 1), EndDate = FixedDate(2024, 3, 5) } },
+            });
+        });
+
+        component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPresetClampedByMaxRangeOntoABlockedDayShouldNotBeApplied()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromDays(5));
+            // The advertised end (3/10) is fine, but the MaxRange clamp moves the applied end
+            // to 3/6, which is a blocked day — so the preset must be rejected.
+            parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 6) });
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Clamped onto a blocked day", Value = new() { StartDate = FixedDate(2024, 3, 1), EndDate = FixedDate(2024, 3, 10) } },
+            });
+        });
+
+        component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPagedNavigationShouldAdvanceByTheRenderedMonths()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.PagedNavigation, true);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = FixedDate(2024, 3, 10) });
+        });
+
+        component.Find(".bit-dtrp-dwp [title='Go to next month']").Click();
+
+        var titles = component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
+
+        Assert.AreEqual(MonthTitle(2024, 5), titles[0].TextContent.Trim());
+        Assert.AreEqual(MonthTitle(2024, 6), titles[1].TextContent.Trim());
+
+        component.Find(".bit-dtrp-dwp [title='Go to previous month']").Click();
+
+        titles = component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
+
+        Assert.AreEqual(MonthTitle(2024, 3), titles[0].TextContent.Trim());
+        Assert.AreEqual(MonthTitle(2024, 4), titles[1].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPagedNavigationShouldNotStepPastMaxDate()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MonthCount, 2);
+            parameters.Add(p => p.PagedNavigation, true);
+            parameters.Add(p => p.MaxDate, FixedDate(2024, 4, 15));
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = FixedDate(2024, 3, 10) });
+        });
+
+        // The page would reach May, but the single-month navigation stops with April as the first
+        // month, so the paged one must stop there too.
+        component.Find(".bit-dtrp-dwp [title='Go to next month']").Click();
+
+        var titles = component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb");
+
+        Assert.AreEqual(MonthTitle(2024, 4), titles[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerCloseCalloutShouldCloseTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var isOpen = true;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        await component.InvokeAsync(() => component.Instance.CloseCallout());
+
+        Assert.IsFalse(isOpen);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTypedTimeAtExactlyMaxRangeShouldBeAccepted()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromHours(2));
+        });
+
+        // With no value picked the times start at 00:00 and (clamped) 02:00. Typing the end hour
+        // back to the exact MaxRange boundary is as valid as reaching it with the spinner buttons.
+        component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].Input("1");
+        component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].Input("2");
+
+        Assert.AreEqual("2", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerClearButtonShouldShowForAnOpenStartRange()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { EndDate = FixedDate(2024, 3, 5) });
+        });
+
+        // A range holding only an end date is still a value, so it must be clearable too.
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-clr").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTimeSpinnerButtonsShouldBeLabelled()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        foreach (var button in component.FindAll(".bit-dtrp-tbt"))
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(button.GetAttribute("aria-label")));
+            Assert.IsFalse(string.IsNullOrEmpty(button.GetAttribute("title")));
+        }
+
+        Assert.AreEqual(1, component.FindAll("[aria-label='Increase start hour']").Count);
+        Assert.AreEqual(1, component.FindAll("[aria-label='Decrease end minute']").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTimeInputsShouldBeLabelled()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='Start hour']").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='Start minute']").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='End hour']").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-tin[aria-label='End minute']").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerTimeSpinnerButtonTitlesShouldBeCustomizable()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.StartTimeIncreaseHourTitle, "More start hours");
+            parameters.Add(p => p.EndTimeDecreaseMinuteTitle, "Fewer end minutes");
+        });
+
+        Assert.AreEqual(1, component.FindAll("[aria-label='More start hours']").Count);
+        Assert.AreEqual(1, component.FindAll("[aria-label='Fewer end minutes']").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStartTimeShouldNotWalkPastMaxRange()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromDays(2));
+            // Exactly 48 hours, sitting right on the MaxRange boundary.
+            parameters.Add(p => p.Value, new BitDateRangePickerValue
+            {
+                StartDate = new DateTimeOffset(2024, 6, 1, 10, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2024, 6, 3, 10, 0, 0, TimeSpan.Zero)
+            });
+        });
+
+        // Moving the start one hour back would stretch the range to 49 hours.
+        var startHourButtons = component.FindAll(".bit-dtrp-sic .bit-dtrp-tpr")[0].QuerySelectorAll(".bit-dtrp-tbt");
+        Assert.IsTrue(startHourButtons[1].HasAttribute("disabled"));
+
+        // Typing the same violation is rejected too.
+        component.FindAll(".bit-dtrp-sic .bit-dtrp-tin")[0].Input("9");
+
+        Assert.AreEqual(new DateTimeOffset(2024, 6, 1, 10, 0, 0, TimeSpan.Zero), component.Instance.Value!.StartDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerEndOnlyValueInThePastShouldBePreserved()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { EndDate = FixedDate(2020, 1, 5) });
+        });
+
+        // An open-ended range holding only a (past) end date has no start to precede,
+        // so it must not be dropped.
+        Assert.IsNotNull(component.Instance.Value);
+        Assert.IsNotNull(component.Instance.Value!.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerPresetShouldRespectTheTimeOfMinDateLikeTheDayGrid()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            // MinDate carries midday as its time-of-day, which disables its own day in the grid.
+            parameters.Add(p => p.MinDate, FixedDate(2024, 3, 5));
+            parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
+            {
+                new() { Text = "Starts on the MinDate day", Value = new() { StartDate = FixedDate(2024, 3, 5), EndDate = FixedDate(2024, 3, 8) } },
+            });
+        });
+
+        component.Find(".bit-dtrp-prb").Click();
+
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStartingValueTimesWithinASubDayMaxRangeShouldBePreserved()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var start = new DateTime(2024, 3, 1, 0, 0, 0);
+        var end = new DateTime(2024, 3, 1, 1, 45, 0);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.MaxRange, TimeSpan.FromHours(2));
+            parameters.Add(p => p.StartingValue, new BitDateRangePickerValue
+            {
+                StartDate = new DateTimeOffset(start, TimeZoneInfo.Local.GetUtcOffset(start)),
+                EndDate = new DateTimeOffset(end, TimeZoneInfo.Local.GetUtcOffset(end))
+            });
+        });
+
+        // 00:00 - 01:45 fits inside the two-hour MaxRange, so the end time must not be clamped.
+        var endInputs = component.FindAll(".bit-dtrp-eic .bit-dtrp-tin");
+
+        Assert.AreEqual("1", endInputs[0].GetAttribute("value"));
+        Assert.AreEqual("45", endInputs[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerReadOnlyShouldHideTheClearButton()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = FixedDate(2024, 3, 1), EndDate = FixedDate(2024, 3, 5) });
+        });
+
+        // The clear button would silently do nothing in ReadOnly, so it is not rendered at all.
+        Assert.AreEqual(0, component.FindAll(".bit-dtrp-clr").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStandaloneContainerShouldExposeItsAriaLabel()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        var container = component.Find(".bit-dtrp-cac");
+
+        // An aria-label is only exposed on an element carrying a role.
+        Assert.AreEqual("group", container.GetAttribute("role"));
+        Assert.AreEqual("Calendar", container.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerMonthNavigationButtonsShouldBeLabelled()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [aria-label='Go to previous month']").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp [aria-label='Go to next month']").Count);
+    }
+
     // Midday keeps a date-only assertion safe from any time zone shifting the instant across midnight.
     private static DateTimeOffset FixedDate(int year, int month, int day)
     {

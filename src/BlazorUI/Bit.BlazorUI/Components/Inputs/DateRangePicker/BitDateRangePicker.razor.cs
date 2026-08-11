@@ -221,7 +221,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
     /// <summary>
-    /// Whether or not the DateRangePicker allows string date inputs.
+    /// Whether or not the DateRangePicker allows string date inputs. A typed range is validated against
+    /// every restriction the calendar enforces (MinDate, MaxDate, MinRange, MaxRange, the disabled days
+    /// and ExcludeDisabledDates), so an out-of-bounds range is rejected as an invalid value.
     /// </summary>
     [Parameter] public bool AllowTextInput { get; set; }
 
@@ -582,6 +584,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     [Parameter] public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// Whether the previous and next navigation buttons move the calendar by all of its rendered months
+    /// instead of one, so consecutive pages of a multi-month calendar never overlap.
+    /// It has no effect when <see cref="MonthCount"/> renders a single month.
+    /// </summary>
+    [Parameter] public bool PagedNavigation { get; set; }
+
+    /// <summary>
     /// Callback for when the displayed month of the day picker changes.
     /// The argument is the first day of the newly displayed month.
     /// </summary>
@@ -717,6 +726,66 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Whether the week number (weeks 1 to 53) should be shown before each week row.
     /// </summary>
     [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>
+    /// The title and the aria-label of the start time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string StartTimeIncreaseHourTitle { get; set; } = "Increase start hour";
+
+    /// <summary>
+    /// The title and the aria-label of the start time-picker's decrease-hour button.
+    /// </summary>
+    [Parameter] public string StartTimeDecreaseHourTitle { get; set; } = "Decrease start hour";
+
+    /// <summary>
+    /// The title and the aria-label of the start time-picker's increase-minute button.
+    /// </summary>
+    [Parameter] public string StartTimeIncreaseMinuteTitle { get; set; } = "Increase start minute";
+
+    /// <summary>
+    /// The title and the aria-label of the start time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string StartTimeDecreaseMinuteTitle { get; set; } = "Decrease start minute";
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's increase-hour button.
+    /// </summary>
+    [Parameter] public string EndTimeIncreaseHourTitle { get; set; } = "Increase end hour";
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's decrease-hour button.
+    /// </summary>
+    [Parameter] public string EndTimeDecreaseHourTitle { get; set; } = "Decrease end hour";
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's increase-minute button.
+    /// </summary>
+    [Parameter] public string EndTimeIncreaseMinuteTitle { get; set; } = "Increase end minute";
+
+    /// <summary>
+    /// The title and the aria-label of the end time-picker's decrease-minute button.
+    /// </summary>
+    [Parameter] public string EndTimeDecreaseMinuteTitle { get; set; } = "Decrease end minute";
+
+    /// <summary>
+    /// The aria-label of the start time-picker's hour input.
+    /// </summary>
+    [Parameter] public string StartTimeHourInputAriaLabel { get; set; } = "Start hour";
+
+    /// <summary>
+    /// The aria-label of the start time-picker's minute input.
+    /// </summary>
+    [Parameter] public string StartTimeMinuteInputAriaLabel { get; set; } = "Start minute";
+
+    /// <summary>
+    /// The aria-label of the end time-picker's hour input.
+    /// </summary>
+    [Parameter] public string EndTimeHourInputAriaLabel { get; set; } = "End hour";
+
+    /// <summary>
+    /// The aria-label of the end time-picker's minute input.
+    /// </summary>
+    [Parameter] public string EndTimeMinuteInputAriaLabel { get; set; } = "End minute";
 
     /// <summary>
     /// The icon to display inside the start time-picker's decrease-hour button.
@@ -944,9 +1013,29 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
 
 
+    /// <summary>
+    /// Opens the callout of the DateRangePicker, exactly like clicking on its input.
+    /// </summary>
     public Task OpenCallout()
     {
         return HandleOnClick();
+    }
+
+    /// <summary>
+    /// Closes the callout of the DateRangePicker.
+    /// </summary>
+    public async Task CloseCallout()
+    {
+        if (Standalone) return;
+        if (IsEnabled is false) return;
+
+        _hoveredDate = null;
+
+        if (await AssignIsOpen(false) is false) return;
+
+        await ToggleCallout();
+
+        StateHasChanged();
     }
 
 
@@ -1054,7 +1143,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return true;
         }
 
-        if (TryParseRange(value!, out var parsedValue))
+        if (TryParseRange(value!, out var parsedValue) && IsRangeWithinRestrictions(parsedValue!))
         {
             result = parsedValue;
             validationErrorMessage = null;
@@ -1447,9 +1536,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         BuildDatesLookups();
 
-        if (CurrentValue is not null)
+        // An open-ended range holding only an end date has no start to precede, so the guard below
+        // only applies once a start date exists.
+        if (CurrentValue?.StartDate is not null)
         {
-            var startDateTime = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
+            var startDateTime = CurrentValue.StartDate.Value;
             if (MinDate.HasValue && MinDate > startDateTime)
             {
                 startDateTime = MinDate.GetValueOrDefault(DateTimeOffset.Now);
@@ -1499,14 +1590,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (endDateHasValue is false && MaxRange.HasValue && MaxRange.Value.TotalHours < 24)
         {
-            if (_endTimeHour > MaxRange.Value.TotalHours)
-            {
-                _endTimeHour = (int)MaxRange.Value.TotalHours;
-            }
+            // With no end date picked yet, the end time is pulled back just far enough for the
+            // time-only span to fit a sub-day MaxRange, leaving an already fitting time untouched.
+            var maxRangeTotalMinutes = (int)MaxRange.Value.TotalMinutes;
+            var startTotalMinutes = (_startTimeHour * 60) + _startTimeMinute;
+            var endTotalMinutes = (_endTimeHour * 60) + _endTimeMinute;
 
-            if (MaxRange.Value.Minutes < 60 && _endTimeMinute > MaxRange.Value.Minutes)
+            if (Math.Abs(endTotalMinutes - startTotalMinutes) > maxRangeTotalMinutes)
             {
-                _endTimeMinute = MaxRange.Value.Minutes;
+                endTotalMinutes = Math.Min(startTotalMinutes + maxRangeTotalMinutes, (24 * 60) - 1);
+                _endTimeHour = endTotalMinutes / 60;
+                _endTimeMinute = endTotalMinutes % 60;
             }
         }
 
@@ -1663,23 +1757,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var startDate = presetValue.StartDate;
         var endDate = presetValue.EndDate;
 
-        // A preset reaching outside the Min/Max bounds is rejected rather than clamped, since a
-        // shifted variant of the advertised range would not be the range its button promised.
-        if (MinDate.HasValue)
-        {
-            var minDate = GetDateTime(MinDate.Value).Date;
-
-            if ((startDate.HasValue && GetDateTime(startDate.Value).Date < minDate) ||
-                (endDate.HasValue && GetDateTime(endDate.Value).Date < minDate)) return;
-        }
-
-        if (MaxDate.HasValue)
-        {
-            var maxDate = GetDateTime(MaxDate.Value).Date;
-
-            if ((startDate.HasValue && GetDateTime(startDate.Value).Date > maxDate) ||
-                (endDate.HasValue && GetDateTime(endDate.Value).Date > maxDate)) return;
-        }
+        // A preset reaching outside the Min/Max bounds (or holding a blocked day as an end) is
+        // rejected rather than clamped, since a shifted variant of the advertised range would not
+        // be the range its button promised. IsDayExcluded compares exactly like the day grid does,
+        // so a preset can never apply a day the grid itself disables.
+        if ((startDate.HasValue && IsDayExcluded(GetDateTime(startDate.Value).Date)) ||
+            (endDate.HasValue && IsDayExcluded(GetDateTime(endDate.Value).Date))) return;
 
         if (startDate.HasValue && endDate.HasValue && MaxRange.HasValue)
         {
@@ -1687,10 +1770,26 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             if (maxEndDate < endDate)
             {
-                _endTimeHour = maxEndDate.Hour;
-                _endTimeMinute = maxEndDate.Minute;
+                // The four time fields are re-derived from the assigned value right after, so only
+                // the date needs the clamp here.
                 endDate = maxEndDate;
             }
+        }
+
+        // The blocked days reject the preset the same way the Min/Max bounds above do: a range whose
+        // ends cannot be picked from the day grid must not be applied by a shortcut either. The check
+        // runs after the MaxRange clamp so it judges the range that would actually be applied.
+        var presetStartDate = startDate.HasValue ? GetDateTime(startDate.Value).Date : (DateTime?)null;
+        var presetEndDate = endDate.HasValue ? GetDateTime(endDate.Value).Date : (DateTime?)null;
+
+        if (presetStartDate.HasValue && IsDayBlocked(presetStartDate.Value)) return;
+        if (presetEndDate.HasValue && IsDayBlocked(presetEndDate.Value)) return;
+
+        if (presetStartDate.HasValue && presetEndDate.HasValue)
+        {
+            if (IsShorterThanMinRange(presetStartDate.Value, presetEndDate.Value)) return;
+
+            if (ExcludeDisabledDates && RangeCoversBlockedDay(presetStartDate.Value, presetEndDate.Value)) return;
         }
 
         _hoveredDate = null;
@@ -1808,29 +1907,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
 
-        if (isNext)
+        // With PagedNavigation the calendar moves a whole page of months at once, but never past the
+        // point where the single-month navigation would have stopped.
+        var steps = PagedNavigation ? _monthCount : 1;
+
+        for (var i = 0; i < steps; i++)
         {
-            if (_currentMonth < 12)
-            {
-                _currentMonth++;
-            }
-            else
-            {
-                _currentYear++;
-                _currentMonth = 1;
-            }
-        }
-        else
-        {
-            if (_currentMonth > 1)
-            {
-                _currentMonth--;
-            }
-            else
-            {
-                _currentYear--;
-                _currentMonth = 12;
-            }
+            if (i > 0 && CanChangeMonth(isNext) is false) break;
+
+            (_currentYear, _currentMonth) = AddMonths(_currentYear, _currentMonth, isNext ? 1 : -1);
         }
 
         GenerateMonthData(_currentYear, _currentMonth);
@@ -2223,6 +2308,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (MinDate.HasValue && date < GetDateTime(MinDate.Value)) return true;
 
+        return IsDayBlocked(date);
+    }
+
+    // The days blocked by the date-level rules alone (DisabledDaysOfWeek, DisabledDates and
+    // IsDateDisabled), without the Min/Max bounds of the calendar.
+    private bool IsDayBlocked(DateTime date)
+    {
         if (_disabledDaysOfWeek.Contains(date.DayOfWeek)) return true;
 
         if (_disabledDates.Contains(date.Date)) return true;
@@ -2230,6 +2322,57 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (IsDateDisabled is not null && IsDateDisabled(GetDateTimeOfDayCell(date))) return true;
 
         return false;
+    }
+
+    // Whether any day strictly between the two ends of the range is blocked, which a range must not
+    // cover when ExcludeDisabledDates is on. The walk is bounded like the excluded-bounds scan.
+    private bool RangeCoversBlockedDay(DateTime startDate, DateTime endDate)
+    {
+        var date = startDate;
+
+        for (var i = 0; i < MAX_EXCLUDED_SCAN_DAYS; i++)
+        {
+            date = date.AddDays(1);
+
+            if (date >= endDate) return false;
+
+            if (IsDayBlocked(date)) return true;
+        }
+
+        return false;
+    }
+
+    // Whether the two ends of the range sit closer to each other than MinRange allows.
+    private bool IsShorterThanMinRange(DateTime startDate, DateTime endDate)
+    {
+        if (MinRange.HasValue is false) return false;
+
+        var minRangeDays = (int)MinRange.Value.TotalDays;
+
+        return minRangeDays > 0 && (endDate - startDate).TotalDays < minRangeDays;
+    }
+
+    // A typed range has to honor every restriction the calendar itself enforces (the Min/Max bounds,
+    // the blocked days as its ends, MinRange, MaxRange and ExcludeDisabledDates), so no range that
+    // could not be picked from the day grid can slip in through the text input.
+    private bool IsRangeWithinRestrictions(BitDateRangePickerValue range)
+    {
+        DateTime? startDate = range.StartDate.HasValue ? GetDateTime(range.StartDate.Value).Date : null;
+        DateTime? endDate = range.EndDate.HasValue ? GetDateTime(range.EndDate.Value).Date : null;
+
+        if (startDate.HasValue && IsDayExcluded(startDate.Value)) return false;
+
+        if (endDate.HasValue && IsDayExcluded(endDate.Value)) return false;
+
+        if (startDate.HasValue is false || endDate.HasValue is false) return true;
+
+        if (IsShorterThanMinRange(startDate.Value, endDate.Value)) return false;
+
+        if (MaxRange.HasValue && range.EndDate!.Value - range.StartDate!.Value > MaxRange.Value) return false;
+
+        if (ExcludeDisabledDates && RangeCoversBlockedDay(startDate.Value, endDate.Value)) return false;
+
+        return true;
     }
 
     private bool IsDayDisabled(DateTime date)
@@ -3057,19 +3200,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return minute;
     }
 
-    private async Task CloseCallout()
-    {
-        if (IsEnabled is false) return;
-
-        _hoveredDate = null;
-
-        if (await AssignIsOpen(false) is false) return;
-
-        await ToggleCallout();
-
-        StateHasChanged();
-    }
-
     private bool ShowDayPicker()
     {
         if (IsMonthPickerVisible is false)
@@ -3143,10 +3273,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             var startDate = ChangeTimeInDateTimeOffset(CurrentValue!.StartDate!.Value, startTimeHour, startTimeMinute);
             var endDate = ChangeTimeInDateTimeOffset(CurrentValue!.EndDate!.Value, endTimeHour, endTimeMinute);
-            var maxDate = new DateTimeOffset(GetMaxEndDate(), CurrentValue!.StartDate.Value.Offset);
-            var minDate = new DateTimeOffset(GetMinEndDate(), CurrentValue!.StartDate.Value.Offset);
 
-            return startDate >= minDate && endDate <= maxDate;
+            // The span the proposed times would produce is what MaxRange bounds, so it is judged
+            // directly instead of against bounds anchored on the current start date, which a series
+            // of small changes could walk past.
+            return startDate <= endDate && endDate - startDate <= MaxRange.Value;
         }
 
         // While the dates of the range are not picked yet, only a sub-day MaxRange can be violated
@@ -3155,7 +3286,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         var maxRangeTotalMinutes = new TimeSpan(MaxRange.Value.Hours, MaxRange.Value.Minutes, MaxRange.Value.Seconds).TotalMinutes;
 
-        return maxRangeTotalMinutes > Math.Abs((startTime - endTime).TotalMinutes);
+        // A span of exactly MaxRange is still within it, matching the boundary the spinner buttons enforce.
+        return maxRangeTotalMinutes >= Math.Abs((startTime - endTime).TotalMinutes);
     }
 
     private DateTimeOffset ChangeTimeInDateTimeOffset(DateTimeOffset dateTime, int? hour, int? minute)
@@ -3263,10 +3395,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 return true;
             }
 
-            var maxDate = new DateTimeOffset(GetMaxEndDate(), CurrentValue!.StartDate.Value.Offset);
-            var minDate = new DateTimeOffset(GetMinEndDate(), CurrentValue!.StartDate.Value.Offset);
-
-            return startDate < minDate || endDate > maxDate;
+            // The span the proposed times would produce is what MaxRange bounds, so it is judged
+            // directly instead of against bounds anchored on the current start date, which a series
+            // of small changes could walk past.
+            return endDate - startDate > MaxRange.Value;
         }
 
         // While the dates of the range are not picked yet, only a sub-day MaxRange can be violated

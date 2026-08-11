@@ -142,6 +142,8 @@ private readonly DateTimeOffset[] highlightedDates =
 
 <BitDateRangePicker Label=""Three months with week numbers"" MonthCount=""3"" ShowWeekNumbers />
 
+<BitDateRangePicker Label=""Two months with paged navigation"" MonthCount=""2"" PagedNavigation />
+
 <BitDateRangePicker Label=""Two months in standalone mode"" MonthCount=""2"" Standalone />";
     private readonly string example7CsharpCode = @"
 private BitDateRangePickerValue? monthCountValue;";
@@ -173,6 +175,13 @@ private BitDateRangePickerValue? monthCountValue;";
                     DateFormat=""dd/MM/yyyy""
                     ValueFormat=""{0} - {1}""
                     InvalidErrorMessage=""The entered date range is not valid.""
+                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+
+<BitDateRangePicker Label=""Text input with MaxRange: 7 days""
+                    AllowTextInput
+                    MaxRange=""TimeSpan.FromDays(7)""
+                    DateFormat=""dd/MM/yyyy""
+                    ValueFormat=""{0} - {1}""
                     Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />";
 
     private readonly string example11RazorCode = @"
