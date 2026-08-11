@@ -83,7 +83,7 @@ public static class IDistributedApplicationBuilderExtensions
                         .WithImage("redis/redis-stack", "latest")
                         .WithDataVolume()
                         .WithArgs(
-                            "--dir", "/data",                  
+                            "--dir", "/data",
                             "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
                             "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
                             "--save", "",                      // Disables RDB snapshots
