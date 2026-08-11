@@ -17,7 +17,16 @@ public interface IAuthTokenProvider
         if (string.IsNullOrEmpty(accessToken) is true)
             return Anonymous();
 
-        var claims = ReadClaims(accessToken, validateExpiry);
+        IEnumerable<Claim>? claims;
+
+        try
+        {
+            claims = ReadClaims(accessToken, validateExpiry);
+        }
+        catch (Exception exp) when (exp is FormatException or JsonException or IndexOutOfRangeException or ArgumentException)
+        {
+            return Anonymous();
+        }
 
         if (claims is null)
             return Anonymous();
@@ -33,10 +42,11 @@ public interface IAuthTokenProvider
     {
         var parsedClaims = DeserializeAccessToken(accessToken);
 
-        if (validateExpiry && long.TryParse(parsedClaims["exp"].ToString(), out var expSeconds))
+        if (validateExpiry)
         {
-            var expirationDate = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
-            if (expirationDate <= TimeProvider.GetUtcNow())
+            if (parsedClaims.TryGetValue("exp", out var exp) is false ||
+                long.TryParse(exp.ToString(), out var expSeconds) is false ||
+                DateTimeOffset.FromUnixTimeSeconds(expSeconds) <= TimeProvider.GetUtcNow())
                 return null;
         }
 

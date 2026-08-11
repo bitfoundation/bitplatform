@@ -53,6 +53,9 @@ public class AppPageTest : PageTest
     public override BrowserNewContextOptions ContextOptions()
     {
         var options = base.ContextOptions();
+
+        options.IgnoreHTTPSErrors = true;
+
         return TestContext.TestRunCount > 1 ? options.EnableVideoRecording(TestContext) : options;
     }
 

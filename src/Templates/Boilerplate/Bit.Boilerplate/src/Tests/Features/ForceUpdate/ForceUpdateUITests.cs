@@ -40,7 +40,12 @@ public partial class ForceUpdateUITests : AppPageTest
 
         // The rejected request publishes the persistent FORCE_UPDATE message, so the force update panel shows up with its
         // title and body (See ForceUpdateSnackBar.razor) instead of the OTP panel the request would otherwise reveal.
-        await Expect(Page.GetByText(AppStrings.ForceUpdateTitle)).ToBeVisibleAsync();
-        await Expect(Page.GetByText(AppStrings.ForceUpdateBody)).ToBeVisibleAsync();
+        // Scoped to that panel: ClientNotSupportedException's own message IS AppStrings.ForceUpdateTitle, so whenever the
+        // rethrown exception also reaches AppSnackBar the page carries a second element with the very same text, and an
+        // unscoped locator then fails with a strict mode violation instead of finding the panel.
+        var forceUpdatePanel = Page.Locator(".force-update-snack-bar");
+
+        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateTitle)).ToBeVisibleAsync();
+        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateBody)).ToBeVisibleAsync();
     }
 }

@@ -547,6 +547,7 @@
                     "exclude": [
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
+                        "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
@@ -622,7 +623,9 @@
                     // Tenant is the only `long Version` entity that exists without a module or signalR.
                     "condition": "(advancedTests != true || multitenant != true)",
                     "exclude": [
-                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs"
+                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs",
+                        // The rule it pins - a tenant filtered body gets no client max-age - only exists under multitenant.
+                        "src/Tests/Features/Caching/ResponseCachePolicyClientCacheTests.cs"
                     ]
                 },
                 {
