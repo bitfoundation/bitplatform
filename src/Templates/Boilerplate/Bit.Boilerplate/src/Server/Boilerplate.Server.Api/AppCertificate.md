@@ -106,7 +106,7 @@ The application uses **RSA 3072** paired with **SHA-256** for the following reas
 
 - **The "Weakest Link" Rule:** Security is only as strong as its weakest component. RSA 3072 & SHA-256 provide **128 bits** of security strength. Using a stronger hash (like SHA-512 with 256 bits security strength) adds no real security benefit because the 3072-bit key remains the limiting factor.
 - **Performance Balance:** Moving to RSA 4096 and SHA-512 would make cryptographic operations (signing and decryption) **5 to 7 times slower** without providing a meaningful security upgrade for standard production environments.
-- **Industry Standard:** RSA 3072 + SHA-256 is the current "Golden Standard" recommended by NIST for secure applications until at least 2030.
+- **Industry Standard:** RSA 3072 + SHA-256 is the current "Golden Standard" recommended by NIST for secure applications until at least the end of this decade.
 
 ## Why RSA over HMAC?
 HMAC algorithms (like HMAC-SHA512) are **Symmetric**, meaning they require a shared secret. This is unsuitable for our architecture, which requires **Asymmetric** (Public/Private) keys so that external services can validate tokens without having the power to issue them.
