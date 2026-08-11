@@ -6,9 +6,7 @@ public partial class Header : IDisposable
 {
     private bool isDocsRoute;
     private bool isLcncDocRoute;
-    private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
-    private bool isButilDocRoute;
     private bool isHeaderMenuOpen;
     private bool isTemplateDocRoute;
     private string currentUrl = string.Empty;
@@ -37,13 +35,11 @@ public partial class Header : IDisposable
     {
         currentUrl = NavigationManager.Uri.Replace(NavigationManager.BaseUri, "/", StringComparison.Ordinal);
 
-        isBswupDocRoute = currentUrl.Contains("bswup");
         isBesqlDocRoute = currentUrl.Contains("besql");
-        isButilDocRoute = currentUrl.Contains("butil");
         isLcncDocRoute = currentUrl.Contains("lowcode-nocode");
         isTemplateDocRoute = currentUrl.Contains("templates") || currentUrl.Contains("admin-panel") || currentUrl.Contains("todo-template");
 
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
+        isDocsRoute = isTemplateDocRoute || isBesqlDocRoute /*|| isLcncDocRoute*/;
     }
 
     private void ToggleMenu()

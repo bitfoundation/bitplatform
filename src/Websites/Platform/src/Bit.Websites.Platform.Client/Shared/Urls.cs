@@ -23,9 +23,11 @@ public static class Urls
     public const string LowCodeNoCode = "/lowcode-nocode";
     public const string Templates = "/templates";
 
-    public const string Bswup = "/bswup";
+    public const string Bswup = "https://bswup.bitplatform.dev/";
     public const string Besql = "/besql";
-    public const string Butil = "/butil";
+    public const string Butil = "https://butil.bitplatform.dev/";
+    public const string Brouter = "https://brouter.bitplatform.dev/";
+    public const string Bmotion = "https://bmotion.bitplatform.dev/";
 
     public const string BoilerplateNuget = "https://www.nuget.org/packages/Bit.Boilerplate/";
 

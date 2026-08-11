@@ -34,14 +34,14 @@
                             </div>
                         </a>
 
-                        <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil">
+                        <a class="menu-item" href="@Urls.Butil" target="_blank">
                             <div class="menu-item-content">
                                 <div class="item-title">Butil</div>
                                 <div class="item-desc">Blazor utils for browser APIs</div>
                             </div>
                         </a>
 
-                        <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup">
+                        <a class="menu-item" href="@Urls.Bswup" target="_blank">
                             <div class="menu-item-content">
                                 <div class="item-title">Bswup</div>
                                 <div class="item-desc">Blazor PWA on steroids</div>
@@ -52,6 +52,20 @@
                             <div class="menu-item-content">
                                 <div class="item-title">Besql</div>
                                 <div class="item-desc">Blazor Entity Framework SQLite</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item" href="@Urls.Brouter" target="_blank">
+                            <div class="menu-item-content">
+                                <div class="item-title">Brouter</div>
+                                <div class="item-desc">Modern declarative Blazor router</div>
+                            </div>
+                        </a>
+
+                        <a class="menu-item" href="@Urls.Bmotion" target="_blank">
+                            <div class="menu-item-content">
+                                <div class="item-title">Bmotion</div>
+                                <div class="item-desc">Blazor-native animation library</div>
                             </div>
                         </a>
 
@@ -129,14 +143,14 @@
                         </div>
                     </a>
 
-                    <a class="menu-item @(isButilDocRoute ? "active" : "")" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.Butil" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <div class="menu-item-content">
                             <div class="item-title">Butil</div>
                             <div class="item-desc">Blazor utils for browser APIs</div>
                         </div>
                     </a>
 
-                    <a class="menu-item @(isBswupDocRoute ? "active" : "")" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu)>
+                    <a class="menu-item" href="@Urls.Bswup" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
                         <div class="menu-item-content">
                             <div class="item-title">Bswup</div>
                             <div class="item-desc">Blazor PWA on steroids</div>
@@ -147,6 +161,20 @@
                         <div class="menu-item-content">
                             <div class="item-title">Besql</div>
                             <div class="item-desc">Blazor Entity Framework SQLite</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.Brouter" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
+                        <div class="menu-item-content">
+                            <div class="item-title">Brouter</div>
+                            <div class="item-desc">Modern declarative Blazor router</div>
+                        </div>
+                    </a>
+
+                    <a class="menu-item" href="@Urls.Bmotion" @onclick=@WrapHandled(ToggleHeaderMenu) target="_blank">
+                        <div class="menu-item-content">
+                            <div class="item-title">Bmotion</div>
+                            <div class="item-desc">Blazor-native animation library</div>
                         </div>
                     </a>
 

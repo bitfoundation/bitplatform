@@ -9,9 +9,7 @@ public partial class MainLayout : IDisposable
     private bool isDocsRoute;
     private bool isLcncDocRoute;
     private bool isTemplateDocRoute;
-    private bool isBswupDocRoute;
     private bool isBesqlDocRoute;
-    private bool isButilDocRoute;
 
     private List<BitNavItem> navItems = [];
 
@@ -98,56 +96,12 @@ public partial class MainLayout : IDisposable
         },
     ];
 
-    private readonly List<BitNavItem> bswupNavItems =
-    [
-        new BitNavItem { Text = "Overview", Url = "/bswup/overview" },
-        new BitNavItem { Text = "Install", Url = "/bswup/install" },
-        new BitNavItem { Text = "Scripts", Url = "/bswup/scripts" },
-        new BitNavItem { Text = "Events", Url = "/bswup/events" },
-        new BitNavItem { Text = "Service Worker", Url = "/bswup/service-worker" },
-        new BitNavItem { Text = "BswupProgress", Url = "/bswup/progress" },
-    ];
-
     private readonly List<BitNavItem> besqlNavItems =
     [
         new BitNavItem { Text = "Overview", Url = "/besql/overview" },
         new BitNavItem { Text = "Install", Url = "/besql/install" },
         new BitNavItem { Text = "Usage", Url = "/besql/usage" },
     ];
-
-    private readonly List<BitNavItem> butilNavItems =
-    [
-        new BitNavItem { Text = "Overview", Url = "/butil/overview" },
-        new BitNavItem { Text = "Install", Url = "/butil/install" },
-        new BitNavItem { Text = "Setup", Url = "/butil/setup" },
-        new BitNavItem { Text = "Cryptography", Url = "/butil/crypto" },
-        new BitNavItem { Text = "Web Authentication", Url = "/butil/webAuthn" },
-        new BitNavItem { Text = "Clipboard", Url = "/butil/clipboard" },
-        new BitNavItem { Text = "Keyboard", Url = "/butil/keyboard" },
-        new BitNavItem { Text = "Console", Url = "/butil/console" },
-        new BitNavItem { Text = "Notification", Url = "/butil/notification" },
-        new BitNavItem { Text = "Storage", Url = "/butil/storage" },
-        new BitNavItem { Text = "Cookie", Url = "/butil/cookie" },
-        new BitNavItem { Text = "History", Url = "/butil/history" },
-        new BitNavItem { Text = "Element", Url = "/butil/element" },
-        new BitNavItem { Text = "Window", Url = "/butil/window" },
-        new BitNavItem { Text = "Document", Url = "/butil/document" },
-        new BitNavItem { Text = "Navigator", Url = "/butil/navigator" },
-        new BitNavItem { Text = "Location", Url = "/butil/location" },
-        new BitNavItem { Text = "Screen", Url = "/butil/screen" },
-        new BitNavItem { Text = "VisualViewport", Url = "/butil/visualViewport" },
-        new BitNavItem { Text = "ScreenOrientation", Url = "/butil/screenOrientation" },
-        new BitNavItem { Text = "UserAgent", Url = "/butil/userAgent" },
-        new BitNavItem { Text = "Device", Url = "/butil/device" },
-        new BitNavItem { Text = "Geolocation", Url = "/butil/geolocation" },
-        new BitNavItem { Text = "MediaDevices", Url = "/butil/mediaDevices" },
-        new BitNavItem { Text = "Permissions", Url = "/butil/permissions" },
-        new BitNavItem { Text = "Fetch", Url = "/butil/fetch" },
-        new BitNavItem { Text = "Files", Url = "/butil/files" },
-        new BitNavItem { Text = "Speech", Url = "/butil/speech" },
-        new BitNavItem { Text = "Observers", Url = "/butil/observers" },
-    ];
-
 
     protected override Task OnInitializedAsync()
     {
@@ -170,16 +124,12 @@ public partial class MainLayout : IDisposable
         var currentUrl = navigationManager.Uri.Replace(navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
         isTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
-        isBswupDocRoute = currentUrl.Contains("/bswup");
         isBesqlDocRoute = currentUrl.Contains("/besql");
-        isButilDocRoute = currentUrl.Contains("/butil");
         isLcncDocRoute = currentUrl.Contains("/lowcode-nocode");
-        isDocsRoute = isTemplateDocRoute || isBswupDocRoute || isBesqlDocRoute || isButilDocRoute /*|| isLcncDocRoute*/;
+        isDocsRoute = isTemplateDocRoute || isBesqlDocRoute /*|| isLcncDocRoute*/;
 
         navItems = isTemplateDocRoute ? templatesNavItems
-                 : isBswupDocRoute ? bswupNavItems
                  : isBesqlDocRoute ? besqlNavItems
-                 : isButilDocRoute ? butilNavItems
                  //: isLcncDocRoute ? lcncNavItems
                  : [];
     }
