@@ -41,6 +41,8 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
+
+        <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
@@ -79,8 +81,6 @@
 
         <PackageReference Include="Bit.CodeAnalyzers" />
         <PackageReference Include="Bit.SourceGenerators" />
-
-        <Watch Remove="*.scss" />
     </ItemGroup>
 
     <!--

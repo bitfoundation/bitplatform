@@ -1,9 +1,10 @@
+//+:cnd:noEmit
 using System.Net;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
-internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandler handler)
+internal class CacheDelegatingHandler(IMemoryCache memoryCache, IAuthTokenProvider tokenProvider, HttpMessageHandler handler)
     : DelegatingHandler(handler)
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -14,7 +15,7 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
 
         try
         {
-            var cacheKey = $"{request.Method}-{request.RequestUri}";
+            var cacheKey = useCache ? await BuildCacheKey(request) : string.Empty;
 
             if (useCache && memoryCache.TryGetValue(cacheKey, out ResponseMemoryCacheItems? cachedResponse))
             {
@@ -65,6 +66,26 @@ internal class CacheDelegatingHandler(IMemoryCache memoryCache, HttpMessageHandl
         {
             logScopeData["MemoryCacheStatus"] = memoryCacheStatus;
         }
+    }
+
+    private async Task<string> BuildCacheKey(HttpRequestMessage request)
+    {
+        var user = IAuthTokenProvider.ParseAccessToken(await tokenProvider.GetAccessToken(), validateExpiry: false);
+
+        var identity = "anonymous";
+
+        if (user.IsAuthenticated())
+        {
+            //#if (multitenant == true)
+            identity = FormattableString.Invariant($"{user.GetUserId()}-{user.GetTenantId()}");
+            //#else
+            identity = user.GetUserId().ToString();
+            //#endif
+        }
+
+        var culture = CultureInfoManager.InvariantGlobalization ? string.Empty : CultureInfo.CurrentUICulture.Name;
+
+        return FormattableString.Invariant($"{identity}-{culture}-{request.Method}-{request.RequestUri}");
     }
 
     public class ResponseMemoryCacheItems

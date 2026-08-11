@@ -1,6 +1,6 @@
 namespace Bit.BlazorUI;
 
-public static class BitCountiresExtensions
+public static class BitCountriesExtensions
 {
     extension(BitCountries source)
     {

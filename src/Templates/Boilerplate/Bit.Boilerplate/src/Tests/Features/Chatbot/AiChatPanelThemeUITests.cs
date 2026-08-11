@@ -87,13 +87,11 @@ public partial class AiChatPanelThemeUITests : AppPageTest
         await SendChatMessage(panel, "please switch the app theme", chatClient);
 
         // The payoff: the browser's own theme attribute, changed by nothing but the chatbot.
-        await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", requestedTheme,
-            new() { Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        await Expect(htmlElement).ToHaveAttributeAsync("bit-theme", requestedTheme);
 
         // The answer written after the tool ran reaches the panel, which proves the second half of the round trip -
         // the tool result went back to the model and its prose was streamed to the user.
-        await Expect(panel.GetByText(finalAnswer))
-            .ToBeVisibleAsync(new() { Timeout = (float)TimeSpan.FromSeconds(30).TotalMilliseconds });
+        await Expect(panel.GetByText(finalAnswer)).ToBeVisibleAsync();
 
         // The tool really executed on the server rather than the theme changing by some other route: its return
         // value was fed back into the conversation. SetApplicationTheme returns "Theme changed to X successfully"

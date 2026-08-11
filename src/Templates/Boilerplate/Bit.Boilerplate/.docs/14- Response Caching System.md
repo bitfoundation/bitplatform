@@ -399,8 +399,10 @@ The `CacheDelegatingHandler` (located in `/src/Client/Boilerplate.Client.Core/In
 ```csharp
 protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 {
-    var cacheKey = $"{request.Method}-{request.RequestUri}";
     var useCache = AppEnvironment.IsDevelopment() is false && AppPlatform.IsBlazorHybridOrBrowser;
+    // Identity and culture are in the key because this cache outlives the user session, and because the token and
+    // Accept-Language are attached by handlers below this one. See BuildCacheKey.
+    var cacheKey = useCache ? await BuildCacheKey(request) : string.Empty;
 
     // Try to get from cache
     if (useCache && memoryCache.TryGetValue(cacheKey, out ResponseMemoryCacheItems? cachedResponse))
@@ -423,9 +425,16 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage 
         {
             Content = responseContent,
             StatusCode = response.StatusCode,
-            ResponseHeaders = response.Headers.ToDictionary(),
-            ContentHeaders = response.Content.Headers.ToDictionary()
-        }, maxAge);
+            ResponseHeaders = response.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
+            ContentHeaders = response.Content.Headers.ToDictionary(h => h.Key, h => h.Value.ToArray()),
+            LogScopeData = logScopeData.ToDictionary()
+        }, options: new()
+        {
+            // Size is not optional here: AppMemoryCache's 4 KB fallback does not apply to an options object, and the
+            // budget in the table below is only byte-accurate because this is the response's real length.
+            Size = responseContent.Length,
+            AbsoluteExpirationRelativeToNow = maxAge
+        });
     }
 
     return response;
@@ -454,6 +463,14 @@ This creates an exceptionally smooth user experience because the app feels nativ
 **Important Notes:**
 - **Client In-Memory Cache** is cleared when the app is closed (doesn't persist across sessions)
 - **Browser HTTP cache** persists even after closing the browser, but it's asynchronous (shows loading briefly)
+
+> **Neither private cache is per-user.** "One app session" and "one browser profile" both span however many people
+> sign in on that device: signing out and switching tenant are in-app navigations, so they do not restart the runtime,
+> and the browser cache outlives the process entirely. The in-memory cache therefore keys on the caller's identity and
+> culture as well as the URL (see `BuildCacheKey`), and a response the server filtered by the caller's tenant claim is
+> not given a client `max-age` at all (see `AppResponseCachePolicy`) - because the browser's cache keys on the URL and
+> nothing the server sends can add a dimension to it. `UserAgnostic` does not help here: it gates the two *shared*
+> caches, which is a different question from whether a *private* cache may hold the response.
 - The combination of both provides the best user experience:
   - Instant loads during the current session (Client In-Memory Cache)
   - Fast loads on return visits (browser cache)
@@ -478,7 +495,8 @@ When a user makes a request, it flows through these layers in order:
 │  1. Client In-Memory Cache Check (CacheDelegatingHandler)   │
 │     - Fastest (microseconds - SYNCHRONOUS)                   │
 │     - No loading indicators, spinners, or shimmers           │
-│     - Only works during current app session                  │
+│     - Lives as long as the app process, across user sessions │
+│     - Keyed by identity + culture + method + URI              │
 │     - Not purgeable                                          │
 └─────────────────────────────────────────────────────────────┘
         │ MISS                          │ HIT

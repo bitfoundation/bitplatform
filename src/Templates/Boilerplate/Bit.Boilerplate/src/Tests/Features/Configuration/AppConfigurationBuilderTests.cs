@@ -1,5 +1,6 @@
 using System.Reflection;
 
+//+:cnd:noEmit
 namespace Boilerplate.Tests.Features.Configuration;
 
 /// <summary>
@@ -29,8 +30,21 @@ public class AppConfigurationBuilderTests
             .AddClientConfigurations(clientEntryAssemblyName: "Boilerplate.Client.Web")
             .Build();
 
-        // Provided by Boilerplate.Client.Core/appsettings.json.
+        // Provided by Boilerplate.Client.Core/appsettings.json, whose ServerAddress is the web port under
+        // api == Integrated and the api port under api == Standalone - two different `replaces` tokens, so this
+        // assertion has to be split the same way that file is, or it fails in every generated Standalone project.
+        //#if (api == "Integrated")
         Assert.AreEqual("http://localhost:5030/", configuration["ServerAddress"]);
+        //#endif
+        //#if (IsInsideProjectTemplate)
+        /*
+        //#endif
+        //#if (api == "Standalone")
+        Assert.AreEqual("http://localhost:5031/", configuration["ServerAddress"]);
+        //#endif
+        //#if (IsInsideProjectTemplate)
+        */
+        //#endif
         // Provided by Boilerplate.Shared/appsettings.json - the lowest-priority layer - proving it is merged in too.
         Assert.AreEqual("268435456", configuration["MemoryCache:SizeLimit"]);
     }

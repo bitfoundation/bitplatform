@@ -33,6 +33,7 @@ public partial class AppClientCoordinator : AppComponentBase
     [AutoInject] private ILogger<AuthManager> authLogger = default!;
     [AutoInject] private ILogger<Navigator> navigatorLogger = default!;
     [AutoInject] private ILogger<AppClientCoordinator> logger = default!;
+    [AutoInject] private AppAccentColorService accentColorService = default!;
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
@@ -87,7 +88,7 @@ public partial class AppClientCoordinator : AppComponentBase
             }
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
-            TelemetryContext.PageUrl = HttpUtility.UrlDecode(NavigationManager.Uri);
+            TelemetryContext.PageUrl = new Uri(NavigationManager.Uri).GetUrlWithMaskedQueryValues();
 
             //#if (appInsights == true)
             _ = appInsights.AddTelemetryInitializer(new()
@@ -100,6 +101,8 @@ public partial class AppClientCoordinator : AppComponentBase
                 }
             });
             //#endif
+
+            await accentColorService.InitializeAsync(); // Restores the persisted accent (main theme) color, if any.
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;
             AuthManager.AuthenticationStateChanged += AuthenticationStateChanged;
@@ -139,7 +142,7 @@ public partial class AppClientCoordinator : AppComponentBase
 
     private void NavigationManager_LocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        TelemetryContext.PageUrl = HttpUtility.UrlDecode(e.Location);
+        TelemetryContext.PageUrl = new Uri(e.Location).GetUrlWithMaskedQueryValues();
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 

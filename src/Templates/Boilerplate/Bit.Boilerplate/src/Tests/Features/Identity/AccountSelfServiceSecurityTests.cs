@@ -222,10 +222,12 @@ public class AccountSelfServiceSecurityTests
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var normalizedEmail = email.ToUpperInvariant();
 
-        return await dbContext.Set<User>()
+        var state = await dbContext.Set<User>()
             .Where(u => u.NormalizedEmail == normalizedEmail)
-            .Select(u => ValueTuple.Create(u.EmailConfirmed, u.SecurityStamp))
+            .Select(u => new { u.EmailConfirmed, u.SecurityStamp })
             .SingleAsync(TestContext.CancellationToken);
+
+        return (state.EmailConfirmed, state.SecurityStamp);
     }
 
     public TestContext TestContext { get; set; } = default!;

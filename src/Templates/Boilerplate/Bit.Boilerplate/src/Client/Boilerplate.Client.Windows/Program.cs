@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Windows.Infrastructure.Services;
 
+using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
@@ -37,6 +38,8 @@ public partial class Program
         var services = new ServiceCollection();
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
+
+        Services.GetService<IStartupValidator>()?.Validate();
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {

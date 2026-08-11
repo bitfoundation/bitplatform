@@ -3,7 +3,9 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
 
-        <SelfContained>true</SelfContained>
+        <!-- SelfContained turns every dev build into a RID-specific one that copies the whole
+             runtime into bin, slowing builds; it's only needed for the published output. -->
+        <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
         <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>

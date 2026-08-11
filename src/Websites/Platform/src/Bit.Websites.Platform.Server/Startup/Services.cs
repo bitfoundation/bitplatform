@@ -1,4 +1,6 @@
 ﻿using System.IO.Compression;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Platform.Server.Services;
@@ -31,6 +33,37 @@ public static class Services
         services
             .AddControllers();
 
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy("MessageSubmit", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(5)
+                    }));
+
+            // Returns the error in the same shape as ApiExceptionHandler (Request-ID header + RestErrorInfo body),
+            // so the client turns it into TooManyRequestsExceptions (a KnownException) instead of retrying the POST
+            // and surfacing a generic unknown-error message.
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                var response = context.HttpContext.Response;
+
+                response.Headers.Append("Request-ID", context.HttpContext.TraceIdentifier);
+
+                await response.WriteAsJsonAsync(new RestErrorInfo
+                {
+                    Key = nameof(TooManyRequestsExceptions),
+                    Message = "You have sent too many messages. Please try again in a few minutes.",
+                    ExceptionType = typeof(TooManyRequestsExceptions).FullName
+                }, AppJsonContext.Default.RestErrorInfo, cancellationToken: cancellationToken);
+            };
+        });
+
         services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = env.IsDevelopment();
@@ -40,6 +73,17 @@ public static class Services
         {
             options.ForwardedHeaders = ForwardedHeaders.All;
             options.ForwardedHostHeaderName = "X-Host";
+            // The site runs behind a reverse proxy/CDN that is not on loopback; with the default
+            // loopback-only trust lists, UseForwardedHeaders ignores X-Forwarded-For and
+            // RemoteIpAddress stays the proxy address, collapsing the rate limiter above
+            // into a single partition shared by all visitors.
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+            // With the trust lists cleared, only the RIGHTMOST X-Forwarded-For entry is consumed, which
+            // the front end appends itself; anything a client puts in the header stays to its left and is
+            // never read. Raising this limit would let a client pick its own rate-limiter partition, so it
+            // is pinned here rather than left at the (currently identical) default.
+            options.ForwardLimit = 1;
         });
 
         if (string.IsNullOrEmpty(appSettings?.OpenAI?.ChatApiKey) is false)

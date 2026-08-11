@@ -38,18 +38,7 @@ public static partial class IJSRuntimeExtensions
         /// </summary>
         public bool IsInitialized()
         {
-            if (jsRuntime is null)
-                return false;
-
-            var type = jsRuntime.GetType();
-
-            return type.Name switch
-            {
-                "UnsupportedJavaScriptRuntime" => false, // pre-rendering
-                "RemoteJSRuntime" /* blazor server */ => (bool)type.GetProperty("IsInitialized")!.GetValue(jsRuntime)!,
-                "WebViewJSRuntime" /* blazor hybrid */ => type.GetField("_ipcSender", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(jsRuntime) is not null,
-                _ => true // blazor wasm
-            };
+            return jsRuntime is not null && jsRuntime.IsRuntimeInvalid() is false;
         }
 
         /// <summary>

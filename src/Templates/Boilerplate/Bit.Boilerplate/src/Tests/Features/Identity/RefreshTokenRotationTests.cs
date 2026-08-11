@@ -234,10 +234,12 @@ public partial class RefreshTokenRotationTests
         await using var scope = server.WebApp.Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        return await dbContext.UserSessions
+        var timestamps = await dbContext.UserSessions
             .Where(us => us.Id == sessionId)
-            .Select(us => ValueTuple.Create(us.StartedOn, us.RenewedOn))
+            .Select(us => new { us.StartedOn, us.RenewedOn })
             .SingleAsync();
+
+        return (timestamps.StartedOn, timestamps.RenewedOn);
     }
 
     private static async Task<bool> SessionExists(AppTestServer server, Guid sessionId)

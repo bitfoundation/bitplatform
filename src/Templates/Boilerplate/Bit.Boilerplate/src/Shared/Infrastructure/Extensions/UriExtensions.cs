@@ -69,6 +69,33 @@ public static partial class UriExtensions
             }.Uri.ToString();
         }
 
+        /// <summary>
+        /// The url with every query value replaced by <c>***</c>, keeping the path and the parameter names.
+        /// </summary>
+        /// <remarks>
+        /// Use this wherever a url is recorded rather than navigated to. Several of this app's own routes carry a
+        /// single-use credential in the query string - <c>?token=</c>, <c>?emailToken=</c>, <c>?phoneToken=</c>,
+        /// <c>?otp=</c> - and <c>ITelemetryContext.PageUrl</c> is copied into the scope of every error record, which
+        /// `DiagnosticLogger` keeps, the chatbot's `CheckLastError` tool reads, and Sentry/App Insights/OTLP export.
+        /// <br/>
+        /// Masking every value rather than a list of known-sensitive names is deliberate: this is a template, and a
+        /// consumer's own token-carrying route would not be on any list this file could ship. The parameter names are
+        /// kept because they are what makes a log record diagnosable.
+        /// </remarks>
+        public string GetUrlWithMaskedQueryValues()
+        {
+            var qsCollection = AppQueryStringCollection.Parse(uri.Query);
+
+            if (qsCollection is { Count: 0 })
+                return uri.ToString();
+
+            // Composed by hand rather than through AppQueryStringCollection.ToString(), which would escape the mask
+            // into %2A%2A%2A. The result is a log string, never something to navigate to.
+            // The keys are re-escaped: Parse hands them back DECODED, so emitting one raw would let a key such as
+            // `%0AInjected` put a newline into the log record, or `%26fake` invent a parameter that was never sent.
+            return $"{uri.GetLeftPart(UriPartial.Path)}?{string.Join("&", qsCollection.Keys.Select(key => $"{Uri.EscapeDataString(key)}=***"))}";
+        }
+
         public string GetPath()
         {
             var uriBuilder = new UriBuilder(uri.GetUrlWithoutCulture()) { Query = string.Empty, Fragment = string.Empty };

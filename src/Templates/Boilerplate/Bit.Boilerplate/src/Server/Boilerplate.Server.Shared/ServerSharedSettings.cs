@@ -79,7 +79,7 @@ public partial class ServerSharedSettings : SharedSettings
     /// Blazor Hybrid's webview, localhost, devtunnels, github codespaces.
     /// </summary>
 #if Development
-    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|.*?devtunnels\.ms|.*?github\.dev)(:\d+)?(\/.*)?$")]
+    [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1|[\w\-]+(\.[\w\-]+)*\.devtunnels\.ms|[\w\-]+(\.[\w\-]+)*\.github\.dev)(:\d+)?(\/.*)?$")]
 #else
     [GeneratedRegex(@"^(http|https|app):\/\/(localhost|0\.0\.0\.0|0\.0\.0\.1|127\.0\.0\.1)(:\d+)?(\/.*)?$")]
 #endif

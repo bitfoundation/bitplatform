@@ -19,11 +19,13 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
         string? requestIdValue = null;
 
+        HttpResponseMessage? response = null;
+
         try
         {
             try
             {
-                var response = await base.SendAsync(request, cancellationToken);
+                response = await base.SendAsync(request, cancellationToken);
 
                 if (response.Headers.TryGetValues("Request-Id", out var requestId))
                 {
@@ -82,6 +84,7 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
         }
         catch (Exception exp)
         {
+            response?.Dispose(); // Only ever reached on a failure; the success path returns from the inner try.
             exp.WithData("RequestId", requestIdValue ?? "?"); // Connect the exception to its corresponding request id, if one exists.
             throw;
         }

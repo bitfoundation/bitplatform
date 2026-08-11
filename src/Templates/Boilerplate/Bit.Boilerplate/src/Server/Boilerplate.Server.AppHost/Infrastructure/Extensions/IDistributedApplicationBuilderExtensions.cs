@@ -15,14 +15,24 @@ public static class IDistributedApplicationBuilderExtensions
     extension(IDistributedApplicationBuilder builder)
     {
         /// <summary>
-        /// Adds a Keycloak identity server with the development realm of the <c>./Infrastructure/Realms</c> folder imported into it.
+        /// Adds a Keycloak identity server. In run mode the development realm of the <c>./Infrastructure/Realms</c>
+        /// folder is imported into it; that realm seeds accounts with well-known passwords, so it must never reach a
+        /// published application model.
         /// https://aspire.dev/integrations/security/keycloak/
         /// </summary>
         public IResourceBuilder<KeycloakResource> AddKeycloak()
         {
-            return builder.AddKeycloak("keycloak", 8080)
-                .WithDataVolume()
-                .WithRealmImport("./Infrastructure/Realms");
+            // No explicit host port: every other container here lets Aspire allocate one, and a fixed port cannot be
+            // held by two app hosts at once - which `aspire run` plus `dotnet test` on one machine already is.
+            var keycloak = builder.AddKeycloak("keycloak")
+                .WithDataVolume();
+
+            if (builder.ExecutionContext.IsRunMode)
+            {
+                keycloak.WithRealmImport("./Infrastructure/Realms");
+            }
+
+            return keycloak;
         }
 
         //#if (redis == true)
@@ -41,7 +51,7 @@ public static class IDistributedApplicationBuilderExtensions
                         .WithArgs(
                          "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
                          "--appendonly", "no",                // Disables AOF persistence as well for the same reason.
-                         "--maxmemory-policy", "allkeys-lru"  // Evict least recently used keys when memory limit is reached
+                         "--maxmemory-policy", "allkeys-lru"  // Documents the Azure-side EvictionPolicy below. Inert in the container: no maxmemory is set, so nothing is ever evicted.
                      ).WithOtlpExporter();
                 }).ConfigureInfrastructure(infra =>
                 {
@@ -71,7 +81,9 @@ public static class IDistributedApplicationBuilderExtensions
                     redis.WithRedisInsight()
                         .WithRedisCommander()
                         .WithImage("redis/redis-stack", "latest")
+                        .WithDataVolume()
                         .WithArgs(
+                            "--dir", "/data",
                             "--appendonly", "yes",             // Enable AOF (Append only file) for data durability
                             "--appendfsync", "always",         // Sync to disk on every write for maximum durability. Temporarily disable it programmatically using C# code during bulk operations if needed.
                             "--save", "",                      // Disables RDB snapshots

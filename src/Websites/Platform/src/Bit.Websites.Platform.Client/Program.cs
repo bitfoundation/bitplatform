@@ -12,7 +12,7 @@ if (apiServerAddress!.IsAbsoluteUri is false)
     apiServerAddress = new Uri($"{builder.HostEnvironment.BaseAddress}{apiServerAddress}");
 }
 
-builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<RetryDelegatingHandler>()) { BaseAddress = apiServerAddress });
+builder.Services.AddSingleton(sp => new HttpClient(sp.GetRequiredService<RequestHeadersDelegationHandler>()) { BaseAddress = apiServerAddress });
 
 builder.Services.AddClientSharedServices();
 
