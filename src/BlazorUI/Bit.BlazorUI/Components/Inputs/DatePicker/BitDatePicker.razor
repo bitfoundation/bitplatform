@@ -119,8 +119,12 @@
      class="bit-dtp-ovl @Classes?.Overlay"></div>
 }
 
+@* The callout is rendered outside of the root element - and reparented to the body while it is open -
+   so it inherits nothing of its direction and has to carry it itself. The explicit Dir is set here as
+   it is on the root; a direction that only the culture implies rides on the bit-dtp-rtl class. *@
 <div id="@_calloutId"
      @onkeydown="HandleOnCalloutKeyDown"
+     dir="@Dir?.ToString().ToLower()"
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()">
     @* The callout is a modal dialog only when it floats over the page; standalone it is part of the

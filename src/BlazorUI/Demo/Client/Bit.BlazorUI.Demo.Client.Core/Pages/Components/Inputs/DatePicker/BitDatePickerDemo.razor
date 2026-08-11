@@ -147,9 +147,11 @@
         <br />
         <div class="example-content">
             <BitDatePicker Label="IsMonthPickerVisible" IsMonthPickerVisible="@isMonthPickerVisible" />
+            <br />
             <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker hidden" @bind-IsChecked="@isMonthPickerVisible" />
-            <br /><br />
+            <br /><br /><br />
             <BitDatePicker Label="ShowMonthPickerAsOverlay" ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
+            <br />
             <BitToggleButton OnText="Position overlay" OffText="Position besides" @bind-IsChecked="@showMonthPickerAsOverlay" />
         </div>
     </DemoExample>
@@ -239,13 +241,17 @@
         <br />
         <div class="example-content">
             <BitDatePicker Label="Two-way binding" @bind-Value="@selectedDate" />
-            <div>Selected date: @selectedDate.ToString()</div>
-            <br /><br />
+        </div>
+        <br />
+        <div>Selected date: @selectedDate.ToString()</div>
+        <br /><br /><br />
+        <div class="example-content">
             <BitDatePicker Label="DefaultValue & OnChange"
                            DefaultValue="DateTimeOffset.Now"
                            OnChange="v => changedDate = v" />
-            <div>Changed date: @(changedDate?.ToString() ?? "-")</div>
         </div>
+        <br />
+        <div>Changed date: @(changedDate?.ToString() ?? "-")</div>
     </DemoExample>
 
     <DemoExample Title="Culture" RazorCode="@example12RazorCode" Id="example12">
@@ -284,7 +290,7 @@
                      Target="_blank">more info</BitLink>).
         </div>
         <br /><br />
-        <div>Default (local TimeZone):</div><br/>
+        <div><b>Default (local TimeZone)</b>:</div><br/>
         <div class="example-content">
             <BitDatePicker @bind-Value="@timeZoneDate1" ShowTimePicker />
         </div>
@@ -302,7 +308,7 @@
 
         @if (timeZoneInfo is not null) {
             <br /><br /><br /><br />
-            <div>"@timeZoneInfo.Id" TimeZone:</div><br/>
+            <div><b>"@timeZoneInfo.Id" TimeZone</b>:</div><br/>
             <div class="example-content">
                 <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" ShowTimePicker />
             </div>
@@ -419,7 +425,7 @@
             <br /><br /><br />
             <BitDatePicker Label="MonthCellTemplate">
                 <MonthCellTemplate>
-                    <div style="width:28px;padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
+                    <div style="padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
                         @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
                     </div>
                 </MonthCellTemplate>

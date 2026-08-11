@@ -284,7 +284,7 @@ private DateTimeOffset? readOnlyDate = DateTimeOffset.Now;";
 
 <BitDatePicker Label=""MonthCellTemplate"">
     <MonthCellTemplate>
-        <div style=""width:28px;padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
+        <div style=""padding:3px;color:black;background:@(context.Month == 1 ? ""lightcoral"" : ""yellowgreen"")"">
             @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
         </div>
     </MonthCellTemplate>

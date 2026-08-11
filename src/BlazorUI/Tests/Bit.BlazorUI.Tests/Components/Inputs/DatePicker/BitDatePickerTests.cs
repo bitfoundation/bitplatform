@@ -2232,6 +2232,60 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"]);
     }
 
+    // ── Direction ─────────────────────────────────────────────────────────────
+
+    [TestMethod,
+        DataRow(BitDir.Rtl, "rtl"),
+        DataRow(BitDir.Ltr, "ltr")
+    ]
+    public void BitDatePickerCalloutShouldCarryTheExplicitDir(BitDir dir, string expectedDir)
+    {
+        // The callout is rendered outside of the root and reparented to the body, so it inherits none
+        // of the direction the root declares and has to spell it out itself.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(expectedDir, component.Find(".bit-dtp-cal").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerCalloutShouldCarryACultureImpliedRtl()
+    {
+        // A direction only the culture implies leaves no dir attribute behind to inherit, so the
+        // callout carries it on the class the stylesheet turns into direction: rtl.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo("fa-IR"));
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var callout = component.Find(".bit-dtp-cal");
+
+        Assert.IsNull(callout.GetAttribute("dir"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-dtp-rtl"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerCalloutShouldRenderTheDayPickerBeforeTheMonthPicker()
+    {
+        // The two panels swap places in RTL through the direction of the callout alone, which only
+        // works while the day picker stays the first of the two in the DOM.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var panels = component.FindAll(".bit-dtp-grp > div:not(.bit-dtp-sdt)");
+
+        Assert.IsTrue(panels[0].ClassList.Contains("bit-dtp-dwp"));
+        Assert.IsTrue(panels[1].ClassList.Contains("bit-dtp-dvd"));
+        Assert.IsTrue(panels[2].ClassList.Contains("bit-dtp-mwp"));
+    }
+
     // ── AutoClose ─────────────────────────────────────────────────────────────
 
     [TestMethod]

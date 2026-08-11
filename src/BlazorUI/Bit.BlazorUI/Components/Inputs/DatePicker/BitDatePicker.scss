@@ -81,7 +81,13 @@
 
 }
 
+// The callout does not sit inside the root element, so a direction the culture implies - which leaves
+// no dir attribute behind to inherit - has to be restated here. It mirrors the whole callout: the day
+// picker leads on the right, the month picker follows on its left, and the days of a week run from the
+// right edge of the grid, which is the order the arrow keys already move in.
 .bit-dtp-cal.bit-dtp-rtl {
+    direction: rtl;
+
     .bit-dtp-am-pm {
         order: -1;
         direction: rtl;
@@ -182,8 +188,8 @@
     }
 
     .bit-dtp-ico {
-        padding-left: 0;
-        padding-right: spacing(1);
+        padding-inline-start: 0;
+        padding-inline-end: spacing(1);
     }
 }
 
@@ -551,7 +557,7 @@
 
 .bit-dtp-dvd {
     top: 0;
-    border-right: $shp-border-width $shp-border-style $clr-brd-sec;
+    border-inline-end: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-dtp-mwp {
@@ -761,7 +767,7 @@
     .bit-dtp-icn {
         border: none;
         flex: 1 1 0px;
-        text-align: left;
+        text-align: start;
     }
 
     &.bit-dis {
