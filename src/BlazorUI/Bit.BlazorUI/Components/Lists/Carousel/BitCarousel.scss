@@ -5,6 +5,23 @@
     position: relative;
     height: spacing(25);
     flex-direction: column;
+
+    // The dot of the current page takes the accent (or the Color) of the carousel, and the buttons take
+    // the neutral foreground so they stay legible over whatever the slides hold. The uncolored carousel
+    // resolves to the primary accent, which is what it always rendered with.
+    --bit-csl-clr: #{$clr-pri};
+    --bit-csl-clr-hover: #{$clr-pri-hover};
+    --bit-csl-btn: #{$clr-fg-pri};
+    --bit-csl-btn-hover: #{$clr-fg-pri-hover};
+    --bit-csl-dot: #{$clr-bg-ter};
+    --bit-csl-dot-hover: #{$clr-bg-ter-hover};
+    --bit-csl-gap: 0px;
+    --bit-csl-dot-size: #{spacing(1.25)};
+    --bit-csl-btn-size: #{spacing(3)};
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-crsi {
@@ -12,6 +29,11 @@
     bottom: 0;
     display: none;
     position: absolute;
+    box-sizing: border-box;
+
+    // The gap is carved out of the box each slide already occupies, half on each side, so the slides
+    // keep lining up with the pages of the carousel no matter how many of them are visible.
+    padding-inline: calc(var(--bit-csl-gap) / 2);
 }
 
 .bit-csl-cnt {
@@ -29,24 +51,25 @@
     }
 }
 
+.bit-csl-ndr {
+    cursor: default;
+}
+
 .bit-csl-lbt,
-.bit-csl-rbt {
-    top: 0;
+.bit-csl-rbt,
+.bit-csl-ppb {
     border: 0;
-    bottom: 0;
-    width: 10%;
     padding: 0;
     z-index: 1;
     opacity: 0.5;
     display: flex;
     cursor: pointer;
     background: 0 0;
-    color: $clr-fg-pri;
-    position: absolute;
     text-align: center;
     align-items: center;
-    font-size: spacing(3);
     justify-content: center;
+    color: var(--bit-csl-btn);
+    font-size: var(--bit-csl-btn-size);
     transition: opacity $mot-duration ease;
 
     @media (hover: hover) {
@@ -54,9 +77,28 @@
             outline: 0;
             opacity: 0.9;
             text-decoration: none;
-            color: $clr-fg-pri-hover;
+            color: var(--bit-csl-btn-hover);
         }
     }
+
+    &:focus-visible {
+        opacity: 1;
+
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
+.bit-csl-lbt,
+.bit-csl-rbt {
+    top: 0;
+    bottom: 0;
+    width: 10%;
+    position: absolute;
 }
 
 .bit-csl-lbt {
@@ -67,73 +109,138 @@
     left: 0;
 }
 
+// A vertical carousel scrolls along its height, so the buttons move to the edges it actually scrolls
+// towards: the "left" (next) button to the bottom and the "right" (prev) button to the top.
+.bit-csl-vrt {
+    .bit-crsi {
+        top: unset;
+        bottom: unset;
+        left: 0;
+        right: 0;
+        padding-inline: 0;
+        padding-block: calc(var(--bit-csl-gap) / 2);
+    }
+
+    .bit-csl-cnt {
+        touch-action: pan-x;
+    }
+
+    .bit-csl-lbt,
+    .bit-csl-rbt {
+        top: unset;
+        bottom: unset;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 10%;
+    }
+
+    .bit-csl-lbt {
+        bottom: 0;
+    }
+
+    .bit-csl-rbt {
+        top: 0;
+    }
+}
+
 .bit-csl-dcn {
-    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: spacing(0.5);
     margin-top: spacing(1.25);
 }
 
+.bit-csl-ppb {
+    position: relative;
+    font-size: calc(var(--bit-csl-dot-size) + #{spacing(0.5)});
+}
+
 .bit-csl-dot {
+    border: 0;
+    padding: 0;
     cursor: pointer;
     border-radius: 50%;
-    width: spacing(1.25);
-    height: spacing(1.25);
     display: inline-block;
-    margin: 0 spacing(0.5);
-    background-color: $clr-bg-ter;
+    width: var(--bit-csl-dot-size);
+    height: var(--bit-csl-dot-size);
+    background-color: var(--bit-csl-dot);
     transition: background-color $mot-duration-long ease;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-ter-hover;
+            background-color: var(--bit-csl-dot-hover);
         }
     }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        background-color: $clr-bg-dis;
+    }
+}
+
+.bit-csl-cud {
+    background-color: var(--bit-csl-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-csl-clr-hover);
+        }
+    }
+}
+
+
+.bit-csl-sm {
+    --bit-csl-dot-size: #{spacing(1)};
+    --bit-csl-btn-size: #{spacing(2)};
+}
+
+.bit-csl-md {
+    --bit-csl-dot-size: #{spacing(1.25)};
+    --bit-csl-btn-size: #{spacing(3)};
+}
+
+.bit-csl-lg {
+    --bit-csl-dot-size: #{spacing(1.75)};
+    --bit-csl-btn-size: #{spacing(4)};
 }
 
 
 .bit-csl-apri {
-    .bit-csl-cud {
-        background-color: $clr-pri;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-pri-hover;
-            }
-        }
-    }
+    --bit-csl-clr: #{$clr-pri};
+    --bit-csl-clr-hover: #{$clr-pri-hover};
 }
 
 .bit-csl-asec {
-    .bit-csl-cud {
-        background-color: $clr-sec;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-sec-hover;
-            }
-        }
-    }
+    --bit-csl-clr: #{$clr-sec};
+    --bit-csl-clr-hover: #{$clr-sec-hover};
 }
 
 .bit-csl-ater {
-    .bit-csl-cud {
-        background-color: $clr-ter;
-
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-ter-hover;
-            }
-        }
-    }
+    --bit-csl-clr: #{$clr-ter};
+    --bit-csl-clr-hover: #{$clr-ter-hover};
 }
 
 .bit-csl-atra {
-    .bit-csl-cud {
-        background-color: transparent;
+    --bit-csl-clr: transparent;
+    --bit-csl-clr-hover: transparent;
+}
 
-        @media (hover: hover) {
-            &:hover {
-                background-color: transparent;
-            }
-        }
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit
+// after the accent classes, so a carousel that sets both Color and Accent renders with its Color. The
+// buttons take the role color as well, so the whole chrome of the carousel reads as that role.
+@each $role, $tokens in $bit-color-roles {
+    .bit-csl-#{$role} {
+        --bit-csl-clr: #{role($tokens, main)};
+        --bit-csl-clr-hover: #{role($tokens, hover)};
+        --bit-csl-btn: #{role($tokens, main)};
+        --bit-csl-btn-hover: #{role($tokens, hover)};
     }
 }

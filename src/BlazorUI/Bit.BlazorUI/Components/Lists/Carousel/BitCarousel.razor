@@ -3,17 +3,29 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="region"
+     aria-roledescription="carousel"
+     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
+     @onkeydown="HandleKeyDown"
+     @onfocusin="HandleFocusIn"
+     @onfocusout="HandleFocusOut"
+     @onmouseenter="HandleMouseEnter"
+     @onmouseleave="HandleMouseLeave">
 
     <div @ref="_carouselContainer"
+         @onwheel="HandleWheel"
+         @onwheel:preventDefault="Wheel"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
-         @onpointerdown:preventDefault="true"
-         class="bit-csl-cnt @Classes?.Container"
+         @onpointerdown:preventDefault="NoDrag is false"
+         aria-live="@(IsPlaying ? "off" : "polite")"
+         class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
 
         <CascadingValue Value="this" IsFixed="true">
@@ -22,34 +34,67 @@
 
         @if (HideNextPrev is false)
         {
-            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? "ChevronRight");
-            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? "ChevronRight bit-ico-r180");
-            <div @onclick="GoLeft"
-                 class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                 style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
-                <i style="@Styles?.GoLeftButtonIcon"
-                   class="@goLeftIcon?.GetCssClasses() @Classes?.GoLeftButtonIcon" />
-            </div>
+            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
+            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
+            <button @onclick="HandleGoLeft"
+                    type="button"
+                    aria-label="@GetGoLeftAriaLabel()"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
+                    style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
+                   class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
+            </button>
 
-            <div @onclick="GoRight"
-                 class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                 style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
-                <i style="@Styles?.GoRightButtonIcon"
-                   class="@goRightIcon?.GetCssClasses() @Classes?.GoRightButtonIcon" />
-            </div>
+            <button @onclick="HandleGoRight"
+                    type="button"
+                    aria-label="@GetGoRightAriaLabel()"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
+                    style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
+                   class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
+            </button>
         }
     </div>
 
-    @if (HideDots is false)
+    @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
-        <div class="bit-csl-dcn @Classes?.DotsContainer"
+        <div role="group"
+             aria-label="@DotsAriaLabel"
+             class="bit-csl-dcn @Classes?.DotsContainer"
              style="@_directionStyle @Styles?.DotsContainer">
-            @for (int i = 0; i < _pagesCount; i++)
+            @if (AutoPlay && ShowPlayPause)
             {
-                int index = i;
-                <div @onclick="(() => GotoPage(index))"
-                     style="@Styles?.Dots"
-                     class="bit-csl-dot @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrectDot}" : "").Trim()) @Classes?.Dots"></div>
+                var playPauseIcon = IsPaused
+                                    ? BitIconInfo.From(PlayIcon, PlayIconName ?? "Play")
+                                    : BitIconInfo.From(PauseIcon, PauseIconName ?? "Pause");
+                <button @onclick="TogglePlay"
+                        type="button"
+                        aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
+                        disabled="@(IsEnabled is false)"
+                        class="bit-csl-ppb @Classes?.PlayPauseButton"
+                        style="@Styles?.PlayPauseButton">
+                    <i aria-hidden="true"
+                       style="@Styles?.PlayPauseButtonIcon"
+                       class="@playPauseIcon?.GetCssClasses() @Classes?.PlayPauseButtonIcon" />
+                </button>
+            }
+            @if (HideDots is false && _pagesCount > 1)
+            {
+                @for (int i = 0; i < _pagesCount; i++)
+                {
+                    int index = i;
+                    <button @onclick="(() => HandleGotoPage(index))"
+                            type="button"
+                            aria-label="@($"{DotAriaLabel} {index + 1}")"
+                            aria-disabled="@(_currentPage == index ? "true" : null)"
+                            disabled="@(IsEnabled is false)"
+                            style="@Styles?.Dots @(_currentPage == index ? Styles?.GetCurrentDot() : null)"
+                            class="bit-csl-dot @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots"></button>
+                }
             }
         </div>
     }

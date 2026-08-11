@@ -1,10 +1,61 @@
-﻿<BitCarousel HideDots="HideDots" HideNextPrev="HideNextPrev">
-    <BitCarouselItem><div class='item'>1</div></BitCarouselItem>
-    <BitCarouselItem><div class='item'>2</div></BitCarouselItem>
-    <BitCarouselItem><div class='item'>3</div></BitCarouselItem>
+<BitCarousel @ref="Carousel"
+              Dir="Dir"
+              Gap="@Gap"
+              Fade="Fade"
+              Wheel="Wheel"
+              NoDrag="NoDrag"
+              Accent="Accent"
+              Styles="Styles"
+              Classes="Classes"
+              AutoPlay="AutoPlay"
+              Vertical="Vertical"
+              HideDots="HideDots"
+              OnChange="OnChange"
+              IsEnabled="IsEnabled"
+              NoKeyboard="NoKeyboard"
+              DefaultPage="DefaultPage"
+              HideNextPrev="HideNextPrev"
+              ShowPlayPause="ShowPlayPause"
+              DotAriaLabel="@DotAriaLabel"
+              GoLeftAriaLabel="@GoLeftAriaLabel"
+              GoRightAriaLabel="@GoRightAriaLabel"
+              ScrollItemsCount="ScrollItemsCount"
+              VisibleItemsCount="VisibleItemsCount"
+              InfiniteScrolling="InfiniteScrolling"
+              StopOnInteraction="StopOnInteraction">
+    @for (int i = 1; i <= ItemsCount; i++)
+    {
+        var index = i;
+        <BitCarouselItem><div class='item'>@index</div></BitCarouselItem>
+    }
 </BitCarousel>
 
 @code {
+    public BitCarousel Carousel { get; set; } = default!;
+
+    [Parameter] public BitDir? Dir { get; set; }
+    [Parameter] public string? Gap { get; set; }
+    [Parameter] public bool Fade { get; set; }
+    [Parameter] public bool Wheel { get; set; }
+    [Parameter] public bool NoDrag { get; set; }
+    [Parameter] public bool AutoPlay { get; set; }
+    [Parameter] public bool Vertical { get; set; }
     [Parameter] public bool HideDots { get; set; }
+    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool NoKeyboard { get; set; }
+    [Parameter] public int ItemsCount { get; set; } = 3;
+    [Parameter] public int DefaultPage { get; set; } = 1;
     [Parameter] public bool HideNextPrev { get; set; }
+    [Parameter] public bool ShowPlayPause { get; set; }
+    [Parameter] public bool InfiniteScrolling { get; set; }
+    [Parameter] public bool StopOnInteraction { get; set; }
+    [Parameter] public int ScrollItemsCount { get; set; } = 1;
+    [Parameter] public int VisibleItemsCount { get; set; } = 1;
+    [Parameter] public BitColorKind? Accent { get; set; }
+    [Parameter] public string DotAriaLabel { get; set; } = "Slide";
+    [Parameter] public string? GoLeftAriaLabel { get; set; }
+    [Parameter] public string? GoRightAriaLabel { get; set; }
+    [Parameter] public BitCarouselClassStyles? Styles { get; set; }
+    [Parameter] public BitCarouselClassStyles? Classes { get; set; }
+    [Parameter] public EventCallback<int> OnChange { get; set; }
 }

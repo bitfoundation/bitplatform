@@ -58,3 +58,21 @@
         transform: translate(0, 80%);
     }
 }
+
+::deep .gap-item {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.colors-container {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(220px), 1fr));
+}
+
+::deep .custom-item {
+    color: white;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #5843be, #9787e5);
+}
