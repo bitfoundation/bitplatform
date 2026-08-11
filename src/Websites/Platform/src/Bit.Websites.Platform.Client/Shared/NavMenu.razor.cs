@@ -8,7 +8,7 @@ public partial class NavMenu : IDisposable
     private List<BitNavItem> filteredNavItems = default!;
     
 
-    [AutoInject] private NavManuService navMenuService = default!;
+    [AutoInject] private NavMenuService navMenuService = default!;
 
 
     [Parameter] public List<BitNavItem> NavItems { get; set; } = [];

@@ -45,16 +45,17 @@
         margin: auto;
         padding: 1rem;
         max-width: rem2(800px);
+        filter: drop-shadow(0 24px 48px rgba(24, 120, 253, 0.18));
     }
 }
 
-.bit-platform-dark-theme {
+:root[bit-theme="dark"] {
     .dark-theme {
         display: unset;
     }
 }
 
-.bit-platform-light-theme {
+:root[bit-theme="light"] {
     .light-theme {
         display: unset;
     }
@@ -100,6 +101,9 @@
 
 ::deep .section-title {
     font-size: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: $bit-color-foreground-secondary;
 }
@@ -155,6 +159,55 @@
 
             .hero-subtitle {
                 text-align: center;
+                color: $bit-color-foreground-secondary;
+            }
+        }
+
+        .hero-cta-container {
+            gap: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+            justify-content: center;
+        }
+
+        .hero-cta {
+            line-height: 1;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            white-space: nowrap;
+            text-decoration: none;
+            box-sizing: border-box;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+
+            &.primary {
+                color: #fff;
+                background-image: linear-gradient(96deg, #524add 10%, #1878fd 90%);
+                box-shadow: 0 8px 24px -8px rgba(82, 74, 221, 0.6);
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 12px 28px -8px rgba(82, 74, 221, 0.8);
+                }
+            }
+
+            &.secondary {
+                color: $bit-color-foreground-primary;
+                border: 1px solid $bit-color-border-secondary;
+
+                &:hover {
+                    transform: translateY(-2px);
+                    border-color: $bit-color-border-primary;
+                    background-color: $bit-color-background-secondary;
+                }
+            }
+
+            &:focus-visible {
+                outline: 2px solid $bit-color-primary;
+                outline-offset: 2px;
             }
         }
 
@@ -203,8 +256,9 @@
         font-size: 6rem;
         line-height: 1.1;
         font-weight: 600;
-        text-align:center;
+        text-align: center;
         margin-bottom: 2rem;
+        letter-spacing: -0.02em;
 
         @include lt-xl {
             font-size: 5rem;
@@ -227,6 +281,7 @@
     }
 
     .text-subtitle {
+        line-height: 1.5;
         font-size: 2.25rem;
         text-align: center;
         color: $bit-color-foreground-secondary;
@@ -298,9 +353,22 @@
         width: rem2(70px);
         height: rem2(70px);
         margin: rem2(20px);
+        border-radius: 0.5rem;
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
+        transition: transform 0.2s ease, filter 0.2s ease;
+
+        &:hover,
+        &:focus-visible {
+            transform: translateY(-6px) scale(1.08);
+            filter: drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+        }
+
+        &:focus-visible {
+            outline: 2px solid $bit-color-primary;
+            outline-offset: 4px;
+        }
     }
 
     .blazor-item {
@@ -331,4 +399,58 @@
 }
 
 .customer-section {
+}
+
+// Motion: entrance stagger for the hero and a scroll-linked reveal for the rest of the page.
+// Both are progressive enhancements guarded by prefers-reduced-motion (and @supports for the
+// scroll-linked part), so unsupported browsers and reduced-motion users get the static page.
+@media (prefers-reduced-motion: no-preference) {
+    .hero-section-content {
+        ::deep .hero-title,
+        ::deep .hero-subtitle,
+        .hero-cta-container {
+            animation: hero-enter 0.7s ease-out both;
+        }
+
+        ::deep .hero-subtitle {
+            animation-delay: 0.15s;
+        }
+
+        .hero-cta-container {
+            animation-delay: 0.3s;
+        }
+    }
+
+    @supports (animation-timeline: view()) {
+        .page-container .hero-image,
+        .page-section:not(.hero-section) .page-section-content {
+            animation: section-reveal linear both;
+            animation-timeline: view();
+            animation-range: entry 5% entry 45%;
+        }
+    }
+}
+
+@keyframes hero-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1.5rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes section-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(2rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

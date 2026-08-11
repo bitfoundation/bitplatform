@@ -8,7 +8,7 @@
         <NavMenu NavItems="navItems" />
     }
 
-    <div class="site-content @(isDocsRoute ? "docs-content" : "")">
+    <div class="site-content @(isDocsRoute ? "docs-content" : "")" id="main-content">
         <AppErrorBoundary>
             @Body
         </AppErrorBoundary>

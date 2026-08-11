@@ -13,7 +13,7 @@
         <ChildContent>
             <div class="content-container">
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Boilerplate is a Visual studio and .NET project template that enables high-quality, speedy cross-platform development
+                    bit Boilerplate is a Visual Studio and .NET project template that enables high-quality, speedy cross-platform development
                     for PWA/SSR enabled websites and Android, iOS, macOS, Windows apps.
                 </BitText>
                 <div class="template-terminal">
@@ -83,7 +83,7 @@
                 </BitText>
                 <br />
                 <div style="text-align:center">
-                    <img src="/images/home/bswup.webp" style="max-width:100%;" />
+                    <img src="/images/home/bswup.webp" style="max-width:100%;" alt="bit Bswup service worker update flow in a Blazor PWA" loading="lazy" />
                 </div>
                 <br />
                 <a class="template-link" href="@Urls.Bswup" target="_blank">
@@ -112,6 +112,65 @@
                     <CodeBox HideCopyButton>services.AddBesqlDbContextFactory();</CodeBox>
                 </div>
                 <a class="template-link" href="@Urls.Besql">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_brouterExpanded ? " expanded" : "")}")" @bind-IsExpanded="_brouterExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
+                <div>
+                    <BitText Typography="BitTypography.H4" Class="header-title">Brouter</BitText>
+                    <BitText Typography="BitTypography.H5" Class="header-subtitle">Modern declarative Blazor router</BitText>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Brouter is a modern, declarative, nestable router for Blazor with async guards, data loaders,
+                    named routes, programmatic navigation, query string binding, and global navigation hooks.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;Brouter NotFoundUrl="404">
+    &lt;Broute Path="/" RedirectTo="/home" />
+    &lt;Broute Name="home" Path="/home">
+        &lt;Content>&lt;HomePage />&lt;/Content>
+    &lt;/Broute>
+    &lt;Broute Name="user" Path="/users/{id:int}" Component="@@typeof(UserPage)" />
+&lt;/Brouter></CodeBox>
+                </div>
+                <a class="template-link" href="@Urls.Brouter" target="_blank">
+                    Learn more <span class="template-link-arrow"></span>
+                </a>
+            </div>
+        </ChildContent>
+    </BitAccordion>
+    <br />
+    <BitAccordion Class="@($"accordion{(_bmotionExpanded ? " expanded" : "")}")" @bind-IsExpanded="_bmotionExpanded">
+        <HeaderTemplate Context="isExpanded">
+            <div class="header-container">
+                <BitIcon Class="header-icon" IconName="ChevronRight" Style="@(isExpanded ? "transform:rotate(90deg)" : "")" />
+                <div>
+                    <BitText Typography="BitTypography.H4" Class="header-title">Bmotion</BitText>
+                    <BitText Typography="BitTypography.H5" Class="header-subtitle">Blazor-native animation library</BitText>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ChildContent>
+            <div class="content-container">
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bmotion is a Blazor-native animation library with springs, gestures, keyframes, variants, drag,
+                    layout animations, shared-element transitions and exit animations, no manual JavaScript wiring required.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+         Animate="Bm.To(opacity: 1, y: 0)"></CodeBox>
+                </div>
+                <a class="template-link" href="@Urls.Bmotion" target="_blank">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>

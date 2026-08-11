@@ -15,4 +15,9 @@ public partial class HomePage
             await ourProductsRef.ScrollIntoView();
         }
     }
+
+    private async Task ScrollToProducts()
+    {
+        await ourProductsRef.ScrollIntoView(new ScrollIntoViewOptions { Behavior = ScrollBehavior.Smooth });
+    }
 }

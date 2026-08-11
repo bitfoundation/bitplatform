@@ -6,5 +6,7 @@ public partial class Products
     private bool _butilExpanded;
     private bool _bswupExpanded;
     private bool _besqlExpanded;
+    private bool _brouterExpanded;
+    private bool _bmotionExpanded;
     private bool _blazoruiExpanded;
 }

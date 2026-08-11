@@ -87,13 +87,13 @@
     border: 1px solid $bit-color-border-secondary;
 }
 
-.bit-platform-dark-theme {
+:root[bit-theme="dark"] {
     .dark-image {
         display: unset;
     }
 }
 
-.bit-platform-light-theme {
+:root[bit-theme="light"] {
     .light-image {
         display: unset;
     }

@@ -125,11 +125,14 @@ public class Middlewares
 
     private static void UseSiteMap(WebApplication app)
     {
+        string[] excludedUrls = ["/not-found", "/demo", "/templates/development-prerequisites"];
+
         var urls = Assembly.Load("Bit.Websites.Platform.Client")
             .ExportedTypes
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
             .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
             .Select(r => r.Template)
+            .Where(t => excludedUrls.Contains(t) is false && t.StartsWith("/boilerplate") is false)
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
