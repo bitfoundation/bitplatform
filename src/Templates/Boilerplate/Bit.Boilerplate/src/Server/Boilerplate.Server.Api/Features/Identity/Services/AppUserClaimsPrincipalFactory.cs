@@ -49,12 +49,19 @@ public partial class AppUserClaimsPrincipalFactory(UserClaimsService userClaimsS
 
     /// <summary>
     /// The following claims are managed by the server and should not be overridden by Keycloak claims.
+    /// <para>
+    /// <see cref="AppClaimTypes.FEATURES"/> deliberately does NOT belong here: granting features from the identity
+    /// provider is the point of the Keycloak integration. Only claims the server has already computed for this very
+    /// session belong here - the filter below drops the incoming claim by TYPE, so anything listed can never be
+    /// federated.
+    /// </para>
     /// </summary>
     private static readonly string[] serverManagedClaimTypes =
     [
         AppClaimTypes.SESSION_ID,
         AppClaimTypes.PRIVILEGED_SESSION,
         AppClaimTypes.ELEVATED_SESSION,
+        AppClaimTypes.MAX_PRIVILEGED_SESSIONS,
         //#if (multitenant == true)
         AppClaimTypes.TENANT_ID,
         //#endif

@@ -607,7 +607,8 @@
                 {
                     "condition": "(advancedTests != true || aspire != true)",
                     "exclude": [
-                        "src/Tests/Features/Identity/ExternalIdentityTests.cs"
+                        "src/Tests/Features/Identity/ExternalIdentityTests.cs",
+                        "src/Tests/Features/AppHost/**"
                     ]
                 },
                 {
@@ -754,7 +755,8 @@
                 {
                     "condition": "(aspire == false)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.AppHost/**"
+                        "src/Server/Boilerplate.Server.AppHost/**",
+                        "aspire.config.json"
                     ]
                 },
                 {
