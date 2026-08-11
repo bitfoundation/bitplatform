@@ -471,25 +471,3 @@
         }
     }
 }
-
-// The animations above are decorative; collapse them for visitors who asked the OS for less motion.
-@media (prefers-reduced-motion: reduce1) {
-
-    .header-link,
-    .header-link::after,
-    .menu-item,
-    .ps-chevron,
-    .github-btn,
-    .toggle-theme-btn,
-    .toggle-theme-btn img,
-    .header-menu-popup,
-    .header-nav,
-    .header-nav>.header-nav-item,
-    .header-nav>.header-nav-link,
-    .header-nav-products {
-        transition-delay: 0ms;
-        transition-duration: 0.01ms;
-        animation-duration: 0.01ms;
-        animation-delay: 0ms;
-    }
-}
