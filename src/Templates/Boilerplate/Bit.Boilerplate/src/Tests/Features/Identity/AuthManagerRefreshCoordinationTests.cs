@@ -124,4 +124,70 @@ public partial class AuthManagerRefreshCoordinationTests
 
         Assert.HasCount(1, refreshRequests, "Two overlapping plain refreshes must share a single request.");
     }
+
+    /// <summary>
+    /// The third part of the contract, and the one that has no visible failure until it happens: the Task
+    /// <c>RefreshToken</c> hands back must <b>always</b> complete.
+    /// <para>
+    /// It is produced by a <c>TaskCompletionSource</c> that the fire-and-forget implementation completes, and that used
+    /// to happen on two statements deep inside an inner try - while three awaits sat outside it, the first of them a
+    /// storage read that is JS interop on the web client. Anything thrown there left the source uncompleted on a task
+    /// nobody observes, and since <c>RefreshToken</c> takes no <c>CancellationToken</c>, every awaiter then waited
+    /// forever: <c>AuthDelegatingHandler</c> in the middle of an HTTP request, the SignalR access token provider, a
+    /// tenant switch. The user's only way out was reloading the app.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public async Task AFailureInsideTheRefresh_Should_StillCompleteTheAwaitingCallers()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestServices: services =>
+        {
+            services.AddIntegrationApiOnlyTestsServices();
+            services.RemoveAll<IStorageService>();
+            services.AddScoped<IStorageService, ThrowsWhenTheRefreshTokenIsRead>();
+        }).Start(TestContext.CancellationToken);
+
+        await using var scope = server.WebApp.Services.CreateAsyncScope();
+
+        var authManager = scope.ServiceProvider.GetRequiredService<AuthManager>();
+
+        // Two callers, because the second joins the first's shared source rather than starting its own - so a source
+        // that is never completed strands both, which is the shape the defect takes in the app.
+        var first = authManager.RefreshToken(requestedBy: "first");
+        var second = authManager.RefreshToken(requestedBy: "second");
+
+        // Any timeout at all is the assertion: unfixed, this waits forever rather than a few seconds.
+        var results = await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+        Assert.IsNull(results[0], "A refresh that could not run reports failure by returning null.");
+        Assert.IsNull(results[1]);
+
+        // The manager has to be usable afterwards: the finally still clears the shared field and releases the
+        // semaphore, so a later refresh is not blocked by the failed one.
+        Assert.IsNull(await authManager.RefreshToken(requestedBy: "after").WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+    }
+
+    /// <summary>
+    /// Reproduces the one real thrower on that path: reading the refresh token is JS interop on the web client, which
+    /// throws when the circuit is being torn down or the call times out. Everything else behaves normally, so the test
+    /// fails for this reason and no other.
+    /// </summary>
+    private sealed class ThrowsWhenTheRefreshTokenIsRead : IStorageService
+    {
+        private readonly TestStorageService inner = new();
+
+        public ValueTask<string?> GetItem(string key)
+        {
+            if (key is "refresh_token")
+                throw new InvalidOperationException("JavaScript interop calls cannot be issued at this time.");
+
+            return inner.GetItem(key);
+        }
+
+        public ValueTask<bool> IsPersistent(string key) => inner.IsPersistent(key);
+        public ValueTask RemoveItem(string key) => inner.RemoveItem(key);
+        public ValueTask SetItem(string key, string? value, bool persistent = true) => inner.SetItem(key, value, persistent);
+        public ValueTask Clear() => inner.Clear();
+    }
 }

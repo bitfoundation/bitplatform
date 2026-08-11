@@ -17,6 +17,11 @@ namespace Boilerplate.Shared.Infrastructure.Services;
 /// (https://github.com/aspnet-contrib/AspNet.Security.OAuth.Providers/issues/1190) - are charged
 /// <see cref="EstimatedEntrySizeInBytes"/> instead. That's deliberately an over-estimate: charging an entry too much
 /// only means fewer of them fit, while charging too little lets the cache outgrow the limit it exists to enforce.
+///
+/// The fallback covers a caller that sets no size. It does NOT cover one that passes a MemoryCacheEntryOptions
+/// without a Size: SetOptions assigns every field unconditionally, so it overwrites the default with null and, because
+/// a SizeLimit is configured, the write then throws out of Set. A caller passing an options object must set Size
+/// itself - which is what CacheDelegatingHandler does.
 /// </summary>
 public class AppMemoryCache(IOptions<MemoryCacheOptions> optionsAccessor, ILoggerFactory loggerFactory) : IMemoryCache
 {

@@ -4,10 +4,37 @@ namespace Boilerplate.Tests.Infrastructure;
 
 public class AppPageTest : PageTest
 {
+    /// <summary>
+    /// How long anything in this suite waits before giving up. Set on the context rather than the page so that pages
+    /// this test opens later - the external sign-in popup, for one - are as patient as the first one.
+    /// </summary>
+    private static readonly TimeSpan defaultTimeout = TimeSpan.FromMinutes(1);
+
     [TestInitialize]
     public async Task PageTimeoutSetup()
     {
-        Page.SetDefaultTimeout((float)TimeSpan.FromMinutes(1).TotalMilliseconds);
+        Context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
+        Assertions.SetDefaultExpectTimeout((float)defaultTimeout.TotalMilliseconds);
+    }
+
+    /// <summary>
+    /// Opens a second browser - an isolated context, i.e. its own storage and its own session - already carrying this
+    /// suite's timeout and pointed at <paramref name="serverAddress"/>. The caller owns the context and disposes it.
+    /// <para>
+    /// Both of those are easy to forget and neither fails loudly: a context left on Playwright's own 30 second default
+    /// simply gives up sooner than the first browser on the very same step, and one that never had the server address
+    /// injected talks to whatever the app was built against.
+    /// </para>
+    /// </summary>
+    protected async Task<IBrowserContext> NewBrowserContext(Uri serverAddress)
+    {
+        var context = await Browser.NewContextAsync(ContextOptions());
+
+        context.SetDefaultTimeout((float)defaultTimeout.TotalMilliseconds);
+
+        await SetBlazorWebAssemblyServerAddress(serverAddress, context);
+
+        return context;
     }
 
     /// <summary>
@@ -53,6 +80,9 @@ public class AppPageTest : PageTest
     public override BrowserNewContextOptions ContextOptions()
     {
         var options = base.ContextOptions();
+
+        options.IgnoreHTTPSErrors = true;
+
         return TestContext.TestRunCount > 1 ? options.EnableVideoRecording(TestContext) : options;
     }
 

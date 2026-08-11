@@ -1,3 +1,9 @@
+// [mirror] IStorageService semantics - persistent vs temp storage - keep in sync with:
+// - src/Client/Boilerplate.Client.Maui/Infrastructure/Services/MauiStorageService.cs
+// - src/Client/Boilerplate.Client.Windows/Infrastructure/Services/WindowsStorageService.cs
+// - src/Tests/Infrastructure/Services/TestStorageService.cs
+// IStorageServiceContractTests pins the behaviour all four must share.
+
 using Bit.Butil;
 
 namespace Boilerplate.Client.Web.Infrastructure.Services;
@@ -30,12 +36,17 @@ public partial class WebStorageService : IStorageService
 
     public async ValueTask SetItem(string key, string? value, bool persistent = true)
     {
+        // A key lives in exactly one of the two stores. Writing to one without removing it from the other would leave
+        // the previous value where GetItem still reads it - and since Preferences wins there (it is the value, the temp
+        // entry is only the default), a temporary write would be shadowed by the persistent value it supersedes.
         if (persistent)
         {
+            await sessionStorage.RemoveItem(key);
             await localStorage.SetItem(key, value);
         }
         else
         {
+            await localStorage.RemoveItem(key);
             await sessionStorage.SetItem(key, value);
         }
     }

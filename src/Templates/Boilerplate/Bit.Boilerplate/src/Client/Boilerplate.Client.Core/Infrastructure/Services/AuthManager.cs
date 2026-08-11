@@ -54,8 +54,8 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
 
         rememberMe ??= await storageService.IsPersistent("refresh_token");
 
-        await storageService.SetItem("access_token", response!.AccessToken);
         await storageService.SetItem("refresh_token", response!.RefreshToken, rememberMe is true);
+        await storageService.SetItem("access_token", response!.AccessToken, rememberMe is true);
 
         NotifyAuthenticationStateChanged(Task.FromResult(await GetAuthenticationStateAsync()));
     }
@@ -158,7 +158,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         //#endif
                     }, default);
                     await StoreTokens(refreshTokenResponse);
-                    currentTsc.SetResult(refreshTokenResponse.AccessToken!);
+                    currentTsc.TrySetResult(refreshTokenResponse.AccessToken!);
                 }
                 catch (Exception exp)
                 {
@@ -176,7 +176,7 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                         await ClearTokens();
                     }
 
-                    currentTsc.SetResult(null);
+                    currentTsc.TrySetResult(null);
                 }
             }
             finally
@@ -187,6 +187,9 @@ public partial class AuthManager : AuthenticationStateProvider, IAsyncDisposable
                 {
                     accessTokenTsc = null;
                 }
+
+                currentTsc.TrySetResult(null);
+
                 semaphore.Release();
             }
         }
