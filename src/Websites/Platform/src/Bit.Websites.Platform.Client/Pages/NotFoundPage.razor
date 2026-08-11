@@ -1,10 +1,23 @@
-﻿@page "/not-found"
+@page "/not-found"
 
 @inherits AppComponentBase
 
-<BitStack Alignment="BitAlignment.Center">
+<PageOutlet Url="not-found"
+            Title="Page not found"
+            Description="The page you are looking for does not exist on bitplatform.dev."
+            NoIndex />
+
+<BitStack Alignment="BitAlignment.Center" Class="not-found-stack">
     <BitText Typography="BitTypography.H1">404</BitText>
-    <BitText>There is nothing here: [<b>@Url</b>]</BitText>
+    <BitText Typography="BitTypography.Subtitle1">There is nothing here: [<b>@Url</b>]</BitText>
+    <BitText>Here are some helpful links instead:</BitText>
+    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Wrap>
+        <BitLink Href="/">Home</BitLink>
+        <BitLink Href="/templates">Boilerplate</BitLink>
+        <BitLink Href="/demos">Demos</BitLink>
+        <BitLink Href="/pricing">Pricing</BitLink>
+        <BitLink Href="/contact-us">Contact us</BitLink>
+    </BitStack>
 </BitStack>
 
 @code {

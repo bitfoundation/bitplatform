@@ -1,14 +1,14 @@
-﻿@page "/templates/create-project"
+@page "/templates/create-project"
 @page "/boilerplate/create-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/create-project"
             Title="Create project - Templates"
-            Description="create project of the project templates of the bit platform" />
+            Description="Create a new project from the bit Boilerplate template and customize it with parameters like database, authentication, and CI/CD pipeline." />
 
 <div class="page-container">
 
-    <BitText Typography="BitTypography.H3" Gutter>Create Project</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>Create Project</BitText>
     <br />
     <BitText Typography="BitTypography.Subtitle1" Gutter>
         Let's make our next cross platform project a success with Bit.Boilerplate.
@@ -56,20 +56,20 @@
                         Supported options include SqlServer, PostgreSQL, MySQL and Other.
                         <br />
                         <br />
-                        For the default SQLite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank">Visual Studio Code</a>.
+                        For the default SQLite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank" rel="noopener">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank" rel="noopener">Visual Studio Code</a>.
                     </div>
                     break;
                 case "SqlServer":
                     <div>
                         You can use Sql Server LocalDb 2025 for development purposes.
                         <br />
-                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank">here</a> or install it using PowerShell:
+                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank" rel="noopener">here</a> or install it using PowerShell:
                         <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
                     </div>
                     break;
                 case "PostgreSQL":
                     <div>
-                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank">here</a>.
+                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank" rel="noopener">here</a>.
                         Alternatively, use the following command:
                         <br />
                         <CodeBox>winget install --id=PostgreSQL.PostgreSQL.18</CodeBox>
@@ -77,12 +77,12 @@
                     break;
                 case "MySQL":
                     <div>
-                        Both <a href="https://mariadb.org/download" target="_blank">MariaDB</a> and MySql are supported.
+                        Both <a href="https://mariadb.org/download" target="_blank" rel="noopener">MariaDB</a> and MySql are supported.
                     </div>
                     break;
                 case "Other":
                     <div>
-                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
+                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank" rel="noopener">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
                     </div>
                     break;
             }
@@ -97,7 +97,7 @@
                 @GetMultiTenantCommand()
             </CodeBox>
             <BitText Typography="BitTypography.Body1" Gutter>
-                You can experience the Multi-tenancy feature instantly by logging into <a href="https://adminpanel.bitplatform.dev" target="_blank">adminpanel.bitplatform.dev</a> using <strong>store-user@bitplatform.dev</strong> (Password: <code>123456</code>). This gives you access to a demo tenant ("Store") where you can explore the Dashboard, Products, and Categories.
+                You can experience the Multi-tenancy feature instantly by logging into <a href="https://adminpanel.bitplatform.dev" target="_blank" rel="noopener">adminpanel.bitplatform.dev</a> using <strong>store-user@bitplatform.dev</strong> (Password: <code>123456</code>). This gives you access to a demo tenant ("Store") where you can explore the Dashboard, Products, and Categories.
             </BitText>
             <BitText Typography="BitTypography.Body1" Gutter>
                 Alternatively, you can sign in using your regular Google/Gmail account to automatically create your own isolated tenant. Once inside your personal tenant, you will also gain access to advanced Identity Management features, including User and Role administration pages.
@@ -121,7 +121,7 @@
                 case "Local":
                     <div>
                         The API project includes an Attachment Controller responsible for handling user images,
-                        including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank">FluentStorage</a>
+                        including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank" rel="noopener">FluentStorage</a>
                         <br />
                         <br />
                         Local option stores files on local hard drive.
@@ -134,13 +134,13 @@
                     break;
                 case "S3":
                     <div>
-                        Install and configure <a href="https://www.nuget.org/packages/FluentStorage.AWS" target="_blank">FluentStorage.AWS</a>, which supports Amazon S3.
+                        Install and configure <a href="https://www.nuget.org/packages/FluentStorage.AWS" target="_blank" rel="noopener">FluentStorage.AWS</a>, which supports Amazon S3.
                         This allows you to use any file storage solution compatible with S3, such as AWS, DigitalOcean Spaces, MinIO, Hetzner, Contabo etc.
                     </div>
                     break;
                 case "Other":
                     <div>
-                        Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank">FluentStorage packages</a>.
+                        Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank" rel="noopener">FluentStorage packages</a>.
                     </div>
                     break;
             }
@@ -166,12 +166,12 @@
                 case "GitHub":
                     <div>
                         Ensure a rapid and reliable deployment by utilizing a pipeline.
-                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank">Github Actions</a>.
+                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank" rel="noopener">Github Actions</a>.
                     </div>
                     break;
                 case "Azure":
                     <div>
-                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank">Azure Devops</a>.
+                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank" rel="noopener">Azure Devops</a>.
                     </div>
                     break;
             }
@@ -218,9 +218,9 @@
                 @GetAspireCommand()
             </CodeBox>
             <BitText Typography="BitTypography.Body2">
-                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Core Aspire</a>.
+                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank" rel="noopener">ASP.NET Core Aspire</a>.
                 <CodeBox>dotnet tool install -g Aspire.Cli</CodeBox>
-                Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank">here</a>.
+                Aspire requires Docker Desktop to be installed and running. Download and install Docker Desktop from <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener">here</a>.
             </BitText>
         </BitGridItem>
 
@@ -243,7 +243,7 @@
                 </div>
                 <br />
                 <div class="api-image-container">
-                    <img class="image" src="images/templates/api-integrated.webp" />
+                    <img class="image" src="images/templates/api-integrated.webp" alt="Integrated API architecture diagram" loading="lazy" />
                 </div>
             }
             else
@@ -253,7 +253,7 @@
                 </div>
                 <br />
                 <div class="api-image-container">
-                    <img class="image" src="images/templates/api-standalone.webp" />
+                    <img class="image" src="images/templates/api-standalone.webp" alt="Standalone API architecture diagram" loading="lazy" />
                 </div>
             }
 
@@ -269,7 +269,7 @@
                 @GetModuleCommand()
             </CodeBox>
             Use this parameter to initialize the project with a module.
-            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank">Sales</a>.
+            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank" rel="noopener">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank" rel="noopener">Sales</a>.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -292,8 +292,8 @@
                 else
                 {
                     <div>
-                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank">reCAPTCHA</a> into
-                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank">Live demo</a>
+                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank" rel="noopener">reCAPTCHA</a> into
+                        the app, include --captcha reCaptcha in the dotnet new command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
                     </div>
                 }
             </div>
@@ -321,7 +321,7 @@
                 @GetSampleCommand()
             </CodeBox>
             Use this parameter to initialize the project with a sample pages.
-            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank">Todo</a>.
+            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank" rel="noopener">Todo</a>.
         </BitGridItem>
 
         <BitGridItem Class="grid-item md">
@@ -405,7 +405,7 @@
             <CodeBox>
                 @GetGoogleAdsCommand()
             </CodeBox>
-            Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank">Demo</a>
+            Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank" rel="noopener">Demo</a>
         </BitGridItem>
 
         <BitGridItem Class="grid-item md" ColumnSpan="2">
@@ -432,12 +432,12 @@
         <BitCarousel Style="height:unset;aspect-ratio:1/.55" AutoPlay=true InfiniteScrolling=true AutoPlayInterval="5000">
             <BitCarouselItem>
                 <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-1.webp">
+                    <img src="images/templates/create-new-project-vs-1.webp" alt="Create a new project dialog in Visual Studio" loading="lazy" />
                 </div>
             </BitCarouselItem>
             <BitCarouselItem>
                 <div class="image-container">
-                    <img src="images/templates/create-new-project-vs-2.webp" />
+                    <img src="images/templates/create-new-project-vs-2.webp" alt="Configure the Boilerplate project options in Visual Studio" loading="lazy" />
                 </div>
             </BitCarouselItem>
         </BitCarousel>

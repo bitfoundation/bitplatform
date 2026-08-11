@@ -1,8 +1,8 @@
-﻿using Bit.Butil;
+using Bit.Butil;
 
 namespace Bit.Websites.Platform.Client.Pages.Templates;
 
-public partial class Templates03GettingStartedPage
+public partial class Templates02GettingStartedPage
 {
     [Inject] private Clipboard clipboard { get; set; } = default!;
 
@@ -43,7 +43,7 @@ public partial class Templates03GettingStartedPage
             command:"dotnet tool install -g Aspire.Cli"),
 
             (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Boilerplate.Templates';",
-            command:"dotnet new install Bit.Boilerplate::10.5.0;")
+            command:"dotnet new install Bit.Boilerplate;")
         ];
 
         if (enableVirtualization)

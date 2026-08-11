@@ -15,11 +15,13 @@ public partial class NavMenu : IDisposable
 
 
 
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
         navMenuService.OnToggleMenu += ToggleMenu;
 
         HandleOnClear();
+
+        return base.OnInitAsync();
     }
 
     protected override void OnParametersSet()

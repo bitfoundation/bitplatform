@@ -116,18 +116,17 @@
     border-radius: rem2(4px);
     margin-bottom: rem2(8px);
     padding: rem2(12px) rem2(16px);
-    color: $White;
-    background-color: $B6Color;
+    color: $bit-color-primary-text;
+    background-color: $bit-color-primary;
 
     &:hover {
-        background-color: #0052cc;
+        background-color: $bit-color-primary-hover;
     }
 }
 
 .secondary-btn {
     outline: 0;
     width: 100%;
-    color: #1976d2;
     cursor: pointer;
     font-weight: 600;
     line-height: 1.2;
@@ -141,16 +140,18 @@
     border-radius: rem2(4px);
     margin-bottom: rem2(8px);
     justify-content: center;
-    background-color: $White;
     padding: rem2(12px) rem2(16px);
-    border: rem2(1px) solid #bdbdbd;
+    color: $bit-color-primary;
+    background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
 
     &.disabled {
-        color: gray;
+        cursor: default;
+        color: $bit-color-foreground-secondary;
     }
 
     &:hover {
-        background-color: #ccc;
+        background-color: $bit-color-background-primary-hover;
     }
 }
 

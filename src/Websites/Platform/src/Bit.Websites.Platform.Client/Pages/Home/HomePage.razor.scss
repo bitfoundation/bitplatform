@@ -309,6 +309,108 @@
     }
 }
 
+.stats-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+
+    .stats-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem 4rem;
+        justify-content: center;
+    }
+
+    .stats-item {
+        gap: 0.5rem;
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+    .stats-number {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.1;
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+
+        @include lt-md {
+            font-size: 2rem;
+        }
+    }
+
+    .stats-label {
+        font-size: 1rem;
+        color: $bit-color-foreground-secondary;
+    }
+}
+
+.cta-section {
+    text-align: center;
+
+    .page-section-content {
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+    }
+
+    .cta-command {
+        width: 100%;
+        max-width: rem2(480px);
+        text-align: left;
+    }
+
+    .cta-buttons {
+        gap: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        justify-content: center;
+    }
+
+    .cta-btn {
+        line-height: 1;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 1rem 2rem;
+        border-radius: 2rem;
+        white-space: nowrap;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+
+        &.primary {
+            color: #fff;
+            background-image: linear-gradient(96deg, #524add 10%, #1878fd 90%);
+            box-shadow: 0 8px 24px -8px rgba(82, 74, 221, 0.6);
+
+            &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 28px -8px rgba(82, 74, 221, 0.8);
+            }
+        }
+
+        &.secondary {
+            color: $bit-color-foreground-primary;
+            border: 1px solid $bit-color-border-secondary;
+
+            &:hover {
+                transform: translateY(-2px);
+                border-color: $bit-color-border-primary;
+                background-color: $bit-color-background-secondary;
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid $bit-color-primary;
+            outline-offset: 2px;
+        }
+    }
+}
+
 .products-section {
     padding-top: 0;
     scroll-margin: 5rem;
@@ -324,12 +426,6 @@
     }
 
     ::deep {
-        .tech-title {
-            @include lt-md {
-                font-size: 2.5rem;
-            }
-        }
-
         .tech-subtitle {
             @include lt-md {
                 font-size: 1.25rem;
@@ -396,9 +492,6 @@
             fill: $bit-color-foreground-primary;
         }
     }
-}
-
-.customer-section {
 }
 
 // Motion: entrance stagger for the hero and a scroll-linked reveal for the rest of the page.

@@ -1,4 +1,4 @@
-﻿@inherits AppComponentBase
+@inherits AppComponentBase
 <div>
     <BitAccordion Class="@($"accordion{(_boilerplateExpanded ? " expanded" : "")}")" @bind-IsExpanded="_boilerplateExpanded">
         <HeaderTemplate Context="isExpanded">
@@ -57,7 +57,7 @@
     var encryptedBytes = await crypto.Encrypt(CryptoAlgorithm.AesCbc, key, textAsUtf8Bytes, iv: iv);
 }</CodeBox>
                 </div>
-                <a class="template-link" href="@Urls.Butil" target="_blank">
+                <a class="template-link" href="@Urls.Butil" target="_blank" rel="noopener">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>
@@ -86,7 +86,7 @@
                     <img src="/images/home/bswup.webp" style="max-width:100%;" alt="bit Bswup service worker update flow in a Blazor PWA" loading="lazy" />
                 </div>
                 <br />
-                <a class="template-link" href="@Urls.Bswup" target="_blank">
+                <a class="template-link" href="@Urls.Bswup" target="_blank" rel="noopener">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>
@@ -143,7 +143,7 @@
     &lt;Broute Name="user" Path="/users/{id:int}" Component="@@typeof(UserPage)" />
 &lt;/Brouter></CodeBox>
                 </div>
-                <a class="template-link" href="@Urls.Brouter" target="_blank">
+                <a class="template-link" href="@Urls.Brouter" target="_blank" rel="noopener">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>
@@ -170,7 +170,7 @@
                     <CodeBox HideCopyButton>&lt;Bmotion Initial="Bm.To(opacity: 0, y: 20)"
          Animate="Bm.To(opacity: 1, y: 0)"></CodeBox>
                 </div>
-                <a class="template-link" href="@Urls.Bmotion" target="_blank">
+                <a class="template-link" href="@Urls.Bmotion" target="_blank" rel="noopener">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>
@@ -201,7 +201,7 @@
              Combo Chips Dynamic Responsive
              OnDynamicAdd="(BitDropdownItem&lt;string> item) => HandleOnDynamicAdd(item)" /></CodeBox>
                 </div>
-                <a class="template-link" href="@Urls.BlazorUI" target="_blank">
+                <a class="template-link" href="@Urls.BlazorUI" target="_blank" rel="noopener">
                     Learn more <span class="template-link-arrow"></span>
                 </a>
             </div>

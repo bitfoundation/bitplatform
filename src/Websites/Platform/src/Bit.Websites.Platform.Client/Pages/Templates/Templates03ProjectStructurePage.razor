@@ -4,10 +4,10 @@
 
 <PageOutlet Url="templates/project-structure"
             Title="Project structure - Templates"
-            Description="project structure of the project templates of the bit platform" />
+            Description="Explore the project structure of the bit Boilerplate template: client, server, and shared projects, and how they fit together." />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>Project structure</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>Project structure</BitText>
     <br />
 
     <section class="section-card">
@@ -35,18 +35,18 @@
                     The subsequent sections will provide detailed information about these files.
                     <br />
                     <br />
-                    The .devcontainer enables seamless integration with GitHub Codespaces when pushing your project to GitHub repository. <a href="https://github.com/bitfoundation/bit-templates-playground" target="_blank">Demo repository</a>
+                    The .devcontainer enables seamless integration with GitHub Codespaces when pushing your project to GitHub repository. <a href="https://github.com/bitfoundation/bit-templates-playground" target="_blank" rel="noopener">Demo repository</a>
                     <br />
                     <br />
                     To enhance the development experience with Visual Studio Code, several configuration files has been included in .vscode directory.
                     <br />
                     <br />
-                    In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank">.gitignore</a> files,
+                    In addition to the <a href="https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options" target="_blank" rel="noopener">.editorconfig</a> and <a href="https://www.w3schools.com/git/git_ignore.asp?remote=github" target="_blank" rel="noopener">.gitignore</a> files,
                     which have clear purposes, there are two additional files: Clean.bat (Windows) and Clean.sh (macOS/Linux). These scripts are designed to remove all auto-generated files from your project.
-                    To understand what are these extra files, please refer to the comments within these scripts. In short, if you face a tough build issue, close your IDE and run the `Clean.bat` or `Clean.sh` file.
+                    To understand what are these extra files, please refer to the comments within these scripts. In short, if you face a tough build issue, close your IDE and run the <code>Clean.bat</code> or <code>Clean.sh</code> file.
                     <br />
                     <br />
-                    There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
+                    There is also a file named <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-json" target="_blank" rel="noopener">global.json</a>, which mitigates potential issues arising from the use of different .NET SDK versions by team members.
                     <br />
                     <br />
                 </div>
@@ -82,11 +82,11 @@
                     <br />
                     <br />
                     <code>
-                        &lt;LangVersion>12.0&lt;/langVersion>
+                        &lt;LangVersion>13.0&lt;/LangVersion>
                     </code>
                     <br />
                     <br />
-                    This setting enforces the use of C# 12 across all projects.
+                    This setting enforces the use of C# 13 across all projects.
 
                     The following sections will provide further details on the Directory.Build.props file and .csproj files.
                     <br />
@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <img class="image" alt="Boilerplate solution" src="/images/templates/project-structure.webp" />
+            <img class="image" alt="Boilerplate solution structure in Visual Studio" src="/images/templates/project-structure.webp" loading="lazy" />
         </div>
     </section>
 
@@ -106,7 +106,7 @@
             <br />
             <ul>
                 <li><b>Features:</b> Business-related code organized by domain (e.g., Identity, Products, Dashboard).</li>
-                <li><b>Components:</b> Features Client-side UI & Logic, implemented by razor, razor.csss and razor.cs (e.g., DashboardPage).</li>
+                <li><b>Components:</b> Features Client-side UI & Logic, implemented by .razor, .razor.scss and .razor.cs (e.g., DashboardPage).</li>
                 <li><b>Infrastructure:</b> Technical cross-cutting concerns not tied to a specific business domain (e.g., DbContext, Services, Middleware).</li>
             </ul>
         </div>
@@ -128,11 +128,11 @@
                     Running this project will make the features mentioned in Server.Api section available on port 5000 as well as server components for Blazor pre-rendering and Blazor Server.
                 </li>
                 <li>
-                    <b>Server.AppHost:</b> This is the app host for <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank">ASP.NET Aspire</a>, which is <b>optional</b> to use.
+                    <b>Server.AppHost:</b> This is the app host for <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank" rel="noopener">ASP.NET Aspire</a>, which is <b>optional</b> to use.
                 </li>
                 <li>
                     <b>Server.Shared:</b> The Server.Shared project includes code shared between the Server.Api and Server.Web projects.
-                    Optionally, it may contain code for use within ASP.NET Aspire, similar to the Aspire's `ServiceDefaults` project.
+                    Optionally, it may contain code for use within ASP.NET Aspire, similar to the Aspire's <code>ServiceDefaults</code> project.
                 </li>
             </ul>
 
@@ -173,9 +173,9 @@
             <br />
             <br />
             Client.Web project can be published as a
-            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a>,
-            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank">Azure Static Web Apps</a>,
-            <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>, and others, without requiring ASP.NET Core.
+            Blazor WebAssembly Standalone application on platforms such as <a href="https://pages.cloudflare.com/" target="_blank" rel="noopener">Cloudflare Pages</a>,
+            <a href="https://azure.microsoft.com/en-us/products/app-service/static" target="_blank" rel="noopener">Azure Static Web Apps</a>,
+            <a href="https://pages.github.com/" target="_blank" rel="noopener">GitHub Pages</a>, and others, without requiring ASP.NET Core.
         </div>
     </section>
 

@@ -52,6 +52,7 @@ public class Middlewares
         app.UseStaticFiles();
 
         app.UseResponseCaching();
+        app.UseRateLimiter();
         app.UseAntiforgery();
 
         app.UseExceptionHandler("/", createScopeForErrors: true);
@@ -125,7 +126,12 @@ public class Middlewares
 
     private static void UseSiteMap(WebApplication app)
     {
-        string[] excludedUrls = ["/not-found", "/demo", "/templates/development-prerequisites"];
+        string[] excludedUrls =
+        [
+            "/not-found", "/demo", "/templates/development-prerequisites",
+            "/lowcode-nocode/overview", "/lowcode-nocode/benefits", "/lowcode-nocode/specs",
+            "/lowcode-nocode/customizations", "/lowcode-nocode/comparison", "/lowcode-nocode/stats"
+        ];
 
         var urls = Assembly.Load("Bit.Websites.Platform.Client")
             .ExportedTypes
@@ -137,20 +143,15 @@ public class Middlewares
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";
 
+        var baseUrl = new Uri("https://bitplatform.dev");
+
+        var siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
+
         app.MapGet("/sitemap.xml", async context =>
         {
-            if (siteMap is null)
-            {
-                var baseUrl = new Uri(context.Request.GetBaseUrl());
-
-                siteMap = $"{siteMapHeader}{string.Join(Environment.NewLine, urls.Select(u => $"<url><loc>{new Uri(baseUrl, u)}</loc></url>"))}</urlset>";
-            }
-
             context.Response.Headers.ContentType = "application/xml";
 
             await context.Response.WriteAsync(siteMap, context.RequestAborted);
         });
     }
-
-    private static string? siteMap;
 }

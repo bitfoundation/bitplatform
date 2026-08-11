@@ -1,8 +1,8 @@
-﻿using System.Text;
+using System.Text;
 
 namespace Bit.Websites.Platform.Client.Pages.Templates;
 
-public partial class Templates05CreateProjectPage
+public partial class Templates04CreateProjectPage
 {
     private string name = "MyFirstProject";
 

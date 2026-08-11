@@ -155,6 +155,15 @@
     --bit-clr-sec: transparent;
     --bit-clr-sec-hover: #061342;
     --bit-clr-sec-active: #061241;
+    --bit-clr-sec-dark: #061342;
+    --bit-clr-sec-dark-hover: #07154A;
+    --bit-clr-sec-dark-active: #061241;
+    --bit-clr-sec-light: #A9A4F1;
+    --bit-clr-sec-light-hover: #9A94ED;
+    --bit-clr-sec-light-active: #8C86E9;
+    --bit-clr-sec-text: #E9EEFA;
+    --bit-clr-sec-dis: #12224D;
+    --bit-clr-sec-dis-text: #5F7396;
     //foregrounds - navy-tinted ink
     --bit-clr-fg-pri: #E9EEFA;
     --bit-clr-fg-pri-hover: #F1F5FC;
@@ -265,7 +274,7 @@
 
 * {
     box-sizing: border-box;
-    font-family: "Segoe UI";
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-text-size-adjust: none;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;

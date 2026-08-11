@@ -53,6 +53,29 @@
 
     <img src="/images/home/hero-image.webp" class="hero-image" alt="bit platform apps running on web, mobile, and desktop" loading="lazy" />
 
+    <section class="page-section stats-section" aria-label="bit platform statistics">
+        <div class="page-section-content">
+            <div class="stats-list">
+                <div class="stats-item">
+                    <span class="stats-number">10M+</span>
+                    <span class="stats-label">NuGet downloads</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-number">1.3K+</span>
+                    <span class="stats-label">GitHub stars</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-number">150+</span>
+                    <span class="stats-label">Contributors</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-number">80+</span>
+                    <span class="stats-label">UI components</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="page-section text-section">
         <div class="page-section-content">
             <div class="section-title-container">
@@ -106,16 +129,16 @@
             </div>
             <br /><br /><br />
             <div class="tech-list">
-                <a target="_blank" title="C#" aria-label="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
-                <a target="_blank" title="Blazor" aria-label="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
-                <a target="_blank" title="Visual Studio" aria-label="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
-                <a target="_blank" title="git" aria-label="git" class="tech-item git-item" href="https://git-scm.com/"></a>
-                <a target="_blank" title="GitHub" aria-label="GitHub" class="tech-item github-item" href="https://github.com">
+                <a target="_blank" rel="noopener" title="C#" aria-label="C#" class="tech-item csharp-item" href="https://dotnet.microsoft.com/en-us/languages/csharp"></a>
+                <a target="_blank" rel="noopener" title="Blazor" aria-label="Blazor" class="tech-item blazor-item" href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor"></a>
+                <a target="_blank" rel="noopener" title="Visual Studio" aria-label="Visual Studio" class="tech-item vs-item" href="https://visualstudio.microsoft.com/"></a>
+                <a target="_blank" rel="noopener" title="git" aria-label="git" class="tech-item git-item" href="https://git-scm.com/"></a>
+                <a target="_blank" rel="noopener" title="GitHub" aria-label="GitHub" class="tech-item github-item" href="https://github.com">
                     <svg height="70" width="70" viewBox="0 0 16 16">
                         <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
                     </svg>
                 </a>
-                <a target="_blank" title="Sass" aria-label="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
+                <a target="_blank" rel="noopener" title="Sass" aria-label="Sass" class="tech-item sass-item" href="https://sass-lang.com/"></a>
             </div>
             <br /><br />
             <BitText Typography="BitTypography.H4" Class="tech-subtitle">
@@ -141,6 +164,26 @@
             </BitText>
             <br /><br />
             <CustomerCarousel />
+        </div>
+    </section>
+
+    <section class="page-section cta-section">
+        <div class="page-section-content">
+            <BitText Typography="BitTypography.H2" Class="text-title">
+                start building <span class="highlight-1">today</span>
+            </BitText>
+            <br />
+            <BitText Typography="BitTypography.H5" Element="p" Class="text-subtitle">
+                Free and open source. MIT licensed. No sign-up required.
+            </BitText>
+            <br />
+            <div class="cta-command">
+                <CodeBox>dotnet new install Bit.Boilerplate</CodeBox>
+            </div>
+            <div class="cta-buttons">
+                <a class="cta-btn primary" href="@Urls.Templates">Get started</a>
+                <a class="cta-btn secondary" href="@Urls.GithubRepo" target="_blank" rel="noopener">Star on GitHub</a>
+            </div>
         </div>
     </section>
 </div>

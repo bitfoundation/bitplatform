@@ -163,14 +163,6 @@
         position: absolute;
     }
 
-    .a-1 {
-        animation-duration: 8s;
-    }
-
-    .d-1 {
-        animation-delay: 4s;
-    }
-
     .a-2 {
         animation-duration: 6s;
     }
@@ -209,6 +201,16 @@
         52% {
             opacity: 0;
             transform: translateY(15px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animated {
+            animation: none;
+        }
+
+        .delayed {
+            display: none;
         }
     }
 }

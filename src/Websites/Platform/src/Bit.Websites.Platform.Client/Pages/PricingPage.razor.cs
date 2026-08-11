@@ -30,12 +30,13 @@ public partial class PricingPage
 
         try
         {
-            await HttpClient.PostAsJsonAsync("api/SupportPackage/BuyPackage", buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+            var response = await HttpClient.PostAsJsonAsync("api/SupportPackage/BuyPackage", buyPackageModel, AppJsonContext.Default.BuyPackageDto);
+            response.EnsureSuccessStatusCode();
+            isSent = true;
         }
         finally
         {
             isSending = false;
-            isSent = true;
         }
     }
 }

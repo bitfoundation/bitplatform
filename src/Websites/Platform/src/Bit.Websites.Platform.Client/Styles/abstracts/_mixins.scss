@@ -15,7 +15,7 @@
     font-size: rem2(36px);
     font-weight: 800;
     line-height: 1;
-    color: #0a1929;
+    color: $bit-color-foreground-primary;
 
     @include lt-lg {
         margin-bottom: rem2(28px);
@@ -28,7 +28,7 @@
     font-size: rem2(16px);
     font-weight: 400;
     line-height: rem2(32px);
-    color: #2E2E2E;
+    color: $bit-color-foreground-secondary;
 }
 
 @mixin SectionCard {
@@ -50,7 +50,7 @@
     font-weight: 700;
     font-size: rem2(24px);
     line-height: 1;
-    color: #1a2027;
+    color: $bit-color-foreground-primary;
 }
 
 @mixin SectionCardText {

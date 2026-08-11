@@ -10,7 +10,7 @@
         </div>
         <div class="footer-links-container">
             <div class="footer-col">
-                <div class="footer-col-title">Products</div>
+                <h3 class="footer-col-title">Products</h3>
                 <a class="footer-link" href="@Urls.Butil">Butil</a>
                 <a class="footer-link" href="@Urls.Besql">Besql</a>
                 <a class="footer-link" href="@Urls.Bswup">Bswup</a>
@@ -21,36 +21,36 @@
             </div>
 
             <div class="footer-col">
-                <div class="footer-col-title">Community</div>
+                <h3 class="footer-col-title">Community</h3>
                 <a class="footer-link" href="@Urls.AboutUs">About us</a>
                 <a class="footer-link" href="@Urls.ContactUs">Contact us</a>
-                <a class="footer-link" target="_blank" href="@Urls.GithubIssues">Issues</a>
-                <a class="footer-link" target="_blank" href="@Urls.GithubOrg">GitHub org</a>
-                <a class="footer-link" target="_blank" href="@Urls.GithubRepo">GitHub repo</a>
+                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubIssues">Issues</a>
+                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubOrg">GitHub org</a>
+                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubRepo">GitHub repo</a>
             </div>
 
             <div class="footer-col">
-                <div class="footer-col-title">Media</div>
-                <a class="footer-link">Blogs (coming soon)</a>
-                <a class="footer-link" target="_blank" href="@Urls.YouTube">Videos (YouTube)</a>
+                <h3 class="footer-col-title">Media</h3>
+                <span class="footer-link coming-soon">Blogs (coming soon)</span>
+                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.YouTube">Videos (YouTube)</a>
             </div>
 
-            <button class="go-to-top" onclick="goToTop()">Go to top</button>
+            <button type="button" class="go-to-top" onclick="goToTop()">Go to top</button>
         </div>
     </section>
 
     <section class="footer-section">
         <div class="address-info">
-            <a class="address" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <a class="address" target="_blank" rel="noopener" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
             <div class="country">Netherlands</div>
             <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
         </div>
         <div>
             <div class="social-link-group">
-                <a class="social-link twitter-link" target="_blank" aria-label="bit platform on X (Twitter)" href="@Urls.Twitter"></a>
-                <a class="social-link github-link" target="_blank" aria-label="bit platform on GitHub" href="@Urls.Github"></a>
-                <a class="social-link youtube-link" target="_blank" aria-label="bit platform on YouTube" href="@Urls.YouTube"></a>
-                <a class="social-link linkedin-link" target="_blank" aria-label="bit platform on LinkedIn" href="@Urls.Linkedin"></a>
+                <a class="social-link twitter-link" target="_blank" rel="noopener" aria-label="bit platform on X (Twitter)" href="@Urls.Twitter"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener" aria-label="bit platform on GitHub" href="@Urls.GithubRepo"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener" aria-label="bit platform on YouTube" href="@Urls.YouTube"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener" aria-label="bit platform on LinkedIn" href="@Urls.Linkedin"></a>
             </div>
             <div class="copyright-txt">Copyright © @DateTimeOffset.UtcNow.Year bit platform | All Rights Reserved </div>
         </div>

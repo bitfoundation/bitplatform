@@ -4,10 +4,10 @@
 
 <PageOutlet Url="templates/wiki"
             Title="Wiki - Templates"
-            Description="Learn about how to learn more about bit Boilerplate using our Wiki" />
+            Description="Deep-dive articles in the bit Boilerplate wiki: architecture, authentication, deployment, and more." />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>Wiki</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>Wiki</BitText>
 
     <section class="section-card">
 
@@ -22,7 +22,7 @@
         </div>
 
         <div class="docs-image-scroll">
-            <img class="docs-image" src="images/templates/wiki.webp" />
+            <img class="docs-image" src="images/templates/wiki.webp" alt="bit Boilerplate wiki pages on GitHub" loading="lazy" />
         </div>
 
         <br />
@@ -42,7 +42,7 @@
         <br /><br />
         <div id="dtos-mappers" class="wiki-item">
             <strong>Stage 2: DTOs, Mappers, and Mapperly</strong>
-            <p>Explore Data Transfer Objects, `AppJsonContext`, and how Mapperly simplifies object mapping. Learn the difference between Project() and Map() methods, and how Patch() updates client-side objects.</p>
+            <p>Explore Data Transfer Objects, <code>AppJsonContext</code>, and how Mapperly simplifies object mapping. Learn the difference between Project() and Map() methods, and how Patch() updates client-side objects.</p>
         </div>
         <br /><br />
         <div id="api-odata" class="wiki-item">
@@ -57,12 +57,12 @@
         <br /><br />
         <div id="localization" class="wiki-item">
             <strong>Stage 5: Localization and Multi-language Support</strong>
-            <p>Master resource files (resx), `DtoResourceType` attribute, `AppDataAnnotationsValidator`, IStringLocalizer usage, and the `bit-resx` tool for managing translations.</p>
+            <p>Master resource files (resx), <code>DtoResourceType</code> attribute, <code>AppDataAnnotationsValidator</code>, IStringLocalizer usage, and the <code>bit-resx</code> tool for managing translations.</p>
         </div>
         <br /><br />
         <div id="exception-handling" class="wiki-item">
             <strong>Stage 6: Exception Handling and Error Management</strong>
-            <p>Learn about Known vs Unknown exceptions, safe exception throwing, `WithData()` and `WithExtensionData()` methods, automatic exception handling in Blazor, and `WrapHandled()` for event handlers.</p>
+            <p>Learn about Known vs Unknown exceptions, safe exception throwing, <code>WithData()</code> and <code>WithExtensionData()</code> methods, automatic exception handling in Blazor, and <code>WrapHandled()</code> for event handlers.</p>
         </div>
         <br /><br />
         <div id="identity-auth" class="wiki-item">
@@ -72,12 +72,12 @@
         <br /><br />
         <div id="components-styling" class="wiki-item">
             <strong>Stage 8: Blazor Pages, Components, Styling &amp; Navigation</strong>
-            <p>Understand the three-file structure (.razor, .razor.cs, .razor.scss), isolated component styles, global styles, ::deep selector, Bit.BlazorUI components, and navigation with `PageUrls`.</p>
+            <p>Understand the three-file structure (.razor, .razor.cs, .razor.scss), isolated component styles, global styles, ::deep selector, Bit.BlazorUI components, and navigation with <code>PageUrls</code>.</p>
         </div>
         <br /><br />
         <div id="dependency-injection" class="wiki-item">
             <strong>Stage 9: Dependency Injection &amp; Service Registration</strong>
-            <p>Explore service registration patterns across different projects, `AddSessioned` method for session-scoped services, and appropriate service lifetimes (Singleton, Scoped, Transient, `Sessioned`).</p>
+            <p>Explore service registration patterns across different projects, <code>AddSessioned</code> method for session-scoped services, and appropriate service lifetimes (Singleton, Scoped, Transient, <code>Sessioned</code>).</p>
         </div>
         <br /><br />
         <div id="configuration" class="wiki-item">
@@ -87,27 +87,27 @@
         <br /><br />
         <div id="typescript" class="wiki-item">
             <strong>Stage 11: TypeScript, Build Process &amp; JavaScript Interop</strong>
-            <p>Understand TypeScript integration, MSBuild targets for JavaScript compilation, `IJSRuntimeExtensions` for C#-to-JS calls, and how to add npm packages with type definitions.</p>
+            <p>Understand TypeScript integration, MSBuild targets for JavaScript compilation, <code>IJSRuntimeExtensions</code> for C#-to-JS calls, and how to add npm packages with type definitions.</p>
         </div>
         <br /><br />
         <div id="blazor-modes" class="wiki-item">
             <strong>Stage 12: Blazor Modes, PreRendering &amp; PWA</strong>
-            <p>Explore Blazor Server, WebAssembly, and Auto modes, pre-rendering configuration for SEO and performance, PWA capabilities, service workers, and `IPrerenderStateService`.</p>
+            <p>Explore Blazor Server, WebAssembly, and Auto modes, pre-rendering configuration for SEO and performance, PWA capabilities, service workers, and <code>IPrerenderStateService</code>.</p>
         </div>
         <br /><br />
         <div id="force-update" class="wiki-item">
             <strong>Stage 13: Force Update System</strong>
-            <p>Learn how `ForceUpdateMiddleware` validates app versions on every request, supports platform-specific update behaviors (auto-update for web/Windows, store redirect for mobile), and ensures all users run supported versions.</p>
+            <p>Learn how <code>ForceUpdateMiddleware</code> validates app versions on every request, supports platform-specific update behaviors (auto-update for web/Windows, store redirect for mobile), and ensures all users run supported versions.</p>
         </div>
         <br /><br />
         <div id="response-caching" class="wiki-item">
             <strong>Stage 14: Response Caching System</strong>
-            <p>Master multi-layer caching: client-side memory cache, browser HTTP cache, CDN edge cache, and ASP.NET Core Output Cache. Learn about `AppResponseCache` attribute, cache purging with `ResponseCacheService`, and optimizing performance.</p>
+            <p>Master multi-layer caching: client-side memory cache, browser HTTP cache, CDN edge cache, and ASP.NET Core Output Cache. Learn about <code>AppResponseCache</code> attribute, cache purging with <code>ResponseCacheService</code>, and optimizing performance.</p>
         </div>
         <br /><br />
         <div id="logging" class="wiki-item">
             <strong>Stage 15: Logging, OpenTelemetry and Health Checks</strong>
-            <p>Understand ILogger for logging, `ActivitySource` and `Meter` for tracking operations, in-app Diagnostic Modal, integration with Sentry and Azure App Insights, Aspire Dashboard, and built-in health checks.</p>
+            <p>Understand ILogger for logging, <code>ActivitySource</code> and <code>Meter</code> for tracking operations, in-app Diagnostic Modal, integration with Sentry and Azure App Insights, Aspire Dashboard, and built-in health checks.</p>
         </div>
         <br /><br />
         <div id="cicd" class="wiki-item">
@@ -137,12 +137,12 @@
         <br /><br />
         <div id="maui-hybrid" class="wiki-item">
             <strong>Stage 21: .NET MAUI / Blazor Hybrid</strong>
-            <p>Explore native platform capabilities on Android, iOS, macOS, and Windows. Learn about Deep Links/Universal Links, `ApplicationVersion` for app stores, Windows project advantages, and WebView considerations.</p>
+            <p>Explore native platform capabilities on Android, iOS, macOS, and Windows. Learn about Deep Links/Universal Links, <code>ApplicationVersion</code> for app stores, Windows project advantages, and WebView considerations.</p>
         </div>
         <br /><br />
         <div id="messaging" class="wiki-item">
             <strong>Stage 22: Messaging</strong>
-            <p>Master in-app messaging with `PubSubService`, JavaScript-to-C# communication with `AppJsBridge`, real-time server-to-client messaging with SignalR, and push notifications with deep linking.</p>
+            <p>Master in-app messaging with <code>PubSubService</code>, JavaScript-to-C# communication with <code>AppJsBridge</code>, real-time server-to-client messaging with SignalR, and push notifications with deep linking.</p>
         </div>
         <br /><br />
         <div id="diagnostic" class="wiki-item">
@@ -164,25 +164,19 @@
     <section class="section-card" id="ai-powered-wiki">
         <BitText Typography="BitTypography.H5" Gutter>AI-Powered Wiki</BitText>
         <div class="section-card-txt">
-            You can also visit <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a> anytime to ask questions about bit Boilerplate and the entire bitplatform ecosystem.
+            You can also visit <a href="https://wiki.bitplatform.dev" target="_blank" rel="noopener">wiki.bitplatform.dev</a> anytime to ask questions about bit Boilerplate and the entire bitplatform ecosystem.
             <br /><br />
             To enhance the understanding of our Open Source Project Repository, all documentation is maintained within a single mono repo. This approach ensures that the AI Wiki can cohesively analyze the entire set of documents, README files, in-code comments, and source code to provide comprehensive insights when queried.
             <br /><br />
-            Here are some example questions that can be answered by <a href="https://wiki.bitplatform.dev" target="_blank">wiki.bitplatform.dev</a>:
+            Here are some example questions that can be answered by <a href="https://wiki.bitplatform.dev" target="_blank" rel="noopener">wiki.bitplatform.dev</a>:
             <ul>
-                <li>What is the optimal way to load page data using <b>StateHasChanged</b> in conjunction with a <b>Skeleton UI</b> or <b>Shimmer</b>? <a title="What is the optimal way to load page data using StateHasChanged in conjunction with a Skeleton UI or Shimmer?" href="https://wiki.bitplatform.dev/search/explain-how-skeletonui-shimmer_aefa5fb9-a326-4685-aa2d-28036661d5d5" target="_blank">Link</a></li>
-                <br />
-                <li>How can I <b>remove google reCAPTCHA</b> from a project I created from bit Boilerplate? <a title="How can I remove google reCAPTCHA from a project I created from bit Boilerplate?" href="https://wiki.bitplatform.dev/search/how-can-i-remove-google-recapt_d3000cc1-b8da-4c18-9907-9030b81b0e01" target="_blank">Link</a></li>
-                <br />
-                <li>What is the <b>difference between Patch and Map</b>, and what is their relationship with Entity Framework Core and Blazor change tracking? <a title="What is the difference between Patch and Map, and what is their relationship with Entity Framework Core and Blazor change tracking?" href="https://wiki.bitplatform.dev/search/describe-whats-the-difference_1cd6804f-94ca-4e2c-abc4-376b6a96a69e" target="_blank">Link</a></li>
-                <br />
-                <li>How can I implement a <b>Grid System</b> and layout using <b>BitGrid</b> and <b>BitStack</b> components, especially if I'm familiar with the Bootstrap grid system? <a title="How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?" href="https://wiki.bitplatform.dev/search/how-can-i-implement-a-grid-sys_41f89d5c-c284-442a-9d8f-0314d1a10b2e" target="_blank">Link</a></li>
-                <br />
-                <li>How does a <b>refresh token</b> function in a Boilerplate project template? <a title="How does a refresh token function in a Boilerplate project template?" href="https://wiki.bitplatform.dev/search/how-does-a-refresh-token-funct_5d74ff31-5571-4c92-bc66-d9b2a139dcab" target="_blank">Link</a></li>
-                <br />
-                <li>How does <b>passwordless authentication</b> work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only? <a title="How does passwordless authentication work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?" href="https://wiki.bitplatform.dev/search/how-does-passwordless-authenti_3ca35e20-979a-4a1b-a49d-b1091e23720d" target="_blank">Link</a></li>
-                <br />
-                <li>How does using <b>embeddings</b> with the PostgreSQL <b>vector</b> extension enable product search functionality via LINQ and Entity Framework Core? <a title="How does using embeddings with the PostgreSQL vector extension enable product search functionality via LINQ and Entity Framework Core?" href="https://wiki.bitplatform.dev/search/describe-how-product-embedding_8f6373c9-aa52-4031-94c1-d644aa2f7a53" target="_blank">Link</a></li>
+                <li>What is the optimal way to load page data using <b>StateHasChanged</b> in conjunction with a <b>Skeleton UI</b> or <b>Shimmer</b>? <a title="What is the optimal way to load page data using StateHasChanged in conjunction with a Skeleton UI or Shimmer?" href="https://wiki.bitplatform.dev/search/explain-how-skeletonui-shimmer_aefa5fb9-a326-4685-aa2d-28036661d5d5" target="_blank" rel="noopener">Link</a></li>
+                <li>How can I <b>remove google reCAPTCHA</b> from a project I created from bit Boilerplate? <a title="How can I remove google reCAPTCHA from a project I created from bit Boilerplate?" href="https://wiki.bitplatform.dev/search/how-can-i-remove-google-recapt_d3000cc1-b8da-4c18-9907-9030b81b0e01" target="_blank" rel="noopener">Link</a></li>
+                <li>What is the <b>difference between Patch and Map</b>, and what is their relationship with Entity Framework Core and Blazor change tracking? <a title="What is the difference between Patch and Map, and what is their relationship with Entity Framework Core and Blazor change tracking?" href="https://wiki.bitplatform.dev/search/describe-whats-the-difference_1cd6804f-94ca-4e2c-abc4-376b6a96a69e" target="_blank" rel="noopener">Link</a></li>
+                <li>How can I implement a <b>Grid System</b> and layout using <b>BitGrid</b> and <b>BitStack</b> components, especially if I'm familiar with the Bootstrap grid system? <a title="How can I implement a Grid System and layout using BitGrid and BitStack components, especially if I'm familiar with the Bootstrap grid system?" href="https://wiki.bitplatform.dev/search/how-can-i-implement-a-grid-sys_41f89d5c-c284-442a-9d8f-0314d1a10b2e" target="_blank" rel="noopener">Link</a></li>
+                <li>How does a <b>refresh token</b> function in a Boilerplate project template? <a title="How does a refresh token function in a Boilerplate project template?" href="https://wiki.bitplatform.dev/search/how-does-a-refresh-token-funct_5d74ff31-5571-4c92-bc66-d9b2a139dcab" target="_blank" rel="noopener">Link</a></li>
+                <li>How does <b>passwordless authentication</b> work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only? <a title="How does passwordless authentication work in Boilerplate, particularly in Blazor Hybrid versions of the app, given that this feature is browser-only?" href="https://wiki.bitplatform.dev/search/how-does-passwordless-authenti_3ca35e20-979a-4a1b-a49d-b1091e23720d" target="_blank" rel="noopener">Link</a></li>
+                <li>How does using <b>embeddings</b> with the PostgreSQL <b>vector</b> extension enable product search functionality via LINQ and Entity Framework Core? <a title="How does using embeddings with the PostgreSQL vector extension enable product search functionality via LINQ and Entity Framework Core?" href="https://wiki.bitplatform.dev/search/describe-how-product-embedding_8f6373c9-aa52-4031-94c1-d644aa2f7a53" target="_blank" rel="noopener">Link</a></li>
             </ul>
         </div>
     </section>

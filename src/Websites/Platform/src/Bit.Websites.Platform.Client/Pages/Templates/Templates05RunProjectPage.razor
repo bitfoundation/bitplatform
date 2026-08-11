@@ -1,13 +1,13 @@
-﻿@page "/templates/run-project"
+@page "/templates/run-project"
 @page "/boilerplate/run-project"
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/run-project"
             Title="Run project - Templates"
-            Description="Run project of the project templates of the bit platform" />
+            Description="Build and run your bit Boilerplate project on web, Android, iOS, Windows, and macOS." />
 
 <div class="page-container">
-    <BitText Typography="BitTypography.H3" Gutter>Project Run</BitText>
+    <BitText Typography="BitTypography.H3" Element="h1" Gutter>Run project</BitText>
     <br />
     <br />
     <section class="section-card">
@@ -45,12 +45,12 @@
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Development Environment</BitText>
             The project is configured to use Blazor Server as the default mode to enhance the development experience,
-            enabling features such as <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload?view=vs-2022" target="_blank">Visual Studio .NET Hot Reload</a>
-            and <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch" target="_blank">dotnet watch</a>. To utilize the Hot Reload feature,
+            enabling features such as <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload?view=vs-2022" target="_blank" rel="noopener">Visual Studio .NET Hot Reload</a>
+            and <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-watch" target="_blank" rel="noopener">dotnet watch</a>. To utilize the Hot Reload feature,
                 ensure that you have the latest versions of Visual Studio and the .NET SDK. 
             This setup allows for automatic application of changes made to .razor,
             .scss, or .cs files without the need to rebuild the project. If any changes to these files do not take effect without a rebuild, please feel free to create an issue 
-            <a href="https://github.com/bitfoundation/bitplatform/issues/new/choose" target="_blank">here</a>.
+            <a href="https://github.com/bitfoundation/bitplatform/issues/new/choose" target="_blank" rel="noopener">here</a>.
         </div>
     </section>
     <br />
@@ -88,7 +88,7 @@
             If you're developing on Windows, it is recommended to run <b><i>bash ./Clean.sh</i></b> inside container the first time you open the project.
             <br />
             <div class="image-container">
-                <img class="image" src="images/templates/vs-code-docker.webp" />
+                <img class="image" src="images/templates/vs-code-docker.webp" alt="Running the project in VS Code with Docker" loading="lazy" />
             </div>
         </div>
     </section>
@@ -112,11 +112,11 @@
                     <br />
                     <code>"ServerAddress": "https://r3c136gg-5030.euw.devtunnels.ms"</code>
                     <br />
-                    For additional details about dev tunnels, please refer to the following video and <a href="https://code.visualstudio.com/docs/editor/port-forwarding" target="_blank">docs</a>.
+                    For additional details about dev tunnels, please refer to the following video and <a href="https://code.visualstudio.com/docs/editor/port-forwarding" target="_blank" rel="noopener">docs</a>.
                     <br />
                     <br />
                     <div class="video-container">
-                        <iframe src="https://www.youtube.com/embed/72hs_IlE-GY"
+                        <iframe loading="lazy" src="https://www.youtube.com/embed/72hs_IlE-GY"
                                 width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                         </iframe>
@@ -143,7 +143,7 @@
             <br />
             <br />
             <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/iIa0HhV1ZsY"
+                <iframe loading="lazy" src="https://www.youtube.com/embed/iIa0HhV1ZsY"
                         width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                 </iframe>
@@ -160,7 +160,7 @@
             <br />
             <br />
             <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/rumfIg9qJ_Y?start=1700"
+                <iframe loading="lazy" src="https://www.youtube.com/embed/rumfIg9qJ_Y?start=1700"
                         width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                 </iframe>
@@ -170,7 +170,7 @@
             <br />
             <br />
             <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/ZkrUR3A9aM4"
+                <iframe loading="lazy" src="https://www.youtube.com/embed/ZkrUR3A9aM4"
                         width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                 </iframe>
@@ -180,7 +180,7 @@
             <br />
             <br />
             <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/B-kZ-AgEeO8"
+                <iframe loading="lazy" src="https://www.youtube.com/embed/B-kZ-AgEeO8"
                         width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                 </iframe>
@@ -194,7 +194,7 @@
             <BitText Typography="BitTypography.H5" Gutter>Run MAUI in Visual Studio for iOS, Android</BitText>
             Running your project on Android, Windows, and Web using Visual Studio is straightforward. However, testing a macOS version with Visual Studio isn't possible.
             For iOS, if you have a Mac connected to the same network as your Windows PC, you can follow 
-            <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-9.0" target="_blank">this documentation</a> 
+            <a href="https://learn.microsoft.com/en-us/dotnet/maui/ios/pair-to-mac?view=net-maui-9.0" target="_blank" rel="noopener">this documentation</a> 
             to connect your Visual Studio to the mac device and run the iOS project using Visual Studio while coding on Windows.
             <br />
             <br />
@@ -204,7 +204,7 @@
             <br />
             <br />
             <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/snQ1C6Cppr8"
+                <iframe loading="lazy" src="https://www.youtube.com/embed/snQ1C6Cppr8"
                         width="560" height="315" title="YouTube video player" frameborder="0" allowfullscreen
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
                 </iframe>

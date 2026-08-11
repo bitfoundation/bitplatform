@@ -4,8 +4,6 @@ public static class Urls
 {
     public const string Home = "/";
 
-    public const string Github = "https://github.com/bitfoundation/bitplatform";
-
     public const string GithubRepo = "https://github.com/bitfoundation/bitplatform";
 
     public const string GithubIssues = "https://github.com/bitfoundation/bitplatform/issues";
@@ -18,8 +16,6 @@ public static class Urls
 
     public const string YouTube = "https://www.youtube.com/@bitplatform";
 
-    public const string Facebook = "#";
-
     public const string LowCodeNoCode = "/lowcode-nocode";
     public const string Templates = "/templates";
 
@@ -28,8 +24,6 @@ public static class Urls
     public const string Butil = "https://butil.bitplatform.dev/";
     public const string Brouter = "https://brouter.bitplatform.dev/";
     public const string Bmotion = "https://bmotion.bitplatform.dev/";
-
-    public const string BoilerplateNuget = "https://www.nuget.org/packages/Bit.Boilerplate/";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";
@@ -58,13 +52,8 @@ public static class Urls
 
     public const string BlazorUI = "https://blazorui.bitplatform.dev/";
 
-    public const string CloudHostingSolutions = "/cloud-hosting-solutions";
-    public const string Support = "/support";
-    public const string Academy = "/academy";
     public const string Demos = "/demos";
     public const string Pricing = "/pricing";
-    public const string Blogs = "/blogs";
-    public const string Videos = "/videos";
     public const string AboutUs = "/about-us";
     public const string ContactUs = "/contact-us";
     public const string NotFound = "/not-found";
