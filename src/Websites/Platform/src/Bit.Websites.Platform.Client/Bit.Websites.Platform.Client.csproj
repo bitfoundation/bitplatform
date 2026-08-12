@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -48,8 +48,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -132,6 +132,8 @@
         <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+        <!-- Optimization flag for the AOT'ed assemblies bitcode, which defaults to -O2 in Release and is not covered by EmccCompileOptimizationFlag. -->
+        <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
 </Project>
