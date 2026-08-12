@@ -24,6 +24,7 @@ public sealed record NavItem(string Title, string Href)
         new("Reorder", "reorder"),
         new("Scroll", "scroll"),
         new("Layout", "layout"),
+        new("Programmatic", "programmatic"),
         new("Color", "color"),
         new("Motion Path", "motion-path"),
         new("View Transitions", "view-transitions"),

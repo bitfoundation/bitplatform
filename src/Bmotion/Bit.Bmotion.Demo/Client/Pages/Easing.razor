@@ -1,75 +1,151 @@
-﻿@page "/easing"
+@page "/easing"
 
 <PageTitle>Easing - Bit.Bmotion</PageTitle>
 
 <h1>Easing</h1>
 
+<p class="page-intro">
+    An easing curve is what turns a duration into a feel. <strong>Bm.Tween</strong> takes one as its
+    second argument and covers the full easings.net family - the cubic default
+    (<code>In</code> / <code>Out</code> / <code>InOut</code>) plus Sine, Quad, Quart, Quint, Expo and
+    Circ, the overshooting <em>Back</em> and <em>Anticipate</em>, and the oscillating
+    <em>Elastic</em> and <em>Bounce</em> - along with <code>steps()</code> staircases and arbitrary
+    cubic-béziers. Curves the browser can express are sampled to <code>linear()</code> and handed to
+    the compositor; the rest run on the C# frame loop.
+</p>
+
 <div class="demo-section">
-    <h2>Named easing presets</h2>
+    <h2>Named presets</h2>
     <p>
-        <strong>Bm.Tween(ease: BmEase.…)</strong> now covers the full easings.net family:
-        Sine, Quad, Quart, Quint, Expo, plus overshoot/oscillating
-        <em>Elastic</em> and <em>Bounce</em>. Elastic and bounce sample to <code>linear()</code>
-        for the compositor where supported, and run on the C# engine otherwise.
+        Each row below plays the same 240&nbsp;px move over the same 0.9&nbsp;s, so the only thing
+        that differs is the curve. Watch where each one spends its time: <code>InOut</code> variants
+        start and end slow, <code>Out</code> variants front-load the distance, and
+        <code>ElasticOut</code> / <code>BounceOut</code> keep moving after they arrive.
     </p>
 
-    <div class="demo-row" style="flex-direction:column; align-items:stretch; gap:.5rem;">
+    <div class="ease-list">
         @foreach (var e in _eases)
         {
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <span style="width:120px; font-size:.8rem; color:var(--bm-muted)">@e</span>
-                <div style="flex:1; position:relative; height:32px;">
+            <div class="ease-row">
+                <span class="demo-label ease-name">@e</span>
+                <div class="ease-track">
                     <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
                              Transition="Bm.Tween(0.9, e)">
-                        <div class="box box-sm" style="width:28px;height:28px;" />
+                        <div class="box box-sm ease-dot" />
                     </Bmotion>
                 </div>
             </div>
         }
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
-        @(_on ? "Reset" : "Animate")
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _on = !_on)">@(_on ? "Send back" : "Animate")</button>
+    </div>
 
     <CodeSnippet Code="@_easeCode" />
 </div>
 
 <div class="demo-section">
-    <h2>Stepped easing - <code>steps()</code></h2>
+    <h2>Custom cubic-bézier</h2>
     <p>
-        <strong>Bm.Tween(steps: n, stepJump: …)</strong> maps to CSS <code>steps()</code> - a
-        staircase progression, great for sprite-style motion. Jump term controls where the jumps fall.
+        When no preset is the curve you want, hand <strong>Bm.Tween</strong> the four control
+        numbers directly with <code>bezier: [x1, y1, x2, y2]</code> - the same values CSS
+        <code>cubic-bezier()</code> takes, and the same values a design tool exports. A
+        <code>y</code> outside <code>0..1</code> is what produces anticipation and overshoot.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var b in _beziers)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@b.Label</span>
+                <div class="ease-track">
+                    <Bmotion Animate="@(_bezier ? Bm.To(x: 160) : Bm.To(x: 0))"
+                             Transition="Bm.Tween(0.9, bezier: b.Points)">
+                        <div class="box box-sm ease-dot" />
+                    </Bmotion>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _bezier = !_bezier)">@(_bezier ? "Send back" : "Animate")</button>
+    </div>
+
+    <CodeSnippet Code="@_bezierCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Stepped easing</h2>
+    <p>
+        <strong>Bm.Tween(steps: n, stepJump: …)</strong> maps to CSS <code>steps()</code>: instead of
+        a continuous curve the progress advances in <em>n</em> discrete jumps - the sprite-sheet and
+        ticking-counter look. <code>stepJump</code> decides where those jumps fall:
+        <code>End</code> holds the first frame and jumps on the way out, <code>Start</code> jumps
+        immediately, <code>None</code> keeps both endpoints, and <code>Both</code> skips both.
     </p>
 
     <div class="demo-row">
         @foreach (var s in _steps)
         {
-            <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                <span style="font-size:.78rem; color:var(--bm-muted)">steps(6, @s)</span>
-                <Bmotion Animate="@(_on2 ? Bm.To(x: 180) : Bm.To(x: 0))"
-                         Transition="Bm.Tween(1.2, steps: 6, stepJump: s)">
-                    <div class="box box-sm" />
-                </Bmotion>
+            <div class="demo-card stack">
+                <span class="demo-label">steps(6, @s.ToString().ToLowerInvariant())</span>
+                <div class="ease-track">
+                    <Bmotion Animate="@(_stepped ? Bm.To(x: 160) : Bm.To(x: 0))"
+                             Transition="Bm.Tween(1.2, steps: 6, stepJump: s)">
+                        <div class="box box-sm ease-dot" />
+                    </Bmotion>
+                </div>
             </div>
         }
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on2 = !_on2)">
-        @(_on2 ? "Reset" : "Step")
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _stepped = !_stepped)">@(_stepped ? "Send back" : "Step")</button>
+    </div>
 
     <CodeSnippet Code="@_stepsCode" />
 </div>
 
+<style>
+    /* One row per curve, all sharing a track of the same length: the comparison only means
+       anything if the distance and the duration are held constant across them. */
+    .ease-list { display: flex; flex-direction: column; gap: .5rem; }
+
+    .ease-row { display: flex; align-items: center; gap: 1rem; }
+
+    .ease-name { width: 7.5rem; flex: none; text-align: left; }
+
+    /* flex: none so the track keeps its height when it is a column item inside a stacked
+       card, rather than stretching to fill it. */
+    .ease-track { position: relative; flex: none; width: 100%; height: 2rem; }
+
+    .ease-row .ease-track { flex: 1; }
+
+    .ease-dot { width: 1.75rem; height: 1.75rem; }
+</style>
+
 @code {
     private bool _on;
-    private bool _on2;
+    private bool _bezier;
+    private bool _stepped;
 
     private readonly BmEase[] _eases =
     [
         BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
-        BmEase.ExpoOut, BmEase.BackOut, BmEase.ElasticOut, BmEase.BounceOut,
+        BmEase.CircOut, BmEase.ExpoOut, BmEase.BackOut, BmEase.Anticipate,
+        BmEase.ElasticOut, BmEase.BounceOut,
+    ];
+
+    /// <summary>A hand-authored curve: its four control numbers and what they read as.</summary>
+    private record BezierDemo(string Label, double[] Points);
+
+    private readonly BezierDemo[] _beziers =
+    [
+        new("0.4, 0, 0.2, 1 · material standard", [0.4, 0, 0.2, 1]),
+        new("0.68, -0.6, 0.32, 1.6 · anticipate then overshoot", [0.68, -0.6, 0.32, 1.6]),
+        new("0.9, 0, 1, 0.2 · slow start, hard stop", [0.9, 0, 1, 0.2]),
     ];
 
     private readonly BmStepJump[] _steps =
@@ -78,16 +154,20 @@
     ];
 
     private const string _easeCode = """
+        @using Bit.Bmotion
+
+        @* The same move and the same duration for every row - only the curve changes. *@
         @foreach (var e in _eases)
         {
             <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
                      Transition="Bm.Tween(0.9, e)">
-                <div class="box box-sm" />
+                <div class="box-sm" />
             </Bmotion>
         }
 
         @code {
             private bool _on;
+
             private readonly BmEase[] _eases =
             [
                 BmEase.SineInOut, BmEase.QuadInOut, BmEase.QuartInOut, BmEase.QuintInOut,
@@ -96,10 +176,25 @@
         }
         """;
 
+    private const string _bezierCode = """
+        @using Bit.Bmotion
+
+        @* Four control numbers, exactly as CSS cubic-bezier() takes them. A y outside 0..1
+           is what gives you anticipation (negative) and overshoot (above 1). *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 160) : Bm.To(x: 0))"
+                 Transition="Bm.Tween(0.9, bezier: [0.68, -0.6, 0.32, 1.6])">
+            <div class="box-sm" />
+        </Bmotion>
+        """;
+
     private const string _stepsCode = """
-        <Bmotion Animate="@(_on ? Bm.To(x: 180) : Bm.To(x: 0))"
+        @using Bit.Bmotion
+
+        @* steps() advances progress in n discrete jumps instead of a continuous curve.
+           stepJump decides where the jumps fall: End (default), Start, None or Both. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: 160) : Bm.To(x: 0))"
                  Transition="Bm.Tween(1.2, steps: 6, stepJump: BmStepJump.End)">
-            <div class="box box-sm" />
+            <div class="box-sm" />
         </Bmotion>
         """;
 }

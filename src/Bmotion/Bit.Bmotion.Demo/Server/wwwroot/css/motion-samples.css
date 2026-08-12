@@ -31,6 +31,11 @@
     color: var(--bit-clr-fg-sec);
 }
 
+.page-intro strong {
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
+}
+
 /* ── Section cards ─────────────────────────────────────────────────────────── */
 
 /* A hairline-bordered surface rather than a shadowed one: on a documentation page the same card
@@ -89,7 +94,10 @@
 }
 
 /* <c> is the demo's shorthand for an inline code span - it is not an HTML element, so it needs
-   both the display and the type treatment spelled out here. */
+   both the display and the type treatment spelled out here. The pages themselves author <code>;
+   the <c> selector stays so any older markup that still uses it keeps the same treatment. */
+.page-intro code,
+.page-intro c,
 .demo-section code,
 .demo-section c {
     display: inline;
@@ -130,6 +138,31 @@
     background-color: var(--bm-card);
     border: 0.0625rem solid var(--bit-clr-brd-ter);
     border-radius: var(--bit-shp-brd-radius);
+}
+
+/* A stage that stacks a caption above the moving part instead of centring one thing in the middle.
+   Nearly every page needs it, so it is a modifier here rather than the same three inline
+   declarations repeated down each page. */
+.demo-card.stack {
+    gap: 0.75rem;
+    flex-direction: column;
+}
+
+/* The caption naming what a stage is showing - a spring's constants, an easing's name, the CSS
+   property being animated. Deliberately quiet: it labels the sample, it is not part of it. */
+.demo-label {
+    font-size: 0.78rem;
+    text-align: center;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* The controls that drive a sample, always directly under its stage. */
+.demo-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    align-items: center;
 }
 
 /* ── Sample primitives ─────────────────────────────────────────────────────── */

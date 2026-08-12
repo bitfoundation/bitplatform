@@ -1,61 +1,110 @@
-﻿@page "/color"
+@page "/color"
 
 <PageTitle>Color spaces - Bit.Bmotion</PageTitle>
 
 <h1>Color spaces</h1>
 
+<p class="page-intro">
+    Interpolating a color means walking a straight line between two points - but <em>which</em>
+    space you draw that line in decides what the midpoints look like. In sRGB the channels are
+    mixed numerically, which is why complementary colors pass through a desaturated grey on the
+    way. <strong>OKLab</strong> is built so that equal steps look like equal steps, so the same
+    journey keeps its chroma the whole way across.
+</p>
+
 <div class="demo-section">
-    <h2>Perceptual OKLab vs sRGB</h2>
+    <h2>sRGB and OKLab side by side</h2>
     <p>
-        By default colors interpolate per-channel in <strong>sRGB</strong> (Framer Motion's default),
-        which drags complementary transitions through a muddy grey. Opt into
-        <strong>BmColorSpace.Oklab</strong> per-transition (or globally on
-        <code>&lt;BmotionConfig ColorSpace="…"&gt;</code>) to keep mid-points vivid.
+        sRGB is the default, matching Framer Motion. Opt into the perceptual space per transition
+        with <code>colorSpace: BmColorSpace.Oklab</code>, or for a whole subtree with
+        <code>&lt;BmotionConfig ColorSpace="BmColorSpace.Oklab"&gt;</code>. The pairs below run the
+        same transition over the same 1.6&nbsp;s - watch the middle of each run, not the endpoints,
+        which are identical by definition.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span style="font-size:.78rem; color:var(--bm-muted)">sRGB - blue → yellow</span>
-            <Bmotion Animate="@(_on ? _yellow : _blue)"
-                     Transition="Bm.Tween(1.6)">
-                <div class="swatch" style="background:#0000ff" />
-            </Bmotion>
-        </div>
-
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span style="font-size:.78rem; color:var(--bm-muted)">OKLab - blue → yellow</span>
-            <Bmotion Animate="@(_on ? _yellow : _blue)"
-                     Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
-                <div class="swatch" style="background:#0000ff" />
-            </Bmotion>
-        </div>
+        @foreach (var pair in _pairs)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@pair.Label</span>
+                <div class="swatch-pair">
+                    <div class="swatch-cell">
+                        <Bmotion Animate="@(_on ? pair.To : pair.From)" Transition="Bm.Tween(1.6)">
+                            <div class="swatch" style="@($"background:{pair.FromCss}")" />
+                        </Bmotion>
+                        <span class="demo-label">sRGB</span>
+                    </div>
+                    <div class="swatch-cell">
+                        <Bmotion Animate="@(_on ? pair.To : pair.From)"
+                                 Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
+                            <div class="swatch" style="@($"background:{pair.FromCss}")" />
+                        </Bmotion>
+                        <span class="demo-label">OKLab</span>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _on = !_on)">
-        @(_on ? "Back to blue" : "To yellow")
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _on = !_on)">@(_on ? "Reverse" : "Cross-fade")</button>
+    </div>
 
     <CodeSnippet Code="@_code" />
 </div>
 
+<div class="demo-section">
+    <h2>When it matters</h2>
+    <p>
+        Not every transition needs it. The two colors have to be far enough apart for the midpoint
+        to be visible at all, so the difference is obvious on opposites - blue to yellow, red to
+        green - and invisible between two neighbouring blues. The cost is a per-frame conversion, so
+        the sensible default is what Bmotion does: sRGB unless you ask, and OKLab where the
+        midpoints are actually on screen long enough to be seen.
+    </p>
+    <ul class="feature-list">
+        <li><strong>Reach for OKLab</strong> when a slow transition crosses the color wheel, or when a hue animates through a keyframe palette.</li>
+        <li><strong>Leave it at sRGB</strong> for short state changes, hover tints, and any pair of nearby colors.</li>
+        <li><strong>Set it globally</strong> on <code>BmotionConfig</code> when a whole surface should behave consistently rather than deciding per animation.</li>
+    </ul>
+</div>
+
 <style>
-    .swatch { width: 160px; height: 80px; border-radius: 10px; }
+    .swatch-pair { display: flex; gap: 1rem; }
+
+    .swatch-cell { display: flex; flex-direction: column; gap: .4rem; align-items: center; }
+
+    .swatch { width: 5.5rem; height: 5rem; border-radius: 10px; }
+
+    .feature-list { line-height: 1.9; color: var(--bm-muted); }
 </style>
 
 @code {
     private bool _on;
 
-    private static readonly BmProps _blue = Bm.To(backgroundColor: "#0000ff");
-    private static readonly BmProps _yellow = Bm.To(backgroundColor: "#ffdd00");
+    /// <summary>One comparison: the two ends of the transition, plus the CSS the swatch starts in.</summary>
+    private sealed record ColorPair(string Label, string FromCss, BmProps From, BmProps To);
+
+    private static ColorPair Pair(string label, string from, string to)
+        => new(label, from, Bm.To(backgroundColor: from), Bm.To(backgroundColor: to));
+
+    private readonly ColorPair[] _pairs =
+    [
+        Pair("blue → yellow", "#0000FF", "#FFDD00"),
+        Pair("red → green", "#E01B24", "#26A269"),
+        Pair("magenta → teal", "#C61Ecb", "#12B8A6"),
+    ];
 
     private const string _code = """
-        @* Per-transition color space (sRGB is the default) *@
-        <Bmotion Animate="Bm.To(backgroundColor: "#ffdd00")"
+        @using Bit.Bmotion
+
+        @* Per-transition. sRGB is the default, matching Framer Motion. *@
+        <Bmotion Animate='Bm.To(backgroundColor: "#FFDD00")'
                  Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
             <div class="swatch" />
         </Bmotion>
 
-        @* …or globally for a whole subtree *@
+        @* …or once, for a whole subtree. *@
         <BmotionConfig ColorSpace="BmColorSpace.Oklab">
             ...
         </BmotionConfig>

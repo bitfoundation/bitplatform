@@ -26,8 +26,9 @@
                          Animate="Bm.To(opacity: 1, y: 0)"
                          Transition="Bm.Tween(0.6, delay: 0.2)">
                     <p class="hero-lead">
-                        A Blazor-native animation library inspired by Framer Motion.
-                        Springs, gestures, layout animations, variants &mdash; zero external dependencies.
+                        A Blazor-native animation library inspired by Framer Motion. Springs,
+                        gestures, layout animations and variants &mdash; all of the maths in C#,
+                        none of the JavaScript wiring, and no animation library shipped alongside it.
                     </p>
                 </Bmotion>
 
@@ -84,8 +85,9 @@
         <div class="homepage-section-content">
             <h2>Quick start</h2>
             <p class="section-lead">
-                One component, two parameters. Everything else &mdash; springs, gestures, keyframes,
-                layout &mdash; is the same component with more of them.
+                One component, two parameters: where the element starts and where it is going.
+                Everything else &mdash; springs, gestures, keyframes, drag, layout &mdash; is the
+                same component with more of them. Hover the box, then press it.
             </p>
 
             <div class="demo-row">
@@ -109,8 +111,10 @@
         <div class="homepage-section-content">
             <h2>What's in the box</h2>
             <p class="section-lead">
-                Everything below is C#. No JavaScript animation library ships with it, and nothing
-                here needs one.
+                Every animation below is computed in C#. Compositor-eligible work &mdash; tweens and
+                settled springs on transform and opacity, which is most enter, exit, hover and
+                variant animation &mdash; is pre-sampled and handed to the browser's Web Animations
+                API, so it plays off the main thread with no per-frame interop at all.
             </p>
 
             <div class="feature-grid">
@@ -169,9 +173,9 @@
     private readonly string[] _features =
     [
         "Spring physics", "Tween", "Inertia", "Keyframes",
-        "Gestures", "Drag", "AnimatePresence", "Variants",
+        "Gestures", "Drag", "Reorder", "AnimatePresence", "Variants",
         "whileInView", "Layout FLIP", "MotionValue", "Scroll tracking",
-        ".NET 8+", "Minimal JS"
+        "Sequences", "SVG paths", "OKLab", ".NET 8+", "Minimal JS"
     ];
 
     private readonly Tile[] _tiles =
@@ -184,14 +188,16 @@
 
     private readonly Tile[] _capabilities =
     [
-        new("Springs, tweens and inertia", "Stiffness and damping, duration and easing, or a throw that decays on its own - per property if you want.", "springs"),
-        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on top of the base animation and revert themselves.", "gestures"),
-        new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place.", "variants"),
-        new("Keyframes", "Arrays of values with their own timings, easings and repeat behaviour.", "keyframes"),
-        new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM.", "presence"),
-        new("Drag and reorder", "Axis locks, constraints, elastic edges, momentum - and lists that reorder themselves under the pointer.", "drag"),
-        new("Layout animations", "FLIP the gap between two layouts, with corner and child counter-scaling handled for you.", "layout"),
-        new("Scroll and viewport", "Track scroll progress as a MotionValue, or trigger an animation the first time an element comes into view.", "scroll"),
+        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, per property if you want.", "springs"),
+        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures"),
+        new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants"),
+        new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes"),
+        new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence"),
+        new("Drag and reorder", "Axis locks, container constraints, elastic edges, momentum - and lists that reorder themselves under the pointer without re-rendering.", "drag"),
+        new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout"),
+        new("Scroll and viewport", "Scrub an animation with the scrollbar as a MotionValue, or trigger one the first time an element comes into view.", "scroll"),
+        new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic"),
+        new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path"),
     ];
 
     private const string _quickStart = """

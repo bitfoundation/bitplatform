@@ -1,27 +1,39 @@
-﻿@page "/basic"
+@page "/basic"
 
 <PageTitle>Basic animations - Bit.Bmotion</PageTitle>
 
+<h1>Basic animations</h1>
+
+<p class="page-intro">
+    Every animation in Bmotion is the same shape: a <strong>state to start from</strong>, a
+    <strong>state to end at</strong>, and a <strong>transition</strong> describing how to get
+    between them. Learn that shape here and the rest of the library - springs, gestures,
+    keyframes, layout - is the same component with more parameters.
+</p>
+
 <div class="demo-section">
-    <h2>Basic Animations</h2>
+    <h2>Initial and Animate</h2>
     <p>
-        Use <strong>Initial</strong> to set the starting state and <strong>Animate</strong>
-        for the target. Each property transitions automatically on mount and whenever
-        <c>Animate</c> changes.
+        <strong>Initial</strong> is the state the element is painted in before it has ever
+        animated; <strong>Animate</strong> is the state it heads for. The animation runs on mount
+        and again whenever <code>Animate</code> changes, so switching a target in your own state
+        is all it takes to animate - there is nothing to start or stop.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">On mount</span>
             <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
                     Animate="Bm.To(opacity: 1, x: 0)"
                     Transition="Bm.Tween(0.6, BmEase.BackOut)">
                 <div class="box" />
             </Bmotion>
         </div>
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">On every change &middot; tap the box</span>
             <Bmotion Initial="Bm.To(scale: 0)"
-                    Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#ff4785")
-                                        : Bm.To(scale: 1, rotate: 0, backgroundColor: "#6c47ff"))'
+                    Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#FD7F36")
+                                        : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                     Transition="Bm.Tween(0.4)"
                     OnTap="@(() => _toggled = !_toggled)">
                 <div class="box" />
@@ -29,55 +41,120 @@
         </div>
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _toggled = !_toggled)">
-        Toggle animate
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _toggled = !_toggled)">Toggle animate</button>
+    </div>
 
     <CodeSnippet Code="@_basicCode" />
 </div>
 
 <div class="demo-section">
-    <h2>CSS Property Animations</h2>
+    <h2>CSS properties</h2>
     <p>
-        Animate any CSS property - colors, border-radius, box-shadow, and more. Complex strings
-        like <c>filter</c> interpolate too: every number (and embedded color) inside two values
-        with the same shape animates smoothly.
+        Animation is not limited to transforms. Colors, <code>borderRadius</code> and
+        <code>boxShadow</code> interpolate as values rather than snapping, and complex strings like
+        <code>filter</code> interpolate too: between two values of the <em>same shape</em>, every
+        number and embedded color inside them animates. Shapes that do not match snap to the
+        target instead.
     </p>
     <div class="demo-row">
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">borderRadius + backgroundColor</span>
             <Bmotion Animate='@(_rounded
-                        ? Bm.To(borderRadius: "50%", backgroundColor: "#ff4785", scale: 1.1)
-                        : Bm.To(borderRadius: "10px", backgroundColor: "#6c47ff", scale: 1))'
+                        ? Bm.To(borderRadius: "50%", backgroundColor: "#FD7F36", scale: 1.1)
+                        : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                     Transition="Bm.Tween(0.5, BmEase.InOut)"
                     OnTap="@(() => _rounded = !_rounded)">
                 <div class="box" />
             </Bmotion>
         </div>
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">filter: blur() saturate()</span>
             <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
                     Animate='@(_dimmed
                         ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
                         : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
                     Transition="Bm.Tween(0.5, BmEase.InOut)"
                     OnTap="@(() => _dimmed = !_dimmed)">
-                <div class="box" style="display:flex;align-items:center;justify-content:center;">filter</div>
+                <div class="box">filter</div>
+            </Bmotion>
+        </div>
+        <div class="demo-card stack">
+            <span class="demo-label">boxShadow (multi-part)</span>
+            <Bmotion Initial='Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)")'
+                    Animate='@(_lifted
+                        ? Bm.To(boxShadow: "0 24px 40px rgba(0,0,0,.35), 0 0 32px rgba(18,118,198,.55)", y: -10)
+                        : Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)", y: 0))'
+                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    OnTap="@(() => _lifted = !_lifted)">
+                <div class="box" />
             </Bmotion>
         </div>
     </div>
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _rounded = !_rounded)">
-        Toggle shape
-    </button>
-    <button class="btn-bm" style="margin-top:1rem;margin-left:.5rem" @onclick="@(() => _dimmed = !_dimmed)">
-        Toggle filter
-    </button>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _rounded = !_rounded)">Toggle shape</button>
+        <button class="btn-bm" @onclick="@(() => _dimmed = !_dimmed)">Toggle filter</button>
+        <button class="btn-bm" @onclick="@(() => _lifted = !_lifted)">Toggle shadow</button>
+    </div>
 
     <CodeSnippet Code="@_cssCode" />
+</div>
+
+<div class="demo-section">
+    <h2>3D transforms</h2>
+    <p>
+        <code>perspective</code> gives an element a vanishing point and
+        <code>rotateX</code> / <code>rotateY</code> / <code>z</code> turn it in that space.
+        They compose with the 2-D transforms into one <code>transform</code> value, so animating
+        <code>x</code> and <code>rotateY</code> at once never has the two fighting over the
+        property. <code>originX</code> / <code>originY</code> move the pivot everything turns
+        about - <code>0</code> is the left/top edge, <code>1</code> the right/bottom.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">rotateY &middot; card flip</span>
+            <Bmotion Animate="@(_flipped ? Bm.To(rotateY: 180, perspective: 600) : Bm.To(rotateY: 0, perspective: 600))"
+                    Transition="Bm.Spring(stiffness: 150, damping: 18)"
+                    OnTap="@(() => _flipped = !_flipped)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">rotateX + rotateY &middot; hover to tilt</span>
+            <Bmotion WhileHover="Bm.To(rotateX: -22, rotateY: 22, perspective: 500, scale: 1.08)"
+                    Transition="Bm.Spring(stiffness: 260, damping: 20)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">originX: 0 &middot; hinged at the left edge</span>
+            <Bmotion Animate="@(_hinged ? Bm.To(rotate: -75, originX: 0, originY: 1) : Bm.To(rotate: 0, originX: 0, originY: 1))"
+                    Transition="Bm.Spring(stiffness: 200, damping: 16)"
+                    OnTap="@(() => _hinged = !_hinged)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _flipped = !_flipped)">Flip</button>
+        <button class="btn-bm" @onclick="@(() => _hinged = !_hinged)">Hinge</button>
+    </div>
+
+    <CodeSnippet Code="@_transform3dCode" />
 </div>
 
 @code {
     private bool _toggled;
     private bool _rounded;
     private bool _dimmed;
+    private bool _lifted;
+    private bool _flipped;
+    private bool _hinged;
 
     private const string _basicCode = """
         @using Bit.Bmotion
@@ -105,9 +182,10 @@
         </style>
 
         <div class="demo-section">
-            <h2>Basic Animations</h2>
+            <h2>Initial and Animate</h2>
 
             <div class="demo-row">
+                @* Initial → Animate: plays once, on mount *@
                 <div class="demo-card">
                     <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
                             Animate="Bm.To(opacity: 1, x: 0)"
@@ -115,10 +193,12 @@
                         <div class="box" />
                     </Bmotion>
                 </div>
+
+                @* A changing Animate re-animates from wherever the element currently is *@
                 <div class="demo-card">
                     <Bmotion Initial="Bm.To(scale: 0)"
-                            Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#ff4785")
-                                                : Bm.To(scale: 1, rotate: 0, backgroundColor: "#6c47ff"))'
+                            Animate='@(_toggled ? Bm.To(scale: 1.3, rotate: 45, backgroundColor: "#FD7F36")
+                                                : Bm.To(scale: 1, rotate: 0, backgroundColor: "#1276C6"))'
                             Transition="Bm.Tween(0.4)"
                             OnTap="@(() => _toggled = !_toggled)">
                         <div class="box" />
@@ -156,33 +236,42 @@
                 cursor: pointer; user-select: none;
                 display: flex; align-items: center; justify-content: center;
             }
-            .btn-bm {
-                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
-                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
-            }
         </style>
 
         <div class="demo-section">
-            <h2>CSS Property Animations</h2>
-            <p>Animate any CSS property - colors, border-radius, box-shadow, filter, and more.</p>
+            <h2>CSS properties</h2>
+            <p>Colors, border-radius and box-shadow interpolate as values, not as swaps.</p>
             <div class="demo-row">
                 <div class="demo-card">
                     <Bmotion Animate='@(_rounded
-                                ? Bm.To(borderRadius: "50%", backgroundColor: "#ff4785", scale: 1.1)
-                                : Bm.To(borderRadius: "10px", backgroundColor: "#6c47ff", scale: 1))'
+                                ? Bm.To(borderRadius: "50%", backgroundColor: "#FD7F36", scale: 1.1)
+                                : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
                             Transition="Bm.Tween(0.5, BmEase.InOut)"
                             OnTap="@(() => _rounded = !_rounded)">
                         <div class="box" />
                     </Bmotion>
                 </div>
+
                 <div class="demo-card">
-                    @* Complex strings with the same shape interpolate number-by-number. *@
+                    @* Same shape in and out - every number inside the string interpolates. *@
                     <Bmotion Initial='Bm.To(filter: "blur(0px) saturate(1)")'
                             Animate='@(_dimmed
                                 ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
                                 : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
                             Transition="Bm.Tween(0.5, BmEase.InOut)"
                             OnTap="@(() => _dimmed = !_dimmed)">
+                        <div class="box">filter</div>
+                    </Bmotion>
+                </div>
+
+                <div class="demo-card">
+                    @* Multi-part shadows work the same way, layer by layer. *@
+                    <Bmotion Initial='Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)")'
+                            Animate='@(_lifted
+                                ? Bm.To(boxShadow: "0 24px 40px rgba(0,0,0,.35), 0 0 32px rgba(18,118,198,.55)", y: -10)
+                                : Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)", y: 0))'
+                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            OnTap="@(() => _lifted = !_lifted)">
                         <div class="box" />
                     </Bmotion>
                 </div>
@@ -192,6 +281,39 @@
         @code {
             private bool _rounded;
             private bool _dimmed;
+            private bool _lifted;
+        }
+        """;
+
+    private const string _transform3dCode = """
+        @using Bit.Bmotion
+
+        @* perspective + rotateY: the card-flip idiom. Both live in the same composed
+           transform, so there is no second element and no CSS to coordinate. *@
+        <Bmotion Animate="@(_flipped ? Bm.To(rotateY: 180, perspective: 600)
+                                     : Bm.To(rotateY: 0, perspective: 600))"
+                 Transition="Bm.Spring(stiffness: 150, damping: 18)"
+                 OnTap="@(() => _flipped = !_flipped)">
+            <div class="box" />
+        </Bmotion>
+
+        @* A gesture state can be 3-D too - here the tilt only exists while hovered. *@
+        <Bmotion WhileHover="Bm.To(rotateX: -22, rotateY: 22, perspective: 500, scale: 1.08)"
+                 Transition="Bm.Spring(stiffness: 260, damping: 20)">
+            <div class="box" />
+        </Bmotion>
+
+        @* originX/originY move the pivot: 0 = left/top edge, 0.5 = centre (default), 1 = right/bottom.
+           Pinning it to the bottom-left corner turns a rotate into a hinge. *@
+        <Bmotion Animate="@(_hinged ? Bm.To(rotate: -75, originX: 0, originY: 1)
+                                    : Bm.To(rotate: 0, originX: 0, originY: 1))"
+                 Transition="Bm.Spring(stiffness: 200, damping: 16)">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private bool _flipped;
+            private bool _hinged;
         }
         """;
 }

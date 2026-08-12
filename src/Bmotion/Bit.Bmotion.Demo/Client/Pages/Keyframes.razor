@@ -1,30 +1,40 @@
-﻿@page "/keyframes"
+@page "/keyframes"
 
 <PageTitle>Keyframes - Bit.Bmotion</PageTitle>
 
 <h1>Keyframes</h1>
 
+<p class="page-intro">
+    A property does not have to travel from one value to one other value. Hand it a
+    <strong>sequence</strong> and it walks through every entry in turn - the same collection
+    expression syntax C# already gives you, no separate keyframe type to learn. The transition
+    then controls how that walk is timed: <code>times</code> for where each stop falls,
+    <code>eases</code> for how each leg is curved, <code>repeat</code> for what happens at the end.
+</p>
+
 <div class="demo-section">
-    <h2>Keyframes</h2>
+    <h2>Keyframe sequences</h2>
     <p>
-        Every animatable property accepts a keyframe sequence via a plain collection
-        expression: <c>Bm.To(scale: [1, 1.3, 0.8, 1])</c>. Use <c>times</c> on the
-        transition for custom offsets (0–1), and <c>Bm.Current</c> as a wildcard for
-        "the element's current value".
+        Any animatable property accepts one: <code>Bm.To(scale: [1, 1.3, 0.8, 1])</code>. By
+        default the stops are spaced evenly over the duration; <code>times</code> on the transition
+        overrides that with explicit offsets in <code>0..1</code>, which is how the second stage
+        below lingers in the middle of its run and sprints at the end.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">Evenly spaced &middot; scale + rotate together</span>
             <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
                     Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
                 <div class="box" />
             </Bmotion>
         </div>
 
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">times: [0, 0.2, 0.5, 0.8, 1]</span>
             <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
                     Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
-                <div class="box" style="height:30px;border-radius:4px;" />
+                <div class="box keyframe-bar" />
             </Bmotion>
         </div>
     </div>
@@ -33,13 +43,17 @@
 </div>
 
 <div class="demo-section">
-    <h2>Color Keyframes</h2>
-    <p>Smoothly cycle through a palette of colors.</p>
+    <h2>Color keyframes</h2>
+    <p>
+        Colors interpolate as colors, not as strings, so a palette cycle is just another sequence.
+        Repeating one needs the first and last entries to match - otherwise every loop jumps back
+        to the start rather than arriving there.
+    </p>
     <div class="demo-row">
         <div class="demo-card">
-            <Bmotion Animate='Bm.To(backgroundColor: ["#6c47ff", "#ff4785", "#00c3ff", "#6c47ff"])'
+            <Bmotion Animate='Bm.To(backgroundColor: ["#1276C6", "#FD7F36", "#8A4FD6", "#1276C6"])'
                     Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
-                <div class="box" style="width:120px;height:120px;border-radius:50%;background-image:none;" />
+                <div class="box color-orb" />
             </Bmotion>
         </div>
     </div>
@@ -50,17 +64,19 @@
 <div class="demo-section">
     <h2>Per-segment easing</h2>
     <p>
-        <c>eases</c> gives each keyframe segment its own curve (one entry per segment; the last
-        repeats when the array is shorter): here the ball launches with an accelerating
-        <c>CircIn</c>, then lands twice with decelerating <c>CircOut</c> / <c>BackOut</c>.
+        One curve across a five-stop sequence rarely reads right - a ball that falls and lands
+        should accelerate on the way down and decelerate on the way up, not ease symmetrically
+        through both. <code>eases</code> gives every <em>segment</em> its own curve (one entry per
+        segment; the last repeats if the array is short), which is what turns the sequence below
+        from a wobble into a bounce.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="height:220px;align-items:flex-end;padding-bottom:2.5rem;">
+        <div class="demo-card ball-stage">
             <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
                     Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
                                          eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
-                <div class="box" style="width:56px;height:56px;border-radius:50%;" />
+                <div class="box ball" />
             </Bmotion>
         </div>
     </div>
@@ -68,15 +84,67 @@
     <CodeSnippet Code="@_easesCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Continuing from the current value</h2>
+    <p>
+        A sequence normally snaps to its first entry before it starts - fine on mount, jarring when
+        the element is already mid-flight somewhere else. <strong>Bm.Current</strong> is a wildcard
+        first entry meaning <em>"wherever this element is right now"</em>, so the new sequence
+        picks up from the live value instead of teleporting. Interrupt the drift below at any point
+        and watch the difference between the two stages.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">x: [0, 140] &middot; snaps home first</span>
+            <div class="current-track">
+                <Bmotion Animate="@(_pulse ? Bm.To(x: [0, 140]) : Bm.To(x: 0))"
+                        Transition="Bm.Tween(1.4, BmEase.InOut)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </div>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">x: [Bm.Current, 140] &middot; continues</span>
+            <div class="current-track">
+                <Bmotion Animate="@(_pulse ? Bm.To(x: [Bm.Current, 140]) : Bm.To(x: 0))"
+                        Transition="Bm.Tween(1.4, BmEase.InOut)">
+                    <div class="box box-sm" />
+                </Bmotion>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _pulse = !_pulse)">@(_pulse ? "Send back" : "Run")</button>
+    </div>
+
+    <CodeSnippet Code="@_currentCode" />
+</div>
+
+<style>
+    .keyframe-bar { height: 1.875rem; border-radius: 4px; }
+
+    .color-orb { width: 7.5rem; height: 7.5rem; border-radius: 50%; background-image: none; }
+
+    /* The ball falls to the floor of its stage, so the stage is anchored at the bottom rather
+       than centring its content the way an ordinary card does. */
+    .ball-stage { height: 13.75rem; align-items: flex-end; padding-bottom: 2.5rem; }
+
+    .ball { width: 3.5rem; height: 3.5rem; border-radius: 50%; }
+
+    .current-track { position: relative; width: 100%; height: 3.125rem; }
+</style>
+
 @code {
+    private bool _pulse;
+
     private const string _keyframesCode = """
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .demo-section { margin-bottom: 3rem; }
-            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            :root { --bm-primary: #1276C6; --bm-secondary: #FD7F36; --bm-card: #F5F5F5; --bm-border: #E0E0E0; }
             .demo-card {
                 background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
@@ -88,66 +156,40 @@
             }
         </style>
 
-        <div class="demo-section">
-            <h2>Keyframes</h2>
+        <div class="demo-card">
+            @* Any property takes a sequence; several can run at once, stop for stop. *@
+            <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
+                     Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                <div class="box" />
+            </Bmotion>
+        </div>
 
-            <div class="demo-row">
-                <div class="demo-card">
-                    <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
-                            Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
-                        <div class="box" />
-                    </Bmotion>
-                </div>
-
-                <div class="demo-card">
-                    <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
-                            Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
-                        <div class="box" style="height:30px;border-radius:4px;" />
-                    </Bmotion>
-                </div>
-            </div>
+        <div class="demo-card">
+            @* times places each stop explicitly in 0..1 instead of spacing them evenly. *@
+            <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
+                     Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever,
+                                          times: [0, 0.2, 0.5, 0.8, 1])">
+                <div class="box" style="height:30px;border-radius:4px" />
+            </Bmotion>
         </div>
         """;
 
     private const string _colorKeyframesCode = """
         @using Bit.Bmotion
 
-        <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .demo-section { margin-bottom: 3rem; }
-            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
-            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
-            .demo-card {
-                background: var(--bm-card); border: 1px solid var(--bm-border);
-                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
-                display: flex; align-items: center; justify-content: center;
-            }
-            .box {
-                width: 80px; height: 80px; border-radius: 10px;
-                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-            }
-        </style>
-
-        <div class="demo-section">
-            <h2>Color Keyframes</h2>
-            <p>Smoothly cycle through a palette of colors.</p>
-            <div class="demo-row">
-                <div class="demo-card">
-                    <Bmotion Animate='Bm.To(backgroundColor: ["#6c47ff", "#ff4785", "#00c3ff", "#6c47ff"])'
-                            Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
-                        <div class="box" style="width:120px;height:120px;border-radius:50%;background-image:none;" />
-                    </Bmotion>
-                </div>
-            </div>
-        </div>
+        @* Colors interpolate as colors. First and last entries match so the loop arrives
+           at its start rather than jumping back to it. *@
+        <Bmotion Animate='Bm.To(backgroundColor: ["#1276C6", "#FD7F36", "#8A4FD6", "#1276C6"])'
+                 Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+            <div style="width:120px;height:120px;border-radius:50%" />
+        </Bmotion>
         """;
 
     private const string _easesCode = """
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
+            :root { --bm-primary: #1276C6; --bm-secondary: #FD7F36; --bm-card: #F5F5F5; --bm-border: #E0E0E0; }
             .demo-card {
                 background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem 2rem 2.5rem; height: 220px;
@@ -158,12 +200,34 @@
         </style>
 
         <div class="demo-card">
-            @* One ease per segment: launch, fall, small bounce, settle. *@
+            @* One ease per segment: launch, fall, small bounce, settle. A single curve
+               across all four would read as a wobble rather than a bounce. *@
             <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
-                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
-                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                     Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
+                                          eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
                 <div class="ball" />
             </Bmotion>
         </div>
+        """;
+
+    private const string _currentCode = """
+        @using Bit.Bmotion
+
+        @* Without the wildcard, a sequence snaps to its first entry before it plays. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: [0, 140]) : Bm.To(x: 0))"
+                 Transition="Bm.Tween(1.4, BmEase.InOut)">
+            <div class="box" />
+        </Bmotion>
+
+        @* Bm.Current means "wherever this element is right now", so an interrupted
+           animation continues from the live value instead of teleporting. *@
+        <Bmotion Animate="@(_on ? Bm.To(x: [Bm.Current, 140]) : Bm.To(x: 0))"
+                 Transition="Bm.Tween(1.4, BmEase.InOut)">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private bool _on;
+        }
         """;
 }

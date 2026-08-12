@@ -1,17 +1,29 @@
-﻿@page "/presence"
+@page "/presence"
 
 <PageTitle>AnimatePresence - Bit.Bmotion</PageTitle>
 
+<h1>AnimatePresence</h1>
+
+<p class="page-intro">
+    An element that has already left the DOM cannot animate. That is the whole problem exit
+    animations exist to solve, and the presence components solve it by <strong>keeping removed
+    content rendered until its exit has finished</strong>. You still write ordinary Blazor - flip a
+    bool, remove a list item, change a page number - and the removal is what schedules the
+    animation.
+</p>
+
 <div class="demo-section">
-    <h2>AnimatePresence</h2>
+    <h2>Exit animations</h2>
     <p>
-        Wrap conditional content in <strong>AnimatePresence</strong>. When
-        <c>IsPresent</c> becomes <c>false</c> the children play their <c>Exit</c>
-        animation before being removed from the DOM.
+        Wrap conditional content in <strong>BmotionAnimatePresence</strong> and give the child an
+        <code>Exit</code> target. When <code>IsPresent</code> goes false the child plays that target
+        and is removed once it lands. <code>Mode</code> decides how an exit overlaps a re-entry:
+        <code>Sync</code> lets them run together, <code>Wait</code> holds the new content back until
+        the old one is gone.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
+        <div class="demo-card presence-stage">
             <BmotionAnimatePresence IsPresent="@_visible">
                 <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
                         Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
@@ -23,31 +35,32 @@
         </div>
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
-        @(_visible ? "Remove" : "Add")
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _visible = !_visible)">@(_visible ? "Remove" : "Add")</button>
+    </div>
 
     <CodeSnippet Code="@_presenceCode" />
 </div>
 
 <div class="demo-section">
-    <h2>Presence Group (keyed lists)</h2>
+    <h2>Keyed lists</h2>
     <p>
-        <strong>BmotionPresenceGroup</strong> tracks a collection by key: removed items play
-        their <c>Exit</c> before leaving the DOM, added items play their enter - no flags, no
-        delays, just mutate the list.
+        <strong>BmotionPresenceGroup</strong> does the same job for a collection, tracked by key:
+        removed items play their <code>Exit</code> before leaving, added items play their enter, and
+        an item put back mid-exit cancels the exit and returns. There are no flags to set and no
+        removal to delay - mutate the list and the animations follow.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
+        <div class="demo-card list-stage">
             <BmotionPresenceGroup Items="_items" ItemKey="@(i => i.Id)" Context="item">
                 <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
                         Animate="Bm.To(opacity: 1, x: 0)"
                         Exit="Bm.To(opacity: 0, x: 30)"
                         Transition="Bm.Spring(stiffness: 300, damping: 25)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:8px;padding:.6rem 1rem;">
+                    <div class="presence-row">
                         <span>@item.Label</span>
-                        <button style="background:none;border:none;color:var(--bm-secondary);cursor:pointer;font-size:1.1rem"
+                        <button type="button" class="row-remove"
                                 aria-label="@($"Remove {item.Label}")"
                                 @onclick="@(() => _items.Remove(item))">✕</button>
                     </div>
@@ -56,7 +69,10 @@
         </div>
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="AddItem">Add item</button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="AddItem">Add item</button>
+        <span class="demo-label">@_items.Count item(s)</span>
+    </div>
 
     <CodeSnippet Code="@_listCode" />
 </div>
@@ -64,115 +80,16 @@
 <div class="demo-section">
     <h2>Pop layout</h2>
     <p>
-        <c>Mode="BmPresenceMode.PopLayout"</c> pops exiting items out of the layout flow
-        (<c>position: absolute</c> at their current spot), so siblings reflow immediately while
-        the exit plays - ideal for grids and chip rows. The container needs
-        <c>position: relative</c>.
+        By default an exiting item still occupies its space, so the row it sits in only closes up
+        once the animation ends - a visible beat of dead air in a chip row or a grid.
+        <code>Mode="BmPresenceMode.PopLayout"</code> takes the exiting item out of the layout flow
+        (<code>position: absolute</code> at the spot it was in) so its siblings reflow immediately
+        while it fades out over them. The container needs <code>position: relative</code> to anchor
+        it. Tap a chip to remove it.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="position:relative;flex-wrap:wrap;gap:.5rem;justify-content:flex-start;align-content:flex-start;min-height:120px;">
-            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
-                <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
-                        Animate="Bm.To(opacity: 1, scale: 1)"
-                        Exit="Bm.To(opacity: 0, scale: 0.6)"
-                        Transition="Bm.Spring(stiffness: 350, damping: 26)"
-                        OnTap="@(() => _chips.Remove(chip))">
-                    <div style="background:color-mix(in srgb, var(--bm-secondary) 15%, transparent);border:1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);border-radius:999px;padding:.35rem .9rem;cursor:pointer;user-select:none;white-space:nowrap;">
-                        @chip ✕
-                    </div>
-                </Bmotion>
-            </BmotionPresenceGroup>
-        </div>
-    </div>
-
-    <button class="btn-bm" style="margin-top:1rem" @onclick="ResetChips">Reset chips</button>
-
-    <CodeSnippet Code="@_popLayoutCode" />
-</div>
-
-<div class="demo-section">
-    <h2>Presence Switch</h2>
-    <p>
-        <strong>BmotionPresenceSwitch</strong> animates <em>between</em> items: change
-        <c>Item</c> and the outgoing content plays its <c>Exit</c> before the new one enters
-        (<c>Mode="BmPresenceMode.Wait"</c>, the default) - the classic paging idiom.
-    </p>
-
-    <div class="demo-row">
-        <div class="demo-card" style="min-height:180px; position:relative; overflow:hidden;">
-            <BmotionPresenceSwitch Item="_page" Context="pageNumber">
-                <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
-                        Animate="Bm.To(opacity: 1, x: 0)"
-                        Exit="Bm.To(opacity: 0, x: -60)"
-                        Transition="Bm.Tween(0.25, BmEase.InOut)">
-                    <div class="box" style="display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;">
-                        @pageNumber
-                    </div>
-                </Bmotion>
-            </BmotionPresenceSwitch>
-        </div>
-    </div>
-
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _page++)">Next page</button>
-
-    <CodeSnippet Code="@_switchCode" />
-</div>
-
-@code {
-    private int _page = 1;
-
-    private const string _switchCode = """
-        @using Bit.Bmotion
-
-        <BmotionPresenceSwitch Item="_page" Context="pageNumber">
-            <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
-                     Animate="Bm.To(opacity: 1, x: 0)"
-                     Exit="Bm.To(opacity: 0, x: -60)"
-                     Transition="Bm.Tween(0.25, BmEase.InOut)">
-                <div>
-                    Page @pageNumber
-                </div>
-            </Bmotion>
-        </BmotionPresenceSwitch>
-
-        <button @onclick="@(() => _page++)">Next page</button>
-
-        @code {
-            private int _page = 1;
-        }
-        """;
-}
-
-@code {
-    private bool _visible = true;
-    private int  _nextId  = 4;
-
-    private sealed record Item(int Id, string Label);
-
-    private List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
-
-    void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
-
-    private static readonly string[] _allChips = ["Springs", "Gestures", "Drag", "Layout", "Variants", "Keyframes"];
-    private List<string> _chips = [.. _allChips];
-
-    void ResetChips() => _chips = [.. _allChips];
-
-    private const string _popLayoutCode = """
-        @using Bit.Bmotion
-
-        <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .chip-row { position: relative; display: flex; flex-wrap: wrap; gap: .5rem; }
-            .chip {
-                background: color-mix(in srgb, var(--bm-secondary) 15%, transparent); border: 1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);
-                border-radius: 999px; padding: .35rem .9rem; cursor: pointer;
-                user-select: none; white-space: nowrap;
-            }
-        </style>
-
-        <div class="chip-row">   @* position: relative anchors the popped (absolute) items *@
+        <div class="demo-card chip-stage">
             <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
                 <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
                         Animate="Bm.To(opacity: 1, scale: 1)"
@@ -183,24 +100,134 @@
                 </Bmotion>
             </BmotionPresenceGroup>
         </div>
+    </div>
 
-        @code {
-            private List<string> _chips = ["Springs", "Gestures", "Drag", "Layout"];
-        }
-        """;
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="ResetChips">Reset chips</button>
+    </div>
+
+    <CodeSnippet Code="@_popLayoutCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Switching between items</h2>
+    <p>
+        <strong>BmotionPresenceSwitch</strong> covers the case where content is <em>replaced</em>
+        rather than added or removed - paging, toasts, a wizard step. Change <code>Item</code> and
+        the outgoing subtree plays its <code>Exit</code> first, still rendering the old item as it
+        goes, because the content is a template <em>of</em> the item rather than a snapshot of it.
+        <code>Mode</code> defaults to <code>Wait</code> here; <code>Sync</code> overlaps the two.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card presence-stage">
+            <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+                <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                        Animate="Bm.To(opacity: 1, x: 0)"
+                        Exit="Bm.To(opacity: 0, x: -60)"
+                        Transition="Bm.Tween(0.25, BmEase.InOut)">
+                    <div class="box page-box">@pageNumber</div>
+                </Bmotion>
+            </BmotionPresenceSwitch>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _page++)">Next page</button>
+        <button class="btn-bm" @onclick="@(() => _page = _page > 1 ? _page - 1 : 1)">Previous page</button>
+    </div>
+
+    <CodeSnippet Code="@_switchCode" />
+</div>
+
+<style>
+    /* Exit targets move content past the edge of its stage; clipping keeps the departure inside
+       the card instead of letting it slide across the page. */
+    .presence-stage { min-height: 12.5rem; position: relative; overflow: hidden; }
+
+    .list-stage {
+        gap: .5rem;
+        width: 100%;
+        min-width: 17.5rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .presence-row {
+        display: flex;
+        padding: .6rem 1rem;
+        border-radius: 8px;
+        align-items: center;
+        color: var(--bm-text);
+        justify-content: space-between;
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .row-remove {
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        background: none;
+        color: var(--bm-secondary);
+    }
+
+    /* position: relative is what anchors the popped (absolute) chips; without it they would
+       fall back to the nearest positioned ancestor and jump across the page. */
+    .chip-stage {
+        gap: .5rem;
+        flex-wrap: wrap;
+        position: relative;
+        min-height: 7.5rem;
+        align-content: flex-start;
+        justify-content: flex-start;
+    }
+
+    .chip {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        padding: .35rem .9rem;
+        border-radius: 999px;
+        color: var(--bm-text);
+        background: color-mix(in srgb, var(--bm-secondary) 15%, transparent);
+        border: 1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);
+    }
+
+    .page-box { font-size: 2rem; }
+</style>
+
+@code {
+    private bool _visible = true;
+    private int _page = 1;
+    private int _nextId = 4;
+
+    private sealed record Item(int Id, string Label);
+
+    private readonly List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
+
+    void AddItem()
+    {
+        _items.Add(new(_nextId, $"Item {_nextId}"));
+        _nextId++;
+    }
+
+    private static readonly string[] _allChips = ["Springs", "Gestures", "Drag", "Layout", "Variants", "Keyframes"];
+
+    private List<string> _chips = [.. _allChips];
+
+    void ResetChips() => _chips = [.. _allChips];
 
     private const string _presenceCode = """
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .demo-section { margin-bottom: 3rem; }
-            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-card: #F5F5F5; --bm-border: #E0E0E0; }
             .demo-card {
                 background: var(--bm-card); border: 1px solid var(--bm-border);
-                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
+                border-radius: 12px; padding: 2rem; min-height: 200px;
                 display: flex; align-items: center; justify-content: center;
+                position: relative; overflow: hidden;   /* keep the exit inside the card */
             }
             .box {
                 width: 80px; height: 80px; border-radius: 10px;
@@ -212,26 +239,21 @@
             }
         </style>
 
-        <div class="demo-section">
-            <h2>AnimatePresence</h2>
-
-            <div class="demo-row">
-                <div class="demo-card" style="min-height:200px; position:relative; overflow:hidden;">
-                    <BmotionAnimatePresence IsPresent="@_visible">
-                        <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
-                                Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
-                                Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
-                                Transition="Bm.Spring(stiffness: 220, damping: 18)">
-                            <div class="box" />
-                        </Bmotion>
-                    </BmotionAnimatePresence>
-                </div>
-            </div>
-
-            <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _visible = !_visible)">
-                @(_visible ? "Remove" : "Add")
-            </button>
+        <div class="demo-card">
+            @* The child stays rendered until its Exit target lands, then is removed. *@
+            <BmotionAnimatePresence IsPresent="@_visible">
+                <Bmotion Initial="Bm.To(opacity: 0, y: 40, scale: 0.8)"
+                         Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                         Exit="Bm.To(opacity: 0, y: -40, scale: 0.8)"
+                         Transition="Bm.Spring(stiffness: 220, damping: 18)">
+                    <div class="box" />
+                </Bmotion>
+            </BmotionAnimatePresence>
         </div>
+
+        <button class="btn-bm" @onclick="@(() => _visible = !_visible)">
+            @(_visible ? "Remove" : "Add")
+        </button>
 
         @code {
             private bool _visible = true;
@@ -242,45 +264,30 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .demo-section { margin-bottom: 3rem; }
-            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
-            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
-            .demo-card {
-                background: var(--bm-card); border: 1px solid var(--bm-border);
-                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
-                display: flex; align-items: center; justify-content: center;
-            }
-            .btn-bm {
-                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
-                padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
+            :root { --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
+            .list { display: flex; flex-direction: column; gap: .5rem; }
+            .row {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: .6rem 1rem; border-radius: 8px;
+                background: var(--bm-accent-soft); border: 1px solid var(--bm-accent-line);
             }
         </style>
 
-        <div class="demo-section">
-            <h2>Presence Group (keyed lists)</h2>
-            <p>Removed items exit, added items enter - just mutate the list.</p>
-
-            <div class="demo-row">
-                <div class="demo-card" style="flex-direction:column;gap:.5rem;align-items:stretch;width:100%;min-width:280px;">
-                    <BmotionPresenceGroup Items="_items" ItemKey="@(i => i.Id)" Context="item">
-                        <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
-                                Animate="Bm.To(opacity: 1, x: 0)"
-                                Exit="Bm.To(opacity: 0, x: 30)"
-                                Transition="Bm.Spring(stiffness: 300, damping: 25)">
-                            <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:8px;padding:.6rem 1rem;">
-                                <span>@item.Label</span>
-                                <button style="background:none;border:none;color:var(--bm-secondary);cursor:pointer;font-size:1.1rem"
-                                        aria-label="@($"Remove {item.Label}")"
-                                        @onclick="@(() => _items.Remove(item))">✕</button>
-                            </div>
-                        </Bmotion>
-                    </BmotionPresenceGroup>
-                </div>
-            </div>
-
-            <button class="btn-bm" style="margin-top:1rem" @onclick="AddItem">Add item</button>
+        <div class="list">
+            @* Keyed by Id: removals exit, additions enter, and an item put back mid-exit
+               cancels its exit instead of restarting. *@
+            <BmotionPresenceGroup Items="_items" ItemKey="@(i => i.Id)" Context="item">
+                <Bmotion Initial="Bm.To(opacity: 0, x: -30)"
+                         Animate="Bm.To(opacity: 1, x: 0)"
+                         Exit="Bm.To(opacity: 0, x: 30)"
+                         Transition="Bm.Spring(stiffness: 300, damping: 25)">
+                    <div class="row">
+                        <span>@item.Label</span>
+                        <button aria-label="@($"Remove {item.Label}")"
+                                @onclick="@(() => _items.Remove(item))">✕</button>
+                    </div>
+                </Bmotion>
+            </BmotionPresenceGroup>
         </div>
 
         @code {
@@ -288,9 +295,67 @@
 
             private sealed record Item(int Id, string Label);
 
-            private List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
+            private readonly List<Item> _items = [new(1, "Item One"), new(2, "Item Two"), new(3, "Item Three")];
 
-            void AddItem() => _items.Add(new(_nextId++, $"Item {_nextId - 1}"));
+            void AddItem()
+            {
+                _items.Add(new(_nextId, $"Item {_nextId}"));
+                _nextId++;
+            }
+        }
+        """;
+
+    private const string _popLayoutCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-secondary: #FD7F36; }
+            .chip-row { position: relative; display: flex; flex-wrap: wrap; gap: .5rem; }
+            .chip {
+                background: color-mix(in srgb, var(--bm-secondary) 15%, transparent);
+                border: 1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);
+                border-radius: 999px; padding: .35rem .9rem; cursor: pointer;
+                user-select: none; white-space: nowrap;
+            }
+        </style>
+
+        <div class="chip-row">   @* position: relative anchors the popped (absolute) items *@
+            @* PopLayout pulls the exiting chip out of the flow so the row closes up at once
+               instead of waiting for the animation to finish. *@
+            <BmotionPresenceGroup Items="_chips" Mode="BmPresenceMode.PopLayout" Context="chip">
+                <Bmotion Initial="Bm.To(opacity: 0, scale: 0.6)"
+                         Animate="Bm.To(opacity: 1, scale: 1)"
+                         Exit="Bm.To(opacity: 0, scale: 0.6)"
+                         Transition="Bm.Spring(stiffness: 350, damping: 26)"
+                         OnTap="@(() => _chips.Remove(chip))">
+                    <div class="chip">@chip ✕</div>
+                </Bmotion>
+            </BmotionPresenceGroup>
+        </div>
+
+        @code {
+            private List<string> _chips = ["Springs", "Gestures", "Drag", "Layout"];
+        }
+        """;
+
+    private const string _switchCode = """
+        @using Bit.Bmotion
+
+        @* Content is replaced rather than added/removed: the outgoing subtree keeps
+           rendering the OLD item while it exits, because the body is a template of the item. *@
+        <BmotionPresenceSwitch Item="_page" Context="pageNumber">
+            <Bmotion Initial="Bm.To(opacity: 0, x: 60)"
+                     Animate="Bm.To(opacity: 1, x: 0)"
+                     Exit="Bm.To(opacity: 0, x: -60)"
+                     Transition="Bm.Tween(0.25, BmEase.InOut)">
+                <div>Page @pageNumber</div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+
+        <button @onclick="@(() => _page++)">Next page</button>
+
+        @code {
+            private int _page = 1;   // Mode defaults to Wait; Sync overlaps exit and enter
         }
         """;
 }

@@ -1,27 +1,39 @@
-﻿@page "/view-transitions"
+@page "/view-transitions"
 @inject BmotionViewTransition ViewTransition
 
 <PageTitle>View transitions - Bit.Bmotion</PageTitle>
 
-<h1>View Transitions</h1>
+<h1>View transitions</h1>
+
+<p class="page-intro">
+    <code>LayoutId</code> animates elements that exist on both sides of a change. The browser's
+    native <strong>View Transitions API</strong> handles the case where they do not: it snapshots
+    the page before and after, then cross-fades the two. That makes it the right tool when a change
+    is wholesale - a whole panel replaced, a route swapped - and <code>LayoutId</code> the right
+    tool when one specific thing moves.
+</p>
 
 <div class="demo-section">
-    <h2>Native View Transitions API</h2>
+    <h2>Wrapping a state change</h2>
     <p>
-        <strong>BmotionViewTransition</strong> wraps <code>document.startViewTransition</code> around a
-        Blazor state change - the browser snapshots before/after and cross-fades. It's the
-        standards-based complement to <code>LayoutId</code> FLIP, and degrades gracefully (the state
-        change just applies without a transition) where the API isn't supported.
+        <strong>BmotionViewTransition.StartAsync</strong> puts
+        <code>document.startViewTransition</code> around a Blazor state change: your callback
+        mutates state and calls <code>StateHasChanged</code>, and the browser handles the rest.
+        Elements that carry a <code>view-transition-name</code> get their own snapshot pair and can
+        be animated individually in CSS. Where the API is unsupported the state change simply
+        applies without a transition - there is no fallback to write.
     </p>
 
-    <div class="tab-bar">
+    <div class="tab-bar" role="tablist">
         @foreach (var t in _tabs)
         {
-            <button class="tab @(t == _active ? "active" : "")" @onclick="@(() => SwitchAsync(t))">@t</button>
+            <button type="button" class="tab @(t == _active ? "active" : null)"
+                    role="tab" aria-selected="@(t == _active)"
+                    @onclick="@(() => SwitchAsync(t))">@t</button>
         }
     </div>
 
-    <div class="panel" style="view-transition-name: vt-panel">
+    <div class="panel">
         <h3>@_active</h3>
         <p>@_copy[_active]</p>
     </div>
@@ -29,12 +41,59 @@
     <CodeSnippet Code="@_code" />
 </div>
 
+<div class="demo-section">
+    <h2>Choosing between the two</h2>
+    <p>
+        They are complements, not competitors, and they can run in the same app on the same screen.
+    </p>
+    <ul class="feature-list">
+        <li>
+            <strong>LayoutId (FLIP)</strong> - one element persists across the change and you want
+            it to travel. Runs in C#, works in every browser Blazor does, and is interruptible
+            mid-flight.
+        </li>
+        <li>
+            <strong>View transitions</strong> - the content is replaced wholesale and a cross-fade
+            is the honest description of what happened. Costs almost no code, but the animation is
+            the browser's and only runs where the API exists.
+        </li>
+    </ul>
+</div>
+
 <style>
     .tab-bar { display: flex; gap: .5rem; margin-bottom: 1rem; }
-    .tab { background: var(--bm-track); color: var(--bm-muted); border: none; border-radius: 8px; padding: .5rem 1rem; cursor: pointer; }
+
+    .tab {
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: .875rem;
+        font-family: inherit;
+        padding: .5rem 1rem;
+        border-radius: var(--bm-radius);
+        color: var(--bm-muted);
+        background: var(--bm-track);
+    }
+
     .tab.active { background: var(--bm-primary); color: var(--bm-primary-text); }
-    .panel { background: var(--bm-card); border: 1px solid var(--bm-border); border-radius: 12px; padding: 2rem; min-height: 120px; }
-    ::view-transition-old(vt-panel), ::view-transition-new(vt-panel) { animation-duration: .4s; }
+
+    .tab:focus-visible { outline: 2px solid var(--bm-primary); outline-offset: 2px; }
+
+    .panel {
+        padding: 2rem;
+        min-height: 7.5rem;
+        border-radius: 12px;
+        background: var(--bm-card);
+        border: 1px solid var(--bm-border);
+        /* Naming the element gives it its own snapshot pair, which is what the rule below
+           can then target independently of the rest of the page. */
+        view-transition-name: vt-panel;
+    }
+
+    ::view-transition-old(vt-panel),
+    ::view-transition-new(vt-panel) { animation-duration: .4s; }
+
+    .feature-list { line-height: 1.9; color: var(--bm-muted); }
 </style>
 
 @code {
@@ -43,9 +102,9 @@
 
     private readonly Dictionary<string, string> _copy = new()
     {
-        ["Overview"] = "A high-level tour. Switching tabs cross-fades this panel via the native View Transitions API.",
-        ["Features"] = "Independent transforms, springs, drag, layout FLIP, motion values and more.",
-        ["Pricing"] = "Free and open-source. Bring your own creativity.",
+        ["Overview"] = "A high-level tour. Switching tabs cross-fades this panel via the native View Transitions API - the panel is replaced outright, so there is no element for a FLIP to follow.",
+        ["Features"] = "Independent transforms, springs, drag, layout FLIP, motion values and more - all of it C#, none of it requiring a JavaScript animation library.",
+        ["Pricing"] = "Free and open-source, under the MIT licence, as part of bit platform.",
     };
 
     private async Task SwitchAsync(string tab)
@@ -57,11 +116,21 @@
     private const string _code = """
         @inject BmotionViewTransition ViewTransition
 
-        <div class="panel" style="view-transition-name: vt-panel">@_active</div>
+        <style>
+            /* Naming an element gives it its own snapshot pair, which these pseudo-elements
+               can then target independently of the rest of the page. */
+            .panel { view-transition-name: vt-panel; }
+            ::view-transition-old(vt-panel),
+            ::view-transition-new(vt-panel) { animation-duration: .4s; }
+        </style>
+
+        <div class="panel">@_active</div>
 
         @code {
             private string _active = "Overview";
 
+            // The callback mutates state and re-renders; the browser snapshots either side of it.
+            // Unsupported browsers just apply the change - no fallback to write.
             private async Task SwitchAsync(string tab) =>
                 await ViewTransition.StartAsync(() => { _active = tab; StateHasChanged(); });
         }

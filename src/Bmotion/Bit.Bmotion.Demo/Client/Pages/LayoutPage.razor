@@ -1,56 +1,68 @@
-﻿@page "/layout"
+@page "/layout"
 
 <PageTitle>Layout animations - Bit.Bmotion</PageTitle>
 
-<h1>Layout Animations</h1>
+<h1>Layout animations</h1>
+
+<p class="page-intro">
+    Layout properties are the ones you cannot animate cheaply: change <code>justify-content</code>
+    or a width and the browser reflows, it does not tween. FLIP sidesteps that - measure where the
+    element was (<strong>F</strong>irst), let the real layout change happen (<strong>L</strong>ast),
+    <strong>I</strong>nvert the difference with a transform, then <strong>P</strong>lay it back to
+    zero. The result animates on the compositor while the DOM is already in its final state.
+    <code>Layout="true"</code> is the whole opt-in; Bmotion does the measuring.
+</p>
 
 <div class="demo-section">
-    <h2>Layout Animations (FLIP)</h2>
+    <h2>Animating a reflow</h2>
     <p>
-        Add <strong>Layout="true"</strong> to any Bmotion element. Whenever the component
-        re-renders and changes position or size, a FLIP animation plays automatically.
+        Add <strong>Layout="true"</strong> to any Bmotion element and every re-render that moves or
+        resizes it plays a FLIP. Nothing below animates a property directly: the buttons change the
+        list order and the container's <code>justify-content</code>, and the boxes work out the rest
+        for themselves.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column;gap:1rem;align-items:stretch;">
-            <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
+        <div class="demo-card layout-stage">
+            <div class="layout-strip" style="@($"justify-content:{_justifyContent}")">
                 @foreach (var item in _items)
                 {
                     <Bmotion @key="@item.Label"
                             Layout="true"
                             Transition="Bm.Spring(stiffness: 500, damping: 35)">
-                        <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
-                            @item.Label
-                        </div>
+                        <div class="@($"layout-tile tone-{item.Tone}")">@item.Label</div>
                     </Bmotion>
                 }
             </div>
         </div>
     </div>
 
-    <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+    <div class="demo-actions">
         <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
-        <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
+        <button class="btn-bm" @onclick="ToggleLayout">Justify: @_justifyContent</button>
     </div>
 
     <CodeSnippet Code="@_layoutCode" />
 </div>
 
 <div class="demo-section">
-    <h2>Shared-Element Transitions (LayoutId)</h2>
+    <h2>Shared elements</h2>
     <p>
-        Give elements the same <strong>LayoutId</strong> and when one unmounts and another mounts,
-        the new one animates (FLIP) from where the old one was - the classic tab-underline idiom.
-        Set <c>Layout="BmLayout.Position"</c> to animate position only and avoid scale distortion.
+        <strong>LayoutId</strong> connects elements <em>across</em> mounts. When one unmounts and
+        another mounts carrying the same id, the new one FLIPs from where the old one was - so a
+        single underline appears to slide between tabs even though each tab renders its own.
+        <code>Layout="BmLayout.Position"</code> animates position without scaling, which is what
+        you want on anything containing text. Wrap independent groups in
+        <code>&lt;BmotionLayoutGroup Name="…"&gt;</code> to keep their ids from colliding.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="align-items:flex-start;">
-            <div style="display:flex;gap:1.5rem;">
+        <div class="demo-card tab-stage">
+            <div class="tab-strip" role="tablist">
                 @foreach (var tab in _tabs)
                 {
                     var t = tab;
-                    <div style="position:relative;padding-bottom:6px;cursor:pointer;font-weight:600;color:@(t == _activeTab ? "#fff" : "#888")"
+                    <div class="tab @(t == _activeTab ? "active" : null)"
                          role="tab" tabindex="0" aria-selected="@(t == _activeTab)"
                          @onclick="@(() => _activeTab = t)"
                          @onkeydown="@(e => { if (e.Key is "Enter" or " ") _activeTab = t; })">
@@ -60,7 +72,7 @@
                             <Bmotion LayoutId="tab-underline"
                                     Layout="BmLayout.Position"
                                     Transition="Bm.Tween(0.3, BmEase.InOut)">
-                                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--bm-primary),var(--bm-secondary));" />
+                                <div class="tab-underline" />
                             </Bmotion>
                         }
                     </div>
@@ -73,16 +85,17 @@
 </div>
 
 <div class="demo-section">
-    <h2>Size correction - no distortion</h2>
+    <h2>Size correction</h2>
     <p>
-        With <strong>Layout="true"</strong>, a resizing box scales for a smooth 60fps FLIP, but its
-        text and child elements are <strong>counter-scaled</strong> and the <strong>border-radius is
-        corrected</strong> each frame - so nothing stretches and the corners stay round (Motion's
-        headline layout feature). Toggle the size and watch the label and inner dot stay crisp.
+        Animating a box's size by scaling it is fast but wrong: the text inside stretches and the
+        corners go oval. With <strong>Layout="true"</strong> Bmotion still scales - that is what
+        keeps it on the compositor - but <strong>counter-scales the children</strong> and
+        <strong>corrects the border-radius</strong> every frame, so the label and the inner dot stay
+        the size and shape they were. Grow the card and watch what does <em>not</em> distort.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="min-height:220px;">
+        <div class="demo-card resize-stage">
             <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
                 <div class="@(_big ? "resize-card big" : "resize-card")">
                     <span class="resize-label">Layout</span>
@@ -92,80 +105,99 @@
         </div>
     </div>
 
-    <button class="btn-bm" style="margin-top:1rem" @onclick="@(() => _big = !_big)">
-        @(_big ? "Shrink" : "Grow")
-    </button>
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _big = !_big)">@(_big ? "Shrink" : "Grow")</button>
+    </div>
 
     <CodeSnippet Code="@_sizeCode" />
 </div>
 
 <style>
-    .resize-card {
-        width: 120px; height: 120px; border-radius: 20px;
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
+    .layout-stage { align-items: stretch; }
+
+    .layout-strip { display: flex; gap: .75rem; flex-wrap: wrap; width: 100%; }
+
+    .layout-tile {
+        width: 3.75rem;
+        height: 3.75rem;
+        display: flex;
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.1rem;
+        border-radius: 8px;
+        align-items: center;
+        justify-content: center;
     }
-    .resize-card.big { width: 260px; height: 180px; }
+
+    /* Five distinguishable tiles drawn from the theme's own two accents rather than five
+       unrelated hexes, so the set still reads as one palette in either theme. */
+    .tone-0 { background: var(--bm-primary); }
+    .tone-1 { background: color-mix(in srgb, var(--bm-primary) 60%, var(--bm-secondary)); }
+    .tone-2 { background: var(--bm-secondary); }
+    .tone-3 { background: color-mix(in srgb, var(--bm-primary) 75%, #000 25%); }
+    .tone-4 { background: color-mix(in srgb, var(--bm-secondary) 70%, #000 30%); }
+
+    .tab-stage { align-items: flex-start; }
+
+    .tab-strip { display: flex; gap: 1.5rem; }
+
+    /* position: relative is what the shared underline FLIPs against - it is absolutely placed
+       inside whichever tab is active. */
+    .tab {
+        cursor: pointer;
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 6px;
+        color: var(--bm-muted);
+    }
+
+    .tab.active { color: var(--bm-text); }
+
+    .tab:focus-visible { outline: 2px solid var(--bm-primary); outline-offset: 4px; }
+
+    .tab-underline {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 3px;
+        position: absolute;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    .resize-stage { min-height: 13.75rem; }
+
+    .resize-card {
+        gap: .6rem;
+        width: 7.5rem;
+        height: 7.5rem;
+        display: flex;
+        border-radius: 20px;
+        align-items: center;
+        flex-direction: column;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    .resize-card.big { width: 16.25rem; height: 11.25rem; }
+
     .resize-label { font-weight: 800; font-size: 1.3rem; color: #fff; }
-    .resize-dot { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.85); }
+
+    .resize-dot { width: 2.125rem; height: 2.125rem; border-radius: 50%; background: rgba(255, 255, 255, .85); }
 </style>
 
 @code {
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
     private string _activeTab = "Home";
     private bool _big;
-
-    private const string _sizeCode = """
-        @* Layout="true" scales for a smooth FLIP; children counter-scale + border-radius is
-           corrected automatically so text/corners don't distort. *@
-        <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
-            <div class="@(_big ? "resize-card big" : "resize-card")">
-                <span class="resize-label">Layout</span>
-                <div class="resize-dot" />
-            </div>
-        </Bmotion>
-        """;
-
-    private const string _layoutIdCode = """
-        @foreach (var tab in _tabs)
-        {
-            var t = tab;
-            <div style="position:relative;cursor:pointer" @onclick="@(() => _activeTab = t)">
-                @t
-                @if (t == _activeTab)
-                {
-                    @* Mounts under the newly selected tab and FLIPs from the old tab's position;
-                       Layout="BmLayout.Position" animates position only (no scale distortion) *@
-                    <Bmotion LayoutId="tab-underline"
-                             Layout="BmLayout.Position"
-                             Transition="Bm.Tween(0.3, BmEase.InOut)">
-                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--bm-primary);" />
-                    </Bmotion>
-                }
-            </div>
-        }
-
-        @* Reuse the same id in independent groups by namespacing it: *@
-        <BmotionLayoutGroup Name="sidebar">
-            ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
-        </BmotionLayoutGroup>
-        """;
-}
-
-@code {
     private string _justifyContent = "flex-start";
 
-    private record ColoredItem(string Label, string Color);
+    /// <summary>A shuffled tile: its label and which of the palette's five tones it wears.</summary>
+    private record ColoredItem(string Label, int Tone);
 
-    private List<ColoredItem> _items = [
-        new("A", "#6c47ff"),
-        new("B", "#ff4785"),
-        new("C", "#00c3ff"),
-        new("D", "#ffd447"),
-        new("E", "#44ff90"),
-    ];
+    private List<ColoredItem> _items = [new("A", 0), new("B", 1), new("C", 2), new("D", 3), new("E", 4)];
 
-    void Shuffle() => _items = [.._items.OrderBy(_ => Random.Shared.Next())];
+    void Shuffle() => _items = [.. _items.OrderBy(_ => Random.Shared.Next())];
 
     void ToggleLayout() => _justifyContent = _justifyContent switch
     {
@@ -178,14 +210,11 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
-            .demo-section { margin-bottom: 3rem; }
-            .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
-            .demo-card {
-                background: var(--bm-card); border: 1px solid var(--bm-border);
-                border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
-                display: flex; align-items: center; justify-content: center;
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-card: #F5F5F5; --bm-border: #E0E0E0; }
+            .strip { display: flex; gap: .75rem; flex-wrap: wrap; width: 100%; }
+            .tile {
+                width: 60px; height: 60px; border-radius: 8px; color: #fff;
+                display: flex; align-items: center; justify-content: center; font-weight: 700;
             }
             .btn-bm {
                 background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
@@ -193,31 +222,21 @@
             }
         </style>
 
-        <div class="demo-section">
-            <h2>Layout Animations (FLIP)</h2>
-
-            <div class="demo-row">
-                <div class="demo-card" style="flex-direction:column;gap:1rem;align-items:stretch;">
-                    <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:@(_justifyContent);">
-                        @foreach (var item in _items)
-                        {
-                            <Bmotion @key="@item.Label"
-                                    Layout="true"
-                                    Transition="Bm.Spring(stiffness: 500, damping: 35)">
-                                <div style="@($"width:60px;height:60px;border-radius:8px;background:{item.Color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;")">
-                                    @item.Label
-                                </div>
-                            </Bmotion>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top:1rem;display:flex;gap:.75rem;flex-wrap:wrap;">
-                <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
-                <button class="btn-bm" @onclick="ToggleLayout">Toggle justify (@_justifyContent)</button>
-            </div>
+        @* Nothing here animates a property. The buttons change the ORDER and the container's
+           justify-content; each tile measures the difference and FLIPs into place. @key is
+           what lets Blazor move a tile instead of rewriting it. *@
+        <div class="strip" style="@($"justify-content:{_justifyContent}")">
+            @foreach (var item in _items)
+            {
+                <Bmotion @key="@item.Label" Layout="true"
+                         Transition="Bm.Spring(stiffness: 500, damping: 35)">
+                    <div class="tile" style="@($"background:{item.Color}")">@item.Label</div>
+                </Bmotion>
+            }
         </div>
+
+        <button class="btn-bm" @onclick="Shuffle">Shuffle</button>
+        <button class="btn-bm" @onclick="ToggleLayout">Justify: @_justifyContent</button>
 
         @code {
             private string _justifyContent = "flex-start";
@@ -225,14 +244,11 @@
             private record ColoredItem(string Label, string Color);
 
             private List<ColoredItem> _items = [
-                new("A", "#6c47ff"),
-                new("B", "#ff4785"),
-                new("C", "#00c3ff"),
-                new("D", "#ffd447"),
-                new("E", "#44ff90"),
+                new("A", "#1276C6"), new("B", "#4A83B8"), new("C", "#FD7F36"),
+                new("D", "#0E5895"), new("E", "#B25926"),
             ];
 
-            void Shuffle() => _items = [.._items.OrderBy(_ => Random.Shared.Next())];
+            void Shuffle() => _items = [.. _items.OrderBy(_ => Random.Shared.Next())];
 
             void ToggleLayout() => _justifyContent = _justifyContent switch
             {
@@ -240,6 +256,66 @@
                 "center"     => "flex-end",
                 _            => "flex-start"
             };
+        }
+        """;
+
+    private const string _layoutIdCode = """
+        @using Bit.Bmotion
+
+        @* Each tab renders its OWN underline - but they share a LayoutId, so the one that
+           mounts FLIPs from where the one that unmounted was. The illusion is a single
+           underline sliding across. *@
+        @foreach (var tab in _tabs)
+        {
+            var t = tab;
+            <div class="tab" style="position:relative" @onclick="@(() => _activeTab = t)">
+                @t
+                @if (t == _activeTab)
+                {
+                    @* Position only: scaling an underline between tabs of different widths
+                       would squash it. *@
+                    <Bmotion LayoutId="tab-underline"
+                             Layout="BmLayout.Position"
+                             Transition="Bm.Tween(0.3, BmEase.InOut)">
+                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#1276C6" />
+                    </Bmotion>
+                }
+            </div>
+        }
+
+        @* Reuse the same id in independent groups by namespacing it: *@
+        <BmotionLayoutGroup Name="sidebar">
+            ... <Bmotion LayoutId="tab-underline"><div /></Bmotion> ...
+        </BmotionLayoutGroup>
+        """;
+
+    private const string _sizeCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-primary: #1276C6; --bm-secondary: #FD7F36; }
+            .resize-card {
+                width: 120px; height: 120px; border-radius: 20px; gap: .6rem;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+            }
+            .resize-card.big { width: 260px; height: 180px; }
+            .resize-label { font-weight: 800; font-size: 1.3rem; color: #fff; }
+            .resize-dot { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.85); }
+        </style>
+
+        @* The box scales - that is what keeps the animation on the compositor - but the
+           children are counter-scaled and the border-radius is corrected each frame, so the
+           label and the dot never distort and the corners stay round. *@
+        <Bmotion Layout="true" Transition="Bm.Spring(stiffness: 350, damping: 30)">
+            <div class="@(_big ? "resize-card big" : "resize-card")">
+                <span class="resize-label">Layout</span>
+                <div class="resize-dot" />
+            </div>
+        </Bmotion>
+
+        @code {
+            private bool _big;
         }
         """;
 }
