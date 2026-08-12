@@ -21,7 +21,10 @@
     <title>bit Bswup - Blazor Service Worker Update Progress</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps." />
-    <meta name="theme-color" content="#0F1318" />
+    @* One tag per scheme, matching --bit-clr-bg-pri in each theme block of app.css. A single
+       fixed value would paint the browser chrome dark behind a light page. *@
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
     <link href="manifest.json" rel="manifest" />
     <link rel="icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />

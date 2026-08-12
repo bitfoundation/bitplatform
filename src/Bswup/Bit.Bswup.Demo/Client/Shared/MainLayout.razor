@@ -18,7 +18,10 @@
             @* No nav rail on the home page, so nothing for the drawer button to open either. *@
             @if (_isHomePage is false)
             {
-                <button type="button" class="menu-btn" aria-label="Header menu button" data-demo-action="toggle-nav-panel">
+                @* aria-expanded starts false and is kept in sync by demo.js, which owns the
+                   open/closed state (a body class) - the drawer is never open on first render. *@
+                <button type="button" class="menu-btn" aria-label="Header menu button"
+                        aria-controls="nav-panel" aria-expanded="false" data-demo-action="toggle-nav-panel">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                         <path d="M3 6h18M3 12h18M3 18h18" />
                     </svg>
@@ -58,7 +61,7 @@
        rail, the way the BlazorUI demo's own home page does. *@
     @if (_isHomePage is false)
     {
-        <aside class="nav-panel">
+        <aside class="nav-panel" id="nav-panel">
             <NavMenu />
         </aside>
         <div class="nav-panel-backdrop" data-demo-action="close-nav-panel"></div>

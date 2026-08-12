@@ -79,10 +79,23 @@
 {
     OnPrepareResponse = ctx =>
     {
+        var path = ctx.Context.Request.Path.Value ?? string.Empty;
+        var headers = ctx.Context.Response.GetTypedHeaders();
+
+        // The worker scripts and any statically served shell must always revalidate,
+        // otherwise a stale copy keeps serving the old app for up to a week.
+        if (path.EndsWith(""service-worker.js"", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(""bit-bswup.sw.js"", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith("".html"", StringComparison.OrdinalIgnoreCase))
+        {
+            headers.CacheControl = new() { NoCache = true };
+            return;
+        }
+
         if (env.IsDevelopment() is false)
         {
             // https://bitplatform.dev/templates/cache-mechanism
-            ctx.Context.Response.GetTypedHeaders().CacheControl = new()
+            headers.CacheControl = new()
             {
                 MaxAge = TimeSpan.FromDays(7),
                 Public = true

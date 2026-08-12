@@ -2,8 +2,9 @@
    links, reproduced in plain markup because this site takes no dependency on Bit.BlazorUI.
 
    Clicking any link also closes the mobile drawer; on desktop the class toggle is a no-op.
-   Wired via data-demo-action (see the delegated listener in demo.js) - no inline onclick, so
-   the site works under a strict Content-Security-Policy.
+   That is the delegated listener in demo.js matching the links themselves - no attribute on
+   the list, so a click on a group header or on the padding between items leaves the drawer
+   alone - and no inline onclick, so the site works under a strict Content-Security-Policy.
 
    Each link sits in a .nav-item wrapper because the search filter in demo.js hides entries by
    toggling a class on them: the wrapper's class is rendered once and never re-rendered, while
@@ -19,7 +20,7 @@
                data-demo-nav-search />
     </div>
 
-    <div class="nav-list" data-demo-action="close-nav-panel">
+    <div class="nav-list">
         <div class="nav-group">Overview</div>
         <div class="nav-item"><NavLink href="" Match="NavLinkMatch.All">Introduction</NavLink></div>
         <div class="nav-item"><NavLink href="getting-started">Getting Started</NavLink></div>
@@ -41,6 +42,9 @@
         <div class="nav-item"><NavLink href="cleanup">Backing Out of Bswup</NavLink></div>
         <div class="nav-item"><NavLink href="migration">Migrating to 10-6-0</NavLink></div>
 
-        <div class="nav-empty">No matching page.</div>
+        @* A live region: the filter shows and hides it from JavaScript, without a Blazor
+           re-render, so screen readers only learn the search came up empty if the element
+           announces the change itself. *@
+        <div class="nav-empty" role="status" aria-live="polite">No matching page.</div>
     </div>
 </nav>

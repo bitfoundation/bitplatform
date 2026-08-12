@@ -196,12 +196,25 @@
         try { localStorage.setItem('bswup-demo-theme', theme); } catch (err) { }
     }
 
+    // The drawer's open state lives in a body class (the stylesheet's only handle on it), so
+    // the button's aria-expanded has to be written from here to stay truthful. Re-read from
+    // the class rather than tracked separately, and re-applied from hydrate() as well, because
+    // Blazor re-renders the header on every client-side navigation and restores the attribute
+    // to the "false" the markup declares.
+    function syncNavPanelState() {
+        const open = document.body.classList.contains('nav-panel-open');
+        const btn = document.querySelector('.menu-btn');
+        if (btn) btn.setAttribute('aria-expanded', String(open));
+    }
+
     function toggleNavPanel() {
         document.body.classList.toggle('nav-panel-open');
+        syncNavPanelState();
     }
 
     function closeNavPanel() {
         document.body.classList.remove('nav-panel-open');
+        syncNavPanelState();
     }
 
     function goToTop() {
@@ -271,6 +284,7 @@
         const search = document.querySelector('[data-demo-nav-search]');
         if (search && search.value !== navQuery) search.value = navQuery;
         filterNav();
+        syncNavPanelState();
     }
 
     // Called once up front because the host prerenders on the server: on a direct load of
@@ -308,14 +322,25 @@
         const target = e.target instanceof Element ? e.target : null;
         if (!target) return;
 
-        // Any in-app link in the chrome dismisses the mobile drawer. The nav list carries a
-        // close-nav-panel action of its own; this also covers the header's links, which are
-        // reachable above the open drawer and would otherwise leave it open over the next page.
+        // Any in-app link in the chrome dismisses the mobile drawer: the nav panel's own links,
+        // and the header's, which are reachable above the open drawer and would otherwise leave
+        // it open over the next page.
         if (target.closest('.header a[href], .nav-panel a[href]')) closeNavPanel();
 
         const trigger = target.closest('[data-demo-action]');
         const action = trigger && actions[trigger.getAttribute('data-demo-action')];
         if (action) action(trigger);
+    });
+
+    // Escape dismisses the open drawer - it is a modal overlay on narrow screens (backdrop and
+    // all), and focus goes back to the button that opened it so keyboard users are not dropped
+    // at the top of the document.
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (!document.body.classList.contains('nav-panel-open')) return;
+        closeNavPanel();
+        const btn = document.querySelector('.menu-btn');
+        if (btn) btn.focus();
     });
 
     // Delegated for the same reason as the click handler: the search box is inside a Blazor
