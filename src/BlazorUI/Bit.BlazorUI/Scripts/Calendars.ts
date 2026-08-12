@@ -7,7 +7,7 @@ namespace BitBlazorUI {
         // The cells of every calendar grid that navigates with the keyboard: the day buttons of the
         // standalone BitCalendar and of the day picker inside the callout of a BitDatePicker, plus the
         // month and year buttons of that same callout.
-        private static _cells = '.bit-cal-dbt, .bit-dtp-dbt, .bit-dtp-pkb';
+        private static _cells = '.bit-cal-dbt, .bit-dtp-dbt, .bit-dtp-pkb, .bit-dtrp-dbt';
 
         // Everything that can hold the focus inside a calendar. The roving tabindex of the grids takes
         // every cell but one out of the tab sequence, which is why tabindex="-1" is excluded here.
@@ -32,6 +32,7 @@ namespace BitBlazorUI {
                 if (Calendars._navKeys.indexOf(e.key) === -1) return;
 
                 const target = e.target as HTMLElement | null;
+
                 if (!target || !target.closest(Calendars._cells)) return;
 
                 e.preventDefault();

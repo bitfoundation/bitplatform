@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
@@ -11,8 +11,12 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker />
 <BitDateRangePicker Label=""Custom Icon"" IconName=""@BitIconName.Airplane"" />
+<BitDateRangePicker Label=""Left icon"" IconLocation=""BitIconLocation.Left"" />
+<BitDateRangePicker Label=""Underlined"" Underlined />
+<BitDateRangePicker Label=""Without border"" HasBorder=""false"" />
 <BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
-<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton />
+<BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton ClearButtonTitle=""Clear the dates"" />
+<BitDateRangePicker Label=""Hidden month picker"" IsMonthPickerVisible=""false"" />
 <BitDateRangePicker Label=""StartingValue: December 2020, Start Time: 10:12, End Time: 16:59"" ShowTimePicker StartingValue=""startingValue"" />";
     private readonly string example1CsharpCode = @"
 private BitDateRangePickerValue? startingValue = new()
@@ -22,12 +26,129 @@ private BitDateRangePickerValue? startingValue = new()
 };";
 
     private readonly string example2RazorCode = @"
+<BitDateRangePicker Label=""Common ranges"" Presets=""presets"" @bind-Value=""presetsValue""
+                    OnPresetSelect=""@(preset => lastSelectedPreset = preset.Text)"" />
+<div>Selected: <b>@(presetsValue?.StartDate?.ToString(""d"") ?? ""-"") → @(presetsValue?.EndDate?.ToString(""d"") ?? ""-"")</b></div>
+<div>Last selected preset: <b>@(lastSelectedPreset ?? ""-"")</b></div>
+
+<BitDateRangePicker Label=""Presets in standalone mode"" Presets=""presets"" Standalone />";
+    private readonly string example2CsharpCode = @"
+private string? lastSelectedPreset;
+private BitDateRangePickerValue? presetsValue;
+
+private readonly BitDateRangePickerPreset[] presets =
+[
+    new()
+    {
+        Text = ""Today"",
+        ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date, EndDate = DateTimeOffset.Now.Date }
+    },
+    new()
+    {
+        Text = ""Yesterday"",
+        ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date.AddDays(-1), EndDate = DateTimeOffset.Now.Date.AddDays(-1) }
+    },
+    new()
+    {
+        Text = ""Last 7 days"",
+        ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date.AddDays(-6), EndDate = DateTimeOffset.Now.Date }
+    },
+    new()
+    {
+        Text = ""Last 30 days"",
+        ValueProvider = () => new() { StartDate = DateTimeOffset.Now.Date.AddDays(-29), EndDate = DateTimeOffset.Now.Date }
+    },
+    new()
+    {
+        Text = ""This month"",
+        ValueProvider = () =>
+        {
+            var now = DateTimeOffset.Now.Date;
+            var firstDay = new DateTime(now.Year, now.Month, 1);
+            return new() { StartDate = firstDay, EndDate = firstDay.AddMonths(1).AddDays(-1) };
+        }
+    },
+    new()
+    {
+        Text = ""Coming soon"",
+        IsEnabled = false,
+        Title = ""This preset is not available yet""
+    },
+];";
+
+    private readonly string example3RazorCode = @"
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
-<BitDateRangePicker MaxRange=""new TimeSpan(2, 4, 30, 0)"" ShowTimePicker />";
+<BitDateRangePicker MaxRange=""new TimeSpan(2, 4, 30, 0)"" ShowTimePicker />
+<BitDateRangePicker MinRange=""TimeSpan.FromDays(3)"" />
+<BitDateRangePicker MinRange=""TimeSpan.FromDays(2)"" MaxRange=""TimeSpan.FromDays(7)"" />";
 
-    private readonly string example3RazorCode = @"
+    private readonly string example4RazorCode = @"
+<BitDateRangePicker DisabledDaysOfWeek=""@([DayOfWeek.Saturday, DayOfWeek.Sunday])"" />
+
+<BitDateRangePicker DisabledDates=""disabledDates"" />
+
+<BitDateRangePicker IsDateDisabled=""@(date => date.Date < DateTimeOffset.Now.Date)"" />
+
+<BitDateRangePicker DisabledDates=""disabledDates"" ExcludeDisabledDates />";
+    private readonly string example4CsharpCode = @"
+private readonly DateTimeOffset[] disabledDates =
+[
+    DateTimeOffset.Now.AddDays(2),
+    DateTimeOffset.Now.AddDays(3),
+    DateTimeOffset.Now.AddDays(8),
+];";
+
+    private readonly string example5RazorCode = @"
+<style>
+    .custom-friday {
+        color: white;
+        background-color: blueviolet;
+    }
+</style>
+
+
+<BitDateRangePicker HighlightedDates=""highlightedDates"" />
+
+<BitDateRangePicker GetDayClass=""@(date => date.DayOfWeek == DayOfWeek.Friday ? ""custom-friday"" : null)"" />";
+    private readonly string example5CsharpCode = @"
+private readonly DateTimeOffset[] highlightedDates =
+[
+    DateTimeOffset.Now.AddDays(1),
+    DateTimeOffset.Now.AddDays(2),
+    DateTimeOffset.Now.AddDays(3),
+];";
+
+    private readonly string example6RazorCode = @"
+<BitDateRangePicker Label=""FirstDayOfWeek: Monday"" FirstDayOfWeek=""DayOfWeek.Monday"" />
+
+<BitDateRangePicker Label=""ShowOutsideDays: false"" ShowOutsideDays=""false"" />
+
+<BitDateRangePicker Label=""FixedWeeks (always six rows)"" FixedWeeks />
+
+<BitDateRangePicker Label=""WeekNumberRule: FirstFourDayWeek""
+                    ShowWeekNumbers
+                    FirstDayOfWeek=""DayOfWeek.Monday""
+                    WeekNumberRule=""System.Globalization.CalendarWeekRule.FirstFourDayWeek"" />
+
+<BitDateRangePicker Label=""Today: 2020/12/04"" Today=""new DateTimeOffset(2020, 12, 4, 0, 0, 0, DateTimeOffset.Now.Offset)"" />";
+
+    private readonly string example7RazorCode = @"
+<BitDateRangePicker Label=""Two months"" MonthCount=""2"" @bind-Value=""monthCountValue"" />
+<div>Selected: <b>@(monthCountValue?.StartDate?.ToString(""d"") ?? ""-"") → @(monthCountValue?.EndDate?.ToString(""d"") ?? ""-"")</b></div>
+
+<BitDateRangePicker Label=""Two months with presets"" MonthCount=""2"" Presets=""presets"" />
+
+<BitDateRangePicker Label=""Three months with week numbers"" MonthCount=""3"" ShowWeekNumbers />
+
+<BitDateRangePicker Label=""Two months with paged navigation"" MonthCount=""2"" PagedNavigation />
+
+<BitDateRangePicker Label=""Two months in standalone mode"" MonthCount=""2"" Standalone />";
+    private readonly string example7CsharpCode = @"
+private BitDateRangePickerValue? monthCountValue;";
+
+    private readonly string example8RazorCode = @"
 <BitDateRangePicker ShowTimePicker
                     Label=""HourStep = 2""
                     HourStep=""2"" />
@@ -36,22 +157,45 @@ private BitDateRangePickerValue? startingValue = new()
                     Label=""MinuteStep = 15""
                     MinuteStep=""15"" />";
 
-    private readonly string example4RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitDateRangePicker Label=""DateFormat: 'dd=MM(yy)'"" DateFormat=""dd=MM(yy)"" />
-<BitDateRangePicker Label=""ValueFormat: 'Dep: {0}, Arr: {1}'"" ValueFormat=""Dep: {0}, Arr: {1}"" />";
+<BitDateRangePicker Label=""ValueFormat: 'Dep: {0}, Arr: {1}'"" ValueFormat=""Dep: {0}, Arr: {1}"" />
+<BitDateRangePicker Label=""NoDateText: 'open ended'"" NoDateText=""open ended"" ValueFormat=""{0} - {1}"" />
+<BitDateRangePicker Label=""Default format with the time picker"" ShowTimePicker />";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example10RazorCode = @"
+<BitDateRangePicker Label=""Text input allowed""
+                    AllowTextInput
+                    DateFormat=""dd/MM/yyyy""
+                    ValueFormat=""{0} - {1}""
+                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+
+<BitDateRangePicker Label=""Custom invalid error message""
+                    AllowTextInput
+                    DateFormat=""dd/MM/yyyy""
+                    ValueFormat=""{0} - {1}""
+                    InvalidErrorMessage=""The entered date range is not valid.""
+                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />
+
+<BitDateRangePicker Label=""Text input with MaxRange: 7 days""
+                    AllowTextInput
+                    MaxRange=""TimeSpan.FromDays(7)""
+                    DateFormat=""dd/MM/yyyy""
+                    ValueFormat=""{0} - {1}""
+                    Placeholder=""dd/MM/yyyy - dd/MM/yyyy"" />";
+
+    private readonly string example11RazorCode = @"
 <BitDateRangePicker @bind-Value=""@selectedDateRange"" />
 <div>From: <b>@selectedDateRange?.StartDate.ToString()</b></div>
 <div>To: <b>@selectedDateRange?.EndDate.ToString()</b></div>";
-    private readonly string example5CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private BitDateRangePickerValue? selectedDateRange = new()
 {
     StartDate = new DateTimeOffset(2020, 1, 17, 0, 0, 0, DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(2020, 1, 25, 0, 0, 0, DateTimeOffset.Now.Offset)
 };";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitDateRangePicker Label=""fa-IR culture with Farsi names""
                     GoToTodayTitle=""برو به امروز""
                     ValueFormat=""شروع: {0}, پایان: {1}""
@@ -62,7 +206,7 @@ private BitDateRangePickerValue? selectedDateRange = new()
                     ValueFormat=""Shoro: {0}, Payan: {1}""
                     Culture=""CultureInfoHelper.GetFaIrCultureWithFingilishNames()"" />";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitDateRangePicker @bind-Value=""@timeZoneDateRange1"" ShowTimePicker />
 <div>Selected date range: from @(timeZoneDateRange1?.StartDate?.ToString() ?? ""-"") to @(timeZoneDateRange1?.EndDate?.ToString() ?? ""-"")</div>
 
@@ -80,30 +224,30 @@ private BitDateRangePickerValue? selectedDateRange = new()
     <BitDateRangePicker TimeZone=""timeZoneInfo"" @bind-Value=""@timeZoneDateRange2"" ShowTimePicker />
     <div>Selected date range: from @(timeZoneDateRange2?.StartDate?.ToString() ?? ""-"") to @(timeZoneDateRange2?.EndDate?.ToString() ?? ""-"")</div>
 }";
-    private readonly string example7CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private BitDateRangePickerValue? timeZoneDateRange1 = new();
 private BitDateRangePickerValue? timeZoneDateRange2 = new();";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitDateRangePicker Label=""Basic DatePicker"" Standalone />
 <BitDateRangePicker Label=""Disabled"" IsEnabled=""false"" Standalone />
 <BitDateRangePicker Label=""Week numbers"" ShowWeekNumbers Standalone />
 <BitDateRangePicker Label=""Highlight months"" HighlightCurrentMonth HighlightSelectedMonth Standalone />
 <BitDateRangePicker Label=""TimePicker"" ShowTimePicker Standalone />";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitDateRangePicker Label=""Basic"" ReadOnly @bind-Value=""readOnlyDateRange"" />
 <BitDateRangePicker Label=""Text input allowed"" ReadOnly AllowTextInput @bind-Value=""readOnlyDateRange"" />
 <BitDateRangePicker Label=""Standalone"" ReadOnly Standalone @bind-Value=""readOnlyDateRange"" />
 <BitDateRangePicker Label=""Standalone with TimePicker"" ReadOnly ShowTimePicker Standalone @bind-Value=""readOnlyDateRange"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private BitDateRangePickerValue? readOnlyDateRange = new()
 {
     StartDate = new DateTimeOffset(2024, 12, 8, 12, 15, 0, DateTimeOffset.Now.Offset),
     EndDate = new DateTimeOffset(2024, 12, 12, 16, 45, 0, DateTimeOffset.Now.Offset),
 };";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitDateRangePicker>
     <LabelTemplate>
         Custom label <BitIcon IconName=""@BitIconName.Calendar"" />
@@ -139,16 +283,77 @@ private BitDateRangePickerValue? readOnlyDateRange = new()
         </span>
     </YearCellTemplate>
 </BitDateRangePicker>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private CultureInfo culture = CultureInfo.CurrentUICulture;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitDateRangePicker Label=""Responsive DateRangePicker""
                     Responsive
                     ShowWeekNumbers
                     Placeholder=""Select a date range"" />";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example18RazorCode = @"
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitDateRangePicker @bind-Value=""validationModel.DateRange"" />
+
+    <ValidationMessage For=""@(() => validationModel.DateRange)"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+    <BitButton ButtonType=""BitButtonType.Reset"" Variant=""BitVariant.Outline""
+               OnClick=""() => { validationModel = new(); successMessage = string.Empty; }"">
+        Reset
+    </BitButton>
+</EditForm>
+
+@if (string.IsNullOrEmpty(successMessage) is false)
+{
+    <BitMessage Color=""BitColor.Success"">@successMessage</BitMessage>
+}";
+    private readonly string example18CsharpCode = @"
+public class FormValidationDateRangePickerModel
+{
+    [Required(ErrorMessage = ""The date range is required."")]
+    [CompleteDateRange(ErrorMessage = ""Both the start and the end dates are required."")]
+    public BitDateRangePickerValue? DateRange { get; set; }
+}
+
+// The end date of a BitDateRangePickerValue stays null while only the first date has been picked.
+public class CompleteDateRangeAttribute : ValidationAttribute
+{
+    public override bool IsValid(object? value)
+    {
+        if (value is not BitDateRangePickerValue range) return true;
+
+        return range.StartDate.HasValue && range.EndDate.HasValue;
+    }
+}
+
+private string successMessage = string.Empty;
+private FormValidationDateRangePickerModel validationModel = new();
+
+private void HandleValidSubmit()
+{
+    successMessage = ""Form Submitted Successfully!"";
+}
+
+private void HandleInvalidSubmit()
+{
+    successMessage = string.Empty;
+}";
+
+    private readonly string example19RazorCode = @"
+<BitDateRangePicker Label=""Primary"" Color=""BitColor.Primary"" ShowTimePicker />
+<BitDateRangePicker Label=""Secondary"" Color=""BitColor.Secondary"" />
+<BitDateRangePicker Label=""Tertiary"" Color=""BitColor.Tertiary"" />
+<BitDateRangePicker Label=""Info"" Color=""BitColor.Info"" />
+<BitDateRangePicker Label=""Success"" Color=""BitColor.Success"" />
+<BitDateRangePicker Label=""Warning"" Color=""BitColor.Warning"" />
+<BitDateRangePicker Label=""SevereWarning"" Color=""BitColor.SevereWarning"" />
+<BitDateRangePicker Label=""Error"" Color=""BitColor.Error"" />";
+
+    private readonly string example20RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDateRangePicker Label=""FontAwesome (string)"" Icon=""@(""fa-solid fa-calendar-days"")"" />
@@ -202,7 +407,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                    NextYearRangeNavIcon=""@BitIconInfo.Bi(""chevron-double-right"")""
                    GoToTodayIcon=""@BitIconInfo.Bi(""calendar-event"")"" />";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -304,6 +509,10 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
         background-color: violet;
     }
 
+    .custom-hovered-days {
+        background-color: #9726ff2e;
+    }
+
     .custom-week-header {
         color: white;
         margin: 0.15rem;
@@ -356,6 +565,7 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                                       Divider = ""border-color: mediumseagreen;"",
                                       DayPickerMonth = ""color: darkgreen;"",
                                       TodayDayButton = ""background-color: green;"",
+                                      HoveredDayButtons = ""background-color: #b4f5b47a;"",
                                       SelectedDayButtons = ""background-color: #36fa368c;"",
                                       EndTimeInputContainer = ""margin-top: 0.5rem;"",
                                       StartAndEndSelectionDays = ""background-color: limegreen;"",
@@ -381,15 +591,16 @@ private CultureInfo culture = CultureInfo.CurrentUICulture;";
                                        TodayDayButton = ""custom-today-day"",
                                        StartAndEndSelectionDays = ""custom-start-end"",
                                        SelectedDayButtons = ""custom-selected-days"",
+                                       HoveredDayButtons = ""custom-hovered-days"",
                                        PrevMonthNavButton = ""custom-prev-month"",
                                        NextMonthNavButton = ""custom-next-month"",
                                        DayPickerMonth = ""custom-day-month"",
                                        DayPickerHeader = ""custom-day-header"",
                                        WeekNumbersHeader = ""custom-week-header"",
                                        YearMonthPickerWrapper = ""custom-year-picker"" })"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private BitDateRangePickerValue? classesValue;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitDateRangePicker Dir=""BitDir.Rtl"" />";
 }
