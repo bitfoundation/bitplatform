@@ -60,7 +60,7 @@
                             <Bmotion LayoutId="tab-underline"
                                     Layout="BmLayout.Position"
                                     Transition="Bm.Tween(0.3, BmEase.InOut)">
-                                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,#6c47ff,#ff4785);" />
+                                <div style="position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--bm-primary),var(--bm-secondary));" />
                             </Bmotion>
                         }
                     </div>
@@ -102,7 +102,7 @@
 <style>
     .resize-card {
         width: 120px; height: 120px; border-radius: 20px;
-        background: linear-gradient(135deg, #6c47ff, #ff4785);
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem;
     }
     .resize-card.big { width: 260px; height: 180px; }
@@ -139,7 +139,7 @@
                     <Bmotion LayoutId="tab-underline"
                              Layout="BmLayout.Position"
                              Transition="Bm.Tween(0.3, BmEase.InOut)">
-                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#6c47ff;" />
+                        <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--bm-primary);" />
                     </Bmotion>
                 }
             </div>
@@ -178,16 +178,17 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
             .btn-bm {
-                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>

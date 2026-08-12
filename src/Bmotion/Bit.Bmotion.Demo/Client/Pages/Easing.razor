@@ -17,7 +17,7 @@
         @foreach (var e in _eases)
         {
             <div style="display:flex; align-items:center; gap:1rem;">
-                <span style="width:120px; font-size:.8rem; color:#888">@e</span>
+                <span style="width:120px; font-size:.8rem; color:var(--bm-muted)">@e</span>
                 <div style="flex:1; position:relative; height:32px;">
                     <Bmotion Animate="@(_on ? Bm.To(x: 240) : Bm.To(x: 0))"
                              Transition="Bm.Tween(0.9, e)">
@@ -46,7 +46,7 @@
         @foreach (var s in _steps)
         {
             <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                <span style="font-size:.78rem; color:#888">steps(6, @s)</span>
+                <span style="font-size:.78rem; color:var(--bm-muted)">steps(6, @s)</span>
                 <Bmotion Animate="@(_on2 ? Bm.To(x: 180) : Bm.To(x: 0))"
                          Transition="Bm.Tween(1.2, steps: 6, stepJump: s)">
                     <div class="box box-sm" />

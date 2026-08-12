@@ -41,7 +41,7 @@
             <Bmotion Animate="Bm.To(scale: 1)"
                     WhileFocus='Bm.To(scale: 1.03, borderColor: "#6c47ff")'
                     Transition="Bm.Tween(0.2)">
-                <input style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
+                <input style="background:var(--bm-card);border:2px solid var(--bm-border);color:var(--bm-text);border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
                        placeholder="Click to focus…"
                        type="text" />
             </Bmotion>
@@ -65,7 +65,7 @@
                     OnTapCancel="@(() => AddEvent("TapCancel"))">
                 <div class="box" />
             </Bmotion>
-            <div style="font-size:.8rem;color:#888;max-height:120px;overflow:auto;">
+            <div style="font-size:.8rem;color:var(--bm-muted);max-height:120px;overflow:auto;">
                 @foreach (var e in _events.TakeLast(8).Reverse())
                 {
                     <div>@e</div>
@@ -93,12 +93,12 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -107,7 +107,7 @@
                 background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
             }
             .btn-bm {
-                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -142,12 +142,13 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -161,7 +162,7 @@
                     <Bmotion Animate="Bm.To(scale: 1)"
                             WhileFocus='Bm.To(scale: 1.03, borderColor: "#6c47ff")'
                             Transition="Bm.Tween(0.2)">
-                        <input style="background:#1e1e2e;border:2px solid #333;color:#eee;border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
+                        <input style="background:var(--bm-card);border:2px solid var(--bm-border);color:var(--bm-text);border-radius:8px;padding:.5rem 1rem;outline:none;width:240px"
                                placeholder="Click to focus…"
                                type="text" />
                     </Bmotion>
@@ -174,13 +175,13 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -204,7 +205,7 @@
                             OnTapCancel="@(() => AddEvent("TapCancel"))">
                         <div class="box" />
                     </Bmotion>
-                    <div style="font-size:.8rem;color:#888;max-height:120px;overflow:auto;">
+                    <div style="font-size:.8rem;color:var(--bm-muted);max-height:120px;overflow:auto;">
                         @foreach (var e in _events.TakeLast(8).Reverse())
                         {
                             <div>@e</div>

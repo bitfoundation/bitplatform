@@ -1,0 +1,98 @@
+﻿@inject IJSRuntime JS
+
+@* The site header: the bit mark and the two top-level destinations at one end, the repository
+   link and the theme switch at the other. It mirrors the Bit.BlazorUI docs header so the two
+   sites read as one product.
+
+   It is the one piece of chrome the landing page and the docs share, and it adapts to which of
+   the two it is sitting on: the bar narrows to the landing page's own width there, and the menu
+   button goes away because that page has no nav panel to open. *@
+
+<div class="header">
+    <div class="container@(IsHomePage ? " home-page" : "")">
+        <div class="header-start">
+            @* Only exists on a docs page, and only at the widths where the nav panel is a drawer;
+               CSS hides it above them. *@
+            @if (IsHomePage is false)
+            {
+                <button type="button" class="menu-btn" @onclick="OnToggleNav"
+                        aria-label="Toggle navigation" aria-controls="nav-panel"
+                        aria-expanded="@(IsNavOpen ? "true" : "false")"
+                        disabled="@IsHydrating">
+                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                        <path d="M0 2.5h16v1H0v-1zm0 5h16v1H0v-1zm0 5h16v1H0v-1z" />
+                    </svg>
+                </button>
+            }
+
+            <a class="logo" href="/" aria-label="Homepage"></a>
+            <a class="wordmark" href="/">Bmotion</a>
+
+            <a class="link@(IsHomePage ? " active" : "")" href="/">Home</a>
+            <a class="link@(IsHomePage ? "" : " active")" href="/basic">Docs</a>
+        </div>
+
+        <div class="header-end">
+            @* The page is prerendered on the server, so it is visible - and inert - until the
+               WebAssembly runtime takes over. Say so instead of letting clicks silently do
+               nothing, and instead of leaving the still animations looking broken. *@
+            @if (IsHydrating)
+            {
+                <span class="hydrating" title="Prerendered HTML - the WebAssembly runtime is still loading.">
+                    <i></i><span>loading</span>
+                </span>
+            }
+
+            <a class="github-btn" target="_blank" rel="noopener noreferrer"
+               aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
+
+            @* Exact complements: CSS shows the sun in the dark theme and the moon in the light one,
+               so exactly one of the pair is ever visible - including on the prerendered document,
+               which carries no data-theme attribute yet. *@
+            <button type="button" class="toggle-theme-btn dark-theme" @onclick="ToggleTheme" title="Turn on light">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-13a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zm0 14a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1zM4 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm14 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1zM6.34 6.34a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm9.2 9.2a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm2.12-9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 1 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0zm-9.2 9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 0 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0z" />
+                </svg>
+            </button>
+            <button type="button" class="toggle-theme-btn light-theme" @onclick="ToggleTheme" title="Turn off light">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M21.3 13.6A9.2 9.2 0 0 1 10.4 2.7a1 1 0 0 0-1.3-1.15A10.2 10.2 0 1 0 22.45 14.9a1 1 0 0 0-1.15-1.3z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>True while the prerendered markup is on screen and the WebAssembly runtime is still loading.</summary>
+    [Parameter] public bool IsHydrating { get; set; }
+
+    /// <summary>Whether the nav drawer is currently open, for the menu button's aria-expanded.</summary>
+    [Parameter] public bool IsNavOpen { get; set; }
+
+    /// <summary>Raised by the menu button at the widths where the nav panel is a drawer.</summary>
+    [Parameter] public EventCallback OnToggleNav { get; set; }
+
+    /// <summary>
+    /// True on the landing page. The layout owns this - it is the same flag that decides whether
+    /// the page gets the docs shell at all - so the two can never disagree about which of the site's
+    /// two faces is on screen.
+    /// </summary>
+    [Parameter] public bool IsHomePage { get; set; }
+
+    // The attribute the stylesheets key off is owned by the theme script, which also persists the
+    // choice; the component only asks it to flip. Nothing here has to know the resulting theme -
+    // the two buttons are shown and hidden by CSS.
+    private async Task ToggleTheme()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmToggleTheme");
+        }
+        catch
+        {
+            // The theme is a preference, not a feature: if the script is missing there is nothing
+            // to report to the reader, and the page keeps working in whichever theme is applied.
+        }
+    }
+}

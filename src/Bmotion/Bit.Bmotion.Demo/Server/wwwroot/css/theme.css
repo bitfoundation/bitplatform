@@ -1,0 +1,162 @@
+/* Bit.Bmotion Demo - design tokens.
+
+   This demo does not reference Bit.BlazorUI, but it is part of the same product family and is
+   meant to read as one site with the BlazorUI docs. So the palette below is the bit Fluent theme
+   transcribed by hand: same token names (--bit-clr-*), same values, light and dark. Keeping the
+   names identical is the point - anything copied over from the BlazorUI demo's stylesheets keeps
+   working, and the two sites can only drift by someone editing this file.
+
+   The theme is selected by the data-theme attribute on <html>, which the bootstrap script in
+   App.razor sets before first paint (see js/demo.js). The bare :root selector carries the light
+   palette so a document with no attribute at all - the pre-hydration prerender, or a browser with
+   JS disabled - still renders a complete theme rather than unstyled markup. */
+
+:root,
+:root[data-theme="light"] {
+    color-scheme: light;
+    /* primary */
+    --bit-clr-pri: #1276C6;
+    --bit-clr-pri-hover: #0B6AB4;
+    --bit-clr-pri-active: #0460A5;
+    --bit-clr-pri-light: #85C1FF;
+    --bit-clr-pri-text: #FFFFFF;
+    --bit-clr-pri-dis: #DDEDFF;
+    /* secondary */
+    --bit-clr-sec: #FD7F36;
+    --bit-clr-sec-light: #FFC7AC;
+    --bit-clr-sec-text: #141414;
+    /* info (the quiet, neutral accent - tags and rail links) */
+    --bit-clr-inf: #6B737C;
+    --bit-clr-inf-light: #B6BCC3;
+    /* foreground */
+    --bit-clr-fg-pri: #1A1A1A;
+    --bit-clr-fg-sec: #525252;
+    --bit-clr-fg-ter: #707070;
+    /* background */
+    --bit-clr-bg-pri: #FFFFFF;
+    --bit-clr-bg-pri-hover: #F5F5F5;
+    --bit-clr-bg-sec: #F5F5F5;
+    --bit-clr-bg-sec-hover: #EDEDED;
+    --bit-clr-bg-ter: #EBEBEB;
+    --bit-clr-bg-overlay: rgba(0, 0, 0, 0.4);
+    /* border */
+    --bit-clr-brd-pri: #707070;
+    --bit-clr-brd-sec: #ADADAD;
+    --bit-clr-brd-ter: #E0E0E0;
+
+    /* Syntax highlighting for the code boxes. The tokens are the demo's own (see
+       Shared/SyntaxHighlighter.cs); only their colors are themed, and they are tuned against
+       --bit-clr-bg-sec, which is the surface a <pre> is painted on. */
+    --bm-tok-com: #3E7A34;
+    --bm-tok-tag: #1F5FA8;
+    --bm-tok-attr: #1A6FA8;
+    --bm-tok-str: #A63A20;
+    --bm-tok-key: #1F5FA8;
+    --bm-tok-type: #197066;
+    --bm-tok-num: #4F6E1E;
+    --bm-tok-raz: #8A3D9C;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    /* primary */
+    --bit-clr-pri: #4FA3F4;
+    --bit-clr-pri-hover: #61AEFB;
+    --bit-clr-pri-active: #6EB6FF;
+    --bit-clr-pri-light: #89C3FF;
+    --bit-clr-pri-text: #141414;
+    --bit-clr-pri-dis: #1E2A36;
+    /* secondary */
+    --bit-clr-sec: #F49666;
+    --bit-clr-sec-light: #FFC1A3;
+    --bit-clr-sec-text: #141414;
+    /* info */
+    --bit-clr-inf: #A4ACB4;
+    --bit-clr-inf-light: #C7CDD3;
+    /* foreground */
+    --bit-clr-fg-pri: #E6ECF2;
+    --bit-clr-fg-sec: #B9BEC4;
+    --bit-clr-fg-ter: #8E9398;
+    /* background */
+    --bit-clr-bg-pri: #0F1318;
+    --bit-clr-bg-pri-hover: #151A1F;
+    --bit-clr-bg-sec: #1B2025;
+    --bit-clr-bg-sec-hover: #22272C;
+    --bit-clr-bg-ter: #272C31;
+    --bit-clr-bg-overlay: rgba(0, 0, 0, 0.6);
+    /* border */
+    --bit-clr-brd-pri: #757B81;
+    --bit-clr-brd-sec: #53595F;
+    --bit-clr-brd-ter: #383E43;
+
+    --bm-tok-com: #6A9955;
+    --bm-tok-tag: #569CD6;
+    --bm-tok-attr: #9CDCFE;
+    --bm-tok-str: #CE9178;
+    --bm-tok-key: #569CD6;
+    --bm-tok-type: #4EC9B0;
+    --bm-tok-num: #B5CEA8;
+    --bm-tok-raz: #C586C0;
+}
+
+/* Shape, motion and typography - the parts of the bit theme that do not change with the palette. */
+:root {
+    --bit-shp-brd-radius: 0.125rem;
+    --bit-shp-brd-width: 0.0625rem;
+    --bit-shp-brd-style: solid;
+
+    --bit-mot-duration-full: 200ms;
+    --bit-mot-duration-short-full: 100ms;
+    --bit-mot-duration-long-full: 300ms;
+    --bit-mot-duration: var(--bit-mot-duration-full);
+    --bit-mot-duration-short: var(--bit-mot-duration-short-full);
+    --bit-mot-duration-long: var(--bit-mot-duration-long-full);
+    --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+
+    /* The docs shell sits on top of the palette and has to make the decisions a theme leaves
+       open: how the chrome is typeset, how wide the content column runs, and how far prose may
+       stretch before it gets hard to read. */
+    --demo-font-sans: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --demo-font-mono: ui-monospace, SFMono-Regular, "SF Mono", "Cascadia Code", Menlo, Consolas, "Liberation Mono", monospace;
+    --demo-content-width: 75rem; /* 1200px */
+    --demo-measure: 76ch;
+    --demo-header-height: 4.0625rem; /* 65px - every sticky offset below is derived from this */
+    --demo-nav-width: 13.875rem; /* 222px */
+}
+
+/* Chrome transitions only. Anything inside .demo-card belongs to the animation being demonstrated
+   and must keep its own timing, which is exactly what this library exists to control. */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bit-mot-duration: 0.01ms;
+        --bit-mot-duration-short: 0.01ms;
+        --bit-mot-duration-long: 0.01ms;
+    }
+}
+
+/* The demo's own palette, expressed in theme tokens.
+
+   Every demo page carries a <style> block of its own that reaches for these --bm-* names, so they
+   stay as the seam between the pages and the theme: redefining them here re-themes all eighteen
+   pages at once, and none of those blocks had to be touched. */
+:root {
+    --bm-primary: var(--bit-clr-pri);
+    --bm-primary-text: var(--bit-clr-pri-text);
+    --bm-secondary: var(--bit-clr-sec);
+    --bm-dark: var(--bit-clr-bg-sec);
+    --bm-surface: var(--bit-clr-bg-pri);
+    /* The stage a sample is played on. One step off the card it sits in, in both themes, so a
+       sample reads as a thing placed on the page rather than as part of the page. */
+    --bm-card: var(--bit-clr-bg-sec);
+    --bm-text: var(--bit-clr-fg-pri);
+    --bm-muted: var(--bit-clr-fg-sec);
+    --bm-border: var(--bit-clr-brd-ter);
+    --bm-radius: var(--bit-shp-brd-radius);
+    /* The recessed surface a sample paints a track, a groove or a gutter on - one step deeper than
+       the stage it sits on, in both themes. */
+    --bm-track: var(--bit-clr-bg-ter);
+    /* A translucent wash of the accent, used for the tints the pages paint behind sample content.
+       color-mix keeps it tied to the accent instead of freezing one theme's hex value. */
+    --bm-accent-soft: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);
+    --bm-accent-line: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
+}

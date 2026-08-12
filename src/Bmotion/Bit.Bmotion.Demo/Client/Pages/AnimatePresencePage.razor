@@ -45,9 +45,9 @@
                         Animate="Bm.To(opacity: 1, x: 0)"
                         Exit="Bm.To(opacity: 0, x: 30)"
                         Transition="Bm.Spring(stiffness: 300, damping: 25)">
-                    <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:8px;padding:.6rem 1rem;">
                         <span>@item.Label</span>
-                        <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                        <button style="background:none;border:none;color:var(--bm-secondary);cursor:pointer;font-size:1.1rem"
                                 aria-label="@($"Remove {item.Label}")"
                                 @onclick="@(() => _items.Remove(item))">✕</button>
                     </div>
@@ -78,7 +78,7 @@
                         Exit="Bm.To(opacity: 0, scale: 0.6)"
                         Transition="Bm.Spring(stiffness: 350, damping: 26)"
                         OnTap="@(() => _chips.Remove(chip))">
-                    <div style="background:rgba(255,71,133,.15);border:1px solid rgba(255,71,133,.35);border-radius:999px;padding:.35rem .9rem;cursor:pointer;user-select:none;white-space:nowrap;">
+                    <div style="background:color-mix(in srgb, var(--bm-secondary) 15%, transparent);border:1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);border-radius:999px;padding:.35rem .9rem;cursor:pointer;user-select:none;white-space:nowrap;">
                         @chip ✕
                     </div>
                 </Bmotion>
@@ -163,9 +163,10 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .chip-row { position: relative; display: flex; flex-wrap: wrap; gap: .5rem; }
             .chip {
-                background: rgba(255,71,133,.15); border: 1px solid rgba(255,71,133,.35);
+                background: color-mix(in srgb, var(--bm-secondary) 15%, transparent); border: 1px solid color-mix(in srgb, var(--bm-secondary) 35%, transparent);
                 border-radius: 999px; padding: .35rem .9rem; cursor: pointer;
                 user-select: none; white-space: nowrap;
             }
@@ -192,12 +193,12 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -206,7 +207,7 @@
                 background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
             }
             .btn-bm {
-                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -241,17 +242,18 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: #1e1e2e; border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
             .btn-bm {
-                background: #6c47ff; color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -267,9 +269,9 @@
                                 Animate="Bm.To(opacity: 1, x: 0)"
                                 Exit="Bm.To(opacity: 0, x: 30)"
                                 Transition="Bm.Spring(stiffness: 300, damping: 25)">
-                            <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.6rem 1rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:8px;padding:.6rem 1rem;">
                                 <span>@item.Label</span>
-                                <button style="background:none;border:none;color:#ff4785;cursor:pointer;font-size:1.1rem"
+                                <button style="background:none;border:none;color:var(--bm-secondary);cursor:pointer;font-size:1.1rem"
                                         aria-label="@($"Remove {item.Label}")"
                                         @onclick="@(() => _items.Remove(item))">✕</button>
                             </div>

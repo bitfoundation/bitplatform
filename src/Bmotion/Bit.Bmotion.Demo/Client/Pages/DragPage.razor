@@ -22,7 +22,7 @@
         </div>
 
         <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
-            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--bm-muted);white-space:nowrap">
                 X-axis only + constraints
             </p>
             <Bmotion Drag="BmDrag.X"
@@ -74,15 +74,15 @@
                     DragHandle=".grip"
                     DragConstraints="BmDragConstraints.Parent()"
                     WhileDrag="Bm.To(scale: 1.05)">
-                <div style="display:flex;align-items:center;gap:.6rem;background:rgba(108,71,255,.15);border:1px solid rgba(108,71,255,.3);border-radius:10px;padding:.8rem 1rem;">
-                    <span class="grip" style="cursor:grab;color:#888;font-size:1.1rem;user-select:none;">⠿</span>
+                <div style="display:flex;align-items:center;gap:.6rem;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:10px;padding:.8rem 1rem;">
+                    <span class="grip" style="cursor:grab;color:var(--bm-muted);font-size:1.1rem;user-select:none;">⠿</span>
                     <span>Drag me by the grip only</span>
                 </div>
             </Bmotion>
         </div>
 
         <div class="demo-card" style="height:200px;">
-            <div style="width:100%;height:28px;border-radius:999px;background:#111;position:relative;display:flex;align-items:center;padding:0 4px;cursor:pointer;"
+            <div style="width:100%;height:28px;border-radius:999px;background:var(--bm-track);position:relative;display:flex;align-items:center;padding:0 4px;cursor:pointer;"
                  @onpointerdown="@(e => _thumbControls.StartAsync(e))">
                 <Bmotion Drag="BmDrag.X"
                         DragControls="_thumbControls"
@@ -90,13 +90,13 @@
                         DragConstraints="BmDragConstraints.Parent()"
                         DragElastic="BmDragElastic.None"
                         WhileDrag="Bm.To(scale: 1.2)">
-                    <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+                    <div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--bm-primary),var(--bm-secondary));" />
                 </Bmotion>
             </div>
         </div>
 
         <div class="demo-card" style="position:relative;height:200px;">
-            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+            <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--bm-muted);white-space:nowrap">
                 Rigid left/top · elastic right/bottom
             </p>
             <Bmotion Drag="true"
@@ -120,7 +120,7 @@
                     OnDragEnd="@HandleDragEnd">
                 <div class="box box-sm" style="cursor:grab" />
             </Bmotion>
-            <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
+            <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:var(--bm-muted);white-space:nowrap">
                 @_dragInfo
             </div>
         </div>
@@ -140,7 +140,7 @@
 
     <div class="demo-row">
         <div class="demo-card" style="height:240px;">
-            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:#888">child isolates (default)</span>
+            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:var(--bm-muted)">child isolates (default)</span>
             <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
                 <div class="drag-parent">
                     <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
@@ -151,7 +151,7 @@
         </div>
 
         <div class="demo-card" style="height:240px;">
-            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:#888">child propagates</span>
+            <span style="position:absolute;top:.5rem;left:.75rem;font-size:.72rem;color:var(--bm-muted)">child propagates</span>
             <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
                 <div class="drag-parent">
                     <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
@@ -168,12 +168,12 @@
 <style>
     .drag-parent {
         width: 150px; height: 150px; border-radius: 12px; cursor: grab;
-        background: rgba(108,71,255,.12); border: 1px solid rgba(108,71,255,.3);
+        background: var(--bm-accent-soft); border: 1px solid var(--bm-accent-line);
         display: flex; align-items: center; justify-content: center;
     }
     .drag-child {
         width: 54px; height: 54px; border-radius: 10px; cursor: grab;
-        background: linear-gradient(135deg, #6c47ff, #ff4785);
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
     }
 </style>
 
@@ -241,12 +241,12 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -272,7 +272,7 @@
                 </div>
 
                 <div class="demo-card" style="position:relative;overflow:hidden;height:200px;">
-                    <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:#888;white-space:nowrap">
+                    <p style="position:absolute;top:.5rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:var(--bm-muted);white-space:nowrap">
                         X-axis only + constraints
                     </p>
                     <Bmotion Drag="BmDrag.X"
@@ -290,9 +290,9 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; height: 220px; position: relative;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -316,13 +316,13 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
-            .demo-section p { color: #888; margin-bottom: 1.5rem; line-height: 1.6; }
+            .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -340,7 +340,7 @@
                             OnDragEnd="@HandleDragEnd">
                         <div class="box box-sm" style="cursor:grab" />
                     </Bmotion>
-                    <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:#888;white-space:nowrap">
+                    <div style="position:absolute;bottom:.75rem;left:50%;transform:translateX(-50%);font-size:.78rem;color:var(--bm-muted);white-space:nowrap">
                         @_dragInfo
                     </div>
                 </div>

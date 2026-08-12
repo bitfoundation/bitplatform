@@ -17,24 +17,24 @@
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column;gap:.6rem;align-items:stretch;width:100%;min-width:280px;">
             <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" HandleSelector=".grip" Context="track">
-                <div style="display:flex;align-items:center;gap:.7rem;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.7rem 1rem;">
-                    <span class="grip" style="cursor:grab;color:#888;user-select:none;">⠿</span>
+                <div style="display:flex;align-items:center;gap:.7rem;background:var(--bm-accent-soft);border:1px solid var(--bm-accent-line);border-radius:8px;padding:.7rem 1rem;">
+                    <span class="grip" style="cursor:grab;color:var(--bm-muted);user-select:none;">⠿</span>
                     <span style="flex:1">@track.Title</span>
-                    <span style="color:#888;font-size:.8rem">@track.Duration</span>
+                    <span style="color:var(--bm-muted);font-size:.8rem">@track.Duration</span>
                     <button type="button" aria-label="Move @track.Title up"
                             disabled="@(_tracks.IndexOf(track) is 0)"
-                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
+                            style="background:none;border:none;color:var(--bm-muted);cursor:pointer;padding:0 .15rem"
                             @onclick="() => MoveTrack(track, -1)">▲</button>
                     <button type="button" aria-label="Move @track.Title down"
                             disabled="@(_tracks.IndexOf(track) == _tracks.Count - 1)"
-                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
+                            style="background:none;border:none;color:var(--bm-muted);cursor:pointer;padding:0 .15rem"
                             @onclick="() => MoveTrack(track, 1)">▼</button>
                 </div>
             </BmotionReorderGroup>
         </div>
     </div>
 
-    <p style="color:#888;font-size:.85rem;margin-top:.75rem">
+    <p style="color:var(--bm-muted);font-size:.85rem;margin-top:.75rem">
         Current order: @string.Join(" → ", _tracks.Select(t => t.Title))
     </p>
 
@@ -68,13 +68,14 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .list { display: flex; flex-direction: column; gap: .6rem; }
             .row {
                 display: flex; align-items: center; gap: .7rem;
-                background: rgba(108,71,255,.12); border: 1px solid rgba(108,71,255,.25);
+                background: var(--bm-accent-soft); border: 1px solid var(--bm-accent-line);
                 border-radius: 8px; padding: .7rem 1rem;
             }
-            .grip { cursor: grab; color: #888; user-select: none; }
+            .grip { cursor: grab; color: var(--bm-muted); user-select: none; }
         </style>
 
         <div class="list">

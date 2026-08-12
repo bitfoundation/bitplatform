@@ -15,7 +15,7 @@
         @foreach (var cfg in _springs)
         {
             <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                <span style="font-size:.78rem; color:#888">@cfg.Label</span>
+                <span style="font-size:.78rem; color:var(--bm-muted)">@cfg.Label</span>
                 <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
                         Transition="@cfg.Config">
                     <div class="box box-sm" />
@@ -58,7 +58,7 @@
 
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-            <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
+            <span style="font-size:.78rem; color:var(--bm-muted)">Mirror &middot; infinite</span>
             <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
                     Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
                 <div class="box box-sm" />
@@ -66,7 +66,7 @@
         </div>
 
         <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-            <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
+            <span style="font-size:.78rem; color:var(--bm-muted)">Loop &middot; 3&times; with delay</span>
             <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
                     Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
                 <div class="box box-sm" />
@@ -102,15 +102,12 @@
         @using Bit.Bmotion
 
         <style>
-            :root {
-                --bm-primary: #6c47ff; --bm-secondary: #ff4785;
-                --bm-card: #1e1e2e; --bm-muted: #888; --bm-radius: 12px;
-            }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: var(--bm-radius); padding: 2rem; min-height: 160px; flex: 1;
                 min-width: 220px; display: flex; align-items: center; justify-content: center;
             }
@@ -119,7 +116,7 @@
                 background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
             }
             .btn-bm {
-                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -131,7 +128,7 @@
                 @foreach (var cfg in _springs)
                 {
                     <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                        <span style="font-size:.78rem; color:#888">@cfg.Label</span>
+                        <span style="font-size:.78rem; color:var(--bm-muted)">@cfg.Label</span>
                         <Bmotion Animate="@(_on ? Bm.To(x: 80) : Bm.To(x: 0))"
                                 Transition="@cfg.Config">
                             <div class="box box-sm" />
@@ -164,13 +161,13 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; --bm-muted: #888; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-section p { color: var(--bm-muted); margin-bottom: 1.5rem; line-height: 1.6; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -179,7 +176,7 @@
                 background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
             }
             .btn-bm {
-                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -211,12 +208,12 @@
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-section { margin-bottom: 3rem; }
             .demo-section h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .5rem; }
             .demo-row { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
+                background: var(--bm-card); border: 1px solid var(--bm-border);
                 border-radius: 12px; padding: 2rem; min-height: 160px; flex: 1; min-width: 220px;
                 display: flex; align-items: center; justify-content: center;
             }
@@ -225,7 +222,7 @@
                 background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
             }
             .btn-bm {
-                background: var(--bm-primary); color: #fff; border: none; border-radius: 8px;
+                background: var(--bm-primary); color: var(--bm-primary-text); border: none; border-radius: 8px;
                 padding: .6rem 1.4rem; font-weight: 600; cursor: pointer;
             }
         </style>
@@ -235,7 +232,7 @@
 
             <div class="demo-row">
                 <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                    <span style="font-size:.78rem; color:#888">Mirror &middot; infinite</span>
+                    <span style="font-size:.78rem; color:var(--bm-muted)">Mirror &middot; infinite</span>
                     <Bmotion Animate="@(_repeat ? Bm.To(x: 90) : Bm.To(x: 0))"
                             Transition="Bm.Spring(stiffness: 200, damping: 12, repeat: BmRepeat.Mirror())">
                         <div class="box box-sm" />
@@ -243,7 +240,7 @@
                 </div>
 
                 <div class="demo-card" style="flex-direction:column; gap:.75rem;">
-                    <span style="font-size:.78rem; color:#888">Loop &middot; 3&times; with delay</span>
+                    <span style="font-size:.78rem; color:var(--bm-muted)">Loop &middot; 3&times; with delay</span>
                     <Bmotion Animate="@(_repeat ? Bm.To(y: 60) : Bm.To(y: 0))"
                             Transition="Bm.Spring(stiffness: 300, damping: 18, repeat: BmRepeat.Loop(3, delay: 0.3))">
                         <div class="box box-sm" />

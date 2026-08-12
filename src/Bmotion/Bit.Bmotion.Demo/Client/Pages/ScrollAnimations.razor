@@ -6,12 +6,13 @@
 
 <h1>Scroll Animations</h1>
 
-<div style="position:sticky;top:3.25rem;z-index:50;background:var(--bm-card);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.35)">
-    <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
-    <div style="background:#111;border-radius:6px;height:8px;overflow:hidden;width:100%">
-        <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
+@* Offset by the site header's own height so the readout parks under it rather than behind it. *@
+<div style="position:sticky;top:calc(var(--demo-header-height) + .5rem);z-index:50;background:var(--bm-card);border:1px solid var(--bm-border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+    <div style="font-size:.9rem;color:var(--bm-muted);margin-bottom:.5rem">Window scroll progress</div>
+    <div style="background:var(--bm-track);border-radius:6px;height:8px;overflow:hidden;width:100%">
+        <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,var(--bm-primary),var(--bm-secondary));width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
     </div>
-    <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
+    <div style="font-size:.85rem;color:var(--bm-muted);margin-top:.4rem">
         Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
     </div>
 </div>
@@ -38,13 +39,13 @@
 
     <div class="demo-row">
         <div class="demo-card" style="flex-direction:column;gap:1.25rem;">
-            <div style="background:#111;border-radius:6px;height:8px;overflow:hidden;width:100%">
+            <div style="background:var(--bm-track);border-radius:6px;height:8px;overflow:hidden;width:100%">
                 <Bmotion Values="_barValues">
-                    <div style="height:100%;background:linear-gradient(90deg,#6c47ff,#ff4785);transform-origin:0 50%;" />
+                    <div style="height:100%;background:linear-gradient(90deg,var(--bm-primary),var(--bm-secondary));transform-origin:0 50%;" />
                 </Bmotion>
             </div>
             <Bmotion Values="_boxValues">
-                <div style="width:50px;height:50px;border-radius:8px;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+                <div style="width:50px;height:50px;border-radius:8px;background:linear-gradient(135deg,var(--bm-primary),var(--bm-secondary));" />
             </Bmotion>
         </div>
     </div>
@@ -63,7 +64,7 @@
     <div class="demo-row">
         <div class="demo-card">
             <Bmotion StringValues="_filterValue">
-                <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#6c47ff,#ff4785);" />
+                <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,var(--bm-primary),var(--bm-secondary));" />
             </Bmotion>
         </div>
     </div>
@@ -200,20 +201,21 @@
         @implements IAsyncDisposable
 
         <style>
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .scroll-progress {
-                position: sticky; top: 0; z-index: 50; background: #1e1e2e;
+                position: sticky; top: 0; z-index: 50; background: var(--bm-card);
                 border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
-                box-shadow: 0 4px 20px rgba(0,0,0,.35);
+                box-shadow: 0 4px 20px rgba(0,0,0,.15);
             }
-            .scroll-track { background: #111; border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+            .scroll-track { background: var(--bm-track); border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
         </style>
 
         <div class="scroll-progress">
-            <div style="font-size:.9rem;color:#888;margin-bottom:.5rem">Window scroll progress</div>
+            <div style="font-size:.9rem;color:var(--bm-muted);margin-bottom:.5rem">Window scroll progress</div>
             <div class="scroll-track">
-                <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,#6c47ff,#ff4785);width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
+                <div style="@($"height:100%;border-radius:6px;background:linear-gradient(90deg,var(--bm-primary),var(--bm-secondary));width:{(_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture)}%;transition:width .05s")" />
             </div>
-            <div style="font-size:.85rem;color:#aaa;margin-top:.4rem">
+            <div style="font-size:.85rem;color:var(--bm-muted);margin-top:.4rem">
                 Y: @((_progressY * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%  |  X: @((_progressX * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%
             </div>
         </div>

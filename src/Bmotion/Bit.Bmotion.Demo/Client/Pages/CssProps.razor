@@ -219,7 +219,7 @@
 
 <style>
     .page-intro { color: var(--bm-muted); margin-bottom: 2.5rem; line-height: 1.6; }
-    .label { font-size: .78rem; color: #888; }
+    .label { font-size: .78rem; color: var(--bm-muted); }
     .headline { font-weight: 800; font-size: 1.4rem; letter-spacing: 0; }
     .prose { max-width: 190px; color: var(--bm-text); font-size: .95rem; text-align: left; }
     .row { display: flex; }
@@ -235,15 +235,15 @@
     }
 
     .fill-box { width: 120px; height: 120px; border-radius: 12px; }
-    .grad-a { background: linear-gradient(135deg, #6c47ff, #ff4785); }
-    .grad-pos { background: linear-gradient(90deg, #6c47ff, #ff4785, #ffb347); background-size: 300% 100%; }
+    .grad-a { background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+    .grad-pos { background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary), #ffb347); background-size: 300% 100%; }
     .grad-size {
-        background: radial-gradient(circle at 50% 50%, #ff4785 0%, #6c47ff 60%);
+        background: radial-gradient(circle at 50% 50%, var(--bm-secondary) 0%, var(--bm-primary) 60%);
         background-repeat: no-repeat; background-position: center;
     }
 
-    .feature-list { line-height: 1.9; color: #bbb; }
-    .feature-list code { background: #2a2a3a; padding: .1rem .35rem; border-radius: 4px; }
+    .feature-list { line-height: 1.9; color: var(--bm-muted); }
+    .feature-list code { background: var(--bm-track); padding: .1rem .35rem; border-radius: 4px; }
 </style>
 
 @code {

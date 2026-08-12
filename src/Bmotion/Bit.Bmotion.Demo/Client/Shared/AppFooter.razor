@@ -1,0 +1,67 @@
+﻿@inject IJSRuntime JS
+
+@* The bit platform footer, matching the one on the Bit.BlazorUI docs site: who makes this, where
+   to go next, and how to reach the team. *@
+
+<div class="footer">
+    <section>
+        <div>
+            <div class="bit-logo"></div>
+            <p class="blurb">
+                A platform that simplifies the development process for freelancers and software
+                companies through its clean project templates and easy-to-use one-click build and
+                deployment feature.
+            </p>
+        </div>
+
+        <div class="link-columns">
+            <div class="link-column">
+                <h6>Explore</h6>
+                <a href="/basic">Docs</a>
+                <a href="/springs">Springs</a>
+                <a href="/gestures">Gestures</a>
+            </div>
+
+            <div class="link-column">
+                <h6>Quick links</h6>
+                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">Github Org</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Github Repo</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Github Issues</a>
+            </div>
+
+            <button type="button" class="go-to-top" @onclick="GoToTop">Go to top</button>
+        </div>
+    </section>
+
+    <section>
+        <div class="address-info">
+            <a class="address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+        <div>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="copy-right-txt">Copyright © 2026 bit platform | All Rights Reserved </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    private async Task GoToTop()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmScrollToTop");
+        }
+        catch
+        {
+            // Scrolling back up is a convenience the page already offers through the scrollbar;
+            // if the script is unavailable there is nothing worth telling the reader about.
+        }
+    }
+}
