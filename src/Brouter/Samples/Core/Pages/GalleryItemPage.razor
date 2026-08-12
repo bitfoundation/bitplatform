@@ -1,0 +1,36 @@
+﻿@* Detail page of the view-transitions sample: the hero re-declares the clicked tile's
+   view-transition-name, which completes the shared-element morph (see GalleryPage). *@
+
+@if (Item is null)
+{
+    <h1>No such item</h1>
+    <BrouterLink Href="/gallery" class="btn">Back to the gallery</BrouterLink>
+}
+else
+{
+    <div class="hero" style="@($"background: {Item.Gradient}; view-transition-name: item-{Item.Id};")">
+        @Item.Emoji
+    </div>
+
+    <h1>@Item.Name</h1>
+
+    <div class="row">
+        <BrouterLink Href="/gallery" class="btn">All items (morphs back)</BrouterLink>
+        @if (Prev is not null)
+        {
+            <BrouterLink Href="@($"/gallery/{Prev.Id}")" class="btn">@Prev.Emoji @Prev.Name</BrouterLink>
+        }
+        @if (Next is not null)
+        {
+            <BrouterLink Href="@($"/gallery/{Next.Id}")" class="btn">@Next.Emoji @Next.Name</BrouterLink>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private GalleryItem? Item => GalleryCatalog.Find(Id);
+    private GalleryItem? Prev => GalleryCatalog.Find(Id - 1);
+    private GalleryItem? Next => GalleryCatalog.Find(Id + 1);
+}

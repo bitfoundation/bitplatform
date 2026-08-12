@@ -1,0 +1,1184 @@
+/* ---------- Bit.Brouter Demo - Global Styles ----------
+
+   This site is styled to read as a sibling of the Bit.BlazorUI demo
+   (blazorui.bitplatform.dev): same chrome, same rhythm, same palette. The difference is that
+   Brouter ships no component library of its own, so where that site composes BitLayout /
+   BitNavPanel / BitCard / BitText, this one reproduces their appearance in plain CSS - the demo
+   stays dependency-free apart from Bit.Brouter itself, which is the point of a router demo.
+
+   The color tokens below are the ACTUAL Bit.BlazorUI Fluent palette
+   (BlazorUI/Bit.BlazorUI/Styles/Fluent/colors.fluent-*.scss), inlined under the same
+   --bit-clr-* names and selected by the same `bit-theme` attribute convention, so a value copied
+   from a Bit.BlazorUI stylesheet lands here unchanged. The --bb-* layer on top is this site's
+   own vocabulary: every page written before the restyle keeps working because the names did not
+   move, only what they resolve to. */
+
+/* ============================================================================================
+   Bit.BlazorUI Fluent palette - light
+   ============================================================================================ */
+
+:root,
+:root[bit-theme="light"] {
+    color-scheme: light;
+    /* primary. Interaction moves the fill toward MORE contrast with the surface it sits on, so
+       the states darken on these light surfaces; '-dis' is the tint the soft backgrounds use. */
+    --bit-clr-pri: #1276C6;
+    --bit-clr-pri-hover: #0B6AB4;
+    --bit-clr-pri-text: #FFFFFF;
+    --bit-clr-pri-dis: #DDEDFF;
+    /* secondary (bit's orange) */
+    --bit-clr-sec: #FD7F36;
+    /* success / warning / error */
+    --bit-clr-suc: #228422;
+    --bit-clr-suc-dark: #0D5D0F;
+    --bit-clr-suc-dis: #E0F1DF;
+    --bit-clr-wrn: #EDAE12;
+    --bit-clr-wrn-dark: #BF8B00;
+    --bit-clr-wrn-dis: #F5EAD5;
+    --bit-clr-err: #D2393B;
+    --bit-clr-err-dark: #9D2225;
+    --bit-clr-err-dis: #FFE4E1;
+    /* foregrounds */
+    --bit-clr-fg-pri: #1A1A1A;
+    --bit-clr-fg-sec: #525252;
+    --bit-clr-fg-ter: #707070;
+    /* backgrounds */
+    --bit-clr-bg-pri: #FFFFFF;
+    --bit-clr-bg-pri-hover: #F5F5F5;
+    --bit-clr-bg-sec: #F5F5F5;
+    --bit-clr-bg-sec-hover: #EDEDED;
+    --bit-clr-bg-ter: #EBEBEB;
+    /* borders */
+    --bit-clr-brd-pri: #707070;
+    --bit-clr-brd-sec: #ADADAD;
+    --bit-clr-brd-ter: #E0E0E0;
+    /* code surface - GitHub's light syntax colors, which is what the code samples were written
+       against; it sits on the secondary background like every other inset surface here. */
+    --bb-code-bg: #F6F8FA;
+    --bb-code-fg: #1F2328;
+    --bb-code-comment: #59636E;
+    --bb-code-keyword: #0969DA;
+    --bb-code-string: #953800;
+    --bb-code-param: #1A7F37;
+}
+
+/* ============================================================================================
+   Bit.BlazorUI Fluent palette - dark
+   ============================================================================================ */
+
+:root[bit-theme="dark"] {
+    color-scheme: dark;
+    /* Dark surfaces: more contrast means lighter, so the interaction steps invert. */
+    --bit-clr-pri: #4FA3F4;
+    --bit-clr-pri-hover: #61AEFB;
+    --bit-clr-pri-text: #141414;
+    --bit-clr-pri-dis: #222F3C;
+    --bit-clr-sec: #F49666;
+    --bit-clr-suc: #78B774;
+    --bit-clr-suc-dark: #A0D49D;
+    --bit-clr-suc-dis: #253224;
+    --bit-clr-wrn: #F0BB52;
+    --bit-clr-wrn-dark: #FFDA97;
+    --bit-clr-wrn-dis: #352C1C;
+    --bit-clr-err: #E67A73;
+    --bit-clr-err-dark: #FEA199;
+    --bit-clr-err-dis: #3C2826;
+    --bit-clr-fg-pri: #E6ECF2;
+    --bit-clr-fg-sec: #B9BEC4;
+    --bit-clr-fg-ter: #8E9398;
+    --bit-clr-bg-pri: #0F1318;
+    --bit-clr-bg-pri-hover: #151A1F;
+    --bit-clr-bg-sec: #1B2025;
+    --bit-clr-bg-sec-hover: #22272C;
+    --bit-clr-bg-ter: #272C31;
+    --bit-clr-brd-pri: #757B81;
+    --bit-clr-brd-sec: #53595F;
+    --bit-clr-brd-ter: #383E43;
+    --bb-code-bg: #12171B;
+    --bb-code-fg: #E6EDF3;
+    --bb-code-comment: #8E9398;
+    --bb-code-keyword: #7DD3FC;
+    --bb-code-string: #FBBF24;
+    --bb-code-param: #86EFAC;
+}
+
+/* ============================================================================================
+   Site vocabulary - the --bb-* names every page in this app is written against, mapped onto the
+   palette above. Roles follow the BlazorUI demo: the page ground is the SECONDARY background and
+   every card/section is the PRIMARY one, which is what makes a docs page read as a stack of
+   surfaces rather than as boxes drawn on a white sheet.
+   ============================================================================================ */
+
+:root {
+    --bb-bg: var(--bit-clr-bg-sec);
+    --bb-surface: var(--bit-clr-bg-pri);
+    --bb-surface-2: var(--bit-clr-bg-ter);
+    --bb-surface-hover: var(--bit-clr-bg-sec-hover);
+    --bb-border: var(--bit-clr-brd-sec);
+    --bb-border-soft: var(--bit-clr-brd-ter);
+    --bb-text: var(--bit-clr-fg-pri);
+    --bb-text-muted: var(--bit-clr-fg-sec);
+    --bb-text-soft: var(--bit-clr-fg-ter);
+    --bb-primary: var(--bit-clr-pri);
+    --bb-primary-hover: var(--bit-clr-pri-hover);
+    --bb-primary-soft: var(--bit-clr-pri-dis);
+    --bb-primary-text: var(--bit-clr-pri-text);
+    --bb-accent: var(--bit-clr-sec);
+    --bb-success: var(--bit-clr-suc);
+    --bb-success-soft: var(--bit-clr-suc-dis);
+    --bb-success-text: var(--bit-clr-suc-dark);
+    --bb-warning: var(--bit-clr-wrn);
+    --bb-warning-soft: var(--bit-clr-wrn-dis);
+    --bb-warning-text: var(--bit-clr-wrn-dark);
+    --bb-danger: var(--bit-clr-err);
+    --bb-danger-soft: var(--bit-clr-err-dis);
+    --bb-danger-text: var(--bit-clr-err-dark);
+
+    /* Shape: the Fluent token, i.e. a 2px hairline radius rather than a rounded card. Surfaces
+       here are separated by a border, not by a corner - on a page that repeats the same card
+       thirty times, rounding every repeat is exactly the decoration the border is there to
+       avoid. */
+    --bb-radius: var(--bit-shp-brd-radius, 0.125rem);
+    --bb-radius-sm: var(--bit-shp-brd-radius, 0.125rem);
+    --bit-shp-brd-radius: 0.125rem;
+
+    /* The only elevation on the site: things that genuinely float over the page, i.e. the search
+       results callout. Cards get a border instead - see the note above. */
+    --bb-shadow: 0 6px 20px rgba(0, 0, 0, .12);
+
+    /* Motion tokens, mirroring --bit-mot-*: one duration and one easing the whole site shares,
+       collapsed under prefers-reduced-motion the way the library's own components collapse. */
+    --bb-motion-duration: 267ms;
+    --bb-motion-duration-short: 167ms;
+    --bb-motion-easing: cubic-bezier(0.33, 0, 0.67, 1);
+
+    /* Chrome geometry - the header bar's height, the nav panel's width and the content cap.
+       Published as variables because the header, the docs shell, the rail and the mobile drawer
+       all have to agree on them. */
+    --bb-header-height: 65px;
+    --bb-nav-panel-width: 222px;
+    --bb-rail-width: 232px;
+    --bb-content-width: 1200px;
+    --bb-measure: 76ch;
+
+    --bb-font-sans: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bb-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bb-motion-duration: 1ms;
+        --bb-motion-duration-short: 1ms;
+    }
+}
+
+/* Below this width the header wraps its nav onto a second row (Header.razor.css), so the height
+   every sticky offset and heading scroll-margin is measured from has to grow with it. It is
+   published here rather than there because a scoped stylesheet cannot write to :root. */
+@media (max-width: 600px) {
+    :root {
+        --bb-header-height: 92px;
+    }
+}
+
+/* ============================================================================================
+   Base
+   ============================================================================================ */
+
+* {
+    box-sizing: border-box;
+    -webkit-text-size-adjust: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    /* Keep the viewport width constant whether or not the page scrolls (classic scrollbars eat
+       layout width on Windows). Without this, navigating between a tall page (home, lifecycle)
+       and a short one resizes every element ~17px, so even chrome pinned out of the view
+       transition via view-transition-name gets a visible 320ms resize animation on its group. */
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bb-bg);
+    color: var(--bb-text);
+    font-family: var(--bb-font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Theme-driven thin scrollbars on the docs chrome only. The scrollbars inside a demo belong to
+   whatever that demo renders and are deliberately left alone. */
+html, body, .bb-docs-sidebar, .bb-rail, pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-clr-brd-pri) transparent;
+}
+
+a {
+    color: var(--bb-primary);
+    text-decoration: none;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+a:hover {
+    color: var(--bb-primary-hover);
+    text-decoration: underline;
+}
+
+/* One focus ring for the whole site, matching the library's --bit-shp-focus-ring-* tokens. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--bb-primary);
+    outline-offset: 2px;
+    border-radius: var(--bb-radius);
+}
+
+/* Fluent's typography ramp: H4 for a page title, H5 for a section heading, H6 for a sub-heading.
+   The weights are low (400/500) by design - Fluent separates levels by size, not by boldness. */
+h1, h2, h3, h4 {
+    color: var(--bb-text);
+    margin: 0 0 .5rem;
+}
+
+h1 { font-size: 2.125rem; font-weight: 400; line-height: 1.412; letter-spacing: .00735em; }
+h2 { font-size: 1.5rem; font-weight: 400; line-height: 1.333; }
+h3 { font-size: 1.25rem; font-weight: 500; line-height: 1.4; letter-spacing: .0075em; }
+h4 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
+
+@media (max-width: 400px) {
+    h1 { font-size: 1.5rem; line-height: 1.333; letter-spacing: 0; }
+    h2 { font-size: 1.25rem; font-weight: 500; line-height: 1.4; }
+    h3 { font-size: 1.125rem; line-height: 1.556; }
+}
+
+p { margin: 0 0 .75rem; }
+
+code, kbd, pre, samp {
+    font-family: var(--bb-mono);
+}
+
+code {
+    font-size: .875em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    padding: .125rem .375rem;
+    border-radius: var(--bb-radius-sm);
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--bb-border-soft);
+    margin: 1.25rem 0;
+}
+
+/* ============================================================================================
+   Layout - header / content / footer, the BitLayout arrangement done in grid.
+   ============================================================================================ */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The content band. The BlazorUI demo paints it with the secondary background so the primary-
+   background cards inside it read as raised; the body already carries that color, and this rule
+   keeps it true for pages shorter than the viewport. */
+.bb-site-content {
+    flex: 1;
+    width: 100%;
+    background: var(--bb-bg);
+}
+
+main {
+    width: 100%;
+    max-width: var(--bb-content-width);
+    margin: 0 auto;
+    padding: 2.5rem 2rem 4rem;
+}
+
+@media (max-width: 960px) {
+    main {
+        padding: 2rem 1.5rem 3rem;
+    }
+}
+
+@media (max-width: 600px) {
+    main {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+}
+
+article {
+    width: 100%;
+    min-width: 0;
+}
+
+/* The landing page is the one page built from full-bleed bands rather than from a column of
+   cards, so it opts out of the content container and lays its own gutters out instead - the same
+   arrangement the Bit.BlazorUI demo's home page uses. Everything else keeps the container. */
+main:has(.bb-landing) {
+    max-width: none;
+    padding: 0;
+}
+
+/* ============================================================================================
+   Page intro - the header row and lead paragraph every page opens with. The lead is prose on the
+   bare page, not one more framed box: after the title the reader should hit a sentence.
+   ============================================================================================ */
+
+.bb-intro {
+    margin-bottom: 2.5rem;
+}
+
+.bb-intro h1 {
+    overflow-wrap: anywhere;
+    margin-bottom: 1.25rem;
+}
+
+.bb-intro .bb-subtitle {
+    color: var(--bb-text-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: var(--bb-measure);
+    margin: 0;
+}
+
+/* ============================================================================================
+   Cards - the BitCard chrome: primary background, secondary border, no shadow. This is both the
+   tile inside a grid and the section a docs page is built from, which is why it stays neutral
+   about its own width.
+   ============================================================================================ */
+
+.bb-card {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--bb-text-muted);
+}
+
+.bb-card-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bb-text);
+    margin: 0 0 .35rem;
+}
+
+.bb-card-desc {
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+    line-height: 1.714;
+    margin: 0 0 1rem;
+}
+
+@media (max-width: 600px) {
+    .bb-card {
+        padding: 1.25rem;
+    }
+}
+
+/* min() on the track floor rather than a bare 280px: below that width a fixed minimum makes the
+   track wider than its own container and the whole page picks up a horizontal scrollbar. */
+.bb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.bb-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ============================================================================================
+   Demo link list
+   ============================================================================================ */
+
+.bb-link-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.bb-link-list li {
+    display: flex;
+    align-items: center;
+}
+
+.bb-link-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .4rem .7rem;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid transparent;
+    font-size: .9rem;
+    color: var(--bb-primary);
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+    text-decoration: none;
+    width: 100%;
+}
+
+.bb-link-list a:hover {
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-border-soft);
+    text-decoration: none;
+}
+
+.bb-link-list a.active {
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+    font-weight: 600;
+}
+
+/* Prose-style list: items mix text with inline links/code. */
+.bb-detail-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .375rem;
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+    line-height: 1.714;
+}
+
+.bb-detail-list a {
+    color: var(--bb-primary);
+}
+
+/* ============================================================================================
+   Badges - BitTag's outline look: a tinted pill in the role's color.
+   ============================================================================================ */
+
+.bb-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: .7rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    background: var(--bb-primary-soft);
+    color: var(--bb-primary-hover);
+}
+
+.bb-badge.bb-badge-warn {
+    background: var(--bb-warning-soft);
+    color: var(--bb-warning-text);
+}
+
+.bb-badge.bb-badge-danger {
+    background: var(--bb-danger-soft);
+    color: var(--bb-danger-text);
+}
+
+.bb-badge.bb-badge-success {
+    background: var(--bb-success-soft);
+    color: var(--bb-success-text);
+}
+
+/* ============================================================================================
+   Buttons - BitButton's Fill and Outline variants.
+   ============================================================================================ */
+
+button.btn,
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 2rem;
+    padding: .4rem 1rem;
+    font-size: .875rem;
+    font-weight: 600;
+    border-radius: var(--bb-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    text-decoration: none;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+.btn-primary,
+button.btn-primary {
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    border-color: var(--bb-primary);
+}
+
+.btn-primary:hover,
+button.btn-primary:hover {
+    color: var(--bb-primary-text);
+    background: var(--bb-primary-hover);
+    border-color: var(--bb-primary-hover);
+}
+
+.btn-outline,
+button.btn-outline {
+    background: transparent;
+    color: var(--bb-primary);
+    border-color: var(--bb-primary);
+}
+
+.btn-outline:hover,
+button.btn-outline:hover {
+    color: var(--bb-primary-hover);
+    background: var(--bb-primary-soft);
+    border-color: var(--bb-primary-hover);
+}
+
+/* ============================================================================================
+   Tables
+   ============================================================================================ */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+    font-size: .875rem;
+}
+
+.table thead {
+    background: var(--bb-surface-2);
+}
+
+.table th,
+.table td {
+    text-align: left;
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--bb-border-soft);
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--bb-text-muted);
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .05em;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.table tbody tr:hover {
+    background: var(--bb-surface-hover);
+}
+
+/* ============================================================================================
+   Counter (used by CounterPage)
+   ============================================================================================ */
+
+.bb-counter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    margin-bottom: 1rem;
+}
+
+.bb-counter-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--bb-primary);
+    min-width: 3rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.bb-counter-label {
+    color: var(--bb-text-muted);
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ============================================================================================
+   Param list
+   ============================================================================================ */
+
+.bb-params {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .35rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1rem 1.25rem;
+    font-size: .875rem;
+    margin-bottom: 1rem;
+}
+
+.bb-params dt {
+    color: var(--bb-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .05em;
+    align-self: center;
+}
+
+.bb-params dd {
+    margin: 0;
+    font-family: var(--bb-mono);
+    color: var(--bb-text);
+    word-break: break-all;
+}
+
+/* ============================================================================================
+   Empty state
+   ============================================================================================ */
+
+.bb-empty {
+    background: var(--bb-surface);
+    border: 1px dashed var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--bb-text-muted);
+}
+
+/* ============================================================================================
+   Inline icon dots
+   ============================================================================================ */
+
+.bb-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bb-text-soft);
+    flex-shrink: 0;
+}
+
+.bb-dot-primary { background: var(--bb-primary); }
+.bb-dot-success { background: var(--bb-success); }
+.bb-dot-warning { background: var(--bb-warning); }
+.bb-dot-danger { background: var(--bb-danger); }
+
+/* ============================================================================================
+   Error pages
+   ============================================================================================ */
+
+.bb-error {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+}
+
+.bb-error h1 {
+    font-size: 4rem;
+    font-weight: 300;
+    margin: 0;
+    line-height: 1;
+}
+
+.bb-error.bb-error-404 h1 { color: var(--bb-text-soft); }
+.bb-error.bb-error-403 h1 { color: var(--bb-warning); }
+
+.bb-error p {
+    color: var(--bb-text-muted);
+    margin: .5rem 0 1.25rem;
+}
+
+/* ---------- View Transitions (o.ViewTransitions = true) ----------
+
+   No custom ::view-transition rules here on purpose: the animations you see (direction-aware
+   glide on push, mirrored on Back/Forward, quick fade on replace, springy shared-element morphs)
+   are Bit.Brouter's BUILT-IN defaults (o.ViewTransitionDefaultAnimations, on by default).
+   They live in the CSS layer "bit-brouter", so any unlayered ::view-transition-* rule added in
+   this file would override them automatically - e.g.:
+
+       ::view-transition-new(root) { animation: 400ms ease both my-fancy-entrance; }
+*/
+
+/* ============================================================================================
+   View Transitions gallery (GalleryPage / GalleryItemPage)
+   ============================================================================================ */
+
+.bb-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+    gap: 1rem;
+}
+
+.bb-gallery-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    transition: transform var(--bb-motion-duration-short) var(--bb-motion-easing),
+                box-shadow var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-gallery-tile:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+}
+
+.bb-gallery-emoji { font-size: 2.2rem; }
+.bb-gallery-name { font-weight: 600; }
+
+.bb-gallery-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 260px;
+    border-radius: var(--bb-radius);
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, .35);
+}
+
+.bb-gallery-hero-emoji { font-size: 4.5rem; }
+.bb-gallery-hero-name { margin: 0; font-size: 2.125rem; }
+
+.bb-gallery-nav {
+    display: flex;
+    gap: .5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================================================================
+   Code samples & feature tables (CodeBox's look: an inset surface on the secondary background
+   with a secondary hairline, and the copy button floating over its top-end corner).
+   ============================================================================================ */
+
+.bb-code {
+    position: relative;
+    background: var(--bb-code-bg);
+    color: var(--bb-code-fg);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: .875rem 3rem .875rem 1rem;
+    font-family: var(--bb-mono);
+    font-size: .84rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+    white-space: pre;
+}
+
+.bb-code::-webkit-scrollbar { width: 8px; }
+.bb-code::-webkit-scrollbar:horizontal { height: 8px; }
+.bb-code::-webkit-scrollbar-track { background-color: transparent; }
+.bb-code::-webkit-scrollbar-thumb { border-radius: 8px; background-color: var(--bit-clr-brd-pri); }
+.bb-code::-webkit-scrollbar-button { display: none; }
+
+/* Copy button injected by site.js into every .bb-code block. Always visible rather than
+   hover-revealed: on a touch screen there is no hover, and the button is the only way to take
+   the sample. */
+.bb-copy-btn {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--bb-radius-sm);
+    background: transparent;
+    color: var(--bb-text-soft);
+    cursor: pointer;
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-copy-btn:hover {
+    color: var(--bb-primary);
+    border-color: var(--bb-border);
+    background: var(--bb-surface);
+}
+
+.bb-copy-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+.bb-copy-btn.bb-copied {
+    color: var(--bb-success);
+    border-color: var(--bb-success);
+    background: var(--bb-surface);
+}
+
+.bb-code .c { color: var(--bb-code-comment); }   /* comment */
+.bb-code .k { color: var(--bb-code-keyword); }   /* keyword-ish / tag */
+.bb-code .s { color: var(--bb-code-string); }    /* string / template */
+.bb-code .p { color: var(--bb-code-param); }     /* parameter */
+
+.bb-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+    font-size: .875rem;
+    margin-bottom: 1rem;
+}
+
+/* A table's used width can never fall below the sum of its columns' MIN-CONTENT widths, so a single
+   unbreakable cell anywhere in it sizes the whole table - and, since these tables are full-width,
+   overflows the card holding it. Making one column breakable is therefore not a fix: it has to be
+   every cell, headers included, which is also why the first column below can't have its mono
+   identifiers on `white-space: nowrap`.
+
+   `anywhere` and not `break-word`: the two wrap identically at a given width, but only `anywhere`
+   lowers the intrinsic minimum - and the intrinsic minimum is the number the table is sized from,
+   so `break-word` here would look fixed and still overflow. Neither breaks a word that fits, so
+   this costs nothing at widths where the table was already fine. */
+.bb-table th,
+.bb-table td,
+.table th,
+.table td {
+    overflow-wrap: anywhere;
+}
+
+.bb-table th {
+    text-align: left;
+    padding: .55rem .9rem;
+    background: var(--bb-surface-2);
+    color: var(--bb-text-muted);
+    font-weight: 600;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.bb-table td {
+    padding: .5rem .9rem;
+    border-top: 1px solid var(--bb-border-soft);
+    vertical-align: top;
+}
+
+.bb-table td:first-child {
+    font-family: var(--bb-mono);
+}
+
+/* A column of buttons rather than of prose: `width: 1%` in an auto-layout table reads as "give this
+   column its minimum", so the button keeps its own label on one line and every pixel the column
+   does not need goes to the text columns instead of squeezing them. This is the one place the
+   cells' `overflow-wrap: anywhere` must not reach - a broken button label is worse than a wide
+   column, and a button's minimum is small enough to afford. */
+.bb-table .bb-table-action {
+    width: 1%;
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+/* BitMessage's look: a tinted band with the role's color as its leading rule. */
+.bb-note {
+    border-left: 3px solid var(--bb-primary);
+    background: var(--bb-primary-soft);
+    border-radius: 0 var(--bb-radius-sm) var(--bb-radius-sm) 0;
+    padding: .75rem 1rem;
+    font-size: .875rem;
+    line-height: 1.714;
+    margin: 0 0 1rem;
+}
+
+.bb-note-warn {
+    border-left-color: var(--bb-warning);
+    background: var(--bb-warning-soft);
+}
+
+.bb-try {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 1rem;
+}
+
+/* ============================================================================================
+   Docs pager (DocsPager, rendered by DocsShell)
+   ============================================================================================ */
+
+.bb-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--bb-border-soft);
+}
+
+.bb-pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .7rem 1rem;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface);
+    text-decoration: none;
+    min-width: 0;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-pager-link:hover {
+    border-color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    text-decoration: none;
+}
+
+.bb-pager-next {
+    margin-left: auto;
+    text-align: right;
+}
+
+.bb-pager-label {
+    font-size: .625rem;
+    text-transform: uppercase;
+    letter-spacing: .08333em;
+    color: var(--bb-text-soft);
+}
+
+.bb-pager-title {
+    font-weight: 600;
+    color: var(--bb-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================================================================
+   Large call-to-action buttons (landing page)
+   ============================================================================================ */
+
+.bb-btn-lg {
+    min-height: 2.75rem;
+    padding: .65rem 1.35rem;
+    font-size: 1rem;
+}
+
+/* ============================================================================================
+   "On this page" rail - the SideRail from the BlazorUI demo. The list is built by site.js from
+   the headings the current page rendered, so no page had to be edited to gain one; the hairline
+   down its inline start is the rail's spine, and the active section lights up its own stretch of
+   it. Below the xl breakpoint navigation like this does not earn its column, so it is hidden.
+   ============================================================================================ */
+
+.bb-rail {
+    position: sticky;
+    top: calc(var(--bb-header-height) + 1.5rem);
+    flex: 0 0 var(--bb-rail-width);
+    height: fit-content;
+    max-height: calc(100vh - var(--bb-header-height) - 3rem);
+    overflow: auto;
+    padding: 0 1.5rem 2rem 0;
+    /* Persistent chrome: keep it out of the page's view transition, like the header. */
+    view-transition-name: bb-rail;
+}
+
+.bb-rail:empty {
+    padding: 0;
+}
+
+.bb-rail-title {
+    display: block;
+    font-size: .625rem;
+    font-weight: 400;
+    line-height: 1.66;
+    letter-spacing: .08333em;
+    text-transform: uppercase;
+    color: var(--bb-text-soft);
+    margin: 0;
+}
+
+.bb-rail ul {
+    list-style: none;
+    padding: 0;
+    margin: .625rem 0 0;
+    border-inline-start: 2px solid var(--bb-border-soft);
+}
+
+.bb-rail li {
+    position: relative;
+    padding: .1875rem .75rem;
+    overflow-wrap: anywhere;
+}
+
+.bb-rail li.bb-rail-sub {
+    padding-inline-start: 1.5rem;
+}
+
+.bb-rail a {
+    display: block;
+    font-size: .875rem;
+    line-height: 1.714;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+}
+
+.bb-rail a:hover {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+/* The current section: its entry takes the primary color and some weight, and its stretch of the
+   spine lights up in the same color - drawn as an overlay on the list's own hairline so active
+   and inactive entries keep exactly the same geometry. */
+.bb-rail li.bb-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    inset-inline-start: -2px;
+    background: var(--bb-primary);
+}
+
+.bb-rail li.bb-active a {
+    color: var(--bb-primary);
+    font-weight: 600;
+}
+
+/* Anchored headings need clearance for the sticky header when the rail scrolls to them. */
+:target,
+.bb-docs-content [id],
+article [id] {
+    scroll-margin-top: calc(var(--bb-header-height) + 1.5rem);
+}
+
+/* ============================================================================================
+   Theme toggle - the header's round primary button. Lives here rather than in Header.razor.css
+   because the sun/moon swap keys off the bit-theme attribute on <html>, which a scoped-CSS
+   selector cannot reach.
+   ============================================================================================ */
+
+.bb-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--bb-primary);
+    color: var(--bb-primary-text);
+    cursor: pointer;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-theme-toggle:hover {
+    background: var(--bb-primary-hover);
+}
+
+.bb-theme-toggle svg {
+    width: 17px;
+    height: 17px;
+}
+
+.bb-theme-toggle .bb-icon-moon { display: none; }
+
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-sun { display: none; }
+:root[bit-theme="dark"] .bb-theme-toggle .bb-icon-moon { display: block; }
+
+/* ============================================================================================
+   Narrow viewports - the handful of components whose desktop shape does not survive a phone.
+   Everything here earns its place by preventing horizontal overflow, which is the one layout
+   failure a reader cannot work around: a page wider than the screen makes every line of prose on
+   it require sideways scrolling to finish.
+   ============================================================================================ */
+
+@media (max-width: 600px) {
+    /* Two pager cards side by side leave neither enough room for its title, and the ellipsis then
+       hides the very thing the link is there to name. */
+    .bb-pager {
+        flex-direction: column;
+    }
+
+    .bb-pager-next {
+        margin-left: 0;
+        text-align: left;
+    }
+
+    /* A label column sized to its own content plus a value column cannot both fit. Stacked, the
+       value gets a full line - which is what it needs, since these are URLs, route templates and
+       serialized history state. */
+    .bb-params {
+        grid-template-columns: minmax(0, 1fr);
+        gap: .15rem;
+    }
+
+    .bb-params dd:not(:last-child) {
+        margin-bottom: .5rem;
+    }
+}
+
+/* Tighter cells buy back some of the width the wrapping spends, so each column holds a few more
+   characters before it has to break a word - which is what keeps the breaks landing between words
+   rather than inside them. The wrapping itself is unconditional (see `overflow-wrap` on the cells):
+   these tables sit in the docs column, whose width comes from the sidebar and rail flanking it
+   rather than from the viewport, so a viewport breakpoint is the wrong axis to hang it on - it
+   leaves the table overflowing its card on a wide screen with a narrow content column. */
+@media (max-width: 760px) {
+    .bb-table th,
+    .bb-table td,
+    .table th,
+    .table td {
+        padding: .45rem .5rem;
+        font-size: .8125rem;
+    }
+}
+
+/* Docs prose runs to long identifiers, package names and URLs; in a phone-width column any one of
+   them is wider than the line, so they are allowed to break rather than to overflow. */
+@media (max-width: 960px) {
+    .bb-card,
+    .bb-intro,
+    .bb-detail-list {
+        overflow-wrap: break-word;
+    }
+}

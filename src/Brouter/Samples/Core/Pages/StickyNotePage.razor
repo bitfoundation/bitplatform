@@ -1,0 +1,91 @@
+﻿@* Mounted twice by AppRouter: /sticky declares KeepAlive (navigating away hides the instance
+   instead of disposing it) and /fleeting is the control that unmounts. Deriving from
+   BrouterRouteBase gives the route lifecycle - OnActivated resumes the timer on every reveal,
+   OnDeactivated pauses it while the page is kept but hidden. *@
+
+@inherits BrouterRouteBase
+
+<h1>@(KeepAliveDemo ? "Keep-alive route" : "Transient route (control)")</h1>
+
+<div class="card">
+    <div class="row">
+        <strong>Clicks: @_clicks</strong>
+        <button @onclick="@(() => _clicks++)">Click me</button>
+    </div>
+    <textarea rows="2" style="margin-top: .5rem;" @bind="_note" placeholder="Scratch note, held by this component instance…"></textarea>
+</div>
+
+@if (KeepAliveDemo)
+{
+    <dl>
+        <dt>visible seconds</dt>
+        <dd>@_visibleSeconds</dd>
+        <dt>deactivations / reactivations</dt>
+        <dd>@_deactivations / @_reactivations</dd>
+    </dl>
+}
+
+<div class="row">
+    <BrouterLink Href="/sticky" class="btn">/sticky (KeepAlive)</BrouterLink>
+    <BrouterLink Href="/fleeting" class="btn">/fleeting (control)</BrouterLink>
+</div>
+
+<p class="muted">
+    @(KeepAliveDemo
+        ? "Click, type, leave and come back: everything survives, and the seconds counter did NOT advance while hidden - the same instance was paused and resumed."
+        : "Click, type, leave and come back: the instance was disposed and recreated, so everything resets.")
+</p>
+
+@code {
+    [Parameter] public bool KeepAliveDemo { get; set; }
+
+    private int _clicks;
+    private string _note = string.Empty;
+
+    private int _visibleSeconds;
+    private int _reactivations;
+    private int _deactivations;
+    private bool _disposed;
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        if (KeepAliveDemo is false) return;
+
+        // Created paused: OnActivated (which also fires on the first show) starts the ticking.
+        _timer = new System.Threading.Timer(_ =>
+        {
+            // Hop to the renderer's dispatcher before touching component state, and re-check
+            // disposal there: Timer.Dispose does not wait for in-flight callbacks, so a tick can
+            // still be unwinding while the component is torn down.
+            _ = InvokeAsync(() =>
+            {
+                if (_disposed) return;
+                _visibleSeconds++;
+                StateHasChanged();
+            });
+        }, null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+    }
+
+    protected override void OnActivated(BrouterRouteActivation activation)
+    {
+        // Fires on the first show AND on every reveal from the hidden retention.
+        if (activation.IsFirstActivation is false) _reactivations++;
+        _timer?.Change(1000, 1000);
+    }
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        // Pause background work while the page is kept but hidden - without this the timer would
+        // keep firing (and re-rendering the hidden subtree) the whole time.
+        _deactivations++;
+        _timer?.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _disposed = true;
+        _timer?.Dispose();
+        base.Dispose(disposing);
+    }
+}

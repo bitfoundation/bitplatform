@@ -1,0 +1,19 @@
+@inherits LayoutComponentBase
+
+@* The app shell, arranged like the Bit.BlazorUI demo's BitLayout: a sticky header, a content
+   band painted with the secondary background so the cards inside read as raised surfaces, and
+   the site footer. Docs pages add their own nav panel and "on this page" rail from DocsShell. *@
+
+<div class="page">
+    <Header />
+
+    <div class="bb-site-content">
+        <main>
+            <article>
+                @Body
+            </article>
+        </main>
+    </div>
+
+    <Footer />
+</div>

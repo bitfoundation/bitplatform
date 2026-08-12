@@ -1,0 +1,128 @@
+/* BitSearchBox's shape: a 32px field that matches the icon buttons beside it in the header, with
+   the magnifier inset at the start and the results hanging off the end as a callout. */
+.bb-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.bb-search-icon {
+    position: absolute;
+    left: .55rem;
+    width: 14px;
+    height: 14px;
+    color: var(--bb-text-soft);
+    pointer-events: none;
+}
+
+.bb-search input {
+    width: 180px;
+    height: 32px;
+    max-width: 100%;
+    padding: 0 .6rem 0 1.9rem;
+    font-size: .875rem;
+    font-family: inherit;
+    color: var(--bb-text);
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    outline: none;
+    transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                width var(--bb-motion-duration) var(--bb-motion-easing);
+}
+
+.bb-search input:focus {
+    border-color: var(--bb-primary);
+    width: 240px;
+}
+
+.bb-search input::placeholder {
+    color: var(--bb-text-soft);
+}
+
+/* The one place on the site that keeps a drop shadow: this really does float over the page, so
+   the elevation is information rather than decoration. */
+.bb-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 320px;
+    max-width: 84vw;
+    margin: 0;
+    padding: .25rem;
+    list-style: none;
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    box-shadow: var(--bb-shadow);
+    z-index: 1300;
+}
+
+.bb-search-results li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .45rem .6rem;
+    border-radius: var(--bb-radius);
+    cursor: pointer;
+    font-size: .875rem;
+}
+
+.bb-search-results li:hover,
+.bb-search-results li.bb-active {
+    background: var(--bb-surface-hover);
+}
+
+.bb-search-result-title {
+    color: var(--bb-text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bb-search-result-section {
+    color: var(--bb-text-soft);
+    font-size: .625rem;
+    text-transform: uppercase;
+    letter-spacing: .08333em;
+    flex-shrink: 0;
+}
+
+.bb-search-empty {
+    color: var(--bb-text-muted);
+    cursor: default;
+}
+
+.bb-search-results li.bb-search-empty:hover {
+    background: none;
+}
+
+/* Narrow viewports: keep search usable as a compact input instead of hiding it. */
+@media (max-width: 760px) {
+    .bb-search input {
+        width: 110px;
+    }
+
+    .bb-search input:focus {
+        width: 160px;
+    }
+}
+
+/* Once the header has wrapped its nav onto a second row, the first row is only the mark and two
+   icon buttons, so the field takes everything that is left rather than staying a stub that
+   truncates its own placeholder. There is nothing to grow into on focus any more, so the width
+   animation stops too. */
+@media (max-width: 600px) {
+    .bb-search {
+        flex: 1;
+    }
+
+    .bb-search input,
+    .bb-search input:focus {
+        width: 100%;
+        transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+    }
+}
