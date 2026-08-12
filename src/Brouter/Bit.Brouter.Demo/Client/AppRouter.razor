@@ -135,6 +135,7 @@
                 @* Empty path = the index route: it matches /docs exactly. *@
                 <Broute Path="" Component="@typeof(DocsOverviewPage)" />
                 <Broute Path="getting-started" Component="@typeof(GettingStartedPage)" />
+                <Broute Path="navigation-pipeline" Component="@typeof(PipelinePage)" />
 
                 <Broute Path="route-templates" Component="@typeof(TemplatesPage)" />
                 <Broute Path="constraints" Component="@typeof(ConstraintsPage)" />
@@ -160,6 +161,10 @@
                 <Broute Path="typed-routes" Component="@typeof(GeneratorPage)" />
                 <Broute Path="migration" Component="@typeof(MigrationPage)" />
                 <Broute Path="performance" Component="@typeof(PerformancePage)" />
+
+                <Broute Path="api" Component="@typeof(ApiPage)" />
+                <Broute Path="recipes" Component="@typeof(RecipesPage)" />
+                <Broute Path="faq" Component="@typeof(FaqPage)" />
             </Routes>
         </Broute>
 

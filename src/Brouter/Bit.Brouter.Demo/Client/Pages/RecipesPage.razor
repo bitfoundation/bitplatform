@@ -1,0 +1,366 @@
+<PageTitle>Recipes · Brouter docs</PageTitle>
+
+@* Task-oriented counterpart to the feature-oriented topic pages: each card states a real problem
+   and answers it with code that can be pasted in. Deliberately cross-cutting - most recipes
+   combine two or three features that live on different docs pages. *@
+
+<div class="bb-intro">
+    <h1>Recipes</h1>
+    <p class="bb-subtitle">
+        The other docs pages are organized by feature. This one is organized by problem - the
+        things applications actually need, each answered with code you can paste in.
+    </p>
+</div>
+
+@* ============================== Auth ============================== *@
+
+<h2 style="margin: 1.75rem 0 .75rem;">Access control</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Protect a whole area, and return the user afterwards</h3>
+    <p class="bb-card-desc">
+        Put the guard on a <strong>pathless group</strong> and every route inside it inherits the
+        check - one declaration instead of one per page, and no <code>/protected</code> segment in
+        the URL. Because the guard runs before the URL commits, the address bar never shows the
+        page the user wasn't allowed to see; stash the intended destination in the query so the
+        login page can send them back.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> <span class="k">Group</span> Path=<span class="s">""</span> Guard=<span class="s">"@@RequireSignIn"</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/orders"</span> Component=<span class="s">"@@typeof(OrdersPage)"</span> /&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/orders/{id:int}"</span> Component=<span class="s">"@@typeof(OrderPage)"</span> /&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/settings"</span> Component=<span class="s">"@@typeof(SettingsPage)"</span> /&gt;
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;
+
+<span class="k">private async</span> ValueTask RequireSignIn(BrouterNavigationContext ctx)
+{
+    <span class="k">if</span> (<span class="k">await</span> auth.IsSignedInAsync(ctx.CancellationToken)) <span class="k">return</span>;
+
+    <span class="c">// The URL never moved, so ctx.To is the page they meant to reach.</span>
+    <span class="k">var</span> returnUrl = Uri.EscapeDataString(ctx.To.Path + ctx.To.Query);
+    ctx.Redirect(<span class="s">$"/login?returnUrl={returnUrl}"</span>);
+}</pre>
+    <p class="bb-card-desc">
+        For the plain <code>[Authorize]</code>-attribute case you don't need a guard at all - set
+        <code>NotAuthorized</code> on <code>&lt;Brouter&gt;</code> and the framework's own
+        <code>AuthorizeRouteView</code> handles policy evaluation. See
+        <BrouterLink Href="/docs/migration">migration</BrouterLink>.
+    </p>
+</div>
+
+@* ============================== Unsaved changes ============================== *@
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A real "unsaved changes" prompt</h3>
+    <p class="bb-card-desc">
+        Three different exits need covering, and each has its own tool. The component-level lock is
+        the one that can show <em>your</em> dialog and await the answer - and it's the only one that
+        catches a parameter change on the same route (<code>/edit/1 → /edit/2</code>).
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>The user...</th><th>Covered by</th></tr></thead>
+        <tbody>
+            <tr><td>navigates to another page in the app</td><td><code>OnDeactivatingAsync</code> (custom dialog) or a route <code>LeaveGuard</code> (silent veto)</td></tr>
+            <tr><td>navigates to the same page with different parameters</td><td><code>OnRenavigatingAsync</code> - a <code>LeaveGuard</code> never fires here</td></tr>
+            <tr><td>closes the tab, reloads, or follows an external link</td><td><code>SetConfirmExternalNavigationAsync(true)</code> - the browser's own dialog</td></tr>
+        </tbody>
+    </table>
+    <pre class="bb-code"><span class="k">public partial class</span> EditorPage : <span class="k">BrouterRouteBase</span>
+{
+    <span class="k">private bool</span> _dirty;
+
+    <span class="k">private async</span> Task MarkDirtyAsync()
+    {
+        _dirty = <span class="k">true</span>;
+        <span class="k">await</span> brouter.SetConfirmExternalNavigationAsync(<span class="k">true</span>);   <span class="c">// tab close / reload</span>
+    }
+
+    <span class="k">protected override async</span> ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
+    {
+        <span class="k">if</span> (_dirty <span class="k">is false</span>) <span class="k">return</span>;
+
+        <span class="c">// The navigation is held open while the dialog is up. The token fires if a</span>
+        <span class="c">// newer navigation supersedes this one, so the dialog can dismiss itself.</span>
+        <span class="k">if</span> (<span class="k">await</span> ConfirmDiscardAsync(ctx.To.Path, ctx.CancellationToken) <span class="k">is false</span>)
+            ctx.Cancel();
+    }
+}</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/lock/1" class="btn btn-outline">See it live on /lock/1</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Data ============================== *@
+
+<h2 style="margin: 1.75rem 0 .75rem;">Data</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Refresh the screen after a mutation</h3>
+    <p class="bb-card-desc">
+        After a POST, the data behind the current page is stale. Don't re-navigate to the same URL -
+        that runs guards, replays the whole pipeline and flashes pending UI. Revalidate instead: the
+        URL stays, the current content stays on screen, and only the loaders re-run.
+    </p>
+    <pre class="bb-code"><span class="k">private async</span> Task SaveAsync()
+{
+    <span class="k">await</span> http.PostAsJsonAsync(<span class="s">"/api/orders"</span>, _draft);
+
+    <span class="c">// This page's data is stale → re-run just this chain's loaders.</span>
+    <span class="k">await</span> brouter.RevalidateAsync();
+
+    <span class="c">// Other pages' cached data is stale too → drop the whole loader cache</span>
+    <span class="c">// so the next visit anywhere re-fetches.</span>
+    brouter.ClearLoaderCache();
+}</pre>
+    <p class="bb-card-desc">
+        Inside the loader, <code>ctx.IsRevalidation</code> distinguishes the refresh from a real
+        visit - useful for skipping an analytics ping or showing a subtler spinner.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Make navigation feel instant</h3>
+    <p class="bb-card-desc">
+        Two settings, applied together, remove most perceived latency: preload on intent so the
+        fetch starts while the pointer is still travelling toward the link, and a
+        <code>StaleTime</code> so Back/Forward and re-visits skip the network entirely.
+    </p>
+    <pre class="bb-code"><span class="c">// Program.cs - app-wide defaults</span>
+builder.Services.AddBitBrouterServices(o =&gt;
+{
+    o.DefaultLinkPreload = BrouterLinkPreload.Intent;   <span class="c">// every link, on hover/focus</span>
+    o.DefaultLoaderStaleTime = TimeSpan.FromSeconds(30);
+});</pre>
+    <pre class="bb-code"><span class="c">@@* ...or per link / per route where it matters most *@@</span>
+&lt;<span class="k">BrouterLink</span> Href=<span class="s">"/orders/42"</span> Preload=<span class="s">"BrouterLinkPreload.Intent"</span>&gt;Order 42&lt;/<span class="k">BrouterLink</span>&gt;
+
+&lt;<span class="k">Broute</span> Path=<span class="s">"/orders/{id:int}"</span> Loader=<span class="s">"@@LoadOrder"</span>
+        StaleTime=<span class="s">"@@TimeSpan.FromMinutes(2)"</span> Component=<span class="s">"@@typeof(OrderPage)"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        Use <code>Viewport</code> preloading for long lists (each link warms as it scrolls into
+        view) and reach for <code>brouter.PreloadAsync(url)</code> when you know where the user is
+        headed - warming the dashboard while the sign-in request is still in flight, for instance.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Don't let one slow query hold the page</h3>
+    <p class="bb-card-desc">
+        Await only what the page can't render without; return everything else as an
+        <em>unawaited</em> task. The route reveals as soon as the critical data lands, and the slow
+        part streams into its own placeholder.
+    </p>
+    <pre class="bb-code"><span class="k">private async</span> ValueTask&lt;<span class="k">object</span>?&gt; LoadDashboard(BrouterNavigationContext ctx)
+{
+    <span class="k">var</span> summary = <span class="k">await</span> api.GetSummaryAsync(ctx.CancellationToken);  <span class="c">// blocks navigation</span>
+    <span class="k">return new</span> Dashboard(summary, api.GetSlowReportAsync());       <span class="c">// streams in later</span>
+}</pre>
+    <pre class="bb-code">&lt;<span class="k">BrouterAwait</span> Task=<span class="s">"@@Data.SlowReport"</span>&gt;
+    &lt;<span class="k">Pending</span>&gt;&lt;Skeleton /&gt;&lt;/<span class="k">Pending</span>&gt;
+    &lt;<span class="k">Resolved</span> Context=<span class="s">"report"</span>&gt;&lt;ReportView Value=<span class="s">"@@report"</span> /&gt;&lt;/<span class="k">Resolved</span>&gt;
+    &lt;<span class="k">Error</span> Context=<span class="s">"ex"</span>&gt;&lt;p&gt;Report unavailable.&lt;/p&gt;&lt;/<span class="k">Error</span>&gt;
+&lt;/<span class="k">BrouterAwait</span>&gt;</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/deferred" Preload="BrouterLinkPreload.Intent" class="btn btn-outline">/deferred - watch it stream</BrouterLink>
+    </div>
+</div>
+
+@* ============================== State in the URL ============================== *@
+
+<h2 style="margin: 1.75rem 0 .75rem;">State that belongs in the URL</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Filters, sorting and paging as query state</h3>
+    <p class="bb-card-desc">
+        Query-as-state makes a filtered view shareable and bookmarkable - but only if changing one
+        filter doesn't clobber the others. <code>NavigateWithQuery</code> mutates the current query
+        functionally and preserves everything you don't touch. It replaces the history entry by
+        default, so paging through twenty pages leaves one Back step, not twenty.
+    </p>
+    <pre class="bb-code"><span class="c">// Next page - keeps ?sort, ?q and the fragment exactly as they were.</span>
+brouter.NavigateWithQuery(q =&gt; q.Set(<span class="s">"page"</span>, _page + 1));
+
+<span class="c">// Changing a filter resets paging: Set(null) removes a key.</span>
+brouter.NavigateWithQuery(q =&gt; q.Set(<span class="s">"status"</span>, status).Set(<span class="s">"page"</span>, <span class="k">null</span>));
+
+<span class="c">// Multi-value, for ?tag=a&amp;tag=b - and push it so this one IS a Back step.</span>
+brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, _tags), replace: <span class="k">false</span>);</pre>
+    <p class="bb-card-desc">
+        Read the values back by binding them - <code>[SupplyParameterFromQuery]</code> for the
+        types the framework parses, <code>[BrouterQuery]</code> for enums, <code>Guid</code>s and
+        <code>string[]</code> - or, in a loader, straight off
+        <code>ctx.To.GetQuery("page")</code>. Give the route a <code>StaleTime</code> and each
+        distinct query is cached separately, so paging back and forth is instant.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent" class="btn btn-outline">/data - the pager, live</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> A localized URL prefix</h3>
+    <p class="bb-card-desc">
+        Wrap the app in one parameterized parent route. Its guard sets the culture before any child
+        renders, its template segment binds for every descendant, and the children stay
+        prefix-free - so nothing below has to know the URL carries a language.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/{lang:length(2)}"</span> Guard=<span class="s">"@@ApplyCulture"</span>&gt;
+    &lt;<span class="k">Content</span>&gt;&lt;BrouterOutlet /&gt;&lt;/<span class="k">Content</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">""</span> Component=<span class="s">"@@typeof(HomePage)"</span> /&gt;          <span class="c">@@* /en *@@</span>
+        &lt;<span class="k">Broute</span> Path=<span class="s">"/products"</span> Component=<span class="s">"@@typeof(ProductsPage)"</span> /&gt; <span class="c">@@* /en/products *@@</span>
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;
+
+<span class="k">private</span> ValueTask ApplyCulture(BrouterNavigationContext ctx)
+{
+    <span class="k">var</span> lang = ctx.Parameters.GetOrDefault&lt;<span class="k">string</span>&gt;(<span class="s">"lang"</span>, <span class="s">"en"</span>)!;
+    CultureInfo.CurrentUICulture = <span class="k">new</span> CultureInfo(lang);
+    <span class="k">return</span> ValueTask.CompletedTask;
+}</pre>
+    <p class="bb-card-desc">
+        Inside that subtree, <strong>relative links keep working without repeating the prefix</strong>:
+        <code>&lt;BrouterLink Href="./products"&gt;</code> resolves against the current path, so it
+        lands on <code>/de/products</code> for a German visitor and <code>/en/products</code> for an
+        English one.
+    </p>
+</div>
+
+@* ============================== Layout & chrome ============================== *@
+
+<h2 style="margin: 1.75rem 0 .75rem;">Layout &amp; chrome</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> A list that remembers where you were</h3>
+    <p class="bb-card-desc">
+        The master-detail annoyance: open an item, press Back, and the list has forgotten your
+        filters and scroll position. Keep-alive fixes it by keeping the list component mounted
+        instead of rebuilding it - the exact pattern this site's docs sidebar uses by staying
+        mounted while its outlet swaps pages.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/orders"</span> KeepAlive=<span class="s">"true"</span> Component=<span class="s">"@@typeof(OrdersPage)"</span> /&gt;
+
+<span class="c">@@* Per-parameter retention: /orders/1 and /orders/2 each resume their own state,</span>
+<span class="c">   LRU-evicted beyond the budget. *@@</span>
+&lt;<span class="k">Broute</span> Path=<span class="s">"/orders/{id:int}"</span> KeepAlive=<span class="s">"true"</span> KeepAliveMax=<span class="s">"3"</span>
+        Component=<span class="s">"@@typeof(OrderPage)"</span> /&gt;</pre>
+    <p class="bb-card-desc">
+        A retained component is still <em>alive</em> - timers keep ticking, subscriptions keep
+        firing. Pause them: <code>OnDeactivated</code> arrives with
+        <code>Reason = Hidden</code> instead of <code>Disposing</code>, and <code>OnActivated</code>
+        is the cue to resume. Add <code>RestoreScrollPosition = true</code> so the window position
+        comes back with the component, and call <code>brouter.ClearKeepAlive()</code> on sign-out.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/sticky" class="btn btn-outline">/sticky vs /fleeting</BrouterLink>
+        <BrouterLink Href="/notes/1" class="btn btn-outline">/notes/1 - per-parameter retention</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Breadcrumbs, page titles and analytics</h3>
+    <p class="bb-card-desc">
+        Attach a label to each route with <code>Meta</code> - static data, no code runs - and read
+        it from the cascaded <code>BrouterRouteMeta</code> wherever the breadcrumb lives. For
+        cross-cutting concerns like titles and telemetry, subscribe once to
+        <code>OnNavigated</code> rather than touching every page.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/orders"</span> Meta=<span class="s">"@@(new PageInfo("Orders", Icon.List))"</span>
+        Component=<span class="s">"@@typeof(OrdersPage)"</span> /&gt;</pre>
+    <pre class="bb-code"><span class="c">// Any component under the router - a breadcrumb, a header, a title bar:</span>
+[<span class="k">CascadingParameter</span>] <span class="k">public</span> BrouterRouteMeta Meta { <span class="k">get</span>; <span class="k">set</span>; } = BrouterRouteMeta.Empty;
+
+<span class="k">var</span> label = Meta.GetOrDefault&lt;PageInfo&gt;()?.Title ?? <span class="s">"Untitled"</span>;
+
+<span class="c">// One subscription, every page - see the API reference for the disposal pattern.</span>
+brouter.OnNavigated += ctx =&gt;
+{
+    analytics.TrackPageView(ctx.To.Path, ctx.NavigationType);
+    <span class="k">return</span> ValueTask.CompletedTask;
+};</pre>
+    <p class="bb-card-desc">
+        Need the framework's own <code>RouteData</code> instead - the page type and its route values -
+        take a plain <code>[CascadingParameter] RouteData?</code>. It's published on every committed
+        navigation, and is null on not-found.
+    </p>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Shared layout without a URL segment</h3>
+    <p class="bb-card-desc">
+        Two sections of an app often need different chrome without different URLs. A parent route
+        with an empty-path <em>index</em> child gives you a layout that stays mounted while its
+        children swap - and because the parent's content only re-renders when it has to, sidebar
+        scroll and expanded state survive every child navigation.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/admin"</span>&gt;
+    &lt;<span class="k">Content</span>&gt;
+        &lt;AdminSidebar /&gt;              <span class="c">@@* stays mounted across child navigations *@@</span>
+        &lt;<span class="k">BrouterOutlet</span> /&gt;
+    &lt;/<span class="k">Content</span>&gt;
+    &lt;<span class="k">Routes</span>&gt;
+        &lt;<span class="k">Broute</span> Path=<span class="s">""</span> Component=<span class="s">"@@typeof(AdminHomePage)"</span> /&gt;   <span class="c">@@* /admin exactly *@@</span>
+        &lt;<span class="k">Broute</span> Path=<span class="s">"users"</span> Component=<span class="s">"@@typeof(UsersPage)"</span> /&gt;   <span class="c">@@* /admin/users *@@</span>
+    &lt;/<span class="k">Routes</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;</pre>
+    <p class="bb-card-desc">
+        If the shared thing is behavior rather than markup - one guard, one loader, one error
+        boundary - use a <code>&lt;Broute Group&gt;</code> instead and skip the URL segment
+        entirely.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/nested3" class="btn btn-outline">/nested3 - parent + outlet</BrouterLink>
+        <BrouterLink Href="/dashboard/stats" class="btn btn-outline">/dashboard - named outlets + group</BrouterLink>
+    </div>
+</div>
+
+@* ============================== Robustness ============================== *@
+
+<h2 style="margin: 1.75rem 0 .75rem;">Robustness</h2>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Handle a failed load without losing the app</h3>
+    <p class="bb-card-desc">
+        A loader that throws shouldn't blank the screen. Put an <code>ErrorContent</code> on the
+        route (or on an ancestor, to cover a whole section) and the failure renders inside your
+        layout, with a retry that re-runs the pipeline in place.
+    </p>
+    <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/orders/{id:int}"</span> Loader=<span class="s">"@@LoadOrder"</span>&gt;
+    &lt;<span class="k">Content</span>&gt;&lt;OrderPage /&gt;&lt;/<span class="k">Content</span>&gt;
+    &lt;<span class="k">ErrorContent</span> Context=<span class="s">"err"</span>&gt;
+        &lt;p&gt;Couldn't load this order: @@err.Exception.Message&lt;/p&gt;
+        &lt;button @@onclick=<span class="s">"@@(() =&gt; err.RetryAsync())"</span>&gt;Try again&lt;/button&gt;
+    &lt;/<span class="k">ErrorContent</span>&gt;
+&lt;/<span class="k">Broute</span>&gt;</pre>
+    <p class="bb-card-desc">
+        Boundaries are for display; logging belongs on <code>IBrouter.OnError</code>, which fires
+        for the same failures in one place. A route that legitimately has no data - the id doesn't
+        exist - should call <code>NavigationManager.NotFound()</code> instead of throwing, which
+        hands control to the router's not-found path with the URL left intact.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/unstable" class="btn btn-outline">/unstable - throw, then retry</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> React to how a navigation ended</h3>
+    <p class="bb-card-desc">
+        When code needs to know whether the user actually got where it sent them - a wizard that
+        should only clear its draft after leaving succeeds - await the navigation and read the
+        outcome. <code>NavigationManager</code> can't tell you this; a guard's cancel is invisible
+        to it.
+    </p>
+    <pre class="bb-code"><span class="k">var</span> outcome = <span class="k">await</span> brouter.NavigateAsync(<span class="s">"/checkout/confirm"</span>);
+
+<span class="k">if</span> (outcome.Succeeded) _draft.Clear();
+<span class="k">else if</span> (outcome.Status <span class="k">is</span> BrouterNavigationStatus.Redirected)
+    logger.LogInformation(<span class="s">"Sent to {Url} instead"</span>, outcome.RedirectedTo);
+<span class="k">else if</span> (outcome.Status <span class="k">is</span> BrouterNavigationStatus.Cancelled)
+    ShowToast(<span class="s">"Finish the form before continuing."</span>);</pre>
+    <div class="bb-try">
+        <BrouterLink Href="/outcomes" class="btn btn-outline">/outcomes - trigger every status</BrouterLink>
+        <BrouterLink Href="/docs/navigation" class="btn btn-primary">Navigation &amp; history →</BrouterLink>
+    </div>
+</div>

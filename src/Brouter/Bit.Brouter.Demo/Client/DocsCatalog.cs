@@ -28,6 +28,9 @@ public static class DocsCatalog
             new("getting-started", "Getting started",
                 "Install the packages, register the services, and declare your first routes.",
                 "install setup nuget package AddBitBrouterServices quick start program.cs"),
+            new("navigation-pipeline", "How a navigation works",
+                "The ordered pipeline behind every navigation: what runs before the URL moves, what runs after, and what each step can do about it.",
+                "pipeline order phases decide commit preventive supersession cancel redirect fail closed revalidation preload concepts"),
         ]),
         new("Routing",
         [
@@ -85,6 +88,18 @@ public static class DocsCatalog
             new("performance", "Performance & scalability",
                 "What routes cost, how matching scales, prerender state bridging, and guidance for very large apps.",
                 "performance benchmark memory startup scalability prerender PersistLoaderState SSR"),
+        ]),
+        new("Reference",
+        [
+            new("api", "API reference",
+                "Every component parameter, service member, option and value type, with defaults.",
+                "api reference parameters options BrouterOptions IBrouter Broute BrouterLink enums types defaults lookup"),
+            new("recipes", "Recipes",
+                "Task-oriented solutions: protected areas, unsaved changes, revalidation, query state, breadcrumbs, keep-alive lists.",
+                "recipes cookbook patterns how-to examples auth login unsaved changes breadcrumbs paging filters localization"),
+            new("faq", "FAQ & troubleshooting",
+                "Adoption questions, and the symptoms you might hit afterwards - each with the reason behind it.",
+                "faq troubleshooting problem error not matching 404 ambiguous null parameter cache stale animation help"),
         ]),
     ];
 
