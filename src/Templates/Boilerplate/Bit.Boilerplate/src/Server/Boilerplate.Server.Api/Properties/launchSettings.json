@@ -10,7 +10,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://*:5031"
+            "applicationUrl": "http://localhost:5031;http://*:5031"
         },
         "WSL": {
             "commandName": "WSL2",
@@ -18,7 +18,7 @@
             "launchUrl": "scalar",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://*:5031"
+                "ASPNETCORE_URLS": "http://localhost:5031;http://*:5031"
             }
         },
         "Docker": {

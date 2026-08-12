@@ -9,7 +9,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         //#if (api == "Integrated")
         "Boilerplate.Server.Web-Scalar": {
@@ -20,7 +20,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
             "dotnetRunMessages": true,
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         //#endif
         "Boilerplate.Server.Web-BlazorWebAssembly": {
@@ -32,7 +32,7 @@
             },
             "dotnetRunMessages": true,
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-            "applicationUrl": "http://*:5030"
+            "applicationUrl": "http://localhost:5030;http://*:5030"
         },
         "WSL": {
             "commandName": "WSL2",
@@ -40,7 +40,7 @@
             "launchUrl": "http://localhost:5030/",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://*:5030"
+                "ASPNETCORE_URLS": "http://localhost:5030;http://*:5030"
             }
         },
         "Docker": {

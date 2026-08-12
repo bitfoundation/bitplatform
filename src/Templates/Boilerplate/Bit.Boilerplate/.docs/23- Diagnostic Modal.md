@@ -1,6 +1,6 @@
 # Stage 23: Diagnostic Modal
 
-The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool that provides developers and support teams with comprehensive runtime information about the application. This feature is available in **all environments** (Development, Staging, and Production) and on **all platforms** (Web, Android, iOS, Windows, macOS).
+The **Diagnostic Modal** is an incredibly powerful built-in troubleshooting tool that provides developers and support teams with comprehensive runtime information about the application. The modal itself is available in **all environments** (Development, Staging, and Production) and on **all platforms** (Web, Android, iOS, Windows, macOS). Its **log list** additionally needs the `DiagnosticLogger` provider, which is registered on the client runtimes (Blazor WebAssembly, MAUI, Windows) in every environment, and on a Blazor Server host only in Development.
 
 ## What is the Diagnostic Modal?
 
@@ -50,7 +50,7 @@ A powerful log viewing and filtering system that displays logs captured by the `
 - **Text Search**: Search logs by message content, category, or state values
 - **Regular Expression Support**: Enable regex mode for advanced pattern matching
 - **Filter by Log Level**: Filter by Trace, Debug, Information, Warning, Error, Critical
-- **Filter by Category**: Multi-select dropdown showing all log categories (e.g., `Microsoft.EntityFrameworkCore`, `Boilerplate.Client.Core.Services`)
+- **Filter by Category**: Multi-select dropdown showing all log categories (e.g., `Microsoft.EntityFrameworkCore`, `Boilerplate.Client.Core.Infrastructure.Services`)
 - **Sort Order**: Toggle between ascending/descending chronological order
 
 #### Log Details View

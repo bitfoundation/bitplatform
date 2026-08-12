@@ -1,3 +1,4 @@
+@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
@@ -25,11 +26,13 @@
             }
         }
 
+        @*#if (signalR == true)*@
         @if (showTroubleButton)
         {
             <BitButton OnClick="WrapHandled(HandleAdTrouble)">
                 @Localizer[nameof(AppStrings.UpgradeAdHaveTrouble)]
             </BitButton>
         }
+        @*#endif*@
     </BitStack>
 </section>

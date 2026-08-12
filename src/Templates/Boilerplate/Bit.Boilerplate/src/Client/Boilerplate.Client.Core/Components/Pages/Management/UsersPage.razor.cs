@@ -190,13 +190,7 @@ public partial class UsersPage
     {
         var logs = await hubConnection.InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.GetUserSessionLogs, userSessionId);
 
-        DiagnosticLogger.Store.Clear();
-        foreach (var log in logs)
-        {
-            DiagnosticLogger.Store.Enqueue(log);
-        }
-
-        PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL);
+        PubSubService.Publish(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, logs);
     }
     //#endif
 }
