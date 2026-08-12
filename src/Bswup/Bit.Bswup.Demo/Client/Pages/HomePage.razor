@@ -19,6 +19,68 @@
     </div>
 </section>
 
+<h2>The problem it solves</h2>
+<p>
+    A Blazor WebAssembly app has to download a runtime and your assemblies before it can render anything.
+    The standard template hides that behind a blank page, and hides updates behind nothing at all: a new
+    version only takes effect once every tab of your app has been closed. Users stare at white space on
+    their first visit, then run a build from last Tuesday for days without knowing it.
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th></th><th>Standard Blazor template</th><th>With Bswup</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>First visit</b></td>
+                <td>Blank page while the runtime downloads. No indication anything is happening.</td>
+                <td>A branded splash with an honest progress bar, counting the very bytes the app is waiting on.</td>
+            </tr>
+            <tr>
+                <td><b>Updates</b></td>
+                <td>Staged silently, applied only after every tab closes. Users can run a stale build indefinitely.</td>
+                <td>Downloaded in the background, then announced. The user accepts, and every open tab moves together.</td>
+            </tr>
+            <tr>
+                <td><b>Flaky network</b></td>
+                <td>One failed asset fails the whole install. No retries, no reporting.</td>
+                <td>Retries with backoff, choice of lax or strict tolerance, and structured error payloads.</td>
+            </tr>
+            <tr>
+                <td><b>Install goes wrong</b></td>
+                <td>Nothing is watching. A worker killed mid-install leaves the page hanging.</td>
+                <td>A stall watchdog boots the app from the network instead. A first visit never dead-ends.</td>
+            </tr>
+            <tr>
+                <td><b>Control</b></td>
+                <td>Edit the generated worker and hope.</td>
+                <td>Script attributes, worker settings, lifecycle events, and a <a href="javascript-api">JavaScript API</a>.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Where to start</h2>
+<div class="path-grid">
+    <a class="path-card" href="getting-started">
+        <span class="path-step">Step 1</span>
+        <h3>Get it running</h3>
+        <p>Six small steps from <code>dotnet add package</code> to a working install splash.</p>
+    </a>
+    <a class="path-card" href="how-it-works">
+        <span class="path-step">Step 2</span>
+        <h3>Understand the model</h3>
+        <p>Who starts Blazor, how an update is staged, and which requests the worker takes over.</p>
+    </a>
+    <a class="path-card" href="recipes">
+        <span class="path-step">Step 3</span>
+        <h3>Ship it properly</h3>
+        <p>Hosting headers, sub-path deployments, build-stamped cache versions, custom update banners.</p>
+    </a>
+</div>
+
+<h2>What you get</h2>
 <section class="feature-grid">
     <a class="feature-card" href="progress-ui">
         <div class="feature-icon">📥</div>
@@ -35,12 +97,12 @@
         <h3>Offline support</h3>
         <p>Full precache or lazy passive mode, SPA navigation fallback, media range requests, and external asset caching.</p>
     </a>
-    <a class="feature-card" href="service-worker">
+    <a class="feature-card" href="service-worker#errortolerance">
         <div class="feature-icon">🛡️</div>
         <h3>Resilient installs</h3>
         <p>Retries with backoff, lax/strict error tolerance, a first-install stall watchdog, and structured error reporting.</p>
     </a>
-    <a class="feature-card" href="javascript-api">
+    <a class="feature-card" href="javascript-api#checkforupdate">
         <div class="feature-icon">🧭</div>
         <h3>Update polling</h3>
         <p>Interval and on-focus update checks, a check-for-update API, and up-to-date / check-failed events.</p>
@@ -50,7 +112,7 @@
         <h3>Configurable, not magical</h3>
         <p>Everything is opt-in via script-tag attributes and service worker settings, with sensible defaults.</p>
     </a>
-    <a class="feature-card" href="javascript-api">
+    <a class="feature-card" href="javascript-api#persiststorage">
         <div class="feature-icon">💾</div>
         <h3>Durable storage</h3>
         <p>One call to request eviction-resistant storage so offline apps survive browser storage pressure.</p>
@@ -106,6 +168,10 @@
         </tbody>
     </table>
 </div>
+<p>
+    <a href="how-it-works">How It Works</a> walks through what each of them does at runtime - the boot
+    handshake, the two lifecycles, and the request pipeline.
+</p>
 
 <h2>Sample projects</h2>
 <p>Besides this documentation site, the repository ships two runnable samples:</p>
