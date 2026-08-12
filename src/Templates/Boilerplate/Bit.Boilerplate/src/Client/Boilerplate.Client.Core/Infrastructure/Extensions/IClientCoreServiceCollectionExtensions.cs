@@ -129,7 +129,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("DbContext has not been optimized"); // Checkout Boilerplate.Client.Core/Data/README.md for more info about Optimize-DbContext command.
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dotnet ef dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }

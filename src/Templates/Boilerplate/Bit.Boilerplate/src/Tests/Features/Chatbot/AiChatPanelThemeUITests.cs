@@ -21,7 +21,7 @@ namespace Boilerplate.Tests.Features.Chatbot;
 /// </para>
 /// </summary>
 [TestClass, TestCategory("UITest"), Retry(2)]
-public partial class AiChatPanelThemeUITests : AppPageTest
+public partial class AiChatPanelThemeUITests : AiChatPanelTestBase
 {
     /// <summary>
     /// The name <c>AIFunctionFactory.Create(SetApplicationTheme)</c> registers the tool under (See
@@ -109,67 +109,4 @@ public partial class AiChatPanelThemeUITests : AppPageTest
             $"The SetApplicationTheme tool did not report a successful change back to the model. Results: [{string.Join(", ", toolResults)}].");
     }
 
-    /// <summary>
-    /// Opens the floating chat button and waits for the panel, including its locally rendered greeting - which is
-    /// the signal that the panel is fully interactive rather than merely present in the DOM.
-    /// </summary>
-    private async Task<ILocator> OpenChatPanel()
-    {
-        await Page.Locator(".open-panel-button").ClickAsync();
-
-        var panel = Page.Locator(".panel-cnt");
-        await Expect(panel).ToBeVisibleAsync();
-        await Expect(panel.Locator("textarea")).ToBeVisibleAsync();
-
-        return panel;
-    }
-
-    /// <summary>
-    /// Types a message, sends it, and waits until the server really received it.
-    /// <para>
-    /// The wait is not decoration. SignalR traffic is invisible to Playwright's network waits and an anonymous
-    /// connection leaves no server-side row to poll (See <c>AppHub.ChangeAuthenticationStateImplementation</c>: a new
-    /// anonymous connection is deliberately not recorded), so the only observable proof that the message arrived is
-    /// the chatbot calling the model. And if the hub connection was not up yet, <c>AppAiChatPanel.StartChannel</c>
-    /// assigns its channel BEFORE <c>StreamAsync</c> throws, which leaves the panel with a channel that is never
-    /// read from - a plain resend would go nowhere. Clearing the chat is the shipped recovery for that
-    /// (<c>ClearChat</c> -> <c>RestartChannel</c>), so that is what the retry does.
-    /// </para>
-    /// </summary>
-    private async Task SendChatMessage(ILocator panel, string message, TestChatClient chatClient)
-    {
-        var conversationsBefore = chatClient.ReceivedConversations.Count;
-
-        for (var attempt = 1; attempt <= 2; attempt++)
-        {
-            if (attempt > 1)
-            {
-                await panel.GetByTitle(AppStrings.Clear).ClickAsync();
-            }
-
-            await panel.Locator("textarea").FillAsync(message);
-            await panel.Locator(".send-message-button").ClickAsync();
-
-            if (await WaitForServerToReceiveAMessage(chatClient, conversationsBefore, TimeSpan.FromSeconds(15)))
-                return;
-        }
-
-        Assert.Fail("The chat message never reached the server, so the hub connection was not established. " +
-                    "Nothing after this point can be meaningful.");
-    }
-
-    private async Task<bool> WaitForServerToReceiveAMessage(TestChatClient chatClient, int conversationsBefore, TimeSpan timeout)
-    {
-        var deadline = DateTimeOffset.UtcNow + timeout;
-
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            if (chatClient.ReceivedConversations.Count > conversationsBefore)
-                return true;
-
-            await Task.Delay(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken);
-        }
-
-        return false;
-    }
 }

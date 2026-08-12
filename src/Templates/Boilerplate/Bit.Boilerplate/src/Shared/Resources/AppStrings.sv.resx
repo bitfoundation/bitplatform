@@ -1214,6 +1214,9 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Konto-uppgradering misslyckades.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Inga annonser är tillgängliga just nu. Försök igen senare.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problem med att titta på annons?</value>
   </data>

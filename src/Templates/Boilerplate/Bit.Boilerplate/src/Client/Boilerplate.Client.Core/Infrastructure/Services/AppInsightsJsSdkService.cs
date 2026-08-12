@@ -9,14 +9,33 @@ namespace Boilerplate.Client.Core.Infrastructure.Services;
 /// </summary>
 public class AppInsightsJsSdkService : IApplicationInsights
 {
-    private TaskCompletionSource? telemetryInitializerIsAddedTcs;
-    private readonly TaskCompletionSource appInsightsJsFilesAreLoaded = new();
+    /// <summary>
+    /// The Application Insights JS SDK is fetched from a CDN, so it can be missing for a while - or for the whole
+    /// of a launch that started offline. That is transient, and it must not be remembered as a permanent failure:
+    /// a failed attempt is discarded so the next telemetry call retries, rather than every later call rethrowing
+    /// the first timeout for the rest of the app session.
+    /// </summary>
+    private static readonly TimeSpan appInsightsJsFilesLoadTimeout = TimeSpan.FromSeconds(15);
+
+    private Task? applicationInsightsIsReady;
+    private readonly SemaphoreSlim applicationInsightsIsReadyLock = new(1, 1);
+
+    /// <summary>
+    /// Initializers that have not reached the SDK yet. They are queued rather than applied directly because
+    /// <see cref="AddTelemetryInitializer"/> is called fire and forget at startup, before the SDK is guaranteed to be
+    /// loaded - and they are kept until the SDK acknowledges them, so neither ordering loses one: an initializer added
+    /// before readiness is applied by the attempt that establishes it, and one added after readiness is applied on the
+    /// spot.
+    /// </summary>
+    private readonly ConcurrentQueue<TelemetryItem> pendingTelemetryInitializers = new();
 
     private IJSRuntime jsRuntime = default!;
+    private readonly TimeProvider timeProvider;
     private readonly ApplicationInsights applicationInsights = new();
 
-    public AppInsightsJsSdkService(IJSRuntime jsRuntime)
+    public AppInsightsJsSdkService(IJSRuntime jsRuntime, TimeProvider timeProvider)
     {
+        this.timeProvider = timeProvider;
         InitJSRuntime(jsRuntime);
     }
 
@@ -129,50 +148,85 @@ public class AppInsightsJsSdkService : IApplicationInsights
 
     public async Task AddTelemetryInitializer(TelemetryItem telemetryItem)
     {
-        await EnsureAppInsightsJsFilesAreLoaded();
+        pendingTelemetryInitializers.Enqueue(telemetryItem);
+
         try
         {
-            await applicationInsights.AddTelemetryInitializer(telemetryItem);
-            telemetryInitializerIsAddedTcs!.TrySetResult();
+            await EnsureApplicationInsightsIsReady();
         }
-        catch (Exception exp)
+        catch
         {
-            telemetryInitializerIsAddedTcs!.TrySetException(exp);
+            // This is called fire and forget during startup (AppClientCoordinator), so a failure here must not
+            // surface as an unobserved task exception. The initializer stays queued and is applied by the retry that
+            // the next Track* call drives.
         }
     }
 
     private async Task EnsureApplicationInsightsIsReady()
     {
-        await appInsightsJsFilesAreLoaded.Task;
-        await telemetryInitializerIsAddedTcs!.Task;
-    }
-
-    private async Task EnsureAppInsightsJsFilesAreLoaded()
-    {
-        try
+        if (applicationInsightsIsReady is not { IsCompletedSuccessfully: true })
         {
-            if (telemetryInitializerIsAddedTcs is not null)
-                return;
+            await applicationInsightsIsReadyLock.WaitAsync();
 
-            telemetryInitializerIsAddedTcs = new();
-
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
-
-            while (true)
+            try
             {
-                if (await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
-                    await jsRuntime.InvokeAsync<bool>("appInsights.hasOwnProperty", "updateCfg") &&
-                    await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights"))
+                // Only a *successful* attempt is kept. A failed one is replaced by a fresh attempt below, which is
+                // the whole point: the previous shape stored the first failure in a one-shot TaskCompletionSource,
+                // so a CDN that was merely slow disabled telemetry for the rest of the app session.
+                if (applicationInsightsIsReady is not { IsCompletedSuccessfully: true })
                 {
-                    appInsightsJsFilesAreLoaded.TrySetResult();
-                    break;
+                    await (applicationInsightsIsReady = WaitForAppInsightsJsFiles());
                 }
-                await Task.Delay(250, cts.Token);
+            }
+            finally
+            {
+                applicationInsightsIsReadyLock.Release();
             }
         }
-        catch (Exception exp)
+
+        // Deliberately outside the readiness check rather than inside the wait: readiness is established by whichever
+        // call gets there first, which is routinely a Track* call that carries no initializer. Applying only there
+        // would silently drop an initializer added afterwards.
+        await ApplyPendingTelemetryInitializers();
+    }
+
+    private async Task ApplyPendingTelemetryInitializers()
+    {
+        if (pendingTelemetryInitializers.IsEmpty) return;
+
+        await applicationInsightsIsReadyLock.WaitAsync();
+
+        try
         {
-            appInsightsJsFilesAreLoaded.TrySetException(exp);
+            // Dequeued only once the SDK has taken it, so a failure leaves it queued for the next attempt rather
+            // than losing it.
+            while (pendingTelemetryInitializers.TryPeek(out var telemetryItem))
+            {
+                await applicationInsights.AddTelemetryInitializer(telemetryItem);
+
+                pendingTelemetryInitializers.TryDequeue(out _);
+            }
         }
+        finally
+        {
+            applicationInsightsIsReadyLock.Release();
+        }
+    }
+
+    private async Task WaitForAppInsightsJsFiles()
+    {
+        using var cts = new CancellationTokenSource(appInsightsJsFilesLoadTimeout, timeProvider);
+
+        while (await AppInsightsJsFilesAreLoaded() is false)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(250), timeProvider, cts.Token);
+        }
+    }
+
+    private async Task<bool> AppInsightsJsFilesAreLoaded()
+    {
+        return await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "appInsights") &&
+               await jsRuntime.InvokeAsync<bool>("appInsights.hasOwnProperty", "updateCfg") &&
+               await jsRuntime.InvokeAsync<bool>("window.hasOwnProperty", "blazorApplicationInsights");
     }
 }

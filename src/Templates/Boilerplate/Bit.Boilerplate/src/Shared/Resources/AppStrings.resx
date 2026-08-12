@@ -1214,6 +1214,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Upgrade account failed.</value>
   </data>
+    <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>No ads are available right now. Please try again later.</value>
+  </data>
     <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Having trouble watching ad?</value>
   </data>

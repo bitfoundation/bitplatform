@@ -1214,6 +1214,9 @@
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>账户升级失败。</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>当前没有可用的广告。请稍后再试。</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>观看广告有问题？</value>
   </data>
