@@ -274,6 +274,8 @@ isVisible = false;
     private double _rate = 1;
     private bool _sequenceRunning;
 
+    private AnimationHandle? _slideHandle;
+    private AnimationHandle? _pulseHandle;
     private AnimationHandle? _optionsHandle;
     private AnimationHandle? _controlHandle;
     private readonly List<AnimationHandle> _sequenceHandles = [];
@@ -289,9 +291,16 @@ isVisible = false;
     {
         try
         {
-            // Nothing holds on to this handle: the animation runs once with the default Fill of
-            // "none", so the element is back to its stylesheet appearance the moment it ends.
-            await _boxRef.Animate(js, Slide, new AnimationOptions { Duration = 1200, Easing = "ease-in-out" });
+            // The animation runs once with the default Fill of "none", so the element is back to its
+            // stylesheet appearance the moment it ends - but the handle still owns a registry entry
+            // on the JavaScript side, so the previous run is disposed before a new one starts.
+            if (_slideHandle is not null)
+            {
+                await _slideHandle.DisposeAsync();
+                _slideHandle = null;
+            }
+
+            _slideHandle = await _boxRef.Animate(js, Slide, new AnimationOptions { Duration = 1200, Easing = "ease-in-out" });
             await runOutput.Success("Animate →", "running a 1200ms slide.");
         }
         catch (Exception ex)
@@ -311,7 +320,13 @@ isVisible = false;
                 new() { ["transform"] = "scale(1)", ["background-color"] = "#1276C6" },
             ];
 
-            await _pulseRef.Animate(js, pulse, new AnimationOptions { Duration = 900 });
+            if (_pulseHandle is not null)
+            {
+                await _pulseHandle.DisposeAsync();
+                _pulseHandle = null;
+            }
+
+            _pulseHandle = await _pulseRef.Animate(js, pulse, new AnimationOptions { Duration = 900 });
             await keyframesOutput.Success("Animate →", "3 keyframes over 900ms.");
         }
         catch (Exception ex)
@@ -501,6 +516,16 @@ isVisible = false;
 
     public async ValueTask DisposeAsync()
     {
+        if (_slideHandle is not null)
+        {
+            await _slideHandle.DisposeAsync();
+        }
+
+        if (_pulseHandle is not null)
+        {
+            await _pulseHandle.DisposeAsync();
+        }
+
         if (_optionsHandle is not null)
         {
             await _optionsHandle.DisposeAsync();

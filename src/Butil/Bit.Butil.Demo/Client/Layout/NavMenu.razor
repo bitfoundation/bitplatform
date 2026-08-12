@@ -2,7 +2,7 @@
    wide screens and sliding in over the content below the md breakpoint. Open/closed is the
    layout's state, not this component's - the scrim that closes it lives outside the panel. *@
 
-<nav class="nav-panel@(IsOpen ? " open" : "")" aria-label="APIs">
+<nav id="nav-panel" class="nav-panel@(IsOpen ? " open" : "")" aria-label="Documentation">
     <div class="nav-panel-search">
         <input type="search" aria-label="Search the documentation" placeholder="Search docs" @bind="_filter" @bind:event="oninput" />
     </div>

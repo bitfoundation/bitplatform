@@ -68,7 +68,7 @@
 
     private void SetIsHomePage()
     {
-        _isHomePage = navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Length == 0;
+        _isHomePage = navManager.RouteKey().Length == 0;
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)

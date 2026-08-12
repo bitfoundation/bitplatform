@@ -6,7 +6,7 @@
             @if (IsHomePage is false)
             {
                 <button class="menu-btn" title="Toggle navigation" aria-label="Header menu button"
-                        aria-expanded="@(IsNavPanelOpen ? "true" : "false")"
+                        aria-expanded="@(IsNavPanelOpen ? "true" : "false")" aria-controls="nav-panel"
                         @onclick="OnToggleNavPanel">
                     ☰
                 </button>

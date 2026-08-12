@@ -22,7 +22,12 @@ public class PageOutline
     /// <summary>The path the current <see cref="Items"/> were registered for.</summary>
     public string? Path { get; private set; }
 
-    public IReadOnlyList<PageOutlineItem> Items => _items;
+    /// <summary>
+    /// A snapshot: <see cref="Register"/> runs while sections initialize, i.e. in the middle of a
+    /// render the rail may already be walking this list, and handing out the live one would let it
+    /// grow underneath the enumerator.
+    /// </summary>
+    public IReadOnlyList<PageOutlineItem> Items => [.. _items];
 
     public event Action? Changed;
 

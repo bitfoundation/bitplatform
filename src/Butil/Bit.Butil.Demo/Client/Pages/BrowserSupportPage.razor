@@ -136,6 +136,12 @@ else
         </div>
     </div>
 
+    @* Filtered re-filters and re-materializes on every read, and the rows and the empty-state
+       check below are two of them - take the one list and use it for both. *@
+    @{
+        var filtered = Filtered;
+    }
+
     <div class="table-view support-table" role="table" aria-label="Browser support matrix">
         <div class="th-row" role="row">
             <div class="th-cell" role="columnheader">API</div>
@@ -144,7 +150,7 @@ else
             <div class="th-cell" role="columnheader">This browser</div>
         </div>
 
-        @foreach (var link in Filtered)
+        @foreach (var link in filtered)
         {
             <div class="tdata-row" role="row">
                 <div class="td-cell" role="cell">
@@ -195,7 +201,7 @@ else
             </div>
         }
 
-        @if (Filtered.Count == 0)
+        @if (filtered.Count == 0)
         {
             <div class="tdata-row" role="row">
                 <div class="td-cell" role="cell">Nothing matches those filters.</div>

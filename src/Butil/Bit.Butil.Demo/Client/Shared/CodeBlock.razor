@@ -6,8 +6,13 @@
    act on it, and a bar that only repeats "csharp" is a row of chrome per snippet. *@
 
 <div class="code-holder">
+    @* aria-live so the outcome is announced: the button confirms by swapping its own content, and
+       a state change inside the control that was just activated is otherwise silent. The label
+       tracks the same three states, so it never contradicts what the button now reads. *@
     <button class="copy-btn @(_failed ? "failed" : _copied ? "copied" : "")"
-            title="Copy to clipboard" aria-label="Copy code to clipboard" @onclick="Copy">
+            title="Copy to clipboard" aria-live="polite"
+            aria-label="@(_failed ? "Copy failed" : _copied ? "Copied to clipboard" : "Copy code to clipboard")"
+            @onclick="Copy">
         @if (_failed)
         {
             <span>Copy failed</span>

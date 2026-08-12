@@ -190,6 +190,13 @@
         --bit-mot-duration-short: 0.01ms;
         --bit-mot-duration-long: 0.01ms;
     }
+
+    /* The duration tokens do not reach scroll-behavior, so the smooth scroll set below - which
+       every in-page anchor and the footer's "Go to top" trigger - has to be turned off here too. */
+    html,
+    body {
+        scroll-behavior: auto;
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -982,7 +989,7 @@ pre code {
     padding: 0.75rem;
     white-space: normal;
     font-size: 0.75rem;
-    word-break: break-word;
+    overflow-wrap: break-word;
     align-items: flex-start;
     justify-content: flex-start;
     color: var(--bit-clr-fg-sec);
@@ -1112,7 +1119,7 @@ pre code {
 
 .demo-console-body .msg {
     white-space: pre-wrap;
-    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .demo-console-body .line.log .msg { color: var(--bit-clr-fg-pri); }
@@ -2070,20 +2077,28 @@ label.check {
        Both start below the header rather than over it, the way the library's
        own nav panel is pinned - the button that opened the drawer stays on
        screen to close it again, and the reader can still see where they are. */
+    /* visibility, not just the transform: a panel parked off the left edge is still in the focus
+       order, so tabbing from the header would walk the whole link list before reaching the page.
+       It is transitioned rather than set outright because visibility interpolates discretely in
+       favour of "visible" - the panel stays painted for the whole slide-out and only disappears
+       once it has left, while opening reveals it immediately. */
     .nav-panel {
         left: 0;
         bottom: 0;
         height: auto;
         position: fixed;
         z-index: 1100;
+        visibility: hidden;
         top: var(--demo-header-height);
         transform: translateX(-100%);
         box-shadow: var(--bit-shd-cal);
-        transition: transform var(--bit-mot-duration) var(--bit-mot-easing);
+        transition: transform var(--bit-mot-duration) var(--bit-mot-easing),
+                    visibility var(--bit-mot-duration) var(--bit-mot-easing);
     }
 
     .nav-panel.open {
         transform: none;
+        visibility: visible;
     }
 
     .nav-scrim {

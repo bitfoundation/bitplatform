@@ -44,9 +44,7 @@
 
     private void SetNeighbours()
     {
-        var relative = navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Trim('/');
-
-        (_previous, _next) = DocsNav.Neighbours(relative);
+        (_previous, _next) = DocsNav.Neighbours(navManager.RouteKey());
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)

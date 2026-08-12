@@ -54,7 +54,11 @@
 
     private string Path => new Uri(navManager.Uri).AbsolutePath;
 
-    private string Slug => string.Concat(Title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-'));
+    // Runs of separators collapse to one hyphen and the ends are trimmed, so a title like
+    // "Play / Pause" anchors at #play-pause rather than #play---pause.
+    private string Slug => string.Join('-',
+        string.Concat(Title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-'))
+              .Split('-', StringSplitOptions.RemoveEmptyEntries));
 
     // The rail cannot know the page's sections up front, so each one puts itself on the list. The
     // outline is keyed by path and resets when the next page registers, so there is nothing to

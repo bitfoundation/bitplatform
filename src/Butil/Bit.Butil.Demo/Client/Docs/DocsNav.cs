@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+
 namespace Bit.Butil.Demo.Client.Docs;
 
 /// <summary>
@@ -160,6 +162,14 @@ public static class DocsNav
     /// each group's links in the order they are declared.
     /// </summary>
     public static readonly DocLink[] ReadingOrder = [.. AllLinks];
+
+    /// <summary>
+    /// The current location as it is written in <see cref="DocLink.Url"/>: base-relative, without
+    /// the query or the fragment, and without surrounding slashes. The home page is the empty
+    /// string. Everything that matches a route against this list has to normalize the same way.
+    /// </summary>
+    public static string RouteKey(this NavigationManager navManager) =>
+        navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Trim('/');
 
     /// <summary>
     /// The links either side of <paramref name="url"/> in <see cref="ReadingOrder"/>, or nulls at
