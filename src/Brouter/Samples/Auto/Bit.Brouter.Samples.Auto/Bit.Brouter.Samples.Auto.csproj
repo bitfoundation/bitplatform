@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
-    <ProjectReference Include="..\Bit.Brouter.Demos.Auto.Client\Bit.Brouter.Demos.Auto.Client.csproj" />
-    <ProjectReference Include="..\..\Core\Bit.Brouter.Demos.Core.csproj" />
+    <ProjectReference Include="..\Bit.Brouter.Samples.Auto.Client\Bit.Brouter.Samples.Auto.Client.csproj" />
+    <ProjectReference Include="..\..\Core\Bit.Brouter.Samples.Core.csproj" />
   </ItemGroup>
 
 </Project>
