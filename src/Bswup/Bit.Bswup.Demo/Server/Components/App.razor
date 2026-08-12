@@ -21,19 +21,25 @@
     <title>bit Bswup - Blazor Service Worker Update Progress</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps." />
-    <meta name="theme-color" content="#03173d" />
+    <meta name="theme-color" content="#0F1318" />
     <link href="manifest.json" rel="manifest" />
     <link rel="icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <script>
-        // Applied before first paint so the persisted theme never flashes.
+        // Applied before first paint so the persisted theme never flashes. The attribute is
+        // data-theme on <html>, which app.css keys every theme rule off. It is always written
+        // to a concrete value: the stylesheet's light and dark rules are exact complements of
+        // [data-theme$='dark'], so an absent attribute would resolve to light regardless of
+        // the system preference.
         (function () {
+            var theme = 'light';
             try {
-                var theme = localStorage.getItem('bswup-demo-theme');
-                if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                }
+                var stored = localStorage.getItem('bswup-demo-theme');
+                theme = stored === 'dark' || stored === 'light'
+                    ? stored
+                    : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             } catch (e) { }
+            document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
     <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />

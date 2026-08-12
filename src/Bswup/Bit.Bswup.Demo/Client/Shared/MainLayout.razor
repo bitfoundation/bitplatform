@@ -1,33 +1,159 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager NavigationManager
 
-<header class="docs-header">
-    <button type="button" class="icon-button menu-button" aria-label="Toggle navigation" data-demo-action="toggle-sidebar">☰</button>
-    <a class="brand" href="/">
-        <img src="icon-512.png" alt="bit platform logo" />
-        <span>Bswup</span>
-    </a>
-    <div class="header-spacer"></div>
-    <a class="header-link" href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener">NuGet</a>
-    <a class="header-link" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">GitHub</a>
-    <button type="button" class="icon-button" aria-label="Toggle dark mode" data-demo-action="toggle-theme">
-        <span class="theme-icon-light">🌙</span>
-        <span class="theme-icon-dark">☀️</span>
-    </button>
+@* The shell mirrors the Bit.BlazorUI demo's chrome (AppHeader / BitNavPanel / AppFooter) in
+   plain markup and CSS - this site takes no dependency on Bit.BlazorUI, so the structure is
+   reproduced rather than composed from BitLayout. Class names are kept identical to the ones
+   in that project's stylesheets so the two can be diffed against each other.
+
+   Every control is wired through data-demo-action and the single delegated listener in
+   demo.js - no inline onclick and no @@onclick that would need an interactive circuit during
+   prerender - so the chrome works under a strict Content-Security-Policy and before the
+   WebAssembly runtime takes over. *@
+
+<header class="header">
+    <div class="container@(_isHomePage ? " home-page" : "")">
+        <div class="header-group">
+            @* No nav rail on the home page, so nothing for the drawer button to open either. *@
+            @if (_isHomePage is false)
+            {
+                <button type="button" class="menu-btn" aria-label="Header menu button" data-demo-action="toggle-nav-panel">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M3 6h18M3 12h18M3 18h18" />
+                    </svg>
+                </button>
+            }
+            <a class="logo" href="/" aria-label="Homepage"></a>
+            @* Not NavLinks: "Docs" marks the whole documentation section, which is every route
+               except the home page, and NavLink can only match its own href. *@
+            <a class="link@(_isHomePage ? " active" : "")" href="/">Home</a>
+            <a class="link@(_isHomePage ? "" : " active")" href="getting-started">Docs</a>
+            <a class="link" href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener noreferrer">NuGet</a>
+        </div>
+
+        <div class="header-group">
+            <a class="github-btn" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer" aria-label="Github repository"></a>
+
+            @* Exact complements: the stylesheet shows the dark-theme button only while
+               data-theme resolves to dark, and the light-theme one only while it does not, so
+               exactly one of the pair is ever visible. *@
+            <button type="button" class="toggle-theme-btn dark-theme" title="Turn on light" aria-label="Turn on light" data-demo-action="toggle-theme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                </svg>
+            </button>
+            <button type="button" class="toggle-theme-btn light-theme" title="Turn off light" aria-label="Turn off light" data-demo-action="toggle-theme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+        </div>
+    </div>
 </header>
 
-<aside class="docs-sidebar">
-    <NavMenu />
-</aside>
-<div class="docs-sidebar-backdrop" data-demo-action="close-sidebar"></div>
+<div class="layout-body">
+    @* The home page is a landing page, not a documentation page: it gets the full width and no
+       rail, the way the BlazorUI demo's own home page does. *@
+    @if (_isHomePage is false)
+    {
+        <aside class="nav-panel">
+            <NavMenu />
+        </aside>
+        <div class="nav-panel-backdrop" data-demo-action="close-nav-panel"></div>
+    }
 
-<main class="docs-main">
-    <article class="docs-content">
-        @Body
-    </article>
-    <footer class="docs-footer">
-        <span>© @DateTime.Now.Year bit platform - MIT licensed</span>
-        <a href="https://bitplatform.dev" target="_blank" rel="noopener">bitplatform.dev</a>
-        <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">Source</a>
-        <a href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener">Bit.Bswup on NuGet</a>
-    </footer>
-</main>
+    <main class="site-content">
+        <div class="page-container@(_isHomePage ? " home-page" : "")">
+            @* Off the home page the article is the equivalent of the BlazorUI demo's
+               .page-section cards - the pages here are continuous prose rather than a stack of
+               sections, so the card is the article and the h2 rule draws the boundaries. *@
+            <article class="page-content">
+                @Body
+            </article>
+        </div>
+    </main>
+</div>
+
+<footer class="footer">
+    <section>
+        <div>
+            <div class="bit-logo"></div>
+            <p class="footer-blurb">
+                Bswup is part of bit platform - a platform that simplifies the development process for
+                freelancers and software companies through its clean project templates and easy-to-use
+                one-click build and deployment feature.
+            </p>
+        </div>
+
+        <div class="footer-columns">
+            <div class="footer-column">
+                <div class="footer-column-title">Explore</div>
+                <a href="getting-started">Getting Started</a>
+                <a href="how-it-works">How It Works</a>
+                <a href="recipes">Recipes</a>
+                <a href="troubleshooting">Troubleshooting</a>
+                <a href="playground">Live Playground</a>
+            </div>
+
+            <div class="footer-column">
+                <div class="footer-column-title">Quick links</div>
+                <a href="https://www.nuget.org/packages/Bit.Bswup" target="_blank" rel="noopener noreferrer">Bit.Bswup on NuGet</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Github Repo</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Github Issues</a>
+            </div>
+
+            <button type="button" class="go-to-top" data-demo-action="go-to-top">Go to top</button>
+        </div>
+    </section>
+
+    <section>
+        <div class="address-info">
+            <a class="address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="country">Netherlands</div>
+            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+        <div>
+            <div class="social-link-group">
+                <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="copy-right-txt">Copyright © @DateTime.Now.Year bit platform | All Rights Reserved</div>
+        </div>
+    </section>
+</footer>
+
+@code {
+    private bool _isHomePage;
+
+    protected override void OnInitialized()
+    {
+        SetIsHomePage();
+        NavigationManager.LocationChanged += OnLocationChanged;
+
+        base.OnInitialized();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetIsHomePage();
+        StateHasChanged();
+    }
+
+    // Query and fragment are stripped rather than compared: the service worker fetches the app
+    // shell with ?no-prerender attached (see the host document), so the copy it caches - and
+    // replays for the home page when offline - carries a query string the route does not.
+    private void SetIsHomePage()
+    {
+        var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0];
+        _isHomePage = path.Length == 0;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
