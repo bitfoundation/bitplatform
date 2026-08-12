@@ -76,7 +76,7 @@
         <span class="k">await</span> brouter.SetConfirmExternalNavigationAsync(<span class="k">true</span>);   <span class="c">// tab close / reload</span>
     }
 
-    <span class="k">protected override async</span> ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
+    <span class="k">protected override async</span> Task OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
     {
         <span class="k">if</span> (_dirty <span class="k">is false</span>) <span class="k">return</span>;
 

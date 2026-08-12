@@ -46,7 +46,7 @@
 /* The one place on the site that outsizes the type ramp: Fluent's H3, because a landing hero is
    the single screen where the title is the whole message. */
 .bb-hero-copy h1 {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: 400;
     line-height: 1.15;
     letter-spacing: 0;
@@ -287,9 +287,11 @@
     .bb-walkthrough-row:nth-child(even) .bb-walkthrough-copy {
         order: 0;
     }
+}
+
+@media (max-width: 600px) {
 
     .bb-hero-copy h1 {
-        font-size: 2.125rem;
-        line-height: 1.25;
+        font-size: 2.5rem;
     }
 }

@@ -74,7 +74,7 @@
     </p>
     <pre class="bb-code"><span class="k">public partial class</span> NavigationLockPage : <span class="k">BrouterRouteBase</span>
 {
-    <span class="k">protected override async</span> ValueTask OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
+    <span class="k">protected override async</span> Task OnDeactivatingAsync(BrouterRouteDeactivatingContext ctx)
     {
         <span class="k">if</span> (_dirty &amp;&amp; !<span class="k">await</span> ShowDialogAsync(ctx.To.Path, ctx.CancellationToken))
             ctx.Cancel();
