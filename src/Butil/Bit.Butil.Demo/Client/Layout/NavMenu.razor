@@ -1,56 +1,60 @@
-﻿@if (_open)
-{
-    <div class="scrim" @onclick="Close"></div>
-}
+@* The BlazorUI demo's BitNavPanel: a filter box over grouped links, pinned under the header on
+   wide screens and sliding in over the content below the md breakpoint. Open/closed is the
+   layout's state, not this component's - the scrim that closes it lives outside the panel. *@
 
-<nav class="sidebar @(_open ? "open" : "")">
-    <a class="sidebar-brand" href="" @onclick="Close">
-        <img src="icon-512.png" alt="bit platform logo">
-        <span>
-            <span class="title">Butil</span><br />
-        </span>
-    </a>
-
-    <div class="sidebar-search">
-        <input aria-label="Filter APIs" placeholder="Filter APIs..." @bind="_filter" @bind:event="oninput" />
+<nav class="nav-panel@(IsOpen ? " open" : "")" aria-label="APIs">
+    <div class="nav-panel-search">
+        <input type="search" aria-label="Search the documentation" placeholder="Search docs" @bind="_filter" @bind:event="oninput" />
     </div>
 
-    <div class="sidebar-nav">
-        <div class="group-label">Overview</div>
-        <NavLink href="" Match="NavLinkMatch.All" @onclick="Close">
-            <span class="ico">🏠</span>
-            <span>Home</span>
-        </NavLink>
-        <NavLink href="getting-started" Match="NavLinkMatch.All" @onclick="Close">
-            <span class="ico">🚀</span>
-            <span>Getting started</span>
-        </NavLink>
+    <div class="nav-panel-items">
+        @* Home is the only entry that is not a documentation page, so it is the only one written
+           out here; everything else - guides included - comes from DocsNav and is filterable. *@
+        @if (string.IsNullOrWhiteSpace(_filter))
+        {
+            <NavLink class="nav-panel-item" href="" Match="NavLinkMatch.All" @onclick="OnNavigate">
+                <span class="ico">🏠</span>
+                <span>Home</span>
+            </NavLink>
+        }
 
+        @{
+            var matched = 0;
+        }
         @foreach (var group in DocsNav.Groups)
         {
             var links = group.Links.Where(Match).ToList();
             if (links.Count == 0) continue;
 
-            <div class="group-label">@group.Title</div>
+            matched += links.Count;
+
+            <div class="nav-panel-group">@group.Title</div>
             @foreach (var link in links)
             {
-                <NavLink href="@link.Url" Match="NavLinkMatch.All" @onclick="Close">
+                <NavLink class="nav-panel-item" href="@link.Url" Match="NavLinkMatch.All" @onclick="OnNavigate">
                     <span class="ico">@link.Icon</span>
                     <span>@link.Title</span>
                 </NavLink>
             }
         }
+
+        @if (matched == 0)
+        {
+            <div class="nav-panel-empty">Nothing matches "@_filter".</div>
+        }
     </div>
 </nav>
 
 @code {
-    private bool _open;
     private string _filter = "";
 
-    public void Toggle() { _open = !_open; StateHasChanged(); }
-    public void Close() { _open = false; StateHasChanged(); }
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Raised when a link is followed, so the layout can close the small-screen drawer.</summary>
+    [Parameter] public EventCallback OnNavigate { get; set; }
 
     private bool Match(DocLink link) =>
         string.IsNullOrWhiteSpace(_filter) ||
-        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+        link.Summary.Contains(_filter, StringComparison.OrdinalIgnoreCase);
 }

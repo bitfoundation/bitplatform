@@ -1,0 +1,51 @@
+@inject Bit.Butil.Window window
+
+<footer class="footer">
+    <section>
+        <div>
+            <div class="bit-logo"></div>
+            <p class="tagline">
+                Bit.Butil is part of bit platform - a platform that simplifies the development
+                process for freelancers and software companies through its clean project templates
+                and easy-to-use one-click build and deployment feature.
+            </p>
+        </div>
+
+        <div class="link-groups">
+            <div class="link-group">
+                <h6>Explore</h6>
+                <a href="getting-started">Getting started</a>
+                <a href="render-modes">Render modes</a>
+                <a href="browser-support">Browser support</a>
+                <a href="troubleshooting">Troubleshooting</a>
+                <a href="window">APIs</a>
+                <a href="https://www.nuget.org/packages/Bit.Butil" target="_blank" rel="noopener noreferrer">NuGet package</a>
+            </div>
+
+            <div class="link-group">
+                <h6>Quick links</h6>
+                <a href="https://github.com/bitfoundation" target="_blank" rel="noopener noreferrer">Github Org</a>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">Github Repo</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener noreferrer">Github Issues</a>
+            </div>
+
+            @* Dogfooding, like the theme switch: the scroll goes through Bit.Butil's own Window
+               wrapper rather than an href="#" that would also push a history entry. *@
+            <button class="go-to-top" @onclick="GoToTop">Go to top</button>
+        </div>
+    </section>
+
+    <section>
+        <div class="social-link-group">
+            <a class="social-link twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+            <a class="social-link github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+            <a class="social-link youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+            <a class="social-link linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+        </div>
+        <div class="copy-right-txt">Copyright © @DateTime.Now.Year bit platform | All Rights Reserved</div>
+    </section>
+</footer>
+
+@code {
+    private async Task GoToTop() => await window.Scroll(0, 0);
+}

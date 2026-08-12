@@ -1,21 +1,41 @@
-﻿<div class="page-header">
+@* A page opens the way every BlazorUI demo page does: an overline naming the area, the title,
+   then the lead as prose on the bare page rather than inside one more frame. *@
+
+@* The lead is already a one-paragraph summary of the page written for a human, which is exactly
+   what a description meta wants - so it is also emitted into the head rather than having every
+   page maintain a second copy of its own summary. The host page deliberately carries no static
+   description for the same reason it carries no static title: with prerendering the HeadOutlet
+   emits a real element, and an earlier one in the served HTML would win. *@
+@if (string.IsNullOrWhiteSpace(Lead) is false)
+{
+    <HeadContent>
+        <meta name="description" content="@Lead" />
+    </HeadContent>
+}
+
+<header class="page-header">
     <span class="eyebrow">@Category</span>
     <h1>@Title</h1>
-    @if (!string.IsNullOrWhiteSpace(Lead))
-    {
-        <p class="lead">@Lead</p>
-    }
+</header>
+
+@if (string.IsNullOrWhiteSpace(Lead) is false)
+{
+    <p class="page-lead">@Lead</p>
+}
+
+@if (string.IsNullOrWhiteSpace(InjectAs) is false || string.IsNullOrWhiteSpace(MdnUrl) is false)
+{
     <div class="page-header-links">
-        @if (!string.IsNullOrWhiteSpace(InjectAs))
+        @if (string.IsNullOrWhiteSpace(InjectAs) is false)
         {
             <code class="inject-chip">@("@inject") Bit.Butil.@InjectAs</code>
         }
-        @if (!string.IsNullOrWhiteSpace(MdnUrl))
+        @if (string.IsNullOrWhiteSpace(MdnUrl) is false)
         {
             <a class="mdn-link" href="@MdnUrl" target="_blank" rel="noopener noreferrer">MDN reference ↗</a>
         }
     </div>
-</div>
+}
 
 @code {
     [Parameter] public string Category { get; set; } = "Bit.Butil";

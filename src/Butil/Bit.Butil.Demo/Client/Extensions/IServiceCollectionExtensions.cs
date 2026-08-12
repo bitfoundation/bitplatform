@@ -15,6 +15,7 @@ public static class IServiceCollectionExtensions
     {
         services.AddBitButilServices();
         services.AddScoped<ThemeService>();
+        services.AddScoped<PageOutline>();
 
         return services;
     }

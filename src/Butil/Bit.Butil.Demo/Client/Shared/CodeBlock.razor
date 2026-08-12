@@ -1,13 +1,31 @@
-﻿@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Clipboard clipboard
 
-<div class="code-block">
-    <div class="code-block-head">
-        <span class="lang">@Language</span>
-        <button class="copy-btn @(_copied ? "copied" : "")" title="Copy to clipboard" @onclick="Copy">
-            @(_failed ? "Copy failed" : _copied ? "Copied ✓" : "Copy")
-        </button>
-    </div>
-    <pre><code>@Code.Trim('\r', '\n')</code></pre>
+@* The BlazorUI demo's code pane: the source on the secondary surface, with a round copy button
+   resting on it that confirms by growing into its label instead of snapping open. The language is
+   kept as a data attribute rather than a header strip - there is no highlighter on this site to
+   act on it, and a bar that only repeats "csharp" is a row of chrome per snippet. *@
+
+<div class="code-holder">
+    <button class="copy-btn @(_failed ? "failed" : _copied ? "copied" : "")"
+            title="Copy to clipboard" aria-label="Copy code to clipboard" @onclick="Copy">
+        @if (_failed)
+        {
+            <span>Copy failed</span>
+        }
+        else if (_copied)
+        {
+            <span>Copied!</span>
+        }
+        else
+        {
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.8" aria-hidden="true" focusable="false">
+                <rect x="9" y="9" width="11" height="11" rx="1.5" />
+                <path d="M15 5.5A1.5 1.5 0 0 0 13.5 4h-8A1.5 1.5 0 0 0 4 5.5v8A1.5 1.5 0 0 0 5.5 15" />
+            </svg>
+        }
+    </button>
+    <pre data-language="@Language"><code>@Code.Trim('\r', '\n')</code></pre>
 </div>
 
 @code {

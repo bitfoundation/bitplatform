@@ -1,47 +1,61 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @implements IDisposable
 @inject ThemeService theme
+@inject NavigationManager navManager
 
-<div class="shell" data-theme="@theme.Current">
-    <NavMenu @ref="_nav" />
+@* The theme lives on this wrapper rather than on <html>: Bit.BlazorUI's palettes are declared
+   for `:root [bit-theme="..."]` as well as for the root itself, so stamping the attribute on any
+   element re-themes that subtree through custom-property inheritance - no interop needed to reach
+   the document element, which also means the prerendered HTML is already themed. *@
+<div class="app-root" bit-theme="@theme.Current">
+    <AppHeader IsHomePage="_isHomePage"
+               IsNavPanelOpen="_isNavPanelOpen"
+               OnToggleNavPanel="() => _isNavPanelOpen = !_isNavPanelOpen" />
 
-    <div class="main">
-        <header class="topbar">
-            <button class="menu-btn" title="Toggle navigation" @onclick="() => _nav.Toggle()">☰</button>
-            <span class="topbar-title">Butil <span class="muted">/ Blazor utilities for JavaScript</span></span>
-            @* The page is prerendered on the server, so it is visible - and inert - until the
-               WebAssembly runtime takes over. Say so instead of letting clicks silently do nothing. *@
-            @if (RendererInfo.IsInteractive is false)
+    <div class="layout">
+        @if (_isHomePage is false)
+        {
+            @if (_isNavPanelOpen)
             {
-                <span class="hydrating" title="Prerendered HTML - the WebAssembly runtime is still loading.">
-                    <i></i>loading
-                </span>
+                <div class="nav-scrim" @onclick="() => _isNavPanelOpen = false"></div>
             }
-            <div class="topbar-links">
-                <a href="https://www.nuget.org/packages/Bit.Butil" target="_blank" rel="noopener noreferrer">NuGet</a>
-                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">GitHub</a>
+
+            <NavMenu IsOpen="_isNavPanelOpen" OnNavigate="() => _isNavPanelOpen = false" />
+        }
+
+        <div class="main">
+            <div class="site-content">
+                @if (_isHomePage)
+                {
+                    @Body
+                }
+                else
+                {
+                    <div class="page-wrapper">
+                        <div class="page-container">
+                            @Body
+                            <DocPager />
+                        </div>
+                        <SideRail />
+                    </div>
+                }
             </div>
-            <button class="theme-btn" title="Switch to @(theme.IsDark ? "light" : "dark") theme" @onclick="theme.Toggle">
-                @(theme.IsDark ? "☀️" : "🌙")
-            </button>
-        </header>
 
-        <main class="content">
-            @Body
-
-            <footer class="footer">
-                <span>Bit.Butil demo &amp; documentation - part of the <a href="https://bitplatform.dev" target="_blank" rel="noopener noreferrer">bit platform</a> project.</span>
-            </footer>
-        </main>
+            <AppFooter />
+        </div>
     </div>
 </div>
 
 @code {
-    private NavMenu _nav = default!;
+    private bool _isHomePage;
+    private bool _isNavPanelOpen;
 
     protected override void OnInitialized()
     {
         theme.Changed += OnThemeChanged;
+        navManager.LocationChanged += OnLocationChanged;
+
+        SetIsHomePage();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -52,10 +66,27 @@
         }
     }
 
+    private void SetIsHomePage()
+    {
+        _isHomePage = navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Length == 0;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetIsHomePage();
+
+        // Whatever opened the drawer has been navigated away from; leaving it over the new page
+        // would make every small-screen navigation take two taps.
+        _isNavPanelOpen = false;
+
+        StateHasChanged();
+    }
+
     private void OnThemeChanged() => StateHasChanged();
 
     public void Dispose()
     {
         theme.Changed -= OnThemeChanged;
+        navManager.LocationChanged -= OnLocationChanged;
     }
 }

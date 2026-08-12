@@ -1,24 +1,36 @@
-﻿<section class="demo-section" id="@Slug">
-    <h2>
-        <a class="anchor" href="@(Href)#@Slug">#</a>
-        @Title
-        @if (!string.IsNullOrWhiteSpace(Api))
+@inject PageOutline outline
+@inject NavigationManager navManager
+
+@* One section per card, following the BlazorUI demo's page rhythm: a heading over a hairline,
+   the prose, the source, then the live sample on the plain surface. The library groups all of its
+   examples inside a single "Usage" card because they demonstrate one component; a Butil page
+   documents a whole browser API, one independent member per section, so each gets its own card. *@
+
+<section class="page-section" id="@Slug">
+    <div class="section-heading">
+        <h2>
+            <a class="anchor" href="@Path#@Slug" aria-label="Link to this section">#</a>
+            @Title
+        </h2>
+        @if (string.IsNullOrWhiteSpace(Api) is false)
         {
             <span class="badge">@Api</span>
         }
-    </h2>
-    @if (!string.IsNullOrWhiteSpace(Description))
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(Description) is false)
     {
         <p class="section-desc">@Description</p>
     }
-    @if (!string.IsNullOrWhiteSpace(Code))
+
+    @if (string.IsNullOrWhiteSpace(Code) is false)
     {
         <CodeBlock Code="@Code" Language="@Language" />
     }
+
     @if (ChildContent is not null)
     {
         <div class="demo-area">
-            <span class="demo-area-label">Live demo</span>
             @ChildContent
         </div>
     }
@@ -40,9 +52,12 @@
     /// <summary>The live, interactive part of the section.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    [Inject] private NavigationManager NavManager { get; set; } = default!;
-
-    private string Href => new Uri(NavManager.Uri).AbsolutePath;
+    private string Path => new Uri(navManager.Uri).AbsolutePath;
 
     private string Slug => string.Concat(Title.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-'));
+
+    // The rail cannot know the page's sections up front, so each one puts itself on the list. The
+    // outline is keyed by path and resets when the next page registers, so there is nothing to
+    // unregister here.
+    protected override void OnInitialized() => outline.Register(Path, new PageOutlineItem(Title, Slug));
 }

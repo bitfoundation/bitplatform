@@ -8,7 +8,8 @@
        prerendering the HeadOutlet emits a real <title> element into this head. A second,
        earlier one would win in the served HTML (browsers and crawlers take the first). *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Bit.Butil demo & documentation - use browser APIs from C# in Blazor without writing JavaScript." />
+    @* No static description here either, for the same reason as the title above: every page emits
+       its own through PageHeader's lead, and an earlier one in the served HTML would win. *@
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="css/app.css" />
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@

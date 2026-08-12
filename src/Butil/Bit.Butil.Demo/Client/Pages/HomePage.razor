@@ -1,43 +1,83 @@
-﻿@page "/"
+@page "/"
 
 <PageTitle>Bit.Butil - browser APIs for Blazor, without JavaScript</PageTitle>
 
-<div class="hero">
-    <h1>Browser APIs for Blazor,<br /><span class="grad">without writing JavaScript</span></h1>
-    <p class="lead">
-        Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media,
-        sensors and much more - in strongly-typed C# classes you simply inject and call.
-        This site documents every feature with live, interactive demos.
-    </p>
-    <div class="hero-actions">
-        <a class="primary" href="getting-started">Get started</a>
-        <a class="ghost" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-    </div>
-    <div class="stat-row">
-        <span><b>@DocsNav.AllLinks.Count()</b> documented APIs</span>
-        <span><b>0</b> lines of JS to write</span>
-        <span><b>1</b> script tag to add</span>
-    </div>
-</div>
+@* The only page with no PageHeader to emit this for it. *@
+<HeadContent>
+    <meta name="description" content="Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media, sensors and more - in strongly-typed C# classes for Blazor WebAssembly, Server and Hybrid. No JavaScript to write." />
+</HeadContent>
 
-<Callout Type="info" Title="Everything on this site is live">
-    Every page pairs the documentation with interactive samples running against the real browser APIs -
-    what you click is what the library does.
-</Callout>
+@* The BlazorUI demo's hero is a two-column split because it has something to put in the second
+   column: a live board of the components it is selling. Butil is not a component library - there
+   is nothing to show next to the pitch - so the hero is flat here, a full-bleed band across the
+   top of the page rather than a half-width column with dead space beside it. *@
+<section class="hero">
+    <div class="hero-inner">
+        @* The break is deliberate: left to wrap on its own the line lands inside the accent
+           phrase, which then reads as two half-coloured lines instead of one claim. *@
+        <h1 class="hero-title">
+            Browser APIs for Blazor,<br />
+            <span class="hero-title-accent">without writing JavaScript</span>
+        </h1>
 
-@foreach (var group in DocsNav.Groups)
-{
-    <div class="home-group">
-        <h2>@group.Title</h2>
-        <div class="card-grid">
-            @foreach (var link in group.Links)
-            {
-                <a class="feature-card" href="@link.Url">
-                    <span class="ico">@link.Icon</span>
-                    <span class="name">@link.Title</span>
-                    <span class="desc">@link.Summary</span>
-                </a>
-            }
+        <p class="hero-subtitle">
+            Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media,
+            sensors and much more - in strongly-typed C# classes you simply inject and call. It works
+            in every interactive Blazor mode: WebAssembly, Server and Hybrid (MAUI).
+        </p>
+
+        <div class="hero-actions">
+            <a href="getting-started">Get started</a>
+            <a class="ghost" href="window">Explore the APIs</a>
+        </div>
+
+        <div class="hero-install">
+            <CodeBlock Language="shell" Code="dotnet add package Bit.Butil" />
+        </div>
+
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-value">@DocsNav.ApiLinks.Count()</span>
+                <span class="hero-stat-label">Documented APIs</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">100% C#</span>
+                <span class="hero-stat-label">No JS to write</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">1</span>
+                <span class="hero-stat-label">Script tag to add</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-value">.NET 8.0+</span>
+                <span class="hero-stat-label">Framework</span>
+            </div>
         </div>
     </div>
-}
+</section>
+
+@* The one page with no nav panel, so it sets its own width cap - the same one the BlazorUI
+   demo's home page uses. *@
+<div class="home-container">
+    <Callout Type="info" Title="Everything on this site is live">
+        Every page pairs the documentation with interactive samples running against the real browser
+        APIs - what you click is what the library does.
+    </Callout>
+
+    @foreach (var group in DocsNav.Groups)
+    {
+        <div class="home-group">
+            <h2>@group.Title</h2>
+            <div class="card-grid">
+                @foreach (var link in group.Links)
+                {
+                    <a class="feature-card" href="@link.Url">
+                        <span class="ico">@link.Icon</span>
+                        <span class="name">@link.Title</span>
+                        <span class="desc">@link.Summary</span>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
