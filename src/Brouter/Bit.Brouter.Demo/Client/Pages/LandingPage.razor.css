@@ -1,0 +1,297 @@
+/* The landing page is a stack of full-bleed bands, the way the Bit.BlazorUI demo's home page is
+   built: every other band drops to the secondary surface and is fenced by the same hairline the
+   rest of the docs chrome uses, so the sections separate without a single drop shadow. */
+
+.bb-landing {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Full-width background, centred content, no wrapper element: the gutter grows to whatever is
+   left over once the content cap is taken, and never falls below the minimum. */
+.bb-landing > section {
+    width: 100%;
+    padding-block: 5rem;
+    padding-inline: max(1.25rem, calc((100% - var(--bb-content-width)) / 2));
+    background: var(--bb-surface);
+}
+
+.bb-landing > section:nth-child(even) {
+    background: var(--bb-bg);
+    border-block: 1px solid var(--bb-border);
+}
+
+/* ---------- Hero ---------- */
+
+.bb-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: center;
+}
+
+.bb-hero-eyebrow {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    padding: .3rem .65rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+}
+
+/* The one place on the site that outsizes the type ramp: Fluent's H3, because a landing hero is
+   the single screen where the title is the whole message. */
+.bb-hero-copy h1 {
+    font-size: 4rem;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0;
+    margin-bottom: .85rem;
+}
+
+.bb-hero-accent {
+    background: linear-gradient(90deg, var(--bb-primary), var(--bb-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.bb-hero-sub {
+    color: var(--bb-text-muted);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+    max-width: 34rem;
+}
+
+.bb-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.bb-hero-code {
+    min-width: 0;
+}
+
+/* ---------- Proof strip ---------- */
+
+/* A single hairline grid: the 1px gap IS the rule between cells, so the four claims read as one
+   row of facts rather than as four more cards. It is also the one child of the stack that is a
+   control rather than a band, so it opts out of the full-bleed treatment entirely and keeps the
+   container's gutters. */
+.bb-landing > section.bb-proof {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+    gap: 1px;
+    width: min(100% - 2.5rem, var(--bb-content-width));
+    margin: 4rem auto;
+    padding: 0;
+    background: var(--bb-border);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    overflow: hidden;
+}
+
+.bb-proof > div {
+    background: var(--bb-surface);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.bb-proof strong {
+    color: var(--bb-text);
+    font-size: .9375rem;
+}
+
+.bb-proof span {
+    color: var(--bb-text-muted);
+    font-size: .8125rem;
+    line-height: 1.6;
+}
+
+/* ---------- Sections ---------- */
+
+.bb-section h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: .5rem;
+}
+
+.bb-section-sub {
+    color: var(--bb-text-muted);
+    max-width: var(--bb-measure);
+    margin-bottom: 2rem;
+}
+
+/* ---------- Walkthrough ---------- */
+
+.bb-walkthrough {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    margin-top: 1.5rem;
+}
+
+.bb-walkthrough-row {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: 2rem;
+    align-items: center;
+}
+
+.bb-walkthrough-row:nth-child(even) .bb-walkthrough-copy {
+    order: 2;
+}
+
+.bb-walkthrough-copy h3 {
+    margin-bottom: .5rem;
+}
+
+.bb-walkthrough-copy p {
+    color: var(--bb-text-muted);
+    line-height: 1.7;
+}
+
+/* ---------- Comparison ---------- */
+
+.bb-compare td:first-child {
+    font-family: inherit;
+    white-space: normal;
+    font-weight: 500;
+}
+
+/* ---------- FAQ ---------- */
+
+.bb-faq {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    max-width: 52rem;
+}
+
+.bb-faq details {
+    background: var(--bb-surface);
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius);
+    padding: .875rem 1.125rem;
+}
+
+.bb-faq summary {
+    display: flex;
+    align-items: baseline;
+    gap: .75rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--bb-text);
+    list-style: none;
+}
+
+.bb-faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.bb-faq summary::before {
+    content: "";
+    flex: 0 0 auto;
+    width: .4rem;
+    height: .4rem;
+    border-right: .125rem solid var(--bb-accent);
+    border-bottom: .125rem solid var(--bb-accent);
+    transform: translateY(-.15rem) rotate(-45deg);
+    transition: transform .2s ease;
+}
+
+.bb-faq summary:hover {
+    color: var(--bb-accent);
+}
+
+.bb-faq summary:focus-visible {
+    outline: .125rem solid var(--bb-accent);
+    outline-offset: .25rem;
+    border-radius: .125rem;
+}
+
+.bb-faq details[open] summary::before {
+    transform: translateY(-.25rem) rotate(45deg);
+}
+
+.bb-faq details[open] summary {
+    margin-bottom: .5rem;
+}
+
+.bb-faq details[open] p {
+    padding-left: 1.15rem;
+}
+
+.bb-faq p {
+    color: var(--bb-text-muted);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ---------- Final CTA ---------- */
+
+.bb-final-cta {
+    text-align: center;
+}
+
+.bb-final-cta h2 {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-bottom: 1.25rem;
+}
+
+/* Center the install line and buttons in the final CTA. Shrink-to-fit is what centres the block,
+   and the cap is what stops it shrink-to-fitting past the edge of a narrow screen. */
+.bb-final-cta .bb-hero-install {
+    display: inline-block;
+    max-width: 100%;
+    text-align: left;
+    margin-bottom: 1.25rem;
+}
+
+.bb-final-cta .bb-hero-actions {
+    justify-content: center;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 960px) {
+    .bb-landing > section {
+        padding-block: 3.5rem;
+    }
+
+    .bb-landing > section.bb-proof {
+        margin-block: 3rem;
+        width: min(100% - 2rem, var(--bb-content-width));
+    }
+
+    /* minmax(0, 1fr), never a bare 1fr: `1fr` is shorthand for minmax(AUTO, 1fr), and that auto
+       minimum stops the track shrinking below its widest item's min-content. The copy column
+       holds a `pre` of install commands, whose min-content is its longest line - about 370px -
+       so a bare 1fr pins the hero to that width, pushes the page past the viewport and gives the
+       whole document a horizontal scrollbar. The two-column rules above already say minmax(0,…)
+       for exactly this reason; this one has to as well. */
+    .bb-hero,
+    .bb-walkthrough-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bb-walkthrough-row:nth-child(even) .bb-walkthrough-copy {
+        order: 0;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .bb-hero-copy h1 {
+        font-size: 2.5rem;
+    }
+}

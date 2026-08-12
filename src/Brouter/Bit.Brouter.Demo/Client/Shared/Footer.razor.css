@@ -1,0 +1,260 @@
+/* The footer is the one band on the page painted with the PRIMARY background: it is what marks
+   the end of the secondary-background content column above it. */
+.bb-footer {
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    background: var(--bb-surface);
+    border-top: 1px solid var(--bb-border);
+    /* Pin the footer out of the page view transition, like the header. */
+    view-transition-name: bb-footer;
+}
+
+.bb-footer section {
+    width: 100%;
+    position: relative;
+    max-width: var(--bb-content-width);
+    padding: 4rem 1.25rem;
+}
+
+.bb-footer-main {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+    /* minmax(0, …) rather than a bare 1fr, so a long unbroken link label can never set a track
+       floor that pushes the footer wider than the page. */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.bb-footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2.5rem 1.25rem;
+    border-top: 1px solid var(--bb-border-soft);
+}
+
+.bb-footer-brand {
+    max-width: 34rem;
+}
+
+.bb-footer-logo {
+    width: 32px;
+    height: 27px;
+    margin-bottom: 1.25rem;
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+:root[bit-theme$='dark'] .bb-footer-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([bit-theme$='dark']) .bb-footer-logo {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+.bb-footer-tagline {
+    color: var(--bb-text-muted);
+    font-size: .875rem;
+    line-height: 1.714;
+    max-width: 34rem;
+    margin: 0;
+}
+
+.bb-footer-links {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-evenly;
+    gap: 1.25rem;
+}
+
+.bb-footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.bb-footer-col h4 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: .0075em;
+    color: var(--bb-text);
+    margin: 0 0 .35rem;
+}
+
+/* Anchors rendered by <BrouterLink> live in a child component - reach them via ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a,
+.bb-footer-col a {
+    color: var(--bb-primary);
+    font-size: .875rem;
+    line-height: 1.714;
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-footer-col ::deep a:hover,
+.bb-footer-col a:hover {
+    color: var(--bb-primary-hover);
+    text-decoration: underline;
+}
+
+/* Parked in the band's bottom-end corner, where a reader who has run out of footer looks next. */
+.bb-go-to-top {
+    bottom: 0;
+    right: 2px;
+    position: absolute;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    font-size: .875rem;
+    color: var(--bb-text-muted);
+    padding: .5rem .75rem;
+    border-radius: var(--bb-radius);
+    background: var(--bb-bg);
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-go-to-top:hover {
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+}
+
+.bb-footer-address {
+    display: flex;
+    flex-direction: column;
+    gap: .1875rem;
+    font-size: .875rem;
+    line-height: 1.714;
+}
+
+.bb-footer-address .bb-address,
+.bb-footer-address .bb-tel,
+.bb-footer-address .bb-country {
+    padding-left: 1.25rem;
+    background-repeat: no-repeat;
+    background-position-y: 4px;
+}
+
+.bb-footer-address .bb-address,
+.bb-footer-address .bb-tel {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+.bb-footer-address .bb-address:hover,
+.bb-footer-address .bb-tel:hover {
+    color: var(--bb-primary-hover);
+}
+
+.bb-footer-address .bb-country {
+    color: var(--bb-text-muted);
+}
+
+.bb-footer-address .bb-address {
+    background-image: url('images/footer/location-icon.svg');
+}
+
+.bb-footer-address .bb-tel {
+    background-image: url('images/footer/tel-icon.svg');
+}
+
+/* The social row and the line it belongs to are one block, so the copyright centres under the
+   icons rather than under the whole band. */
+.bb-footer-social-block {
+    text-align: center;
+}
+
+.bb-social-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Neutral until hovered, when each mark takes its own brand color - the row reads as one control
+   at rest and identifies itself on approach. */
+.bb-social-link {
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #888;
+    background-size: 18px;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+.bb-twitter-link {
+    background-image: url('images/footer/twitter-icon.svg');
+}
+
+.bb-twitter-link:hover {
+    background-color: #1DA1F2;
+}
+
+.bb-github-link {
+    background-image: url('images/footer/github-icon.svg');
+}
+
+.bb-github-link:hover {
+    background-color: #000;
+}
+
+.bb-youtube-link {
+    background-image: url('images/footer/youtube-icon.svg');
+}
+
+.bb-youtube-link:hover {
+    background-color: #FF0000;
+}
+
+.bb-linkedin-link {
+    background-image: url('images/footer/linkedin-icon.svg');
+}
+
+.bb-linkedin-link:hover {
+    background-color: #0077B5;
+}
+
+.bb-copyright {
+    line-height: 1.5;
+    font-size: .875rem;
+    margin-top: 1rem;
+    color: var(--bb-text-muted);
+}
+
+.bb-copyright a {
+    color: var(--bb-primary);
+}
+
+@media (max-width: 960px) {
+    .bb-footer section {
+        padding: 3rem 1.5rem;
+    }
+
+    .bb-footer-main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .bb-footer-links {
+        justify-content: flex-start;
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .bb-footer-bottom {
+        flex-flow: column nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1.875rem;
+        text-align: center;
+    }
+}

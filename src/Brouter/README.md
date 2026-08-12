@@ -26,11 +26,17 @@ builder.Services.AddBitBrouterServices(o =>
 });
 ```
 
-Brouter's documentation website lives in [`Demos`](Demos/) - run the
-[Server](Demos/Server/) project (`dotnet run`) for the full site: a landing page, a docs hub
-under `/docs` with a page per feature area, and a `/playground` index of live, clickable demo
-routes. The same shared site also runs under [WASM](Demos/Wasm/) and [Auto](Demos/Auto/)
-render modes - and it is routed by Brouter itself.
+Brouter's documentation website lives in [`Bit.Brouter.Demo`](Bit.Brouter.Demo/) - run the
+[Server](Bit.Brouter.Demo/Server/) project (`dotnet run`) for the full site: a landing page, a
+docs hub under `/docs` with a page per feature area (plus an API reference, recipes and a
+troubleshooting guide), and a `/playground` index of live, clickable demo routes. It is a
+self-contained Blazor WebAssembly app with prerendering - and it is routed by Brouter itself, so
+every page you read is also a working proof of the feature it documents.
+
+[`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
+[Core](Samples/Core/) project of demo routes, hosted unchanged under
+[Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same routing
+code can be exercised in each render mode.
 
 ## Quick start
 

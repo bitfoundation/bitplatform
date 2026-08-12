@@ -1,0 +1,136 @@
+/* Nav panel | page | rail. The two side columns are fixed-width and the page takes what is
+   left, so the reading measure grows with the window instead of the margins doing it. */
+.bb-docs {
+    display: grid;
+    grid-template-columns: var(--bb-nav-panel-width) minmax(0, 1fr) var(--bb-rail-width);
+    gap: 2rem;
+    align-items: start;
+}
+
+.bb-docs-menu-toggle {
+    display: none;
+}
+
+.bb-docs-menu-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* BitNavPanel's column: a quiet list that scrolls under the sticky header, with no frame of its
+   own - the page's own background is the panel, and the rows are the only chrome in it. */
+.bb-docs-sidebar {
+    position: sticky;
+    top: calc(var(--bb-header-height) + 1.5rem);
+    max-height: calc(100vh - var(--bb-header-height) - 3rem);
+    overflow-y: auto;
+    padding-right: .5rem;
+    /* Keep the persistent sidebar out of the page view transition (same trick as the header). */
+    view-transition-name: bb-docs-sidebar;
+}
+
+.bb-docs-section {
+    margin-bottom: 1.25rem;
+}
+
+/* The group headers use Fluent's Overline: small, spaced and uppercase, so they read as labels
+   over the rows rather than as the first row of each group. */
+.bb-docs-section h4 {
+    font-size: .625rem;
+    font-weight: 400;
+    line-height: 1.66;
+    text-transform: uppercase;
+    letter-spacing: .08333em;
+    color: var(--bb-text-soft);
+    margin: 0 0 .375rem;
+    padding-inline-start: .5rem;
+}
+
+.bb-docs-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+/* The sidebar anchors are rendered by <BrouterLink> - they carry that component's scope, not
+   this file's, so they are reached through ::deep. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a {
+    display: block;
+    padding: .4rem .5rem;
+    border-radius: var(--bb-radius);
+    font-size: .875rem;
+    line-height: 1.5;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+    transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
+                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a:hover {
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+    text-decoration: none;
+}
+
+/* The selected row: a tinted band plus the accent bar down its leading edge, drawn with an inset
+   shadow rather than a border so the row's geometry is identical whether it is selected or not. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-section ::deep a.active {
+    font-weight: 600;
+    color: var(--bb-primary);
+    background: var(--bb-primary-soft);
+    box-shadow: inset 2px 0 0 0 var(--bb-primary);
+}
+
+.bb-docs-content {
+    min-width: 0;
+    max-width: var(--bb-measure);
+}
+
+/* Below the content cap the rail is the first column to go: it is navigation within a page the
+   reader can already see, so it is the least costly thing to drop. */
+@media (max-width: 1200px) {
+    .bb-docs {
+        grid-template-columns: var(--bb-nav-panel-width) minmax(0, 1fr);
+    }
+
+    .bb-rail {
+        display: none;
+    }
+}
+
+/* Tablet and below: the nav panel folds into a drawer opened from the button above the page,
+   which is the same move the header's own links make. */
+@media (max-width: 960px) {
+    .bb-docs {
+        display: block;
+    }
+
+    .bb-docs-menu-toggle {
+        display: inline-flex;
+        margin-bottom: 1rem;
+    }
+
+    .bb-docs-sidebar {
+        display: none;
+        position: static;
+        max-height: none;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--bb-surface);
+        border: 1px solid var(--bb-border);
+        border-radius: var(--bb-radius);
+    }
+
+    .bb-docs-sidebar.bb-open {
+        display: block;
+    }
+
+    .bb-docs-content {
+        max-width: none;
+    }
+}

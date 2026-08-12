@@ -1,0 +1,23 @@
+﻿@* Complex segment: two parameters inside ONE URL segment. The text is scanned right-to-left, so
+   a.b.c binds name = "a.b", ext = "c". Only a period may precede an optional part. *@
+
+<h1>File details</h1>
+
+<dl>
+    <dt>name</dt>
+    <dd>@Name</dd>
+    <dt>ext</dt>
+    <dd>@(Ext ?? "(null - the optional part was omitted)")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/files/report.pdf" class="btn">/files/report.pdf</BrouterLink>
+    <BrouterLink Href="/files/report" class="btn">/files/report</BrouterLink>
+    <BrouterLink Href="/files/a.b.c" class="btn">/files/a.b.c</BrouterLink>
+    <BrouterLink Href="/files/report." class="btn">/files/report. → 404</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string? Ext { get; set; }
+}

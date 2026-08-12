@@ -1,0 +1,71 @@
+@* The site footer, in the two-band arrangement the Bit.BlazorUI demo uses: a wide band with the
+   bit mark, what the project is, and the link columns; then a rule, under which sit the
+   organization's contact details, the social row and the copyright line. *@
+
+<footer class="bb-footer">
+    <section class="bb-footer-main">
+        <div class="bb-footer-brand">
+            <div class="bb-footer-logo"></div>
+            <p class="bb-footer-tagline">
+                Brouter is a modern, declarative, nestable router for Blazor: async guards, data
+                loaders with stale-while-revalidate caching, keep-alive, view transitions and
+                compile-time-safe URLs. This site is itself a Blazor app, routed by Brouter.
+            </p>
+        </div>
+
+        <div class="bb-footer-links">
+            <nav class="bb-footer-col" aria-label="Documentation links">
+                <h4>Docs</h4>
+                <BrouterLink Href="/docs/getting-started">Getting started</BrouterLink>
+                <BrouterLink Href="/docs/route-templates">Route templates</BrouterLink>
+                <BrouterLink Href="/docs/data-loading">Data loading</BrouterLink>
+                <BrouterLink Href="/docs/migration">Migration guide</BrouterLink>
+            </nav>
+
+            <nav class="bb-footer-col" aria-label="Explore links">
+                <h4>Explore</h4>
+                <BrouterLink Href="/playground">Playground</BrouterLink>
+                <BrouterLink Href="/docs/view-transitions">View transitions</BrouterLink>
+                <BrouterLink Href="/docs/typed-routes">Typed routes</BrouterLink>
+                <BrouterLink Href="/docs/performance">Performance</BrouterLink>
+            </nav>
+
+            <nav class="bb-footer-col" aria-label="Community links">
+                <h4>Community</h4>
+                <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/bitfoundation/bitplatform/issues" target="_blank" rel="noopener">Issues</a>
+                <a href="https://www.nuget.org/packages/Bit.Brouter" target="_blank" rel="noopener">NuGet package</a>
+                <a href="https://bitplatform.dev" target="_blank" rel="noopener">bit platform</a>
+            </nav>
+
+            <button type="button" class="bb-go-to-top" @onclick="GoToTop">Go to top</button>
+        </div>
+    </section>
+
+    <section class="bb-footer-bottom">
+        <div class="bb-footer-address">
+            <a class="bb-address" target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
+            <div class="bb-country">Netherlands</div>
+            <a class="bb-tel" href="tel:+31684207362">+31 6 84207362</a>
+        </div>
+
+        <div class="bb-footer-social-block">
+            <div class="bb-social-links">
+                <a class="bb-social-link bb-twitter-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on X (Twitter)" href="https://twitter.com/bitplatformhq"></a>
+                <a class="bb-social-link bb-github-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on GitHub" href="https://github.com/bitfoundation/bitplatform"></a>
+                <a class="bb-social-link bb-youtube-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on YouTube" href="https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog"></a>
+                <a class="bb-social-link bb-linkedin-link" target="_blank" rel="noopener noreferrer" aria-label="bit platform on LinkedIn" href="https://www.linkedin.com/company/bitplatformhq"></a>
+            </div>
+            <div class="bb-copyright">
+                MIT licensed · net8.0 · net9.0 · net10.0 · part of the
+                <a href="https://bitplatform.dev" target="_blank" rel="noopener">bit platform</a> project
+            </div>
+        </div>
+    </section>
+</footer>
+
+@code {
+    [Inject] private IJSRuntime jsRuntime { get; set; } = default!;
+
+    private async Task GoToTop() => await jsRuntime.InvokeVoidAsync("bitBrouterSite.goToTop");
+}

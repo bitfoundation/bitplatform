@@ -1,0 +1,75 @@
+﻿@* Two features at once: route values reaching a page through the cascaded parameter bag, and the
+   count itself living in the host component that declares the routes - passed in via <Content>,
+   so it survives navigating between the counter routes. *@
+
+<h1>Counter</h1>
+
+<div class="row">
+    <strong>Count: @CurrentCount</strong>
+    <button @onclick="IncrementCount">Increment</button>
+</div>
+
+@if (Parameters is not null)
+{
+    <dl style="margin-top: 1rem;">
+        @if (Parameters.Contains("init"))
+        {
+            <dt>init</dt>
+            <dd>@(Parameters.GetOrDefault<int>("init"))</dd>
+        }
+        @if (Parameters.Contains("id"))
+        {
+            <dt>id (int:long)</dt>
+            <dd>@(Parameters.GetOrDefault<long>("id"))</dd>
+        }
+        @if (Parameters.Contains("age"))
+        {
+            <dt>age (long:decimal:double)</dt>
+            <dd>@(Parameters.GetOrDefault<double>("age"))</dd>
+        }
+        @if (Parameters.Contains("name"))
+        {
+            <dt>name</dt>
+            <dd>@Parameters["name"]</dd>
+        }
+    </dl>
+}
+
+@code {
+    [Parameter] public int CurrentCount { get; set; }
+    [Parameter] public EventCallback<int> CurrentCountChanged { get; set; }
+    [Parameter] public Action<int>? ChangeCount { get; set; }
+
+    [CascadingParameter(Name = "RouteParameters")] BrouterRouteParameters? Parameters { get; set; }
+
+    private int? _appliedInit;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // Apply the route's 'init' only once per distinct value, otherwise every re-render would
+        // overwrite user-driven increments with the original route value.
+        if (Parameters?.TryGet<int>("init", out var init) == true)
+        {
+            if (_appliedInit != init)
+            {
+                CurrentCount = init;
+                _appliedInit = init;
+                ChangeCount?.Invoke(CurrentCount);
+                await CurrentCountChanged.InvokeAsync(CurrentCount);
+            }
+        }
+        else
+        {
+            _appliedInit = null;
+        }
+    }
+
+    private async Task IncrementCount()
+    {
+        CurrentCount++;
+        ChangeCount?.Invoke(CurrentCount);
+        await CurrentCountChanged.InvokeAsync(CurrentCount);
+    }
+}

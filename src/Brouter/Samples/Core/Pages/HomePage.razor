@@ -1,0 +1,68 @@
+﻿@* Index of every sample route declared in AppRouter.razor. *@
+
+<PageTitle>Brouter samples</PageTitle>
+
+<h1>Brouter samples</h1>
+
+<h2>Route templates</h2>
+<ul>
+    <li><BrouterLink Href="@BrouterRoutes.Counter(1234)">/counter/1234</BrouterLink> - typed <code>{init:int}</code>, via the generated URL builder</li>
+    <li><BrouterLink Href="/counter/multi/1/2/saleh">/counter/multi/1/2/saleh</BrouterLink> - chained type constraints, last one binds</li>
+    <li><BrouterLink Href="@BrouterRoutes.ProfileByUsername("saleh")">/profile/saleh</BrouterLink> · <BrouterLink Href="/profile">/profile</BrouterLink> - trailing optional</li>
+    <li><BrouterLink Href="/posts/2026/05/hello">/posts/2026/05/hello</BrouterLink> - catch-all <code>{**slug}</code></li>
+    <li><BrouterLink Href="/products/en/list">/products/en/list</BrouterLink> - middle optional (required at match time)</li>
+    <li><BrouterLink Href="/en/welcome">/en/welcome</BrouterLink> - constrained middle optional</li>
+    <li><BrouterLink Href="/blog">/blog</BrouterLink> - default value <code>{action=Index}</code></li>
+    <li><BrouterLink Href="/files/report.pdf">/files/report.pdf</BrouterLink> - complex segment</li>
+    <li><BrouterLink Href="/api/v2-10">/api/v2-10</BrouterLink> - typed complex segment</li>
+    <li><BrouterLink Href="/assets/img/logo">/assets/img/logo</BrouterLink> - constrained catch-all</li>
+    <li><BrouterLink Href="/anything/test">/anything/test</BrouterLink> · <BrouterLink Href="/a/test2/b">/a/test2/b</BrouterLink> - wildcard &amp; pattern</li>
+    <li><BrouterLink Href="/discovered/7?q=hello">/discovered/7?q=hello</BrouterLink> - discovered <code>@@page</code> route</li>
+    <li><BrouterLink Href="/home">/home</BrouterLink> - <code>RedirectTo</code></li>
+    <li><BrouterLink Href="/no/such/page">/no/such/page</BrouterLink> - no match, <code>NotFoundUrl</code> takes over</li>
+</ul>
+
+<h2>Constraints</h2>
+<ul>
+    <li><BrouterLink Href="/constraints">/constraints</BrouterLink> - every built-in constraint plus a custom one, pass and fail</li>
+</ul>
+
+<h2>Nested routes &amp; outlets</h2>
+<ul>
+    <li><BrouterLink Href="/nested">/nested</BrouterLink> - component parent + <code>&lt;BrouterOutlet&gt;</code></li>
+    <li><BrouterLink Href="/nested-inline">/nested-inline</BrouterLink> - inline parent + child <code>&lt;Routes&gt;</code></li>
+    <li><BrouterLink Href="/dashboard/stats">/dashboard/stats</BrouterLink> - named outlets + pathless group guard</li>
+</ul>
+
+<h2>Guards &amp; locks</h2>
+<ul>
+    <li><BrouterLink Href="/g1">/g1</BrouterLink> - sync guard (even second, else redirects to /403)</li>
+    <li><BrouterLink Href="/g2">/g2</BrouterLink> - async guard (even minute)</li>
+    <li><BrouterLink Href="/editor">/editor</BrouterLink> - route <code>LeaveGuard</code> on unsaved changes</li>
+    <li><BrouterLink Href="/lock/1">/lock/1</BrouterLink> - component-level lock with a custom dialog</li>
+</ul>
+
+<h2>Data loading</h2>
+<ul>
+    <li><BrouterLink Href="/data" Preload="BrouterLinkPreload.Intent">/data</BrouterLink> - <code>Loader</code>, <code>StaleTime</code> cache, revalidation, query updates (preloads on hover)</li>
+    <li><BrouterLink Href="/deferred">/deferred</BrouterLink> - deferred data streamed via <code>&lt;BrouterAwait&gt;</code></li>
+    <li><BrouterLink Href="/unstable">/unstable</BrouterLink> - loader throws, route <code>ErrorContent</code> retries</li>
+</ul>
+
+<h2>Navigation &amp; history</h2>
+<ul>
+    <li><BrouterLink Href="/outcomes">/outcomes</BrouterLink> - awaited <code>NavigateAsync</code> outcomes</li>
+    <li><BrouterLink Href="/history-state">/history-state</BrouterLink> - state attached to history entries</li>
+</ul>
+
+<h2>Lifecycle &amp; keep-alive</h2>
+<ul>
+    <li><BrouterLink Href="/sticky">/sticky</BrouterLink> vs <BrouterLink Href="/fleeting">/fleeting</BrouterLink> - <code>KeepAlive</code> and the control</li>
+    <li><BrouterLink Href="/notes/1">/notes/1</BrouterLink> - per-parameter keep-alive with LRU eviction</li>
+    <li><BrouterLink Href="/lifecycle/1">/lifecycle/1</BrouterLink> - <code>IBrouterRoute</code> callbacks</li>
+</ul>
+
+<h2>View transitions</h2>
+<ul>
+    <li><BrouterLink Href="@BrouterRoutes.Gallery()">/gallery</BrouterLink> - shared-element morph between tile and hero</li>
+</ul>

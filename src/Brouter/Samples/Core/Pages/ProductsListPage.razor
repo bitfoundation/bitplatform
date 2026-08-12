@@ -1,0 +1,19 @@
+﻿@* Middle optional: legal in a template but required at match time - only a trailing run of
+   optionals can be omitted by the URL. Same behavior as the built-in Blazor router. *@
+
+<h1>Products list</h1>
+
+<dl>
+    <dt>culture</dt>
+    <dd>@(Culture ?? "(null)")</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/products/en/list" class="btn">/products/en/list</BrouterLink>
+    <BrouterLink Href="/products/fa-IR/list" class="btn">/products/fa-IR/list</BrouterLink>
+    <BrouterLink Href="/products/list" class="btn">/products/list → 404</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Culture { get; set; }
+}
