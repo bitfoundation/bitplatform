@@ -1135,17 +1135,14 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwortlose Anmeldung erfolgreich deaktiviert</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>Ihr Passkey konnte nicht überprüft werden und wurde daher nicht entfernt. Bitte versuchen Sie es erneut.</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>Dieser Passkey existiert nicht mehr auf dem Server; er wurde von diesem Gerät entfernt.</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>Löschen</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Senden</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>Akzentfarbe {0} anwenden</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>Abgebrochen</value>
@@ -1153,6 +1150,27 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-Chat-Panel</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Nachricht diktieren</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Diktat beenden</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Diktat</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Der Zugriff auf das Mikrofon ist blockiert. Erlauben Sie ihn für diese Website, um zu diktieren.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Diktat beendet: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Vorlesen</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Vorlesen beenden</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>

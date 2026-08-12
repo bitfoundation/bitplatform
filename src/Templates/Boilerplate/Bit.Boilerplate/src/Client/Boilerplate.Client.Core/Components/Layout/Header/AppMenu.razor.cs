@@ -119,8 +119,11 @@ public partial class AppMenu
     //#if (multitenant == true)
     private void AuthManager_AuthenticationStateChanged(Task<AuthenticationState> task)
     {
-        showTenants = false; // This would help refreshing the list of tenants, so they would get loaded again the next time user opens the tenant menu.
-        StateHasChanged();
+        _ = InvokeAsync(() =>
+        {
+            showTenants = false; // This would help refreshing the list of tenants, so they would get loaded again the next time user opens the tenant menu.
+            StateHasChanged();
+        });
     }
     //#endif
 

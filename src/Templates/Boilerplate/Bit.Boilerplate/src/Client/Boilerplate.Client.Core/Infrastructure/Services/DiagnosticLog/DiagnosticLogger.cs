@@ -4,7 +4,14 @@ namespace Boilerplate.Client.Core.Infrastructure.Services.DiagnosticLog;
 
 public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
 {
-    public static ConcurrentQueue<DiagnosticLogDto> Store { get; } = [];
+    private static readonly ConcurrentQueue<DiagnosticLogDto> store = [];
+
+    public static IReadOnlyCollection<DiagnosticLogDto> Store => store;
+
+    /// <summary>
+    /// Discards this device's buffer. Called when the signed-in user changes, and by the diagnostic modal.
+    /// </summary>
+    public static void ClearStore() => store.Clear();
 
     private readonly AsyncLocal<IDictionary<string, object?>?> currentState = new();
 
@@ -38,12 +45,12 @@ public partial class DiagnosticLogger(TimeProvider timeProvider) : ILogger
 
         var message = formatter(state, exception);
 
-        if (Store.Count >= 1_000)
+        if (store.Count >= 1_000)
         {
-            Store.TryDequeue(out var _);
+            store.TryDequeue(out var _);
         }
 
-        Store.Enqueue(new()
+        store.Enqueue(new()
         {
             CreatedOn = timeProvider.GetUtcNow(),
             Level = logLevel,

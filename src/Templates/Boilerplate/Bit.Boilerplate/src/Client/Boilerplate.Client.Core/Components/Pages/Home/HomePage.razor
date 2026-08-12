@@ -38,12 +38,14 @@
         @*#endif*@
 
         @*#if (module == "Sales")*@
+        @*#if (signalR == true)*@
         <BitSearchBox ReadOnly
                       Underlined
                       ShowSearchButton
                       Style="width:80%"
                       Color="BitColor.Secondary"
                       @onclick="HandleOnSearchBoxClick" />
+        @*#endif*@
 
         <ProductsCarousel />
         <br />

@@ -154,7 +154,7 @@ public static class WebApplicationExtensions
                     // 6. Permissions-Policy
                     // "Disables" sensitive hardware/API access to reduce the attack surface.
                     // Example: If building an E-Commerce or Delivery app, remove 'payment' or 'geolocation' from this list.
-                    headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=(), usb=(), display-capture=()";
+                    headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(self), payment=(), usb=(), display-capture=()";
 
                     // 7. Cross-Origin-Resource-Policy (CORP)
                     // Set to 'cross-origin' to explicitly allow resources (images, fonts, etc.) to be loaded by

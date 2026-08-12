@@ -58,6 +58,43 @@
         max-width: 100%;
     }
 
+    .message-row {
+        width: 100%;
+        align-items: flex-start;
+        padding-bottom: 0.25rem; // Separates two messages; the parent stack has no gap of its own.
+
+        &.user {
+            align-items: flex-end;
+        }
+
+        &:hover .message-actions, &:focus-within .message-actions {
+            opacity: 1;
+        }
+    }
+
+    .message-actions {
+        opacity: 0;
+        width: fit-content;
+        min-height: 1.25rem;
+        transition: opacity 0.15s ease-in-out;
+
+        button {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: none;
+            background: none;
+
+            i {
+                font-size: 0.7rem;
+                color: $bit-color-foreground-secondary;
+            }
+
+            &:hover i {
+                color: $bit-color-foreground-primary;
+            }
+        }
+    }
+
     .user-message {
         align-self: end;
         padding: 0.5rem 1rem;
@@ -82,5 +119,23 @@
         left: unset;
         right: unset;
         inset-inline-end: 0.5rem;
+    }
+
+    .dictate-button {
+        left: unset;
+        right: unset;
+        inset-inline-end: 3rem;
+
+        // While the recognizer is live the button is the only feedback that the microphone is open, so it says so
+        // continuously rather than once.
+        &.listening i {
+            animation: dictate-pulse 1.2s ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes dictate-pulse {
+    50% {
+        opacity: 0.4;
     }
 }
