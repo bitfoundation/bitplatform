@@ -34,6 +34,15 @@
 }
 
 ::deep {
+    .custom-friday {
+        color: white;
+        background-color: blueviolet;
+    }
+
+    .custom-hovered-days {
+        background-color: #9726ff2e;
+    }
+
     .custom-class {
         overflow: hidden;
         margin-inline: 1rem;
