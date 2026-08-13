@@ -19,6 +19,9 @@ var BitButil = BitButil || {};
         getHash() { return window.location.hash },
         setHash(value: string) { window.location.hash = value },
         origin() { return window.location.origin },
+        // Origins of the containing frames, innermost first. Empty in a top-level page; the only
+        // way to see who is embedding you without postMessage. Absent on Firefox.
+        ancestorOrigins() { return Array.from((window.location as any).ancestorOrigins ?? []) },
         assign(url: string) { window.location.assign(url) },
         reload() { window.location.reload() },
         replace(url: string) { window.location.replace(url) },

@@ -18,6 +18,18 @@ public class UserAgent(IJSRuntime js)
         return await js.Invoke<UserAgentProperties>("BitButil.userAgent.extract", userAgentString);
     }
 
+    /// <summary>True when the runtime exposes <c>navigator.userAgentData</c> (UA Client Hints).</summary>
+    /// <remarks>
+    /// The uniform spelling used by every other Butil class; <see cref="IsClientHintsSupported"/>
+    /// is the same probe under the name that says which of the two mechanisms it is about.
+    /// <see cref="Extract"/> works without UA-CH, falling back to parsing the legacy string.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.userAgent.isSupported");
+
     /// <summary>
     /// True when the runtime exposes <c>navigator.userAgentData</c> (modern UA Client Hints).
     /// </summary>

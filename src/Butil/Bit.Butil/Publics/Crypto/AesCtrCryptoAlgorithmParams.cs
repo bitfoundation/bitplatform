@@ -17,5 +17,9 @@ public class AesCtrCryptoAlgorithmParams : ICryptoAlgorithmParams
     /// <summary>
     /// The number of bits in the counter block that are used for the actual counter.
     /// </summary>
-    public int Length { get; set; }
+    /// <remarks>
+    /// Defaults to 64 - the value MDN's AES-CTR example uses - because WebCrypto rejects a length of
+    /// 0 with an <c>OperationError</c>, which is what an unset property would otherwise send.
+    /// </remarks>
+    public int Length { get; set; } = 64;
 }

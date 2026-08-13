@@ -11,6 +11,8 @@ var BitButil = BitButil || {};
         getDir() { return document.dir },
         setDir(value: string) { document.dir = value },
         referrer() { return document.referrer },
+        readyState() { return document.readyState },
+        lastModified() { return document.lastModified },
         getTitle() { return document.title },
         URL() { return document.URL },
         setTitle(value: string) { document.title = value },

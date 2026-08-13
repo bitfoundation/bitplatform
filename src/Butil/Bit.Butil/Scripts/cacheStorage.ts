@@ -11,9 +11,37 @@ var BitButil = BitButil || {};
         putBytes,
         putText,
         match,
+        matchAny,
         deleteEntry,
         entryKeys
     };
+
+    function toResult(response: Response | undefined, url: string) {
+        const empty = { found: false, status: 0, statusText: '', url: '', headers: {}, body: new Uint8Array() };
+        if (!response) return Promise.resolve(empty);
+        return response.arrayBuffer().then(buf => {
+            const headers: any = {};
+            response.headers.forEach((v, k) => { headers[k] = v; });
+            return {
+                found: true,
+                status: response.status,
+                statusText: response.statusText,
+                url: response.url || url,
+                headers,
+                body: new Uint8Array(buf)
+            };
+        });
+    }
+
+    // caches.match searches every cache this origin owns, in creation order, which is what a
+    // service worker's fetch handler normally wants - no need to know which cache holds the entry.
+    async function matchAny(url: string) {
+        const empty = { found: false, status: 0, statusText: '', url: '', headers: {}, body: new Uint8Array() };
+        if (!('caches' in window)) return empty;
+        try {
+            return await toResult(await caches.match(url), url);
+        } catch { return empty; }
+    }
 
     async function keys() {
         if (!('caches' in window)) return [];

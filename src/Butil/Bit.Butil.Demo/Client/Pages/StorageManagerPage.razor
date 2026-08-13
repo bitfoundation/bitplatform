@@ -1,4 +1,4 @@
-@page "/storage-manager"
+﻿@page "/storage-manager"
 @inject Bit.Butil.StorageManager storageManager
 
 <PageTitle>StorageManager - Bit.Butil</PageTitle>
@@ -109,6 +109,12 @@ if (granted)
     <ApiMember Name="StorageEstimate"
                Signature="class StorageEstimate { long? Quota; long? Usage; }"
                Description="Estimate payload. All values are in bytes; null when the runtime can't report them." />
+    <ApiMember Name="StorageEstimate.UsageDetails"
+               Signature="StorageUsageDetail[] UsageDetails { get; set; }"
+               Description="Per-API breakdown of Usage - which storage API holds the bytes (indexedDB, caches, serviceWorkerRegistrations, ...). Empty outside Chromium, so treat empty as unknown rather than as nothing stored." />
+    <ApiMember Name="StorageUsageDetail"
+               Signature="class StorageUsageDetail { string Api; long Bytes; }"
+               Description="One entry of the usage breakdown." />
 </ApiTable>
 
 @code {

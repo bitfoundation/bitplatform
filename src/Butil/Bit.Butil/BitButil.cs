@@ -17,13 +17,19 @@ public static class BitButil
         services.AddScoped<Crypto>();
         services.AddScoped<Battery>();
         services.AddScoped<BackgroundSync>();
+        services.AddScoped<BarcodeDetector>();
         services.AddScoped<BroadcastChannel>();
         services.AddScoped<CacheStorage>();
+        services.AddScoped<Compression>();
         services.AddScoped<ContactPicker>();
+        services.AddScoped<DeviceOrientation>();
         services.AddScoped<Document>();
+        services.AddScoped<EventSource>();
         services.AddScoped<EyeDropper>();
         services.AddScoped<Fetch>();
         services.AddScoped<FileReader>();
+        services.AddScoped<FileSystem>();
+        services.AddScoped<Gamepad>();
         services.AddScoped<Geolocation>();
         services.AddScoped<History>();
         services.AddScoped<IdleDetector>();
@@ -33,6 +39,9 @@ public static class BitButil
         services.AddScoped<SessionStorage>();
         services.AddScoped<Location>();
         services.AddScoped<MediaDevices>();
+        services.AddScoped<MediaRecorder>();
+        services.AddScoped<MediaSession>();
+        services.AddScoped<Navigation>();
         services.AddScoped<Navigator>();
         services.AddScoped<NetworkInformation>();
         services.AddScoped<Nfc>();
@@ -40,6 +49,7 @@ public static class BitButil
         services.AddScoped<ObjectUrls>();
         services.AddScoped<Performance>();
         services.AddScoped<Permissions>();
+        services.AddScoped<PictureInPicture>();
         services.AddScoped<Push>();
         services.AddScoped<Reporting>();
         services.AddScoped<Screen>();
@@ -47,8 +57,10 @@ public static class BitButil
         services.AddScoped<ServiceWorker>();
         services.AddScoped<SpeechRecognition>();
         services.AddScoped<SpeechSynthesis>();
+        services.AddScoped<StorageAccess>();
         services.AddScoped<StorageManager>();
         services.AddScoped<UserAgent>();
+        services.AddScoped<ViewTransition>();
         services.AddScoped<VisualViewport>();
         services.AddScoped<WakeLock>();
         services.AddScoped<WebAudio>();

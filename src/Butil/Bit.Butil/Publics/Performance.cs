@@ -104,6 +104,8 @@ public class Performance(IJSRuntime js) : IAsyncDisposable
     /// <c>"longtask"</c>, <c>"largest-contentful-paint"</c>, <c>"layout-shift"</c>,
     /// <c>"first-input"</c>, <c>"paint"</c>, <c>"mark"</c>, <c>"measure"</c>.
     /// </summary>
+    /// <param name="entryTypes">The entry types to observe. At least one is required.</param>
+    /// <param name="handler">Called with each batch of entries the observer receives.</param>
     /// <param name="buffered">When true, the observer is also notified about entries that
     /// were already in the buffer when the observer registered.</param>
     [DynamicDependency(nameof(InvokePerformanceObserver), typeof(Performance))]

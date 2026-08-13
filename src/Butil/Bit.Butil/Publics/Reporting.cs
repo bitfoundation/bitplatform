@@ -45,6 +45,7 @@ public class Reporting(IJSRuntime js) : IAsyncDisposable
     /// <summary>
     /// Subscribes to browser-generated reports. Use the returned <see cref="ButilSubscription"/> to stop.
     /// </summary>
+    /// <param name="handler">Called with each batch of reports the observer receives.</param>
     /// <param name="types">Optional whitelist of report types (e.g. <c>"deprecation"</c>, <c>"intervention"</c>).
     /// Pass null to receive every type.</param>
     /// <param name="buffered">When true, also delivers reports queued before the observer registered.</param>

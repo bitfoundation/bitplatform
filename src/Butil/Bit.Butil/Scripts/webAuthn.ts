@@ -2,6 +2,7 @@ var BitButil = BitButil || {};
 
 (function (butil: any) {
     butil.webAuthn = {
+        isSupported() { return !!window.PublicKeyCredential; },
         isAvailable() { return !!window.PublicKeyCredential; },
         createCredential,
         getCredential

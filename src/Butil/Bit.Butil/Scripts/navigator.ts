@@ -11,6 +11,15 @@ var BitButil = BitButil || {};
         pdfViewerEnabled() { return window.navigator.pdfViewerEnabled },
         userAgent() { return window.navigator.userAgent },
         webdriver() { return window.navigator.webdriver },
+        cookieEnabled() { return window.navigator.cookieEnabled },
+        doNotTrack() { return (window.navigator as any).doNotTrack ?? null },
+        // Sticky = the user has interacted at some point (unlocks autoplay, storage access);
+        // transient = an interaction is still "fresh" enough to open a popup or read the clipboard.
+        userActivation() {
+            const ua = (window.navigator as any).userActivation;
+            if (!ua) return null;
+            return { hasBeenActive: !!ua.hasBeenActive, isActive: !!ua.isActive };
+        },
         canShare(data?: ShareData) { return data ? window.navigator.canShare(data) : window.navigator.canShare() },
         clearAppBadge() { return (window.navigator as any).clearAppBadge?.() },
         sendBeacon(url: string, data?: any) { return window.navigator.sendBeacon(url, data ?? undefined) },

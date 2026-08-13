@@ -1,0 +1,57 @@
+@implements IDisposable
+@inject NavigationManager navManager
+
+@* Sequential navigation along DocsNav's declaration order, so the site can be read front to back
+   rather than only jumped around. Pages outside that list - the home page, the error page - get
+   nothing rendered at all rather than an empty bar. *@
+
+@if (_previous is not null || _next is not null)
+{
+    <nav class="doc-pager" aria-label="Previous and next page">
+        @if (_previous is not null)
+        {
+            <a class="doc-pager-link prev" href="@_previous.Url">
+                <span class="doc-pager-dir">← Previous</span>
+                <span class="doc-pager-title">@_previous.Icon @_previous.Title</span>
+            </a>
+        }
+        else
+        {
+            @* Holds the right-hand link against the right edge on the first page of the site. *@
+            <span class="doc-pager-spacer"></span>
+        }
+
+        @if (_next is not null)
+        {
+            <a class="doc-pager-link next" href="@_next.Url">
+                <span class="doc-pager-dir">Next →</span>
+                <span class="doc-pager-title">@_next.Icon @_next.Title</span>
+            </a>
+        }
+    </nav>
+}
+
+@code {
+    private DocLink? _previous;
+    private DocLink? _next;
+
+    protected override void OnInitialized()
+    {
+        navManager.LocationChanged += OnLocationChanged;
+
+        SetNeighbours();
+    }
+
+    private void SetNeighbours()
+    {
+        (_previous, _next) = DocsNav.Neighbours(navManager.RouteKey());
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        SetNeighbours();
+        StateHasChanged();
+    }
+
+    public void Dispose() => navManager.LocationChanged -= OnLocationChanged;
+}

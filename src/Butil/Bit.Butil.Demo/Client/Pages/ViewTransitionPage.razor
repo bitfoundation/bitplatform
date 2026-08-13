@@ -1,0 +1,334 @@
+@page "/view-transition"
+@implements IAsyncDisposable
+@inject Bit.Butil.ViewTransition viewTransition
+
+<PageTitle>ViewTransition - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="ViewTransition"
+            Lead="Let the browser animate between two states of your page: it snapshots what's there, you change it, and it cross-fades or morphs from one to the other - no animation library, and no keyframes to write."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API"
+            InjectAs="ViewTransition viewTransition" />
+
+<Callout Type="warning" Title="The one thing to get right">
+    The browser snapshots the page <em>before</em> your update callback and again when that
+    callback's task <em>completes</em>. In Blazor the DOM changes on a render, not on an assignment -
+    so a callback that just sets a field and returns produces two identical snapshots and no
+    animation. Await the render. The pattern below does that reliably.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Treat view transitions as a progressive enhancement. When this is false, make the same change without one - the page still works, it just doesn't animate. Start returns null in that case and deliberately does not run your callback, so 'did the update happen' stays a question with one answer."
+                 Code=@("""
+@inject Bit.Butil.ViewTransition viewTransition
+
+var supported = await viewTransition.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Awaiting the render"
+                 Api="Start"
+                 Description="A TaskCompletionSource completed from OnAfterRenderAsync is the reliable way to say 'the DOM has caught up'. Set it up before requesting the render, hand the transition a callback that awaits it, and the browser's second snapshot lands after Blazor has actually painted the new state."
+                 Code=@("""
+private TaskCompletionSource? _rendered;
+
+protected override void OnAfterRender(bool firstRender)
+{
+    // Whoever is waiting for a render gets released here, and only here.
+    _rendered?.TrySetResult();
+}
+
+private Task NextRender()
+{
+    _rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    StateHasChanged();
+    return _rendered.Task;
+}
+
+private async Task Toggle()
+{
+    var handle = await viewTransition.Start(
+        updateState: () => _expanded = !_expanded,
+        render: NextRender);
+
+    if (handle is null)
+    {
+        // no view transitions here - same change, no animation
+        _expanded = !_expanded;
+        return;
+    }
+
+    await handle.WaitForFinished();
+}
+""")>
+        <div class="controls">
+            <button @onclick="ToggleLayout">Toggle with a transition</button>
+            <button class="secondary" @onclick="ToggleWithoutTransition">Toggle without one</button>
+        </div>
+        @* view-transition-name is what tells the browser these are the same box before and after,
+           so it morphs the card rather than cross-fading the whole page. *@
+        <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap">
+            @foreach (var card in _cards)
+            {
+                <div style="view-transition-name:card-@card;flex:@(_expanded && card == _cards[0] ? "1 1 100%" : "0 0 6rem");height:@(_expanded && card == _cards[0] ? "8rem" : "4rem");border-radius:10px;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-weight:600">
+                    @card
+                </div>
+            }
+        </div>
+        <DemoConsole @ref="transitionOutput" Title="transition output" />
+    </DemoSection>
+
+    <DemoSection Title="Reordering a list"
+                 Api="Start / view-transition-name"
+                 Description="Give each item a stable view-transition-name and the browser animates every one of them from its old position to its new one - the effect that normally needs a FLIP implementation. Nothing here computes a position; the whole animation is the browser's."
+                 Code=@("""
+// each row carries its own name, stable across the reorder:
+// <div style="view-transition-name:row-@item.Id">...</div>
+
+await viewTransition.Start(
+    updateState: () => _items = [.. _items.OrderBy(_ => Random.Shared.Next())],
+    render: NextRender);
+""")>
+        <div class="controls">
+            <button @onclick="ShuffleItems">Shuffle</button>
+            <button class="secondary" @onclick="SortItems">Sort</button>
+        </div>
+        <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.4rem">
+            @foreach (var item in _items)
+            {
+                <div style="view-transition-name:row-@item.ToLowerInvariant();padding:0.5rem 0.75rem;border-radius:8px;border:1px solid currentColor">
+                    @item
+                </div>
+            }
+        </div>
+        <DemoConsole @ref="listOutput" Title="list output" />
+    </DemoSection>
+
+    <DemoSection Title="Waiting and skipping"
+                 Api="WaitForReady / WaitForFinished / Skip / WasSkipped"
+                 Description="Awaiting is optional - the animation runs whether or not anyone watches. WaitForReady fires when the pseudo-element tree exists and the animation is about to run, which is the moment to start anything that has to move in lockstep. Skip jumps to the end state: the DOM update still applies and WaitForFinished still completes, so it is the right move when the user acts again before the last transition finished."
+                 Code=@("""
+var handle = await viewTransition.Start(updateState: Change, render: NextRender);
+if (handle is null) return;
+
+await handle.WaitForReady();      // pseudo-elements exist, animation about to run
+await handle.WaitForFinished();   // page has settled
+
+if (handle.WasSkipped)
+{
+    // the browser (or Skip) dropped the animation - the DOM still updated
+}
+
+// cut it short:
+await handle.Skip();
+""")>
+        <div class="controls">
+            <button @onclick="ToggleAndWatch">Toggle and watch the phases</button>
+            <button class="danger" @onclick="SkipCurrent">Skip</button>
+        </div>
+        <DemoConsole @ref="phaseOutput" Title="phase output" />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="The animation itself is CSS">
+    Butil starts and controls the transition; which elements morph into which is decided by giving
+    them a matching <code>view-transition-name</code>, and the look is styled through the
+    <code>::view-transition-*</code> pseudo-elements. The default cross-fade needs no CSS at all -
+    everything above uses inline <code>view-transition-name</code> values and nothing else.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes document.startViewTransition. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Start"
+               Signature="ValueTask<ViewTransitionHandle?> Start(Func<Task> updateDom, string[]? types = null)"
+               Description="Runs the update inside a transition. The callback must not return until the DOM has actually updated. Null when unsupported - and then the callback is NOT run." />
+    <ApiMember Name="Start"
+               Signature="ValueTask<ViewTransitionHandle?> Start(Action updateState, Func<Task> render, string[]? types = null)"
+               Description="The same, with the two halves named, so it is obvious that the render is the part that has to be awaited." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, skips any transition still running." />
+    <ApiMember Name="ViewTransitionHandle.WaitForReady"
+               Signature="Task WaitForReady()"
+               Description="Completes when the pseudo-element tree exists and the animation is about to run. Also completes on a skip." />
+    <ApiMember Name="ViewTransitionHandle.WaitForFinished"
+               Signature="Task WaitForFinished()"
+               Description="Completes when the animation has ended and the page is in its new state." />
+    <ApiMember Name="ViewTransitionHandle.WasSkipped"
+               Signature="bool WasSkipped { get; }"
+               Description="True when the animation was dropped - by Skip, or by the browser when the update took too long or the page was hidden. The DOM update still applied." />
+    <ApiMember Name="ViewTransitionHandle.Skip"
+               Signature="ValueTask Skip()"
+               Description="Jumps to the end state immediately, dropping the animation." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole transitionOutput = default!;
+    private DemoConsole listOutput = default!;
+    private DemoConsole phaseOutput = default!;
+
+    private readonly string[] _cards = ["One", "Two", "Three"];
+    private string[] _items = ["Alpha", "Bravo", "Charlie", "Delta", "Echo"];
+    private ViewTransitionHandle? _current;
+    private bool _expanded;
+
+    // Completed from OnAfterRender, so NextRender() resolves only once Blazor has painted. This is
+    // the whole trick: the browser takes its "after" snapshot when the update task completes, and
+    // an assignment alone would not have changed the DOM by then.
+    private TaskCompletionSource? _rendered;
+
+    protected override void OnAfterRender(bool firstRender) => _rendered?.TrySetResult();
+
+    private Task NextRender()
+    {
+        _rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        StateHasChanged();
+        return _rendered.Task;
+    }
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var supported = await viewTransition.IsSupported();
+            if (supported)
+            {
+                await supportOutput.Success("IsSupported → true.");
+            }
+            else
+            {
+                await supportOutput.Warn("IsSupported → false. The demos below will change the page without animating.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleLayout()
+    {
+        try
+        {
+            var handle = await viewTransition.Start(() => _expanded = !_expanded, NextRender);
+            if (handle is null)
+            {
+                _expanded = !_expanded;
+                await transitionOutput.Warn("No view transitions here - toggled without one.");
+                return;
+            }
+
+            await transitionOutput.Success($"Started → expanded is now {_expanded}.");
+            await handle.WaitForFinished();
+            await transitionOutput.Log("Finished.");
+        }
+        catch (Exception ex)
+        {
+            await transitionOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleWithoutTransition()
+    {
+        _expanded = !_expanded;
+        await transitionOutput.Log($"Toggled directly → expanded is now {_expanded}. Compare the two.");
+    }
+
+    private async Task ShuffleItems() => await Reorder(items => [.. items.OrderBy(_ => Random.Shared.Next())], "Shuffled");
+
+    private async Task SortItems() => await Reorder(items => [.. items.OrderBy(i => i)], "Sorted");
+
+    private async Task Reorder(Func<string[], string[]> reorder, string label)
+    {
+        try
+        {
+            var handle = await viewTransition.Start(() => _items = reorder(_items), NextRender);
+            if (handle is null)
+            {
+                _items = reorder(_items);
+                await listOutput.Warn($"{label} without a transition - not supported here.");
+                return;
+            }
+
+            await listOutput.Success($"{label} with a transition.");
+        }
+        catch (Exception ex)
+        {
+            await listOutput.Error("Reorder failed →", ex.Message);
+        }
+    }
+
+    private async Task ToggleAndWatch()
+    {
+        try
+        {
+            _current = await viewTransition.Start(() => _expanded = !_expanded, NextRender);
+            if (_current is null)
+            {
+                _expanded = !_expanded;
+                await phaseOutput.Warn("No view transitions here - nothing to watch.");
+                return;
+            }
+
+            var handle = _current;
+            await phaseOutput.Log("Started.");
+
+            await handle.WaitForReady();
+            await phaseOutput.Log($"Ready{(handle.WasSkipped ? " (already skipped)" : " - the animation is about to run")}.");
+
+            await handle.WaitForFinished();
+            await phaseOutput.Success($"Finished{(handle.WasSkipped ? " - the animation was skipped, but the DOM still updated" : "")}.");
+
+            if (ReferenceEquals(_current, handle)) _current = null;
+        }
+        catch (Exception ex)
+        {
+            await phaseOutput.Error("Transition failed →", ex.Message);
+        }
+    }
+
+    private async Task SkipCurrent()
+    {
+        if (_current is null)
+        {
+            await phaseOutput.Warn("No transition is running. Transitions are short - start one and hit Skip quickly.");
+            return;
+        }
+
+        try
+        {
+            await _current.Skip();
+            await phaseOutput.Log("Skip → jumped to the end state.");
+        }
+        catch (Exception ex)
+        {
+            await phaseOutput.Error("Skip failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            // A transition left running would keep the page's snapshot layer alive after we've gone.
+            if (_current is not null)
+            {
+                await _current.Skip();
+                _current = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

@@ -1,4 +1,4 @@
-@page "/speech-synthesis"
+﻿@page "/speech-synthesis"
 @implements IAsyncDisposable
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
 
@@ -141,6 +141,9 @@ var pending = await speechSynthesis.IsPending();
     <ApiMember Name="Resume" Signature="ValueTask Resume()" Description="Resumes a paused utterance." />
     <ApiMember Name="IsSpeaking" Signature="ValueTask<bool> IsSpeaking()" Description="True when the engine is currently speaking (or paused)." />
     <ApiMember Name="IsPending" Signature="ValueTask<bool> IsPending()" Description="True when an utterance is queued." />
+    <ApiMember Name="IsPaused"
+               Signature="ValueTask<bool> IsPaused()"
+               Description="True when speech is paused. Independent of IsSpeaking, which stays true while paused mid-utterance - check this before rendering a pause/resume toggle." />
 </ApiTable>
 
 @code {
