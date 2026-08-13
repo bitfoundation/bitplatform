@@ -2,6 +2,10 @@ var BitButil = BitButil || {};
 
 (function (butil: any) {
     butil.crypto = {
+        // crypto.subtle is undefined outside a secure context, which is the way this API is
+        // usually "missing" - the engine shipped it, the page just isn't on https://.
+        // getRandomValues and the randomUUID polyfill below work either way.
+        isSupported() { return !!(window.crypto && (window.crypto as any).subtle); },
         randomUUID() {
             // Polyfill for older browsers / non-secure contexts.
             if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();

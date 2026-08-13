@@ -1,10 +1,20 @@
 @page "/"
+@inject NavigationManager navManager
 
 <PageTitle>Bit.Butil - browser APIs for Blazor, without JavaScript</PageTitle>
 
-@* The only page with no PageHeader to emit this for it. *@
+@* The only page with no PageHeader to emit these for it. *@
 <HeadContent>
-    <meta name="description" content="Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media, sensors and more - in strongly-typed C# classes for Blazor WebAssembly, Server and Hybrid. No JavaScript to write." />
+    <link rel="canonical" href="@navManager.BaseUri" />
+    <meta name="description" content="@Description" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Butil" />
+    <meta property="og:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:url" content="@navManager.BaseUri" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta name="twitter:description" content="@Description" />
 </HeadContent>
 
 @* The BlazorUI demo's hero is a two-column split because it has something to put in the second
@@ -81,3 +91,12 @@
         </div>
     }
 </div>
+
+@code {
+    // One string, used as the description, the og:description and the twitter:description - the
+    // three places that all want "what is this page, in a sentence" and must not disagree.
+    private const string Description =
+        "Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media, " +
+        "sensors and more - in strongly-typed C# classes for Blazor WebAssembly, Server and Hybrid. " +
+        "No JavaScript to write.";
+}

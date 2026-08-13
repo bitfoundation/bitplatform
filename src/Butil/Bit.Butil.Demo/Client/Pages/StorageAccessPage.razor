@@ -1,0 +1,157 @@
+@page "/storage-access"
+@inject Bit.Butil.StorageAccess storageAccess
+
+<PageTitle>StorageAccess - Bit.Butil</PageTitle>
+
+<PageHeader Category="Storage"
+            Title="StorageAccess"
+            Lead="How an app running inside a third-party iframe asks for its own cookies and storage back, now that browsers partition both by the embedding site."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Storage_Access_API"
+            InjectAs="StorageAccess storageAccess" />
+
+<Callout Type="info" Title="Only matters inside a cross-site iframe">
+    In a top-level page - like this one - there is nothing to ask for:
+    <code>HasAccess</code> answers true and <code>Request</code> is unnecessary. This API is for the
+    case where your Blazor app is embedded in <em>someone else's</em> site, where the browser hands
+    it a fresh, empty storage jar per embedding site and any auth cookie set on its own domain is
+    invisible.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and current state"
+                 Api="IsSupported / HasAccess"
+                 Description="HasAccess answers true on engines that don't partition storage at all, since there is nothing to be denied - which means a false genuinely means 'ask'. Check it before prompting: browsers count an unnecessary prompt against you."
+                 Code=@("""
+@inject Bit.Butil.StorageAccess storageAccess
+
+var supported = await storageAccess.IsSupported();
+
+if (await storageAccess.HasAccess() is false)
+{
+    // show a button - Request needs a user gesture
+}
+""")>
+        <div class="controls">
+            <button @onclick="CheckState">Check</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Supported</span>
+            <span>@_supported</span>
+        </div>
+        <div class="field">
+            <span class="field-label">Has access</span>
+            <span>@_hasAccess</span>
+        </div>
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+
+    <DemoSection Title="Ask for access"
+                 Api="Request"
+                 Description="Must be called from a user-gesture handler, and browsers generally only grant it for a site the user has already interacted with at the top level. False covers every refusal - user declined, no gesture, embedder's permissions policy forbids it - because the spec deliberately doesn't say which. A grant lasts for the rest of this document's lifetime, not permanently, so ask again after a reload."
+                 Code=@("""
+// inside a click handler:
+var granted = await storageAccess.Request();
+if (granted)
+{
+    // unpartitioned cookies and storage are now readable
+    var token = await cookie.GetValue("auth");
+}
+else
+{
+    // fall back: an in-frame sign-in, or a popup to the top-level origin
+}
+""")>
+        <div class="controls">
+            <button @onclick="Ask">Request</button>
+        </div>
+        <DemoConsole @ref="requestOutput" Title="request output" />
+    </DemoSection>
+
+    <DemoSection Title="Where this fits"
+                 Api="-"
+                 Description="Once access is granted, nothing else changes: Cookie, LocalStorage, SessionStorage and IndexedDb all start seeing the unpartitioned jar. The Storage Access API is a gate in front of the storage APIs, not a replacement for them."
+                 Code=@("""
+// the usual pattern for an embedded app:
+if (await storageAccess.IsSupported() && await storageAccess.HasAccess() is false)
+{
+    // render a "Continue" button rather than calling Request on load -
+    // without a gesture it is refused, and the refusal is remembered
+    return;
+}
+
+// from here on, the ordinary storage wrappers see the real jar:
+var session = await localStorage.GetItem("session");
+""") />
+</div>
+
+<Callout Type="warning" Title="Don't ask on load">
+    <code>Request</code> outside a user gesture is refused, and some engines treat a refused
+    request as a signal not to prompt again for a while. Render a button, and call it from the
+    click.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes document.requestStorageAccess. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="HasAccess"
+               Signature="ValueTask<bool> HasAccess()"
+               Description="Whether this document already has unpartitioned storage. True on engines that don't partition at all, so a false genuinely means 'ask'." />
+    <ApiMember Name="Request"
+               Signature="ValueTask<bool> Request()"
+               Description="Asks for access. Requires a user gesture. False covers every refusal - the spec deliberately gives no reason. A grant lasts for this document's lifetime only." />
+</ApiTable>
+
+@code {
+    private DemoConsole stateOutput = default!;
+    private DemoConsole requestOutput = default!;
+
+    private string _supported = "Not checked.";
+    private string _hasAccess = "Not checked.";
+
+    private async Task CheckState()
+    {
+        try
+        {
+            var supported = await storageAccess.IsSupported();
+            var has = await storageAccess.HasAccess();
+
+            _supported = supported.ToString();
+            _hasAccess = has.ToString();
+
+            if (has)
+            {
+                await stateOutput.Success($"Supported → {supported}, has access → true. Expected here: this page is top-level, so there is nothing partitioned away.");
+            }
+            else
+            {
+                await stateOutput.Warn($"Supported → {supported}, has access → false. Storage is partitioned for this document.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await stateOutput.Error("Check failed →", ex.Message);
+        }
+    }
+
+    private async Task Ask()
+    {
+        try
+        {
+            var granted = await storageAccess.Request();
+            if (granted)
+            {
+                _hasAccess = "True";
+                await requestOutput.Success("Request → granted.");
+            }
+            else
+            {
+                await requestOutput.Warn("Request → refused. In a top-level page there is nothing to grant, so this is the expected answer here.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await requestOutput.Error("Request failed →", ex.Message);
+        }
+    }
+}

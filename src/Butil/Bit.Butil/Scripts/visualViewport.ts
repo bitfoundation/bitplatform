@@ -4,6 +4,7 @@ var BitButil = BitButil || {};
     const _handlers: { [id: string]: EventListener } = {};
 
     butil.visualViewport = {
+        isSupported() { return !!window.visualViewport; },
         offsetLeft() { return window.visualViewport.offsetLeft; },
         offsetTop() { return window.visualViewport.offsetTop; },
         pageLeft() { return window.visualViewport.pageLeft; },

@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject NavigationManager navManager
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -11,6 +13,18 @@
     @* No static description here either, for the same reason as the title above: every page emits
        its own through PageHeader's lead, and an earlier one in the served HTML would win. *@
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    @* Titles and descriptions are per-page and come from the HeadOutlet below; the card image is
+       the same for every page, so it is stated once here rather than repeated 68 times. A page
+       that emits its own og:image would simply win, since these come first.
+       Absolute, not relative: unfurlers fetch the image out of band and have no document to
+       resolve a relative path against. *@
+    <meta property="og:image" content="@($"{navManager.BaseUri}icon-512.png")" />
+    <meta name="twitter:image" content="@($"{navManager.BaseUri}icon-512.png")" />
+    @* Tints the browser's own chrome on mobile. Two of them, so the bar matches whichever theme
+       the visitor's OS is set to rather than always the dark one. *@
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
     <link rel="stylesheet" href="css/app.css" />
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />

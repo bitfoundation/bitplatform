@@ -2,27 +2,45 @@
 @inject Bit.Butil.Window window
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.BackgroundSync backgroundSync
+@inject Bit.Butil.BarcodeDetector barcodeDetector
 @inject Bit.Butil.Battery battery
 @inject Bit.Butil.BroadcastChannel broadcastChannel
 @inject Bit.Butil.CacheStorage cacheStorage
+@inject Bit.Butil.Clipboard clipboard
+@inject Bit.Butil.Compression compression
 @inject Bit.Butil.ContactPicker contactPicker
 @inject Bit.Butil.CookieStore cookieStore
+@inject Bit.Butil.Crypto crypto
+@inject Bit.Butil.DeviceOrientation deviceOrientation
+@inject Bit.Butil.EventSource eventSource
 @inject Bit.Butil.EyeDropper eyeDropper
+@inject Bit.Butil.FileSystem fileSystem
+@inject Bit.Butil.Gamepad gamepad
 @inject Bit.Butil.Geolocation geolocation
 @inject Bit.Butil.IdleDetector idleDetector
 @inject Bit.Butil.IndexedDb indexedDb
 @inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.MediaRecorder mediaRecorder
+@inject Bit.Butil.MediaSession mediaSession
+@inject Bit.Butil.Navigation navigation
+@inject Bit.Butil.NetworkInformation networkInformation
 @inject Bit.Butil.Nfc nfc
 @inject Bit.Butil.Notification notification
 @inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.PictureInPicture pictureInPicture
 @inject Bit.Butil.Push push
 @inject Bit.Butil.Reporting reporting
+@inject Bit.Butil.ScreenOrientation screenOrientation
 @inject Bit.Butil.ServiceWorker serviceWorker
 @inject Bit.Butil.SpeechRecognition speechRecognition
 @inject Bit.Butil.SpeechSynthesis speechSynthesis
+@inject Bit.Butil.StorageAccess storageAccess
 @inject Bit.Butil.StorageManager storageManager
+@inject Bit.Butil.ViewTransition viewTransition
+@inject Bit.Butil.VisualViewport visualViewport
 @inject Bit.Butil.WakeLock wakeLock
 @inject Bit.Butil.WebAudio webAudio
+@inject Bit.Butil.WebAuthn webAuthn
 @inject Bit.Butil.WebLocks webLocks
 
 <PageTitle>Browser support - Bit.Butil</PageTitle>
@@ -41,7 +59,7 @@
 <div class="stack">
     <DemoSection Title="Check this browser"
                  Api="IsSupported"
-                 Description="Twenty-three Butil classes expose IsSupported(), a cheap feature detection that asks the runtime whether the underlying API object exists. Pressing the button runs all of them here and fills the last column of the table below. This is exactly the check you should be making in your own app before offering a feature - never a user-agent string."
+                 Description="@($"{_detectors.Count} of the {DocsNav.ApiLinks.Count()} classes here expose IsSupported(), a cheap feature detection that asks the runtime whether the underlying API object exists. Pressing the button runs all of them and fills the last column of the table below. This is exactly the check you should be making in your own app before offering a feature - never a user-agent string.")"
                  Code=@("""
 if (await wakeLock.IsSupported())
 {
@@ -278,34 +296,54 @@ _canPickContacts = await contactPicker.IsSupported();
     private record BrowserEnvironment(string Brands, string Platform, bool IsMobile, bool IsSecureContext);
 
     // Built once: the table asks whether a row is probeable on every render, and rebuilding a
-    // 23-entry dictionary of closures per row per render is a lot of garbage for a lookup.
-    // Only the APIs that ship an IsSupported() check can be probed; the rest are baseline platform
-    // that has been in every engine for a decade, and a fabricated "available" for those would be
-    // a claim this page never actually verified.
+    // forty-entry dictionary of closures per row per render is a lot of garbage for a lookup.
+    // Every class that ships an IsSupported() is here - the keys are DocsNav urls, so a typo shows
+    // up as a row that never fills rather than as a compile error. What is left out is the baseline
+    // platform that has been in every engine for a decade (window, document, history, storage and
+    // friends); a fabricated "available" for those would be a claim this page never verified.
     protected override void OnInitialized() => _detectors = new()
     {
         ["background-sync"] = () => backgroundSync.IsSupported(),
+        ["barcode-detector"] = () => barcodeDetector.IsSupported(),
         ["battery"] = () => battery.IsSupported(),
         ["broadcast-channel"] = () => broadcastChannel.IsSupported(),
         ["cache-storage"] = () => cacheStorage.IsSupported(),
+        ["clipboard"] = () => clipboard.IsSupported(),
+        ["compression"] = () => compression.IsSupported(),
         ["contact-picker"] = () => contactPicker.IsSupported(),
         ["cookie-store"] = () => cookieStore.IsSupported(),
+        ["crypto"] = () => crypto.IsSupported(),
+        ["device-orientation"] = () => deviceOrientation.IsSupported(),
+        ["event-source"] = () => eventSource.IsSupported(),
         ["eye-dropper"] = () => eyeDropper.IsSupported(),
+        ["file-system"] = () => fileSystem.IsSupported(),
+        ["gamepad"] = () => gamepad.IsSupported(),
         ["geolocation"] = () => geolocation.IsSupported(),
         ["idle-detector"] = () => idleDetector.IsSupported(),
         ["indexed-db"] = () => indexedDb.IsSupported(),
         ["media-devices"] = () => mediaDevices.IsSupported(),
+        ["media-recorder"] = () => mediaRecorder.IsSupported(),
+        ["media-session"] = () => mediaSession.IsSupported(),
+        ["navigation"] = () => navigation.IsSupported(),
+        ["network-information"] = () => networkInformation.IsSupported(),
         ["nfc"] = () => nfc.IsSupported(),
         ["notification"] = () => notification.IsSupported(),
         ["permissions"] = () => permissions.IsSupported(),
+        ["picture-in-picture"] = () => pictureInPicture.IsSupported(),
         ["push"] = () => push.IsSupported(),
         ["reporting"] = () => reporting.IsSupported(),
+        ["screen-orientation"] = () => screenOrientation.IsSupported(),
         ["service-worker"] = () => serviceWorker.IsSupported(),
         ["speech-recognition"] = () => speechRecognition.IsSupported(),
         ["speech-synthesis"] = () => speechSynthesis.IsSupported(),
+        ["storage-access"] = () => storageAccess.IsSupported(),
         ["storage-manager"] = () => storageManager.IsSupported(),
+        ["user-agent"] = () => userAgent.IsSupported(),
+        ["view-transition"] = () => viewTransition.IsSupported(),
+        ["visual-viewport"] = () => visualViewport.IsSupported(),
         ["wake-lock"] = () => wakeLock.IsSupported(),
         ["web-audio"] = () => webAudio.IsSupported(),
+        ["web-authn"] = () => new ValueTask<bool>(webAuthn.IsSupported()),
         ["web-locks"] = () => webLocks.IsSupported(),
     };
 

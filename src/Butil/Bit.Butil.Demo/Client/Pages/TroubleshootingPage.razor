@@ -91,12 +91,17 @@ public async ValueTask DisposeAsync()
                  Language="razor" />
 
     <DemoSection Title="It works on localhost and breaks in production"
-                 Description="Browsers treat localhost as a secure context so that development works over plain HTTP. The moment the app is served from a real host over HTTP, every secure-context API disappears - clipboard, crypto, geolocation, service workers, web locks, storage estimates and more. Serve over HTTPS. The browser-support page lists exactly which APIs are affected."
+                 Description="Browsers treat localhost as a secure context so that development works over plain HTTP. The moment the app is served from a real host over HTTP, every secure-context API disappears - clipboard, crypto, geolocation, service workers, web locks, storage estimates and more. Serve over HTTPS. The browser-support page lists exactly which APIs are affected, and IsSupported() answers it per API: it probes for the object itself, which an insecure context does not have, so it reports false for exactly the reason you are chasing."
                  Code=@("""
 if (await window.IsSecureContext() is false)
 {
     // this is the difference between your machine and production
 }
+
+// per-API, and the same answer: false here means navigator.clipboard
+// does not exist, which over plain HTTP it never does
+if (await clipboard.IsSupported() is false) { /* ... */ }
+if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
 """) />
 
     <DemoSection Title="It works in debug and breaks after publish"

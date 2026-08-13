@@ -3,6 +3,10 @@ var BitButil = BitButil || {};
 (function (butil: any) {
     butil.userAgent = {
         extract,
+        // Two names for one probe on purpose: isSupported is the spelling every other Butil class
+        // uses, isClientHintsSupported is the one that says which of the two mechanisms - UA-CH or
+        // the legacy string - the answer is about. Extract() works without either.
+        isSupported() { return !!(window.navigator as any).userAgentData; },
         isClientHintsSupported() { return !!(window.navigator as any).userAgentData; },
         getBrands() {
             const data = (window.navigator as any).userAgentData;

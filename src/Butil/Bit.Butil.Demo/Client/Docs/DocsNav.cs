@@ -79,6 +79,7 @@ public static class DocsNav
             new("Window", "window", "🪟", "The DOM window object: events, dialogs, sizes and more."),
             new("Document", "document", "📄", "The DOM document object: title, cookies, fullscreen, design mode.", ApiSupport.Broad, ApiNeeds.UserGesture),
             new("History", "history", "🕘", "Session history: navigate back/forward and push/replace states."),
+            new("Navigation", "navigation", "🗺️", "The modern successor to History - read the entry list, and finally know whether you can go back."),
             new("Location", "location", "📍", "Read and mutate the current URL, reload or navigate."),
             new("Navigator", "navigator", "🧭", "Browser identity, languages, share, vibrate, badges and more.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
             new("UserAgent", "user-agent", "🪪", "Parsed user-agent brands, platform and mobile-ness.", ApiSupport.Partial),
@@ -96,6 +97,8 @@ public static class DocsNav
         [
             new("Element", "element", "🧱", "Attributes, scrolling, fullscreen, pointer capture and events on any ElementReference."),
             new("Animation", "animation", "✨", "Run and control Web Animations on any element, straight from C#."),
+            new("PictureInPicture", "picture-in-picture", "🖼️", "Float a video in an always-on-top window outside the page.", ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("ViewTransition", "view-transition", "🎞️", "Let the browser animate between two states of the page.", ApiSupport.Partial),
             new("Keyboard", "keyboard", "⌨️", "App-wide keyboard shortcuts with modifier support."),
             new("IntersectionObserver", "intersection-observer", "👁️", "Observe element visibility inside the viewport or a scroll container."),
             new("MutationObserver", "mutation-observer", "🧬", "Observe DOM tree, attribute and character-data mutations."),
@@ -109,6 +112,7 @@ public static class DocsNav
             new("IndexedDb", "indexed-db", "🧮", "Structured, transactional client-side database."),
             new("CacheStorage", "cache-storage", "📦", "The service-worker Cache API: store and match requests.", ApiSupport.Broad, ApiNeeds.SecureContext),
             new("StorageManager", "storage-manager", "🧰", "Storage quota, usage estimates and persistence.", ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("StorageAccess", "storage-access", "🔓", "Ask for unpartitioned storage from inside a third-party iframe.", ApiSupport.Broad, ApiNeeds.UserGesture),
         ]),
         new("Files & Data",
         [
@@ -117,6 +121,8 @@ public static class DocsNav
             new("Clipboard", "clipboard", "📋", "Read and write text and typed items on the system clipboard.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
             new("Crypto", "crypto", "🔐", "SubtleCrypto encryption, decryption, hashing and random values.", ApiSupport.Broad, ApiNeeds.SecureContext),
             new("Fetch", "fetch", "🌐", "The browser fetch API with full request/response control."),
+            new("FileSystem", "file-system", "🗂️", "Pick real files and folders, then read and write them back.", ApiSupport.Chromium, ApiNeeds.UserGesture),
+            new("Compression", "compression", "🗜️", "Gzip and deflate through the browser's native codec.", ApiSupport.Broad),
         ]),
         new("Network & Workers",
         [
@@ -126,17 +132,21 @@ public static class DocsNav
             new("NetworkInformation", "network-information", "📶", "Connection type, speed, save-data and change events.", ApiSupport.Chromium),
             new("BroadcastChannel", "broadcast-channel", "📡", "Message other tabs and windows of the same origin."),
             new("WebLocks", "web-locks", "🔒", "Cross-tab cooperative resource locking.", ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("EventSource", "event-source", "📻", "Server-sent events, with reconnection built into the browser."),
         ]),
         new("Device & Hardware",
         [
             new("Battery", "battery", "🔋", "Battery level, charging state and related events.", ApiSupport.Chromium, ApiNeeds.SecureContext),
             new("Geolocation", "geolocation", "🛰️", "Current position, watch positions and errors.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
-            new("MediaDevices", "media-devices", "🎥", "Enumerate cameras/microphones and query capabilities.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("MediaDevices", "media-devices", "🎥", "Enumerate cameras/microphones, capture the screen, and open streams.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+            new("Gamepad", "gamepad", "🎮", "Read game controllers - buttons, sticks and rumble.", ApiSupport.Broad),
+            new("DeviceOrientation", "device-orientation", "🧲", "Tilt, acceleration and rotation from the device's own sensors.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
             new("Nfc", "nfc", "🏷️", "Read and write NDEF messages on NFC tags.", ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("WakeLock", "wake-lock", "☀️", "Keep the screen awake while your app needs it.", ApiSupport.Partial, ApiNeeds.SecureContext),
             new("IdleDetector", "idle-detector", "💤", "Detect user and screen idle state changes.", ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("ContactPicker", "contact-picker", "👥", "Let users pick contacts to share with your app.", ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
             new("EyeDropper", "eye-dropper", "🎨", "Sample any pixel color on the screen.", ApiSupport.ChromiumDesktop, ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("BarcodeDetector", "barcode-detector", "🔎", "Find QR codes and barcodes in a camera frame or an image.", ApiSupport.Chromium, ApiNeeds.Experimental),
         ]),
         new("Identity & Permissions",
         [
@@ -149,6 +159,8 @@ public static class DocsNav
             new("SpeechSynthesis", "speech-synthesis", "🗣️", "Text-to-speech with voices, pitch and rate.", ApiSupport.Broad, ApiNeeds.UserGesture),
             new("SpeechRecognition", "speech-recognition", "🎙️", "Speech-to-text with interim results and events.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),
             new("WebAudio", "web-audio", "🎵", "Play and control audio buffers with the Web Audio API.", ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("MediaRecorder", "media-recorder", "⏺️", "Record a camera, microphone or screen share to a file.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("MediaSession", "media-session", "🎛️", "Lock-screen metadata and hardware media-key handlers.", ApiSupport.Partial),
         ]),
     ];
 

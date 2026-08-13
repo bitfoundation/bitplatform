@@ -1,3 +1,5 @@
+@inject NavigationManager navManager
+
 @* A page opens the way every BlazorUI demo page does: an overline naming the area, the title,
    then the lead as prose on the bare page rather than inside one more frame. *@
 
@@ -5,13 +7,26 @@
    what a description meta wants - so it is also emitted into the head rather than having every
    page maintain a second copy of its own summary. The host page deliberately carries no static
    description for the same reason it carries no static title: with prerendering the HeadOutlet
-   emits a real element, and an earlier one in the served HTML would win. *@
-@if (string.IsNullOrWhiteSpace(Lead) is false)
-{
-    <HeadContent>
+   emits a real element, and an earlier one in the served HTML would win.
+
+   The Open Graph and canonical tags come from the same two strings. Every page on this site is
+   prerendered, so a crawler or a chat client unfurling a link gets these in the served HTML
+   without running the WebAssembly runtime - which is the only reason emitting them here works. *@
+<HeadContent>
+    <link rel="canonical" href="@CanonicalUrl" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Bit.Butil" />
+    <meta property="og:title" content="@Title" />
+    <meta property="og:url" content="@CanonicalUrl" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="@Title" />
+    @if (string.IsNullOrWhiteSpace(Lead) is false)
+    {
         <meta name="description" content="@Lead" />
-    </HeadContent>
-}
+        <meta property="og:description" content="@Lead" />
+        <meta name="twitter:description" content="@Lead" />
+    }
+</HeadContent>
 
 <header class="page-header">
     <span class="eyebrow">@Category</span>
@@ -38,6 +53,18 @@
 }
 
 @code {
+    // The query and the fragment are navigation state, not identity - two urls that differ only
+    // by "#play-pause" are the same document, and a canonical that says otherwise splits the page
+    // in a crawler's index.
+    private string CanonicalUrl
+    {
+        get
+        {
+            var uri = new Uri(navManager.Uri);
+            return $"{uri.GetLeftPart(UriPartial.Path)}";
+        }
+    }
+
     [Parameter] public string Category { get; set; } = "Bit.Butil";
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public string? Lead { get; set; }
