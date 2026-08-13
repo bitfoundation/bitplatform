@@ -808,24 +808,20 @@ public class BitTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
+            // Longer than anything the test waits for, so the number of steps the press makes is not a race
+            // against the continuous spin: the press contributes the one step every press makes, and the
+            // release has to cancel the spin that is waiting out this delay for the value to stay there.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
         var button = component.Find("button[title='Increase hour']");
 
-        var downTask = button.TriggerEventAsync("onpointerdown", new PointerEventArgs());
+        await button.TriggerEventAsync("onpointerdown", new PointerEventArgs());
 
         await button.TriggerEventAsync("onpointerup", new PointerEventArgs());
 
-        Assert.AreSame(downTask, await Task.WhenAny(downTask, Task.Delay(5000)), "The press did not stop stepping after the release.");
-        await downTask;
-
-        Assert.IsTrue(value >= new TimeSpan(11, 30, 0));
-
-        // The loop steps every 75ms, so a value that is still the same well after the release is one nothing is stepping anymore.
-        var valueOnRelease = value;
-        await Task.Delay(300);
-        Assert.AreEqual(valueOnRelease, value);
+        Assert.AreEqual(new TimeSpan(11, 30, 0), value);
     }
 
     [TestMethod]
@@ -990,6 +986,48 @@ public class BitTimePickerTests : BunitTestContext
         Assert.AreEqual("the hour", inputs[0].GetAttribute("aria-label"));
         Assert.AreEqual("the minute", inputs[1].GetAttribute("aria-label"));
         Assert.AreEqual("the second", inputs[2].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheRangeOfEachTimeInput()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.HourStep, 2);
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.SecondStep, 30);
+            parameters.Add(p => p.ShowSeconds, true);
+        });
+
+        var inputs = component.FindAll(".bit-tpc-tin");
+
+        Assert.AreEqual("0", inputs[0].GetAttribute("min"));
+        Assert.AreEqual("23", inputs[0].GetAttribute("max"));
+        Assert.AreEqual("0", inputs[1].GetAttribute("min"));
+        Assert.AreEqual("59", inputs[1].GetAttribute("max"));
+        Assert.AreEqual("0", inputs[2].GetAttribute("min"));
+        Assert.AreEqual("59", inputs[2].GetAttribute("max"));
+
+        // The step of the picker is not a step of the input: a value that does not sit on it - a bound time
+        // of 10:37 in a picker that steps by 15 minutes - would make the input invalid, and a form holding a
+        // closed (and therefore hidden) picker could not be submitted at all.
+        Assert.IsFalse(inputs[0].HasAttribute("step"));
+        Assert.IsFalse(inputs[1].HasAttribute("step"));
+        Assert.IsFalse(inputs[2].HasAttribute("step"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheClockFaceRangeOfTheHourInputInTwelveHours()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+        });
+
+        var hourInput = component.FindAll(".bit-tpc-tin")[0];
+
+        Assert.AreEqual("1", hourInput.GetAttribute("min"));
+        Assert.AreEqual("12", hourInput.GetAttribute("max"));
     }
 
     #endregion
@@ -1679,48 +1717,6 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find(".bit-tpc-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
         Assert.IsFalse(isOpen);
-    }
-
-    [TestMethod]
-    public void BitTimePickerShouldRenderTheRangeOfEachTimeInput()
-    {
-        var component = RenderComponent<BitTimePicker>(parameters =>
-        {
-            parameters.Add(p => p.HourStep, 2);
-            parameters.Add(p => p.MinuteStep, 15);
-            parameters.Add(p => p.SecondStep, 30);
-            parameters.Add(p => p.ShowSeconds, true);
-        });
-
-        var inputs = component.FindAll(".bit-tpc-tin");
-
-        Assert.AreEqual("0", inputs[0].GetAttribute("min"));
-        Assert.AreEqual("23", inputs[0].GetAttribute("max"));
-        Assert.AreEqual("0", inputs[1].GetAttribute("min"));
-        Assert.AreEqual("59", inputs[1].GetAttribute("max"));
-        Assert.AreEqual("0", inputs[2].GetAttribute("min"));
-        Assert.AreEqual("59", inputs[2].GetAttribute("max"));
-
-        // The step of the picker is not a step of the input: a value that does not sit on it - a bound time
-        // of 10:37 in a picker that steps by 15 minutes - would make the input invalid, and a form holding a
-        // closed (and therefore hidden) picker could not be submitted at all.
-        Assert.IsFalse(inputs[0].HasAttribute("step"));
-        Assert.IsFalse(inputs[1].HasAttribute("step"));
-        Assert.IsFalse(inputs[2].HasAttribute("step"));
-    }
-
-    [TestMethod]
-    public void BitTimePickerShouldRenderTheClockFaceRangeOfTheHourInputInTwelveHours()
-    {
-        var component = RenderComponent<BitTimePicker>(parameters =>
-        {
-            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
-        });
-
-        var hourInput = component.FindAll(".bit-tpc-tin")[0];
-
-        Assert.AreEqual("1", hourInput.GetAttribute("min"));
-        Assert.AreEqual("12", hourInput.GetAttribute("max"));
     }
 
     [TestMethod]

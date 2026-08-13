@@ -205,7 +205,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string? CloseButtonIconName { get; set; }
 
     /// <summary>
-    /// The title of the CloseDatePicker button (tooltip).
+    /// The title of the close button (tooltip).
     /// </summary>
     [Parameter] public string CloseButtonTitle { get; set; } = "Close date picker";
 
@@ -319,22 +319,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The title of the Go to next year button (tooltip).
     /// </summary>
     [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
-
-    /// <summary>
-    /// The icon to display inside the now button.
-    /// Takes precedence over <see cref="NowButtonIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? NowButtonIcon { get; set; }
-
-    /// <summary>
-    /// The name of the now button's icon from the built-in Fluent UI icon set.
-    /// </summary>
-    [Parameter] public string? NowButtonIconName { get; set; }
-
-    /// <summary>
-    /// The title of the now button (tooltip).
-    /// </summary>
-    [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
 
     /// <summary>
     /// The title of the Go to previous month button (tooltip).
@@ -565,6 +549,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string? NextYearRangeNavIconName { get; set; }
 
     /// <summary>
+    /// The icon to display inside the now button.
+    /// Takes precedence over <see cref="NowButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NowButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the now button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? NowButtonIconName { get; set; }
+
+    /// <summary>
+    /// The title of the now button (tooltip).
+    /// </summary>
+    [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
+
+    /// <summary>
     /// The callback that is called when the value gets cleared by the clear button.
     /// </summary>
     [Parameter] public EventCallback OnClear { get; set; }
@@ -675,11 +675,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
-    /// Whether the now button should be shown or not.
-    /// </summary>
-    [Parameter] public bool ShowNowButton { get; set; } = true;
-
-    /// <summary>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
@@ -690,6 +685,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool ShowMonthPickerAsOverlay { get; set; }
+
+    /// <summary>
+    /// Whether the now button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowNowButton { get; set; } = true;
 
     /// <summary>
     /// Whether the days of the previous and next months should be shown in the day picker.
@@ -1007,10 +1007,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                     await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
                 }
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
-                // callout element to toggle yet, so the open state is applied here instead.
+                // callout element to toggle yet, so the open state is applied here instead - with the focus
+                // handling and the event of the hook, so a picker that starts open and one opened from the
+                // outside a moment later end up in the same state.
                 if (IsOpen && Standalone is false)
                 {
                     await ToggleCallout();
+
+                    if (AllowTextInput is false || ReadOnly)
+                    {
+                        FocusCalloutOnOpen();
+                        StateHasChanged();
+                    }
+
+                    await OnOpen.InvokeAsync();
                 }
 
                 // The autofocus attribute is only honored by the browser for an element that is part of the
@@ -1164,9 +1174,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         await PrepareCalloutForOpen();
 
-        await ToggleCallout();
+        // A click on the field of an already open picker is not a second opening: the callout is shown and
+        // positioned, and reporting it open again would have the application counting one opening per click.
+        if (wasOpen is false)
+        {
+            await ToggleCallout();
 
-        await OnOpen.InvokeAsync();
+            await OnOpen.InvokeAsync();
+        }
 
         // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
         // the date from inside it. The exception is a pointer press on a picker whose input accepts

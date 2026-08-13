@@ -342,13 +342,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// Disables every day after today, exactly as a <see cref="MaxDate"/> of today would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
-    [Parameter] public bool DisableFuture { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisableFuture { get; set; }
 
     /// <summary>
     /// Disables every day before today, exactly as a <see cref="MinDate"/> of today would.
     /// When both are set, the later of the two bounds wins.
     /// </summary>
-    [Parameter] public bool DisablePast { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisablePast { get; set; }
 
     /// <summary>
     /// The list of dates that are disabled (not selectable) in the DateRangePicker, in addition to MinDate and MaxDate.
@@ -1206,10 +1210,21 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                         dotnetObj: _dotnetObj);
                 }
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
-                // callout element to toggle yet, so the open state is applied here instead.
+                // callout element to toggle yet, so the open state is applied here instead - with the focus
+                // handling and the event of the hook, so a picker that starts open and one opened from the
+                // outside a moment later end up in the same state.
                 if (IsOpen && Standalone is false)
                 {
                     await ToggleCallout();
+
+                    if (AllowTextInput is false)
+                    {
+                        _focusedDate = GetFocusableDay();
+                        _focusAfterRender = true;
+                        StateHasChanged();
+                    }
+
+                    await OnOpen.InvokeAsync();
                 }
 
                 // The autofocus attribute is only honored by the browser for an element that is part of the
@@ -1464,6 +1479,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (Standalone) return;
         if (IsEnabled is false) return;
 
+        var wasOpen = IsOpen;
+
         if (await AssignIsOpenInternal(true) is false) return;
 
         await PrepareCalloutForOpen();
@@ -1485,9 +1502,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         StateHasChanged();
 
-        await ToggleCallout();
+        // A click on the field of an already open picker is not a second opening: the callout is shown and
+        // positioned, and reporting it open again would have the application counting one opening per click.
+        if (wasOpen is false)
+        {
+            await ToggleCallout();
 
-        await OnOpen.InvokeAsync();
+            await OnOpen.InvokeAsync();
+        }
 
         await OnClick.InvokeAsync();
     }
@@ -3629,8 +3651,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: "",
             scrollOffset: 0,
-            headerId: "",
-            footerId: "",
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: GetMaxWidth());

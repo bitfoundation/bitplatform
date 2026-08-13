@@ -788,7 +788,9 @@ public class BitCalendarTests : BunitTestContext
 
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
 
-        Assert.IsTrue(day15.GetAttribute("title")?.Contains("9.30"));
+        // The hour is padded whatever the culture writes it like, so the assertion is on the padded time
+        // rather than on a substring of it that an unpadded "9.30" would match just as well.
+        Assert.IsTrue(day15.GetAttribute("title")?.Contains("09.30"));
     }
 
     [TestMethod]

@@ -129,7 +129,7 @@ public partial class BitDatePickerDemo
             Name = "CloseButtonTitle",
             Type = "string",
             DefaultValue = "Close date picker",
-            Description = "The title of the CloseDatePicker button (tooltip).",
+            Description = "The title of the close button (tooltip).",
         },
         new()
         {
@@ -260,29 +260,6 @@ public partial class BitDatePickerDemo
             Type = "string",
             DefaultValue = "Go to next year {0}",
             Description = "The title of the Go to next year button (tooltip)."
-        },
-        new()
-        {
-            Name = "NowButtonIcon",
-            Type = "BitIconInfo?",
-            DefaultValue = "null",
-            Description = "The icon to display inside the now button. Takes precedence over NowButtonIconName when both are set.",
-            LinkType = LinkType.Link,
-            Href = "#bit-icon-info",
-        },
-        new()
-        {
-            Name = "NowButtonIconName",
-            Type = "string?",
-            DefaultValue = "null",
-            Description = "The name of the now button's icon from the built-in Fluent UI icon set."
-        },
-        new()
-        {
-            Name = "NowButtonTitle",
-            Type = "string",
-            DefaultValue = "Go to now",
-            Description = "The title of the now button (tooltip)."
         },
         new()
         {
@@ -561,6 +538,29 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "NowButtonIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon to display inside the now button. Takes precedence over NowButtonIconName when both are set.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "NowButtonIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the now button's icon from the built-in Fluent UI icon set."
+        },
+        new()
+        {
+            Name = "NowButtonTitle",
+            Type = "string",
+            DefaultValue = "Go to now",
+            Description = "The title of the now button (tooltip)."
+        },
+        new()
+        {
             Name = "OnClear",
             Type = "EventCallback",
             Description = "The callback that is called when the value gets cleared by the clear button."
@@ -705,13 +705,6 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "ShowNowButton",
-            Type = "bool",
-            DefaultValue = "true",
-            Description = "Whether the now button should be shown or not."
-        },
-        new()
-        {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
@@ -723,6 +716,13 @@ public partial class BitDatePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Show month picker on top of date picker when visible."
+        },
+        new()
+        {
+            Name = "ShowNowButton",
+            Type = "bool",
+            DefaultValue = "true",
+            Description = "Whether the now button should be shown or not."
         },
         new()
         {

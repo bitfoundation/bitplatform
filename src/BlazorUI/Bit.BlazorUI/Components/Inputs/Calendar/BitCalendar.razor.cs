@@ -889,6 +889,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private void HandleNowButtonClick()
     {
         if (IsEnabled is false) return;
+        if (ReadOnly) return;
 
         var now = GetToday();
 

@@ -1442,7 +1442,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldStartAnEmptyPickerFromTheStartingValue()
+    public async Task BitCircularTimePickerShouldStartAnEmptyPickerFromTheStartingValue()
     {
         TimeSpan? value = null;
 
@@ -1457,13 +1457,15 @@ public class BitCircularTimePickerTests : BunitTestContext
         // stepping the hour keeps the 30 minutes rather than resetting them to the top of the hour.
         Assert.IsNull(value);
 
-        component.Find(".bit-ctp-clf").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        var clockFace = component.Find(".bit-ctp-clf");
+
+        await component.InvokeAsync(() => clockFace.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" }));
 
         Assert.AreEqual(new TimeSpan(10, 30, 0), value);
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldReportTheClearButton()
+    public async Task BitCircularTimePickerShouldReportTheClearButton()
     {
         var cleared = 0;
         TimeSpan? value = new TimeSpan(10, 30, 0);
@@ -1475,7 +1477,9 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        component.Find(".bit-ctp-abn").Click();
+        var clearButton = component.Find(".bit-ctp-abn");
+
+        await component.InvokeAsync(() => clearButton.Click());
 
         Assert.IsNull(value);
         Assert.AreEqual(1, cleared);

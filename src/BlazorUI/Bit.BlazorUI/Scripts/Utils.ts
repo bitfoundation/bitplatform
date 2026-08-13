@@ -199,9 +199,15 @@
         }
 
         // Everything that can hold the focus inside a container. A roving tabindex takes every item of a grid
-        // but one out of the tab sequence, which is why tabindex="-1" is excluded here.
+        // but one out of the tab sequence, which is why tabindex="-1" is excluded here. The controls a header
+        // or footer template brings along are part of the container too, so the whole set of natively
+        // focusable elements is listed rather than only the ones the components render themselves.
         private static readonly _focusables =
-            'button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
+            'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
+            'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), ' +
+            '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
+            '[tabindex]:not([tabindex="-1"])';
 
         // Keeps Tab and Shift+Tab cycling inside a container, which is what a popup that reports itself a modal
         // dialog has to do: the tab order runs on into the page behind it otherwise, leaving the focus somewhere

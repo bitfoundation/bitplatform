@@ -1234,6 +1234,20 @@ public partial class BitDateRangePickerDemo
                 },
                 new()
                 {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout header, the container of the CalloutHeaderTemplate."
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout footer, the container of the CalloutFooterTemplate."
+                },
+                new()
+                {
                     Name = "Group",
                     Type = "string?",
                     DefaultValue = "null",

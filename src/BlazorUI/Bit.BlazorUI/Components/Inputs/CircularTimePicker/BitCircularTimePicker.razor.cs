@@ -1297,9 +1297,35 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         if (hour.HasValue is false) return;
 
+        // Each part is put in place before the next one is searched for, since what a minute is allowed to be
+        // depends on the hour it sits in and a second on the minute. A part the constraints leave without a
+        // single allowed value takes the parts already placed back with it: the time is set whole or not at
+        // all, rather than falling back to a zero those same constraints may well have ruled out.
+        var previousHour = _hour;
+        var previousMinute = _minute;
+
         _hour = hour;
-        _minute = FindNearestAllowedMinute(now.Minutes);
-        _second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : 0;
+
+        var minute = FindNearestAllowedMinute(now.Minutes);
+
+        if (minute.HasValue is false)
+        {
+            _hour = previousHour;
+            return;
+        }
+
+        _minute = minute;
+
+        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : 0;
+
+        if (second.HasValue is false)
+        {
+            _hour = previousHour;
+            _minute = previousMinute;
+            return;
+        }
+
+        _second = second;
 
         await UpdateCurrentValue();
 
@@ -1416,8 +1442,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: "",
             scrollOffset: 0,
-            headerId: "",
-            footerId: "",
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0);

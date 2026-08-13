@@ -2839,27 +2839,6 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(footer.PreviousElementSibling!.ClassList.Contains("bit-dtp-grp"));
     }
 
-    // The component counts months with CultureInfo.Calendar, which has no public setter and is not
-    // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
-    private static CultureInfo CreateHebrewCulture()
-    {
-        var culture = CultureInfo.CreateSpecificCulture("he-IL");
-
-        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
-                                        "update this test if the field is renamed or removed.");
-        calendarField.SetValue(culture, new HebrewCalendar());
-
-        return culture;
-    }
-
-    private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)
-    {
-        var dateTime = new DateTime(year, month, day, hour, minute, 0);
-
-        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
-    }
-
     [TestMethod]
     public void BitDatePickerShouldReportOpeningAndClosingTheCallout()
     {
@@ -3005,5 +2984,26 @@ public class BitDatePickerTests : BunitTestContext
         decreaseMinute.PointerUp();
 
         Assert.AreEqual(0, value!.Value.Minute);
+    }
+
+    // The component counts months with CultureInfo.Calendar, which has no public setter and is not
+    // touched by DateTimeFormat.Calendar, so the private backing field is the only way in.
+    private static CultureInfo CreateHebrewCulture()
+    {
+        var culture = CultureInfo.CreateSpecificCulture("he-IL");
+
+        var calendarField = culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.IsNotNull(calendarField, "CultureInfo._calendar is a runtime implementation detail; " +
+                                        "update this test if the field is renamed or removed.");
+        calendarField.SetValue(culture, new HebrewCalendar());
+
+        return culture;
+    }
+
+    private static DateTimeOffset GetLocalDate(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
     }
 }
