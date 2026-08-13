@@ -7,12 +7,13 @@
     <BitButton Float
                Draggable
                FloatOffset="2rem"
+               Color="BitColor.Primary"
                Class="open-panel-button"
-               Variant="BitVariant.Outline"
                OnClick="() => isOpen = true"
-               Color="BitColor.PrimaryBackground"
+               IconName="@BitIconName.ChatBot"
                FloatPosition="BitPosition.BottomRight"
-               IconUrl="_content/Boilerplate.Client.Core/images/icons/ai-chat-icon-64.webp" />
+               Title="@Localizer[nameof(AppStrings.AiChatPanelTitle)]"
+               AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelTitle)]" />
 
     <BitProPanel @bind-IsOpen="isOpen"
                  ShowCloseButton
@@ -79,7 +80,7 @@
 
                                         @if (isReadAloudSupported)
                                         {
-                                            var isReading = ReferenceEquals(speakingMessage, message);
+                                            var isReading = ReferenceEquals(readAloudMessage, message);
 
                                             <BitButton IconOnly
                                                        Variant="BitVariant.Text"

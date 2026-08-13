@@ -1214,6 +1214,9 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Konto-Upgrade fehlgeschlagen.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Derzeit sind keine Anzeigen verfügbar. Bitte versuchen Sie es später erneut.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Probleme beim Ansehen der Anzeige?</value>
   </data>

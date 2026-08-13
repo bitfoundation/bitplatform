@@ -7,12 +7,12 @@ The usage of `Bit.Besql` is exactly the same as the regular usage of `Microsoft.
 In order to download sqlite db file from browser cache storage in blazor WebAssembly run the followings in browser console:
 ```js
 const cache = await caches.open('bit-Besql');
-const resp = await cache.match('/data/cache/App_Data/Offline.db');
+const resp = await cache.match('/data/cache/App_Data/AppOffline.db');
 const blob = await resp.blob();
 const urlToDownload = URL.createObjectURL(blob);
 const a = document.createElement('a');
 a.href = urlToDownload;
-a.download = 'Offline.db';
+a.download = 'AppOffline.db';
 a.click();
 URL.revokeObjectURL(urlToDownload);
 
@@ -24,22 +24,24 @@ https://inloop.github.io/sqlite-viewer/
 `AppOfflineDbContext` migrations are slightly different from Boilerplate.Server.Api's `AppDbContext` migrations.
 To add migration for `AppOfflineDbContext` first set `Boilerplate.Server.Web` as the Startup Project in solution explorer and set `Boilerplate.Client.Core` it as the Default Project in Package Manager Console and run the following commands:
 ```powershell
-Add-Migration Initial -OutputDir Infrastructure\Data\Migrations -Context AppOfflineDbContext -Verbose
+Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Context AppOfflineDbContext -Verbose
 ```
 Or open a terminal in your Boilerplate.Server.Web project directory and run followings:
 ```bash
-dotnet tool restore && dotnet ef migrations add Initial --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet tool restore && dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 *Note*: If you encounter any problem in running these commands, first make sure that the solution builds successfully.
 
 *Note*: You may not run `Update-Database` command, because client app should programmatically create database and tables on every device that runs the app using `DbContext.Database.MigrateAsync()` code.
 
-*Optimizing EF Core Performance with Compiled Models:*
+*Compiled Models (required before publishing):*
 
-To enhance the performance of your models, consider compiling them using EF Core compiled models. Detailed information on this advanced optimization technique can be found [here](https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models) and [here](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#dotnet-ef-dbcontext-optimize).
+Outside of the Development environment the app **refuses to open the offline database** until a compiled model has been generated: the first `CreateDbContextAsync` throws `InvalidOperationException: AppOfflineDbContext has not been optimized`. So this is not an optional performance tweak - it is a release step, and it has to be **re-run after every model or migration change**, because EF Core does not detect a stale compiled model and will silently use it against a schema it no longer matches. That is also why no compiled model is checked into the template.
 
-To implement this optimization, follow these steps in the Package Manager Console:
+The generated model is discovered automatically (EF Core emits an `[assembly: DbContextModel(...)]` attribute for it), so no `UseModel(...)` call is needed. See [EF Core compiled models](https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics?tabs=with-di%2Cexpression-api-with-constant#compiled-models) for the technique and [dotnet ef dbcontext optimize](https://learn.microsoft.com/en-us/ef/core/cli/dotnet#dotnet-ef-dbcontext-optimize) for the command.
+
+To generate it, follow these steps in the Package Manager Console:
 
 1. Make sure `Server.Web` is set as the default startup project, and `Boilerplate.Client.Core` is the default project in the Package Manager Console.
 
