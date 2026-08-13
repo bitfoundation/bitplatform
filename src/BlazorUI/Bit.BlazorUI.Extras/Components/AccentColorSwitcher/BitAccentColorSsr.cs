@@ -178,10 +178,18 @@ public static class BitAccentColorSsr
     /// </param>
     /// <exception cref="ArgumentException">An accent color is not a valid <c>#RGB</c>/<c>#RRGGBB</c> hex.</exception>
     /// <remarks>
+    /// <para>
     /// The doubled <c>:root:root</c> is there for specificity, not for matching: the packaged
     /// palette declares the same tokens at <c>:root[bit-theme=…]</c>, so an equal-specificity rule
     /// would only win by coming later in the document. Outranking it instead keeps the stylesheet
     /// order-independent.
+    /// </para>
+    /// <para>
+    /// The rendered stylesheet is cached for the process lifetime, one entry per distinct accent
+    /// token set, and never evicted. Reuse one fixed accent list (hoist it to a static or a
+    /// singleton) rather than building a list per request or per tenant - every distinct set pins
+    /// another full stylesheet in that cache.
+    /// </para>
     /// </remarks>
     public static string BuildStaticCss(IEnumerable<BitAccentColorItem>? accents = null)
     {
