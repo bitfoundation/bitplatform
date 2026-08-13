@@ -6,6 +6,34 @@ namespace Bit.Butil;
 
 public class Clipboard(IJSRuntime js)
 {
+    /// <summary>True when the runtime exposes <c>navigator.clipboard</c>.</summary>
+    /// <remarks>
+    /// The Clipboard API is secure-context only, so this is <c>false</c> on a plain <c>http://</c>
+    /// page even in a browser that implements it - which is the usual reason a copy button "does
+    /// nothing" in development.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsSupported() => js.Invoke<bool>("BitButil.clipboard.isSupported");
+
+    /// <summary>
+    /// True when the runtime also exposes the item-based half of the API -
+    /// <c>read</c>, <c>write</c> and <c>ClipboardItem</c> - which is what
+    /// <see cref="Read"/> and <see cref="Write"/> need.
+    /// </summary>
+    /// <remarks>
+    /// Worth a separate check from <see cref="IsSupported"/>: Firefox ships
+    /// <see cref="ReadText"/>/<see cref="WriteText"/> without the item-based pair, so a page that
+    /// copies images has to gate on this one.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsItemSupported() => js.Invoke<bool>("BitButil.clipboard.isItemSupported");
+
     /// <summary>
     /// Requests text from the system clipboard, returning a Promise that 
     /// is fulfilled with a string containing the clipboard's text once it's available.

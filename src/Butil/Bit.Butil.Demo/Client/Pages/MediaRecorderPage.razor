@@ -1,0 +1,467 @@
+@page "/media-recorder"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaDevices mediaDevices
+@inject Bit.Butil.MediaRecorder recorder
+
+<PageTitle>MediaRecorder - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="MediaRecorder"
+            Lead="Record a live stream - a camera, a microphone or a screen share - into a file the browser encodes for you, and get it back as bytes or as a blob URL you can play straight away."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API"
+            InjectAs="MediaRecorder recorder" />
+
+<Callout Type="info" Title="A recorder consumes a stream someone else opened">
+    Get a <code>MediaStreamHandle</code> from <a href="media-devices">MediaDevices</a> first -
+    <code>GetUserMedia</code> for a camera or microphone, <code>GetDisplayMedia</code> for a screen
+    share. Stopping the recording does not stop that stream, and disposing the stream does not
+    save the recording: they are two separate lifetimes.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support and container check"
+                 Api="IsSupported / IsTypeSupported / GetSupportedTypes"
+                 Description="Which containers and codecs exist differs per engine - Chromium and Firefox speak WebM, Safari only speaks MP4 - so probe rather than hard-coding a MIME type. GetSupportedTypes filters a candidate list down to what this browser can actually record, keeping your order, so the first entry is your best available choice."
+                 Code=@("""
+@inject Bit.Butil.MediaRecorder recorder
+
+var supported = await recorder.IsSupported();
+var webm = await recorder.IsTypeSupported("video/webm;codecs=vp9,opus");
+
+// MediaRecorder.CommonVideoTypes / CommonAudioTypes are ready-made candidate lists:
+var available = await recorder.GetSupportedTypes(MediaRecorder.CommonVideoTypes);
+var best = available.FirstOrDefault();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+            <button class="secondary" @onclick="() => ProbeTypes(MediaRecorder.CommonVideoTypes)">Probe video types</button>
+            <button class="secondary" @onclick="() => ProbeTypes(MediaRecorder.CommonAudioTypes)">Probe audio types</button>
+        </div>
+        @if (_supportedTypes.Length > 0)
+        {
+            <div class="field">
+                <span class="field-label">@_supportedTypes.Length supported</span>
+                <ul style="margin:0;padding-left:1.2rem">
+                    @foreach (var type in _supportedTypes)
+                    {
+                        <li><code>@type</code></li>
+                    }
+                </ul>
+            </div>
+        }
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Record and play back"
+                 Api="Start / Stop / StopAndCreateObjectUrl"
+                 Description="Start returns a handle, or null when the container isn't supported or the stream is already stopped. Stop is what produces the recording - disposing without stopping throws the take away. StopAndCreateObjectUrl keeps the bytes inside the browser and hands back a blob: URL a media element can play directly, which is much cheaper than pulling a whole video across the interop boundary."
+                 Code=@("""
+private MediaStreamHandle? _stream;
+private MediaRecordingHandle? _recording;
+private string? _playbackUrl;
+
+// 1. open a stream, 2. record it
+_stream = await mediaDevices.GetUserMedia(audio: true, video: true);
+_recording = await recorder.Start(_stream!, new MediaRecorderOptions
+{
+    MimeType = (await recorder.GetSupportedTypes()).FirstOrDefault(),
+});
+
+// later - the blob stays in the browser, only the URL crosses:
+var media = await _recording!.StopAndCreateObjectUrl();
+_playbackUrl = media?.ObjectUrl;   // <video src="@_playbackUrl" controls />
+
+// or pull the bytes into C# to upload or save:
+// var media = await _recording.Stop();
+// await File.WriteAllBytesAsync(path, media!.Data!);
+
+// release the blob when you're done with it (the service, not the handle - stopping
+// the recording already retired the handle):
+await recorder.RevokeObjectUrl(_playbackUrl);
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_recordVideo" /> Video</label>
+            <label><input type="checkbox" @bind="_recordAudio" /> Audio</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartRecording">Start recording</button>
+            <button class="secondary" @onclick="PauseOrResume">@(_paused ? "Resume" : "Pause")</button>
+            <button class="danger" @onclick="StopRecording">Stop and play back</button>
+        </div>
+        <div class="field">
+            <span class="field-label">State</span>
+            <span>@_state</span>
+        </div>
+        <video @ref="_livePreview" autoplay playsinline muted
+               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+        @if (string.IsNullOrEmpty(_playbackUrl) is false)
+        {
+            <div class="field">
+                <span class="field-label">Recorded @FormatSize(_recordedSize) of @_recordedType</span>
+            </div>
+            <video src="@_playbackUrl" controls playsinline
+                   style="margin-top:0.5rem;max-width:100%;border-radius:8px;background:#111"></video>
+        }
+        <DemoConsole @ref="recordOutput" Title="recording output" />
+    </DemoSection>
+
+    <DemoSection Title="Stream the slices as they arrive"
+                 Api="Start(onData, timesliceMs) / RequestData"
+                 Description="Pass a timeslice and an onData callback and the browser hands you each encoded slice as it is produced, so a long recording can be uploaded while it runs instead of being held whole in memory. RequestData flushes what has been captured so far without ending the take."
+                 Code=@("""
+_recording = await recorder.Start(
+    _stream!,
+    onData: chunk => InvokeAsync(() =>
+    {
+        _bytesSoFar += chunk.Length;   // upload it, append it to a file, ...
+        StateHasChanged();
+    }),
+    timesliceMs: 1000);   // one slice per second
+
+// flush early, without stopping:
+await _recording!.RequestData();
+""")>
+        <div class="controls">
+            <button @onclick="StartChunked">Start chunked recording</button>
+            <button class="secondary" @onclick="FlushChunk">RequestData</button>
+            <button class="danger" @onclick="StopRecording">Stop</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Slices received</span>
+            <span>@_chunkCount slice(s), @FormatSize(_chunkBytes) total</span>
+        </div>
+        <DemoConsole @ref="chunkOutput" Title="chunk output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Stop the stream too">
+    Stopping a recording leaves the camera or microphone running - the recorder never owned it.
+    Dispose the <code>MediaStreamHandle</code> when the user is finished, or the indicator light
+    stays on.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes MediaRecorder. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsTypeSupported"
+               Signature="ValueTask<bool> IsTypeSupported(string mimeType)"
+               Description="True when this engine can record the given container/codec string." />
+    <ApiMember Name="GetSupportedTypes"
+               Signature="ValueTask<string[]> GetSupportedTypes(string[]? candidates = null)"
+               Description="Filters candidates down to the recordable ones, preserving your order. Defaults to CommonVideoTypes." />
+    <ApiMember Name="CommonVideoTypes"
+               Signature="static readonly string[] CommonVideoTypes"
+               Description="Video containers worth probing on today's engines, most-preferred first." />
+    <ApiMember Name="CommonAudioTypes"
+               Signature="static readonly string[] CommonAudioTypes"
+               Description="Audio-only containers worth probing, most-preferred first." />
+    <ApiMember Name="Start"
+               Signature="ValueTask<MediaRecordingHandle?> Start(MediaStreamHandle stream, MediaRecorderOptions? options = null, Action<byte[]>? onData = null, int? timesliceMs = null, Action<string>? onError = null)"
+               Description="Starts recording a stream. Null when MediaRecorder is missing, the stream is stopped, or the container isn't supported." />
+    <ApiMember Name="RevokeObjectUrl"
+               Signature="ValueTask RevokeObjectUrl(string? objectUrl)"
+               Description="Releases an object URL after its handle is gone - the normal case, since stopping a recording retires its handle. Safe with null." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, cancels any recording whose handle was never disposed." />
+    <ApiMember Name="MediaRecordingHandle.GetState"
+               Signature="ValueTask<string> GetState()"
+               Description='"recording", "paused", or "inactive" once the take is over.' />
+    <ApiMember Name="MediaRecordingHandle.GetMimeType"
+               Signature="ValueTask<string> GetMimeType()"
+               Description="The container the browser settled on, which can differ from the one requested." />
+    <ApiMember Name="MediaRecordingHandle.Pause"
+               Signature="ValueTask Pause()"
+               Description="Pauses encoding without ending the take. No-op unless recording." />
+    <ApiMember Name="MediaRecordingHandle.Resume"
+               Signature="ValueTask Resume()"
+               Description="Resumes a paused take. No-op unless paused." />
+    <ApiMember Name="MediaRecordingHandle.RequestData"
+               Signature="ValueTask RequestData()"
+               Description="Emits everything captured so far to the onData callback and keeps recording." />
+    <ApiMember Name="MediaRecordingHandle.Stop"
+               Signature="ValueTask<RecordedMedia?> Stop()"
+               Description="Stops and returns the encoded bytes. Null when already stopped or disposed." />
+    <ApiMember Name="MediaRecordingHandle.StopAndCreateObjectUrl"
+               Signature="ValueTask<RecordedMedia?> StopAndCreateObjectUrl()"
+               Description="Stops and returns a blob: URL, leaving the bytes in the browser. Release it with RevokeObjectUrl." />
+    <ApiMember Name="MediaRecordingHandle.RevokeObjectUrl"
+               Signature="ValueTask RevokeObjectUrl(string? objectUrl)"
+               Description="Releases an object URL. Safe to call more than once, and with null." />
+    <ApiMember Name="MediaRecordingHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Abandons the recording, discarding anything captured. No-op once stopped." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole recordOutput = default!;
+    private DemoConsole chunkOutput = default!;
+    private ElementReference _livePreview;
+
+    private MediaStreamHandle? _stream;
+    private MediaRecordingHandle? _recording;
+    private string[] _supportedTypes = [];
+    private string _state = "No recording yet.";
+    private string? _playbackUrl;
+    private string _recordedType = "";
+    private long _recordedSize;
+    private bool _paused;
+    private bool _recordVideo = true;
+    private bool _recordAudio = true;
+    private int _chunkCount;
+    private long _chunkBytes;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await recorder.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ProbeTypes(string[] candidates)
+    {
+        try
+        {
+            _supportedTypes = await recorder.GetSupportedTypes(candidates);
+            if (_supportedTypes.Length == 0)
+            {
+                await supportOutput.Warn("None of the candidates are supported here.");
+                return;
+            }
+
+            await supportOutput.Success($"GetSupportedTypes → {_supportedTypes.Length} of {candidates.Length}.");
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("GetSupportedTypes failed →", ex.Message);
+        }
+    }
+
+    // Both demos record the same stream, so opening it is shared. Returns false when the user
+    // refused the camera/microphone, in which case there is nothing to record.
+    private async Task<bool> EnsureStream(DemoConsole output)
+    {
+        if (_stream is not null) return true;
+
+        if (!_recordVideo && !_recordAudio)
+        {
+            await output.Warn("Enable at least audio or video first.");
+            return false;
+        }
+
+        _stream = await mediaDevices.GetUserMedia(_recordAudio, _recordVideo);
+        if (_stream is null)
+        {
+            await output.Warn("GetUserMedia returned null - permission denied or no matching device.");
+            return false;
+        }
+
+        await _stream.AttachTo(_livePreview);
+        return true;
+    }
+
+    private async Task StartRecording()
+    {
+        try
+        {
+            await DiscardRecording();
+            await ReleasePlayback();
+
+            if (!await EnsureStream(recordOutput)) return;
+
+            var best = (await recorder.GetSupportedTypes(_recordVideo ? MediaRecorder.CommonVideoTypes : MediaRecorder.CommonAudioTypes))
+                .FirstOrDefault();
+
+            _recording = await recorder.Start(_stream!,
+                best is null ? null : new MediaRecorderOptions { MimeType = best },
+                onError: message => InvokeAsync(async () => await recordOutput.Error("Recorder error →", message)));
+
+            if (_recording is null)
+            {
+                await recordOutput.Warn("Start returned null - the container isn't supported, or the stream is already stopped.");
+                return;
+            }
+
+            _paused = false;
+            _state = $"Recording{(best is null ? "" : $" as {best}")}...";
+            await recordOutput.Success("Recording started →", _recording.Id);
+        }
+        catch (Exception ex)
+        {
+            await recordOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task PauseOrResume()
+    {
+        if (_recording is null)
+        {
+            await recordOutput.Warn("Start a recording first.");
+            return;
+        }
+
+        try
+        {
+            if (_paused)
+            {
+                await _recording.Resume();
+            }
+            else
+            {
+                await _recording.Pause();
+            }
+
+            _paused = !_paused;
+            _state = await _recording.GetState();
+            await recordOutput.Log($"State → {_state}");
+        }
+        catch (Exception ex)
+        {
+            await recordOutput.Error("Pause/Resume failed →", ex.Message);
+        }
+    }
+
+    private async Task StopRecording()
+    {
+        if (_recording is null)
+        {
+            await recordOutput.Warn("Nothing is recording.");
+            return;
+        }
+
+        try
+        {
+            var media = await _recording.StopAndCreateObjectUrl();
+            _recording = null;
+            _paused = false;
+            _state = "Stopped.";
+
+            if (media is null)
+            {
+                await recordOutput.Warn("Stop returned null - the recording was already finished.");
+                return;
+            }
+
+            _playbackUrl = media.ObjectUrl;
+            _recordedType = media.MimeType;
+            _recordedSize = media.Size;
+            await recordOutput.Success($"Stopped → {FormatSize(media.Size)} of {media.MimeType}.");
+        }
+        catch (Exception ex)
+        {
+            await recordOutput.Error("Stop failed →", ex.Message);
+        }
+    }
+
+    private async Task StartChunked()
+    {
+        try
+        {
+            await DiscardRecording();
+
+            if (!await EnsureStream(chunkOutput)) return;
+
+            _chunkCount = 0;
+            _chunkBytes = 0;
+
+            _recording = await recorder.Start(_stream!,
+                onData: chunk => InvokeAsync(async () =>
+                {
+                    _chunkCount++;
+                    _chunkBytes += chunk.Length;
+                    await chunkOutput.Log($"Slice {_chunkCount} → {FormatSize(chunk.Length)}");
+                    StateHasChanged();
+                }),
+                timesliceMs: 1000);
+
+            if (_recording is null)
+            {
+                await chunkOutput.Warn("Start returned null.");
+                return;
+            }
+
+            _state = "Recording in 1-second slices...";
+            await chunkOutput.Success("Chunked recording started →", _recording.Id);
+        }
+        catch (Exception ex)
+        {
+            await chunkOutput.Error("Start failed →", ex.Message);
+        }
+    }
+
+    private async Task FlushChunk()
+    {
+        if (_recording is null)
+        {
+            await chunkOutput.Warn("Start a recording first.");
+            return;
+        }
+
+        try
+        {
+            await _recording.RequestData();
+            await chunkOutput.Log("RequestData → flushed.");
+        }
+        catch (Exception ex)
+        {
+            await chunkOutput.Error("RequestData failed →", ex.Message);
+        }
+    }
+
+    // Throws away an in-flight take without producing a recording - what a "start over" needs.
+    private async Task DiscardRecording()
+    {
+        if (_recording is null) return;
+
+        await _recording.DisposeAsync();
+        _recording = null;
+        _paused = false;
+    }
+
+    private async Task ReleasePlayback()
+    {
+        if (string.IsNullOrEmpty(_playbackUrl)) return;
+
+        // Through the service rather than the handle: stopping a recording is what retires its
+        // handle, so by the time there is a URL to release the handle is already gone.
+        await recorder.RevokeObjectUrl(_playbackUrl);
+
+        _playbackUrl = null;
+        _recordedType = "";
+        _recordedSize = 0;
+    }
+
+    private static string FormatSize(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.##} MB"
+        : bytes >= 1024 ? $"{bytes / 1024d:0.#} KB"
+        : $"{bytes} B";
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_recording is not null)
+            {
+                await _recording.DisposeAsync();
+                _recording = null;
+            }
+
+            if (_stream is not null)
+            {
+                await _stream.DisposeAsync();
+                _stream = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

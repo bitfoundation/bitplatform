@@ -1214,6 +1214,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Account-upgrade mislukt.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Er zijn op dit moment geen advertenties beschikbaar. Probeer het later opnieuw.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problemen met het bekijken van advertentie?</value>
   </data>

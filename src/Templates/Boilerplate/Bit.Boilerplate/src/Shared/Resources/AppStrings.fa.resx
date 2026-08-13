@@ -1214,6 +1214,9 @@
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>ارتقاء حساب با شکست مواجه شد.</value>
   </data>
+    <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>در حال حاضر تبلیغی در دسترس نیست. لطفاً بعداً دوباره تلاش کنید.</value>
+  </data>
     <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>مشکلی برای مشاهده تبلیغ دارید؟</value>
   </data>

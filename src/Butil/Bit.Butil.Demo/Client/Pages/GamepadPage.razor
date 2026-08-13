@@ -1,0 +1,358 @@
+@page "/gamepad"
+@implements IAsyncDisposable
+@inject Bit.Butil.Gamepad gamepad
+
+<PageTitle>Gamepad - Bit.Butil</PageTitle>
+
+<PageHeader Category="Device & Hardware"
+            Title="Gamepad"
+            Lead="Read game controllers from C#: buttons, analogue sticks and triggers, plus rumble on the pads that support it - polled in the browser's frame loop so your Blazor code only hears about actual input."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Gamepad_API"
+            InjectAs="Gamepad gamepad" />
+
+<Callout Type="info" Title="Press a button first">
+    For privacy, browsers hide connected controllers from a page until the user has interacted with
+    one. Until then <code>GetGamepads</code> returns an empty array even with a pad plugged in -
+    that is not a bug, and the fix is to ask the user to press a button.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.getGamepads. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Gamepad gamepad
+
+var supported = await gamepad.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Read a snapshot"
+                 Api="GetGamepads"
+                 Description="A point-in-time read of every connected pad. Axes are floats from -1 to 1; buttons carry an analogue Value as well as Pressed and Touched, because triggers on a standard-mapping pad are buttons rather than axes. Mapping is 'standard' when the browser recognised the layout - otherwise the indices are device-specific."
+                 Code=@("""
+var pads = await gamepad.GetGamepads();
+
+foreach (var pad in pads)
+{
+    // pad.Mapping == "standard": axes 0/1 are the left stick, 2/3 the right
+    var leftX = pad.Axes.ElementAtOrDefault(0);
+    var aPressed = pad.Buttons.ElementAtOrDefault(0)?.Pressed ?? false;
+    var trigger = pad.Buttons.ElementAtOrDefault(7)?.Value ?? 0;   // analogue
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadSnapshot">GetGamepads</button>
+        </div>
+        @if (_pads.Length > 0)
+        {
+            @foreach (var pad in _pads)
+            {
+                <div class="field">
+                    <span class="field-label">#@pad.Index - @pad.Id</span>
+                    <span>
+                        mapping: <code>@(string.IsNullOrEmpty(pad.Mapping) ? "(non-standard)" : pad.Mapping)</code>,
+                        @pad.Axes.Length axes, @pad.Buttons.Length buttons,
+                        rumble: @(pad.HasVibration ? "yes" : "no")
+                    </span>
+                </div>
+                <div class="field">
+                    <span class="field-label">Axes</span>
+                    <span><code>@string.Join(", ", pad.Axes.Select(a => a.ToString("0.00")))</code></span>
+                </div>
+                <div class="field">
+                    <span class="field-label">Pressed</span>
+                    <span>
+                        @{
+                            var pressed = pad.Buttons
+                                .Select((b, i) => (b, i))
+                                .Where(x => x.b.Pressed)
+                                .Select(x => x.i.ToString())
+                                .ToArray();
+                        }
+                        <code>@(pressed.Length == 0 ? "none" : string.Join(", ", pressed))</code>
+                    </span>
+                </div>
+            }
+        }
+        <DemoConsole @ref="snapshotOutput" Title="snapshot output" />
+    </DemoSection>
+
+    <DemoSection Title="Watch for input"
+                 Api="SubscribeChanges"
+                 Description="Gamepads have no input events - polling is the only way to read them. SubscribeChanges polls on requestAnimationFrame (which also means it stops while the tab is hidden) and only crosses into .NET when the state actually differs, at most once per minIntervalMs. Analogue sticks jitter constantly, so that floor is what keeps a controller sitting still from calling into C# sixty times a second."
+                 Code=@("""
+private ButilSubscription? _watch;
+
+_watch = await gamepad.SubscribeChanges(
+    pads => InvokeAsync(() =>
+    {
+        _live = pads;
+        StateHasChanged();
+    }),
+    minIntervalMs: 50);
+
+// later:
+await _watch.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching">SubscribeChanges</button>
+            <button class="danger" @onclick="StopWatching">Unsubscribe</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Live</span>
+            <span>@(_watch is null ? "Not watching." : $"Watching - {_updates} update(s) received.")</span>
+        </div>
+        @foreach (var pad in _live)
+        {
+            <div class="field">
+                <span class="field-label">#@pad.Index</span>
+                <span>
+                    <code>
+                        L(@pad.Axes.ElementAtOrDefault(0).ToString("0.00"), @pad.Axes.ElementAtOrDefault(1).ToString("0.00"))
+                        R(@pad.Axes.ElementAtOrDefault(2).ToString("0.00"), @pad.Axes.ElementAtOrDefault(3).ToString("0.00"))
+                    </code>
+                    @{
+                        var down = pad.Buttons.Select((b, i) => (b, i)).Where(x => x.b.Pressed).Select(x => x.i.ToString()).ToArray();
+                    }
+                    buttons: <code>@(down.Length == 0 ? "none" : string.Join(", ", down))</code>
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="watchOutput" Title="watch output" />
+    </DemoSection>
+
+    <DemoSection Title="Connect and disconnect"
+                 Api="SubscribeConnection"
+                 Description="Fires when a pad is plugged in or unplugged. Both callbacks get the full list of connected pads as it is after the change, not just the one that changed, so you can rebind your UI from a single argument."
+                 Code=@("""
+_connection = await gamepad.SubscribeConnection(
+    onConnected: pads => InvokeAsync(() => { /* ... */ }),
+    onDisconnected: pads => InvokeAsync(() => { /* ... */ }));
+""")>
+        <div class="controls">
+            <button @onclick="StartConnectionWatch">SubscribeConnection</button>
+            <button class="danger" @onclick="StopConnectionWatch">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="connectionOutput" Title="connection output" />
+    </DemoSection>
+
+    <DemoSection Title="Rumble"
+                 Api="Vibrate / ResetVibration"
+                 Description="Plays a dual-rumble effect on a pad's two motors: strongMagnitude drives the low-frequency (heavy) one, weakMagnitude the high-frequency (light) one, both from 0 to 1. Returns false when the pad is gone or has no vibration actuator - check HasVibration on a snapshot first."
+                 Code=@("""
+var played = await gamepad.Vibrate(
+    index: 0,
+    durationMs: 300,
+    strongMagnitude: 1.0,
+    weakMagnitude: 0.4);
+
+// cut an effect short:
+await gamepad.ResetVibration(0);
+""")>
+        <div class="controls">
+            <label>Pad index <input type="number" min="0" max="7" style="width:5rem" @bind="_vibrateIndex" /></label>
+            <label>Duration (ms) <input type="number" min="0" max="5000" step="50" style="width:6rem" @bind="_vibrateDuration" /></label>
+        </div>
+        <div class="controls">
+            <button @onclick="Rumble">Vibrate</button>
+            <button class="danger" @onclick="StopRumble">ResetVibration</button>
+        </div>
+        <DemoConsole @ref="rumbleOutput" Title="rumble output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.getGamepads. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetGamepads"
+               Signature="ValueTask<GamepadState[]> GetGamepads()"
+               Description="A snapshot of every connected pad. Empty until the user has pressed a button on one." />
+    <ApiMember Name="SubscribeConnection"
+               Signature="ValueTask<ButilSubscription> SubscribeConnection(Action<GamepadState[]>? onConnected = null, Action<GamepadState[]>? onDisconnected = null)"
+               Description="Watches pads being plugged in and unplugged. Both callbacks receive the full list after the change." />
+    <ApiMember Name="SubscribeChanges"
+               Signature="ValueTask<ButilSubscription> SubscribeChanges(Action<GamepadState[]> handler, int minIntervalMs = 50)"
+               Description="Polls in the browser's frame loop and calls back only when the state changed, at most once per minIntervalMs. Pass 0 for every frame." />
+    <ApiMember Name="Vibrate"
+               Signature="ValueTask<bool> Vibrate(int index, int durationMs = 200, double strongMagnitude = 1, double weakMagnitude = 1, int startDelayMs = 0)"
+               Description="Plays a dual-rumble effect. Magnitudes are clamped to 0-1. False when the pad is gone or has no actuator." />
+    <ApiMember Name="ResetVibration"
+               Signature="ValueTask ResetVibration(int index)"
+               Description="Stops any haptic effect currently playing on that pad." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, detaches any listener whose subscription was never disposed." />
+    <ApiMember Name="GamepadState"
+               Signature="Index, Id, Connected, Mapping, Timestamp, Axes, Buttons, HasVibration"
+               Description="A snapshot of one controller. Mapping is 'standard' when the browser recognised the layout." />
+    <ApiMember Name="GamepadButton"
+               Signature="Pressed, Touched, Value"
+               Description="One button. Value is 0-1 - digital buttons only report 0 or 1, analogue triggers the whole range." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole snapshotOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private DemoConsole connectionOutput = default!;
+    private DemoConsole rumbleOutput = default!;
+
+    private GamepadState[] _pads = [];
+    private GamepadState[] _live = [];
+    private ButilSubscription? _watch;
+    private ButilSubscription? _connection;
+    private int _updates;
+    private int _vibrateIndex;
+    private int _vibrateDuration = 300;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await gamepad.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadSnapshot()
+    {
+        try
+        {
+            _pads = await gamepad.GetGamepads();
+            if (_pads.Length == 0)
+            {
+                await snapshotOutput.Warn("No gamepads reported - plug one in and press a button, then try again.");
+                return;
+            }
+
+            await snapshotOutput.Success($"GetGamepads → {_pads.Length} pad(s).");
+        }
+        catch (Exception ex)
+        {
+            await snapshotOutput.Error("GetGamepads failed →", ex.Message);
+        }
+    }
+
+    private async Task StartWatching()
+    {
+        await StopWatching();
+
+        try
+        {
+            _updates = 0;
+            _watch = await gamepad.SubscribeChanges(pads => InvokeAsync(() =>
+            {
+                _updates++;
+                _live = pads;
+                StateHasChanged();
+            }));
+
+            await watchOutput.Success("SubscribeChanges → watching. Move a stick or press a button.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeChanges failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_watch is null) return;
+
+        await _watch.DisposeAsync();
+        _watch = null;
+        _live = [];
+        await watchOutput.Log("Unsubscribed.");
+    }
+
+    private async Task StartConnectionWatch()
+    {
+        await StopConnectionWatch();
+
+        try
+        {
+            _connection = await gamepad.SubscribeConnection(
+                onConnected: pads => InvokeAsync(async () => await connectionOutput.Success($"Connected → {pads.Length} pad(s) now available.")),
+                onDisconnected: pads => InvokeAsync(async () => await connectionOutput.Warn($"Disconnected → {pads.Length} pad(s) left.")));
+
+            await connectionOutput.Success("SubscribeConnection → watching. Plug a controller in or unplug one.");
+        }
+        catch (Exception ex)
+        {
+            await connectionOutput.Error("SubscribeConnection failed →", ex.Message);
+        }
+    }
+
+    private async Task StopConnectionWatch()
+    {
+        if (_connection is null) return;
+
+        await _connection.DisposeAsync();
+        _connection = null;
+        await connectionOutput.Log("Unsubscribed.");
+    }
+
+    private async Task Rumble()
+    {
+        try
+        {
+            var played = await gamepad.Vibrate(_vibrateIndex, _vibrateDuration);
+            if (played)
+            {
+                await rumbleOutput.Success($"Vibrate → playing for {_vibrateDuration} ms on pad {_vibrateIndex}.");
+            }
+            else
+            {
+                await rumbleOutput.Warn($"Vibrate → pad {_vibrateIndex} is missing or has no vibration actuator.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await rumbleOutput.Error("Vibrate failed →", ex.Message);
+        }
+    }
+
+    private async Task StopRumble()
+    {
+        try
+        {
+            await gamepad.ResetVibration(_vibrateIndex);
+            await rumbleOutput.Log("ResetVibration → stopped.");
+        }
+        catch (Exception ex)
+        {
+            await rumbleOutput.Error("ResetVibration failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_watch is not null)
+            {
+                await _watch.DisposeAsync();
+                _watch = null;
+            }
+
+            if (_connection is not null)
+            {
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

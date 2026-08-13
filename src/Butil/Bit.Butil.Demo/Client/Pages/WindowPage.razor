@@ -1,4 +1,4 @@
-@page "/window"
+﻿@page "/window"
 @implements IAsyncDisposable
 @inject Bit.Butil.Window window
 
@@ -301,6 +301,24 @@ ButilSubscription sub = await window.WatchMatchMedia(
     <ApiMember Name="Scroll" Signature="Task Scroll(float? x, float? y)" Description="Scrolls the window to an absolute position. An overload accepts ScrollOptions for smooth/instant behavior." />
     <ApiMember Name="ScrollBy" Signature="Task ScrollBy(float? x, float? y)" Description="Scrolls the document by a relative amount. An overload accepts ScrollOptions." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Releases every listener, media-query watcher, popup ref and beforeunload handler this instance registered. InvokeMediaQueryChange is the public JSInvokable dispatch bridge and is not intended for app code." />
+    <ApiMember Name="GetDevicePixelRatio"
+               Signature="Task<double> GetDevicePixelRatio()"
+               Description="CSS pixels per device pixel - 2 on a typical retina display, fractional at OS zoom levels. Changes when the user zooms or moves the window to another monitor, so read it when needed rather than caching it." />
+    <ApiMember Name="IsCrossOriginIsolated"
+               Signature="Task<bool> IsCrossOriginIsolated()"
+               Description="True when the page is cross-origin isolated, which unlocks SharedArrayBuffer and unthrottled high-resolution timers. Requires COOP and COEP response headers; Blazor WebAssembly multithreading needs it." />
+    <ApiMember Name="IsInIframe"
+               Signature="Task<bool> IsInIframe()"
+               Description="True when this document is running inside a frame. Stays legal across origins, and returns true if the check itself is blocked, since only a cross-origin embedding causes that. Pair with Location.GetAncestorOrigins to find out who." />
+    <ApiMember Name="GetFrameCount"
+               Signature="Task<int> GetFrameCount()"
+               Description="Number of frames directly inside this window (window.length)." />
+    <ApiMember Name="MoveTo / MoveBy"
+               Signature="Task MoveTo(float x, float y)  |  Task MoveBy(float x, float y)"
+               Description="Moves the window. Silently ignored for a normal tab - browsers only honor this for a window the script itself opened, and never for one with multiple tabs." />
+    <ApiMember Name="ResizeTo / ResizeBy"
+               Signature="Task ResizeTo(float width, float height)  |  Task ResizeBy(float width, float height)"
+               Description="Resizes the window. Subject to the same restrictions as MoveTo." />
 </ApiTable>
 
 @code {

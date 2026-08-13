@@ -119,7 +119,14 @@ public partial class AppDiagnosticModal
         //#if (offlineDb == true)
         try
         {
-            await syncService.Push(); // Try to push any pending changes before clearing the DB.
+            // Try to push any pending changes before clearing the DB. This deliberately takes the overload that
+            // accepts a DbContext rather than SyncService.Push(), which returns without doing anything when the app
+            // believes it is offline - the state in which unpushed changes are most likely to exist.
+            using var pushCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+            pushCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(pushCts.Token);
+            await syncService.Sync(dbContext, pullRecentChanges: false, pushCts.Token);
         }
         catch (Exception exp)
         {

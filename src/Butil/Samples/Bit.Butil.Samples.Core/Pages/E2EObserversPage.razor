@@ -12,6 +12,13 @@
 @inject Bit.Butil.Navigator navigator
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.Screen screen
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.StorageAccess storageAccess
+@inject Bit.Butil.Window butilWindow
+@inject Bit.Butil.Location butilLocation
+@inject Bit.Butil.Document butilDocument
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
 @inject IJSRuntime js
 
 @*
@@ -55,6 +62,8 @@
 <section>
     <h3>IndexedDB</h3>
     <button id="idb-roundtrip" @onclick="IndexedDbRoundTrip">open + put + get</button>
+    <button id="idb-advanced" @onclick="IndexedDbAdvanced">ranges + cursors + transactions</button>
+    <button id="idb-migrate" @onclick="IndexedDbMigrate">schema migration</button>
 </section>
 
 <section>
@@ -75,6 +84,12 @@
 <section>
     <h3>CookieStore</h3>
     <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+    <button id="cookiestore-change" @onclick="CookieStoreChangeEvent">subscribe change</button>
+</section>
+
+<section>
+    <h3>Change subscriptions</h3>
+    <button id="subs-attach" @onclick="ChangeSubscriptions">battery + network + permissions</button>
 </section>
 
 <section>
@@ -87,6 +102,7 @@
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+    <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
 
 @code {
@@ -224,6 +240,183 @@
         Set($"idb:get:{item?.Value}");
     }
 
+    // Walks the whole extended surface - ranges, cursors, index queries, batched transactions and
+    // binary values - and reports the first check that fails so a red test names the culprit.
+    private async Task IndexedDbAdvanced()
+    {
+        const string dbName = "butil-e2e-adv";
+        const string store = "rows";
+        const string blobs = "blobs";
+        const string index = "by-group";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using var db = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = index, KeyPath = "group" }]
+            },
+            new IndexedDbStoreSchema { Name = blobs }
+        ]);
+
+        var failure = await RunIdbChecks(db, store, blobs, index);
+        Set(failure is null ? "idb:adv:ok" : $"idb:adv:fail:{failure}");
+    }
+
+    private async Task<string?> RunIdbChecks(IndexedDbHandle db, string store, string blobs, string index)
+    {
+        // 10 rows, ids 1..10, alternating groups - one transaction, so this also exercises Transact.
+        var writes = Enumerable.Range(1, 10)
+            .Select(i => IndexedDbOperation.Put(store, new IdbRow { Id = i, Group = i % 2 == 0 ? "even" : "odd", Text = $"row{i}" }))
+            .ToArray();
+        var keys = await db.Transact(writes, durability: IndexedDbDurability.Relaxed);
+        if (keys.Length != 10 || keys[0].GetInt32() != 1) return "transact-keys";
+
+        if (await db.Count(store) != 10) return "count";
+
+        // Key ranges.
+        var midRange = IndexedDbKeyRange.Bound(3, 6);
+        if ((await db.GetAll<IdbRow>(store, midRange)).Length != 4) return "range-getall";
+        if (await db.Count(store, midRange) != 4) return "range-count";
+        if ((await db.GetAll<IdbRow>(store, IndexedDbKeyRange.Bound(3, 6, lowerOpen: true))).Length != 3) return "range-open";
+        if ((await db.GetAllKeys(store, IndexedDbKeyRange.LowerBound(8))).Length != 3) return "range-keys";
+
+        // Cursors: paging, skipping, and reverse order.
+        var page = await db.GetPage<IdbRow>(store, skip: 2, take: 3);
+        if (page.Length != 3 || page[0].Value!.Id != 3 || page[0].PrimaryKey.GetInt32() != 3) return "page";
+
+        var reverse = await db.GetPage<IdbRow>(store, direction: IndexedDbCursorDirection.Previous, take: 2);
+        if (reverse.Length != 2 || reverse[0].Value!.Id != 10 || reverse[1].Value!.Id != 9) return "page-reverse";
+
+        var rangedPage = await db.GetKeyPage(store, IndexedDbKeyRange.Bound(4, 8), take: 2);
+        if (rangedPage.Length != 2 || rangedPage[0].PrimaryKey.GetInt32() != 4) return "page-range";
+
+        // Index queries.
+        if (await db.CountByIndex(store, index, "even") != 5) return "index-count";
+        if ((await db.GetAllKeysByIndex(store, index, "odd")).Length != 5) return "index-keys";
+        if ((await db.GetKeyByIndex(store, index, "even")).GetInt32() != 2) return "index-getkey";
+
+        var distinct = await db.GetKeyPageByIndex(store, index, direction: IndexedDbCursorDirection.NextUnique);
+        if (distinct.Length != 2) return "index-distinct";
+
+        // Index cursor keys are the index key, not the primary key.
+        var indexPage = await db.GetPageByIndex<IdbRow>(store, index, "even", take: 1);
+        if (indexPage.Length != 1 || indexPage[0].Key.GetString() != "even" || indexPage[0].PrimaryKey.GetInt32() != 2) return "index-page";
+
+        // A rolled-back batch must leave nothing behind: the duplicate Add aborts the whole thing.
+        var rolledBack = false;
+        try
+        {
+            await db.Transact(
+            [
+                IndexedDbOperation.Put(store, new IdbRow { Id = 99, Group = "temp", Text = "should vanish" }),
+                IndexedDbOperation.Add(store, new IdbRow { Id = 1, Group = "temp", Text = "duplicate" })
+            ]);
+        }
+        catch
+        {
+            rolledBack = true;
+        }
+        if (rolledBack is false) return "rollback-not-raised";
+        if (await db.Get<IdbRow>(store, 99) is not null) return "rollback-leaked";
+
+        // Deleting through an index has no native equivalent - it walks a cursor.
+        if (await db.DeleteByIndex(store, index, "odd") != 5) return "index-delete";
+        if (await db.Count(store) != 5) return "index-delete-count";
+
+        // Range delete.
+        await db.Delete(store, IndexedDbKeyRange.LowerBound(8));
+        if (await db.Count(store) != 3) return "range-delete";
+
+        // Binary values bypass JSON entirely.
+        var payload = new byte[] { 1, 2, 3, 250, 251, 252 };
+        await db.PutBytes(blobs, payload, key: "bin");
+        var readBack = await db.GetBytes(blobs, "bin");
+        if (readBack is null || readBack.SequenceEqual(payload) is false) return "bytes";
+
+        // Schema introspection.
+        var storeInfo = await db.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.KeyPath.SequenceEqual(["id"]) is false || storeInfo.IndexNames.Contains(index) is false) return "store-info";
+
+        var indexInfo = await db.GetIndexInfo(store, index);
+        if (indexInfo is null || indexInfo.KeyPath.SequenceEqual(["group"]) is false || indexInfo.Unique) return "index-info";
+
+        var blobInfo = await db.GetStoreInfo(blobs);
+        if (blobInfo is null || blobInfo.KeyPath.Length != 0) return "blob-store-info";
+
+        if (await db.GetStoreInfo("no-such-store") is not null) return "missing-store-info";
+
+        var info = await db.GetInfo();
+        if (info is null || info.Version != 1 || info.StoreNames.Contains(blobs) is false) return "db-info";
+
+        // Key ordering, straight from the browser.
+        if (await indexedDb.Compare(1, 2) >= 0 || await indexedDb.Compare(2, 2) != 0) return "compare";
+
+        return null;
+    }
+
+    // Opening at a higher version runs the upgrade: a new store and index appear, a dropped index
+    // goes away, and the handle reports the version transition it performed.
+    private async Task IndexedDbMigrate()
+    {
+        const string dbName = "butil-e2e-migrate";
+        const string store = "rows";
+
+        await indexedDb.DeleteDatabase(dbName);
+
+        await using (var v1 = await indexedDb.Open(dbName, 1,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes = [new IndexedDbIndexSchema { Name = "by-group", KeyPath = "group" }]
+            }
+        ]))
+        {
+            if (v1.WasUpgraded is false) { Set("idb:migrate:fail:v1-not-upgraded"); return; }
+            if (v1.OldVersion != 0) { Set("idb:migrate:fail:v1-oldversion"); return; }
+            await v1.Put(store, new IdbRow { Id = 1, Group = "keep", Text = "survives the migration" });
+        }
+
+        await using var v2 = await indexedDb.Open(dbName, 2,
+        [
+            new IndexedDbStoreSchema
+            {
+                Name = store,
+                KeyPath = "id",
+                Indexes =
+                [
+                    new IndexedDbIndexSchema { Name = "by-group", Drop = true },
+                    new IndexedDbIndexSchema { Name = "by-text", KeyPath = "text", Unique = true }
+                ]
+            },
+            new IndexedDbStoreSchema { Name = "added-in-v2", KeyPath = "id", AutoIncrement = true }
+        ]);
+
+        if (v2.OldVersion != 1 || v2.NewVersion != 2) { Set($"idb:migrate:fail:versions:{v2.OldVersion}->{v2.NewVersion}"); return; }
+        if (v2.StoreNames.Contains("added-in-v2") is false) { Set("idb:migrate:fail:new-store"); return; }
+
+        var storeInfo = await v2.GetStoreInfo(store);
+        if (storeInfo is null || storeInfo.IndexNames.Contains("by-group")) { Set("idb:migrate:fail:index-not-dropped"); return; }
+        if (storeInfo.IndexNames.Contains("by-text") is false) { Set("idb:migrate:fail:index-not-added"); return; }
+
+        var newIndex = await v2.GetIndexInfo(store, "by-text");
+        if (newIndex is null || newIndex.Unique is false) { Set("idb:migrate:fail:index-flags"); return; }
+
+        // Records written before the upgrade must still be there.
+        if (await v2.Get<IdbRow>(store, 1) is null) { Set("idb:migrate:fail:data-lost"); return; }
+
+        // The generated key of an autoIncrement store is only observable through the write's result.
+        var generated = await v2.Put("added-in-v2", new { text = "auto" });
+        if (generated.GetInt32() != 1) { Set($"idb:migrate:fail:autoincrement:{generated}"); return; }
+
+        Set("idb:migrate:ok");
+    }
+
     // ─── CacheStorage ────────────────────────────────────────────────────────────
     private async Task CacheRoundTrip()
     {
@@ -274,6 +467,100 @@
         var item = await cookieStore.Get("butil-e2e-cs");
         await cookieStore.Delete("butil-e2e-cs");
         Set($"cookiestore:get:{item?.Value}");
+    }
+
+    private TaskCompletionSource<string>? _cookieChanged;
+
+    // The change event is the one thing document.cookie can never give you, so this asserts a real
+    // round trip: subscribe, write, and wait for the browser to report the write back.
+    private async Task CookieStoreChangeEvent()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:change:unsupported");
+            return;
+        }
+
+        _cookieChanged = new TaskCompletionSource<string>();
+        var sub = await cookieStore.SubscribeChange(change =>
+        {
+            var name = change.Changed.FirstOrDefault()?.Name;
+            if (name == "butil-e2e-change") _cookieChanged?.TrySetResult(name);
+        });
+
+        if (sub is null) { Set("cookiestore:change:no-subscription"); return; }
+
+        try
+        {
+            await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-change", Value = "v", Path = "/" });
+            var received = await WaitForValue(_cookieChanged, 5000);
+            Set($"cookiestore:change:{(received == "butil-e2e-change" ? "ok" : "timeout")}");
+        }
+        finally
+        {
+            await sub.DisposeAsync();
+            await cookieStore.Delete("butil-e2e-change");
+        }
+    }
+
+    // Battery/network/permission changes can't be provoked from a headless page, so this asserts
+    // the subscription contract instead: attach, get the documented shape back, detach cleanly.
+    private async Task ChangeSubscriptions()
+    {
+        // Battery: a subscription where the API exists, null where it doesn't - never a throw.
+        var batterySupported = await battery.IsSupported();
+        var batterySub = await battery.SubscribeChange(_ => { });
+        if (batterySupported != (batterySub is not null)) { Set("subs:fail:battery-mismatch"); return; }
+        if (batterySub is not null) await batterySub.DisposeAsync();
+
+        // Network: always subscribable, because online/offline exist everywhere.
+        var networkSub = await networkInformation.SubscribeChange(_ => { });
+        await networkSub.DisposeAsync();
+
+        // Permissions: a recognized descriptor reports a real state and hands back a subscription.
+        var (state, permSub) = await permissions.SubscribeChange("geolocation", _ => { });
+        if (state == PermissionState.Unknown || permSub is null) { Set($"subs:fail:permissions:{state}"); return; }
+        await permSub.DisposeAsync();
+
+        // An unrecognized descriptor is Unknown with nothing to dispose.
+        var (bogusState, bogusSub) = await permissions.SubscribeChange("not-a-real-permission", _ => { });
+        if (bogusState != PermissionState.Unknown || bogusSub is not null) { Set("subs:fail:permissions-bogus"); return; }
+
+        Set("subs:ok");
+    }
+
+    // ─── Platform extras ───────────────────────────────────────────────────────
+    private async Task PlatformExtras()
+    {
+        // Newly surfaced getters: assert the plumbing, not specific machine-dependent values.
+        if (await navigator.IsCookieEnabled() is false) { Set("extras:fail:cookieEnabled"); return; }
+
+        var activation = await navigator.GetUserActivation();
+        if (activation is null || activation.HasBeenActive is false) { Set("extras:fail:userActivation"); return; }
+
+        if (await butilWindow.GetDevicePixelRatio() <= 0) { Set("extras:fail:devicePixelRatio"); return; }
+        if (await butilWindow.IsInIframe()) { Set("extras:fail:isInIframe"); return; }
+        if (await butilWindow.GetFrameCount() != 0) { Set("extras:fail:frameCount"); return; }
+        await butilWindow.IsCrossOriginIsolated();   // no COOP/COEP here, so only the call is asserted
+
+        // Top-level page: no ancestors.
+        if ((await butilLocation.GetAncestorOrigins()).Length != 0) { Set("extras:fail:ancestorOrigins"); return; }
+
+        if (await butilDocument.GetReadyState() != "complete") { Set("extras:fail:readyState"); return; }
+        if (string.IsNullOrWhiteSpace(await butilDocument.GetLastModified())) { Set("extras:fail:lastModified"); return; }
+
+        // Screen availLeft/availTop are reported as 0 where unimplemented, so only sanity-check them.
+        if (await screen.GetAvailableLeft() < 0 || await screen.GetAvailableTop() < 0) { Set("extras:fail:screen-avail"); return; }
+
+        if (await speechSynthesis.IsPaused()) { Set("extras:fail:speech-paused"); return; }
+
+        // Chromium reports a per-API usage breakdown; elsewhere it is empty, which is also valid.
+        var estimate = await storageManager.Estimate();
+        if (estimate.UsageDetails is null) { Set("extras:fail:usageDetails"); return; }
+
+        await storageAccess.IsRequestForSupported();   // presence check only - granting needs a real embed
+
+        Set("extras:ok");
     }
 
     // ─── Performance entries ───────────────────────────────────────────────────
@@ -327,6 +614,13 @@
     {
         public string Id { get; set; } = "";
         public string Value { get; set; } = "";
+    }
+
+    public class IdbRow
+    {
+        public int Id { get; set; }
+        public string Group { get; set; } = "";
+        public string Text { get; set; } = "";
     }
 
     public async ValueTask DisposeAsync()

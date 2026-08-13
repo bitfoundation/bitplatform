@@ -1214,6 +1214,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Falla al mejorar la cuenta.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>No hay anuncios disponibles en este momento. Inténtelo de nuevo más tarde.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>¿Tienes problemas para ver el anuncio?</value>
   </data>

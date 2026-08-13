@@ -437,7 +437,7 @@ Add-Migration YourMigrationName -OutputDir Infrastructure\Data\Migrations -Conte
 Open a terminal in the `Boilerplate.Server.Web` project directory and run:
 ```bash
 dotnet tool restore
-dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
+dotnet ef migrations add YourMigrationName --context AppOfflineDbContext --output-dir Infrastructure/Data/Migrations --project ../../Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj --verbose
 ```
 
 **Important Notes:**

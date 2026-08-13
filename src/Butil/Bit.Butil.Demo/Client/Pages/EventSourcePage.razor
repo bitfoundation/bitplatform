@@ -1,0 +1,251 @@
+@page "/event-source"
+@implements IAsyncDisposable
+@inject Bit.Butil.EventSource eventSource
+
+<PageTitle>EventSource - Bit.Butil</PageTitle>
+
+<PageHeader Category="Network & Workers"
+            Title="EventSource"
+            Lead="Server-sent events: a one-way stream of text pushed from the server over ordinary HTTP, with reconnection and resume-from-last-id built into the browser rather than into your code."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events"
+            InjectAs="EventSource eventSource" />
+
+<Callout Type="info" Title="A live endpoint is running">
+    This demo connects to <code>/sse/ticks</code> on the demo server, which emits one event a
+    second - every third one named <code>heartbeat</code> rather than unnamed, so both listener
+    kinds are exercised. Each event carries an id, which is what lets a reconnect resume the
+    sequence instead of restarting it.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes EventSource. Supported by every current engine. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.EventSource eventSource
+
+var supported = await eventSource.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Open a stream"
+                 Api="Open / EventSourceHandle"
+                 Description="Named events never reach the default message listener, so anything the server names has to be declared in eventNames to be seen at all. The onError callback's argument distinguishes 'the browser is about to retry' (false) from 'this stream is finished' (true) - the browser reconnects on its own by default, so a transient failure is not something you have to handle."
+                 Code=@("""
+private EventSourceHandle? _stream;
+
+_stream = await eventSource.Open(
+    "/sse/ticks",
+    onMessage: e => InvokeAsync(() =>
+    {
+        // e.EventName is "message" for unnamed events, the server's name otherwise
+        // e.Data is always text - deserialize it yourself
+        // e.LastEventId is what the browser replays on reconnect
+        _events.Insert(0, e);
+        StateHasChanged();
+    }),
+    eventNames: ["heartbeat"],
+    onOpen: () => InvokeAsync(StateHasChanged),
+    onError: fatal => InvokeAsync(StateHasChanged));
+
+// closing is what stops the browser reconnecting:
+await _stream!.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="OpenStream">Open</button>
+            <button class="secondary" @onclick="ReadState">GetState</button>
+            <button class="danger" @onclick="CloseStream">Close</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Connection</span>
+            <span>@_connectionState</span>
+        </div>
+        <div class="field">
+            <span class="field-label">Received</span>
+            <span>@_received event(s)</span>
+        </div>
+        @if (_events.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Latest</span>
+                <span>
+                    <code>@_events[0].EventName</code> #@_events[0].LastEventId - @_events[0].Data
+                </span>
+            </div>
+        }
+        <DemoConsole @ref="streamOutput" Title="stream output" />
+    </DemoSection>
+
+    <DemoSection Title="Reconnection is free"
+                 Api="EventSourceHandle.GetState"
+                 Description="Drop the server (or your network) while the stream is open and the browser reconnects by itself, sending the last id it saw as a Last-Event-ID header. The demo endpoint reads that header and carries on counting rather than starting from one - which is the whole point of ids. GetState reports Connecting during the gap, which is a normal mid-stream state rather than a failure."
+                 Code=@("""
+var state = await _stream!.GetState();
+// EventSourceState.Connecting - dropped, browser is retrying
+// EventSourceState.Open       - delivering
+// EventSourceState.Closed     - finished for good, no retry
+""")>
+        <div class="field">
+            <span class="field-label">Try it</span>
+            <span>
+                Open the stream, then stop the demo server for a few seconds and start it again -
+                the tick numbers continue rather than resetting.
+            </span>
+        </div>
+        <DemoConsole @ref="reconnectOutput" Title="reconnect output" />
+    </DemoSection>
+</div>
+
+<Callout Type="warning" Title="Always close what you open">
+    An <code>EventSource</code> that is never closed keeps reconnecting on the browser's own
+    schedule for as long as the page lives. Dispose the handle - as a safety net, the
+    <code>EventSource</code> service closes any leaked stream when its scope is torn down.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes EventSource. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Open"
+               Signature="ValueTask<EventSourceHandle?> Open(string url, Action<ServerSentEvent> onMessage, string[]? eventNames = null, Action? onOpen = null, Action<bool>? onError = null, bool withCredentials = false)"
+               Description="Opens a stream. Null when EventSource is missing or the URL is malformed. onError's argument is true only when the stream is finished for good." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, closes any stream whose handle was never disposed." />
+    <ApiMember Name="EventSourceHandle.GetState"
+               Signature="ValueTask<EventSourceState> GetState()"
+               Description="Connecting, Open or Closed. Connecting mid-stream means the browser is retrying by itself." />
+    <ApiMember Name="EventSourceHandle.DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="Closes the connection and stops the browser reconnecting. Idempotent." />
+    <ApiMember Name="ServerSentEvent"
+               Signature='record (string EventName, string Data, string LastEventId)'
+               Description='EventName is "message" for unnamed events. Data is always text. LastEventId is what the browser replays as Last-Event-ID on reconnect.' />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole streamOutput = default!;
+    private DemoConsole reconnectOutput = default!;
+
+    private EventSourceHandle? _stream;
+    private readonly List<ServerSentEvent> _events = [];
+    private string _connectionState = "Not connected.";
+    private int _received;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await eventSource.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenStream()
+    {
+        await CloseStream();
+
+        try
+        {
+            _events.Clear();
+            _received = 0;
+
+            _stream = await eventSource.Open("/sse/ticks",
+                onMessage: e => InvokeAsync(() =>
+                {
+                    _received++;
+                    _events.Insert(0, e);
+                    if (_events.Count > 20) _events.RemoveAt(_events.Count - 1);
+                    _connectionState = "Open - receiving.";
+                    StateHasChanged();
+                }),
+                eventNames: ["heartbeat"],
+                onOpen: () => InvokeAsync(async () =>
+                {
+                    _connectionState = "Open.";
+                    await streamOutput.Success("Connected.");
+                    StateHasChanged();
+                }),
+                onError: fatal => InvokeAsync(async () =>
+                {
+                    _connectionState = fatal ? "Closed - the browser will not retry." : "Reconnecting...";
+                    if (fatal)
+                    {
+                        await streamOutput.Error("Stream closed for good.");
+                    }
+                    else
+                    {
+                        await reconnectOutput.Warn("Connection dropped - the browser is retrying, and will send the last id it saw.");
+                    }
+                    StateHasChanged();
+                }));
+
+            if (_stream is null)
+            {
+                _connectionState = "Could not open.";
+                await streamOutput.Warn("Open returned null - EventSource is unavailable, or the URL is malformed.");
+                return;
+            }
+
+            _connectionState = "Connecting...";
+            await streamOutput.Success("Open → connecting to /sse/ticks.");
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("Open failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadState()
+    {
+        if (_stream is null)
+        {
+            await streamOutput.Warn("Open a stream first.");
+            return;
+        }
+
+        try
+        {
+            var state = await _stream.GetState();
+            await streamOutput.Success("GetState →", state);
+        }
+        catch (Exception ex)
+        {
+            await streamOutput.Error("GetState failed →", ex.Message);
+        }
+    }
+
+    private async Task CloseStream()
+    {
+        if (_stream is null) return;
+
+        await _stream.DisposeAsync();
+        _stream = null;
+        _connectionState = "Closed.";
+        await streamOutput.Log("Closed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_stream is not null)
+            {
+                await _stream.DisposeAsync();
+                _stream = null;
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

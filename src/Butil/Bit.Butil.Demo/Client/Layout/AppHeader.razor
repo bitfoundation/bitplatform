@@ -1,0 +1,72 @@
+@inject ThemeService theme
+
+<header class="header">
+    <div class="container@(IsHomePage ? " home-page" : "")">
+        <div class="header-start">
+            @if (IsHomePage is false)
+            {
+                <button class="menu-btn" title="Toggle navigation" aria-label="Header menu button"
+                        aria-expanded="@(IsNavPanelOpen ? "true" : "false")" aria-controls="nav-panel"
+                        @onclick="OnToggleNavPanel">
+                    ☰
+                </button>
+            }
+            <a class="logo" href="" aria-label="Homepage"></a>
+            <a class="link@(IsHomePage ? " active" : "")" href="">Home</a>
+            <a class="link@(IsHomePage ? "" : " active")" href="getting-started">Docs</a>
+        </div>
+
+        <div class="header-end">
+            @* The page is prerendered on the server, so it is visible - and inert - until the
+               WebAssembly runtime takes over. Say so instead of letting clicks silently do
+               nothing. *@
+            @if (RendererInfo.IsInteractive is false)
+            {
+                @* The word is its own element so the narrowest screens - where the row is already
+                   full without it - can keep the pulsing dot and drop the label. *@
+                <span class="hydrating" title="Prerendered HTML - the WebAssembly runtime is still loading.">
+                    <i></i><span>loading</span>
+                </span>
+            }
+
+            <a class="nuget-btn" target="_blank" rel="noopener noreferrer"
+               href="https://www.nuget.org/packages/Bit.Butil">NuGet</a>
+
+            <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository"
+               href="https://github.com/bitfoundation/bitplatform"></a>
+
+            @* One button rather than the two the BlazorUI demo swaps between with CSS: without the
+               library's icon font the glyph is inline SVG, which is cheaper to render once and
+               relabel than to render twice and hide one. *@
+            <button class="toggle-theme-btn" @onclick="theme.Toggle"
+                    title="@(theme.IsDark ? "Turn on light" : "Turn off light")"
+                    aria-label="@(theme.IsDark ? "Switch to the light theme" : "Switch to the dark theme")">
+                @if (theme.IsDark)
+                {
+                    @* Sunny *@
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+                        <circle cx="12" cy="12" r="4.2" />
+                        <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
+                    </svg>
+                }
+                else
+                {
+                    @* Clear night *@
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                         aria-hidden="true" focusable="false">
+                        <path d="M21 13.3A9.2 9.2 0 1 1 10.7 3a7.4 7.4 0 0 0 10.3 10.3Z" />
+                    </svg>
+                }
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter] public bool IsHomePage { get; set; }
+
+    [Parameter] public bool IsNavPanelOpen { get; set; }
+
+    [Parameter] public EventCallback OnToggleNavPanel { get; set; }
+}

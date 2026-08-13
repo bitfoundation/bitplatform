@@ -1,4 +1,5 @@
 @page "/battery"
+@implements IAsyncDisposable
 @inject Bit.Butil.Battery battery
 
 <PageTitle>Battery - Bit.Butil</PageTitle>
@@ -84,6 +85,33 @@ batteryLabel = status.Charging
         }
         <DemoConsole @ref="snapshotOutput" Title="snapshot output" />
     </DemoSection>
+
+    <DemoSection Title="React to battery changes"
+                 Api="SubscribeChange"
+                 Description="Polling GetStatus is the wrong shape for a battery indicator. SubscribeChange hands you a fresh snapshot every time anything moves - plugged in, unplugged, or the level ticked. The spec has no single change event, so this attaches to all four (chargingchange, levelchange, chargingtimechange, dischargingtimechange) and always reports the whole state, meaning your handler never has to work out which field changed. Returns null where the API doesn't exist, since the AC-power stub can never change."
+                 Code=@("""
+private ButilSubscription? subscription;
+
+subscription = await battery.SubscribeChange(status =>
+{
+    _snapshot = status;
+    InvokeAsync(StateHasChanged);
+});
+
+if (subscription is null)
+{
+    // No Battery Status API here - nothing to watch.
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="StartWatching" disabled="@(_subscription is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="StopWatching" disabled="@(_subscription is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="change output" />
+    </DemoSection>
 </div>
 
 <ApiTable Title="API reference">
@@ -93,6 +121,9 @@ batteryLabel = status.Charging
     <ApiMember Name="GetStatus"
                Signature="ValueTask<BatteryStatus> GetStatus()"
                Description="One-shot snapshot of the battery state. Reports a charged-AC-power stub when the API is unsupported." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription?> SubscribeChange(Action<BatteryStatus> handler)"
+               Description="Calls the handler with a fresh snapshot on every battery change. Attaches to all four change events, so the handler gets the whole state each time. Null when the API is unsupported - the stub never changes." />
     <ApiMember Name="BatteryStatus.Charging"
                Signature="bool Charging { get; set; }"
                Description="True if the device is currently charging." />
@@ -111,7 +142,56 @@ batteryLabel = status.Charging
     private DemoConsole supportOutput = default!;
     private DemoConsole statusOutput = default!;
     private DemoConsole snapshotOutput = default!;
+    private DemoConsole watchOutput = default!;
     private BatteryStatus? _snapshot;
+    private ButilSubscription? _subscription;
+
+    private async Task StartWatching()
+    {
+        try
+        {
+            _subscription = await battery.SubscribeChange(async status =>
+            {
+                _snapshot = status;
+                await InvokeAsync(async () =>
+                {
+                    await watchOutput.Success("change →", $"level={status.Level:P0}, charging={status.Charging}");
+                    StateHasChanged();
+                });
+            });
+
+            if (_subscription is null)
+            {
+                await watchOutput.Warn("SubscribeChange → null (no Battery Status API in this browser).");
+                return;
+            }
+            await watchOutput.Log("Subscribed - plug or unplug the charger to see events.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error("SubscribeChange failed →", ex.Message);
+        }
+    }
+
+    private async Task StopWatching()
+    {
+        if (_subscription is null) return;
+        await _subscription.DisposeAsync();
+        _subscription = null;
+        await watchOutput.Warn("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_subscription is not null) await _subscription.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
 
     private async Task CheckSupported()
     {

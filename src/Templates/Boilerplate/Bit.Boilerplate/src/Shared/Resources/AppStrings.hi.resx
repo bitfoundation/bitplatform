@@ -1214,6 +1214,9 @@
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>खाता अपग्रेड विफल।</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>अभी कोई विज्ञापन उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>विज्ञापन देखने में समस्या?</value>
   </data>

@@ -1,4 +1,5 @@
 @page "/permissions"
+@implements IAsyncDisposable
 @inject Bit.Butil.Permissions permissions
 
 <PageTitle>Permissions - Bit.Butil</PageTitle>
@@ -67,6 +68,31 @@ foreach (var name in names)
         </div>
         <DemoConsole @ref="snapshotOutput" Title="snapshot output" />
     </DemoSection>
+
+    <DemoSection Title="Watch a permission for changes"
+                 Api="SubscribeChange"
+                 Description="A permission can change without your page doing anything - the user revokes camera access from the address bar, or grants notifications in site settings. SubscribeChange is the only way to notice that short of polling Query. It returns the state at subscription time alongside the subscription, so you don't have to call Query first and race the handler. An unrecognized descriptor yields Unknown with a null subscription - there is nothing to watch."
+                 Code=@("""
+var (state, subscription) = await permissions.SubscribeChange("geolocation", newState =>
+{
+    // the user granted or revoked it from browser UI
+    InvokeAsync(StateHasChanged);
+});
+
+if (subscription is null)
+{
+    // no Permissions API, or this browser doesn't know the descriptor
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="WatchPermission" disabled="@(_watchSub is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="UnwatchPermission" disabled="@(_watchSub is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="watchOutput" Title="change output" />
+    </DemoSection>
 </div>
 
 <Callout Type="info" Title="Descriptor names vary by engine">
@@ -84,6 +110,7 @@ foreach (var name in names)
 <ApiTable Title="API reference">
     <ApiMember Name="IsSupported" Signature="ValueTask<bool> IsSupported()" Description="True when the runtime exposes navigator.permissions." />
     <ApiMember Name="Query" Signature="Task<PermissionState> Query(string name)" Description="Returns the current state for a given permission descriptor name (granted, denied, prompt); unknown names return PermissionState.Unknown." />
+    <ApiMember Name="SubscribeChange" Signature="Task<(PermissionState State, ButilSubscription? Subscription)> SubscribeChange(string name, Action<PermissionState> handler)" Description="Watches a permission and calls the handler whenever its state changes - including revocations made from browser UI. Returns the state at subscription time; the subscription is null for an unsupported runtime or descriptor." />
     <ApiMember Name="PermissionState" Signature="enum PermissionState { Granted, Denied, Prompt, Unknown }" Description="Mirrors PermissionStatus.state, plus Unknown for unsupported descriptors or runtimes." />
 </ApiTable>
 
@@ -91,7 +118,52 @@ foreach (var name in names)
     private DemoConsole supportOutput = default!;
     private DemoConsole queryOutput = default!;
     private DemoConsole snapshotOutput = default!;
+    private DemoConsole watchOutput = default!;
+    private ButilSubscription? _watchSub;
     private string selectedPermission = "geolocation";
+
+    private async Task WatchPermission()
+    {
+        try
+        {
+            var (state, sub) = await permissions.SubscribeChange(selectedPermission, newState =>
+            {
+                _ = InvokeAsync(() => watchOutput.Info($"'{selectedPermission}' changed → {newState}"));
+            });
+
+            _watchSub = sub;
+            if (sub is null)
+            {
+                await watchOutput.Warn($"SubscribeChange(\"{selectedPermission}\") → {state}; nothing to watch on this browser.");
+                return;
+            }
+            await watchOutput.Success($"Watching '{selectedPermission}' - current state {state}. Change it from the browser's site settings to see an event.");
+        }
+        catch (Exception ex)
+        {
+            await watchOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnwatchPermission()
+    {
+        if (_watchSub is null) return;
+        await _watchSub.DisposeAsync();
+        _watchSub = null;
+        await watchOutput.Log("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_watchSub is not null) await _watchSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
 
     private static readonly string[] permissionNames =
     [

@@ -1214,6 +1214,9 @@
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>فشلت ترقية الحساب.</value>
   </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>لا تتوفر إعلانات في الوقت الحالي. يرجى المحاولة مرة أخرى لاحقاً.</value>
+  </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>تواجه مشكلة في مشاهدة الإعلان؟</value>
   </data>
