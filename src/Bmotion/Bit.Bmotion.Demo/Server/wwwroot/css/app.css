@@ -464,6 +464,10 @@ code {
 }
 
 @media (max-width: 63.9375rem) {
+    /* visibility, not just the off-screen transform: a translated drawer is still focusable, so
+       without it the closed panel's search box and every nav link stay in the tab order of the page
+       they are covering. Transitioning it keeps the panel painted for the whole slide out, because
+       visibility only flips to hidden once the transform has finished. */
     .nav-panel {
         top: 0;
         left: 0;
@@ -472,11 +476,14 @@ code {
         height: 100dvh;
         width: 17rem;
         flex-basis: 0;
+        visibility: hidden;
         transform: translateX(-100%);
-        transition: transform var(--bit-mot-duration) var(--bit-mot-easing);
+        transition: transform var(--bit-mot-duration) var(--bit-mot-easing),
+                    visibility var(--bit-mot-duration);
     }
 
     .nav-panel.open {
+        visibility: visible;
         transform: translateX(0);
     }
 
@@ -844,6 +851,16 @@ code {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+/* A forced-colors palette drops the gradient but keeps the transparent fill, which would leave the
+   headline invisible. Hand the text back to the system colour instead. */
+@media (forced-colors: active) {
+    .hero-copy h1 {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: currentColor;
+    }
 }
 
 .hero-lead {

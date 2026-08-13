@@ -11,9 +11,11 @@
         @foreach (var item in _visibleItems)
         {
             <li>
-                @* Match.All only for the home route: every other href is a distinct path, and
-                   prefix matching would light up "Layout" while "LayoutSomething" is open. *@
-                <NavLink href="@item.Href" Match="@(item.Href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+                @* Match.All throughout: every href is a distinct leaf route with nothing nested
+                   under it, and prefix matching would light up "Layout" the moment a
+                   "LayoutSomething" route existed - as well as lighting up the home entry, whose
+                   empty href prefixes every page. *@
+                <NavLink href="@item.Href" Match="NavLinkMatch.All">
                     @item.Title
                 </NavLink>
             </li>

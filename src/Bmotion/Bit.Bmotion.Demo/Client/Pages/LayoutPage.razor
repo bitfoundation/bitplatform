@@ -112,6 +112,69 @@
     <CodeSnippet Code="@_sizeCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Anchoring and measurement</h2>
+    <p>
+        A FLIP is a comparison between two measurements, and four parameters decide what is being
+        compared. <strong>LayoutAnchor</strong> picks the point that appears to stay still: the
+        default top-left corner is right for text and rows, while
+        <code>BmLayoutAnchor.Center</code> makes a box grow outward evenly - the same size change,
+        read completely differently.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack resize-stage">
+            <span class="demo-label">anchor: TopLeft (default)</span>
+            <Bmotion Layout="true"
+                     LayoutDependency="_anchored"
+                     OnLayoutAnimationComplete="@(() => { _layoutCompletions++; StateHasChanged(); })"
+                     Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                <div class="@(_anchored ? "anchor-box big" : "anchor-box")" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack resize-stage">
+            <span class="demo-label">anchor: Center</span>
+            <Bmotion Layout="true"
+                     LayoutAnchor="BmLayoutAnchor.Center"
+                     LayoutDependency="_anchored"
+                     Transition="Bm.Spring(stiffness: 350, damping: 30)">
+                <div class="@(_anchored ? "anchor-box big" : "anchor-box")" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _anchored = !_anchored)">@(_anchored ? "Shrink" : "Grow")</button>
+        <span class="demo-label">layout animations completed: @_layoutCompletions</span>
+    </div>
+
+    <p>
+        The other three are about the coordinate space. <strong>LayoutScroll</strong> is for an
+        element inside a scrolling container: without it, scrolling that container between the two
+        measurements looks exactly like the element having moved, and it jumps.
+        <strong>LayoutRoot</strong> does the same job for a <code>position: fixed</code> element,
+        which stays put while the page scrolls under it. <strong>LayoutDependency</strong> is the
+        performance one - measuring forces a reflow, so pointing it at the state the layout actually
+        depends on stops unrelated re-renders paying for one.
+    </p>
+
+    <CodeSnippet Code="@_projectionCode" />
+</div>
+
+<style>
+    /* Fixed footprint so the two anchor stages are directly comparable: the same size change
+       reads differently only because of where it is projected from. */
+    .anchor-box {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    .anchor-box.big { width: 7rem; height: 7rem; }
+</style>
+
 <style>
     .layout-stage { align-items: stretch; }
 
@@ -190,6 +253,8 @@
     private readonly string[] _tabs = ["Home", "Projects", "About", "Contact"];
     private string _activeTab = "Home";
     private bool _big;
+    private bool _anchored;
+    private int _layoutCompletions;
     private string _justifyContent = "flex-start";
 
     /// <summary>A shuffled tile: its label and which of the palette's five tones it wears.</summary>
@@ -316,6 +381,46 @@
 
         @code {
             private bool _big;
+        }
+        """;
+
+    private const string _projectionCode = """
+        @using Bit.Bmotion
+
+        @* LayoutAnchor picks the point that appears to stay still while the box resizes.
+           TopLeft (the default) pins the corner; Center grows the box outward evenly. *@
+        <Bmotion Layout="true" LayoutAnchor="BmLayoutAnchor.Center">
+            <div class="box" />
+        </Bmotion>
+
+        @* LayoutScroll: the element lives in a scrolling container, so its measurements fold in
+           that container's scroll offset. Without it, scrolling between the two measurements
+           reads as the element having moved and it visibly jumps. *@
+        <div class="scroller" style="overflow:auto; max-height:20rem">
+            <Bmotion Layout="true" LayoutScroll="true">
+                <div class="row" />
+            </Bmotion>
+        </div>
+
+        @* LayoutRoot: same idea for a position:fixed element, which stays put while the page
+           scrolls under it - so it is measured against the viewport, not the document. *@
+        <Bmotion Layout="true" LayoutRoot="true">
+            <div class="toolbar" style="position:fixed; top:0" />
+        </Bmotion>
+
+        @* LayoutDependency: measuring forces a reflow. Point it at the state the layout
+           actually depends on and unrelated re-renders stop paying for one.
+           OnLayoutAnimationStart / OnLayoutAnimationComplete bracket the animation. *@
+        <Bmotion Layout="true"
+                 LayoutDependency="_isOpen"
+                 OnLayoutAnimationStart="@(() => _settling = true)"
+                 OnLayoutAnimationComplete="@(() => _settling = false)">
+            <div class="panel" />
+        </Bmotion>
+
+        @code {
+            private bool _isOpen;
+            private bool _settling;
         }
         """;
 }

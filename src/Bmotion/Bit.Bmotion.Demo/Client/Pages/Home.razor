@@ -173,8 +173,8 @@
     private readonly string[] _features =
     [
         "Spring physics", "Tween", "Inertia", "Keyframes",
-        "Gestures", "Drag", "Reorder", "AnimatePresence", "Variants",
-        "whileInView", "Layout FLIP", "MotionValue", "Scroll tracking",
+        "Gestures", "Drag", "Reorder", "AnimatePresence", "Variants", "Split text",
+        "whileInView", "Layout FLIP", "MotionValue", "Scroll timelines",
         "Sequences", "SVG paths", "OKLab", ".NET 8+", "Minimal JS"
     ];
 
@@ -192,12 +192,14 @@
         new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures"),
         new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants"),
         new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes"),
+        new("Split text", "Headlines that assemble a character, a word or a line at a time - split in C#, so nothing re-splits on re-render and a screen reader still reads the sentence.", "split-text"),
         new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence"),
         new("Drag and reorder", "Axis locks, container constraints, elastic edges, momentum - and lists that reorder themselves under the pointer without re-rendering.", "drag"),
         new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout"),
-        new("Scroll and viewport", "Scrub an animation with the scrollbar as a MotionValue, or trigger one the first time an element comes into view.", "scroll"),
+        new("Scroll and viewport", "Hand a scroll-linked animation to the browser's native scroll timelines - no handler, no interop - or scrub it yourself as a MotionValue, or trigger it the first time an element comes into view.", "scroll"),
         new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic"),
         new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path"),
+        new("Accessibility and diagnostics", "prefers-reduced-motion that softens rather than deletes, keyboard-accessible taps, and an inspector that shows what the engine is doing.", "accessibility"),
     ];
 
     private const string _quickStart = """

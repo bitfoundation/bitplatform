@@ -19,6 +19,7 @@ public sealed record NavItem(string Title, string Href)
         new("Gestures", "gestures"),
         new("Variants", "variants"),
         new("Keyframes", "keyframes"),
+        new("Split Text", "split-text"),
         new("AnimatePresence", "presence"),
         new("Drag", "drag"),
         new("Reorder", "reorder"),
@@ -29,5 +30,6 @@ public sealed record NavItem(string Title, string Href)
         new("Motion Path", "motion-path"),
         new("View Transitions", "view-transitions"),
         new("CSS Props", "css-props"),
+        new("Accessibility", "accessibility"),
     ];
 }

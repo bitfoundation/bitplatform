@@ -164,12 +164,14 @@
         border: 1px solid var(--bm-accent-line);
     }
 
+    /* The glyph sits on the accent-tinted row, where the secondary accent is too low-contrast to
+       read; the foreground token carries it in both themes. */
     .row-remove {
         border: none;
         cursor: pointer;
         font-size: 1.1rem;
         background: none;
-        color: var(--bm-secondary);
+        color: var(--bm-text);
     }
 
     /* position: relative is what anchors the popped (absolute) chips; without it they would

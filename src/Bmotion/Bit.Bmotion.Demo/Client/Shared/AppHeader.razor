@@ -49,12 +49,14 @@
             @* Exact complements: CSS shows the sun in the dark theme and the moon in the light one,
                so exactly one of the pair is ever visible - including on the prerendered document,
                which carries no data-theme attribute yet. *@
-            <button type="button" class="toggle-theme-btn dark-theme" @onclick="ToggleTheme" title="Turn on light">
+            <button type="button" class="toggle-theme-btn dark-theme" @onclick="ToggleTheme"
+                    title="Turn on light" aria-label="Turn on light">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-13a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zm0 14a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1zM4 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm14 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1zM6.34 6.34a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm9.2 9.2a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm2.12-9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 1 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0zm-9.2 9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 0 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0z" />
                 </svg>
             </button>
-            <button type="button" class="toggle-theme-btn light-theme" @onclick="ToggleTheme" title="Turn off light">
+            <button type="button" class="toggle-theme-btn light-theme" @onclick="ToggleTheme"
+                    title="Turn off light" aria-label="Turn off light">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M21.3 13.6A9.2 9.2 0 0 1 10.4 2.7a1 1 0 0 0-1.3-1.15A10.2 10.2 0 1 0 22.45 14.9a1 1 0 0 0-1.15-1.3z" />
                 </svg>

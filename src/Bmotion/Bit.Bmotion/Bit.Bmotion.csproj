@@ -11,9 +11,9 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
-    <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
+    <!-- No local README <None Pack> item: Bit.Build.props already packs the nearest README.md above
+         the project directory at the package root, which resolves to this project's own README.md.
+         Adding it again here packed the same file twice (NU5118). -->
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />

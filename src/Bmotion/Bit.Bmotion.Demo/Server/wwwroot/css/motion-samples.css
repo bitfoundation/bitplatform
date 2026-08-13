@@ -26,7 +26,6 @@
 .page-intro {
     line-height: 1.5;
     font-size: 1rem;
-    max-width: var(--demo-measure);
     margin-bottom: 2.5rem;
     color: var(--bit-clr-fg-sec);
 }
@@ -49,6 +48,11 @@
     background-color: var(--bit-clr-bg-pri);
     border: 0.0625rem solid var(--bit-clr-brd-ter);
     border-radius: var(--bit-shp-brd-radius);
+}
+
+.demo-section .align-start {
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .demo-section:last-child {
@@ -84,7 +88,6 @@
     font-size: 0.875rem;
     margin-bottom: 1.5rem;
     letter-spacing: 0.01071em;
-    max-width: var(--demo-measure);
     color: var(--bit-clr-fg-sec);
 }
 
@@ -370,6 +373,16 @@
     -webkit-text-fill-color: transparent;
 }
 
+/* A forced-colors palette drops the gradient but keeps the transparent fill, which would leave the
+   headline invisible. Hand the text back to the system colour instead. */
+@media (forced-colors: active) {
+    .page-hero h1 {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: currentColor;
+    }
+}
+
 .page-hero p {
     margin: 0 auto 2rem;
     line-height: 1.5;
@@ -396,4 +409,34 @@
     background-color: transparent;
     border: 0.0625rem solid var(--bit-clr-pri);
     border-radius: var(--bit-shp-brd-radius);
+}
+
+/* ── Split text ────────────────────────────────────────────────────────────── */
+
+/* The split-text stages animate type, not boxes, so they need a type scale of their own - the
+   samples are only legible as a headline treatment if they are actually headline-sized. */
+.split-headline {
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--bit-clr-fg-pri);
+}
+
+.split-lines {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--bit-clr-fg-pri);
+}
+
+.split-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--bit-clr-fg-pri);
+}
+
+/* Deliberately narrow: the point of the sample is to force the text to wrap, so the reader can
+   see that the break lands between words rather than inside one. */
+.split-narrow {
+    max-width: 15rem;
 }

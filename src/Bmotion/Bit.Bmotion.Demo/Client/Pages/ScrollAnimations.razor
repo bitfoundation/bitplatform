@@ -12,8 +12,10 @@
     <strong>Scroll-linked</strong> motion asks <em>"how far along are we?"</em> and maps that
     progress continuously onto a property - the reader scrubs the animation.
     <strong>Scroll-triggered</strong> motion asks <em>"is this on screen yet?"</em> and plays a
-    normal animation once the answer changes. <code>BmotionScrollTracker</code> covers the first,
-    <code>WhileInView</code> the second.
+    normal animation once the answer changes. For the first there is a fast path -
+    <code>Timeline</code>, which hands the scrubbing to the browser outright - and a general one,
+    <code>BmotionScrollTracker</code>, for when you need the number itself.
+    <code>WhileInView</code> covers the second.
 </p>
 
 @* Offset by the site header's own height so the readout parks under it rather than behind it. *@
@@ -25,6 +27,54 @@
     <div class="demo-label progress-caption">
         Y: @Percent(_progressY)% &nbsp;|&nbsp; X: @Percent(_progressX)%
     </div>
+</div>
+
+<div class="demo-section">
+    <h2>Scroll timelines: let the browser do it</h2>
+    <p>
+        A scroll handler that calls back into .NET on every scroll event is the expensive way to
+        scrub an animation, and it is the one thing you cannot make fast from the outside.
+        <strong>Timeline</strong> hands the whole thing to the browser instead: the keyframes are
+        pre-sampled in C# once, and progress comes from the browser's own
+        <code>ScrollTimeline</code> / <code>ViewTimeline</code>. After the handoff there is no
+        scroll handler, no frame loop and no interop at all - the animation runs on the compositor.
+        Where those APIs are missing, the bridge scrubs the same Web Animation from one passive
+        listener, so the values are still interpolated by the browser rather than round-tripped
+        through .NET.
+    </p>
+    <p>
+        <code>BmScrollTimeline.Page()</code> is the whole document's progress;
+        <code>Container(selector)</code> is one scroller's; <code>View()</code> is the animated
+        element's own journey through the viewport, and <code>ViewOf(selector)</code> is some other
+        element's. Only transforms and <code>opacity</code> can be handed over this way - they are
+        what the browser can interpolate for us - and while a timeline is attached it owns those
+        properties, so <code>Transition</code> does not apply: scroll position <em>is</em> the
+        progress.
+    </p>
+
+    <div class="timeline-bar-wrap">
+        <span class="demo-label">BmScrollTimeline.Page() &middot; scroll the page</span>
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill full-width" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-row">
+        @foreach (var card in _timelineCards)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@card</span>
+                <Bmotion Timeline="BmScrollTimeline.View()"
+                         Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
+                    <div class="box" />
+                </Bmotion>
+            </div>
+        }
+    </div>
+
+    <CodeSnippet Code="@_timelineCode" />
 </div>
 
 <div class="demo-section">
@@ -161,6 +211,10 @@
 
     .progress-caption { text-align: left; margin: .4rem 0; }
 
+    /* The timeline-driven bar sits on its own, above the row of stages, with the caption it
+       needs to be readable as a sample rather than as page chrome. */
+    .timeline-bar-wrap { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.5rem; }
+
     .scroll-track {
         width: 100%;
         height: .5rem;
@@ -215,6 +269,11 @@
     private Dictionary<string, BmValue<double>> _boxValues = default!;
     private Dictionary<string, BmValue<double>> _targetValues = default!;
     private Dictionary<string, BmValue<string>> _filterValue = default!;
+
+    // Three stages so the reader can see one enter, one cross and one leave at the same time -
+    // one card alone only ever shows a single phase of its own journey.
+    private readonly string[] _timelineCards =
+        ["BmScrollTimeline.View()", "…the same, one row along", "…and again"];
 
     private static string Percent(double progress)
         => (progress * 100).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
@@ -363,6 +422,47 @@
                 }, info => { _progress = info.TargetProgress ?? 0; return InvokeAsync(StateHasChanged); });
             }
         }
+        """;
+
+    private const string _timelineCode = """
+        @using Bit.Bmotion
+
+        <style>
+            :root { --bm-track: #EBEBEB; --bm-primary: #1276C6; --bm-secondary: #FD7F36; }
+            .scroll-track { background: var(--bm-track); border-radius: 6px; height: 8px; overflow: hidden; width: 100%; }
+            /* Scaled, not resized: the bar starts full width and the browser drives scaleX
+               from its left edge. */
+            .scroll-fill { width: 100%; height: 100%; border-radius: 6px; transform-origin: 0 50%;
+                background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary)); }
+            .box { width: 80px; height: 80px; border-radius: 10px;
+                background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+        </style>
+
+        @* A reading-progress bar. No scroll handler, no OnInitialized, no IAsyncDisposable:
+           the browser's own ScrollTimeline drives it on the compositor. *@
+        <div class="scroll-track">
+            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+                <div class="scroll-fill" />
+            </Bmotion>
+        </div>
+
+        @* View(): the element's own journey through the viewport, 0 as it enters and 1 as it
+           leaves. Four keyframes, so it fades in, holds, then fades out again. *@
+        <Bmotion Timeline="BmScrollTimeline.View()"
+                 Animate="Bm.To(opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.6], rotate: [-12, 0, 0, 12])">
+            <div class="box" />
+        </Bmotion>
+
+        @* Other sources: one scroll container, or another element's journey driving this one.
+           A native range narrows a view timeline to part of the journey. *@
+        <Bmotion Timeline='BmScrollTimeline.Container(".panel")' Animate="Bm.To(scaleX: [0, 1])">
+            <div class="scroll-fill" />
+        </Bmotion>
+
+        <Bmotion Timeline='BmScrollTimeline.ViewOf("#hero", range: "entry 0% cover 50%")'
+                 Animate="Bm.To(opacity: [1, 0])">
+            <div class="box" />
+        </Bmotion>
         """;
 
     private const string _scrollTrackCode = """

@@ -84,6 +84,13 @@
         number is absolute, and <code>Label</code> marks a position several later steps can share.
         That is what lets a sequence overlap without you hand-computing a single delay.
     </p>
+    <p>
+        The whole timeline runs on <strong>one playhead</strong>, driven by the animation clock
+        rather than by wall-clock timers. So the controls it returns govern the gaps between the
+        steps as well as the steps themselves: pause it mid-run and the sequence genuinely holds
+        instead of quietly starting its later steps on time, and <code>SetSpeed(3)</code> compresses
+        the silences by the same factor it compresses the movement.
+    </p>
 
     <div class="demo-row">
         <div class="demo-card seq-stage">
@@ -99,6 +106,9 @@
 
     <div class="demo-actions">
         <button class="btn-bm" @onclick="RunSequenceAsync">Play sequence</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.Pause())">Pause</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.Play())">Resume</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.SetSpeed(3))">3&times; speed</button>
         <button class="btn-bm" @onclick="ResetSequenceAsync">Reset</button>
     </div>
 
@@ -186,11 +196,8 @@
         cheapest way to change the feel of a whole surface at once. <code>TransitionSpeed</code> is
         a playback multiplier - <code>0.25</code> is the slow-motion switch every animation
         developer wants while tuning, and <code>0</code> makes every transition instant.
-        <code>ReduceMotion</code> takes <code>null</code> to follow the operating system's
-        <em>prefers-reduced-motion</em> setting, and honouring that preference is
-        <strong>scoped to this component on purpose</strong>: an element with no
-        <code>BmotionConfig</code> above it always animates, so the library can never silently
-        disable motion an app did not opt into.
+        It also carries <code>ReduceMotion</code>, the <em>prefers-reduced-motion</em> policy for
+        its subtree &mdash; covered in full on the <a href="/accessibility">Accessibility</a> page.
     </p>
 
     <BmotionConfig TransitionSpeed="_speed">
@@ -275,6 +282,7 @@
 @code {
     private Bmotion _box = default!;
     private BmAnimationControls? _controls;
+    private BmAnimationControls? _sequenceControls;
     private string _runState = "idle";
 
     private double _count;
@@ -354,11 +362,16 @@
             .Add(".seq-dot", Bm.To(scale: [1, 1.8, 1]), Bm.Spring(stiffness: 400, damping: 16), at: "burst")
             .Add("#seq-box", Bm.To(x: 0, rotate: 0), Bm.Spring(stiffness: 200, damping: 18), at: "+0.1");
 
-        await Motion.RunAsync(sequence);
+        // Stop whatever a previous press left running so the two runs can't fight over the box.
+        _sequenceControls?.Stop();
+        _sequenceControls = await Motion.RunAsync(sequence);
+        await _sequenceControls;
     }
 
     private async Task ResetSequenceAsync()
     {
+        _sequenceControls?.Stop();
+        _sequenceControls = null;
         await Motion.AnimateAsync("#seq-box", Bm.To(x: 0, rotate: 0), Bm.Tween(0.2));
         await Motion.AnimateAsync(".seq-dot", Bm.To(scale: 1), Bm.Tween(0.2));
     }
@@ -369,6 +382,7 @@
     public void Dispose()
     {
         _controls?.Stop();
+        _sequenceControls?.Stop();
         _follower?.Dispose();
     }
 
@@ -444,9 +458,18 @@
                     .Add("#seq-box", Bm.To(x: 0, rotate: 0),
                          Bm.Spring(stiffness: 200, damping: 18), at: "+0.1");
 
-                // RunAsync returns the same controls a single animation does.
-                await Motion.RunAsync(sequence);
+                // RunAsync returns the same controls a single animation does - and because the
+                // whole timeline runs on one playhead, they govern the gaps between the steps
+                // as well as the steps themselves.
+                _controls = await Motion.RunAsync(sequence);
+                await _controls;
             }
+
+            void Hold()   => _controls?.Pause();       // the timeline genuinely stops here
+            void Resume() => _controls?.Play();
+            void Faster() => _controls?.SetSpeed(3);   // steps AND gaps compress by 3x
+
+            private BmAnimationControls? _controls;
         }
         """;
 

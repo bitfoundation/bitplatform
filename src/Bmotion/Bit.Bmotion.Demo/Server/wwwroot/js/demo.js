@@ -56,13 +56,17 @@ window.bmSections = {
     activeId: null,
     onScroll: null,
 
+    // Breathing room below the header, so an anchored heading lands clear of it rather than flush
+    // against its underside.
+    HEADER_GAP_PX: 24,
+
     // The offset the sticky header occupies, so "the section at the top of the screen" means the
     // one at the top of the part of the screen the reader can actually see. Read from the same
     // custom property the header sizes itself from, so the two can only agree.
     headerOffset() {
-        const raw = getComputedStyle(document.documentElement).getPropertyValue('--demo-header-height');
-        const rem = parseFloat(raw) || 4.0625;
-        return rem * parseFloat(getComputedStyle(document.documentElement).fontSize || '16') + 24;
+        const root = getComputedStyle(document.documentElement);
+        const rem = parseFloat(root.getPropertyValue('--demo-header-height')) || 4.0625;
+        return rem * parseFloat(root.fontSize || '16') + window.bmSections.HEADER_GAP_PX;
     },
 
     // The last heading that has passed under the header is the one being read. Falls back to the
@@ -108,11 +112,14 @@ window.bmCollectSections = function () {
     return items;
 };
 
-window.bmObserveSections = function (dotNetRef) {
+// The caller has just collected the sections to build the rail from, so it hands the ids straight
+// over rather than making this walk the same headings a second time. Collecting them here is only
+// the fallback for a caller that has not.
+window.bmObserveSections = function (dotNetRef, ids) {
     window.bmDisposeSections();
 
     window.bmSections.dotNetRef = dotNetRef;
-    window.bmSections.ids = window.bmCollectSections().map(i => i.id);
+    window.bmSections.ids = ids ?? window.bmCollectSections().map(i => i.id);
     window.bmSections.activeId = null;
 
     // A passive listener with the work deferred to the next frame: scroll fires far more often than

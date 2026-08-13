@@ -134,6 +134,121 @@
     <CodeSnippet Code="@_eventsCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Nested gestures</h2>
+    <p>
+        Pointer gestures bubble, so a tappable button inside a tappable card presses both. That is
+        usually right - a card that reacts to being pressed anywhere feels alive - but not when the
+        inner control has its own meaning. <strong>GesturePropagation="false"</strong> on the child
+        stops its tap and pan from reaching gesture-enabled ancestors, exactly as
+        <code>DragPropagation</code> does for drag. Press each button and watch the card behind it.
+    </p>
+    <p>
+        Hover is unaffected either way: <code>pointerenter</code> and <code>pointerleave</code> do
+        not bubble, so a child's hover was never its parent's problem.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">propagates (default)</span>
+            <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+                <div class="nest-card">
+                    <Bmotion WhileTap="Bm.To(scale: 0.88)">
+                        <button class="nest-btn" type="button">Press me</button>
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">GesturePropagation="false"</span>
+            <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+                <div class="nest-card">
+                    <Bmotion WhileTap="Bm.To(scale: 0.88)" GesturePropagation="false">
+                        <button class="nest-btn" type="button">Press me</button>
+                    </Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_propagationCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Owning the transform string</h2>
+    <p>
+        Bmotion composes one <code>transform</code> from every animated component, in a fixed order.
+        <strong>TransformTemplate</strong> hands that string back to you before it is written -
+        useful when the element already needs a transform of its own that the animation must not
+        clobber. The classic case is an element centred on its own anchor with
+        <code>translate(-50%, -50%)</code>: leave it in the CSS and the animation overwrites it,
+        so put it in the template instead and it survives every frame.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack pin-stage align-start">
+            <span class="demo-label">without a template - the pin slips</span>
+            <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                     Transition="Bm.Spring(stiffness: 250, damping: 18)">
+                <div class="pin" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack pin-stage align-start">
+            <span class="demo-label">template keeps it centred</span>
+            <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                     TransformTemplate="@(( _, generated) => $"translate(-50%, -50%) {generated}")"
+                     Transition="Bm.Spring(stiffness: 250, damping: 18)">
+                <div class="pin" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _pinned = !_pinned)">@(_pinned ? "Shrink" : "Grow")</button>
+    </div>
+
+    <CodeSnippet Code="@_templateCode" />
+</div>
+
+<style>
+    .nest-card {
+        display: flex;
+        padding: 1.5rem;
+        cursor: pointer;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .nest-btn {
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        padding: .6rem 1.1rem;
+        border-radius: 8px;
+        color: var(--bm-primary-text);
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    /* A fixed stage with a marked centre, so "the pin slipped off its anchor" is visible rather
+       than something you have to take on faith. */
+    .pin-stage { position: relative; min-height: 11rem; }
+
+    .pin {
+        top: 50%;
+        left: 50%;
+        width: 2.5rem;
+        height: 2.5rem;
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+</style>
+
 <style>
     .focus-input {
         width: 15rem;
@@ -163,6 +278,7 @@
 @code {
     private readonly List<string> _events = [];
 
+    private bool _pinned;
     private bool _panning;
     private BmPoint _panOffset = new();
     private BmPoint _panVelocity = new();
@@ -321,6 +437,54 @@
                     _events.RemoveRange(0, _events.Count - 8);
                 StateHasChanged();
             }
+        }
+        """;
+
+    private const string _propagationCode = """
+        @using Bit.Bmotion
+
+        @* Default: pointer gestures bubble, so pressing the button also presses the card. *@
+        <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+            <div class="card">
+                <Bmotion WhileTap="Bm.To(scale: 0.88)">
+                    <button type="button">Press me</button>
+                </Bmotion>
+            </div>
+        </Bmotion>
+
+        @* GesturePropagation="false" keeps the press to the button - the tap/pan counterpart
+           of DragPropagation. Hover is unaffected: pointerenter/leave never bubbled. *@
+        <Bmotion WhileTap="Bm.To(scale: 0.96, rotate: -1)">
+            <div class="card">
+                <Bmotion WhileTap="Bm.To(scale: 0.88)" GesturePropagation="false">
+                    <button type="button">Press me</button>
+                </Bmotion>
+            </div>
+        </Bmotion>
+        """;
+
+    private const string _templateCode = """
+        @using Bit.Bmotion
+
+        <style>
+            /* Centred on its own anchor. An animated transform would overwrite this... */
+            .pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        </style>
+
+        @* ...so move it into the template, where it is re-applied on every frame in front of
+           whatever the animation composed. The template receives the element's live transform
+           components and the string Bmotion would otherwise have written. *@
+        <Bmotion Animate="@(_pinned ? Bm.To(scale: 1.6) : Bm.To(scale: 1))"
+                 TransformTemplate="@((_, generated) => $"translate(-50%, -50%) {generated}")"
+                 Transition="Bm.Spring(stiffness: 250, damping: 18)">
+            <div class="pin" />
+        </Bmotion>
+
+        @* It also reorders: CSS applies transforms right to left, so this rotates first. *@
+        @* TransformTemplate="@((c, _) => $"rotate({c.GetValueOrDefault("rotate")}deg) translateX({c.GetValueOrDefault("x")}px)")" *@
+
+        @code {
+            private bool _pinned;
         }
         """;
 }

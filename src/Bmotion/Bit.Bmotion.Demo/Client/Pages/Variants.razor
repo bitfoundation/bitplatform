@@ -23,7 +23,7 @@
     </p>
 
     <div class="demo-row">
-        <div class="demo-card stack">
+        <div class="demo-card">
             <Bmotion Variants="_containerVariants"
                     InitialState="hidden"
                     State='@(_visible ? "visible" : "hidden")'
@@ -59,8 +59,16 @@
         transition via <code>Bm.To(..., transition: …)</code>, which is how the rows below land on
         a spring while the container itself simply fades.
     </p>
+    <p>
+        <code>when: BmWhen.BeforeChildren</code> is the same idea without the magic number: instead
+        of guessing a <code>delayChildren</code> that happens to match the container's duration, the
+        children are held back <em>by</em> that duration - and stay correct when you change it.
+        The right-hand card is the same cascade ordered that way, and the middle one has one row cut
+        out of the cascade entirely with <code>Inherit="false"</code>.
+    </p>
     <div class="demo-row">
-        <div class="demo-card">
+        <div class="demo-card stack">
+            <span class="demo-label">delayChildren: 0.2</span>
             <Bmotion Variants="_containerVariants"
                     InitialState="hidden"
                     State='@(_visible2 ? "visible" : "hidden")'
@@ -71,6 +79,112 @@
                         <Bmotion Variants="_itemVariants">
                             <div class="box box-sm" />
                         </Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">one row opts out</span>
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(staggerChildren: 0.12)">
+                <div class="variant-boxes">
+                    <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
+                    @* Ignores the cascade: it plays its own animation, once, on mount. *@
+                    <Bmotion Inherit="false"
+                            Initial="Bm.To(opacity: 0.25)"
+                            Animate="Bm.To(opacity: 1)">
+                        <div class="box box-sm box-muted" />
+                    </Bmotion>
+                    <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
+                    <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">when: BeforeChildren</span>
+            <Bmotion Variants="_containerVariants"
+                    InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmWhen.BeforeChildren)">
+                <div class="variant-boxes">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <Bmotion Variants="_itemVariants">
+                            <div class="box box-sm" />
+                        </Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">when: AfterChildren</span>
+            <Bmotion Variants="_fadeVariants"
+                    InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmWhen.AfterChildren)">
+                <div class="variant-boxes">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <Bmotion Variants="_itemVariants">
+                            <div class="box box-sm" />
+                        </Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <p>
+        <code>staggerChildren</code> always runs first-to-last. <strong>childStagger</strong> takes
+        the same <code>Bm.Stagger</code> generator the programmatic API uses, so the cascade can
+        radiate from the last element, from the centre, or across a grid by Euclidean distance -
+        which needs to know how many children there are, so children claim their place during the
+        render pass rather than after it.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">from: First (default)</span>
+            <Bmotion Variants="_containerVariants" InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09))">
+                <div class="variant-boxes">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">from: Last</span>
+            <Bmotion Variants="_containerVariants" InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Last))">
+                <div class="variant-boxes">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
+                    }
+                </div>
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">from: Center</span>
+            <Bmotion Variants="_containerVariants" InitialState="hidden"
+                    State='@(_visible2 ? "visible" : "hidden")'
+                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Center))">
+                <div class="variant-boxes">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <Bmotion Variants="_itemVariants"><div class="box box-sm" /></Bmotion>
                     }
                 </div>
             </Bmotion>
@@ -166,6 +280,13 @@
 
     .variant-boxes { display: flex; gap: .5rem; }
 
+    /* The row that sits out the cascade. Drawn flat rather than gradient-filled so it reads as
+       "not part of this group" before it moves at all. */
+    .box-muted {
+        background: var(--bm-track);
+        border: 1px dashed var(--bm-accent-line);
+    }
+
     /* A fixed stage the fanned cards overlap inside: they start stacked, so the container has to
        hold its size rather than track the widest arrangement. */
     .fan-stage { position: relative; width: 100%; height: 8rem; }
@@ -219,6 +340,14 @@
     {
         ["hidden"]  = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
+    };
+
+    // The AfterChildren container animates last, so it needs a state change you can still see once
+    // its contents have already arrived - a fade alone would be invisible behind opaque children.
+    private readonly BmVariants _fadeVariants = new()
+    {
+        ["hidden"]  = Bm.To(opacity: 0.15, scale: 0.94),
+        ["visible"] = Bm.To(opacity: 1, scale: 1),
     };
 
     private readonly BmVariants _itemVariants = new()
@@ -333,6 +462,54 @@
                     </Bmotion>
                 }
             </div>
+        </Bmotion>
+
+        @* when: BeforeChildren says the same thing without the magic number - the children are
+           held back BY the container's own duration, so changing 0.5 keeps the order intact. *@
+        <Bmotion Variants="_containerVariants"
+                 InitialState="hidden"
+                 State='@(_visible ? "visible" : "hidden")'
+                 Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmWhen.BeforeChildren)">
+            <div style="display:flex;gap:.5rem">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <Bmotion Variants="_itemVariants"><div class="box" /></Bmotion>
+                }
+            </div>
+        </Bmotion>
+
+        @* AfterChildren is the mirror image: the container waits for the whole cascade - the last
+           child's stagger slot plus that child's own transition - and only then animates itself. *@
+        <Bmotion Variants="_containerVariants"
+                 InitialState="hidden"
+                 State='@(_visible ? "visible" : "hidden")'
+                 Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmWhen.AfterChildren)">
+            <div style="display:flex;gap:.5rem">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <Bmotion Variants="_itemVariants"><div class="box" /></Bmotion>
+                }
+            </div>
+        </Bmotion>
+
+        @* childStagger takes the full Bm.Stagger generator, so the cascade doesn't have to run
+           first-to-last: it can radiate from the last element, the centre, or across a grid. *@
+        <Bmotion Variants="_containerVariants"
+                 InitialState="hidden"
+                 State='@(_visible ? "visible" : "hidden")'
+                 Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Center))">
+            <div style="display:flex;gap:.5rem">
+                @for (int i = 0; i < 5; i++)
+                {
+                    <Bmotion Variants="_itemVariants"><div class="box" /></Bmotion>
+                }
+            </div>
+        </Bmotion>
+
+        @* Inherit="false" cuts one element out of the cascade: it stops reacting to the label
+           coming down and plays only what its own Animate says. *@
+        <Bmotion Inherit="false" Initial="Bm.To(opacity: 0.25)" Animate="Bm.To(opacity: 1)">
+            <div class="box" />
         </Bmotion>
 
         @code {

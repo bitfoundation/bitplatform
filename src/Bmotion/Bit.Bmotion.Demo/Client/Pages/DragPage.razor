@@ -114,13 +114,57 @@
             <Bmotion Drag="true"
                     DragDirectionLock="true"
                     DragConstraints="BmDragConstraints.Parent()"
+                    OnDirectionLock="@(axis => _lockedAxis = axis.ToString())"
                     WhileDrag="Bm.To(scale: 1.1)">
                 <div class="box box-sm grabbable" />
             </Bmotion>
+            <span class="stage-note bottom">locked axis: @_lockedAxis</span>
         </div>
     </div>
 
     <CodeSnippet Code="@_momentumCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Snapping on release</h2>
+    <p>
+        Momentum answers <em>how fast</em> the element stops; <strong>modifyTarget</strong> answers
+        <em>where</em>. A <code>DragTransition</code> written as an inertia hands the projected
+        resting position to your function and uses whatever comes back, which is the whole of
+        carousel paging and grid snapping. <strong>Bm.SnapTo(step)</strong> rounds to a grid,
+        <strong>Bm.SnapTo([&hellip;])</strong> picks the nearest of a fixed set of stops. With one
+        set, even a slow release still travels to the nearest stop - and the snap is applied before
+        the constraints, so it can never land outside them.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card drag-stage">
+            <span class="stage-note">Grid &middot; settles every 60 px</span>
+            <div class="snap-grid" aria-hidden="true"></div>
+            <Bmotion Drag="BmDrag.X"
+                    DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+                    DragElastic="BmDragElastic.None"
+                    DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(60))"
+                    WhileDrag="Bm.To(scale: 1.15)">
+                <div class="box box-sm drag-centred-sm" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card drag-stage">
+            <span class="stage-note">Pages &middot; snaps to 1 of 3</span>
+            <Bmotion Drag="BmDrag.X"
+                    DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+                    DragElastic="0.15"
+                    DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))"
+                    WhileDrag="Bm.To(scale: 1.05)">
+                <div class="snap-pages">
+                    <span>1</span><span>2</span><span>3</span>
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_snapCode" />
 </div>
 
 <div class="demo-section">
@@ -309,10 +353,44 @@
         border-radius: 10px;
         background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
     }
+
+    /* The stops the snap demo lands on, drawn so the settle is visibly ON something. */
+    .snap-grid {
+        top: 50%;
+        left: 50%;
+        width: 15.5rem;
+        height: 1px;
+        position: absolute;
+        transform: translate(-50%, -50%);
+        background: repeating-linear-gradient(to right,
+            var(--bm-accent-line) 0 1px, transparent 1px 3.75rem);
+    }
+
+    .snap-pages {
+        gap: .5rem;
+        display: flex;
+        cursor: grab;
+        padding: .75rem;
+        border-radius: 10px;
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .snap-pages span {
+        width: 5rem;
+        display: flex;
+        height: 3.5rem;
+        color: var(--bm-primary-text);
+        border-radius: 8px;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
 </style>
 
 @code {
     private string _dragInfo = "Drag the box";
+    private string _lockedAxis = "none yet";
     private readonly BmDragControls _thumbControls = new();
 
     private const string _dragCode = """
@@ -392,12 +470,46 @@
             <div class="box" />
         </Bmotion>
 
-        @* 3 - Direction lock: whichever axis the gesture starts on wins for the rest of it. *@
+        @* 3 - Direction lock: whichever axis the gesture starts on wins for the rest of it.
+           OnDirectionLock reports that decision the moment it is made. *@
         <Bmotion Drag="true"
                  DragDirectionLock="true"
-                 DragConstraints="BmDragConstraints.Parent()">
+                 DragConstraints="BmDragConstraints.Parent()"
+                 OnDirectionLock="@(axis => _lockedAxis = axis.ToString())">
             <div class="box" />
         </Bmotion>
+
+        @code {
+            private string _lockedAxis = "none yet";
+        }
+        """;
+
+    private const string _snapCode = """
+        @using Bit.Bmotion
+
+        @* A DragTransition written as an inertia configures the momentum itself - including
+           modifyTarget, which decides WHERE the coast comes to rest. *@
+
+        @* 1 - Grid: round the projected resting position to the nearest 60px. *@
+        <Bmotion Drag="BmDrag.X"
+                 DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+                 DragElastic="BmDragElastic.None"
+                 DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(60))">
+            <div class="box" />
+        </Bmotion>
+
+        @* 2 - Pages: snap to whichever of the fixed stops the fling was heading for. *@
+        <Bmotion Drag="BmDrag.X"
+                 DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+                 DragElastic="0.15"
+                 DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))">
+            <div class="pages">
+                <span>1</span><span>2</span><span>3</span>
+            </div>
+        </Bmotion>
+
+        @* modifyTarget takes any function - Bm.SnapTo is just the common shape:
+           DragTransition="Bm.Inertia(modifyTarget: v => v < -100 ? -200 : 0)" *@
         """;
 
     private const string _handleControlsCode = """

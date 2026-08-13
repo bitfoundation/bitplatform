@@ -10,6 +10,13 @@ public enum BmLayoutMode
     Full,
     /// <summary>Animate position only - the cheapest, always-distortion-free option.</summary>
     Position,
+    /// <summary>
+    /// Animate size only: the element snaps to its new position and scales from its old size, with
+    /// the same child counter-scaling and border-radius correction as <see cref="Full"/>. Use it
+    /// when the element's box grows or shrinks in place and the move itself shouldn't be animated
+    /// (an accordion panel, a resizing card).
+    /// </summary>
+    Size,
 }
 
 /// <summary>
@@ -17,6 +24,7 @@ public enum BmLayoutMode
 /// <code>
 /// Layout="true"                 // animate position + size, with child counter-scale + radius correction
 /// Layout="BmLayout.Position"    // animate position only (cheapest, no scaling at all)
+/// Layout="BmLayout.Size"        // animate size only (the element snaps to its new position)
 /// </code>
 /// </summary>
 public readonly struct BmLayout : IEquatable<BmLayout>
@@ -41,6 +49,9 @@ public readonly struct BmLayout : IEquatable<BmLayout>
 
     /// <summary>Animate position only.</summary>
     public static BmLayout Position => new(true, BmLayoutMode.Position);
+
+    /// <summary>Animate size only.</summary>
+    public static BmLayout Size => new(true, BmLayoutMode.Size);
 
     public static implicit operator BmLayout(bool enabled) => enabled ? Full : None;
 

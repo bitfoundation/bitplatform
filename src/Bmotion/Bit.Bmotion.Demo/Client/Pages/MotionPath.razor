@@ -9,8 +9,58 @@
     send an element <strong>along</strong> it, <strong>draw</strong> it stroke by stroke, and
     <strong>morph</strong> it into another shape. All three are ordinary properties on
     <code>Bm.To</code> - no separate SVG API, and the element you animate is the plain markup you
-    already wrote.
+    already wrote. A fourth needs no path at all: <strong>Bm.Arc</strong> curves the line between
+    wherever the element is and wherever it is going.
 </p>
+
+<div class="demo-section">
+    <h2>Curving the journey</h2>
+    <p>
+        Animating <code>x</code> and <code>y</code> together moves an element in a straight line,
+        which is exactly what nothing in the physical world does. <strong>Bm.Arc</strong> bends that
+        line: pass it as a transition's <code>path</code> and the two axes are driven together along
+        a curve instead of independently. There is no <code>d</code> string to write - the curve is
+        generated from the two endpoints, so it survives either of them moving.
+    </p>
+    <p>
+        <strong>strength</strong> sets how far it bends (as a fraction of the distance travelled),
+        <strong>peak</strong> moves where it crests, <strong>direction</strong> picks the side, and
+        <strong>rotate</strong> turns the element to follow the tangent - which is the difference
+        between a box sliding along a curve and a card being thrown.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">straight line</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut)">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">arc &middot; strength 0.6</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+                <div class="box box-sm arc-start" />
+            </Bmotion>
+        </div>
+
+        <div class="demo-card stack arc-stage">
+            <span class="demo-label">arc &middot; rotate 1</span>
+            <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+                <div class="box box-sm arc-start arc-card">&#9992;</div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _thrown = !_thrown)">@(_thrown ? "Send back" : "Throw")</button>
+    </div>
+
+    <CodeSnippet Code="@_arcCode" />
+</div>
 
 <div class="demo-section">
     <h2>Travel along a path</h2>
@@ -144,11 +194,19 @@
     }
 
     .draw-svg { width: 100%; max-width: 200px; height: 120px; }
+
+    /* The arc samples travel 150px right and 40px down, so the stage has to hold that journey
+       without reflowing - the box starts pinned to the top-left of the space it has to cross. */
+    .arc-stage { justify-content: flex-start; min-height: 11rem; }
+    .arc-start { align-self: flex-start; }
+
+    .arc-card { font-size: 1.25rem; color: #fff; }
 </style>
 
 @code {
     private bool _on;
     private bool _morph;
+    private bool _thrown;
 
     private static readonly BmProps _initial =
         Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
@@ -221,6 +279,37 @@
             // has a counterpart to travel to. Mismatched paths snap instead of morphing.
             static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 …");
             static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 …");
+        }
+        """;
+
+    private const string _arcCode = """
+        @using Bit.Bmotion
+
+        @* Straight line: x and y are interpolated independently, which is the only
+           thing two separate interpolations can describe. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut)">
+            <div class="box" />
+        </Bmotion>
+
+        @* Same target, curved: `path` couples the two axes onto one journey. No `d`
+           string - the curve is derived from the two endpoints. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+            <div class="box" />
+        </Bmotion>
+
+        @* rotate: 1 turns the element along the tangent, so it banks into the curve. *@
+        <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
+                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+            <div class="box">&#9992;</div>
+        </Bmotion>
+
+        @* The timing is still the transition's, so a spring on a path arcs AND overshoots:
+           Bm.Spring(bounce: 0.4, duration: 0.9, path: Bm.Arc(strength: 0.8)) *@
+
+        @code {
+            private bool _thrown;
         }
         """;
 }

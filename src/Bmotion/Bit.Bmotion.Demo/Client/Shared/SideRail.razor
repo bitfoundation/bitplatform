@@ -62,7 +62,7 @@
             if (items.Length == 0) return;
 
             _items = items;
-            await JS.InvokeVoidAsync("bmObserveSections", _selfRef);
+            await JS.InvokeVoidAsync("bmObserveSections", _selfRef, items.Select(i => i.Id));
             StateHasChanged();
         }
         catch
