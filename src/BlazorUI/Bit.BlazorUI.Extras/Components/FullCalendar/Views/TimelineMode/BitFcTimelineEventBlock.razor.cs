@@ -133,16 +133,20 @@ public partial class BitFcTimelineEventBlock
             return Task.CompletedTask;
 
         // Read-only can be switched on mid-gesture: the handle leaves the DOM, but the document-level
-        // pointer listeners keep running. Drop the preview so the block snaps back to the stored times.
+        // pointer listeners keep running. Cancel the whole gesture (not just the preview) so the block
+        // snaps back to the stored times and stays there - keeping the resize alive would let it pick
+        // up again, and commit on release, if read-only were switched back off before the pointer up.
         if (State.ReadOnly)
         {
-            if (_previewStart.HasValue || _previewEnd.HasValue)
-            {
-                _previewStart = null;
-                _previewEnd = null;
-                return InvokeAsync(StateHasChanged);
-            }
-            return Task.CompletedTask;
+            _previewStart = null;
+            _previewEnd = null;
+            _isResizing = false;
+            _resizeBaseEvent = null;
+            _resizeDirection = null;
+            // The pointer is still down: swallow the click its release produces so cancelling a resize
+            // doesn't select the event.
+            _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
+            return InvokeAsync(StateHasChanged);
         }
 
         // Inside the dead-zone treat the gesture as "no change" so users can press without

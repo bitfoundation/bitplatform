@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -169,6 +170,32 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFullCalendarShouldCloseAnOpenEditDialogWhenReadOnlyIsTurnedOn()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        component.Find(".bit-bfc-event-badge").Click();
+        // Details footer while editable: Edit, Delete, Close.
+        component.FindAll(".bit-bfc-dialog-footer button")[0].Click();
+        // The edit dialog opens on top of the details dialog, and it owns the only Save button.
+        Assert.AreEqual(2, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Count);
+
+        // Read-only arrives while the form is open: every entry point only checks read-only when it
+        // opens the dialog, so the open form has to close itself instead of staying live.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Count);
+        Assert.AreEqual(0, changes.Count);
+    }
+
+    [TestMethod]
     public void BitFullCalendarReadOnlyShouldStripTheHourSlotButtonSemantics()
     {
         var editable = RenderComponent<BitFullCalendar>(parameters =>
@@ -213,6 +240,84 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(0, readOnly.FindAll(".bit-bfc-resize-handle").Count);
         Assert.AreEqual("false", readOnly.Find(".bit-bfc-event-block").GetAttribute("draggable"));
+    }
+
+    [TestMethod]
+    public async Task BitFullCalendarShouldNotResumeADayResizeThatCrossedAReadOnlySwitch()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        var block = component.FindComponent<BitFcEventBlock>().Instance;
+        await component.InvokeAsync(() => block.OnResizeStart("bottom"));
+        await component.InvokeAsync(() => block.OnResizeMove("bottom", 60));
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        // Read-only lands mid-gesture: the preview goes away and the gesture is cancelled outright.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.AreSame(block, component.FindComponent<BitFcEventBlock>().Instance);
+        await component.InvokeAsync(() => block.OnResizeMove("bottom", 90));
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        // Read-only switched back off before the pointer is released: the cancelled gesture must not
+        // pick up again, so neither the remaining moves nor the release may change the event.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+        await component.InvokeAsync(() => block.OnResizeMove("bottom", 120));
+        await component.InvokeAsync(block.OnResizeEnd);
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        // A brand new gesture still resizes: cancelling must not wedge the block.
+        await component.InvokeAsync(() => block.OnResizeStart("bottom"));
+        await component.InvokeAsync(() => block.OnResizeMove("bottom", 60));
+        await component.InvokeAsync(block.OnResizeEnd);
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
+    }
+
+    [TestMethod]
+    public async Task BitFullCalendarShouldNotResumeATimelineResizeThatCrossedAReadOnlySwitch()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+        });
+
+        var block = component.FindComponent<BitFcTimelineEventBlock>().Instance;
+        await component.InvokeAsync(() => block.OnResizeStart("end"));
+        await component.InvokeAsync(() => block.OnResizeMove("end", 200));
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.AreSame(block, component.FindComponent<BitFcTimelineEventBlock>().Instance);
+        await component.InvokeAsync(() => block.OnResizeMove("end", 240));
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+        await component.InvokeAsync(() => block.OnResizeMove("end", 280));
+        await component.InvokeAsync(block.OnResizeEnd);
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
+
+        await component.InvokeAsync(() => block.OnResizeStart("end"));
+        await component.InvokeAsync(() => block.OnResizeMove("end", 200));
+        await component.InvokeAsync(block.OnResizeEnd);
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
     }
 
     [TestMethod]
