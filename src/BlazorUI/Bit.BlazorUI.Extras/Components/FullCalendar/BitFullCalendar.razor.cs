@@ -154,6 +154,17 @@ public partial class BitFullCalendar : IDisposable
     [Parameter] public EventCallback<BitFullCalendarView> OnViewChange { get; set; }
 
     /// <summary>
+    /// When <c>true</c>, the calendar becomes presentation-only: the "Add Event" button and the
+    /// per-cell add affordances are hidden, events can no longer be dragged or resized, and the
+    /// edit/delete actions are removed from the event details dialog.
+    /// <para>
+    /// Everything that does not modify events keeps working - date navigation, view and mode
+    /// switching, filtering, the settings panel, and opening an event to read its details.
+    /// </para>
+    /// </summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
     /// Resources displayed as rows in the resource timeline view. When <c>null</c> or empty,
     /// the resource timeline tab is hidden from the header. Each event's
     /// <see cref="BitFullCalendarEvent.Resource"/> is matched against the resource <c>Id</c>.
@@ -189,6 +200,20 @@ public partial class BitFullCalendar : IDisposable
     /// </para>
     /// </summary>
     [Parameter, TwoWayBound] public BitFullCalendarView View { get; set; } = BitFullCalendarView.Month;
+
+    /// <summary>
+    /// The views the calendar offers, in the order the view tabs render them. When <c>null</c> or
+    /// empty, every view (day, week, month, year, agenda) is offered in that order. Unknown and
+    /// repeated entries are ignored.
+    /// <para>
+    /// Excluded views are unreachable: the view tabs omit them, and <see cref="View"/>,
+    /// <see cref="DefaultView"/>, and the indirect navigation paths (for example selecting a month
+    /// from the year overview) are clamped into the supplied set. The tab strip is hidden entirely
+    /// when a single view is left. Timeline mode still renders only the day, week, and month
+    /// layouts, so it is unavailable when none of them is listed here.
+    /// </para>
+    /// </summary>
+    [Parameter] public IReadOnlyList<BitFullCalendarView>? Views { get; set; }
 
     /// <summary>
     /// Optional template for customizing event rendering in the week view.
@@ -300,9 +325,12 @@ public partial class BitFullCalendar : IDisposable
                 State.SyncEvents([]);
 
             State.SyncResources(Resources);
+            State.SyncViews(Views);
+            State.SetReadOnly(ReadOnly);
 
-            // Apply the view, mode, and date after resources are synced: Timeline mode requires
-            // Resources to be populated to take effect.
+            // Apply the view, mode, and date after resources and views are synced: Timeline mode
+            // requires Resources to be populated to take effect, and both the mode and the view are
+            // clamped into the allowed view set.
             ApplyBoundState();
 
             ApplySettings();
@@ -328,15 +356,17 @@ public partial class BitFullCalendar : IDisposable
         if (ModeHasBeenSet)
         {
             // Controlled: keep the state aligned with the bound Mode on every parameter change.
-            // State.SetMode falls back to Event when Timeline is requested without resources.
+            // State.SetMode falls back to Event when Timeline is requested without the resources or
+            // the timeline-capable views it needs.
             State.SetMode(Mode);
         }
         else if (!_defaultModeApplied && DefaultMode.HasValue)
         {
-            // Timeline default needs at least one resource to take effect; defer until resources are
-            // available so a later Resources assignment is not permanently ignored.
+            // Timeline default needs at least one resource and one timeline-capable view to take
+            // effect; defer until they are available so a later Resources/Views assignment is not
+            // permanently ignored.
             var canApplyDefaultMode = DefaultMode.Value != BitFullCalendarMode.Timeline
-                || Resources is { Count: > 0 };
+                || State.IsTimelineModeAvailable;
             if (canApplyDefaultMode)
             {
                 _defaultModeApplied = true;

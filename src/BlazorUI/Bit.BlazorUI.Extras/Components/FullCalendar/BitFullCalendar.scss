@@ -2015,6 +2015,28 @@ button.bit-bfc-cell-add-hint:focus-visible {
     left: 8px;
 }
 
+/* ===== Read-only mode ===== */
+/* The time-grid slots and timeline cells are add targets only, so a read-only calendar must not
+   advertise them as clickable. The month cell keeps its pointer affordance because clicking it
+   still selects the date. */
+.bit-bfc-readonly .bit-bfc-hour-row,
+.bit-bfc-readonly .bit-bfc-tl-cell {
+    cursor: default;
+}
+
+.bit-bfc-readonly .bit-bfc-hour-row:hover,
+.bit-bfc-readonly .bit-bfc-tl-cell:hover {
+    background: none;
+}
+
+/* Events stay clickable (they open the read-only details dialog) but are no longer draggable, so
+   the grab cursor would promise a gesture that does nothing. */
+.bit-bfc-readonly .bit-bfc-event-badge,
+.bit-bfc-readonly .bit-bfc-event-block,
+.bit-bfc-readonly .bit-bfc-timeline-event {
+    cursor: pointer;
+}
+
 /* ===== Scrollbar styling ===== */
 .bit-bfc-body ::-webkit-scrollbar,
 .bit-bfc-week-scroll::-webkit-scrollbar {

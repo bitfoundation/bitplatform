@@ -62,7 +62,9 @@ public partial class BitFcEventBlock
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_resizeInitialized)
+        // A read-only block renders no resize handles, so there is nothing to bind the JS listeners
+        // to. Leaving _resizeInitialized unset means turning read-only back off re-registers them.
+        if (State.ReadOnly || _resizeInitialized)
             return;
 
         try

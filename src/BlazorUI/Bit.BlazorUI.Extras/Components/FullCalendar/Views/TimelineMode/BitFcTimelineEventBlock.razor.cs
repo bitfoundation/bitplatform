@@ -66,7 +66,9 @@ public partial class BitFcTimelineEventBlock
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (PixelsPerMinute <= 0) return;
+        // A read-only block renders no resize handles, so there is nothing to bind the JS listeners
+        // to. The initialized flags stay unset so turning read-only back off re-registers them.
+        if (PixelsPerMinute <= 0 || State.ReadOnly) return;
         if (_startResizeInitialized && _endResizeInitialized) return;
 
         try

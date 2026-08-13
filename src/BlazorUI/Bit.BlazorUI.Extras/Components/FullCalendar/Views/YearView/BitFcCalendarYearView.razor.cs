@@ -13,7 +13,11 @@ public partial class BitFcCalendarYearView
     private void GoToMonth(DateTime month)
     {
         State.SetSelectedDate(month);
-        State.SetView(BitFullCalendarView.Month);
+
+        // Drilling into a month is an indirect route to the month view; when the consumer excluded
+        // it, navigating the date is all this does rather than landing on some other view.
+        if (State.IsViewAvailable(BitFullCalendarView.Month))
+            State.SetView(BitFullCalendarView.Month);
     }
 
     private void ShowEventsForDay(DateTime date, List<BitFullCalendarEvent> events)
