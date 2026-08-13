@@ -53,8 +53,10 @@ public partial class BitAccentColorHead : ComponentBase
     [Parameter] public BitAccentColorConfig? Config { get; set; }
 
     /// <summary>
-    /// Optional CSP nonce for the emitted inline script, to satisfy a script-src 'nonce-…'
-    /// Content-Security-Policy.
+    /// Optional CSP nonce for the emitted inline script and the emitted palette style element, to
+    /// satisfy a script-src / style-src 'nonce-…' Content-Security-Policy. The inline script stamps
+    /// the same nonce onto the style element it injects from the localStorage snapshot, so the whole
+    /// first-paint chain passes under one nonce.
     /// </summary>
     [Parameter] public string? Nonce { get; set; }
 

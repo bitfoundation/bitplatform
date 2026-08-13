@@ -11,11 +11,11 @@
         }
         else
         {
-            <style>@((MarkupString)BitAccentColorSsr.BuildStaticCss(_config.Accents))</style>
+            <style nonce="@Nonce">@((MarkupString)BitAccentColorSsr.BuildStaticCss(_config.Accents))</style>
         }
     }
     else if (_prerenderCss is not null)
     {
-        <style id="@BitAccentColorNames.StyleElementId">@((MarkupString)_prerenderCss)</style>
+        <style id="@BitAccentColorNames.StyleElementId" nonce="@Nonce">@((MarkupString)_prerenderCss)</style>
     }
 }

@@ -427,32 +427,40 @@ public partial class BitAccentColorSwitcherDemo
 private string? changedAccentColor;";
 
     private readonly string example6RazorCode = @"
-@* In the host page (e.g. App.razor of a Blazor Web App): *@
+@* In the host page (e.g. App.razor of a Blazor Web App). ONE BitAccentColorHead goes into <head>,
+   after BitThemeSsr.InlineHeadScript and before the stylesheets; the three usages below are
+   alternatives, one per first-paint setup - pick the one matching the configured strategy. Each
+   emits the inline script that re-resolves the accent from localStorage / the cookie pre-paint -
+   which is what keeps the accent correct when the HTML comes out of a cache that served it to a
+   visitor whose cookie never reached the server - plus the palette CSS that strategy needs. The
+   configuration comes from the BitAccentColorConfig registered in DI (see the C# tab); a Config
+   parameter would override it. *@
 
 <head>
-    @* After BitThemeSsr.InlineHeadScript and before the stylesheets. Emits the inline script that
-       re-resolves the accent from localStorage / the cookie pre-paint - which is what keeps the
-       accent correct when the HTML comes out of a cache that served it to a visitor whose cookie
-       never reached the server - plus the palette CSS. The configuration comes from the
-       BitAccentColorConfig registered in DI (see the C# tab); a Config parameter would override it.
-       In StaticCss mode with no StylesheetHref, the whole all-accents stylesheet is inlined; no
+    @* StaticCss strategy, inlined: the whole all-accents stylesheet goes into the response; no
        endpoint needed. *@
     <BitAccentColorHead />
+    ...
+</head>
 
-    @* Or reference the stylesheet as a long-cached asset instead of inlining it (see the C# tab;
-       the library version is appended as a cache-buster automatically). Keep the href root-relative:
-       this sits before any <base>, so a relative href would resolve against the current page path
-       and 404 on every non-root route. *@
+<head>
+    @* StaticCss strategy, as a long-cached asset instead of inlined (see the C# tab; the library
+       version is appended as a cache-buster automatically). Keep the href root-relative: this sits
+       before any <base>, so a relative href would resolve against the current page path and 404 on
+       every non-root route. *@
     <BitAccentColorHead StylesheetHref=""/accent-colors.css"" />
+    ...
+</head>
 
+<head>
     @* StoredCss strategy: no stylesheet at all; pass the accent cookie so origin-rendered responses
-       paint immediately (cached responses are covered by the localStorage snapshot): *@
+       paint immediately (cached responses are covered by the localStorage snapshot). *@
     <BitAccentColorHead PersistedAccent=""@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]"" />
     ...
 </head>
 
-@* And wherever the switcher renders (a layout, a settings page, ...) - it falls back to the same
-   DI-registered configuration: *@
+@* Independent of the choice above: wherever the switcher renders (a layout, a settings page, ...) -
+   it falls back to the same DI-registered configuration: *@
 <BitAccentColorSwitcher />";
 
     private readonly string example6CsharpCode = @"

@@ -335,6 +335,11 @@ public static class BitAccentColorSsr
         // persisted token and this library version (see Version), and lands through
         // textContent, which cannot break out into markup; the '<' scan on top of that is cheap
         // defense-in-depth.
+        // The injected style element carries the nonce of the script element injecting it, read off
+        // document.currentScript rather than baked in here - a nonce is per-response, so baking it
+        // into this body would make the cache above grow by one full script per request. Browsers
+        // hide the nonce content attribute, hence the IDL property first and getAttribute only as a
+        // fallback for engines predating it.
         return
             "(function(){var r=document.documentElement," +
             $"k='{storageKey}'," +
@@ -351,7 +356,8 @@ public static class BitAccentColorSsr
             (readLocalStorage
                 ? "try{var s=localStorage.getItem(sk);if(s){var o=JSON.parse(s);" +
                   $"if(o&&o.a===v&&o.v==='{Version}'&&typeof o.css==='string'&&o.css.indexOf('<')<0){{" +
-                  $"var el=document.createElement('style');el.id='{styleElementId}';el.textContent=o.css;document.head.appendChild(el);}}}}}}catch(e){{}}"
+                  "var cs=document.currentScript,n=cs&&(cs.nonce||cs.getAttribute('nonce'));" +
+                  $"var el=document.createElement('style');el.id='{styleElementId}';if(n)el.setAttribute('nonce',n);el.textContent=o.css;document.head.appendChild(el);}}}}}}catch(e){{}}"
                 : string.Empty) +
             "})();";
     }

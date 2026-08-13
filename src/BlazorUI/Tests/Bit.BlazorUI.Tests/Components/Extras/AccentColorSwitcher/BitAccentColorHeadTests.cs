@@ -122,6 +122,40 @@ public class BitAccentColorHeadTests : BunitTestContext
 
         StringAssert.Contains(component.Markup, "<script nonce=\"abc123\">", StringComparison.Ordinal,
             "A CSP-protected host can only run the inline script if the nonce reaches it.");
+
+        Assert.AreEqual("abc123", component.Find("style").GetAttribute("nonce"),
+            "The palette stylesheet needs the nonce as much as the script does - a style-src 'nonce-...' policy blocks it otherwise, and the page paints the packaged palette.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorHeadShouldEmitTheNonceOnThePrerenderStyle()
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
+            });
+            parameters.Add(p => p.PersistedAccent, "8764b8");
+            parameters.Add(p => p.Nonce, "abc123");
+        });
+
+        Assert.AreEqual("abc123", component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]").GetAttribute("nonce"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorHeadShouldEmitNoNonceAttributeWhenNoNonceIsGiven()
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+            });
+        });
+
+        Assert.IsFalse(component.Markup.Contains("nonce", StringComparison.Ordinal),
+            "Apps without a CSP must not get an empty nonce attribute - an empty nonce is not a wildcard, it is a value that matches nothing.");
     }
 
     [TestMethod]

@@ -134,10 +134,18 @@
             // (duplicates are possible when a server-emitted style and a script-injected snapshot
             // met in one document) and append one fresh element. textContent keeps the payload
             // inert - it is never parsed as markup.
+            // The element being replaced carries the CSP nonce the host page stamped on it (see
+            // BitAccentColorHead.Nonce), so carry it over - dropping it would get the replacement
+            // blocked under a style-src 'nonce-...' policy on the first accent pick. Browsers hide
+            // the nonce content attribute, hence the IDL property first.
+            const existing = document.getElementById(STYLE_ELEMENT_ID);
+            const nonce = (existing && ((existing as HTMLElement).nonce || existing.getAttribute('nonce'))) || '';
+
             AccentColor.removeStyleElements();
 
             const element = document.createElement('style');
             element.id = STYLE_ELEMENT_ID;
+            if (nonce) element.setAttribute('nonce', nonce);
             element.textContent = css;
             document.head.appendChild(element);
         }

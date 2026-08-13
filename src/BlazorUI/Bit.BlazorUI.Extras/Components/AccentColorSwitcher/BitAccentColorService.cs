@@ -386,7 +386,11 @@ public class BitAccentColorService : IDisposable
 
     public void Dispose()
     {
+        // Detached first: the handler is what starts a transition after this point, and a reapply
+        // racing the Dispose below would only find the gate already gone.
         _themeNotifications.ThemeChanged -= OnThemeChanged;
+
+        _transitionGate.Dispose();
 
         GC.SuppressFinalize(this);
     }
