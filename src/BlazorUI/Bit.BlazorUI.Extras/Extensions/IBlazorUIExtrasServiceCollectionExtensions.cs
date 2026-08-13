@@ -25,14 +25,20 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
         {
             services.TryAddSingleton<BitProModalService>();
             services.TryAddSingleton<BitMessageBoxService>();
-            services.TryAddSingleton<BitAccentColorService>();
         }
         else
         {
             services.TryAddScoped<BitProModalService>();
             services.TryAddScoped<BitMessageBoxService>();
-            services.TryAddScoped<BitAccentColorService>();
         }
+
+        // Never singleton, regardless of trySingleton: its constructor takes IJSRuntime,
+        // BitThemeManager and BitThemeNotifications, which AddBitBlazorUIServices registers as
+        // scoped. A singleton would capture the root scope's instances - in Blazor Hybrid a
+        // JS runtime that is never attached to any WebView - and either break interop silently or
+        // throw under scope validation. Scoped is also the lifetime the accent needs: one shared
+        // color per circuit/WebView, alive across every switcher instance.
+        services.TryAddScoped<BitAccentColorService>();
 
         services.TryAddScoped<BitExtraServices>();
 

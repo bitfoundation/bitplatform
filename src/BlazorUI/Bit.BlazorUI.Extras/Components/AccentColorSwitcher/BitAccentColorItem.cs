@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// An accent color offered by the <see cref="BitAccentColorSwitcher"/>.

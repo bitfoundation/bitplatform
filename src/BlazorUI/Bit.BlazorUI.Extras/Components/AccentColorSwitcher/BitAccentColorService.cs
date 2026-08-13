@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
@@ -36,9 +36,10 @@ public class BitAccentColorService : IDisposable
     private readonly SemaphoreSlim _transitionGate = new(1, 1);
 
     /// <summary>
-    /// Monotonic stamp of the latest requested transition. A transition that finds a newer stamp
-    /// once it holds <see cref="_transitionGate"/> abandons itself: the newer request is already
-    /// queued behind it and will apply the up-to-date accent and scheme.
+    /// Monotonic stamp of the latest accent-changing transition (a pick or a restore; a
+    /// scheme-switch reapply changes no accent state and does not stamp). A transition that finds a
+    /// newer stamp once it holds <see cref="_transitionGate"/> abandons itself: the newer request is
+    /// already queued behind it and will apply, persist and announce the up-to-date accent.
     /// </summary>
     private int _transitionVersion;
 
@@ -66,16 +67,23 @@ public class BitAccentColorService : IDisposable
     /// cookie while prerendering, so the prerendered markup already marks the right swatch as active
     /// instead of blinking from the default to the visitor's color once the client comes up. Paints
     /// nothing: the matching palette reaches the same response through the selected strategy's
-    /// first-paint machinery (see <see cref="BitAccentColorSsr"/>). A missing or unrecognized value
-    /// is ignored.
+    /// first-paint machinery (see <see cref="BitAccentColorSsr"/>). A missing or invalid value is
+    /// ignored.
     /// </summary>
+    /// <remarks>
+    /// The value is validated as plain hex rather than against the configured accents, because this
+    /// runs (from a layout's initialization) before any switcher has installed a custom accent list -
+    /// list-validating here would silently drop the seed of every custom-accent app. Matching
+    /// <see cref="ApplyAsync"/>'s off-list policy, a syntactically valid hex is trusted; it only
+    /// affects the visitor whose own cookie carried it.
+    /// </remarks>
     public void SeedFromPrerender(string? accent)
     {
         // The interactive pass has already read the authoritative store; letting a (possibly stale)
         // cascaded value overwrite it afterwards would undo a fresh pick.
         if (_initialized) return;
 
-        var normalized = Normalize(accent);
+        var normalized = Canonicalize(accent);
         if (normalized is null || normalized == ActiveAccent) return;
 
         ActiveAccent = normalized;
@@ -186,27 +194,19 @@ public class BitAccentColorService : IDisposable
     }
 
     /// <summary>
-    /// Applies <paramref name="accentColor"/> as the accent and persists it. Values outside the
-    /// accents configured by the first <see cref="InitializeAsync"/> call (or
+    /// Applies <paramref name="accentColor"/> as the accent and persists it, per the first-paint
+    /// strategy and persistence configured by the first <see cref="InitializeAsync"/> call. The
+    /// configuration deliberately cannot vary per apply: it describes the app's first-paint setup,
+    /// so letting one caller deviate would tear down the stores and attribute every other caller
+    /// relies on. Values outside the configured accents (or
     /// <see cref="BitAccentColorSwitcher.DefaultAccents"/>) are re-validated as plain hex, so an app
     /// can programmatically apply an accent it never offers as a swatch; anything that is not a
     /// valid <c>#RGB</c>/<c>#RRGGBB</c> hex is ignored.
     /// </summary>
     /// <param name="accentColor">The accent color to apply.</param>
-    /// <param name="firstPaintStrategy">
-    /// The first-paint strategy whose persistence shape to write; <see langword="null"/> keeps the
-    /// strategy of the first <see cref="InitializeAsync"/> call.
-    /// </param>
-    /// <param name="persistence">
-    /// The stores to persist the accent to; <see langword="null"/> keeps the persistence of the
-    /// first <see cref="InitializeAsync"/> call.
-    /// </param>
-    public async Task ApplyAsync(string accentColor, BitAccentColorFirstPaintStrategy? firstPaintStrategy = null, BitAccentColorPersistence? persistence = null)
+    public async Task ApplyAsync(string accentColor)
     {
-        // Normalize returns the canonical hex of a configured accent; for a programmatic
-        // off-list value, fall back to syntax validation alone (BuildSnapshotCss / the factory
-        // throws on anything that is not hex, so nothing unvalidated gets further than this).
-        var accent = Normalize(accentColor) ?? (BitAccentColorSsr.NormalizeToken(accentColor) is null ? null : accentColor.Trim());
+        var accent = Canonicalize(accentColor);
         if (accent is null) return;
 
         var version = ++_transitionVersion;
@@ -218,7 +218,7 @@ public class BitAccentColorService : IDisposable
         {
             if (version != _transitionVersion) return; // A newer pick supersedes this one.
 
-            await ApplyCoreAsync(accent, firstPaintStrategy ?? _firstPaintStrategy, persistence ?? _persistence);
+            await ApplyCoreAsync(accent, _firstPaintStrategy, _persistence);
         }
         finally
         {
@@ -253,7 +253,7 @@ public class BitAccentColorService : IDisposable
             // configurations self-heals.
             var setAttribute = firstPaintStrategy is not BitAccentColorFirstPaintStrategy.None;
             var snapshotCss = firstPaintStrategy is BitAccentColorFirstPaintStrategy.StoredCss ? BitAccentColorSsr.BuildSnapshotCss(accent) : null;
-            await _js.BitAccentColorApply(BitAccentColorSsr.NormalizeToken(accent)!, snapshotCss, BitAccentColorSsr.SnapshotVersion, setAttribute, persistence);
+            await _js.BitAccentColorApply(BitAccentColorSsr.NormalizeToken(accent)!, snapshotCss, BitAccentColorSsr.Version, setAttribute, persistence);
 
             await PersistToCustomStoreAsync(accent);
         }
@@ -299,7 +299,11 @@ public class BitAccentColorService : IDisposable
         // The whole-theme factory rather than the accent-only one: the point of the switcher is to
         // show what a single brand color does to an entire product, so the surfaces, text, strokes
         // and status colors all move with it instead of an accent changing under a fixed gray page.
-        var isDark = themeName?.Contains("dark", StringComparison.OrdinalIgnoreCase) is true;
+        // "Ends with dark" (ordinal) is the same classification the generated first-paint CSS
+        // applies through its [bit-theme$=dark] selectors (see BitAccentColorSsr.BuildSnapshotCss) -
+        // diverging from it would paint one scheme pre-hydration and the other after, the exact
+        // flash the first-paint strategies exist to prevent.
+        var isDark = themeName?.EndsWith("dark", StringComparison.Ordinal) is true;
         var theme = isDark ? BitThemeFactory.CreateDarkThemeFromSeed(accent) : BitThemeFactory.CreateLightThemeFromSeed(accent);
         await _themeManager.ApplyBitThemeAsync(theme);
     }
@@ -321,6 +325,17 @@ public class BitAccentColorService : IDisposable
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// <see cref="Normalize"/>, falling back to plain hex validation for a value outside the
+    /// configured accents: the canonical <c>#</c>-prefixed lower-case form is returned (the shape
+    /// <see cref="BitThemeFactory"/> requires - a bare token would pass validation here only to
+    /// throw inside the factory), or <see langword="null"/> for anything that is not hex at all.
+    /// </summary>
+    private string? Canonicalize(string? value)
+    {
+        return Normalize(value) ?? (BitAccentColorSsr.NormalizeToken(value) is { } token ? $"#{token}" : null);
     }
 
     private static bool IsNeutral(string accent)
@@ -345,13 +360,14 @@ public class BitAccentColorService : IDisposable
     {
         try
         {
-            var version = ++_transitionVersion;
-
+            // Deliberately NOT a numbered transition: a reapply changes no accent state, it only
+            // re-derives the overlay for the new scheme. Bumping _transitionVersion here would
+            // abandon a queued pick or restore - which, unlike this, still has stores to write and
+            // an AccentChanged to raise - silently un-persisting it. Reading ActiveAccent under the
+            // gate keeps this correct even when a newer pick overtakes the notification.
             await _transitionGate.WaitAsync();
             try
             {
-                if (version != _transitionVersion) return; // The newer transition re-reads the current theme itself.
-
                 await ApplyForThemeAsync(ActiveAccent, themeName);
             }
             finally

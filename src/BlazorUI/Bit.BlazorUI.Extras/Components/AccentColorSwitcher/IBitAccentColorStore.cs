@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// An app-supplied store for the accent preference, for hosts where the built-in web stores are not

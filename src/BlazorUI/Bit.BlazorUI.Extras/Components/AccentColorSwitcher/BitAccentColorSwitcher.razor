@@ -9,17 +9,36 @@
      dir="@Dir?.ToString().ToLower()"
      role="group"
      aria-label="@(AriaLabel ?? "Accent color")">
+    @{
+        var activeToken = BitAccentColorSsr.NormalizeToken(_accentColorService.ActiveAccent);
+        var cssMarked = FirstPaintStrategy is not BitAccentColorFirstPaintStrategy.None;
+    }
     @foreach (var item in Accents ?? DefaultAccents)
     {
-        var isActive = IsActive(item);
+        var token = BitAccentColorSsr.NormalizeToken(item.Color);
+        var isActive = token == activeToken;
 
         <button @onclick="() => HandleOnClickAsync(item)"
                 type="button"
                 title="@item.Name"
                 disabled="@(IsEnabled is false)"
-                class="@GetSwatchClass(isActive)"
+                bit-accent-swatch="@(cssMarked ? token : null)"
+                class="@GetSwatchClass(isActive, cssMarked)"
                 style="@GetSwatchStyle(item, isActive)"
                 aria-pressed="@(isActive ? "true" : "false")"
                 aria-label="@GetSwatchAriaLabel(item)"></button>
     }
 </div>
+@if (cssMarked)
+{
+    var markerCss = GetPrePaintActiveMarkerCss();
+    if (markerCss.Length > 0)
+    {
+        @* With a CSS first-paint strategy the active ring keys on the bit-accent root attribute -
+           the same one the inline head script sets before anything is painted - so prerendered and
+           cached markup rings the visitor's swatch immediately instead of ringing the default and
+           jumping once hydration restores the accent. The C# state (which the None strategy's class
+           marking, aria-pressed and Classes.ActiveSwatch follow) catches up at hydration. *@
+        <style>@((MarkupString)markerCss)</style>
+    }
+}

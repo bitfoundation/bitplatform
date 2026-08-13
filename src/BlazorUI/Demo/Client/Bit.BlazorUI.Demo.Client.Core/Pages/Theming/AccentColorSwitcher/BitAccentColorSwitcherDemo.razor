@@ -35,8 +35,9 @@
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
                 Pick a swatch to re-theme this whole website live; the first swatch is the packaged palette's own
-                primary, i.e. "no override". By default nothing is persisted, so the choice lasts for the current
-                session only - see the Persistence section to make it survive a refresh.
+                primary, i.e. "no override". Every switcher acts on the one shared BitAccentColorService, so a pick
+                here behaves exactly like one in the site header - including persistence, which follows the app-wide
+                configuration (see the Persistence section; a fresh app persists nothing until it enables it).
             </div>
             <br />
             <BitAccentColorSwitcher />
@@ -59,6 +60,8 @@
                 Cookie, or both (All); the default None keeps the accent for the current session only.
                 The cookie is the only store the server can read, so it is what lets SSR prerender the page
                 with the visitor's accent - enable it whenever the server takes part in first paint.
+                The persistence is app-wide state on the shared service, fixed by the first initialized
+                switcher (this website enables All), so give every instance the same value.
             </div>
             <br />
             <BitAccentColorSwitcher Persistence="BitAccentColorPersistence.All" />
@@ -94,6 +97,8 @@
                 persisted, no inline head script is even emitted, and the first paint has nothing to restore -
                 first paint simply won't work without a Persistence other than None. The StoredCss snapshot
                 additionally lives in localStorage, so that strategy specifically needs the LocalStorage store enabled.
+                Like the persistence, the strategy is app-wide state fixed by the first initialized switcher
+                (this website uses StaticCss), so give every instance the same value.
             </div>
             <br />
             <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"

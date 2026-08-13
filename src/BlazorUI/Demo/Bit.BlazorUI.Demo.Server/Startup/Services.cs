@@ -61,15 +61,6 @@ public static class Services
                 || httpContext?.Request?.Query?.ContainsKey("showallcodes") is true;
         });
 
-        // The accent the visitor picked, so the prerendered markup marks the right swatch as active.
-        // The matching palette reaches the same response through the bit-accent root attribute that
-        // App.razor renders from this same cookie (plus the accent-colors.css static stylesheet);
-        // this only carries the value into the component tree, where MainLayout picks it up and
-        // round-trips it through the prerender state for the interactive pass. Null once the circuit
-        // outlives the request (no HttpContext) - by then the client has read its own stores.
-        services.AddCascadingValue("PrerenderedAccentColor", sp =>
-            sp.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Cookies[BitAccentColorNames.CookieName]);
-
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.All;

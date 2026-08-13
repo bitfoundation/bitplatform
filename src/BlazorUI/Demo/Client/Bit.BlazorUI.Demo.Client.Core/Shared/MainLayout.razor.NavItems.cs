@@ -191,7 +191,6 @@ public partial class MainLayout
                 new() { Text = "RichTextEditorLegacy", Url = "/components/legacy/richtexteditor" },
             ]
         },
-        new() { Text = "Iconography", Url = "/iconography" },
         new()
         {
             Text = "Theming",
@@ -201,6 +200,7 @@ public partial class MainLayout
                 new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
             ]
         },
+        new() { Text = "Iconography", Url = "/iconography" },
     ];
 }
 

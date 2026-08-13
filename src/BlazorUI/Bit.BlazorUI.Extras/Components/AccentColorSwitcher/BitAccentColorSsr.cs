@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace Bit.BlazorUI;
 
@@ -32,12 +32,9 @@ public static class BitAccentColorSsr
     /// because the assembly version is not stamped per release (it stays 1.0.0.0); the '+' build
     /// metadata is trimmed so equal releases compare equal across rebuilds.
     /// </summary>
-    public static readonly string Version = ResolveSnapshotVersion();
+    public static readonly string Version = ResolveVersion();
 
-    /// <inheritdoc cref="Version"/>
-    internal static string SnapshotVersion => Version;
-
-    private static string ResolveSnapshotVersion()
+    private static string ResolveVersion()
     {
         var informational = typeof(BitAccentColorSsr).Assembly
             .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), inherit: false)
@@ -84,7 +81,7 @@ public static class BitAccentColorSsr
     /// anything is painted, sets the <c>bit-accent</c> attribute on the root element (which the
     /// <see cref="BuildStaticCss"/> stylesheet keys on) and injects the stored palette snapshot when
     /// one matches (the <see cref="BitAccentColorFirstPaintStrategy.StoredCss"/> strategy). Equivalent to
-    /// <see cref="BuildInlineHeadScript(string?)"/> with a <see langword="null"/> nonce.
+    /// <see cref="BuildInlineHeadScript"/> with a <see langword="null"/> nonce.
     /// </summary>
     public static string InlineHeadScript => BuildInlineHeadScript(nonce: null);
 
@@ -101,23 +98,13 @@ public static class BitAccentColorSsr
     }
 
     /// <summary>
-    /// Builds the inline first-paint script and wraps it in a <c>&lt;script&gt;</c> element.
-    /// Pass <paramref name="nonce"/> to satisfy a <c>script-src 'nonce-…'</c> Content-Security-Policy.
-    /// </summary>
-    /// <param name="nonce">Optional CSP nonce. When supplied, the value is HTML-attribute-encoded and emitted as <c>nonce="…"</c>.</param>
-    public static string BuildInlineHeadScript(string? nonce)
-    {
-        return BuildInlineHeadScript(nonce, BitAccentColorPersistence.All);
-    }
-
-    /// <summary>
     /// Builds the inline first-paint script wrapped in a <c>&lt;script&gt;</c> element, reading
     /// only the stores <paramref name="persistence"/> enables. Returns an empty string for
     /// <see cref="BitAccentColorPersistence.None"/>, so nothing is emitted when nothing is persisted.
     /// </summary>
     /// <param name="nonce">Optional CSP nonce. When supplied, the value is HTML-attribute-encoded and emitted as <c>nonce="…"</c>.</param>
     /// <param name="persistence">The stores the script reads the persisted accent from.</param>
-    public static string BuildInlineHeadScript(string? nonce, BitAccentColorPersistence persistence)
+    public static string BuildInlineHeadScript(string? nonce = null, BitAccentColorPersistence persistence = BitAccentColorPersistence.All)
     {
         var body = BuildInlineHeadScriptBody(persistence);
         if (body.Length is 0) return string.Empty;
@@ -129,7 +116,7 @@ public static class BitAccentColorSsr
 
         // HTML-attribute-encode the nonce so a tampered value cannot break out of the attribute.
         // CSP nonces are base64url in practice, but defense-in-depth is cheap.
-        var safeNonce = HtmlEncodeAttribute(nonce);
+        var safeNonce = BitThemeSsr.HtmlEncodeAttribute(nonce);
         return $"<script nonce=\"{safeNonce}\">{body}</script>";
     }
 
@@ -284,12 +271,31 @@ public static class BitAccentColorSsr
         return token;
     }
 
+    /// <summary>
+    /// The cache stops growing past this many distinct accents. The offered accent lists this cache
+    /// exists for are a handful of colors; only the programmatic <c>ApplyAsync</c> path can feed it
+    /// arbitrary hexes (e.g. an app wiring a free-form color picker to it), and each entry pins two
+    /// full palettes (~tens of KB) in a process-wide static for the process lifetime - on Blazor
+    /// Server, shared across every circuit.
+    /// </summary>
+    private const int MaxCachedDeclarations = 64;
+
     private static (string Dark, string Light) GetDeclarations(string accentHex)
     {
         // The dark/light split matches the library's own [bit-theme$=dark] convention, so "fluent-dark"
         // and any other dark preset land on the dark palette too.
-        return _declarations.GetOrAdd(accentHex, static hex =>
-            (Declarations(BitThemeFactory.CreateDarkThemeFromSeed(hex)), Declarations(BitThemeFactory.CreateLightThemeFromSeed(hex))));
+        if (_declarations.TryGetValue(accentHex, out var cached)) return cached;
+
+        var derived = (Declarations(BitThemeFactory.CreateDarkThemeFromSeed(accentHex)), Declarations(BitThemeFactory.CreateLightThemeFromSeed(accentHex)));
+
+        // Past the cap the derivation is repeated per call instead of cached: correct either way,
+        // and the repeating caller is by definition off the offered lists.
+        if (_declarations.Count < MaxCachedDeclarations)
+        {
+            _declarations.TryAdd(accentHex, derived);
+        }
+
+        return derived;
 
         static string Declarations(BitTheme theme)
         {
@@ -318,7 +324,7 @@ public static class BitAccentColorSsr
         // Only the stores the persistence flags enable are read (the snapshot lives in localStorage,
         // so it follows that flag). The token regex mirrors NormalizeToken, so a tampered store value
         // never reaches the document. The snapshot is only injected when it matches both the
-        // persisted token and this library version (see SnapshotVersion), and lands through
+        // persisted token and this library version (see Version), and lands through
         // textContent, which cannot break out into markup; the '<' scan on top of that is cheap
         // defense-in-depth.
         return
@@ -329,32 +335,16 @@ public static class BitAccentColorSsr
             "v=null;" +
             (readLocalStorage ? "try{v=localStorage.getItem(k);}catch(e){}" : string.Empty) +
             (readCookie ? "if(!v){var m=('; '+document.cookie).match('; '+ck+'=([^;]*)');if(m){try{v=decodeURIComponent(m[1]);}catch(e){v=m[1];}}}" : string.Empty) +
-            "if(!v||!/^[0-9a-f]{3}([0-9a-f]{3})?$/.test(v))return;" +
+            // With nothing (valid) persisted, any bit-accent already on the root element is a
+            // server-rendered attribute for some OTHER visitor's cookie, served to this one from a
+            // cache - remove it, or the static stylesheet would paint their accent here.
+            $"if(!v||!/^[0-9a-f]{{3}}([0-9a-f]{{3}})?$/.test(v)){{r.removeAttribute('{attribute}');return;}}" +
             $"r.setAttribute('{attribute}',v);" +
             (readLocalStorage
                 ? "try{var s=localStorage.getItem(sk);if(s){var o=JSON.parse(s);" +
-                  $"if(o&&o.a===v&&o.v==='{SnapshotVersion}'&&typeof o.css==='string'&&o.css.indexOf('<')<0){{" +
+                  $"if(o&&o.a===v&&o.v==='{Version}'&&typeof o.css==='string'&&o.css.indexOf('<')<0){{" +
                   $"var el=document.createElement('style');el.id='{styleElementId}';el.textContent=o.css;document.head.appendChild(el);}}}}}}catch(e){{}}"
                 : string.Empty) +
             "})();";
-    }
-
-    private static string HtmlEncodeAttribute(string value)
-    {
-        // Minimal attribute-context encoding, matching BitThemeSsr: encode the characters that can
-        // break out of a double-quoted attribute or alter parsing.
-        var builder = new System.Text.StringBuilder(value.Length);
-        foreach (var ch in value)
-        {
-            switch (ch)
-            {
-                case '&': builder.Append("&amp;"); break;
-                case '"': builder.Append("&quot;"); break;
-                case '<': builder.Append("&lt;"); break;
-                case '>': builder.Append("&gt;"); break;
-                default: builder.Append(ch); break;
-            }
-        }
-        return builder.ToString();
     }
 }

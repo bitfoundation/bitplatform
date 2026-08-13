@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Theming.AccentColorSwitcher;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Theming.AccentColorSwitcher;
 
 public partial class BitAccentColorSwitcherDemo
 {
@@ -27,7 +27,7 @@ public partial class BitAccentColorSwitcherDemo
             Name = "FirstPaintStrategy",
             Type = "BitAccentColorFirstPaintStrategy",
             DefaultValue = "BitAccentColorFirstPaintStrategy.None",
-            Description = "The first-paint strategy to maintain when applying an accent: None (the default) applies the accent after hydration only, StaticCss keys a prebuilt all-accents stylesheet on the bit-accent root attribute, StoredCss keeps a snapshot of the generated palette CSS in localStorage. See BitAccentColorFirstPaintStrategy and BitAccentColorSsr for the server/head-script halves each strategy needs.",
+            Description = "The first-paint strategy to maintain when applying an accent: None (the default) applies the accent after hydration only, StaticCss keys a prebuilt all-accents stylesheet on the bit-accent root attribute, StoredCss keeps a snapshot of the generated palette CSS in localStorage. See BitAccentColorFirstPaintStrategy and BitAccentColorSsr for the server/head-script halves each strategy needs. The strategy is app-wide state on the shared BitAccentColorService - the first initialized instance (or an explicit BitAccentColorService.InitializeAsync call) fixes it, so keep it identical across instances. With a CSS strategy the built-in active ring additionally keys on the bit-accent root attribute the inline head script sets pre-paint, so prerendered and cached markup rings the visitor's swatch immediately instead of ringing the default until hydration restores the accent.",
             LinkType = LinkType.Link,
             Href = "#accent-color-first-paint-strategy-enum",
         },
@@ -43,7 +43,7 @@ public partial class BitAccentColorSwitcherDemo
             Name = "Persistence",
             Type = "BitAccentColorPersistence",
             DefaultValue = "BitAccentColorPersistence.None",
-            Description = "The stores the picked accent is persisted to: LocalStorage, Cookie, or both (All); None (the default) keeps the accent for the current session only. The cookie half is what lets the server read the preference while prerendering (SSR), so enable it when the server takes part in painting or seeding the accent.",
+            Description = "The stores the picked accent is persisted to: LocalStorage, Cookie, or both (All); None (the default) keeps the accent for the current session only. The cookie half is what lets the server read the preference while prerendering (SSR), so enable it when the server takes part in painting or seeding the accent. Like FirstPaintStrategy, this is app-wide state on the shared BitAccentColorService fixed by the first initialized instance, so keep it identical across instances.",
             LinkType = LinkType.Link,
             Href = "#accent-color-persistence-enum",
         },
@@ -158,9 +158,9 @@ public partial class BitAccentColorSwitcherDemo
                 new()
                 {
                     Name = "ApplyAsync",
-                    Type = "Task ApplyAsync(string accentColor, BitAccentColorFirstPaintStrategy? firstPaintStrategy = null, BitAccentColorPersistence? persistence = null)",
+                    Type = "Task ApplyAsync(string accentColor)",
                     DefaultValue = "",
-                    Description = "Applies the given accent color and persists it to the enabled stores.",
+                    Description = "Applies the given accent color and persists it, per the first-paint strategy and persistence configured by the first InitializeAsync call. Values outside the configured accents are re-validated as plain hex, so an app can programmatically apply an accent it never offers as a swatch.",
                 },
             ]
         },
@@ -257,7 +257,7 @@ public partial class BitAccentColorSwitcherDemo
                     Name = "InlineHeadScript",
                     Type = "string",
                     DefaultValue = "",
-                    Description = "Full <script> markup ready to drop into <head>, before the stylesheets. Re-resolves the accent from localStorage / the preference cookie pre-paint: sets the bit-accent root attribute and injects the StoredCss snapshot when one matches. BuildInlineHeadScript(nonce) is the CSP-nonce variant, and BuildInlineHeadScript(nonce, persistence) restricts which stores the script reads.",
+                    Description = "Full <script> markup ready to drop into <head>, before the stylesheets. Re-resolves the accent from localStorage / the preference cookie pre-paint: sets the bit-accent root attribute and injects the StoredCss snapshot when one matches. BuildInlineHeadScript(nonce, persistence) is the parameterized variant: the optional CSP nonce is emitted onto the script element, and the optional persistence restricts which stores the script reads.",
                 },
                 new()
                 {
@@ -404,10 +404,12 @@ private string? changedAccentColor;";
                         Persistence=""BitAccentColorPersistence.All"" />
 
     @* Or reference the stylesheet as a long-cached asset instead of inlining it (see the C# tab;
-       the library version is appended as a cache-buster automatically): *@
+       the library version is appended as a cache-buster automatically). Keep the href root-relative:
+       this sits before any <base>, so a relative href would resolve against the current page path
+       and 404 on every non-root route. *@
     <BitAccentColorHead FirstPaintStrategy=""BitAccentColorFirstPaintStrategy.StaticCss""
                         Persistence=""BitAccentColorPersistence.All""
-                        StylesheetHref=""accent-colors.css"" />
+                        StylesheetHref=""/accent-colors.css"" />
 
     @* StoredCss strategy: no stylesheet at all; pass the accent cookie so origin-rendered responses
        paint immediately (cached responses are covered by the localStorage snapshot): *@

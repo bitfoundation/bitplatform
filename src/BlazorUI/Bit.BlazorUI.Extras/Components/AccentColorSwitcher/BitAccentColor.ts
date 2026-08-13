@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     // The name constants below must stay aligned with BitAccentColorNames.cs and the inline script
     // in BitAccentColorSsr.cs - the three read and write the same attribute and stores.
     const ATTRIBUTE = 'bit-accent';
@@ -130,27 +130,20 @@ namespace BitBlazorUI {
 
         private static upsertStyleElement(css: string) {
             // A single element owns the pre-paint palette, whether it was emitted by the server,
-            // injected by the inline head script, or created here. textContent keeps the payload
+            // injected by the inline head script, or created here - so drop every existing one
+            // (duplicates are possible when a server-emitted style and a script-injected snapshot
+            // met in one document) and append one fresh element. textContent keeps the payload
             // inert - it is never parsed as markup.
-            AccentColor.removeStyleElements(/* keepFirst */ true);
+            AccentColor.removeStyleElements();
 
-            let element = document.getElementById(STYLE_ELEMENT_ID);
-            if (!element) {
-                element = document.createElement('style');
-                element.id = STYLE_ELEMENT_ID;
-                document.head.appendChild(element);
-            }
+            const element = document.createElement('style');
+            element.id = STYLE_ELEMENT_ID;
             element.textContent = css;
+            document.head.appendChild(element);
         }
 
-        private static removeStyleElements(keepFirst?: boolean) {
-            // Duplicates are possible when a server-emitted style and a script-injected snapshot met
-            // in one document; converge on at most one (or none).
-            const elements = document.querySelectorAll(`style[id="${STYLE_ELEMENT_ID}"]`);
-            elements.forEach((element, index) => {
-                if (keepFirst && index === 0) return;
-                element.remove();
-            });
+        private static removeStyleElements() {
+            document.querySelectorAll(`style[id="${STYLE_ELEMENT_ID}"]`).forEach(element => element.remove());
         }
     }
 }

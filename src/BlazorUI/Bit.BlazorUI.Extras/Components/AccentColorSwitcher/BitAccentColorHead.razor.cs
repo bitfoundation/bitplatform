@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAccentColorHead is the single-drop first-paint setup for the accent color: place it at the top
@@ -66,8 +66,11 @@ public partial class BitAccentColorHead : ComponentBase
     /// StaticCss strategy only: when set, the all-accents stylesheet is referenced as an external
     /// stylesheet at this href (with the library version appended as a cache-buster) instead of
     /// being inlined - serve BitAccentColorSsr.BuildStaticCss there with long cache headers (see the
-    /// AccentColorSwitcher demo page). When null, the stylesheet is inlined into the response, which
-    /// needs no endpoint at the cost of re-sending the (well-compressing) palette CSS per page load.
+    /// AccentColorSwitcher demo page). Use a root-relative href (e.g. "/accent-colors.css"): this
+    /// component sits at the top of head, before any base element, so a relative href would resolve
+    /// against the current page path and silently 404 on every non-root route. When null, the
+    /// stylesheet is inlined into the response, which needs no endpoint at the cost of re-sending
+    /// the (well-compressing) palette CSS per page load.
     /// </summary>
     [Parameter] public string? StylesheetHref { get; set; }
 

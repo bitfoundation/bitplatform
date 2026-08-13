@@ -106,8 +106,6 @@ public class Middlewares
 
         UseSiteMap(app);
 
-        UseAccentColorsCss(app);
-
         // Handle the rest of requests with blazor
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode()
@@ -185,26 +183,6 @@ public class Middlewares
                     await statusCodeContext.Next.Invoke(statusCodeContext.HttpContext);
                 }
             }
-        });
-    }
-
-    /// <summary>
-    /// Serves the accent palettes stylesheet App.razor links in its head: every offered accent's
-    /// palette scoped to the bit-accent + bit-theme root attributes (see
-    /// <see cref="BitAccentColorSsr.BuildStaticCss"/>). The content is identical for every visitor -
-    /// the attributes select the right palette per visitor - which is what lets both this response
-    /// and the HTML that links it live behind a cache. Immutable because the URL carries the Extras
-    /// library version as a cache-buster; BuildStaticCss caches internally, so this is a lookup per
-    /// request, not a palette derivation.
-    /// </summary>
-    private static void UseAccentColorsCss(WebApplication app)
-    {
-        app.MapGet("/accent-colors.css", context =>
-        {
-            context.Response.Headers.ContentType = "text/css";
-            context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
-
-            return context.Response.WriteAsync(BitAccentColorSsr.BuildStaticCss(), context.RequestAborted);
         });
     }
 

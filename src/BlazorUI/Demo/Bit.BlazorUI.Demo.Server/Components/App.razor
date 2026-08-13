@@ -61,17 +61,18 @@
        reached us, so this is what covers the rest - following the OS (which the server cannot read),
        and a localStorage value newer than the cookie. *@
     @((MarkupString)BitThemeSsr.InlineHeadScript)
-    @* The accent counterpart of the script above, as one component: emits the inline script that
-       re-resolves bit-accent from localStorage / the accent cookie before anything is painted -
-       which is what keeps the accent correct when this markup comes out of a cache (e.g. a CDN)
-       that served it to a visitor whose cookie never reached the server - plus the stylesheet link
-       carrying every accent's palette (served by Startup/Middlewares.cs with immutable caching;
-       omitting StylesheetHref would inline it instead). Kept AFTER the theme script above: the
-       palette rules split on the bit-theme attribute that script sets, so painting must not start
-       before it has run, which the parser guarantees for styles that come later in <head>. *@
-    <BitAccentColorHead FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StaticCss"
-                        Persistence="BitAccentColorPersistence.All"
-                        StylesheetHref="accent-colors.css" />
+    @* The accent counterpart of the script above, as one component: emits the inline script that,
+       before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
+       injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what
+       keeps the accent correct even when this markup comes out of a cache (e.g. a CDN) that served
+       it to a visitor whose cookie never reached the server. Kept AFTER the theme script above: the
+       snapshot's rules split on the bit-theme attribute that script sets, so painting must not
+       start before it has run, which the parser guarantees for styles that come later in <head>.
+       MUST carry the same strategy and persistence as the app's AccentColorSwitcher chrome
+       instances - they are what configures the shared service (the snapshot only gets stored while
+       the service runs StoredCss); this component only emits the matching head half. *@
+    <BitAccentColorHead FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"
+                        Persistence="BitAccentColorPersistence.All" />
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />

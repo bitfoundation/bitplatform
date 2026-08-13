@@ -17,11 +17,12 @@
         <BitText Element="span" Typography="BitTypography.Caption1" Class="accent-switcher-label">Accent color</BitText>
     }
 
-    @* StaticCss + All explicitly (the component defaults persist nothing and skip first paint):
-       this app's host page emits the matching BitAccentColorHead and reads the accent cookie while
-       prerendering (see App.razor and Services.cs in the Server project), and the first
-       InitializeAsync call - which comes from one of these chrome instances - fixes the
-       configuration the restore maintains. *@
-    <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StaticCss"
+    @* StoredCss + All explicitly (the component defaults persist nothing and skip first paint).
+       The configuration is app-wide state fixed by the first initialized instance - these chrome
+       instances render in the layout on every page, so one of them is always that first instance.
+       It is what the service applies and persists by (the palette snapshot only gets stored while
+       the service runs StoredCss), so the host page's BitAccentColorHead (App.razor in the Server
+       project) MUST carry these same values - it only emits the matching head half. *@
+    <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"
                             Persistence="BitAccentColorPersistence.All" />
 </div>

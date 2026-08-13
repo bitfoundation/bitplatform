@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -98,6 +98,39 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         var active = component.Find(".bit-acs-act");
         Assert.IsTrue(active.ClassList.Contains("custom-active"));
         Assert.AreEqual(1, swatches.Count(s => s.ClassList.Contains("custom-active")));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherWithACssStrategyShouldMarkTheActiveSwatchThroughTheRootAttribute()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
+            parameters.Add(p => p.Persistence, BitAccentColorPersistence.All);
+        });
+
+        // The built-in ring must not come from the C# state: prerendered markup renders before the
+        // accent is restored, so a class-driven ring would mark the default swatch and visibly jump
+        // to the visitor's accent at hydration. The emitted rules key on the bit-accent root
+        // attribute instead, which the inline head script sets before first paint.
+        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
+            "With a CSS strategy the built-in ring is attribute-driven, so the class must not render.");
+
+        var purpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
+        var purple = component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple");
+        Assert.AreEqual(purpleToken, purple.GetAttribute("bit-accent-swatch"),
+            "Each swatch must carry its token for the attribute-keyed rules to target.");
+
+        var style = component.Find("style").TextContent;
+        StringAssert.Contains(style, $":root[{BitAccentColorNames.Attribute}=\"{purpleToken}\"]", System.StringComparison.Ordinal);
+        StringAssert.Contains(style, $"[bit-accent-swatch=\"{purpleToken}\"]", System.StringComparison.Ordinal);
+
+        var blueToken = BitAccentColorPresets.Blue.TrimStart('#').ToLowerInvariant();
+        StringAssert.Contains(style, $":root:not([{BitAccentColorNames.Attribute}]) ", System.StringComparison.Ordinal);
+        StringAssert.Contains(style, $"[bit-accent-swatch=\"{blueToken}\"]", System.StringComparison.Ordinal,
+            "With no bit-accent attribute set (no override), the packaged primary's swatch must ring.");
     }
 
     [TestMethod]

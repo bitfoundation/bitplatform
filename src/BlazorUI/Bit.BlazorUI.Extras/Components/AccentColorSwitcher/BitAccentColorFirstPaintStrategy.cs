@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// How the accent palette reaches the very first paint of a page load, before any Blazor runtime is
