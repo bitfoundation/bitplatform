@@ -6,7 +6,7 @@
 
 <DemoPage Name="AccentColorSwitcher"
           SecondaryNames="@(["Accent", "Brand", "Theming"])"
-          Description="BitAccentColorSwitcher renders a row of accent color swatches that re-theme the whole app live: one picked brand color is fed to BitThemeFactory as the seed of a complete palette, applied through BitThemeManager, and optionally persisted (localStorage and/or cookie, see Persistence) so it survives a refresh - with two opt-in first-paint strategies (beyond the default None, which simply re-applies the accent after hydration) that keep the accent correct even when the served HTML comes from a cache, before any Blazor runtime is up."
+          Description="BitAccentColorSwitcher renders a row of accent color swatches that re-theme the whole app live: one picked brand color is fed to BitThemeFactory as the seed of a complete palette, applied through BitThemeManager, and optionally persisted (localStorage and/or cookie, see BitAccentColorConfig.Persistence) so it survives a refresh - with two opt-in first-paint strategies (beyond the default None, which simply re-applies the accent after hydration) that keep the accent correct even when the served HTML comes from a cache, before any Blazor runtime is up."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -45,33 +45,37 @@
 
         <DemoExample Title="Accents" RazorCode="@example2RazorCode" Id="example2">
             <div>
-                Offer your own brand colors using the Accents parameter. Any valid hex works as a seed - the palette
-                is derived from it on the fly. The Name shows as the swatch tooltip and accessible label.
+                Offer your own brand colors using the Accents of the Config parameter. Any valid hex works as a
+                seed - the palette is derived from it on the fly. The Name shows as the swatch tooltip and
+                accessible label.
                 (Note: on this website only the six default accents take part in persistence, since they are what
                 the app's first initialization registered for restore validation.)
             </div>
             <br />
-            <BitAccentColorSwitcher Accents="customAccents" />
+            <BitAccentColorSwitcher Config="customAccentsConfig" />
         </DemoExample>
 
         <DemoExample Title="Persistence" RazorCode="@example3RazorCode" Id="example3">
             <div>
-                The Persistence parameter selects the stores the picked accent is persisted to: LocalStorage,
-                Cookie, or both (All); the default None keeps the accent for the current session only.
+                The Persistence of the Config parameter selects the stores the picked accent is persisted to:
+                LocalStorage, Cookie, or both (All); the default None keeps the accent for the current session only.
                 The cookie is the only store the server can read, so it is what lets SSR prerender the page
                 with the visitor's accent - enable it whenever the server takes part in first paint.
-                The persistence is app-wide state on the shared service, fixed by the first initialized
-                switcher (this website enables All), so give every instance the same value.
+                The configuration is app-wide state on the shared service, fixed by the first initialized
+                switcher (this website enables All), so state it once: register it in DI through the
+                accentColor option of AddBitBlazorUIExtrasServices - which every switcher and the
+                BitAccentColorHead fall back to when no Config parameter is handed to them, and what this
+                website does - or hand one shared BitAccentColorConfig instance to every instance.
             </div>
             <br />
-            <BitAccentColorSwitcher Persistence="BitAccentColorPersistence.All" />
+            <BitAccentColorSwitcher Config="persistenceConfig" />
         </DemoExample>
 
         <DemoExample Title="FirstPaintStrategy" RazorCode="@example4RazorCode" Id="example4">
             <div>
-                The FirstPaintStrategy parameter selects how the accent palette reaches the very first paint of a
-                page load, before any Blazor runtime is up - which matters when the served HTML comes from a cache
-                (e.g. a CDN) that cannot vary on the visitor's cookie:
+                The FirstPaintStrategy of the Config parameter selects how the accent palette reaches the very
+                first paint of a page load, before any Blazor runtime is up - which matters when the served HTML
+                comes from a cache (e.g. a CDN) that cannot vary on the visitor's cookie:
             </div>
             <br />
             <div>
@@ -92,17 +96,17 @@
             </div>
             <br />
             <div>
-                The CSS strategies work hand in hand with the Persistence parameter: pre-paint, the accent is
+                The CSS strategies work hand in hand with the config's Persistence: pre-paint, the accent is
                 re-resolved from the stores Persistence enables, so with the default Persistence None nothing is
                 persisted, no inline head script is even emitted, and the first paint has nothing to restore -
                 first paint simply won't work without a Persistence other than None. The StoredCss snapshot
                 additionally lives in localStorage, so that strategy specifically needs the LocalStorage store enabled.
                 Like the persistence, the strategy is app-wide state fixed by the first initialized switcher
-                (this website uses StaticCss), so give every instance the same value.
+                (this website uses StoredCss), so it belongs in the once-stated configuration too - the
+                DI-registered one, or the one shared config instance.
             </div>
             <br />
-            <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"
-                                    Persistence="BitAccentColorPersistence.All" />
+            <BitAccentColorSwitcher Config="firstPaintConfig" />
         </DemoExample>
 
         <DemoExample Title="OnChange" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
@@ -118,13 +122,17 @@
                 With the default None strategy the switcher works with no further setup, but the accent is only
                 applied after hydration - a server-rendered page paints the packaged palette first and flips once
                 the client is up. Picking a CSS strategy closes that gap: drop the BitAccentColorHead component at
-                the top of the host page's head (App.razor in a Blazor Web App) with the same FirstPaintStrategy
-                and Persistence as your switchers, and it emits the inline script that re-resolves the accent
-                from the enabled stores pre-paint on every
+                the top of the host page's head (App.razor in a Blazor Web App), and it emits the inline script
+                that re-resolves the accent from the enabled stores pre-paint on every
                 load (this is what survives a CDN cache) plus the palette CSS the selected strategy needs. The
-                Razor tab shows the host-page half; the C# tab shows the optional stylesheet endpoint the
-                StaticCss strategy can link instead of inlining. The underlying BitAccentColorSsr helpers stay
-                available for hosts that need finer control (CSP nonces, custom placement).
+                head and the switchers read the one BitAccentColorConfig the app states once: registered in DI
+                through the accentColor option of AddBitBlazorUIExtrasServices in the service-registration
+                method the server and the clients share (recommended, and what this website does), or defined
+                as one shared instance handed to every Config parameter - a Config parameter always outranks
+                the DI-registered one. The Razor tab shows the host-page half; the C# tab shows the
+                registration plus the optional stylesheet endpoint the StaticCss strategy can link instead of
+                inlining. The underlying BitAccentColorSsr helpers stay available for hosts that need finer
+                control (CSP nonces, custom placement).
             </div>
         </DemoExample>
 

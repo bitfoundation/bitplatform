@@ -1,9 +1,9 @@
 @namespace Bit.BlazorUI
 
-@if (FirstPaintStrategy is not BitAccentColorFirstPaintStrategy.None)
+@if (_config is not null && _config.FirstPaintStrategy is not BitAccentColorFirstPaintStrategy.None)
 {
-    @((MarkupString)BitAccentColorSsr.BuildInlineHeadScript(Nonce, Persistence))
-    @if (FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StaticCss)
+    @((MarkupString)BitAccentColorSsr.BuildInlineHeadScript(Nonce, _config.Persistence))
+    @if (_config.FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StaticCss)
     {
         if (StylesheetHref.HasValue())
         {
@@ -11,7 +11,7 @@
         }
         else
         {
-            <style>@((MarkupString)BitAccentColorSsr.BuildStaticCss(Accents))</style>
+            <style>@((MarkupString)BitAccentColorSsr.BuildStaticCss(_config.Accents))</style>
         }
     }
     else if (_prerenderCss is not null)

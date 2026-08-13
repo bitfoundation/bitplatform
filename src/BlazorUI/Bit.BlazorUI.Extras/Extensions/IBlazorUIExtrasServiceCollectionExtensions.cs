@@ -16,10 +16,26 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     /// rendering state (the active modal container), and a singleton would be shared across circuits,
     /// leaking modals between users.
     /// </param>
+    /// <param name="accentColor">
+    /// Configures the app-wide <see cref="BitAccentColorConfig"/> and registers it in DI, where
+    /// <see cref="BitAccentColorHead"/>, <see cref="BitAccentColorSwitcher"/> and
+    /// <see cref="BitAccentColorService"/> fall back to it whenever no explicit Config is handed to
+    /// them. Call this from a service-registration method both the server and the client compile
+    /// (the usual shared AddClientServices-style extension), so the configuration is stated once
+    /// and every container - the one that renders the host page's head and the one the switchers
+    /// run in - resolves the same values.
+    /// </param>
     /// <returns></returns>
-    public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services, bool trySingleton = false)
+    public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services, bool trySingleton = false, Action<BitAccentColorConfig>? accentColor = null)
     {
         services.AddBitBlazorUIServices(trySingleton);
+
+        if (accentColor is not null)
+        {
+            var accentColorConfig = new BitAccentColorConfig();
+            accentColor(accentColorConfig);
+            services.TryAddSingleton(accentColorConfig);
+        }
 
         if (trySingleton)
         {

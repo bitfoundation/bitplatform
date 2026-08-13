@@ -68,11 +68,12 @@
        it to a visitor whose cookie never reached the server. Kept AFTER the theme script above: the
        snapshot's rules split on the bit-theme attribute that script sets, so painting must not
        start before it has run, which the parser guarantees for styles that come later in <head>.
-       MUST carry the same strategy and persistence as the app's AccentColorSwitcher chrome
-       instances - they are what configures the shared service (the snapshot only gets stored while
-       the service runs StoredCss); this component only emits the matching head half. *@
-    <BitAccentColorHead FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"
-                        Persistence="BitAccentColorPersistence.All" />
+       The configuration comes from the BitAccentColorConfig registered in DI (see
+       AddClientSharedServices, which this server also runs) - the same one the app's
+       AccentColorSwitcher chrome instances configure the shared service with (the snapshot only
+       gets stored while the service runs StoredCss); this component only emits the matching head
+       half. *@
+    <BitAccentColorHead />
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />

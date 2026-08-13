@@ -21,6 +21,7 @@ public class BitAccentColorService : IDisposable
     private readonly ILogger? _logger;
     private readonly BitThemeManager _themeManager;
     private readonly IBitAccentColorStore? _customStore;
+    private readonly BitAccentColorConfig? _registeredConfig;
     private readonly BitThemeNotifications _themeNotifications;
 
     private bool _initialized;
@@ -43,11 +44,12 @@ public class BitAccentColorService : IDisposable
     /// </summary>
     private int _transitionVersion;
 
-    public BitAccentColorService(IJSRuntime js, BitThemeManager themeManager, BitThemeNotifications themeNotifications, ILoggerFactory? loggerFactory = null, IBitAccentColorStore? customStore = null)
+    public BitAccentColorService(IJSRuntime js, BitThemeManager themeManager, BitThemeNotifications themeNotifications, ILoggerFactory? loggerFactory = null, IBitAccentColorStore? customStore = null, BitAccentColorConfig? registeredConfig = null)
     {
         _js = js;
         _customStore = customStore;
         _themeManager = themeManager;
+        _registeredConfig = registeredConfig;
         _themeNotifications = themeNotifications;
         _logger = loggerFactory?.CreateLogger<BitAccentColorService>();
     }
@@ -96,24 +98,25 @@ public class BitAccentColorService : IDisposable
     /// the stores needs interactivity, so callers have to wait for the first render; calling it
     /// during prerendering is a no-op that leaves the service ready to initialize on the retry.
     /// Safe to call repeatedly - only the first interactive call does the work, and its
-    /// <paramref name="accents"/>/<paramref name="firstPaintStrategy"/>/<paramref name="persistence"/>
-    /// become the restore configuration.
+    /// <paramref name="config"/> becomes the app-wide restore configuration.
     /// </summary>
-    /// <param name="accents">
-    /// The accents a persisted value is validated against; <see langword="null"/> keeps
-    /// <see cref="BitAccentColorSwitcher.DefaultAccents"/>. The stores are visitor-editable, so a
-    /// value outside this list is treated as "nothing persisted" rather than handed to
-    /// <see cref="BitThemeFactory"/> as-is.
+    /// <param name="config">
+    /// The app-wide accent configuration; <see langword="null"/> falls back to the
+    /// <see cref="BitAccentColorConfig"/> registered in DI (the accentColor option of
+    /// AddBitBlazorUIExtrasServices), and with neither, <see cref="BitAccentColorSwitcher.DefaultAccents"/>
+    /// are kept with no persistence and no first-paint machinery. The stores are visitor-editable,
+    /// so a persisted value outside the configured accents is treated as "nothing persisted" rather
+    /// than handed to <see cref="BitThemeFactory"/> as-is.
     /// </param>
-    /// <param name="firstPaintStrategy">The first-paint strategy whose persistence shape the restore maintains.</param>
-    /// <param name="persistence">The stores the accent is persisted to, and restored from.</param>
-    public async Task InitializeAsync(IReadOnlyList<BitAccentColorItem>? accents = null, BitAccentColorFirstPaintStrategy firstPaintStrategy = BitAccentColorFirstPaintStrategy.None, BitAccentColorPersistence persistence = BitAccentColorPersistence.None)
+    public async Task InitializeAsync(BitAccentColorConfig? config = null)
     {
         if (_initialized) return;
 
-        if (accents is not null) _accents = accents;
-        _firstPaintStrategy = firstPaintStrategy;
-        _persistence = persistence;
+        config ??= _registeredConfig;
+
+        if (config?.Accents is not null) _accents = config.Accents;
+        _firstPaintStrategy = config?.FirstPaintStrategy ?? BitAccentColorFirstPaintStrategy.None;
+        _persistence = config?.Persistence ?? BitAccentColorPersistence.None;
 
         if (_js.IsRuntimeInvalid()) return; // prerendering / disconnected circuit: retry on the next call.
 

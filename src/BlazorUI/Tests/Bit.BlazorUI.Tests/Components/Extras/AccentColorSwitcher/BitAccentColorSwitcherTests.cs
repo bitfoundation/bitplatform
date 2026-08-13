@@ -8,11 +8,11 @@ namespace Bit.BlazorUI.Tests.Components.Extras.AccentColorSwitcher;
 [TestClass]
 public class BitAccentColorSwitcherTests : BunitTestContext
 {
-    private void RegisterServices()
+    private void RegisterServices(System.Action<BitAccentColorConfig>? accentColor = null)
     {
         // The switcher resolves the scoped BitAccentColorService, which itself needs the core
         // theme services - the same registration an app gets from AddBitBlazorUIExtrasServices.
-        Context.Services.AddBitBlazorUIExtrasServices();
+        Context.Services.AddBitBlazorUIExtrasServices(accentColor: accentColor);
     }
 
     [TestMethod]
@@ -41,10 +41,13 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
         {
-            parameters.Add(p => p.Accents, new[]
+            parameters.Add(p => p.Config, new BitAccentColorConfig
             {
-                new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" },
-                new BitAccentColorItem { Name = "Indigo", Color = "#4B0082" },
+                Accents =
+                [
+                    new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" },
+                    new BitAccentColorItem { Name = "Indigo", Color = "#4B0082" },
+                ]
             });
         });
 
@@ -107,8 +110,11 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
-            parameters.Add(p => p.Persistence, BitAccentColorPersistence.All);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
         });
 
         // The built-in ring must not come from the C# state: prerendered markup renders before the
@@ -140,7 +146,10 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
         {
-            parameters.Add(p => p.Persistence, BitAccentColorPersistence.LocalStorage);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Persistence = BitAccentColorPersistence.LocalStorage,
+            });
         });
 
         component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
@@ -151,6 +160,48 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         Assert.AreEqual(false, apply.Arguments[3], "The default None strategy sets no bit-accent attribute.");
         Assert.AreEqual((int)BitAccentColorPersistence.LocalStorage, apply.Arguments[4],
             "The persistence flags must reach the JS side - they decide which stores are written and which are cleaned up.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldFallBackToTheDiRegisteredConfig()
+    {
+        RegisterServices(accentColor: config =>
+        {
+            config.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss;
+            config.Persistence = BitAccentColorPersistence.All;
+        });
+
+        var component = RenderComponent<BitAccentColorSwitcher>();
+
+        // The attribute-driven ring (instead of the class-driven one) is the observable proof that
+        // the CSS strategy reached the switcher without any Config parameter - the whole point of
+        // registering the configuration once in DI.
+        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
+            "The DI-registered CSS strategy must reach a parameterless switcher.");
+        Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute("bit-accent-swatch")));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherConfigParameterShouldOutrankTheDiRegisteredConfig()
+    {
+        RegisterServices(accentColor: config =>
+        {
+            config.Accents = [new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" }];
+        });
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Accents = [new BitAccentColorItem { Name = "Indigo", Color = "#4B0082" }],
+            });
+        });
+
+        var swatches = component.FindAll(".bit-acs-swt");
+
+        Assert.AreEqual(1, swatches.Count);
+        Assert.AreEqual("Indigo", swatches[0].GetAttribute("title"),
+            "An explicit Config parameter must win over the DI-registered configuration.");
     }
 
     [TestMethod]

@@ -1,9 +1,11 @@
-﻿namespace Bit.BlazorUI;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAccentColorHead is the single-drop first-paint setup for the accent color: place it at the top
 /// of the host page's <c>&lt;head&gt;</c> (right after <c>BitThemeSsr.InlineHeadScript</c>, before
-/// any stylesheet) and it emits everything the selected <see cref="BitAccentColorFirstPaintStrategy"/>
+/// any stylesheet) and it emits everything the strategy selected by <see cref="Config"/>
 /// needs - the inline script that re-resolves the accent from localStorage / the preference cookie
 /// before anything is painted (which is what keeps the accent correct when the HTML comes out of a
 /// cache), plus the palette CSS: the all-accents stylesheet in
@@ -25,21 +27,30 @@ public partial class BitAccentColorHead : ComponentBase
 {
     private string? _prerenderCss;
 
+    /// <summary>
+    /// The configuration this instance emits the head half for: the Config parameter when one is
+    /// handed in, otherwise the app-wide instance registered in DI (the accentColor option of
+    /// AddBitBlazorUIExtrasServices), otherwise null (nothing is emitted).
+    /// </summary>
+    private BitAccentColorConfig? _config;
+
+
+
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
+
 
 
     /// <summary>
-    /// The accent colors whose palettes are emitted. When null, the DefaultAccents (the six
-    /// BitAccentColorPresets hues) are used. Keep it in sync with the Accents parameter of the
-    /// BitAccentColorSwitcher instances of the app.
+    /// The app-wide accent configuration this component emits the head half of: its
+    /// FirstPaintStrategy selects what is emitted (nothing for the default None), its Persistence
+    /// selects the stores the inline script reads, and its Accents are the palettes emitted in
+    /// StaticCss mode. When null, the BitAccentColorConfig registered in DI (the accentColor option
+    /// of AddBitBlazorUIExtrasServices) is used - registering it in a service-registration method
+    /// both the server and the client compile, or handing this parameter the same instance the
+    /// app's BitAccentColorSwitcher instances use, is what keeps the head and the switchers
+    /// describing one configuration. With neither (or with a None strategy), nothing is emitted.
     /// </summary>
-    [Parameter] public IReadOnlyList<BitAccentColorItem>? Accents { get; set; }
-
-    /// <summary>
-    /// The first-paint strategy to emit the head content for; with the default None nothing is
-    /// emitted. Keep it in sync with the FirstPaintStrategy parameter of the BitAccentColorSwitcher
-    /// instances of the app.
-    /// </summary>
-    [Parameter] public BitAccentColorFirstPaintStrategy FirstPaintStrategy { get; set; }
+    [Parameter] public BitAccentColorConfig? Config { get; set; }
 
     /// <summary>
     /// Optional CSP nonce for the emitted inline script, to satisfy a script-src 'nonce-…'
@@ -54,13 +65,6 @@ public partial class BitAccentColorHead : ComponentBase
     /// cookie-independent. A missing or tampered value is treated as "no preference".
     /// </summary>
     [Parameter] public string? PersistedAccent { get; set; }
-
-    /// <summary>
-    /// The stores the emitted inline script reads the persisted accent from; with the default None
-    /// no script is emitted, since nothing is persisted for it to restore. Keep it in sync with the
-    /// Persistence parameter of the BitAccentColorSwitcher instances of the app.
-    /// </summary>
-    [Parameter] public BitAccentColorPersistence Persistence { get; set; }
 
     /// <summary>
     /// StaticCss strategy only: when set, the all-accents stylesheet is referenced as an external
@@ -78,8 +82,10 @@ public partial class BitAccentColorHead : ComponentBase
 
     protected override void OnParametersSet()
     {
-        _prerenderCss = FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StoredCss
-            ? BitAccentColorSsr.BuildPrerenderCss(PersistedAccent, Accents)
+        _config = Config ?? _serviceProvider.GetService<BitAccentColorConfig>();
+
+        _prerenderCss = _config?.FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StoredCss
+            ? BitAccentColorSsr.BuildPrerenderCss(PersistedAccent, _config?.Accents)
             : null;
 
         base.OnParametersSet();

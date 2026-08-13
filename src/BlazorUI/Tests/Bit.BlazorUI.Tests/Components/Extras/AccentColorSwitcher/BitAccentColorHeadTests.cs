@@ -18,11 +18,30 @@ public class BitAccentColorHeadTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitAccentColorHeadShouldFallBackToTheDiRegisteredConfig()
+    {
+        Context.Services.AddBitBlazorUIExtrasServices(accentColor: config =>
+        {
+            config.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss;
+            config.Persistence = BitAccentColorPersistence.All;
+        });
+
+        var component = RenderComponent<BitAccentColorHead>();
+
+        StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
+            "The DI-registered configuration must reach a parameterless head - stating the config once in shared registration is the whole point.");
+        Assert.AreEqual(1, component.FindAll("style").Count);
+    }
+
+    [TestMethod]
     public void BitAccentColorHeadInStaticCssModeShouldEmitTheStaticCssButNoScriptWithoutPersistence()
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+            });
         });
 
         Assert.AreEqual(1, component.FindAll("style").Count);
@@ -35,8 +54,11 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
-            parameters.Add(p => p.Persistence, BitAccentColorPersistence.All);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
         });
 
         StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
@@ -55,7 +77,10 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+            });
             parameters.Add(p => p.StylesheetHref, "accent-colors.css");
         });
 
@@ -72,7 +97,10 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+            });
             parameters.Add(p => p.StylesheetHref, "accent-colors.css?tenant=a");
         });
 
@@ -84,8 +112,11 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
-            parameters.Add(p => p.Persistence, BitAccentColorPersistence.All);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
             parameters.Add(p => p.Nonce, "abc123");
         });
 
@@ -98,7 +129,10 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StoredCss);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
+            });
             parameters.Add(p => p.PersistedAccent, "8764b8");
         });
 
@@ -117,8 +151,11 @@ public class BitAccentColorHeadTests : BunitTestContext
     {
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StoredCss);
-            parameters.Add(p => p.Persistence, BitAccentColorPersistence.All);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
             parameters.Add(p => p.PersistedAccent, persisted);
         });
 
@@ -130,12 +167,13 @@ public class BitAccentColorHeadTests : BunitTestContext
     [TestMethod]
     public void BitAccentColorHeadShouldHonorACustomAccentList()
     {
-        var accents = new[] { new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" } };
-
         var component = RenderComponent<BitAccentColorHead>(parameters =>
         {
-            parameters.Add(p => p.FirstPaintStrategy, BitAccentColorFirstPaintStrategy.StaticCss);
-            parameters.Add(p => p.Accents, accents);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Accents = [new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" }],
+            });
         });
 
         var css = component.Find("style").TextContent;

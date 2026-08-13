@@ -11,9 +11,9 @@
      aria-label="@(AriaLabel ?? "Accent color")">
     @{
         var activeToken = BitAccentColorSsr.NormalizeToken(_accentColorService.ActiveAccent);
-        var cssMarked = FirstPaintStrategy is not BitAccentColorFirstPaintStrategy.None;
+        var cssMarked = _config?.FirstPaintStrategy is not (null or BitAccentColorFirstPaintStrategy.None);
     }
-    @foreach (var item in Accents ?? DefaultAccents)
+    @foreach (var item in _config?.Accents ?? DefaultAccents)
     {
         var token = BitAccentColorSsr.NormalizeToken(item.Color);
         var isActive = token == activeToken;

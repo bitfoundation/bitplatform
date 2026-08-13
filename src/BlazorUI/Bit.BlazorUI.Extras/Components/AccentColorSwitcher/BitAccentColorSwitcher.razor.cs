@@ -1,10 +1,12 @@
-﻿namespace Bit.BlazorUI;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitAccentColorSwitcher renders a row of accent color swatches that re-theme the whole app live:
 /// one picked brand color is fed to BitThemeFactory as the seed of a complete palette, applied
 /// through BitThemeManager, and optionally persisted to localStorage and/or a cookie (see
-/// Persistence) so it survives a refresh - with
+/// BitAccentColorConfig.Persistence) so it survives a refresh - with
 /// selectable first-paint strategies that keep the accent correct even when the served HTML comes
 /// from a cache, before any Blazor runtime is up (see BitAccentColorFirstPaintStrategy and
 /// BitAccentColorSsr).
@@ -29,13 +31,18 @@ public partial class BitAccentColorSwitcher : BitComponentBase
 
     [Inject] private BitAccentColorService _accentColorService { get; set; } = default!;
 
+    [Inject] private IServiceProvider _serviceProvider { get; set; } = default!;
+
 
 
     /// <summary>
-    /// The accent colors to offer as swatches. When null, the DefaultAccents (the six
-    /// BitAccentColorPresets hues) are offered.
+    /// The configuration this instance renders and initializes by: the Config parameter when one is
+    /// handed in, otherwise the app-wide instance registered in DI (the accentColor option of
+    /// AddBitBlazorUIExtrasServices), otherwise null (all defaults).
     /// </summary>
-    [Parameter] public IReadOnlyList<BitAccentColorItem>? Accents { get; set; }
+    private BitAccentColorConfig? _config;
+
+
 
     /// <summary>
     /// Custom CSS classes for different parts of the switcher.
@@ -44,33 +51,25 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     public BitAccentColorSwitcherClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// The first-paint strategy to maintain when applying an accent: None (the default) applies the
-    /// accent after hydration only, StaticCss keys a prebuilt all-accents stylesheet on the
-    /// bit-accent root attribute, StoredCss keeps a snapshot of the generated palette CSS in
-    /// localStorage. See BitAccentColorFirstPaintStrategy and BitAccentColorSsr for the
-    /// server/head-script halves each strategy needs. The strategy is app-wide state on the shared
-    /// BitAccentColorService - the first initialized instance (or an explicit
-    /// BitAccentColorService.InitializeAsync call) fixes it, so keep it identical across instances.
-    /// With a CSS strategy the built-in active ring additionally keys on the bit-accent root
-    /// attribute the inline head script sets pre-paint, so prerendered and cached markup rings the
-    /// visitor's swatch immediately instead of ringing the default until hydration restores the accent.
+    /// The app-wide accent configuration: the accents offered as swatches, the stores the picked
+    /// one is persisted to, and the first-paint strategy to maintain when applying it. When null,
+    /// the BitAccentColorConfig registered in DI (the accentColor option of
+    /// AddBitBlazorUIExtrasServices) is used; with neither, the DefaultAccents are offered, nothing
+    /// is persisted and no first-paint machinery runs. The configuration is app-wide state on the
+    /// shared BitAccentColorService - the first initialized instance (or an explicit
+    /// BitAccentColorService.InitializeAsync call) fixes it - so state it once: register it in DI,
+    /// or define one shared BitAccentColorConfig instance and hand the same one to every switcher
+    /// and to the host page's BitAccentColorHead. With a CSS strategy the built-in active ring
+    /// additionally keys on the bit-accent root attribute the inline head script sets pre-paint, so
+    /// prerendered and cached markup rings the visitor's swatch immediately instead of ringing the
+    /// default until hydration restores the accent.
     /// </summary>
-    [Parameter] public BitAccentColorFirstPaintStrategy FirstPaintStrategy { get; set; }
+    [Parameter] public BitAccentColorConfig? Config { get; set; }
 
     /// <summary>
     /// The callback that is called when the accent color changes, receiving the applied accent color.
     /// </summary>
     [Parameter] public EventCallback<string> OnChange { get; set; }
-
-    /// <summary>
-    /// The stores the picked accent is persisted to: LocalStorage, Cookie, or both (All); None (the
-    /// default) keeps the accent for the current session only. The cookie half is what lets the
-    /// server read the preference while prerendering (SSR) - see BitAccentColorSsr - so enable it
-    /// when the server takes part in painting or seeding the accent. Like FirstPaintStrategy, this
-    /// is app-wide state on the shared BitAccentColorService fixed by the first initialized
-    /// instance, so keep it identical across instances.
-    /// </summary>
-    [Parameter] public BitAccentColorPersistence Persistence { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the switcher.
@@ -92,6 +91,13 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    protected override void OnParametersSet()
+    {
+        _config = Config ?? _serviceProvider.GetService<BitAccentColorConfig>();
+
+        base.OnParametersSet();
+    }
+
     protected override void OnInitialized()
     {
         // Subscribed this early - rather than after the first render - so the restore the first
@@ -106,7 +112,7 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     {
         if (firstRender)
         {
-            await _accentColorService.InitializeAsync(Accents, FirstPaintStrategy, Persistence);
+            await _accentColorService.InitializeAsync(_config);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -139,7 +145,7 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         var selectors = new List<string>();
         var neutralToken = BitAccentColorSsr.NormalizeToken(BitAccentColorPresets.Blue);
 
-        foreach (var item in Accents ?? DefaultAccents)
+        foreach (var item in _config?.Accents ?? DefaultAccents)
         {
             var token = BitAccentColorSsr.NormalizeToken(item.Color);
             if (token is null) continue;
@@ -179,8 +185,8 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         if (IsEnabled is false) return;
 
         // The service applies per the app-wide configuration the first InitializeAsync call fixed;
-        // this instance's parameters are not forwarded, so a differently-parameterized switcher
-        // cannot tear down the stores and attribute its siblings maintain.
+        // this instance's Config is not forwarded, so a differently-configured switcher cannot
+        // tear down the stores and attribute its siblings maintain.
         await _accentColorService.ApplyAsync(item.Color);
 
         await OnChange.InvokeAsync(item.Color);
