@@ -294,6 +294,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// </remarks>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbRecord<>))]
     public ValueTask<IndexedDbRecord<T>[]> GetPage<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store,
         object? query = null,
         IndexedDbCursorDirection direction = IndexedDbCursorDirection.Next,
@@ -320,6 +321,7 @@ public sealed class IndexedDbHandle : IAsyncDisposable
     /// </summary>
     [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed.")]
     [RequiresDynamicCode("JSON deserialization may use reflection-based code paths that aren't AOT-safe; use a source generator for native AOT.")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IndexedDbRecord<>))]
     public ValueTask<IndexedDbRecord<T>[]> GetPageByIndex<[DynamicallyAccessedMembers(JsonSerialized)] T>(string store,
         string index,
         object? query = null,

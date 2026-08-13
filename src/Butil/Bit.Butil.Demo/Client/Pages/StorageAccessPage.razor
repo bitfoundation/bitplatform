@@ -1,4 +1,4 @@
-@page "/storage-access"
+﻿@page "/storage-access"
 @inject Bit.Butil.StorageAccess storageAccess
 
 <PageTitle>StorageAccess - Bit.Butil</PageTitle>
@@ -100,6 +100,12 @@ var session = await localStorage.GetItem("session");
     <ApiMember Name="Request"
                Signature="ValueTask<bool> Request()"
                Description="Asks for access. Requires a user gesture. False covers every refusal - the spec deliberately gives no reason. A grant lasts for this document's lifetime only." />
+    <ApiMember Name="IsRequestForSupported"
+               Signature="ValueTask<bool> IsRequestForSupported()"
+               Description="True when the runtime exposes document.requestStorageAccessFor (Chromium only)." />
+    <ApiMember Name="RequestFor"
+               Signature="ValueTask<bool> RequestFor(string origin)"
+               Description="The top-level counterpart of Request: a first-party page asks for storage access on behalf of an origin it embeds, saving the embedded frame from needing its own user gesture. Call it from the top-level page, not the iframe." />
 </ApiTable>
 
 @code {

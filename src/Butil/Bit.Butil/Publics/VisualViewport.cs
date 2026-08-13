@@ -290,6 +290,31 @@ public class VisualViewport(IJSRuntime js) : IAsyncDisposable
         await RemoveScrollFromJs(ids);
     }
 
+    /// <summary>
+    /// Fires once when a visual-viewport scroll settles, rather than continuously while it moves.
+    /// <br/>
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scrollend_event">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport/scrollend_event</see>
+    /// </summary>
+    /// <returns>A subscription - dispose it to detach the listener.</returns>
+    /// <remarks>
+    /// Use this instead of <see cref="SubscribeScroll"/> when the work is expensive - re-laying out,
+    /// or persisting a position - since a pinch-zoom pan fires <c>scroll</c> on every frame but
+    /// <c>scrollend</c> only once. Not implemented in Safari, where the handler simply never fires.
+    /// </remarks>
+    public async ValueTask<ButilSubscription> SubscribeScrollEnd(Action handler)
+    {
+        var listenerId = Guid.NewGuid();
+        _handlers.TryAdd(listenerId, handler);
+
+        await js.InvokeVoid("BitButil.visualViewport.addScrollEnd", DotNetRef, listenerId);
+
+        return new ButilSubscription(listenerId, async () =>
+        {
+            _handlers.TryRemove(listenerId, out _);
+            await js.InvokeVoid("BitButil.visualViewport.removeScrollEnd", new[] { listenerId });
+        });
+    }
+
     private async ValueTask RemoveScrollFromJs(Guid[] ids)
     {
         await js.InvokeVoid("BitButil.visualViewport.removeScroll", ids);

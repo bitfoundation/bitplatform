@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Bit.Butil;
 
 /// <summary>
@@ -35,7 +37,16 @@ public sealed class IndexedDbKeyRange
     /// <summary>True to exclude <see cref="Upper"/> itself from the range.</summary>
     public bool UpperOpen { get; private set; }
 
+    // Ranges are serialized TO JavaScript: every property here is written by reflection and read by
+    // nobody in C#, which is exactly the shape a trimmer removes. If the getters go, a range
+    // serializes to {}, the isKeyRange marker disappears, and the JS side silently treats it as a
+    // plain key instead of a range - wrong results, no exception. Anchoring the dependency on the
+    // factories means any code path that can produce a range has already preserved it, which is
+    // sturdier than annotating every method that accepts one (most take it as `object query`).
+    private const DynamicallyAccessedMemberTypes Serialized = DynamicallyAccessedMemberTypes.All;
+
     /// <summary>Matches the single key <paramref name="value"/>. See <c>IDBKeyRange.only()</c>.</summary>
+    [DynamicDependency(Serialized, typeof(IndexedDbKeyRange))]
     public static IndexedDbKeyRange Only(object value)
         => new() { IsOnly = true, Lower = value, Upper = value };
 
@@ -43,6 +54,7 @@ public sealed class IndexedDbKeyRange
     /// Matches every key at or above <paramref name="lower"/>. Pass <paramref name="open"/> to exclude
     /// <paramref name="lower"/> itself. See <c>IDBKeyRange.lowerBound()</c>.
     /// </summary>
+    [DynamicDependency(Serialized, typeof(IndexedDbKeyRange))]
     public static IndexedDbKeyRange LowerBound(object lower, bool open = false)
         => new() { Lower = lower, LowerOpen = open };
 
@@ -50,6 +62,7 @@ public sealed class IndexedDbKeyRange
     /// Matches every key at or below <paramref name="upper"/>. Pass <paramref name="open"/> to exclude
     /// <paramref name="upper"/> itself. See <c>IDBKeyRange.upperBound()</c>.
     /// </summary>
+    [DynamicDependency(Serialized, typeof(IndexedDbKeyRange))]
     public static IndexedDbKeyRange UpperBound(object upper, bool open = false)
         => new() { Upper = upper, UpperOpen = open };
 
@@ -57,6 +70,7 @@ public sealed class IndexedDbKeyRange
     /// Matches every key between <paramref name="lower"/> and <paramref name="upper"/>, inclusive on
     /// both ends unless the matching <c>*Open</c> flag is set. See <c>IDBKeyRange.bound()</c>.
     /// </summary>
+    [DynamicDependency(Serialized, typeof(IndexedDbKeyRange))]
     public static IndexedDbKeyRange Bound(object lower, object upper, bool lowerOpen = false, bool upperOpen = false)
         => new() { Lower = lower, Upper = upper, LowerOpen = lowerOpen, UpperOpen = upperOpen };
 }

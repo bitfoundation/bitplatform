@@ -1,4 +1,4 @@
-@page "/document"
+﻿@page "/document"
 @implements IAsyncDisposable
 @inject Bit.Butil.Document document
 
@@ -213,6 +213,12 @@ ButilSubscription sub = await document.SubscribeDomContentLoaded(
     <ApiMember Name="SubscribePointerLockError" Signature="Task<ButilSubscription> SubscribePointerLockError(Action handler)" Description="Fires when acquiring pointer lock fails." />
     <ApiMember Name="SubscribeDomContentLoaded" Signature="Task<ButilSubscription> SubscribeDomContentLoaded(Action handler)" Description="Fires when the DOMContentLoaded event is raised." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Detaches every event listener this instance registered." />
+    <ApiMember Name="GetReadyState"
+               Signature="Task<string> GetReadyState()"
+               Description="loading, interactive, or complete. In Blazor this is nearly always complete by the time a component can call it, since the framework has to have booted first." />
+    <ApiMember Name="GetLastModified"
+               Signature="Task<string> GetLastModified()"
+               Description="When the document was last modified, in the browser's locale format - there is no ISO-8601 form. Falls back to the current time when the server sent no Last-Modified header, so it cannot distinguish just-modified from unknown." />
 </ApiTable>
 
 @code {

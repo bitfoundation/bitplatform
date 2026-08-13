@@ -56,4 +56,24 @@ public class StorageAccess(IJSRuntime js)
     /// a reload.
     /// </remarks>
     public ValueTask<bool> Request() => js.Invoke<bool>("BitButil.storageAccess.request");
+
+    /// <summary>True when the runtime exposes <c>document.requestStorageAccessFor</c> (Chromium only).</summary>
+    /// <remarks>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsRequestForSupported() => js.Invoke<bool>("BitButil.storageAccess.isRequestForSupported");
+
+    /// <summary>
+    /// The top-level counterpart of <see cref="Request"/>: a first-party page asks for storage
+    /// access on behalf of an origin it embeds.
+    /// </summary>
+    /// <param name="origin">The embedded origin to grant access to, e.g. <c>"https://embedded.example"</c>.</param>
+    /// <returns>True when granted; false on refusal or where the API doesn't exist.</returns>
+    /// <remarks>
+    /// Call this from the <em>top-level</em> page, not from the iframe - it saves the embedded frame
+    /// from needing its own user gesture. Still requires a user gesture here, and is Chromium-only.
+    /// </remarks>
+    public ValueTask<bool> RequestFor(string origin) => js.Invoke<bool>("BitButil.storageAccess.requestFor", origin);
 }

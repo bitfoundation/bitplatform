@@ -13,7 +13,8 @@ var BitButil = BitButil || {};
         height() { return window.visualViewport.height; },
         scale() { return window.visualViewport.scale; },
         addResize, removeResize,
-        addScroll, removeScroll
+        addScroll, removeScroll,
+        addScrollEnd, removeScrollEnd
     };
 
     function addResize(dotNetRef: DotNet.DotNetObject, listenerId: string) {
@@ -45,6 +46,24 @@ var BitButil = BitButil || {};
             const handler = _handlers[id];
             delete _handlers[id];
             window.visualViewport.removeEventListener('scroll', handler);
+        });
+    }
+
+    // scroll fires continuously through a pinch-zoom pan; scrollend fires once when it settles,
+    // which is the one you want for re-laying out or persisting a position.
+    function addScrollEnd(dotNetRef: DotNet.DotNetObject, listenerId: string) {
+        const handler: EventListener = () => {
+            butil.utils.dispatch(dotNetRef, 'InvokeVisualViewport', listenerId);
+        };
+
+        _handlers[listenerId] = handler;
+        window.visualViewport.addEventListener('scrollend', handler);
+    }
+    function removeScrollEnd(ids: string[]) {
+        ids.forEach(id => {
+            const handler = _handlers[id];
+            delete _handlers[id];
+            window.visualViewport.removeEventListener('scrollend', handler);
         });
     }
 }(BitButil));

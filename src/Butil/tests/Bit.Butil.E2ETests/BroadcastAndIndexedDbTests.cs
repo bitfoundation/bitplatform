@@ -32,4 +32,22 @@ public class BroadcastAndIndexedDbTests : ButilObserversPageTest
     {
         await ClickAndExpectAsync("idb-migrate", "idb:migrate:ok");
     }
+
+    [Test]
+    public async Task CookieStore_Change_Event_Reports_A_Written_Cookie()
+    {
+        await ClickAndExpectAsync("cookiestore-change", "cookiestore:change:ok");
+    }
+
+    [Test]
+    public async Task Change_Subscriptions_Attach_And_Detach()
+    {
+        await ClickAndExpectAsync("subs-attach", "subs:ok");
+    }
+
+    [Test]
+    public async Task Platform_Extras_Report_Expected_Values()
+    {
+        await ClickAndExpectAsync("platform-extras", "extras:ok");
+    }
 }

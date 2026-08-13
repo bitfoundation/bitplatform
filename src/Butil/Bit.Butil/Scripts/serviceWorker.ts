@@ -8,6 +8,8 @@ var BitButil = BitButil || {};
         isSupported() { return 'serviceWorker' in window.navigator; },
         register,
         getRegistration,
+        getRegistrations,
+        ready,
         update,
         unregister,
         postMessage,
@@ -46,6 +48,22 @@ var BitButil = BitButil || {};
     async function getRegistration(scope: string | null) {
         if (!('serviceWorker' in window.navigator)) return info(null);
         const reg = await window.navigator.serviceWorker.getRegistration(scope ?? undefined);
+        return info(reg);
+    }
+
+    async function getRegistrations() {
+        if (!('serviceWorker' in window.navigator)) return [];
+        const regs = await window.navigator.serviceWorker.getRegistrations();
+        return (regs || []).map(info);
+    }
+
+    // navigator.serviceWorker.ready resolves only once a registration is ACTIVE, so it is the
+    // reliable point to start postMessage-ing; a freshly registered worker is still 'installing'.
+    // It never rejects and never resolves without a worker, hence the timeout.
+    async function ready(timeoutMs: number) {
+        if (!('serviceWorker' in window.navigator)) return info(null);
+        const timeout = new Promise<null>(resolve => window.setTimeout(() => resolve(null), timeoutMs));
+        const reg = await Promise.race([window.navigator.serviceWorker.ready, timeout]);
         return info(reg);
     }
 

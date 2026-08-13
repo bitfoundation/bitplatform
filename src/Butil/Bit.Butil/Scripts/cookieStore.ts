@@ -26,8 +26,32 @@ var BitButil = BitButil || {};
         return init;
     }
 
+    const _listeners: { [id: string]: (e: any) => void } = {};
+
     butil.cookieStore = {
         isSupported() { return 'cookieStore' in window; },
+        subscribe(dotNetRef: any, listenerId: string) {
+            const cs: any = (window as any).cookieStore;
+            if (!cs) return false;
+            // A single change event carries both halves: cookies written and cookies removed.
+            // An overwrite shows up as a delete followed by a set, so both lists can be non-empty.
+            const handler = (e: any) => butil.utils.dispatch(dotNetRef, 'InvokeCookieStoreChange', listenerId, {
+                changed: (e.changed || []).map(toItem),
+                deleted: (e.deleted || []).map(toItem)
+            });
+            _listeners[listenerId] = handler;
+            cs.addEventListener('change', handler);
+            return true;
+        },
+        unsubscribe(listenerId: string) {
+            const handler = _listeners[listenerId];
+            if (!handler) return;
+            delete _listeners[listenerId];
+            (window as any).cookieStore?.removeEventListener('change', handler);
+        },
+        disposeAll() {
+            for (const id of Object.keys(_listeners)) butil.cookieStore.unsubscribe(id);
+        },
         async getAll() {
             const cs: any = (window as any).cookieStore;
             if (!cs) return [];

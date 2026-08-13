@@ -12,6 +12,13 @@
 @inject Bit.Butil.Navigator navigator
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.Screen screen
+@inject Bit.Butil.Battery battery
+@inject Bit.Butil.Permissions permissions
+@inject Bit.Butil.StorageAccess storageAccess
+@inject Bit.Butil.Window butilWindow
+@inject Bit.Butil.Location butilLocation
+@inject Bit.Butil.Document butilDocument
+@inject Bit.Butil.SpeechSynthesis speechSynthesis
 @inject IJSRuntime js
 
 @*
@@ -77,6 +84,12 @@
 <section>
     <h3>CookieStore</h3>
     <button id="cookiestore-roundtrip" @onclick="CookieStoreRoundTrip">set + get + delete</button>
+    <button id="cookiestore-change" @onclick="CookieStoreChangeEvent">subscribe change</button>
+</section>
+
+<section>
+    <h3>Change subscriptions</h3>
+    <button id="subs-attach" @onclick="ChangeSubscriptions">battery + network + permissions</button>
 </section>
 
 <section>
@@ -89,6 +102,7 @@
     <button id="nav-info" @onclick="NavInfo">navigator info</button>
     <button id="ua-extract" @onclick="UaExtract">userAgent.extract</button>
     <button id="screen-metrics" @onclick="ScreenMetrics">screen metrics</button>
+    <button id="platform-extras" @onclick="PlatformExtras">platform extras</button>
 </section>
 
 @code {
@@ -453,6 +467,100 @@
         var item = await cookieStore.Get("butil-e2e-cs");
         await cookieStore.Delete("butil-e2e-cs");
         Set($"cookiestore:get:{item?.Value}");
+    }
+
+    private TaskCompletionSource<string>? _cookieChanged;
+
+    // The change event is the one thing document.cookie can never give you, so this asserts a real
+    // round trip: subscribe, write, and wait for the browser to report the write back.
+    private async Task CookieStoreChangeEvent()
+    {
+        if (!await cookieStore.IsSupported())
+        {
+            Set("cookiestore:change:unsupported");
+            return;
+        }
+
+        _cookieChanged = new TaskCompletionSource<string>();
+        var sub = await cookieStore.SubscribeChange(change =>
+        {
+            var name = change.Changed.FirstOrDefault()?.Name;
+            if (name == "butil-e2e-change") _cookieChanged?.TrySetResult(name);
+        });
+
+        if (sub is null) { Set("cookiestore:change:no-subscription"); return; }
+
+        try
+        {
+            await cookieStore.Set(new CookieStoreItem { Name = "butil-e2e-change", Value = "v", Path = "/" });
+            var received = await WaitForValue(_cookieChanged, 5000);
+            Set($"cookiestore:change:{(received == "butil-e2e-change" ? "ok" : "timeout")}");
+        }
+        finally
+        {
+            await sub.DisposeAsync();
+            await cookieStore.Delete("butil-e2e-change");
+        }
+    }
+
+    // Battery/network/permission changes can't be provoked from a headless page, so this asserts
+    // the subscription contract instead: attach, get the documented shape back, detach cleanly.
+    private async Task ChangeSubscriptions()
+    {
+        // Battery: a subscription where the API exists, null where it doesn't - never a throw.
+        var batterySupported = await battery.IsSupported();
+        var batterySub = await battery.SubscribeChange(_ => { });
+        if (batterySupported != (batterySub is not null)) { Set("subs:fail:battery-mismatch"); return; }
+        if (batterySub is not null) await batterySub.DisposeAsync();
+
+        // Network: always subscribable, because online/offline exist everywhere.
+        var networkSub = await networkInformation.SubscribeChange(_ => { });
+        await networkSub.DisposeAsync();
+
+        // Permissions: a recognized descriptor reports a real state and hands back a subscription.
+        var (state, permSub) = await permissions.SubscribeChange("geolocation", _ => { });
+        if (state == PermissionState.Unknown || permSub is null) { Set($"subs:fail:permissions:{state}"); return; }
+        await permSub.DisposeAsync();
+
+        // An unrecognized descriptor is Unknown with nothing to dispose.
+        var (bogusState, bogusSub) = await permissions.SubscribeChange("not-a-real-permission", _ => { });
+        if (bogusState != PermissionState.Unknown || bogusSub is not null) { Set("subs:fail:permissions-bogus"); return; }
+
+        Set("subs:ok");
+    }
+
+    // ─── Platform extras ───────────────────────────────────────────────────────
+    private async Task PlatformExtras()
+    {
+        // Newly surfaced getters: assert the plumbing, not specific machine-dependent values.
+        if (await navigator.IsCookieEnabled() is false) { Set("extras:fail:cookieEnabled"); return; }
+
+        var activation = await navigator.GetUserActivation();
+        if (activation is null || activation.HasBeenActive is false) { Set("extras:fail:userActivation"); return; }
+
+        if (await butilWindow.GetDevicePixelRatio() <= 0) { Set("extras:fail:devicePixelRatio"); return; }
+        if (await butilWindow.IsInIframe()) { Set("extras:fail:isInIframe"); return; }
+        if (await butilWindow.GetFrameCount() != 0) { Set("extras:fail:frameCount"); return; }
+        await butilWindow.IsCrossOriginIsolated();   // no COOP/COEP here, so only the call is asserted
+
+        // Top-level page: no ancestors.
+        if ((await butilLocation.GetAncestorOrigins()).Length != 0) { Set("extras:fail:ancestorOrigins"); return; }
+
+        if (await butilDocument.GetReadyState() != "complete") { Set("extras:fail:readyState"); return; }
+        if (string.IsNullOrWhiteSpace(await butilDocument.GetLastModified())) { Set("extras:fail:lastModified"); return; }
+
+        // Screen availLeft/availTop are reported as 0 where unimplemented, so only sanity-check them.
+        if (await screen.GetAvailableLeft() < 0 || await screen.GetAvailableTop() < 0) { Set("extras:fail:screen-avail"); return; }
+
+        if (await speechSynthesis.IsPaused()) { Set("extras:fail:speech-paused"); return; }
+
+        // Chromium reports a per-API usage breakdown; elsewhere it is empty, which is also valid.
+        var estimate = await storageManager.Estimate();
+        if (estimate.UsageDetails is null) { Set("extras:fail:usageDetails"); return; }
+
+        await storageAccess.IsRequestForSupported();   // presence check only - granting needs a real embed
+
+        Set("extras:ok");
     }
 
     // ─── Performance entries ───────────────────────────────────────────────────

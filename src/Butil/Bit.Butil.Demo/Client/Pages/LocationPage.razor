@@ -1,4 +1,4 @@
-@page "/location"
+﻿@page "/location"
 @inject Bit.Butil.Location location
 
 <PageTitle>Location - Bit.Butil</PageTitle>
@@ -123,6 +123,9 @@ await location.SetProtocol("https");       // upgrade to https
     <ApiMember Name="Assign" Signature="Task Assign(string url)" Description="Loads the resource at the given URL, adding a history entry." />
     <ApiMember Name="Reload" Signature="Task Reload()" Description="Reloads the current URL, like the Refresh button." />
     <ApiMember Name="Replace" Signature="Task Replace(string url)" Description="Navigates to the given URL, replacing the current history entry." />
+    <ApiMember Name="GetAncestorOrigins"
+               Signature="Task<string[]> GetAncestorOrigins()"
+               Description="Origins of the frames containing this document, innermost first; empty in a top-level page. Not implemented in Firefox, where it also reports empty - so pair it with Window.IsInIframe before treating empty as proof you are not framed." />
 </ApiTable>
 
 @code {
