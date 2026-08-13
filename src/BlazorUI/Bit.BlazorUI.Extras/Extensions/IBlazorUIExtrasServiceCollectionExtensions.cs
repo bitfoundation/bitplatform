@@ -25,11 +25,13 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
         {
             services.TryAddSingleton<BitProModalService>();
             services.TryAddSingleton<BitMessageBoxService>();
+            services.TryAddSingleton<BitAccentColorService>();
         }
         else
         {
             services.TryAddScoped<BitProModalService>();
             services.TryAddScoped<BitMessageBoxService>();
+            services.TryAddScoped<BitAccentColorService>();
         }
 
         services.TryAddScoped<BitExtraServices>();

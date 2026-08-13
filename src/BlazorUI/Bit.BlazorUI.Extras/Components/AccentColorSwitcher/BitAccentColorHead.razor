@@ -1,0 +1,21 @@
+@namespace Bit.BlazorUI
+
+@if (FirstPaintStrategy is not BitAccentColorFirstPaintStrategy.None)
+{
+    @((MarkupString)BitAccentColorSsr.BuildInlineHeadScript(Nonce, Persistence))
+    @if (FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StaticCss)
+    {
+        if (StylesheetHref.HasValue())
+        {
+            <link rel="stylesheet" href="@GetVersionedStylesheetHref()" />
+        }
+        else
+        {
+            <style>@((MarkupString)BitAccentColorSsr.BuildStaticCss(Accents))</style>
+        }
+    }
+    else if (_prerenderCss is not null)
+    {
+        <style id="@BitAccentColorNames.StyleElementId">@((MarkupString)_prerenderCss)</style>
+    }
+}

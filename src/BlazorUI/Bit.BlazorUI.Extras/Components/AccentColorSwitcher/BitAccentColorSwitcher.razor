@@ -1,0 +1,25 @@
+@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     role="group"
+     aria-label="@(AriaLabel ?? "Accent color")">
+    @foreach (var item in Accents ?? DefaultAccents)
+    {
+        var isActive = IsActive(item);
+
+        <button @onclick="() => HandleOnClickAsync(item)"
+                type="button"
+                title="@item.Name"
+                disabled="@(IsEnabled is false)"
+                class="@GetSwatchClass(isActive)"
+                style="@GetSwatchStyle(item, isActive)"
+                aria-pressed="@(isActive ? "true" : "false")"
+                aria-label="@GetSwatchAriaLabel(item)"></button>
+    }
+</div>

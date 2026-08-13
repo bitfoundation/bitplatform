@@ -13,7 +13,7 @@ public partial class MainLayout : IDisposable
     [AutoInject] private IExceptionHandler _exceptionHandler = default!;
     [AutoInject] private NavigationManager _navigationManager = default!;
     [AutoInject] private IPrerenderStateService _prerenderStateService = default!;
-    [AutoInject] private AppAccentColorService _accentColorService = default!;
+    [AutoInject] private BitAccentColorService _accentColorService = default!;
 
 
     /// <summary>

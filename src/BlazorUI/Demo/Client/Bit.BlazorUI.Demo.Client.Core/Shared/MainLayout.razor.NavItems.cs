@@ -192,7 +192,15 @@ public partial class MainLayout
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },
-        new() { Text = "Theming", Url = "/theming" },
+        new()
+        {
+            Text = "Theming",
+            ChildItems =
+            [
+                new() { Text = "Theming", Url = "/theming", Description = "Theme, DesignTokens, Dark, Light" },
+                new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
+            ]
+        },
     ];
 }
 

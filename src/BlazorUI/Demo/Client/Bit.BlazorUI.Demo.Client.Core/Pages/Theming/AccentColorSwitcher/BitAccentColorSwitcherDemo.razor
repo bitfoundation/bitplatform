@@ -1,0 +1,136 @@
+@page "/components/accentcolorswitcher"
+
+<PageOutlet Url="components/accentcolorswitcher"
+            Title="AccentColorSwitcher"
+            Description="BitAccentColorSwitcher renders a row of accent color swatches that re-theme the whole app live from a single brand color, can persist the choice, and can keep the first paint correct even behind a CDN cache." />
+
+<DemoPage Name="AccentColorSwitcher"
+          SecondaryNames="@(["Accent", "Brand", "Theming"])"
+          Description="BitAccentColorSwitcher renders a row of accent color swatches that re-theme the whole app live: one picked brand color is fed to BitThemeFactory as the seed of a complete palette, applied through BitThemeManager, and optionally persisted (localStorage and/or cookie, see Persistence) so it survives a refresh - with two opt-in first-paint strategies (beyond the default None, which simply re-applies the accent after hydration) that keep the accent correct even when the served HTML comes from a cache, before any Blazor runtime is up."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          GitHubExtrasUrl="AccentColorSwitcher/BitAccentColorSwitcher.razor.cs"
+          GitHubDemoUrl="../Theming/AccentColorSwitcher/BitAccentColorSwitcherDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The accent is owned by the scoped BitAccentColorService (registered by AddBitBlazorUIExtrasServices),
+            so every switcher on this page shows and sets the same one color - including the one in this site's
+            own header, which is this very component.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Pick a swatch to re-theme this whole website live; the first swatch is the packaged palette's own
+                primary, i.e. "no override". By default nothing is persisted, so the choice lasts for the current
+                session only - see the Persistence section to make it survive a refresh.
+            </div>
+            <br />
+            <BitAccentColorSwitcher />
+        </DemoExample>
+
+        <DemoExample Title="Accents" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                Offer your own brand colors using the Accents parameter. Any valid hex works as a seed - the palette
+                is derived from it on the fly. The Name shows as the swatch tooltip and accessible label.
+                (Note: on this website only the six default accents take part in persistence, since they are what
+                the app's first initialization registered for restore validation.)
+            </div>
+            <br />
+            <BitAccentColorSwitcher Accents="customAccents" />
+        </DemoExample>
+
+        <DemoExample Title="Persistence" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                The Persistence parameter selects the stores the picked accent is persisted to: LocalStorage,
+                Cookie, or both (All); the default None keeps the accent for the current session only.
+                The cookie is the only store the server can read, so it is what lets SSR prerender the page
+                with the visitor's accent - enable it whenever the server takes part in first paint.
+            </div>
+            <br />
+            <BitAccentColorSwitcher Persistence="BitAccentColorPersistence.All" />
+        </DemoExample>
+
+        <DemoExample Title="FirstPaintStrategy" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                The FirstPaintStrategy parameter selects how the accent palette reaches the very first paint of a
+                page load, before any Blazor runtime is up - which matters when the served HTML comes from a cache
+                (e.g. a CDN) that cannot vary on the visitor's cookie:
+            </div>
+            <br />
+            <div>
+                <b>None</b> (default): no first-paint machinery. The accent (if persisted - see the Persistence
+                section above) is restored and applied after hydration only, so a server-rendered page paints the
+                packaged palette first and flips once the client is up.
+            </div>
+            <br />
+            <div>
+                <b>StaticCss</b>: a prebuilt stylesheet carries every offered accent's palette, each scoped to
+                the bit-accent attribute the inline head script sets pre-paint. Recommended for a fixed set of accents.
+            </div>
+            <br />
+            <div>
+                <b>StoredCss</b>: every accent change stores a snapshot of the generated palette CSS in localStorage,
+                and the inline head script injects it pre-paint. No static stylesheet needed, so the accents do not
+                have to be known up front.
+            </div>
+            <br />
+            <div>
+                The CSS strategies work hand in hand with the Persistence parameter: pre-paint, the accent is
+                re-resolved from the stores Persistence enables, so with the default Persistence None nothing is
+                persisted, no inline head script is even emitted, and the first paint has nothing to restore -
+                first paint simply won't work without a Persistence other than None. The StoredCss snapshot
+                additionally lives in localStorage, so that strategy specifically needs the LocalStorage store enabled.
+            </div>
+            <br />
+            <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StoredCss"
+                                    Persistence="BitAccentColorPersistence.All" />
+        </DemoExample>
+
+        <DemoExample Title="OnChange" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>Get notified when the accent changes:</div>
+            <br />
+            <BitAccentColorSwitcher OnChange="color => changedAccentColor = color" />
+            <br />
+            <div>Changed accent color: <b>@(changedAccentColor ?? "-")</b></div>
+        </DemoExample>
+
+        <DemoExample Title="First paint setup" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                With the default None strategy the switcher works with no further setup, but the accent is only
+                applied after hydration - a server-rendered page paints the packaged palette first and flips once
+                the client is up. Picking a CSS strategy closes that gap: drop the BitAccentColorHead component at
+                the top of the host page's head (App.razor in a Blazor Web App) with the same FirstPaintStrategy
+                and Persistence as your switchers, and it emits the inline script that re-resolves the accent
+                from the enabled stores pre-paint on every
+                load (this is what survives a CDN cache) plus the palette CSS the selected strategy needs. The
+                Razor tab shows the host-page half; the C# tab shows the optional stylesheet endpoint the
+                StaticCss strategy can link instead of inlining. The underlying BitAccentColorSsr helpers stay
+                available for hosts that need finer control (CSP nonces, custom placement).
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>Use Style, Class, Styles and Classes to customize the switcher:</div>
+            <br />
+            <BitAccentColorSwitcher Style="padding:0.5rem;border:1px dashed gray;border-radius:0.5rem" />
+            <br />
+            <BitAccentColorSwitcher Classes="@(new() { Swatch = "custom-swatch", ActiveSwatch = "custom-active-swatch" })" />
+            <br />
+            <BitAccentColorSwitcher Styles="@(new() { Root = "gap:1.5rem", Swatch = "border-radius:0.25rem" })" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

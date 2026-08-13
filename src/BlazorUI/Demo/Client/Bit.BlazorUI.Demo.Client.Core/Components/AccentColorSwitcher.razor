@@ -17,18 +17,11 @@
         <BitText Element="span" Typography="BitTypography.Caption1" Class="accent-switcher-label">Accent color</BitText>
     }
 
-    <div class="accent-swatches">
-        @foreach (var (name, hex) in AppAccentColorService.Presets)
-        {
-            var isActive = _accentColorService.ActiveAccent == hex;
-
-            <button type="button"
-                    title="@name"
-                    aria-pressed="@(isActive ? "true" : "false")"
-                    aria-label="@($"Apply the {name} accent color")"
-                    class="accent-swatch@(isActive ? " accent-swatch--active" : null)"
-                    style="--swatch-color: @hex"
-                    @onclick="() => _accentColorService.ApplyAsync(hex)"></button>
-        }
-    </div>
+    @* StaticCss + All explicitly (the component defaults persist nothing and skip first paint):
+       this app's host page emits the matching BitAccentColorHead and reads the accent cookie while
+       prerendering (see App.razor and Services.cs in the Server project), and the first
+       InitializeAsync call - which comes from one of these chrome instances - fixes the
+       configuration the restore maintains. *@
+    <BitAccentColorSwitcher FirstPaintStrategy="BitAccentColorFirstPaintStrategy.StaticCss"
+                            Persistence="BitAccentColorPersistence.All" />
 </div>

@@ -99,10 +99,6 @@ function getInnerText(element: HTMLElement) {
     return element?.innerText;
 }
 
-function removeElementById(id: string) {
-    document.getElementById(id)?.remove();
-}
-
 const windowResizeListeners: { [key: string]: () => void } = {};
 
 function registerWindowResizeListener(id: string, dotnetObj: any, methodName: string) {
@@ -119,26 +115,6 @@ function unregisterWindowResizeListener(id: string) {
 
     window.removeEventListener('resize', listener);
     delete windowResizeListeners[id];
-}
-
-// Cookies are how a client-side preference reaches the server, which needs it to prerender the page
-// the way the visitor left it - localStorage is unreachable from there. Lax + the 400-day cap
-// browsers clamp to, mirroring what the library writes for its own theme-preference cookie.
-function setCookie(name: string, value: string, maxAgeSeconds: number) {
-    const secure = location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax${secure}`;
-}
-
-function getCookie(name: string): string | null {
-    const prefix = `${name}=`;
-    const match = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(prefix));
-    if (match == null) return null;
-
-    try {
-        return decodeURIComponent(match.substring(prefix.length));
-    } catch {
-        return match.substring(prefix.length);
-    }
 }
 
 declare namespace BitBlazorUI {
