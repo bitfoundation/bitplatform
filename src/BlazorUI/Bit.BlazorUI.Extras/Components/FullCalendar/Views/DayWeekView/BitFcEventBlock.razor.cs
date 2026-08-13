@@ -63,8 +63,16 @@ public partial class BitFcEventBlock
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // A read-only block renders no resize handles, so there is nothing to bind the JS listeners
-        // to. Leaving _resizeInitialized unset means turning read-only back off re-registers them.
-        if (State.ReadOnly || _resizeInitialized)
+        // to. The handles are removed from the DOM (taking their listeners with them), so the flag
+        // is cleared as well - otherwise the fresh handles rendered when read-only is turned back
+        // off would be skipped here and never receive listeners.
+        if (State.ReadOnly)
+        {
+            _resizeInitialized = false;
+            return;
+        }
+
+        if (_resizeInitialized)
             return;
 
         try
@@ -88,6 +96,11 @@ public partial class BitFcEventBlock
         if (direction is not ("top" or "bottom"))
             return;
 
+        // The handles are not rendered while read-only, but a listener bound before the switch can
+        // still deliver a start; refuse it so the block never enters resize mode in read-only.
+        if (State.ReadOnly)
+            return;
+
         _isResizing = true;
         _resizeDirection = direction;
         _resizeBaseEvent = Event;
@@ -103,6 +116,19 @@ public partial class BitFcEventBlock
     {
         if (!_isResizing || _resizeBaseEvent == null)
             return Task.CompletedTask;
+
+        // Read-only can be switched on mid-gesture: the handle leaves the DOM, but the document-level
+        // pointer listeners keep running. Drop the preview so the block snaps back to the stored times.
+        if (State.ReadOnly)
+        {
+            if (_previewStart.HasValue || _previewEnd.HasValue)
+            {
+                _previewStart = null;
+                _previewEnd = null;
+                return InvokeAsync(StateHasChanged);
+            }
+            return Task.CompletedTask;
+        }
 
         // Finger back at (or very near) the grab point → show the original span again and cancel
         // any in-progress preview so the user can "undo" without releasing early.
@@ -177,7 +203,9 @@ public partial class BitFcEventBlock
     {
         try
         {
-            if (_resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+            // Never commit in read-only: the switch can land between the last move and the release,
+            // which would otherwise persist a resize the calendar no longer allows.
+            if (State.ReadOnly is false && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
             {
                 var s = _previewStart.Value;
                 var e = _previewEnd.Value;
