@@ -19,12 +19,14 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
   - [BmotionPresenceSwitch](#bmotionpresenceswitch)
   - [BmotionPresenceGroup](#bmotionpresencegroup)
   - [BmotionReorderGroup](#bmotionreordergroup)
+  - [BmotionSplitText](#bmotionsplittext)
   - [BmotionConfig](#bmotionconfig)
 - [Transitions](#transitions)
 - [Keyframes](#keyframes)
 - [Variants](#variants)
 - [Drag](#drag)
 - [Layout & shared elements](#layout--shared-elements)
+- [Scroll timelines](#scroll-timelines)
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
 - [Accessibility](#accessibility)
@@ -79,13 +81,30 @@ Bm.Tween(0.4, BmEase.InOut, repeat: BmRepeat.Mirror())
 Bm.Inertia(velocity: 500)
 Bm.Stagger(0.08, from: BmStaggerFrom.Center)     // delay generator for multi-element animations
 Bm.Current                                        // wildcard keyframe: "the element's current value"
+
+Bm.Value(0.0)                                     // a reactive motion value
+Bm.Velocity(x)                                    // a motion value carrying x's units/sec (useVelocity)
+Bm.Clamp(0, 10, v) · Bm.Wrap(0, 10, v) · Bm.Mix(a, b, t) · Bm.MapRange(v, [0, 100], [0, 1])
 ```
 
-`Bm.To(...)` returns a `BmProps`; every parameter is optional. Available
-properties: `x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY,
-perspective, originX, originY, opacity, backgroundColor, color, borderColor, outlineColor,
-fill, stroke, width, height, borderRadius, boxShadow, filter, pathLength, pathOffset, pathSpacing,
-cssVars, transition`.
+Every transition is reusable: `transition.WithDelay(seconds)` returns a copy with a new delay, so
+one configured spring can drive a whole staggered set without them fighting over its `Delay`.
+
+`Bm.To(...)` returns a `BmProps`; every parameter is optional:
+
+| Group | Properties |
+|---|---|
+| Transforms | `x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY, perspective, originX, originY` |
+| Visual | `opacity, backgroundColor, color, borderColor, outlineColor, fill, stroke, width, height, borderRadius, boxShadow, filter` |
+| Layout / box-model | `top, left, right, bottom, margin, padding, gap` |
+| Typography | `letterSpacing, lineHeight, fontSize` |
+| Misc CSS | `clipPath, backgroundPosition, backgroundSize` |
+| Motion path | `offsetPath, offsetDistance` |
+| SVG | `d` (shape morph), `pathLength, pathOffset, pathSpacing` (stroke drawing) |
+| Escape hatches | `cssVars` (custom properties), `css` (any other CSS property), `transition` |
+
+Anything without a typed parameter goes through `css`, which takes dash-case or camelCase keys:
+`Bm.To(css: new() { ["mix-blend-mode"] = "screen" })`.
 
 > **Security:** string-valued properties are written verbatim into the element's inline style.
 > They are intended for developer-authored values; binding untrusted end-user input risks CSS
@@ -136,12 +155,16 @@ literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66
 | `Variants` | `BmVariants?` | Named animation states |
 | `State` / `InitialState` | `string?` | Active / initial variant name (razor-literal friendly) |
 | `Custom` | `object?` | Data passed to dynamic variants |
+| `Inherit` | `bool` | Default `true`. `false` cuts this element out of an ancestor's variant cascade (it still cascades its own variants downward) |
+| `TransformTemplate` | `BmTransformTemplate?` | Rewrites the composed `transform` string - reorder the components, or keep one of your own in front |
+| `GesturePropagation` | `bool` | Default `true`. `false` stops this element's tap/pan from also reaching gesture-enabled ancestors |
 | `Values` | `Dictionary<string, BmValue<double>>?` | Motion-value bindings (`style={{ x }}` equivalent) |
 | `StringValues` | `Dictionary<string, BmValue<string>>?` | String motion-value bindings for any CSS property (`useMotionTemplate` equivalent, see [Motion values](#motion-values)) |
 | `Drag`, `DragConstraints`, `DragElastic`, `DragMomentum`, `DragSnapToOrigin`, `DragDirectionLock`, `DragTransition`, `DragHandle`, `DragControls`, `DragListener` | | See [Drag](#drag) |
-| `Layout` | `BmLayout` | Automatic FLIP layout animations (`true` or `BmLayout.Position`) |
+| `Timeline` | `BmScrollTimeline?` | Drives `Animate` from scroll position on the browser's native scroll timelines (see [Scroll timelines](#scroll-timelines)) |
+| `Layout` | `BmLayout` | Automatic FLIP layout animations (`true`, `BmLayout.Position` or `BmLayout.Size`) |
 | `LayoutId` | `string?` | Shared-element transitions (see [Layout & shared elements](#layout--shared-elements)) |
-| `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` |
+| `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` (`Viewport.Root` measures against a scroll container instead of the page) |
 | `OnUpdate` | `Action<IReadOnlyDictionary<string, string>>?` | Per-frame callback with the CSS flushed this frame (no re-render) |
 
 Plain HTML attributes (`class`, `role`, `data-*`, …) go directly on the element you author
@@ -156,6 +179,40 @@ both).
 </Bmotion>
 ```
 
+#### Controlling the transform string
+
+`TransformTemplate` rewrites the `transform` Bmotion composes - to reorder the components, or to
+keep one of your own in front of the animated ones:
+
+```razor
+@* stays centred on its own anchor whatever the animation does *@
+<Bmotion Animate="Bm.To(scale: 1.2)"
+         TransformTemplate="(_, generated) => $&quot;translate(-50%, -50%) {generated}&quot;">
+    <div class="pin" />
+</Bmotion>
+```
+
+It receives the element's live transform components (px and degrees) and the string Bmotion would
+have written, and applies on every path that writes a transform - the frame loop, the
+pre-first-paint inline style, instant `Set` calls and the keyframes handed to the compositor - so
+the element never flickers between a templated and an untemplated transform.
+
+#### Nested gestures
+
+Pointer gestures bubble, so pressing a tappable child also presses its tappable parent.
+`GesturePropagation="false"` stops that for tap and pan, exactly as `DragPropagation` does for drag
+(hover is unaffected - `pointerenter`/`pointerleave` don't bubble in the first place):
+
+```razor
+<Bmotion WhileTap="Bm.To(scale: 0.98)">          @* the card *@
+    <div class="card">
+        <Bmotion WhileTap="Bm.To(scale: 0.9)" GesturePropagation="false">
+            <button>Only this presses</button>
+        </Bmotion>
+    </div>
+</Bmotion>
+```
+
 #### Event callbacks
 
 ```text
@@ -164,6 +221,8 @@ OnTapStart / OnTap / OnTapCancel
 OnFocusStart / OnFocusEnd
 OnPanStart / OnPan / OnPanEnd                  (BmPanInfo)
 OnDragStart / OnDrag / OnDragEnd
+OnDirectionLock                                (BmDragAxis - the axis DragDirectionLock resolved)
+OnLayoutAnimationStart / OnLayoutAnimationComplete
 OnAnimationStart / OnAnimationComplete         (BmProps? - the resolved target)
 OnViewportEnter / OnViewportLeave
 ```
@@ -275,6 +334,42 @@ release:
 | `Transition` | `BmTransition?` | Spring for sibling displacement and the release settle |
 | `OnReorder` | `EventCallback` | Fires after a reorder is committed |
 
+### BmotionSplitText
+
+Staggered text animation - motion.dev's `splitText` and GSAP's `SplitText`, with no DOM surgery.
+The text is split in **C#** and every unit is rendered as its own `<Bmotion>` element, so there is
+nothing to re-split on re-render and nothing for a script to undo:
+
+```razor
+<BmotionSplitText Text="Every character"
+                  By="BmSplitBy.Chars"
+                  Initial="Bm.To(opacity: 0, y: 24, rotate: -12)"
+                  Animate="Bm.To(opacity: 1, y: 0, rotate: 0)"
+                  Stagger="Bm.Stagger(0.03)"
+                  Transition="Bm.Spring(bounce: 0.35, duration: 0.7)" />
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `Text` | `string?` | The text to split and animate |
+| `By` | `BmSplitBy` | `Chars` (default), `Words`, or `Lines` (splits on authored newlines) |
+| `Initial` / `Animate` / `Exit` | `BmTarget?` | Forwarded to every unit |
+| `WhileHover` / `WhileTap` / `WhileInView` | `BmTarget?` | Per-unit gestures - the hover lands on the one character the pointer is over |
+| `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport options for `WhileInView` |
+| `Transition` | `BmTransition?` | Timing for every unit; each unit's stagger offset is added to its delay |
+| `Stagger` | `BmStagger?` | The cascade across units. Default `Bm.Stagger(0.03)` |
+| `As` / `Class` / `Style` / `UnitClass` | `string?` | The container element/styling and the per-unit class |
+| `Accessible` | `bool` | Default `true`: `aria-label` on the container, `aria-hidden` on the units |
+| `OnComplete` | `EventCallback` | Fires once the last unit finishes |
+
+The split is **not** a bag of one-character spans: whitespace is rendered as whitespace rather than
+as units, and in `Chars` mode each word is wrapped in its own inline-block. So the text wraps
+between words (never mid-word), a selection copies the original string back, and a screen reader
+reads the sentence once instead of spelling it out.
+
+> Every unit is a real animated element, so `Chars` on a paragraph means hundreds of them. Split
+> headlines by character; split body copy by `Words` or `Lines`.
+
 ### BmotionConfig
 
 Provides global animation defaults to an entire subtree via cascading values.
@@ -308,6 +403,7 @@ Bm.Spring(bounce: 0.4, duration: 0.5)
 
 // Inertia (momentum deceleration)
 Bm.Inertia(velocity: 500, timeConstant: 700, min: 0, max: 1000)
+Bm.Inertia(velocity: 500, modifyTarget: Bm.SnapTo(100))   // coast, then settle on a 100px grid
 ```
 
 Repeat via `BmRepeat` (no more `int.MaxValue` sentinel):
@@ -334,6 +430,32 @@ A target can also **embed** its own transition, which wins over the component's 
 ```csharp
 Bm.To(x: 100, transition: Bm.Spring(bounce: 0.6))
 ```
+
+### Arcs
+
+`path: Bm.Arc(...)` bends the straight line between two points into a curve. There is no path data
+to author - the curve is generated from wherever the element is to wherever it is going, so it
+keeps working when either end moves:
+
+```razor
+<Bmotion Animate="Bm.To(x: 220, y: 90)"
+         Transition="Bm.Tween(0.8, path: Bm.Arc(strength: 0.8, rotate: 1))">
+    <div class="card" />
+</Bmotion>
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `strength` | `0.5` | How far it bends, as a fraction of the distance travelled. `1` peaks a full travel-distance off the line |
+| `peak` | `0.5` | Where the curve crests - `0` towards the start, `1` towards the end |
+| `direction` | `Auto` | Which side it bulges. `Auto` arcs upward, which reads as "thrown" |
+| `rotate` | `0` | How much the element turns to follow the curve: `1` points it along the tangent |
+
+The timing still comes from the transition, so a spring on a path arcs *and* overshoots. An arc
+needs both `x` and `y` as single values in the same target - a keyframe sequence on either axis is
+already describing its own path, so it is left alone. Because the two axes have to move together,
+an arc runs on the C# frame loop rather than the compositor (so, like drag, it is a
+**Blazor WebAssembly** feature).
 
 ## Keyframes
 
@@ -395,6 +517,49 @@ Named states declared once, selected by name - with razor-literal-friendly `Stat
         ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300)),
     };
 }
+```
+
+### Orchestration
+
+A variant container's transition carries the orchestration knobs for the subtree beneath it:
+
+```csharp
+Bm.Tween(0.3, staggerChildren: 0.08, delayChildren: 0.2)
+
+// "the panel opens, then its contents cascade in": children wait out the container's own
+// animation, so the offset stays correct when you change the container's duration
+Bm.Tween(0.4, staggerChildren: 0.06, when: BmWhen.BeforeChildren)
+```
+
+```csharp
+// the mirror image: the contents leave, then the panel closes behind them
+Bm.Tween(0.3, staggerChildren: 0.06, when: BmWhen.AfterChildren)
+
+// the cascade doesn't have to run first-to-last - it can radiate from anywhere
+Bm.Tween(0.3, childStagger: Bm.Stagger(0.06, from: BmStaggerFrom.Center))
+Bm.Tween(0.3, childStagger: Bm.Stagger(0.04, grid: (cols: 6, rows: 4)))
+```
+
+`childStagger` takes the same `BmStagger` the programmatic API uses, so `from` origins, grids and
+fully custom `(index, total) => delay` generators all work. It supersedes the flat
+`staggerChildren` interval; `delayChildren` still adds on top of either.
+
+A spring has no true end, so `BeforeChildren` uses `Bm.Spring(duration:)` when set and estimates
+from the physics otherwise. `AfterChildren` waits for the real cascade: the latest child's stagger
+slot plus that child's own resolved transition.
+
+`Inherit="false"` cuts one element out of the cascade entirely - it stops reacting to the label
+coming down while everything below it still inherits the variants *it* defines:
+
+```razor
+<Bmotion Variants="_list" State="visible" Transition="Bm.Tween(staggerChildren: 0.08)">
+    <div>
+        <Bmotion Variants="_item"><div>In the cascade</div></Bmotion>
+        <Bmotion Inherit="false" Animate="Bm.To(opacity: 1)">
+            <div>Runs to its own timing</div>
+        </Bmotion>
+    </div>
+</Bmotion>
 ```
 
 Dynamic variants receive the component's `Custom` parameter:
@@ -462,6 +627,29 @@ pair it with `DragListener="false"` so the controls are the only trigger:
 }
 ```
 
+**Snapping on release.** A `DragTransition` authored as an *inertia* configures the momentum
+itself - including `modifyTarget`, which decides where the coast comes to rest. That is how a
+carousel pages and a slider clicks onto a grid: the fling projects a resting position, and
+`modifyTarget` rounds it. `Bm.SnapTo` builds the usual two shapes for you:
+
+```razor
+@* release anywhere on the track; settle on the nearest 120px stop *@
+<Bmotion Drag="BmDrag.X" DragConstraints="BmDragConstraints.Parent()"
+         DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(120))">
+    <div />
+</Bmotion>
+
+@* a three-page carousel: snap to whichever page the fling was heading for *@
+<Bmotion Drag="BmDrag.X"
+         DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -320, -640]))">
+    <div />
+</Bmotion>
+```
+
+With a `modifyTarget` set, even a slow release coasts to the nearest stop instead of resting
+where the pointer left it. Snapping happens before constraint clamping, so a snapped target can
+never land outside the bounds.
+
 **Per-edge elasticity.** `DragElastic` accepts a uniform value or per-edge values
 (unspecified edges are rigid):
 
@@ -486,6 +674,31 @@ pair it with `DragListener="false"` so the controls are the only trigger:
 <Bmotion Layout="BmLayout.Position" ...>
     <div />
 </Bmotion>
+
+@* size only - the element snaps to its new spot and only the box grows/shrinks *@
+<Bmotion Layout="BmLayout.Size" ...>
+    <div />
+</Bmotion>
+```
+
+Four options control how the projection is measured:
+
+| Parameter | Use it when |
+|---|---|
+| `LayoutAnchor` | The wrong part of the box appears to stay still. Default `TopLeft`; `BmLayoutAnchor.Center` makes a resizing box grow evenly around its middle |
+| `LayoutScroll` | The element lives in a **scrolling container**. Without it, scrolling that container between the two measurements reads as the element having moved, and it visibly jumps |
+| `LayoutRoot` | The element is `position: fixed`. It stays put while the page scrolls, so it is measured in viewport rather than document coordinates |
+| `LayoutDependency` | Measuring on every re-render is costing you a forced reflow. Point it at the state the layout depends on and unrelated renders stop measuring |
+
+```razor
+@* an accordion panel inside a scrolling list, measured only when it actually opens/closes *@
+<Bmotion Layout="BmLayout.Size"
+         LayoutAnchor="BmLayoutAnchor.Center"
+         LayoutScroll="true"
+         LayoutDependency="_isOpen"
+         OnLayoutAnimationComplete="@(() => _settled = true)">
+    <div class="panel" />
+</Bmotion>
 ```
 
 `LayoutId` connects elements across mounts: when one element unmounts and another mounts with
@@ -502,6 +715,50 @@ idiom:
 ```
 
 Wrap independent groups in `<BmotionLayoutGroup Name="sidebar">` to namespace their ids.
+
+---
+
+## Scroll timelines
+
+`Timeline` drives `Animate` from **scroll position instead of time**, on the browser's native
+`ScrollTimeline` / `ViewTimeline`. The keyframes are pre-sampled in C# once and handed over; after
+that there is no scroll handler, no frame loop and no interop - the animation runs on the
+compositor.
+
+```razor
+@* a reading-progress bar: no scroll handler, no disposal, no state *@
+<Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+    <div class="progress-bar" style="transform-origin:0 50%;" />
+</Bmotion>
+
+@* the element's own journey through the viewport: 0 as it enters, 1 as it leaves *@
+<Bmotion Timeline="BmScrollTimeline.View()"
+         Animate="Bm.To(opacity: [0, 1, 1, 0], y: [40, 0, 0, -40])">
+    <div class="card" />
+</Bmotion>
+```
+
+| Source | Progress measured over |
+|---|---|
+| `BmScrollTimeline.Page(axis)` | the whole document's scroll |
+| `BmScrollTimeline.Container(selector, axis)` | one scroll container's scroll |
+| `BmScrollTimeline.View(axis, range)` | the animated element's journey through the scrollport |
+| `BmScrollTimeline.ViewOf(selector, axis, range)` | another element's journey, driving this one |
+
+`range` takes CSS `animation-range` syntax (`"entry 0% cover 50%"`) and needs native support.
+
+- Only **transform components and `opacity`** can be scroll-driven - they are what the browser can
+  interpolate for us. A target touching anything else falls back to the ordinary time-based path.
+- `Transition` does not apply while a timeline is attached: scroll position *is* the progress.
+- A timeline **owns the properties it animates**, so don't also aim a gesture or a second animation
+  at them.
+- Without native scroll timelines the bridge scrubs the same Web Animation from one passive scroll
+  listener - still no per-frame interop, still the browser interpolating. Custom `range` strings
+  need the native API and the fallback covers the full journey instead.
+
+Use `BmotionScrollTracker` (see [Motion values](#motion-values)) instead when you need the scroll
+progress *as a number* - to drive C# state, compose it with other values, or animate a property
+the browser can't own.
 
 ---
 
@@ -549,6 +806,13 @@ var controls = await Motion.RunAsync(seq);
 `at` accepts: `"+0.5"` / `"-0.2"` (relative to previous end), `"<"` / `"<0.3"` (previous
 start), `"1.5"` (absolute), or a label name.
 
+The whole timeline runs on **one playhead**, driven by the animation clock rather than by
+wall-clock timers, so the returned controls govern the gaps between steps as well as the steps
+themselves: `controls.Pause()` genuinely holds the sequence instead of letting its later steps
+start on time, and `controls.SetSpeed(3)` compresses the silences by the same factor as the
+movement. (On Blazor Server, where there is no frame loop, the gaps fall back to wall-clock
+timers along with everything else that needs the loop.)
+
 ---
 
 ## Motion values
@@ -563,7 +827,9 @@ x.GetVelocity();                                  // units/sec
 x.Jump(0);                                        // set without feeding physics
 
 var angle = x.Transform([0, 200], [0, 360]);      // range mapping
+var raw   = x.Transform([0, 200], [0, 360], clamp: false);  // extrapolate past the ends
 var label = x.Transform(v => $"{v:0}px");         // arbitrary derivation (useTransform)
+var speed = Bm.Velocity(x);                       // units/sec as its own value (useVelocity)
 var smooth = Motion.Spring(x, Bm.Spring(stiffness: 120));  // spring follower (useSpring)
 
 await Motion.AnimateAsync(x, 200, Bm.Spring());   // animate the value itself
@@ -648,16 +914,37 @@ Tap gestures are keyboard-accessible out of the box: when a tappable element has
 (`WhileTap` plays, `OnTapStart`/`OnTap` fire; losing focus mid-press cancels). Give the
 element `tabindex="0"` if it isn't natively focusable.
 
-Bmotion can honour the user's **prefers-reduced-motion** preference, collapsing animations to
-instant state changes. To keep it from ever disabling animations an app didn't opt into, this
-is **scoped to `<BmotionConfig>`**: an element only consults the preference when it sits inside
-one. Elements with no surrounding `<BmotionConfig>` always animate.
+Bmotion honours the user's **prefers-reduced-motion** preference. Choose how, globally, at
+registration:
+
+```csharp
+builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+```
+
+| `BmReducedMotionMode` | Behaviour |
+|---|---|
+| `IgnoreUnlessConfigured` | **Default (back-compat).** OS preference respected only inside a `<BmotionConfig>`. |
+| `User` | **Recommended.** Respect the OS preference everywhere - the web-platform default. |
+| `Always` | Always reduce, regardless of the OS. |
+| `Never` | Never reduce, regardless of the OS. |
+
+When motion is reduced, Bmotion follows Motion's `"user"` semantics: **transforms, layout and
+dimension changes snap to their target instantly, while opacity and colour still animate** - a
+softer, more correct reduction than collapsing every property to instant. Stagger delays are
+dropped too, so a reduced list appears at once instead of trickling in.
+
+A local `<BmotionConfig ReduceMotion="true|false">` always overrides the global mode for its
+subtree (`null` = follow the mode):
 
 ```razor
-<BmotionConfig ReduceMotion="null">   @* respect the OS prefers-reduced-motion setting *@
+<BmotionConfig ReduceMotion="true">   @* force-reduce this subtree *@
     ...
 </BmotionConfig>
 ```
+
+> **Migration note.** The default remains `IgnoreUnlessConfigured` so existing apps are unaffected.
+> New apps should set `ReducedMotion = BmReducedMotionMode.User` to match the platform default;
+> this is planned to become the default in a future major version.
 
 ---
 

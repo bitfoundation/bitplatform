@@ -349,6 +349,15 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
+    /// Sets (or clears) the element's transform-string rewrite - see <see cref="BmTransformTemplate"/>.
+    /// </summary>
+    internal void SetTransformTemplate(string elementId, BmTransformTemplate? template)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.TransformTemplate = template;
+    }
+
+    /// <summary>
     /// Sets the playback rate for an element's animations: 1 = realtime, 0 = paused,
     /// 2 = twice as fast. Negative and non-finite rates are coerced to 0.
     /// </summary>
@@ -425,7 +434,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         var (posX, posY) = state.GetCurrentXY();
 
+        // A DragTransition authored as an inertia (Bm.Inertia(...)) configures the momentum itself -
+        // its decay knobs and, most usefully, its ModifyTarget snap hook (Bm.SnapTo). Authored as a
+        // spring/tween it only describes the constraint snap-back, so the momentum keeps its
+        // defaults. Reading it here is what makes snap-to-grid / carousel paging work on release.
+        var inertiaTemplate = snapTransition?.Type == BmotionTransitionType.Inertia ? snapTransition : null;
+        // The snap-back branch below needs a spring; an inertia template is not one.
+        if (inertiaTemplate != null) snapTransition = null;
+
         bool inertiaXStarted = false, inertiaYStarted = false;
+        // Momentum with a snap target must run even for a slow release: without it a gentle drag
+        // would come to rest wherever the pointer left it, defeating the snap entirely.
+        bool alwaysCoast = inertiaTemplate?.ModifyTarget is not null;
         if (momentum)
         {
             // velX/velY arrive from JS already scaled to "px per frame" (~16 ms). The * 50 factor
@@ -433,31 +453,30 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             // exponential-decay inertia driver expects (tuned so a natural flick throws roughly the
             // distance Framer Motion produces for the same gesture).
             const double inertiaVelocityScale = 50.0;
-            if (axis != "y" && Math.Abs(velX) > 0.5)
+
+            BmotionTransitionConfig BuildInertia(double velocity, double? min, double? max)
             {
-                var inertiaX = new BmotionTransitionConfig
-                {
-                    Type = BmotionTransitionType.Inertia,
-                    InertiaVelocity = velX * inertiaVelocityScale,
-                    InertiaMin = constraints?.Left,
-                    InertiaMax = constraints?.Right,
-                };
+                var c = inertiaTemplate?.Clone() ?? new BmotionTransitionConfig();
+                c.Type = BmotionTransitionType.Inertia;
+                c.InertiaVelocity = velocity * inertiaVelocityScale;
+                // Drag bounds are measured live (element-bounds constraints resolve in JS), so they
+                // always win over any Min/Max authored on the template.
+                c.InertiaMin = min;
+                c.InertiaMax = max;
+                return c;
+            }
+
+            if (axis != "y" && (Math.Abs(velX) > 0.5 || alwaysCoast))
+            {
                 var valuesX = new Dictionary<string, object?> { ["x"] = posX };
-                state.AnimateTo(valuesX, inertiaX);
+                state.AnimateTo(valuesX, BuildInertia(velX, constraints?.Left, constraints?.Right));
                 inertiaXStarted = true;
             }
 
-            if (axis != "x" && Math.Abs(velY) > 0.5)
+            if (axis != "x" && (Math.Abs(velY) > 0.5 || alwaysCoast))
             {
-                var inertiaY = new BmotionTransitionConfig
-                {
-                    Type = BmotionTransitionType.Inertia,
-                    InertiaVelocity = velY * inertiaVelocityScale,
-                    InertiaMin = constraints?.Top,
-                    InertiaMax = constraints?.Bottom,
-                };
                 var valuesY = new Dictionary<string, object?> { ["y"] = posY };
-                state.AnimateTo(valuesY, inertiaY);
+                state.AnimateTo(valuesY, BuildInertia(velY, constraints?.Top, constraints?.Bottom));
                 inertiaYStarted = true;
             }
         }
@@ -501,7 +520,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     public string? GetCurrentTransformString(string elementId)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return null;
-        return BmotionTransformComposer.Build(state.Transforms);
+        return state.ComposeTransform(state.Transforms);
     }
 
     /// <summary>Returns the <see cref="BmotionElementAnimationState"/> for an element, or null.</summary>
@@ -632,6 +651,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         // Features the compositor path can't express - stay on the rAF engine.
         if (config.OnUpdate != null) return null;
+        // An arc couples x and y along a curve; pre-sampling each key independently would sample
+        // the straight line between the endpoints and quietly discard the bend. Only stand down
+        // when the arc actually applies (both axes present as single values), so a path left on a
+        // shared transition doesn't cost every other animation its compositor offload.
+        if (config.Path != null && BmotionArcTargets.Applies(values)) return null;
         if (config.Properties is { Count: > 0 }) return null;
         if (config.RepeatDelay > 0) return null;
         if (config.RepeatType == BmRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
@@ -642,50 +666,11 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         if (config.Type == BmotionTransitionType.Spring && config.Velocity != 0) return null;
         if (config.Type == BmotionTransitionType.Tween && config.Duration <= 0) return null;
 
-        // Every animated property must be a transform component or opacity with a single
-        // finite numeric target.
-        var targets = new Dictionary<string, (double From, double To)>(StringComparer.OrdinalIgnoreCase);
-        // Per-key frames (uniform offsets). Scalars become [from, to]; keyframe arrays keep their
-        // frames. All keyframe keys must share one length (mixed lengths ⇒ rAF) so the WAAPI
-        // keyframes and the C# interruption mirror stay on one aligned, exact grid.
-        var frameArrays = new Dictionary<string, double[]>(StringComparer.OrdinalIgnoreCase);
-        bool touchesTransform = false;
-        int keyframeLen = 0;
-        foreach (var (key, raw) in values)
-        {
-            if (raw == null) continue;
-            bool isTransform = BmotionTransformComposer.IsTransformProp(key);
-            if (!isTransform && !string.Equals(key, "opacity", StringComparison.OrdinalIgnoreCase)) return null;
-
-            double from = isTransform
-                ? state.Transforms.GetValueOrDefault(key,
-                    key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0)
-                : state.NumericValues.GetValueOrDefault(key, 1.0); // opacity defaults to 1
-
-            double[] frames;
-            switch (raw)
-            {
-                case double d: frames = [from, d]; break;
-                case int i: frames = [from, i]; break;
-                case float f: frames = [from, f]; break;
-                case long l: frames = [from, l]; break;
-                case double[] { Length: >= 2 } arr:
-                    frames = (double[])arr.Clone();
-                    // A leading Bm.Current (NaN) wildcard resolves to the element's current value.
-                    if (double.IsNaN(frames[0])) frames[0] = from;
-                    foreach (var v in frames) if (!double.IsFinite(v)) return null;
-                    if (keyframeLen == 0) keyframeLen = frames.Length;
-                    else if (keyframeLen != frames.Length) return null; // mixed keyframe lengths ⇒ rAF
-                    break;
-                case double[] { Length: 1 } one: frames = [from, one[0]]; break;
-                default: return null; // string keyframes stay on the rAF path
-            }
-            if (!double.IsFinite(frames[^1])) return null;
-            targets[key] = (frames[0], frames[^1]);
-            frameArrays[key] = frames;
-            touchesTransform |= isTransform;
-        }
-        if (targets.Count == 0) return null;
+        // Every animated property must be a transform component or opacity with finite numeric
+        // frames; anything else stays on the rAF path.
+        if (!TryCollectFrameArrays(state, values, out var frameArrays, out var targets,
+                out bool touchesTransform, out int keyframeLen))
+            return null;
 
         // Per-segment eases can't be expressed by a single WAAPI timeline easing.
         if (keyframeLen > 0 && config.Eases is { Length: > 0 }) return null;
@@ -734,26 +719,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             }
         }
 
-        // N keyframes composed from the FULL transform state so untouched components persist, with
-        // identical function order across frames (required for piecewise interpolation). frameCount
-        // is 2 for a plain tween (from/to) and the keyframe length otherwise.
-        var frameStyles = new Dictionary<string, object>[frameCount];
-        var opacityKey = targets.Keys.FirstOrDefault(k => k.Equals("opacity", StringComparison.OrdinalIgnoreCase));
-        for (int j = 0; j < frameCount; j++)
-        {
-            var frame = new Dictionary<string, object>();
-            if (touchesTransform)
-            {
-                var tj = new Dictionary<string, double>(state.Transforms, StringComparer.OrdinalIgnoreCase);
-                foreach (var (key, frames) in frameArrays)
-                    if (BmotionTransformComposer.IsTransformProp(key)) tj[key] = frames[j];
-                var str = BmotionTransformComposer.Build(tj);
-                frame["transform"] = string.IsNullOrEmpty(str) ? "none" : str;
-            }
-            if (opacityKey != null)
-                frame["opacity"] = BmotionCssFormat.Num(frameArrays[opacityKey][j]);
-            frameStyles[j] = frame;
-        }
+        var frameStyles = BuildFrameStyles(state, frameArrays, targets, touchesTransform, frameCount);
 
         bool infinite = config.IsInfiniteRepeat;
         string direction = config.RepeatType == BmRepeatType.Mirror ? "alternate" : "normal";
@@ -782,6 +748,159 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         };
 
         return new WaapiOffload(plan, frameStyles, timing);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Scroll-driven timelines
+    // Same pre-sampled keyframes as the compositor offload, but progressed by scroll position
+    // instead of by time. The browser owns the whole animation from there: on a native
+    // ScrollTimeline/ViewTimeline it never touches the main thread at all, and on the bridge's
+    // fallback a passive scroll listener scrubs it - either way with no .NET interop per frame.
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Binds <paramref name="values"/> to <paramref name="timeline"/> for an element. Returns the
+    /// animation's token (pass it to <see cref="DetachScrollTimelineAsync"/>), or <c>0</c> when the
+    /// target isn't expressible as browser keyframes - only transform components and opacity are,
+    /// so anything else has to stay on the time-based engine.
+    /// </summary>
+    internal async ValueTask<int> AttachScrollTimelineAsync(
+        string elementId, Dictionary<string, object?> values, BmScrollTimeline timeline)
+    {
+        if (!_elements.TryGetValue(elementId, out var state)) return 0;
+        if (!TryCollectFrameArrays(state, values, out var frameArrays, out var targets,
+                out bool touchesTransform, out int keyframeLen))
+            return 0;
+
+        // The browser is about to own these properties outright, so hand it an element nothing
+        // else is writing: fold back and cancel any compositor plan, and stop any rAF driver, on
+        // the same keys first.
+        await InterruptWaapiOverlapsAsync(elementId, state, values.Keys);
+        state.Cancel(values.Keys.ToArray());
+
+        int frameCount = Math.Max(2, keyframeLen);
+        if (frameCount > 2)
+            foreach (var key in frameArrays.Keys.ToArray())
+                frameArrays[key] = ResampleUniform(frameArrays[key], frameCount);
+
+        var frameStyles = BuildFrameStyles(state, frameArrays, targets, touchesTransform, frameCount);
+
+        int token = ++_waapiTokenSeq;
+        bool? native;
+        try
+        {
+            native = await _interop.PlayScrollTimelineAsync(elementId, token, frameStyles, timeline.ToJsObject());
+        }
+        catch
+        {
+            return 0; // bridge unavailable (e.g. teardown) - the element simply doesn't animate
+        }
+        if (native is null) return 0;
+
+        if (native == false)
+            _logger?.LogDebug(
+                "Bit.Bmotion: element '{ElementId}' is scroll-driven through the scroll-scrub fallback; "
+                + "this browser has no native ScrollTimeline/ViewTimeline.", elementId);
+
+        return token;
+    }
+
+    /// <summary>Releases a scroll-driven animation started by <see cref="AttachScrollTimelineAsync"/>.</summary>
+    internal async ValueTask DetachScrollTimelineAsync(string elementId, int token)
+    {
+        if (token == 0) return;
+        try { await _interop.CancelScrollTimelineAsync(elementId, token); }
+        catch { /* teardown races the cancel; the element is going away anyway */ }
+    }
+
+    /// <summary>
+    /// Collects each animated property's keyframes as a numeric array, resolving the "from" end
+    /// from the element's live state. Returns <c>false</c> when anything about the target makes it
+    /// ineligible for the browser (a non-transform/opacity property, a string keyframe, a
+    /// non-finite value, or keyframe arrays of differing lengths - which would break the single
+    /// aligned grid the WAAPI keyframes and the C# interruption mirror share).
+    /// </summary>
+    private static bool TryCollectFrameArrays(
+        BmotionElementAnimationState state,
+        Dictionary<string, object?> values,
+        out Dictionary<string, double[]> frameArrays,
+        out Dictionary<string, (double From, double To)> targets,
+        out bool touchesTransform,
+        out int keyframeLen)
+    {
+        targets = new Dictionary<string, (double From, double To)>(StringComparer.OrdinalIgnoreCase);
+        frameArrays = new Dictionary<string, double[]>(StringComparer.OrdinalIgnoreCase);
+        touchesTransform = false;
+        keyframeLen = 0;
+
+        foreach (var (key, raw) in values)
+        {
+            if (raw == null) continue;
+            bool isTransform = BmotionTransformComposer.IsTransformProp(key);
+            if (!isTransform && !string.Equals(key, "opacity", StringComparison.OrdinalIgnoreCase)) return false;
+
+            double from = isTransform
+                ? state.Transforms.GetValueOrDefault(key,
+                    key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0)
+                : state.NumericValues.GetValueOrDefault(key, 1.0); // opacity defaults to 1
+
+            double[] frames;
+            switch (raw)
+            {
+                case double d: frames = [from, d]; break;
+                case int i: frames = [from, i]; break;
+                case float f: frames = [from, f]; break;
+                case long l: frames = [from, l]; break;
+                case double[] { Length: >= 2 } arr:
+                    frames = (double[])arr.Clone();
+                    // A leading Bm.Current (NaN) wildcard resolves to the element's current value.
+                    if (double.IsNaN(frames[0])) frames[0] = from;
+                    foreach (var v in frames) if (!double.IsFinite(v)) return false;
+                    if (keyframeLen == 0) keyframeLen = frames.Length;
+                    else if (keyframeLen != frames.Length) return false; // mixed keyframe lengths
+                    break;
+                case double[] { Length: 1 } one: frames = [from, one[0]]; break;
+                default: return false; // string keyframes stay on the rAF path
+            }
+            if (!double.IsFinite(frames[^1])) return false;
+            targets[key] = (frames[0], frames[^1]);
+            frameArrays[key] = frames;
+            touchesTransform |= isTransform;
+        }
+        return targets.Count > 0;
+    }
+
+    /// <summary>
+    /// Composes the browser-side keyframes. Each frame is built from the element's FULL transform
+    /// state so untouched components persist, and every frame lists the same transform functions in
+    /// the same order - which is what lets the browser interpolate them piecewise rather than
+    /// falling back to a discrete swap.
+    /// </summary>
+    private static Dictionary<string, object>[] BuildFrameStyles(
+        BmotionElementAnimationState state,
+        Dictionary<string, double[]> frameArrays,
+        Dictionary<string, (double From, double To)> targets,
+        bool touchesTransform,
+        int frameCount)
+    {
+        var frameStyles = new Dictionary<string, object>[frameCount];
+        var opacityKey = targets.Keys.FirstOrDefault(k => k.Equals("opacity", StringComparison.OrdinalIgnoreCase));
+        for (int j = 0; j < frameCount; j++)
+        {
+            var frame = new Dictionary<string, object>();
+            if (touchesTransform)
+            {
+                var tj = new Dictionary<string, double>(state.Transforms, StringComparer.OrdinalIgnoreCase);
+                foreach (var (key, frames) in frameArrays)
+                    if (BmotionTransformComposer.IsTransformProp(key)) tj[key] = frames[j];
+                var str = state.ComposeTransform(tj);
+                frame["transform"] = string.IsNullOrEmpty(str) ? "none" : str;
+            }
+            if (opacityKey != null)
+                frame["opacity"] = BmotionCssFormat.Num(frameArrays[opacityKey][j]);
+            frameStyles[j] = frame;
+        }
+        return frameStyles;
     }
 
     // Resamples a keyframe array onto <paramref name="n"/> uniformly-spaced points via linear
@@ -955,6 +1074,25 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         _detachedAnims[key] = new DetachedAnim(driver, tcs);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Timeline schedulers (BmSequence segment starts)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // Sequences schedule their segment starts here rather than on wall-clock timers, so a
+    // timeline's playback rate governs the gaps between segments as well as the segments
+    // themselves. Ticked at the top of every frame - see ComputeFrame.
+    private readonly List<BmotionSequenceScheduler> _schedulers = new();
+
+    /// <summary>Registers a timeline scheduler to be advanced by the frame loop.</summary>
+    internal void AddScheduler(BmotionSequenceScheduler scheduler) => _schedulers.Add(scheduler);
+
+    /// <summary>Stops and drops a timeline scheduler (a stopped or completed sequence).</summary>
+    internal void RemoveScheduler(BmotionSequenceScheduler scheduler)
+    {
+        scheduler.Cancel();
+        _schedulers.Remove(scheduler);
+    }
+
     /// <summary>Cancels the detached animation for <paramref name="key"/>, if any (resolves its task with false).</summary>
     internal void CancelDetached(object key)
     {
@@ -983,6 +1121,19 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         Dictionary<string, Dictionary<string, string>>? result = null;
         bool anyActive = false;
         List<string>? faulted = null;
+
+        // Timeline schedulers tick first: a segment falling due this frame should start animating
+        // in this same frame rather than lagging one behind.
+        if (_schedulers.Count > 0)
+        {
+            // Snapshot: a fired segment can register or drop schedulers (a nested sequence, or a
+            // Stop() from its own completion) while we're iterating.
+            foreach (var scheduler in _schedulers.ToArray())
+            {
+                if (scheduler.Tick(timestamp)) _schedulers.Remove(scheduler);
+            }
+            if (_schedulers.Count > 0) anyActive = true;
+        }
 
         // Detached value animations tick BEFORE the elements: their apply callbacks typically set
         // BmValues whose subscribers mark element properties dirty, and ticking them first

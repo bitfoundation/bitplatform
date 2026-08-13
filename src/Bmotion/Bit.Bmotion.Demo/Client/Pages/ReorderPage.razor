@@ -1,48 +1,148 @@
-﻿@page "/reorder"
+@page "/reorder"
 
 <PageTitle>Reorder - Bit.Bmotion</PageTitle>
 
 <h1>Reorder</h1>
 
+<p class="page-intro">
+    Drag-to-reorder is the one interaction where the naive implementation is always wrong: re-render
+    the list on every pointer move and you drop frames, lose focus and reset component state.
+    <strong>BmotionReorderGroup</strong> previews the new order with transforms only - the list
+    itself re-renders <em>once</em>, on release - so the drag stays smooth and the bound list is the
+    single source of truth throughout.
+</p>
+
 <div class="demo-section">
     <h2>Drag to reorder</h2>
     <p>
-        <strong>BmotionReorderGroup</strong> makes every item draggable along the list axis;
-        siblings spring out of the way while you drag, and the new order is committed to the
-        bound list on release - motion.dev's <c>Reorder.Group</c>. <c>HandleSelector</c>
-        restricts the drag to a grip inside each row, keeping the rest of the row free for
-        clicks and text selection.
+        Bind a list, give the items a stable key, and every row becomes draggable along the list
+        axis while its siblings spring out of the way. <code>HandleSelector</code> restricts the
+        gesture to a grip inside each row so the rest of it stays clickable and selectable, and
+        <code>OnReorder</code> fires once the new order has been committed.
     </p>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column;gap:.6rem;align-items:stretch;width:100%;min-width:280px;">
-            <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)" HandleSelector=".grip" Context="track">
-                <div style="display:flex;align-items:center;gap:.7rem;background:rgba(108,71,255,.12);border:1px solid rgba(108,71,255,.25);border-radius:8px;padding:.7rem 1rem;">
-                    <span class="grip" style="cursor:grab;color:#888;user-select:none;">⠿</span>
-                    <span style="flex:1">@track.Title</span>
-                    <span style="color:#888;font-size:.8rem">@track.Duration</span>
-                    <button type="button" aria-label="Move @track.Title up"
+        <div class="demo-card list-stage">
+            <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)"
+                                 HandleSelector=".grip" Context="track"
+                                 OnReorder="@(() => _reorders++)">
+                <div class="track-row">
+                    <span class="grip">⠿</span>
+                    <span class="track-title">@track.Title</span>
+                    <span class="track-time">@track.Duration</span>
+                    <button type="button" class="track-move" aria-label="Move @track.Title up"
                             disabled="@(_tracks.IndexOf(track) is 0)"
-                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
                             @onclick="() => MoveTrack(track, -1)">▲</button>
-                    <button type="button" aria-label="Move @track.Title down"
+                    <button type="button" class="track-move" aria-label="Move @track.Title down"
                             disabled="@(_tracks.IndexOf(track) == _tracks.Count - 1)"
-                            style="background:none;border:none;color:#888;cursor:pointer;padding:0 .15rem"
                             @onclick="() => MoveTrack(track, 1)">▼</button>
                 </div>
             </BmotionReorderGroup>
         </div>
     </div>
 
-    <p style="color:#888;font-size:.85rem;margin-top:.75rem">
+    <p class="reorder-readout">
         Current order: @string.Join(" → ", _tracks.Select(t => t.Title))
+        <br />
+        Committed reorders: @_reorders
     </p>
 
     <CodeSnippet Code="@_reorderCode" />
 </div>
 
+<div class="demo-section">
+    <h2>Horizontal lists</h2>
+    <p>
+        <code>Axis="BmDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
+        toolbar or a card rail. Only the axis changes - the displacement, the commit and the binding
+        all behave identically. Wrapping grids are not supported: the group needs a single line to
+        reason about order along.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="chip-rail">
+                <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
+                    <div class="rail-chip">@stage</div>
+                </BmotionReorderGroup>
+            </div>
+        </div>
+    </div>
+
+    <p class="reorder-readout">Current order: @string.Join(" → ", _stages)</p>
+
+    <CodeSnippet Code="@_horizontalCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Keyboard access</h2>
+    <p>
+        A pointer drag is not reachable by keyboard, so a reorderable list needs a second way in -
+        and it does not need to be a separate mechanism. The group observes external mutations of
+        the bound list, so plain move-up / move-down buttons that reorder <code>Items</code>
+        directly (the ▲▼ controls in the first sample) animate exactly like a drag would. The same
+        applies to any other source of order: a sort, a server push, an undo.
+    </p>
+
+    <CodeSnippet Code="@_keyboardCode" />
+</div>
+
+<style>
+    .list-stage {
+        gap: .6rem;
+        width: 100%;
+        min-width: 17.5rem;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .track-row {
+        gap: .7rem;
+        display: flex;
+        padding: .7rem 1rem;
+        align-items: center;
+        border-radius: 8px;
+        color: var(--bm-text);
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .track-title { flex: 1; }
+    .track-time { font-size: .8rem; color: var(--bm-muted); }
+
+    .track-move {
+        border: none;
+        cursor: pointer;
+        background: none;
+        padding: 0 .15rem;
+        font-family: inherit;
+        color: var(--bm-muted);
+    }
+
+    .track-move:disabled { opacity: .35; cursor: default; }
+
+    .grip { cursor: grab; user-select: none; color: var(--bm-muted); }
+
+    .chip-rail { display: flex; gap: .5rem; flex-wrap: nowrap; }
+
+    .rail-chip {
+        cursor: grab;
+        user-select: none;
+        white-space: nowrap;
+        padding: .5rem 1rem;
+        border-radius: 999px;
+        color: var(--bm-text);
+        background: var(--bm-accent-soft);
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .reorder-readout { font-size: .85rem; margin-top: .75rem; color: var(--bm-muted); }
+</style>
+
 @code {
     private sealed record Track(int Id, string Title, string Duration);
+
+    private int _reorders;
 
     private List<Track> _tracks =
     [
@@ -52,6 +152,8 @@
         new(4, "Something About Us", "3:51"),
         new(5, "Voyager", "3:47"),
     ];
+
+    private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
 
     // Keyboard-accessible fallback for the pointer-only drag: the group observes external
     // Items mutations, so moving an item in the bound list reorders the rendered rows.
@@ -68,18 +170,21 @@
         @using Bit.Bmotion
 
         <style>
+            :root { --bm-muted: #525252; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .list { display: flex; flex-direction: column; gap: .6rem; }
             .row {
                 display: flex; align-items: center; gap: .7rem;
-                background: rgba(108,71,255,.12); border: 1px solid rgba(108,71,255,.25);
+                background: var(--bm-accent-soft); border: 1px solid var(--bm-accent-line);
                 border-radius: 8px; padding: .7rem 1rem;
             }
-            .grip { cursor: grab; color: #888; user-select: none; }
+            .grip { cursor: grab; color: var(--bm-muted); user-select: none; }
         </style>
 
         <div class="list">
+            @* The preview is transform-based: this list re-renders once, on release. *@
             <BmotionReorderGroup @bind-Items="_tracks" ItemKey="@(t => t.Id)"
-                                 HandleSelector=".grip" Context="track">
+                                 HandleSelector=".grip" Context="track"
+                                 OnReorder="@(() => _reorders++)">
                 <div class="row">
                     <span class="grip">⠿</span>
                     <span style="flex:1">@track.Title</span>
@@ -89,6 +194,8 @@
         </div>
 
         @code {
+            private int _reorders;
+
             private sealed record Track(int Id, string Title, string Duration);
 
             private List<Track> _tracks =
@@ -97,6 +204,41 @@
                 new(2, "Digital Love", "4:58"),
                 new(3, "Harder Better Faster", "3:45"),
             ];
+        }
+        """;
+
+    private const string _horizontalCode = """
+        @using Bit.Bmotion
+
+        @* Same machinery, sideways. A single line only - wrapping grids are not supported. *@
+        <div style="display:flex;gap:.5rem;flex-wrap:nowrap">
+            <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
+                <div class="chip">@stage</div>
+            </BmotionReorderGroup>
+        </div>
+
+        @code {
+            // No ItemKey needed here: the strings are their own identity, and they are unique.
+            private List<string> _stages = ["Draft", "Review", "Approved", "Shipped"];
+        }
+        """;
+
+    private const string _keyboardCode = """
+        @* The group observes external mutations of the bound list, so anything that reorders
+           Items animates exactly like a drag: keyboard controls, a sort, a server push, an undo. *@
+        <button aria-label="Move @track.Title up"
+                disabled="@(_tracks.IndexOf(track) is 0)"
+                @onclick="() => MoveTrack(track, -1)">▲</button>
+
+        @code {
+            private void MoveTrack(Track track, int delta)
+            {
+                var index = _tracks.IndexOf(track);
+                var target = index + delta;
+                if (index < 0 || target < 0 || target >= _tracks.Count) return;
+                _tracks.RemoveAt(index);
+                _tracks.Insert(target, track);
+            }
         }
         """;
 }

@@ -1,0 +1,557 @@
+@page "/programmatic"
+@inject BmotionAnimateService Motion
+@implements IDisposable
+
+<PageTitle>Programmatic API - Bit.Bmotion</PageTitle>
+
+<h1>Programmatic API</h1>
+
+<p class="page-intro">
+    Declarative animation covers the common case: describe the state, let the change drive the
+    motion. Some things do not fit that shape - a timeline whose steps overlap, a value that is not
+    a DOM property, an animation you need to pause halfway. <strong>BmotionAnimateService</strong>
+    is the imperative half of the library: animate by CSS selector or <code>ElementReference</code>,
+    with no <code>&lt;Bmotion&gt;</code> wrapper anywhere in sight, and get back playback controls
+    you can hold on to.
+</p>
+
+<div class="demo-section">
+    <h2>Animating by selector</h2>
+    <p>
+        <code>AnimateAsync(selector, target, transition, stagger)</code> resolves every matching
+        element and animates them together, with the optional <strong>stagger</strong> spreading
+        their start times. The call returns <strong>BmAnimationControls</strong>: awaitable for
+        completion, and holding <code>Pause</code>, <code>Play</code>, <code>SetSpeed</code>,
+        <code>Stop</code> (freeze where it is) and <code>Complete</code> (jump to the end). Start
+        the slow run below and then interfere with it.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <div class="dot-row">
+                @for (var i = 0; i < 8; i++)
+                {
+                    <div class="prog-dot"></div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="RunAsync">Run</button>
+        <button class="btn-bm" @onclick="@(() => _controls?.Pause())">Pause</button>
+        <button class="btn-bm" @onclick="@(() => _controls?.Play())">Play</button>
+        <button class="btn-bm" @onclick="@(() => _controls?.SetSpeed(3))">3&times; speed</button>
+        <button class="btn-bm" @onclick="@(() => _controls?.Complete())">Complete</button>
+        <button class="btn-bm" @onclick="ResetDotsAsync">Reset</button>
+        <span class="demo-label">@_runState</span>
+    </div>
+
+    <CodeSnippet Code="@_selectorCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Animating a number</h2>
+    <p>
+        Nothing about the engine requires a DOM element. <code>AnimateAsync(from, to, onUpdate,
+        transition)</code> interpolates a bare <code>double</code> and hands you every value on the
+        way - which is how you get a counter that eases rather than ticks, and equally how you
+        would drive a canvas, an audio gain or anything else outside the render tree.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="counter">@_count.ToString("N0", System.Globalization.CultureInfo.InvariantCulture)</span>
+            <span class="demo-label">interpolated, not incremented</span>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => CountToAsync(2_450))">Count up</button>
+        <button class="btn-bm" @onclick="@(() => CountToAsync(0))">Count down</button>
+    </div>
+
+    <CodeSnippet Code="@_countCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Sequences</h2>
+    <p>
+        A <strong>BmSequence</strong> is a timeline: each step names its own target, and
+        <code>at</code> places it relative to what came before. <code>"+0.2"</code> and
+        <code>"-0.1"</code> are offsets from the previous step's <em>end</em> (so a negative value
+        overlaps it), <code>"&lt;"</code> aligns with the previous step's <em>start</em>, a bare
+        number is absolute, and <code>Label</code> marks a position several later steps can share.
+        That is what lets a sequence overlap without you hand-computing a single delay.
+    </p>
+    <p>
+        The whole timeline runs on <strong>one playhead</strong>, driven by the animation clock
+        rather than by wall-clock timers. So the controls it returns govern the gaps between the
+        steps as well as the steps themselves: pause it mid-run and the sequence genuinely holds
+        instead of quietly starting its later steps on time, and <code>SetSpeed(3)</code> compresses
+        the silences by the same factor it compresses the movement.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card seq-stage">
+            <div id="seq-box" class="box seq-box"></div>
+            <div class="seq-dots">
+                @for (var i = 0; i < 5; i++)
+                {
+                    <div class="seq-dot"></div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="RunSequenceAsync">Play sequence</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.Pause())">Pause</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.Play())">Resume</button>
+        <button class="btn-bm" @onclick="@(() => _sequenceControls?.SetSpeed(3))">3&times; speed</button>
+        <button class="btn-bm" @onclick="ResetSequenceAsync">Reset</button>
+    </div>
+
+    <CodeSnippet Code="@_sequenceCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Motion values</h2>
+    <p>
+        A <strong>motion value</strong> is a number that other things can watch. Bind one with the
+        <code>Values</code> parameter and it writes to the DOM every frame without re-rendering the
+        component; derive from it with <code>Transform</code> and the derived value updates in
+        lockstep; wrap it in <code>Motion.Spring</code> and you get a follower that lags behind with
+        physics rather than tracking exactly. The slider below sets one value - everything else on
+        the row is downstream of it.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <input type="range" min="0" max="100" step="1" class="value-slider"
+                   value="@_slider" @oninput="OnSliderInput" aria-label="Drive the motion value" />
+
+            <div class="value-row">
+                <div class="value-cell">
+                    <Bmotion Values="_directValues">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                    <span class="demo-label">bound directly</span>
+                </div>
+
+                <div class="value-cell">
+                    <Bmotion Values="_springValues">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                    <span class="demo-label">spring follower</span>
+                </div>
+
+                <div class="value-cell">
+                    <Bmotion Values="_rotateValues">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                    <span class="demo-label">Transform → 0-360&deg;</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_valuesCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Driving one element by reference</h2>
+    <p>
+        When the element <em>is</em> a <code>&lt;Bmotion&gt;</code>, a <code>@@ref</code> gives you
+        the same controls without a selector. <code>AnimateAsync</code> plays a one-off target,
+        <code>Set</code> applies one instantly with no animation, <code>Pause</code> /
+        <code>Resume</code> / <code>SetPlaybackRate</code> control whatever is currently running,
+        and <code>Stop</code> freezes it where it stands.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card">
+            <Bmotion @ref="_box"
+                     Animate="Bm.To(rotate: 360)"
+                     Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                <div class="box" />
+            </Bmotion>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _box.Pause())">Pause</button>
+        <button class="btn-bm" @onclick="@(() => _box.Resume())">Resume</button>
+        <button class="btn-bm" @onclick="@(() => _box.SetPlaybackRate(4))">4&times; rate</button>
+        <button class="btn-bm" @onclick="PulseAsync">Pulse</button>
+    </div>
+
+    <CodeSnippet Code="@_refCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Global defaults</h2>
+    <p>
+        <strong>BmotionConfig</strong> cascades defaults to everything beneath it, which is the
+        cheapest way to change the feel of a whole surface at once. <code>TransitionSpeed</code> is
+        a playback multiplier - <code>0.25</code> is the slow-motion switch every animation
+        developer wants while tuning, and <code>0</code> makes every transition instant.
+        It also carries <code>ReduceMotion</code>, the <em>prefers-reduced-motion</em> policy for
+        its subtree &mdash; covered in full on the <a href="/accessibility">Accessibility</a> page.
+    </p>
+
+    <BmotionConfig TransitionSpeed="_speed">
+        <div class="demo-row">
+            <div class="demo-card stack">
+                <span class="demo-label">Both boxes inherit the speed below</span>
+                <div class="value-row">
+                    <Bmotion Animate="@(_configOn ? Bm.To(x: 40, rotate: 180) : Bm.To(x: -40, rotate: 0))"
+                             Transition="Bm.Spring(stiffness: 180, damping: 16)">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                    <Bmotion Animate="@(_configOn ? Bm.To(y: 30, scale: 1.3) : Bm.To(y: -30, scale: 1))"
+                             Transition="Bm.Tween(0.8, BmEase.InOut)">
+                        <div class="box box-sm" />
+                    </Bmotion>
+                </div>
+            </div>
+        </div>
+    </BmotionConfig>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="@(() => _configOn = !_configOn)">Animate</button>
+        @foreach (var speed in _speeds)
+        {
+            <button class="btn-bm @(Math.Abs(_speed - speed) < 0.001 ? null : "ghost")"
+                    @onclick="@(() => _speed = speed)">@speed&times;</button>
+        }
+    </div>
+
+    <CodeSnippet Code="@_configCode" />
+</div>
+
+<style>
+    .dot-row { display: flex; gap: .5rem; }
+
+    .prog-dot {
+        width: 1.5rem;
+        height: 2.75rem;
+        border-radius: 6px;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+    }
+
+    .counter {
+        font-weight: 800;
+        font-size: 2.75rem;
+        line-height: 1;
+        color: var(--bm-text);
+        font-variant-numeric: tabular-nums;
+        font-family: var(--demo-font-mono);
+    }
+
+    .seq-stage { gap: 1.5rem; flex-direction: column; min-height: 12.5rem; }
+
+    .seq-box { width: 3.75rem; height: 3.75rem; }
+
+    .seq-dots { display: flex; gap: .6rem; }
+
+    .seq-dot {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background: var(--bm-secondary);
+    }
+
+    .value-slider { width: 100%; max-width: 22rem; accent-color: var(--bm-primary); }
+
+    .value-row { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+
+    .value-cell { display: flex; flex-direction: column; gap: .5rem; align-items: center; }
+
+    /* A secondary treatment for the speed buttons, so the active one is legible as the
+       selection rather than as one of six identical primaries. */
+    .btn-bm.ghost {
+        color: var(--bm-primary);
+        background: transparent;
+        border: 1px solid var(--bm-accent-line);
+    }
+
+    .btn-bm.ghost:hover { background: var(--bm-accent-soft); }
+</style>
+
+@code {
+    private Bmotion _box = default!;
+    private BmAnimationControls? _controls;
+    private BmAnimationControls? _sequenceControls;
+    private string _runState = "idle";
+
+    private double _count;
+
+    private int _slider = 20;
+    private readonly BmValue<double> _driver = Bm.Value(20.0);
+    private BmValue<double>? _follower;
+    private Dictionary<string, BmValue<double>> _directValues = default!;
+    private Dictionary<string, BmValue<double>> _springValues = default!;
+    private Dictionary<string, BmValue<double>> _rotateValues = default!;
+
+    private bool _configOn;
+    private double _speed = 1;
+    private readonly double[] _speeds = [0.25, 1, 2];
+
+    protected override void OnInitialized()
+    {
+        // Built once: a dictionary rebuilt per render would re-subscribe the bindings each time.
+        _directValues = new() { ["x"] = _driver.Transform([0, 100], [-60, 60]) };
+
+        // A spring follower (motion.dev's useSpring) lags the source with physics instead of
+        // tracking it exactly - the source is dragged, the follower catches up.
+        _follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
+        _springValues = new() { ["x"] = _follower.Transform([0, 100], [-60, 60]) };
+
+        _rotateValues = new() { ["rotate"] = _driver.Transform([0, 100], [0, 360]) };
+    }
+
+    private void OnSliderInput(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value) is false) return;
+        _slider = value;
+        _driver.SetSync(value);
+    }
+
+    private async Task RunAsync()
+    {
+        _runState = "running…";
+        var controls = await Motion.AnimateAsync(
+            ".prog-dot",
+            Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
+            Bm.Tween(2.4, BmEase.InOut),
+            stagger: Bm.Stagger(0.12));
+
+        _controls = controls;
+        await controls;
+
+        // A Reset (or a second Run) while this one was still playing has already moved the
+        // state on; only the run that is still current gets to report its own ending.
+        if (ReferenceEquals(_controls, controls) is false) return;
+
+        _runState = "finished";
+        StateHasChanged();
+    }
+
+    private async Task ResetDotsAsync()
+    {
+        _controls?.Stop();
+        _controls = null;
+        _runState = "idle";
+        await Motion.AnimateAsync(".prog-dot", Bm.To(y: 0, scale: 1), Bm.Tween(0.2));
+    }
+
+    private Task CountToAsync(double target)
+        => Motion.AnimateAsync(_count, target, value =>
+        {
+            _count = value;
+            StateHasChanged();
+        }, Bm.Tween(1.4, BmEase.InOut));
+
+    private async Task RunSequenceAsync()
+    {
+        var sequence = new BmSequence()
+            .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmEase.InOut))
+            .Add("#seq-box", Bm.To(rotate: 180), Bm.Tween(0.4), at: "-0.2")   // overlap the previous step
+            .Label("burst")
+            .Add(".seq-dot", Bm.To(scale: [1, 1.8, 1]), Bm.Spring(stiffness: 400, damping: 16), at: "burst")
+            .Add("#seq-box", Bm.To(x: 0, rotate: 0), Bm.Spring(stiffness: 200, damping: 18), at: "+0.1");
+
+        // Stop whatever a previous press left running so the two runs can't fight over the box.
+        _sequenceControls?.Stop();
+        _sequenceControls = await Motion.RunAsync(sequence);
+        await _sequenceControls;
+    }
+
+    private async Task ResetSequenceAsync()
+    {
+        _sequenceControls?.Stop();
+        _sequenceControls = null;
+        await Motion.AnimateAsync("#seq-box", Bm.To(x: 0, rotate: 0), Bm.Tween(0.2));
+        await Motion.AnimateAsync(".seq-dot", Bm.To(scale: 1), Bm.Tween(0.2));
+    }
+
+    private Task PulseAsync()
+        => _box.AnimateAsync(Bm.To(scale: [1, 1.35, 1]), Bm.Spring(bounce: 0.5, duration: 0.6)).AsTask();
+
+    public void Dispose()
+    {
+        _controls?.Stop();
+        _sequenceControls?.Stop();
+        _follower?.Dispose();
+    }
+
+    private const string _selectorCode = """
+        @inject BmotionAnimateService Motion
+
+        <div class="dot-row">
+            @for (var i = 0; i < 8; i++) { <div class="prog-dot"></div> }
+        </div>
+
+        @code {
+            private BmAnimationControls? _controls;
+
+            async Task RunAsync()
+            {
+                // Every match animates together; the stagger spreads their start times.
+                _controls = await Motion.AnimateAsync(
+                    ".prog-dot",
+                    Bm.To(y: [0, -60, 0], scale: [1, 1.25, 1]),
+                    Bm.Tween(2.4, BmEase.InOut),
+                    stagger: Bm.Stagger(0.12));
+
+                await _controls;   // the controls are directly awaitable
+            }
+
+            // …and hold the controls to interfere while it plays:
+            void Pause()    => _controls?.Pause();
+            void Faster()   => _controls?.SetSpeed(3);
+            void JumpToEnd()=> _controls?.Complete();   // Stop() freezes it where it is instead
+        }
+        """;
+
+    private const string _countCode = """
+        @inject BmotionAnimateService Motion
+
+        <span class="counter">@_count.ToString("N0")</span>
+
+        @code {
+            private double _count;
+
+            // No DOM involved: the engine interpolates a bare double and hands you every
+            // value on the way. The same call drives a canvas, an audio gain, anything.
+            Task CountToAsync(double target)
+                => Motion.AnimateAsync(_count, target, value =>
+                {
+                    _count = value;
+                    StateHasChanged();
+                }, Bm.Tween(1.4, BmEase.InOut));
+        }
+        """;
+
+    private const string _sequenceCode = """
+        @inject BmotionAnimateService Motion
+
+        <div id="seq-box" class="box"></div>
+        @for (var i = 0; i < 5; i++) { <div class="seq-dot"></div> }
+
+        @code {
+            async Task RunSequenceAsync()
+            {
+                var sequence = new BmSequence()
+                    .Add("#seq-box", Bm.To(x: 90), Bm.Tween(0.5, BmEase.InOut))
+
+                    // "-0.2" starts 0.2s BEFORE the previous step ends, so the two overlap.
+                    // "+0.2" would leave a gap; "<" aligns with the previous step's start.
+                    .Add("#seq-box", Bm.To(rotate: 180), Bm.Tween(0.4), at: "-0.2")
+
+                    // A label marks a position any number of later steps can share.
+                    .Label("burst")
+                    .Add(".seq-dot", Bm.To(scale: [1, 1.8, 1]),
+                         Bm.Spring(stiffness: 400, damping: 16), at: "burst")
+
+                    .Add("#seq-box", Bm.To(x: 0, rotate: 0),
+                         Bm.Spring(stiffness: 200, damping: 18), at: "+0.1");
+
+                // RunAsync returns the same controls a single animation does - and because the
+                // whole timeline runs on one playhead, they govern the gaps between the steps
+                // as well as the steps themselves.
+                _controls = await Motion.RunAsync(sequence);
+                await _controls;
+            }
+
+            void Hold()   => _controls?.Pause();       // the timeline genuinely stops here
+            void Resume() => _controls?.Play();
+            void Faster() => _controls?.SetSpeed(3);   // steps AND gaps compress by 3x
+
+            private BmAnimationControls? _controls;
+        }
+        """;
+
+    private const string _valuesCode = """
+        @using Bit.Bmotion
+        @inject BmotionAnimateService Motion
+
+        <Bmotion Values="_directValues"><div class="box" /></Bmotion>
+        <Bmotion Values="_springValues"><div class="box" /></Bmotion>
+        <Bmotion Values="_rotateValues"><div class="box" /></Bmotion>
+
+        @code {
+            // One source of truth; everything else is derived from it.
+            private readonly BmValue<double> _driver = Bm.Value(20.0);
+
+            private Dictionary<string, BmValue<double>> _directValues = default!;
+            private Dictionary<string, BmValue<double>> _springValues = default!;
+            private Dictionary<string, BmValue<double>> _rotateValues = default!;
+
+            protected override void OnInitialized()
+            {
+                // Transform maps one range onto another, and updates in lockstep.
+                _directValues = new() { ["x"] = _driver.Transform([0, 100], [-60, 60]) };
+
+                // A spring follower lags the source with physics rather than tracking it.
+                var follower = Motion.Spring(_driver, Bm.Spring(stiffness: 120, damping: 14));
+                _springValues = new() { ["x"] = follower.Transform([0, 100], [-60, 60]) };
+
+                _rotateValues = new() { ["rotate"] = _driver.Transform([0, 100], [0, 360]) };
+            }
+
+            // Setting the source flushes every dependent binding to the DOM next frame -
+            // with no re-render of this component at all.
+            void OnSlider(int value) => _driver.SetSync(value);
+
+            // Or animate the value itself: await Motion.AnimateAsync(_driver, 100, Bm.Spring());
+        }
+        """;
+
+    private const string _refCode = """
+        @using Bit.Bmotion
+
+        <Bmotion @ref="_box"
+                 Animate="Bm.To(rotate: 360)"
+                 Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+            <div class="box" />
+        </Bmotion>
+
+        @code {
+            private Bmotion _box = default!;
+
+            void Pause()  => _box.Pause();                 // playback rate 0
+            void Resume() => _box.Resume();
+            void Faster() => _box.SetPlaybackRate(4);
+            void Freeze() => _box.Stop();                  // Stop("x") halts one property
+            void Jump()   => _box.Set(Bm.To(scale: 1.5));  // apply instantly, no animation
+
+            // A one-off target that plays over whatever is already running.
+            Task PulseAsync()
+                => _box.AnimateAsync(Bm.To(scale: [1, 1.35, 1]),
+                                     Bm.Spring(bounce: 0.5, duration: 0.6)).AsTask();
+        }
+        """;
+
+    private const string _configCode = """
+        @using Bit.Bmotion
+
+        @* Cascades to every Bmotion beneath it. TransitionSpeed is a playback multiplier:
+           0.25 is the slow-motion switch for tuning, 0 makes everything instant. *@
+        <BmotionConfig Transition="Bm.Spring(stiffness: 180, damping: 16)"
+                       TransitionSpeed="0.25"
+                       ColorSpace="BmColorSpace.Oklab"
+                       ReduceMotion="null">
+            ...
+        </BmotionConfig>
+
+        @* ReduceMotion: null follows the OS prefers-reduced-motion setting, true always
+           reduces, false always animates. Honouring the preference is scoped to this
+           component on purpose - an element with no BmotionConfig above it always animates,
+           so the library never silently disables motion an app did not opt into.
+
+           For an app-wide policy, set it at registration instead:
+           builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User); *@
+        """;
+}

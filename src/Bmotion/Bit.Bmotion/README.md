@@ -25,13 +25,24 @@ builder.Services.AddBitBmotionServices();
 
 The `Bm` facade is the entry point for the whole hot path: `Bm.To(...)` builds animation
 targets (single values or keyframe sequences), `Bm.Spring` / `Bm.Tween` / `Bm.Inertia` build
-transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.Value` creates reactive
+transitions, `Bm.Stagger` builds multi-element delay generators, `Bm.SnapTo` builds the
+snap-to-grid / snap-to-page hook a drag release settles on, `Bm.Value` creates reactive
 motion values, and `Bm.Template` composes them into CSS strings. Components:
 `<Bmotion>`, `<BmotionAnimatePresence>`, `<BmotionPresenceSwitch>`, `<BmotionPresenceGroup>`
 (keyed list presence, with a popLayout mode), `<BmotionReorderGroup>` (drag-to-reorder lists),
-`<BmotionLayoutGroup>` and `<BmotionConfig>`. Programmatic
+`<BmotionSplitText>` (staggered per-character/word/line text animation, split in C# rather than by
+DOM surgery), `<BmotionLayoutGroup>` and `<BmotionConfig>`. Programmatic
 animation is available through `BmotionAnimateService` (selector / `ElementReference` based,
 supports sequences and staggers) and `BmotionScrollTracker` (scroll-linked motion values).
+
+A `BmSequence` timeline runs on a single playhead driven by the animation clock, so the controls it
+returns govern the gaps between steps as well as the steps themselves - pausing a sequence really
+holds it, and `SetSpeed(3)` compresses the silences by the same factor as the movement.
+
+Scroll-linked animation has a fast path of its own: `Timeline="BmScrollTimeline.Page()"` (or
+`View()`, `Container(...)`, `ViewOf(...)`) hands the animation to the browser's native
+`ScrollTimeline` / `ViewTimeline`, so scrubbing it costs no scroll handler, no frame loop and no
+interop at all. Browsers without those APIs get a scroll-scrub fallback over the same Web Animation.
 
 See the repository README for the full guide, and the XML documentation on `Bmotion`, `Bm`,
 and `BmotionAnimateService` for the complete API surface.
