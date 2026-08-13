@@ -53,6 +53,16 @@ public class BitTimePickerClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the callout header of the BitTimePicker.
+    /// </summary>
+    public string? CalloutHeader { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the callout footer of the BitTimePicker.
+    /// </summary>
+    public string? CalloutFooter { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the time input container of the BitTimePicker.
     /// </summary>
     public string? TimeInputContainer { get; set; }

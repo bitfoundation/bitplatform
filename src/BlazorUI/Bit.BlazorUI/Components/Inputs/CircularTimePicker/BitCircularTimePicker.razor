@@ -100,11 +100,23 @@
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">
+    @*
+        The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
+        off and the focus leaving it dismisses it; standalone it is a group of controls that is part of the page
+        like any other, where announcing a dialog would announce one the user can never leave.
+    *@
     <div @attributes=@CalloutHtmlAttributes
-         role="dialog"
+         role="@(Standalone ? "group" : "dialog")"
+         aria-modal="@(Standalone ? null : "true")"
          aria-label="@CalloutAriaLabel"
          style="@Styles?.CalloutContainer"
          class="bit-ctp-cac @Classes?.CalloutContainer">
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">
+                @CalloutHeaderTemplate
+            </div>
+        }
         @*
             The dial moving from one part of the time to the next, and the hand moving to a value that has no
             number of its own, are both changes a sighted person reads off the toolbar and the clock. Neither
@@ -350,6 +362,13 @@
                     aria-label="@CloseButtonTitle">
                 <i style="@Styles?.CloseButtonIcon" class="bit-ctp-cbi @closeButtonIcon?.GetCssClasses() @Classes?.CloseButtonIcon" aria-hidden="true" />
             </button>
+        }
+
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">
+                @CalloutFooterTemplate
+            </div>
         }
     </div>
 </div>

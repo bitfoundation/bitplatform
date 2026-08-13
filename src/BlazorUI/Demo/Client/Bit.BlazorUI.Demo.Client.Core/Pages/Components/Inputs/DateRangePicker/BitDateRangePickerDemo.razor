@@ -1,4 +1,4 @@
-@page "/components/daterangepicker"
+﻿@page "/components/daterangepicker"
 @page "/components/date-range-picker"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
@@ -97,6 +97,9 @@
             selection itself — once the start date is picked, every day that would produce a range longer than
             <b>MaxRange</b> or shorter than <b>MinRange</b> becomes unselectable. <b>MaxRange</b> also accounts for the hours
             and minutes of a range, so the time picker's spinners are disabled as soon as they would exceed it.
+            <b>DisablePast</b> and <b>DisableFuture</b> bound the calendar by today exactly as a <b>MinDate</b> or a
+            <b>MaxDate</b> of today would, without having to keep one up to date; where both apply, the narrower of
+            the two wins.
         </div>
         <div class="example-content">
             <div>Min: Now.AddDays(-5)</div>
@@ -110,6 +113,12 @@
             <div>Min: Now.AddYears(-5)</div>
             <div>Max: Now.AddYears(+1)</div>
             <BitDateRangePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
+            <br /><br />
+            <div>DisablePast:</div>
+            <BitDateRangePicker DisablePast />
+            <br /><br />
+            <div>DisableFuture:</div>
+            <BitDateRangePicker DisableFuture />
             <br /><br />
             <div>MaxRange: 2 days, 4 hours and 30 minutes</div>
             <BitDateRangePicker MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker />
@@ -448,6 +457,15 @@
                         <span class="year-suffix">AC</span>
                     </span>
                 </YearCellTemplate>
+            </BitDateRangePicker>
+            <br /><br /><br />
+            <BitDateRangePicker Label="Callout header & footer">
+                <CalloutHeaderTemplate>
+                    <div style="padding:0.5rem">Pick a range</div>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <div style="padding:0.5rem">Dates are local</div>
+                </CalloutFooterTemplate>
             </BitDateRangePicker>
         </div>
     </DemoExample>

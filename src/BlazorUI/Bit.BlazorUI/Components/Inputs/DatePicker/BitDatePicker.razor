@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<DateTimeOffset?>
 
 @{
@@ -13,7 +13,7 @@
     var nextYearNavIconCss = BitIconInfo.From(NextYearNavIcon, NextYearNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
     var prevYearRangeNavIconCss = BitIconInfo.From(PrevYearRangeNavIcon, PrevYearRangeNavIconName ?? "Up")?.GetCssClasses();
     var nextYearRangeNavIconCss = BitIconInfo.From(NextYearRangeNavIcon, NextYearRangeNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
-    var goToNowIconCss = BitIconInfo.From(GoToNowIcon, GoToNowIconName ?? "Clock")?.GetCssClasses();
+    var nowButtonIconCss = BitIconInfo.From(NowButtonIcon, NowButtonIconName ?? "Clock")?.GetCssClasses();
     var hideTimePickerIconCss = BitIconInfo.From(HideTimePickerIcon, HideTimePickerIconName ?? "CalendarMirrored")?.GetCssClasses();
     var increaseHourIconCss = BitIconInfo.From(TimePickerIncreaseHourIcon, TimePickerIncreaseHourIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
     var decreaseHourIconCss = BitIconInfo.From(TimePickerDecreaseHourIcon, TimePickerDecreaseHourIconName ?? "ChevronDownSmall")?.GetCssClasses();
@@ -127,10 +127,12 @@
      dir="@Dir?.ToString().ToLower()"
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()">
-    @* The callout is a modal dialog only when it floats over the page; standalone it is part of the
-       page itself, where role="dialog" would announce a dialog the user can never leave. *@
+    @* The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
+       off and the focus is held inside it; standalone it is a group of controls that is part of the page like
+       any other, where role="dialog" would announce a dialog the user can never leave - and where a plain div
+       would leave the label below naming nothing. *@
     <div style="@Styles?.CalloutContainer" class="bit-dtp-cac @Classes?.CalloutContainer"
-         role="@(Standalone ? null : "dialog")"
+         role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"
          @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
         @if (CalloutHeaderTemplate is not null)
@@ -240,8 +242,8 @@
                                         type="button"
                                         style="@Styles?.CloseButton"
                                         class="bit-dtp-nbt @Classes?.CloseButton"
-                                        title="@CloseDatePickerTitle"
-                                        aria-label="@CloseDatePickerTitle">
+                                        title="@CloseButtonTitle"
+                                        aria-label="@CloseButtonTitle">
                                     <i aria-hidden="true"
                                        style="@Styles?.CloseButtonIcon"
                                        class="bit-dtp-cic @closeButtonIconCss @Classes?.CloseButtonIcon" />
@@ -617,19 +619,19 @@
                 <div style="@Styles?.TimePickerWrapper" class="bit-dtp-twp @Classes?.TimePickerWrapper">
                     <div style="@Styles?.TimePickerHeader" class="bit-dtp-pkh bit-dtp-tph @Classes?.TimePickerHeader">
                         <div style="@Styles?.TimePickerNavWrapper" class="bit-dtp-nbc @Classes?.TimePickerNavWrapper">
-                            @if (ShowGoToNow)
+                            @if (ShowNowButton)
                             {
-                                <button @onclick="HandleGoToNow"
+                                <button @onclick="HandleNowButtonClick"
                                         type="button"
-                                        title="@GoToNowTitle"
-                                        aria-label="@GoToNowTitle"
-                                        style="@Styles?.GoToNowButton"
+                                        title="@NowButtonTitle"
+                                        aria-label="@NowButtonTitle"
+                                        style="@Styles?.NowButton"
                                         disabled="@(IsEnabled is false)"
                                         aria-disabled="@((IsEnabled is false || ReadOnly) ? "true" : null)"
-                                        class="bit-dtp-gtn @Classes?.GoToNowButton">
+                                        class="bit-dtp-gtn @Classes?.NowButton">
                                     <i aria-hidden="true"
-                                       style="@Styles?.GoToNowIcon"
-                                       class="bit-dtp-cic @goToNowIconCss @Classes?.GoToNowIcon" />
+                                       style="@Styles?.NowButtonIcon"
+                                       class="bit-dtp-cic @nowButtonIconCss @Classes?.NowButtonIcon" />
                                 </button>
                             }
                             @if (_isTimePickerOverlayOnTop)

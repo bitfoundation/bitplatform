@@ -24,6 +24,20 @@ public partial class BitCalendarDemo
         },
         new()
         {
+            Name = "ContinuousSpinDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay in milliseconds before the hour/minute starts changing continuously while an increase/decrease button of the time picker is held down.",
+        },
+        new()
+        {
+            Name = "ContinuousSpinInterval",
+            Type = "int",
+            DefaultValue = "75",
+            Description = "The interval in milliseconds between two consecutive changes while an increase/decrease button of the time picker is held down.",
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "System.Globalization.CultureInfo.CurrentUICulture",
@@ -42,6 +56,20 @@ public partial class BitCalendarDemo
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
             Description = "Used to customize how content inside the day cell is rendered."
+        },
+        new()
+        {
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
         },
         new()
         {
@@ -124,28 +152,28 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "GoToNowIcon",
+            Name = "NowButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "Gets or sets the icon to display in the GoToNow button using custom CSS classes for external icon libraries. Takes precedence over GoToNowIconName when both are set.",
+            Description = "Gets or sets the icon to display in the now button using custom CSS classes for external icon libraries. Takes precedence over NowButtonIconName when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info"
         },
         new()
         {
-            Name = "GoToNowIconName",
+            Name = "NowButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the name of the icon to display in the GoToNow button from the built-in Fluent UI icons.",
+            Description = "Gets or sets the name of the icon to display in the now button from the built-in Fluent UI icons.",
             LinkType = LinkType.Link,
             Href = "https://blazorui.bitplatform.dev/iconography"
         },
         new()
         {
-            Name = "GoToNowTitle",
+            Name = "NowButtonTitle",
             Type = "string",
             DefaultValue = "Go to now",
-            Description = "The title of the GoToNow button (tooltip)."
+            Description = "The title of the now button (tooltip)."
         },
         new()
         {
@@ -244,7 +272,7 @@ public partial class BitCalendarDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for calendar's hour.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -279,7 +307,7 @@ public partial class BitCalendarDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for calendar's minute.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
         },
         new()
         {
@@ -424,10 +452,10 @@ public partial class BitCalendarDemo
         },
         new()
         {
-            Name = "ShowGoToNow",
+            Name = "ShowNowButton",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the GoToNow button should be shown or not."
+            Description = "Whether the now button should be shown or not."
         },
         new()
         {

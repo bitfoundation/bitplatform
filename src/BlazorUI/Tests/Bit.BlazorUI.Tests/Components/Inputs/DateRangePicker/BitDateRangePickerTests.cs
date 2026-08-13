@@ -3336,17 +3336,47 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
+        // The step lays a grid over the day - 0, 3, 6 ... 21 - rather than adding itself to whatever the hour
+        // happens to be, so the two hours the value came in on, which sit between grid points, move onto the
+        // next one in the direction they were pressed instead of three past themselves.
         var increaseButton = component.Find("button[title='Increase start hour']");
         increaseButton.PointerDown();
         increaseButton.PointerUp();
 
-        Assert.AreEqual(13, component.Instance.Value!.StartDate!.Value.Hour);
+        Assert.AreEqual(12, component.Instance.Value!.StartDate!.Value.Hour);
 
         var decreaseButton = component.Find("button[title='Decrease end hour']");
         decreaseButton.PointerDown();
         decreaseButton.PointerUp();
 
-        Assert.AreEqual(8, component.Instance.Value!.EndDate!.Value.Hour);
+        Assert.AreEqual(9, component.Instance.Value!.EndDate!.Value.Hour);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerHourStepShouldStayOnTheGridWhenItDoesNotDivideTheDay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var value = new BitDateRangePickerValue
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 20, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 11, 0, 0, TimeSpan.Zero)
+        };
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HourStep, 5);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The grid is 0, 5, 10, 15, 20 and the four hours above 20 are not on it, so the hour wraps to the
+        // top of the grid rather than to the 25th hour of a 24-hour day.
+        var increaseButton = component.Find("button[title='Increase start hour']");
+        increaseButton.PointerDown();
+        increaseButton.PointerUp();
+
+        Assert.AreEqual(0, component.Instance.Value!.StartDate!.Value.Hour);
     }
 
     [TestMethod]
@@ -3465,5 +3495,196 @@ public class BitDateRangePickerTests : BunitTestContext
     private static string MonthTitle(int year, int month)
     {
         return $"{CultureInfo.InvariantCulture.DateTimeFormat.GetMonthName(month)} {year}";
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldTellAnUnreadableRangeFromAnOutOfRangeOne()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.ValueFormat, "{0} - {1}");
+            parameters.Add(p => p.MinDate, new DateTimeOffset(2026, 1, 10, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.MaxDate, new DateTimeOffset(2026, 1, 20, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.InvalidErrorMessage, "not a range");
+            parameters.Add(p => p.OutOfRangeErrorMessage, "outside the range");
+        });
+
+        // Text that does not read as a range at all and text that reads fine but breaks the restrictions
+        // are different mistakes, so they no longer share the one message.
+        component.Find(".bit-dtrp-inp").Change("nonsense");
+        component.Find("form").Submit();
+        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "not a range"));
+
+        component.Find(".bit-dtrp-inp").Change("2026-01-01 - 2026-01-05");
+        component.Find("form").Submit();
+        Assert.IsTrue(component.FindAll(".validation-message").Any(m => m.TextContent == "outside the range"));
+
+        component.Find(".bit-dtrp-inp").Change("2026-01-12 - 2026-01-15");
+        component.Find("form").Submit();
+        Assert.AreEqual(0, component.FindAll(".validation-message").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldDisableThePastAndTheFutureLikeTheBounds()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var today = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+
+        var past = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.DisablePast, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // A day before today is out of the range exactly as it would be with a MinDate of today.
+        Assert.IsTrue(past.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(past.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
+
+        var future = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.DisableFuture, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        Assert.IsFalse(future.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsTrue(future.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldReportOpeningAndClosingTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var opened = 0;
+        var closed = 0;
+        var isOpen = false;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(0, closed);
+
+        component.Find(".bit-dtrp-ovl").Click();
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(1, closed);
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerShouldShowTheCalloutWhenIsOpenIsSetFromOutside()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>();
+
+        var before = Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The hook does its toggling on the renderer's dispatcher rather than inline, so the queue is
+        // drained before the invocations are counted.
+        await component.InvokeAsync(() => Task.CompletedTask);
+
+        var after = Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The callout is shown and positioned from the JS side, so an IsOpen pushed in through the
+        // parameter has to reach it too - otherwise the picker reports itself open while nothing appears.
+        Assert.IsTrue(after > before);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldReportTheClearButton()
+    {
+        var cleared = 0;
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 0, 0, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.OnClear, () => cleared++);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtrp-clr").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldFocusTheInputOnAutoFocus()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        // The autofocus attribute is not honored for an interactively rendered input, so the focus is
+        // placed from the first render instead - which reaches the DOM as a focus interop call.
+        Assert.IsTrue(Context.JSInterop.Invocations
+                             .Any(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerCalloutShouldBeAModalDialogOnlyWhenItFloats()
+    {
+        var component = RenderComponent<BitDateRangePicker>();
+
+        var callout = component.Find(".bit-dtrp-cac");
+
+        Assert.AreEqual("dialog", callout.GetAttribute("role"));
+        Assert.AreEqual("true", callout.GetAttribute("aria-modal"));
+
+        component.Render(parameters => parameters.Add(p => p.Standalone, true));
+
+        callout = component.Find(".bit-dtrp-cac");
+
+        Assert.AreEqual("group", callout.GetAttribute("role"));
+        Assert.IsFalse(callout.HasAttribute("aria-modal"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldTrapTheFocusInAFloatingCallout()
+    {
+        var component = RenderComponent<BitDateRangePicker>();
+
+        // A callout that reports itself a modal dialog has to hold the tab order, which happens on the JS
+        // side - so it only works if the setup is actually told to trap.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Calendars.setup"].Single();
+
+        Assert.AreEqual(true, setup.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldNotTrapTheFocusInAStandaloneCallout()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Calendars.setup"].Single();
+
+        Assert.AreEqual(false, setup.Arguments[1]);
     }
 }

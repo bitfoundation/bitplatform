@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<TimeSpan?>
 
 @{
@@ -17,15 +17,24 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
+    @*
+        The label names the part of the picker the person operates, which for a standalone one is the hour
+        input rather than the hidden input that only carries the value: a label pointing at that one would
+        put the focus somewhere invisible when clicked.
+    *@
+    @{
+        var labelFor = Standalone ? _hourInputId : _inputId;
+    }
+
     @if (LabelTemplate is not null)
     {
-        <label id="@_labelId" for="@_inputId">
+        <label id="@_labelId" for="@labelFor">
             @LabelTemplate
         </label>
     }
     else if (Label.HasValue())
     {
-        <label style="@Styles?.Label" class="bit-tpc-lbl @Classes?.Label" id="@_labelId" for="@_inputId">
+        <label style="@Styles?.Label" class="bit-tpc-lbl @Classes?.Label" id="@_labelId" for="@labelFor">
             @Label
         </label>
     }
@@ -99,11 +108,31 @@
              class="bit-tpc-ovl @Classes?.Overlay"></div>
     }
 
-    <div id="@_calloutId"
+    <div @ref="_calloutRef"
+         id="@_calloutId"
          style="@Styles?.Callout"
          class="@GetCalloutCssClasses()"
          dir="@Dir?.ToString().ToLower()">
-        <div @onkeydown="HandleOnCalloutKeyDown" style="@Styles?.CalloutContainer" class="bit-tpc-cac @Classes?.CalloutContainer" role="dialog" @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+        @*
+            The callout is a modal dialog only when it floats over the page, where an overlay closes the rest
+            of it off and the focus is held inside it; standalone it is a group of controls that is part of
+            the page like any other, where role="dialog" would announce a dialog the user can never leave -
+            and where a plain div would leave the label below naming nothing.
+        *@
+        <div @onkeydown="HandleOnCalloutKeyDown"
+             style="@Styles?.CalloutContainer"
+             class="bit-tpc-cac @Classes?.CalloutContainer"
+             role="@(Standalone ? "group" : "dialog")"
+             aria-modal="@(Standalone ? null : "true")"
+             @attributes=@CalloutHtmlAttributes aria-label="@CalloutAriaLabel">
+
+            @if (CalloutHeaderTemplate is not null)
+            {
+                <div id="@_headerId" style="@Styles?.CalloutHeader" class="bit-tpc-chd @Classes?.CalloutHeader">
+                    @CalloutHeaderTemplate
+                </div>
+            }
+
             <div style="@Styles?.TimeInputContainer" class="bit-tpc-tic @Classes?.TimeInputContainer">
                 <div style="@Styles?.HourInputContainer" class="bit-tpc-tpr @Classes?.HourInputContainer">
                     <button @onpointerup="HandleOnPointerUpOrOut"
@@ -122,9 +151,10 @@
                            @bind="@_hourView"
                            @bind:event="oninput"
                            @onfocus="HandleOnHourFocus"
+                           @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Hour)"
+                           id="@_hourInputId"
                            min="@(TimeFormat == BitTimeFormat.TwelveHours ? "1" : "0")"
                            max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
-                           step="@SafeHourStep"
                            type="number"
                            inputmode="numeric"
                            readonly="@ReadOnly"
@@ -165,9 +195,9 @@
                            @bind="@_minuteView"
                            @bind:event="oninput"
                            @onfocus="HandleOnMinuteFocus"
+                           @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Minute)"
                            min="0"
                            max="59"
-                           step="@SafeMinuteStep"
                            type="number"
                            inputmode="numeric"
                            readonly="@ReadOnly"
@@ -210,9 +240,9 @@
                                @bind="@_secondView"
                                @bind:event="oninput"
                                @onfocus="HandleOnSecondFocus"
+                               @onkeydown="e => HandleOnTimeInputKeyDown(e, TimeUnit.Second)"
                                min="0"
                                max="59"
-                               step="@SafeSecondStep"
                                type="number"
                                inputmode="numeric"
                                readonly="@ReadOnly"
@@ -289,6 +319,20 @@
                     }
                 </div>
             }
+
+            @if (CalloutFooterTemplate is not null)
+            {
+                <div id="@_footerId" style="@Styles?.CalloutFooter" class="bit-tpc-cft @Classes?.CalloutFooter">
+                    @CalloutFooterTemplate
+                </div>
+            }
+
+            @*
+                The time on the inputs, announced as a whole whenever any part of it changes: a screen
+                reader follows the input that was operated by itself, but the buttons that set the whole
+                time at once - now, clear, the meridiem - would otherwise change it silently.
+            *@
+            <div class="bit-tpc-lve" aria-live="polite" aria-atomic="true">@CurrentValueAsString</div>
 
             @if (ShowCloseButton && Standalone is false)
             {

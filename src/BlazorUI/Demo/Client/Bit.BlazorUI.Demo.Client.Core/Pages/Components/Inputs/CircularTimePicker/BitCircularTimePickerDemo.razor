@@ -1,4 +1,4 @@
-@page "/components/circulartimepicker"
+﻿@page "/components/circulartimepicker"
 @page "/components/circular-time-picker"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
@@ -124,10 +124,12 @@
 
     <DemoExample Title="Steps" RazorCode="@example6RazorCode" Id="example6">
         <div>
-            <b>MinuteStep</b> and <b>HourStep</b> set the granularity the dial and the arrow keys move in. A minute
-            step snaps the pick to the nearest multiple of it, which is what turns the face into a five-minute or
-            quarter-hour picker, and an hour step dims the hours in between so a grid the picker does not accept is
-            never offered. A press on a dimmed number changes nothing and leaves the dial where it is.
+            <b>MinuteStep</b> and <b>HourStep</b> set the granularity the dial and the arrow keys move in. A step lays
+            a grid over its range that the pick snaps to, which is what turns the face into a five-minute or
+            quarter-hour picker, and dims the numbers in between so a value the picker does not accept is never
+            offered. A press on a dimmed number changes nothing and leaves the dial where it is. The grid starts at
+            the matching part of <b>MinTime</b>, and at the top of the range where there is none, so a picker whose
+            range begins at 09:07 can still be set to 09:07.
         </div>
         <br />
         <div class="example-content-standalone">
@@ -147,8 +149,10 @@
             <b>MinTime</b> and <b>MaxTime</b> bound what can be picked: the hours outside the range are dimmed, and
             inside the boundary hours only the minutes still within it stay selectable. <b>AllowedHours</b>,
             <b>AllowedMinutes</b> and <b>AllowedSeconds</b> add an arbitrary rule on top of that. The pointer refuses
-            a dimmed number, the arrow keys step over it, and a time typed outside the range fails validation the same
-            way an unparsable one does.
+            a dimmed number, the arrow keys step over it, and a time typed outside the range fails validation with
+            its own <b>OutOfRangeErrorMessage</b> rather than the message an unreadable one gets.
+            <b>DisablePast</b> and <b>DisableFuture</b> bound the range by the current time exactly as a
+            <b>MinTime</b> or a <b>MaxTime</b> of now would; where both apply, the narrower of the two wins.
         </div>
         <br />
         <div class="example-content-standalone">
@@ -158,6 +162,8 @@
             <BitCircularTimePicker Label="Working hours only, on the half hour" Standalone
                                    AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
                                    DefaultValue="@(new TimeSpan(9, 0, 0))" />
+            <br /><br />
+            <BitCircularTimePicker Label="Later today only" Standalone DisablePast />
         </div>
     </DemoExample>
 
@@ -221,9 +227,10 @@
     <DemoExample Title="Value format" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <b>ValueFormat</b> is the .NET format string the field is rendered with, and - when the text input is
-            allowed - parsed back with. Left unset it follows the <b>TimeFormat</b> and <b>ShowSeconds</b>:
-            <code>HH:mm</code> on the 24-hour face, <code>hh:mm tt</code> on the 12-hour one, each with a
-            <code>:ss</code> where the seconds are shown.
+            allowed - parsed back with. Left unset, the picker writes the time the way its culture writes one:
+            the pattern of the culture, rewritten into the clock format the dial is in (<b>TimeFormat</b>),
+            extended with the seconds where <b>ShowSeconds</b> is set and written with the leading zeros -
+            though a time typed without them is still read.
         </div>
         <br />
         <div class="example-content">
@@ -315,6 +322,8 @@
             <b>LabelTemplate</b> and <b>IconTemplate</b> replace the label and the trailing glyph with arbitrary
             markup. The first picker below drives its callout from a button inside its own label, through the public
             <b>OpenCallout</b> and <b>DismissCallout</b> methods of the component.
+            <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> add arbitrary markup above and below the
+            dial inside the callout itself.
         </div>
         <br />
         <div class="example-content">
@@ -330,6 +339,15 @@
                 <IconTemplate>
                     <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
                 </IconTemplate>
+            </BitCircularTimePicker>
+            <br /><br /><br />
+            <BitCircularTimePicker Label="Custom callout header & footer" Placeholder="Select a time">
+                <CalloutHeaderTemplate>
+                    <div style="padding:0.5rem">Pick a time</div>
+                </CalloutHeaderTemplate>
+                <CalloutFooterTemplate>
+                    <div style="padding:0.5rem">Times are local</div>
+                </CalloutFooterTemplate>
             </BitCircularTimePicker>
         </div>
     </DemoExample>

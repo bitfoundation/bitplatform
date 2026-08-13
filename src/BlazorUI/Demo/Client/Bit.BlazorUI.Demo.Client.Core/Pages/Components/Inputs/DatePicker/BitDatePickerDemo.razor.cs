@@ -43,6 +43,13 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the input of the picker gets the focus as soon as it renders for the first time. A standalone picker carries its value in a hidden input nobody is meant to land on, so it has nothing to place the focus on.",
+        },
+        new()
+        {
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Calendar",
@@ -119,7 +126,7 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "CloseDatePickerTitle",
+            Name = "CloseButtonTitle",
             Type = "string",
             DefaultValue = "Close date picker",
             Description = "The title of the CloseDatePicker button (tooltip).",
@@ -132,6 +139,20 @@ public partial class BitDatePickerDemo
             Description = "The general color of the DatePicker that applies to the today day button, the highlighted current month, and the selected AM/PM button.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
+        },
+        new()
+        {
+            Name = "ContinuousSpinDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay in milliseconds before the hour/minute starts changing continuously while an increase/decrease button of the time picker is held down.",
+        },
+        new()
+        {
+            Name = "ContinuousSpinInterval",
+            Type = "int",
+            DefaultValue = "75",
+            Description = "The interval in milliseconds between two consecutive changes while an increase/decrease button of the time picker is held down.",
         },
         new()
         {
@@ -242,26 +263,26 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "GoToNowIcon",
+            Name = "NowButtonIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
-            Description = "The icon to display inside the GoToNow button. Takes precedence over GoToNowIconName when both are set.",
+            Description = "The icon to display inside the now button. Takes precedence over NowButtonIconName when both are set.",
             LinkType = LinkType.Link,
             Href = "#bit-icon-info",
         },
         new()
         {
-            Name = "GoToNowIconName",
+            Name = "NowButtonIconName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The name of the GoToNow button's icon from the built-in Fluent UI icon set."
+            Description = "The name of the now button's icon from the built-in Fluent UI icon set."
         },
         new()
         {
-            Name = "GoToNowTitle",
+            Name = "NowButtonTitle",
             Type = "string",
             DefaultValue = "Go to now",
-            Description = "The title of the GoToNow button (tooltip)."
+            Description = "The title of the now button (tooltip)."
         },
         new()
         {
@@ -370,7 +391,7 @@ public partial class BitDatePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for date-picker's hour.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -465,7 +486,7 @@ public partial class BitDatePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for date-picker's minute.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
         },
         new()
         {
@@ -552,6 +573,12 @@ public partial class BitDatePickerDemo
         },
         new()
         {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "Callback for when the callout is closed.",
+        },
+        new()
+        {
             Name = "OnFocus",
             Type = "EventCallback",
             Description = "The callback for focusing the DatePicker's input."
@@ -573,6 +600,12 @@ public partial class BitDatePickerDemo
             Name = "OnMonthChange",
             Type = "EventCallback<DateTimeOffset>",
             Description = "The callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month."
+        },
+        new()
+        {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "Callback for when the callout is opened.",
         },
         new()
         {
@@ -672,10 +705,10 @@ public partial class BitDatePickerDemo
         },
         new()
         {
-            Name = "ShowGoToNow",
+            Name = "ShowNowButton",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the GoToNow button should be shown or not."
+            Description = "Whether the now button should be shown or not."
         },
         new()
         {
@@ -1069,7 +1102,7 @@ public partial class BitDatePickerDemo
                 },
                 new()
                 {
-                    Name = "GoToNowButton",
+                    Name = "NowButton",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Go to now button of the BitDatePicker."
@@ -1097,7 +1130,7 @@ public partial class BitDatePickerDemo
                 },
                 new()
                 {
-                    Name = "GoToNowIcon",
+                    Name = "NowButtonIcon",
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the Go to now icon of the BitDatePicker."
@@ -1732,6 +1765,8 @@ public partial class BitDatePickerDemo
     private DateTimeOffset? presetsValue;
     private BitDatePicker? presetsPicker;
 
+    private int openCount;
+    private int closeCount;
     private int clickCount;
     private int clearCount;
     private int focusInCount;

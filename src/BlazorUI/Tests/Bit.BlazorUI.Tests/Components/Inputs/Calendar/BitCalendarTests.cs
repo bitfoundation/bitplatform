@@ -230,12 +230,12 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalendarGoToNowIconNameShouldRenderCustomIcon()
+    public void BitCalendarNowButtonIconNameShouldRenderCustomIcon()
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);
-            parameters.Add(p => p.GoToNowIconName, "CustomNowIcon");
+            parameters.Add(p => p.NowButtonIconName, "CustomNowIcon");
         });
 
         var icon = component.Find(".bit-cal-gtn i");
@@ -244,12 +244,12 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalendarGoToNowIconShouldRenderExternalIcon()
+    public void BitCalendarNowButtonIconShouldRenderExternalIcon()
     {
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.ShowTimePicker, true);
-            parameters.Add(p => p.GoToNowIcon, BitIconInfo.Css("bi bi-clock"));
+            parameters.Add(p => p.NowButtonIcon, BitIconInfo.Css("bi bi-clock"));
         });
 
         var icon = component.Find(".bit-cal-gtn i");
@@ -743,6 +743,9 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            // the time of an event is written the way its culture writes a time of day, so the one it is
+            // read back against is pinned rather than left to whatever the machine running the test is set to
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
             parameters.Add(p => p.Events, [
                 new ()
                 {
@@ -756,10 +759,64 @@ public class BitCalendarTests : BunitTestContext
 
         var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
         var title = day15.GetAttribute("title");
-        var expectedTime = new TimeOnly(9, 30).ToString("HH:mm", System.Globalization.CultureInfo.CurrentUICulture);
+        var expectedTime = new TimeOnly(9, 30).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.IsTrue(title?.Contains("Sync"));
         Assert.IsTrue(title?.Contains(expectedTime));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsTimeShouldKeepTheSeparatorsOfTheCulture()
+    {
+        var culture = (System.Globalization.CultureInfo)System.Globalization.CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "H.mm";
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.Events, [
+                new ()
+                {
+                    Title = "Sync",
+                    Body = "Details",
+                    Date = new DateOnly(2026, 1, 15),
+                    StartTime = new TimeOnly(9, 30)
+                }
+            ]);
+        });
+
+        var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+
+        Assert.IsTrue(day15.GetAttribute("title")?.Contains("9.30"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEventsTimeShouldPadTheHourOfACultureThatWritesItNarrow()
+    {
+        var culture = (System.Globalization.CultureInfo)System.Globalization.CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "H:mm"; // en-US and fa-IR write the hour like this
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.Events, [
+                new ()
+                {
+                    Title = "Sync",
+                    Body = "Details",
+                    Date = new DateOnly(2026, 1, 15),
+                    StartTime = new TimeOnly(9, 5)
+                }
+            ]);
+        });
+
+        var day15 = component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15");
+
+        // The separators and the order come from the culture, but the parts are padded, so the times of
+        // a list of events line up under one another.
+        Assert.IsTrue(day15.GetAttribute("title")?.Contains("09:05"));
     }
 
     [TestMethod]
@@ -833,6 +890,9 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            // the times of an event are written the way its culture writes a time of day, so the one they
+            // are read back against is pinned rather than left to whatever the machine is set to
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
             parameters.Add(p => p.Events, [
                 new()
                 {
@@ -845,7 +905,7 @@ public class BitCalendarTests : BunitTestContext
             ]);
         });
 
-        var culture = System.Globalization.CultureInfo.CurrentUICulture;
+        var culture = System.Globalization.CultureInfo.InvariantCulture;
         var startFormatted = new TimeOnly(9, 0).ToString("HH:mm", culture);
         var endFormatted = new TimeOnly(11, 30).ToString("HH:mm", culture);
 
@@ -864,6 +924,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
             parameters.Add(p => p.Events, [
                 new BitCalendarEvent { Title = "Event", Body = "Details", Date = new DateOnly(2026, 1, 15), StartTime = new TimeOnly(10, 0) }
             ]);
@@ -872,7 +933,7 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
 
         var timeEl = component.Find(".bit-cal-eis");
-        var expectedTime = new TimeOnly(10, 0).ToString("HH:mm", System.Globalization.CultureInfo.CurrentUICulture);
+        var expectedTime = new TimeOnly(10, 0).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.Contains("From", timeEl.TextContent);
         Assert.Contains(expectedTime, timeEl.TextContent);
@@ -884,6 +945,7 @@ public class BitCalendarTests : BunitTestContext
         var component = RenderComponent<BitCalendar>(parameters =>
         {
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
             parameters.Add(p => p.Events, [
                 new ()
                 {
@@ -898,7 +960,7 @@ public class BitCalendarTests : BunitTestContext
         component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
 
         var timeEl = component.Find(".bit-cal-eis");
-        var expectedTime = new TimeOnly(17, 0).ToString("HH:mm", System.Globalization.CultureInfo.CurrentUICulture);
+        var expectedTime = new TimeOnly(17, 0).ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
         Assert.Contains("Until", timeEl.TextContent);
         Assert.Contains(expectedTime, timeEl.TextContent);
@@ -1361,5 +1423,103 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.Contains(expectedTitle, monthTitle.TextContent);
         Assert.AreEqual("15", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldDisableThePastAndTheFutureLikeTheBounds()
+    {
+        var today = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+
+        var past = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.DisablePast, true);
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
+        });
+
+        // A day before today is out of the range exactly as it would be with a MinDate of today.
+        Assert.IsTrue(past.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(past.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
+
+        var future = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.DisableFuture, true);
+            parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
+        });
+
+        Assert.IsFalse(future.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsTrue(future.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitCalendarHourStepShouldLayAGridOverTheDay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.HourStep, 3);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The step lays a grid over the day - 0, 3, 6 ... 21 - rather than adding itself to whatever the hour
+        // happens to be, so an hour that sits between two grid points moves onto the next one, not three past
+        // itself.
+        var increaseHour = component.FindAll(".bit-cal-tbt")[0];
+        increaseHour.PointerDown();
+        increaseHour.PointerUp();
+
+        Assert.AreEqual(12, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public async Task BitCalendarShouldNotStartTheContinuousSpinBeforeTheContinuousSpinDelay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            // Longer than the press below, so the held button contributes the one step every press makes
+            // and the continuous spin never starts.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var increaseHour = component.FindAll(".bit-cal-tbt")[0];
+        increaseHour.PointerDown();
+
+        await Task.Delay(600);
+
+        Assert.AreEqual(11, value!.Value.Hour);
+
+        component.FindAll(".bit-cal-tbt")[0].PointerUp();
+    }
+
+    [TestMethod]
+    public void BitCalendarMinuteStepShouldLayAGridOverTheHour()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = new DateTimeOffset(2026, 1, 15, 10, 7, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var decreaseMinute = component.FindAll(".bit-cal-tbt")[3];
+        decreaseMinute.PointerDown();
+        decreaseMinute.PointerUp();
+
+        Assert.AreEqual(0, value!.Value.Minute);
     }
 }

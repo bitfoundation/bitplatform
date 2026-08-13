@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
 
 public partial class BitTimePickerDemo
 {
@@ -28,13 +28,27 @@ public partial class BitTimePickerDemo
                Placeholder=""Select a time..."" />";
 
     private readonly string example4RazorCode = @"
-<BitTimePicker AllowTextInput Label=""Start time"" />";
+<BitTimePicker AllowTextInput Label=""Start time"" />
+
+<BitTimePicker AllowTextInput
+               ShowSeconds
+               Label=""Start time (with seconds)""
+               TimeFormat=""BitTimeFormat.TwelveHours"" />";
 
     private readonly string example5RazorCode = @"
 <BitTimePicker IconName=""@BitIconName.HourGlass"" Placeholder=""Select a time..."" />
 
 <BitTimePicker IconName=""@BitIconName.HourGlass""
                IconLocation=""BitIconLocation.Left""
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Custom spin & close icons""
+               ShowCloseButton
+               IncreaseHourIconName=""@BitIconName.CaretSolidUp""
+               DecreaseHourIconName=""@BitIconName.CaretSolidDown""
+               IncreaseMinuteIconName=""@BitIconName.CaretSolidUp""
+               DecreaseMinuteIconName=""@BitIconName.CaretSolidDown""
+               CloseButtonIconName=""@BitIconName.ChromeClose""
                Placeholder=""Select a time..."" />";
 
     private readonly string example6RazorCode = @"
@@ -44,11 +58,8 @@ public partial class BitTimePickerDemo
 <BitTimePicker @bind-Value=""@selectedTime"" Placeholder=""Select a time..."" />
 <div>Selected time: @selectedTime.ToString()</div>
 
-<BitTimePicker @bind-IsOpen=""isOpen"" @bind-Value=""@boundTime"" Placeholder=""Select a time..."" />
-<BitButton OnClick=""() => isOpen = true"">Open TimePicker</BitButton>";
+<BitTimePicker DefaultValue=""new(8, 15, 0)"" Label=""DefaultValue (08:15)"" />";
     private readonly string example7CsharpCode = @"
-private bool isOpen;
-private TimeSpan? boundTime;
 private TimeSpan? selectedTime = new(5, 12, 15);";
 
     private readonly string example8RazorCode = @"
@@ -92,6 +103,16 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
 <BitTimePicker Label=""Even hours, on the quarter""
                AllowedHours=""@(h => h % 2 == 0)""
                AllowedMinutes=""@(m => m % 15 == 0)""
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Later today only (DisablePast)""
+               DisablePast
+               ShowNowButton
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Earlier today only (DisableFuture)""
+               DisableFuture
+               ShowNowButton
                Placeholder=""Select a time..."" />";
 
     private readonly string example12RazorCode = @"
@@ -109,6 +130,14 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
                Placeholder=""Select a time..."" />";
 
     private readonly string example13RazorCode = @"
+<BitTimePicker Label=""Starts from 09:30""
+               StartingValue=""new(9, 30, 0)""
+               Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Starts from midnight (default)""
+               Placeholder=""Select a time..."" />";
+
+    private readonly string example14RazorCode = @"
 <BitTimePicker @bind-Value=""@actionsTime""
                ShowNowButton
                ShowClearButton
@@ -127,15 +156,19 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
                NowButtonText=""Current time""
                ClearButtonText=""Reset""
                Label=""Custom button texts"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private TimeSpan? actionsTime;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitTimePicker Label=""Underlined"" Underlined Placeholder=""Select a time..."" />
 
-<BitTimePicker Label=""No border"" HasBorder=""false"" Placeholder=""Select a time..."" />";
+<BitTimePicker Label=""No border"" HasBorder=""false"" Placeholder=""Select a time..."" />
 
-    private readonly string example15RazorCode = @"
+<BitTimePicker Label=""DropDirection (All)""
+               DropDirection=""BitDropDirection.All""
+               Placeholder=""Select a time..."" />";
+
+    private readonly string example16RazorCode = @"
 <EditForm Model=""formValidationTimePickerModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
     <div class=""validation-summary"">
@@ -147,7 +180,12 @@ private TimeSpan? actionsTime;";
                        Label=""Time required""
                        AriaLabel=""Select a time""
                        Placeholder=""Select a time...""
-                       InvalidErrorMessage=""Invalid Time!"" />
+                       MinTime=""new(8, 0, 0)""
+                       MaxTime=""new(18, 0, 0)""
+                       AllowedMinutes=""@(m => m % 15 == 0)""
+                       InvalidErrorMessage=""Invalid Time!""
+                       OutOfRangeErrorMessage=""The time must be between 08:00 and 18:00!""
+                       DisallowedTimeErrorMessage=""Only quarter hours can be booked!"" />
         <ValidationMessage For=""@(() => formValidationTimePickerModel.Time)"" />
     </div>
     <br />
@@ -155,7 +193,7 @@ private TimeSpan? actionsTime;";
         Submit
     </BitButton>
 </EditForm>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 public class FormValidationTimePickerModel
 {
     [Required]
@@ -178,12 +216,12 @@ private void HandleInvalidSubmit()
     successMessage = string.Empty;
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitTimePicker Responsive
                ShowCloseButton
                Placeholder=""Select a time..."" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitTimePicker Label=""Try it with the keyboard""
                CalloutAriaLabel=""Pick a meeting time""
                HourInputAriaLabel=""Meeting hour""
@@ -194,13 +232,14 @@ private void HandleInvalidSubmit()
                DecreaseMinuteTitle=""One minute earlier""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitTimePicker Label=""Watch the log""
                ShowClearButton
                Placeholder=""Select a time...""
                OnOpen=""LogOpen""
                OnClose=""LogClose""
                OnClick=""LogClick""
+               OnClear=""LogClear""
                OnFocusIn=""LogFocusIn""
                OnFocusOut=""LogFocusOut""
                OnSelectTime=""LogSelectTime""
@@ -212,12 +251,13 @@ private void HandleInvalidSubmit()
         <div>@log</div>
     }
 </div>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private readonly List<string> eventLogs = [];
 
 private void LogOpen() => Log(""OnOpen"");
 private void LogClose() => Log(""OnClose"");
 private void LogClick() => Log(""OnClick"");
+private void LogClear() => Log(""OnClear"");
 private void LogFocusIn() => Log(""OnFocusIn"");
 private void LogFocusOut() => Log(""OnFocusOut"");
 private void LogSelectTime(TimeSpan? time) => Log($""OnSelectTime: {time}"");
@@ -233,7 +273,34 @@ private void Log(string message)
     }
 }";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
+<BitTimePicker @ref=""programmaticPicker"" @bind-IsOpen=""isCalloutOpen"" Label=""Controlled callout"" />
+<div>IsOpen: @isCalloutOpen</div>
+
+<BitButton OnClick=""() => programmaticPicker?.OpenCallout()"">OpenCallout()</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticPicker?.DismissCallout()"">
+    DismissCallout()
+</BitButton>";
+    private readonly string example20CsharpCode = @"
+private bool isCalloutOpen;
+private BitTimePicker? programmaticPicker;";
+
+    private readonly string example21RazorCode = @"
+<style>
+    .callout-header {
+        width: 100%;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .callout-footer {
+        display: flex;
+        width: 100%;
+        gap: 0.25rem;
+        justify-content: space-between;
+    }
+</style>
+
 <BitTimePicker @ref=""timePicker"" Placeholder=""Select a time..."">
     <LabelTemplate>
         Custom label <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.AlarmClock"" OnClick=""OpenCallout""></BitButton>
@@ -244,8 +311,22 @@ private void Log(string message)
     <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
     </IconTemplate>
+</BitTimePicker>
+
+<BitTimePicker @bind-Value=""@templateTime"" Label=""Callout header & footer"" Placeholder=""Select a time..."">
+    <CalloutHeaderTemplate>
+        <div class=""callout-header"">Pick a meeting time</div>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <div class=""callout-footer"">
+            <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""() => templateTime = new(9, 0, 0)"">09:00</BitButton>
+            <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""() => templateTime = new(13, 30, 0)"">13:30</BitButton>
+            <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" OnClick=""() => templateTime = new(17, 45, 0)"">17:45</BitButton>
+        </div>
+    </CalloutFooterTemplate>
 </BitTimePicker>";
-    private readonly string example19CsharpCode = @"
+    private readonly string example21CsharpCode = @"
+private TimeSpan? templateTime;
 private BitTimePicker timePicker;
 
 private async Task OpenCallout()
@@ -253,7 +334,26 @@ private async Task OpenCallout()
     await timePicker.OpenCallout();
 }";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example22RazorCode = @"
+<BitTimePicker Label=""Primary"" Color=""BitColor.Primary"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Secondary"" Color=""BitColor.Secondary"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Tertiary"" Color=""BitColor.Tertiary"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Info"" Color=""BitColor.Info"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Success"" Color=""BitColor.Success"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Warning"" Color=""BitColor.Warning"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""SevereWarning"" Color=""BitColor.SevereWarning"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""Error"" Color=""BitColor.Error"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""PrimaryBackground"" Color=""BitColor.PrimaryBackground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""SecondaryBackground"" Color=""BitColor.SecondaryBackground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""TertiaryBackground"" Color=""BitColor.TertiaryBackground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""PrimaryForeground"" Color=""BitColor.PrimaryForeground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""SecondaryForeground"" Color=""BitColor.SecondaryForeground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""TertiaryForeground"" Color=""BitColor.TertiaryForeground"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""PrimaryBorder"" Color=""BitColor.PrimaryBorder"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""SecondaryBorder"" Color=""BitColor.SecondaryBorder"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />
+<BitTimePicker Label=""TertiaryBorder"" Color=""BitColor.TertiaryBorder"" ShowNowButton TimeFormat=""BitTimeFormat.TwelveHours"" Value=""new(10, 30, 0)"" />";
+
+    private readonly string example23RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitTimePicker Icon=""@(""fa-solid fa-clock"")"" Placeholder=""Select a time..."" />
@@ -277,7 +377,14 @@ private async Task OpenCallout()
 <BitTimePicker Icon=""@BitIconInfo.Bi(""stopwatch-fill"")""
                Placeholder=""Select a time..."" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example24RazorCode = @"
+<BitTimePicker Label=""Small"" Size=""BitSize.Small"" TimeFormat=""BitTimeFormat.TwelveHours"" Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Medium"" Size=""BitSize.Medium"" TimeFormat=""BitTimeFormat.TwelveHours"" Placeholder=""Select a time..."" />
+
+<BitTimePicker Label=""Large"" Size=""BitSize.Large"" TimeFormat=""BitTimeFormat.TwelveHours"" Placeholder=""Select a time..."" />";
+
+    private readonly string example25RazorCode = @"
 <style>
     .custom-class {
         overflow: hidden;
@@ -383,10 +490,10 @@ private async Task OpenCallout()
                                   DecreaseHourButton = ""custom-button"",
                                   IncreaseMinuteButton = ""custom-button"",
                                   DecreaseMinuteButton = ""custom-button"" })"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example25CsharpCode = @"
 private TimeSpan? classesValue;";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example26RazorCode = @"
 <BitTimePicker Dir=""BitDir.Rtl""
                Standalone
                Label=""تایم""

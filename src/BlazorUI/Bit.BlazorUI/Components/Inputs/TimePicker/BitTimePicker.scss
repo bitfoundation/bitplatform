@@ -1,5 +1,20 @@
 ﻿@import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
+@import "../../../Styles/color-role-maps.scss";
+
+// The default size, declared as a mixin so both the root element and the callout - which is moved out to
+// the body while it is open and therefore inherits nothing from the root - can fall back to it.
+@mixin tpc-size-medium {
+    --bit-tpc-inp-h: #{spacing(4)};
+    --bit-tpc-inp-fs: #{spacing(1.75)};
+    --bit-tpc-lbl-fs: #{spacing(1.75)};
+    --bit-tpc-cell-size: #{spacing(3.75)};
+    --bit-tpc-cell-fs: #{spacing(2.28)};
+    --bit-tpc-ico-fs: #{spacing(1.5)};
+    --bit-tpc-sep-fs: #{spacing(2.5)};
+    --bit-tpc-ampm-fs: #{spacing(1.8)};
+    --bit-tpc-act-fs: #{spacing(1.75)};
+}
 
 .bit-tpc {
     margin: 0;
@@ -10,6 +25,8 @@
     box-sizing: border-box;
     font-size: spacing(2.25);
     font-family: $tg-font-family;
+
+    @include tpc-size-medium;
 
     &.bit-dis {
         .bit-tpc-lbl,
@@ -65,7 +82,7 @@
     font-weight: 600;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
-    font-size: spacing(1.75);
+    font-size: var(--bit-tpc-lbl-fs);
     overflow-wrap: break-word;
     color: $clr-fg-pri;
 }
@@ -79,7 +96,7 @@
     display: flex;
     cursor: pointer;
     box-shadow: none;
-    height: spacing(4);
+    height: var(--bit-tpc-inp-h);
     position: relative;
     align-items: center;
     flex-flow: row nowrap;
@@ -111,14 +128,16 @@
     border-radius: 0;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: var(--bit-tpc-inp-fs);
     background: none transparent;
     color: $clr-fg-pri;
     font-family: $tg-font-family;
 }
 
+// An input that takes a typed time is a text field, so it carries the caret of one rather than the
+// pointer of the button-like input that only opens the callout.
 .bit-tpc-ein {
-    cursor: default;
+    cursor: text;
 }
 
 .bit-tpc-lic {
@@ -134,7 +153,7 @@
 
 .bit-tpc-foc:not(.bit-tpc-und) {
     .bit-tpc-icn {
-        @include focus-ring;
+        @include focus-ring(var(--bit-tpc-clr-focus));
     }
 }
 
@@ -159,7 +178,7 @@
 
     &.bit-tpc-foc {
         .bit-tpc-icn {
-            @include focus-underline-ring;
+            @include focus-underline-ring(var(--bit-tpc-clr-focus));
         }
     }
 }
@@ -196,6 +215,8 @@
     border-radius: $shp-border-radius;
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+
+    @include tpc-size-medium;
 }
 
 .bit-tpc-cac {
@@ -238,8 +259,35 @@
     justify-content: center;
     align-content: center;
     align-items: center;
-    font-size: spacing(2.5);
+    font-size: var(--bit-tpc-sep-fs);
     font-weight: $tg-font-weight;
+}
+
+.bit-tpc-chd,
+.bit-tpc-cft {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bit-tpc-chd {
+    margin-bottom: spacing(1);
+}
+
+.bit-tpc-cft {
+    margin-top: spacing(1);
+}
+
+// The announcement of the whole time, which is read but never seen.
+.bit-tpc-lve {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    border-width: 0;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
 }
 
 .bit-tpc-am-pm {
@@ -257,12 +305,12 @@
     cursor: pointer;
     text-align: center;
     align-items: center;
-    width: spacing(3.75);
+    width: var(--bit-tpc-cell-size);
     box-sizing: border-box;
     justify-content: center;
     -moz-appearance: textfield; // Firefox
     background-color: $clr-bg-pri;
-    font-size: spacing(2.28);
+    font-size: var(--bit-tpc-cell-fs);
     font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
@@ -279,7 +327,7 @@
     }
 
     &:focus {
-        @include focus-underline-ring;
+        @include focus-underline-ring(var(--bit-tpc-clr-focus));
         border: none;
     }
 }
@@ -291,10 +339,10 @@
     overflow: visible;
     position: relative;
     text-align: center;
-    width: spacing(3.75);
+    width: var(--bit-tpc-cell-size);
     outline: transparent;
-    line-height: spacing(3.75);
-    font-size: spacing(1.5);
+    line-height: var(--bit-tpc-cell-size);
+    font-size: var(--bit-tpc-ico-fs);
     background-color: transparent;
     color: $clr-fg-pri;
     border-radius: $shp-border-radius;
@@ -330,19 +378,19 @@
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-tpc-clr-focus));
     }
 }
 
 .bit-tpc-bam,
 .bit-tpc-bpm {
-    font-size: spacing(1.8);
+    font-size: var(--bit-tpc-ampm-fs);
     font-weight: $tg-font-weight;
 }
 
 .bit-tpc-bns {
-    color: $clr-pri-text;
-    background-color: $clr-pri;
+    color: var(--bit-tpc-clr-txt);
+    background-color: var(--bit-tpc-clr);
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -350,12 +398,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-pri-hover;
+            background-color: var(--bit-tpc-clr-hover);
         }
     }
 
     &:active {
-        background-color: $clr-pri-active;
+        background-color: var(--bit-tpc-clr-active);
     }
 }
 
@@ -371,8 +419,8 @@
     border: none;
     cursor: pointer;
     font-weight: 600;
-    color: $clr-pri;
-    font-size: spacing(1.75);
+    color: var(--bit-tpc-clr);
+    font-size: var(--bit-tpc-act-fs);
     background-color: transparent;
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
@@ -394,7 +442,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-tpc-clr-focus));
     }
 }
 
@@ -414,6 +462,30 @@
         z-index: unset;
         animation: none;
         position: relative;
+    }
+}
+
+// A read-only picker still shows the time it holds, and it holds it on the same buttons and inputs a
+// picker that can be changed does. The buttons carry the disabled attribute there only to keep them from
+// being pressed, so the look of a switched off control - which the attribute brings along on its own -
+// is taken back off them: nothing on the callout is unavailable, it is only the time that is settled.
+// The class sits on the root and on the callout alike, since the callout leaves the root while it is open.
+.bit-tpc-rdl {
+    .bit-tpc-tbt:disabled {
+        color: $clr-fg-pri;
+
+        i {
+            color: inherit;
+        }
+    }
+
+    .bit-tpc-bns:disabled {
+        color: var(--bit-tpc-clr-txt);
+        background-color: var(--bit-tpc-clr);
+    }
+
+    .bit-tpc-abn:disabled {
+        color: var(--bit-tpc-clr);
     }
 }
 
@@ -468,4 +540,54 @@
             max-width: spacing(5);
         }
     }
+}
+
+// The callout does not sit inside the root element while it is open, so a direction the culture implies -
+// which leaves no dir attribute behind to inherit - has to be restated here. The parts of the time itself
+// keep running left to right (.bit-tpc-tic), so only the order of the sections around them mirrors.
+.bit-tpc-cal.bit-tpc-rtl {
+    direction: rtl;
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// They are applied to the root element and to the callout alike, since the callout is moved out of
+// the root while it is open and inherits nothing from it.
+@each $role, $tokens in $bit-color-roles {
+    .bit-tpc-#{$role} {
+        --bit-tpc-clr: #{role($tokens, main)};
+        --bit-tpc-clr-txt: #{role($tokens, on)};
+        --bit-tpc-clr-hover: #{role($tokens, hover)};
+        --bit-tpc-clr-active: #{role($tokens, active)};
+        --bit-tpc-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+
+.bit-tpc-sm {
+    --bit-tpc-inp-h: #{spacing(3.25)};
+    --bit-tpc-inp-fs: #{spacing(1.5)};
+    --bit-tpc-lbl-fs: #{spacing(1.5)};
+    --bit-tpc-cell-size: #{spacing(3)};
+    --bit-tpc-cell-fs: #{spacing(1.85)};
+    --bit-tpc-ico-fs: #{spacing(1.375)};
+    --bit-tpc-sep-fs: #{spacing(2)};
+    --bit-tpc-ampm-fs: #{spacing(1.5)};
+    --bit-tpc-act-fs: #{spacing(1.5)};
+}
+
+.bit-tpc-md {
+    @include tpc-size-medium;
+}
+
+.bit-tpc-lg {
+    --bit-tpc-inp-h: #{spacing(5)};
+    --bit-tpc-inp-fs: #{spacing(2)};
+    --bit-tpc-lbl-fs: #{spacing(2)};
+    --bit-tpc-cell-size: #{spacing(4.5)};
+    --bit-tpc-cell-fs: #{spacing(2.75)};
+    --bit-tpc-ico-fs: #{spacing(1.75)};
+    --bit-tpc-sep-fs: #{spacing(3)};
+    --bit-tpc-ampm-fs: #{spacing(2.1)};
+    --bit-tpc-act-fs: #{spacing(2)};
 }

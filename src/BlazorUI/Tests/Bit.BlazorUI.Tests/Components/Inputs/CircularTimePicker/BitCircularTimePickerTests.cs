@@ -1394,6 +1394,92 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCircularTimePickerShouldTellAnUnreadableTimeFromAnOutOfRangeOne()
+    {
+        var component = RenderComponent<BitCircularTimePickerValidationTest>(parameters =>
+        {
+            parameters.Add(p => p.MinTime, new TimeSpan(9, 0, 0));
+            parameters.Add(p => p.MaxTime, new TimeSpan(17, 0, 0));
+            parameters.Add(p => p.InvalidErrorMessage, "not a time");
+            parameters.Add(p => p.OutOfRangeErrorMessage, "outside the range");
+        });
+
+        // Text that does not read as a time at all and text that reads fine but falls outside of the range
+        // are different mistakes, so they no longer share the one message.
+        component.Find(".bit-ctp-inp").Input("nonsense");
+        component.Find("form").Submit();
+        Assert.AreEqual("not a time", component.Find(".validation-message").TextContent);
+
+        component.Find(".bit-ctp-inp").Input("19:00");
+        component.Find("form").Submit();
+        Assert.AreEqual("outside the range", component.Find(".validation-message").TextContent);
+
+        component.Find(".bit-ctp-inp").Input("10:00");
+        component.Find("form").Submit();
+        Assert.AreEqual(new TimeSpan(10, 0, 0), component.Instance.TestModel.Time);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldStartAnEmptyPickerFromTheStartingValue()
+    {
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.StartingValue, new TimeSpan(9, 30, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // An untouched picker stays empty; the starting value only says where the first change lands, so
+        // stepping the hour keeps the 30 minutes rather than resetting them to the top of the hour.
+        Assert.IsNull(value);
+
+        component.Find(".bit-ctp-clf").KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReportTheClearButton()
+    {
+        var cleared = 0;
+        TimeSpan? value = new TimeSpan(10, 30, 0);
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.OnClear, () => cleared++);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-ctp-abn").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerCalloutShouldBeAModalDialogOnlyWhenItFloats()
+    {
+        var component = RenderComponent<BitCircularTimePicker>();
+
+        var callout = component.Find(".bit-ctp-cac");
+
+        Assert.AreEqual("dialog", callout.GetAttribute("role"));
+        Assert.AreEqual("true", callout.GetAttribute("aria-modal"));
+
+        component.Render(parameters => parameters.Add(p => p.Standalone, true));
+
+        callout = component.Find(".bit-ctp-cac");
+
+        // Standalone the dial is part of the page, where announcing a dialog would announce one the user can
+        // never leave.
+        Assert.AreEqual("group", callout.GetAttribute("role"));
+        Assert.IsFalse(callout.HasAttribute("aria-modal"));
+    }
+
+    [TestMethod]
     public void BitCircularTimePickerShouldHandItsFieldToTheKeyDefaultCanceller()
     {
         var component = RenderComponent<BitCircularTimePicker>();
@@ -2008,6 +2094,99 @@ public class BitCircularTimePickerTests : BunitTestContext
         });
 
         Assert.AreEqual("01-05 PM", component.Find(".bit-ctp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldKeepTheSeparatorsOfTheCulture()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "H.mm";
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(13, 45, 0));
+        });
+
+        // The default format is the pattern of the culture, so it is what the value is written with and
+        // what a typed time is read back with.
+        Assert.AreEqual("13.45", component.Find(".bit-ctp-inp").GetAttribute("value"));
+
+        component.Find(".bit-ctp-inp").Input("07.15");
+
+        Assert.AreEqual(new TimeSpan(7, 15, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldPadTheValueOfACultureThatWritesTheHourNarrow()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "h:mm tt"; // en-US writes the hour like this
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 5, 0));
+        });
+
+        // The separators, the order and the designators come from the culture, but the parts are padded:
+        // a clock face reads a time as two digits either side of the separator.
+        Assert.AreEqual("09:05 AM", component.Find(".bit-ctp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldPadTheValueOfATwentyFourHourCultureThatWritesTheHourNarrow()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "h:mm tt";
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwentyFourHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(9, 5, 0));
+        });
+
+        Assert.AreEqual("09:05", component.Find(".bit-ctp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldReadATypedTimeWithoutTheLeadingZeros()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "H:mm";
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.AllowTextInput, true);
+        });
+
+        // The field is written padded, but the padded pattern would accept nothing but a padded value,
+        // so the narrow one is read with as well.
+        component.Find(".bit-ctp-inp").Input("9:05");
+
+        Assert.AreEqual(new TimeSpan(9, 5, 0), component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNotRewriteTheQuotedLiteralsOfThePatternOfTheCulture()
+    {
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.DateTimeFormat.ShortTimePattern = "HH'h'mm";
+
+        // The 'h' is a literal, not the hour specifier of a 12-hour culture, so the conversion to the
+        // 12-hour clock has to leave it where it is.
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.DefaultValue, new TimeSpan(13, 45, 0));
+        });
+
+        Assert.AreEqual("01h45 PM", component.Find(".bit-ctp-inp").GetAttribute("value"));
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TimePicker;
 
 public partial class BitTimePickerDemo
 {
@@ -45,6 +45,20 @@ public partial class BitTimePickerDemo
             Type = "string",
             DefaultValue = "Clock",
             Description = "Aria label for time picker popup for screen reader users."
+        },
+        new()
+        {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the bottom of the TimePicker's callout, below the time inputs and the action buttons."
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the top of the TimePicker's callout, above the time inputs."
         },
         new()
         {
@@ -96,10 +110,33 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear action buttons, and the focus indicator of the input.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
+            Name = "ContinuousSpinDelay",
+            Type = "int",
+            DefaultValue = "400",
+            Description = "The delay in milliseconds before the time part starts changing continuously while an increase/decrease button is held down.",
+        },
+        new()
+        {
+            Name = "ContinuousSpinInterval",
+            Type = "int",
+            DefaultValue = "75",
+            Description = "The interval in milliseconds between two consecutive changes while an increase/decrease button is held down.",
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the TimePicker."
+            Description = "CultureInfo for the TimePicker. It provides the AM/PM designators and the pattern the value is written in, and a culture that reads right to left lays the picker out that way without an explicit Dir."
         },
         new()
         {
@@ -178,6 +215,27 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "DisallowedTimeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects.",
+        },
+        new()
+        {
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every time of day after the current time, exactly as a MaxTime of now would. When both are set, the earlier of the two bounds wins.",
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every time of day before the current time, exactly as a MinTime of now would. When both are set, the later of the two bounds wins.",
+        },
+        new()
+        {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
@@ -204,7 +262,7 @@ public partial class BitTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's hour.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at the hour of MinTime, and at midnight where there is none, that every hour the buttons produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -369,7 +427,7 @@ public partial class BitTimePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's minute.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the minute of MinTime, and at the top of the hour where there is none, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
         },
         new()
         {
@@ -377,6 +435,12 @@ public partial class BitTimePickerDemo
             Type = "string",
             DefaultValue = "Now",
             Description = "The text of the now button, shown when ShowNowButton is set.",
+        },
+        new()
+        {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "Callback for when the value is cleared using the clear button.",
         },
         new()
         {
@@ -422,6 +486,13 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "OutOfRangeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that falls outside of MinTime and MaxTime.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -446,7 +517,7 @@ public partial class BitTimePickerDemo
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for time-picker's second.",
+            Description = "The step, in seconds, the spin buttons move the second by. A step greater than 1 lays a grid over the minute, starting at the second of MinTime, and at the top of the minute where there is none, that every second the buttons produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -478,6 +549,15 @@ public partial class BitTimePickerDemo
         },
         new()
         {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitTimePickerClassStyles",
             DefaultValue = "null",
@@ -491,6 +571,13 @@ public partial class BitTimePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the BitTimePicker is rendered standalone or with the input component and callout.",
+        },
+        new()
+        {
+            Name = "StartingValue",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The time an empty TimePicker starts from, instead of midnight. It is not a value: the picker stays empty until something is picked, but the first change made to it lands around the given time.",
         },
         new()
         {
@@ -513,7 +600,7 @@ public partial class BitTimePickerDemo
             Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The format of the time in the TimePicker like ""HH:mm"".",
+            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the time pattern of the culture, rewritten into the TimeFormat, extended with the seconds where ShowSeconds is set and padded with the leading zeros.",
         }
     ];
 
@@ -608,6 +695,44 @@ public partial class BitTimePickerDemo
                     Description="Show time pickers in 12 hours format.",
                     Value="1",
                 }
+            ]
+        },
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size TimePicker.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size TimePicker.", Value = "1" },
+                new() { Name = "Large", Description = "The large size TimePicker.", Value = "2" }
             ]
         },
         new()
@@ -710,6 +835,20 @@ public partial class BitTimePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the callout container of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout header of the BitTimePicker."
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout footer of the BitTimePicker."
                 },
                 new()
                 {
@@ -949,16 +1088,17 @@ public partial class BitTimePickerDemo
 
 
 
-    private bool isOpen;
+    private bool isCalloutOpen;
     private readonly List<string> eventLogs = [];
-    private TimeSpan? boundTime;
     private TimeSpan? actionsTime;
     private TimeSpan? classesValue;
+    private TimeSpan? templateTime;
     private TimeSpan? readOnlyTime = new(2, 50, 0);
     private TimeSpan? selectedTime = new(5, 12, 15);
     private FormValidationTimePickerModel formValidationTimePickerModel = new();
     private string successMessage = string.Empty;
     private BitTimePicker timePicker = default!;
+    private BitTimePicker? programmaticPicker;
 
     private async Task OpenCallout()
     {
@@ -981,6 +1121,7 @@ public partial class BitTimePickerDemo
     private void LogOpen() => Log("OnOpen");
     private void LogClose() => Log("OnClose");
     private void LogClick() => Log("OnClick");
+    private void LogClear() => Log("OnClear");
     private void LogFocusIn() => Log("OnFocusIn");
     private void LogFocusOut() => Log("OnFocusOut");
     private void LogSelectTime(TimeSpan? time) => Log($"OnSelectTime: {time}");

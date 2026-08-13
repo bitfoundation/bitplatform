@@ -161,7 +161,7 @@
             Enable the built-in time picker using <b>ShowTimePicker</b> to let users pick the time of day along with
             the date. Switch between the 24-hour and the 12-hour clock using <b>TimeFormat</b>, render the time
             picker as an overlay (reached through the clock button) using <b>ShowTimePickerAsOverlay</b>, and hide
-            the GoToNow button using <b>ShowGoToNow</b>. While the time picker is on screen, selecting a day keeps
+            the now button using <b>ShowNowButton</b>. While the time picker is on screen, selecting a day keeps
             the callout open so the time can be set as well.
         </div>
         <br />
@@ -173,7 +173,7 @@
             <br /><br />
             <BitDatePicker Label="ShowTimePickerAsOverlay" ShowTimePicker ShowTimePickerAsOverlay />
             <br /><br />
-            <BitDatePicker Label="Without the GoToNow button" ShowTimePicker ShowGoToNow="false" />
+            <BitDatePicker Label="Without the now button" ShowTimePicker ShowNowButton="false" />
         </div>
     </DemoExample>
 
@@ -475,8 +475,9 @@
             <b>OnSelectDate</b> reports every date the user picks, <b>OnMonthChange</b> reports the first day of the
             month the calendar navigates to (through the nav buttons, the month/year pickers, GoToToday, or the
             keyboard), which is ideal for lazy-loading the data of the visible month, <b>OnClick</b>,
-            <b>OnFocusIn</b>, and <b>OnFocusOut</b> report the interactions with the input, and <b>OnClear</b>
-            reports the value getting cleared by the clear button.
+            <b>OnFocusIn</b>, and <b>OnFocusOut</b> report the interactions with the input, <b>OnClear</b>
+            reports the value getting cleared by the clear button, and <b>OnOpen</b> and <b>OnClose</b> report the
+            callout opening and closing however it happened - a click, the keyboard, or <b>IsOpen</b> set from code.
         </div>
         <br />
         <div class="example-content">
@@ -498,6 +499,13 @@
             <div>Focused in: @focusInCount times</div>
             <div>Focused out: @focusOutCount times</div>
             <div>Cleared: @clearCount times</div>
+            <br /><br />
+            <BitDatePicker Label="OnOpen & OnClose"
+                           OnOpen="() => openCount++"
+                           OnClose="() => closeCount++" />
+            <br />
+            <div>Opened: @openCount times</div>
+            <div>Closed: @closeCount times</div>
         </div>
     </DemoExample>
 
@@ -691,7 +699,7 @@
             <BitDatePicker Label="TimePicker icons (FA)"
                            ShowTimePicker
                            ShowClearButton
-                           GoToNowIcon="@BitIconInfo.Fa("solid clock")"
+                           NowButtonIcon="@BitIconInfo.Fa("solid clock")"
                            HideTimePickerIcon="@BitIconInfo.Fa("solid calendar")"
                            TimePickerIncreaseHourIcon="@BitIconInfo.Fa("solid chevron-up")"
                            TimePickerDecreaseHourIcon="@BitIconInfo.Fa("solid chevron-down")"

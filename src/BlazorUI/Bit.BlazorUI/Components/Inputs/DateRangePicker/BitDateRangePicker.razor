@@ -125,12 +125,23 @@
      style="@Styles?.Callout"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">
+    @*
+        The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
+        off; standalone it is a group of controls that is part of the page like any other.
+    *@
     <div style="@Styles?.CalloutContainer"
          class="bit-dtrp-cac @Classes?.CalloutContainer"
          role="@(Standalone ? "group" : "dialog")"
+         aria-modal="@(Standalone ? null : "true")"
          @attributes=@CalloutHtmlAttributes
          @onkeydown="HandleOnCalloutKeyDown"
          aria-label="@CalloutAriaLabel">
+        @if (CalloutHeaderTemplate is not null)
+        {
+            <div id="@_headerId" style="@Styles?.CalloutHeader" class="@Classes?.CalloutHeader">
+                @CalloutHeaderTemplate
+            </div>
+        }
         <div style="@Styles?.Group" class="bit-dtrp-grp @Classes?.Group" role="group">
             <div class="bit-dtrp-sdt" aria-live="polite" aria-atomic="true">
                 @if (CurrentValueAsString.HasValue())
@@ -896,5 +907,11 @@
                 </div>
             }
         </div>
+        @if (CalloutFooterTemplate is not null)
+        {
+            <div id="@_footerId" style="@Styles?.CalloutFooter" class="@Classes?.CalloutFooter">
+                @CalloutFooterTemplate
+            </div>
+        }
     </div>
 </div>
