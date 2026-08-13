@@ -1097,16 +1097,27 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         return Today ?? DateTimeOffset.Now;
     }
 
+    // Today as a whole day in the time zone of the component: the days it is compared against carry no
+    // time of day, so a bound taken from the current instant would place today on the wrong side of it.
+    private (DateTimeOffset start, DateTimeOffset end) GetTodayBounds()
+    {
+        var today = GetDateTime(GetNow()).Date;
+
+        var start = new DateTimeOffset(today, _timeZone.GetUtcOffset(today));
+
+        return (start, start.AddDays(1).AddTicks(-1));
+    }
+
     // DisablePast and DisableFuture bound the selectable days by today exactly the way MinDate and MaxDate
     // do, so every consumer of the allowed range reads the bounds through these two accessors. Where both
-    // apply, the narrower of the two wins.
+    // apply, the narrower of the two wins. Today itself stays selectable under either of them.
     private DateTimeOffset? GetMinDate()
     {
         if (DisablePast is false) return MinDate;
 
-        var now = GetNow();
+        var startOfToday = GetTodayBounds().start;
 
-        return MinDate.HasValue && MinDate.Value > now ? MinDate : now;
+        return MinDate.HasValue && MinDate.Value > startOfToday ? MinDate : startOfToday;
     }
 
     /// <inheritdoc cref="GetMinDate"/>
@@ -1114,9 +1125,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (DisableFuture is false) return MaxDate;
 
-        var now = GetNow();
+        var endOfToday = GetTodayBounds().end;
 
-        return MaxDate.HasValue && MaxDate.Value < now ? MaxDate : now;
+        return MaxDate.HasValue && MaxDate.Value < endOfToday ? MaxDate : endOfToday;
     }
 
     private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)

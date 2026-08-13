@@ -1428,7 +1428,10 @@ public class BitCalendarTests : BunitTestContext
     [TestMethod]
     public void BitCalendarShouldDisableThePastAndTheFutureLikeTheBounds()
     {
-        var today = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+        // Today carries a time of day, the way the current instant always does, so that the bounds are
+        // measured against the whole day and not against the moment the test happens to name.
+        var now = new DateTime(2026, 1, 15, 14, 30, 0);
+        var today = new DateTimeOffset(now, TimeZoneInfo.Local.GetUtcOffset(now));
 
         var past = RenderComponent<BitCalendar>(parameters =>
         {
@@ -1437,8 +1440,10 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.Culture, System.Globalization.CultureInfo.InvariantCulture);
         });
 
-        // A day before today is out of the range exactly as it would be with a MinDate of today.
+        // A day before today is out of the range exactly as it would be with a MinDate of today,
+        // while today itself is the first day still in it.
         Assert.IsTrue(past.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(past.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").HasAttribute("disabled"));
         Assert.IsFalse(past.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
 
         var future = RenderComponent<BitCalendar>(parameters =>
@@ -1449,6 +1454,7 @@ public class BitCalendarTests : BunitTestContext
         });
 
         Assert.IsFalse(future.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(future.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").HasAttribute("disabled"));
         Assert.IsTrue(future.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
     }
 

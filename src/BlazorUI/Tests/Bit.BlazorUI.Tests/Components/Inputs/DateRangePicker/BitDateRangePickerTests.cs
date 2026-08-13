@@ -3535,7 +3535,10 @@ public class BitDateRangePickerTests : BunitTestContext
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var today = new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero);
+        // Today carries a time of day, the way the current instant always does, so that the bounds are
+        // measured against the whole day and not against the moment the test happens to name.
+        var now = new DateTime(2026, 1, 15, 14, 30, 0);
+        var today = new DateTimeOffset(now, TimeZoneInfo.Local.GetUtcOffset(now));
 
         var past = RenderComponent<BitDateRangePicker>(parameters =>
         {
@@ -3545,8 +3548,10 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
         });
 
-        // A day before today is out of the range exactly as it would be with a MinDate of today.
+        // A day before today is out of the range exactly as it would be with a MinDate of today,
+        // while today itself is the first day that can still start or end a range.
         Assert.IsTrue(past.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(past.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "15").HasAttribute("disabled"));
         Assert.IsFalse(past.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
 
         var future = RenderComponent<BitDateRangePicker>(parameters =>
@@ -3558,6 +3563,7 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         Assert.IsFalse(future.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "14").HasAttribute("disabled"));
+        Assert.IsFalse(future.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "15").HasAttribute("disabled"));
         Assert.IsTrue(future.FindAll(".bit-dtrp-dbt").First(b => b.TextContent.Trim() == "16").HasAttribute("disabled"));
     }
 
@@ -3606,6 +3612,29 @@ public class BitDateRangePickerTests : BunitTestContext
         // The callout is shown and positioned from the JS side, so an IsOpen pushed in through the
         // parameter has to reach it too - otherwise the picker reports itself open while nothing appears.
         Assert.IsTrue(after > before);
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerShouldFitTheMonthsWhenIsOpenIsSetFromOutside()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.MonthCount, 2);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The hook does its work on the renderer's dispatcher rather than inline, so the queue is
+        // drained before the callout is read.
+        await component.InvokeAsync(() => Task.CompletedTask);
+
+        // An open pushed in from the outside measures the width available exactly as a click on the field
+        // does - the width reported here being zero - so the extra months are dropped instead of being laid
+        // out side by side past the edge of a viewport that cannot hold them.
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb").Count);
     }
 
     [TestMethod]

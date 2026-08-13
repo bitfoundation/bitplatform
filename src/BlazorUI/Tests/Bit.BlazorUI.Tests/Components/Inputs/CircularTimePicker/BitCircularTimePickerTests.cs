@@ -1372,6 +1372,28 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCircularTimePickerKeyboardShouldNotSeedAReadOnlyDialFromTheStartingValue()
+    {
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.StartingValue, new TimeSpan(9, 30, 0));
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        await KeyDown(component, "Home");
+        await KeyDown(component, "End");
+
+        // The starting value only says where the first change would land, so a dial that refuses the change
+        // must not come to rest on it either: the picker is still empty, and no number is pointed at.
+        Assert.IsNull(value);
+        Assert.IsFalse(component.FindAll(".bit-ctp-num").Any(n => n.GetAttribute("aria-selected") == "true"));
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerInputKeysShouldOpenAndCloseTheCallout()
     {
         var isOpen = false;

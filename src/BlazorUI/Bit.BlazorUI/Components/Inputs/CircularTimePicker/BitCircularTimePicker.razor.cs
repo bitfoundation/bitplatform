@@ -1634,9 +1634,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task MoveToEdge(bool first)
     {
-        SeedFromStartingValue();
-
         if (IsInteractive is false) return;
+
+        SeedFromStartingValue();
 
         if (IsHourView)
         {

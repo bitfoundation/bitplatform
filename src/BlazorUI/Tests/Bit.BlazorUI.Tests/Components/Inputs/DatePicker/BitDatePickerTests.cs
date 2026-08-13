@@ -2906,6 +2906,35 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitDatePickerShouldOpenOnTheValueMonthWhenIsOpenIsSetFromOutside()
+    {
+        var day = new DateTime(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(day, TimeZoneInfo.Local.GetUtcOffset(day)));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // Opened by hand, walked a month past the value and closed again.
+        component.Find(".bit-dtp-wrp").Click();
+        component.Find(".bit-dtp-pkh .bit-dtp-nbt:last-child").Click();
+        Assert.Contains("February", component.Find(".bit-dtp-pkt, .bit-dtp-ptb").TextContent);
+
+        component.Find(".bit-dtp-ovl").Click();
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The hook does its work on the renderer's dispatcher rather than inline, so the queue is
+        // drained before the callout is read.
+        await component.InvokeAsync(() => Task.CompletedTask);
+
+        // An open pushed in from the outside prepares the callout exactly as a click on the field does, so
+        // it comes back on the month holding the value instead of the month the last visit was left on.
+        Assert.Contains("January", component.Find(".bit-dtp-pkt, .bit-dtp-ptb").TextContent);
+    }
+
+    [TestMethod]
     public void BitDatePickerHourStepShouldLayAGridOverTheDay()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

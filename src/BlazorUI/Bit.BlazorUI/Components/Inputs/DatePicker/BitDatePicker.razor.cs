@@ -1162,6 +1162,31 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
+        await PrepareCalloutForOpen();
+
+        await ToggleCallout();
+
+        await OnOpen.InvokeAsync();
+
+        // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
+        // the date from inside it. The exception is a pointer press on a picker whose input accepts
+        // text: there the user is about to type the date, and the focus has to stay where they typed.
+        if (wasOpen is false && (_focusDayOnOpen || AllowTextInput is false || ReadOnly))
+        {
+            FocusCalloutOnOpen();
+        }
+
+        _focusDayOnOpen = false;
+
+        await OnClick.InvokeAsync();
+    }
+
+    // Everything the callout has to be brought to before it is shown: the pickers back at their starting
+    // view, the overlay decisions remade against the width available right now, and the calendar moved onto
+    // the current value. Every path that opens the callout runs it, so a click, a call to OpenCallout and an
+    // IsOpen pushed in from the outside all open onto the same state.
+    private async Task PrepareCalloutForOpen()
+    {
         ResetPickersState();
 
         var bodyWidth = await _js.BitUtilsGetBodyWidth();
@@ -1191,22 +1216,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
-
-        await ToggleCallout();
-
-        await OnOpen.InvokeAsync();
-
-        // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
-        // the date from inside it. The exception is a pointer press on a picker whose input accepts
-        // text: there the user is about to type the date, and the focus has to stay where they typed.
-        if (wasOpen is false && (_focusDayOnOpen || AllowTextInput is false || ReadOnly))
-        {
-            FocusCalloutOnOpen();
-        }
-
-        _focusDayOnOpen = false;
-
-        await OnClick.InvokeAsync();
     }
 
     // The keys the input answers itself, per the APG combobox pattern: the popup opens with
@@ -2854,6 +2863,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         _ = InvokeAsync(async () =>
         {
+            if (isOpen)
+            {
+                await PrepareCalloutForOpen();
+                StateHasChanged();
+            }
+
             await ToggleCallout();
 
             // The callout holds the tab order while it is open, so an open pushed in from the outside has to

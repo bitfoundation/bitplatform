@@ -1422,17 +1422,23 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         _ = InvokeAsync(async () =>
         {
-            await ToggleCallout();
-
-            // The callout holds the tab order while it is open, so an open pushed in from the outside has to
-            // move the focus into it exactly as a click on the field does - otherwise the focus is left on the
-            // page behind an overlay that it can no longer reach.
-            if (isOpen && AllowTextInput is false)
+            if (isOpen)
             {
-                _focusedDate = GetFocusableDay();
-                _focusAfterRender = true;
+                await PrepareCalloutForOpen();
+
+                // The callout holds the tab order while it is open, so an open pushed in from the outside has
+                // to move the focus into it exactly as a click on the field does - otherwise the focus is left
+                // on the page behind an overlay that it can no longer reach.
+                if (AllowTextInput is false)
+                {
+                    _focusedDate = GetFocusableDay();
+                    _focusAfterRender = true;
+                }
+
                 StateHasChanged();
             }
+
+            await ToggleCallout();
 
             await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
         });
@@ -1460,6 +1466,39 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         if (await AssignIsOpenInternal(true) is false) return;
 
+        await PrepareCalloutForOpen();
+
+        // The callout is a dialog, so the keyboard focus moves into the day grid with it. An editable
+        // input keeps the focus instead, since the user may well want to go on typing the range.
+        if (AllowTextInput is false)
+        {
+            _focusedDate = GetFocusableDay();
+            _focusAfterRender = true;
+        }
+        else
+        {
+            // A click that landed on the icon rather than on the input never moved the focus into the
+            // field, so the picker would open with none of the focus cues the very same click on the
+            // input two pixels away produces.
+            await InputElement.FocusAsync();
+        }
+
+        StateHasChanged();
+
+        await ToggleCallout();
+
+        await OnOpen.InvokeAsync();
+
+        await OnClick.InvokeAsync();
+    }
+
+    // Everything the callout has to be brought to before it is shown: the pickers back at their starting
+    // view, the month count and the overlay decisions remade against the width available right now, and the
+    // calendar moved onto the current value. Every path that opens the callout runs it, so a click, a call
+    // to OpenCallout and an IsOpen pushed in from the outside all open onto the same state - skipping it
+    // leaves, among other things, the full month count laid out side by side on a viewport too narrow for it.
+    private async Task PrepareCalloutForOpen()
+    {
         ResetPickersState();
 
         var bodyWidth = await _js.BitUtilsGetBodyWidth();
@@ -1512,29 +1551,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
-
-        // The callout is a dialog, so the keyboard focus moves into the day grid with it. An editable
-        // input keeps the focus instead, since the user may well want to go on typing the range.
-        if (AllowTextInput is false)
-        {
-            _focusedDate = GetFocusableDay();
-            _focusAfterRender = true;
-        }
-        else
-        {
-            // A click that landed on the icon rather than on the input never moved the focus into the
-            // field, so the picker would open with none of the focus cues the very same click on the
-            // input two pixels away produces.
-            await InputElement.FocusAsync();
-        }
-
-        StateHasChanged();
-
-        await ToggleCallout();
-
-        await OnOpen.InvokeAsync();
-
-        await OnClick.InvokeAsync();
     }
 
     private async Task HandleOnFocusIn()
@@ -1623,12 +1639,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void OnSetParameters()
     {
-        var maxDate = GetMaxDate();
-        var minDate = GetMinDate();
-
+        // The bounds are read in the time zone of the component, so the time zone is settled first.
         _timeZone = TimeZone ?? TimeZoneInfo.Local;
         _culture = Culture ?? CultureInfo.CurrentUICulture;
         _monthCount = Math.Min(Math.Clamp(MonthCount, 1, MAX_MONTH_COUNT), _fittingMonthCount);
+
+        var maxDate = GetMaxDate();
+        var minDate = GetMinDate();
 
         BuildDatesLookups();
 
@@ -2372,16 +2389,27 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return Today ?? DateTimeOffset.Now;
     }
 
+    // Today as a whole day in the time zone of the component: the days it is compared against carry no
+    // time of day, so a bound taken from the current instant would place today on the wrong side of it.
+    private (DateTimeOffset start, DateTimeOffset end) GetTodayBounds()
+    {
+        var today = GetDateTime(GetNow()).Date;
+
+        var start = new DateTimeOffset(today, _timeZone.GetUtcOffset(today));
+
+        return (start, start.AddDays(1).AddTicks(-1));
+    }
+
     // DisablePast and DisableFuture bound the selectable days by today exactly the way MinDate and MaxDate
     // do, so every consumer of the allowed range reads the bounds through these two accessors. Where both
-    // apply, the narrower of the two wins.
+    // apply, the narrower of the two wins. Today itself stays selectable under either of them.
     private DateTimeOffset? GetMinDate()
     {
         if (DisablePast is false) return MinDate;
 
-        var now = GetNow();
+        var startOfToday = GetTodayBounds().start;
 
-        return MinDate.HasValue && MinDate.Value > now ? MinDate : now;
+        return MinDate.HasValue && MinDate.Value > startOfToday ? MinDate : startOfToday;
     }
 
     /// <inheritdoc cref="GetMinDate"/>
@@ -2389,9 +2417,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (DisableFuture is false) return MaxDate;
 
-        var now = GetNow();
+        var endOfToday = GetTodayBounds().end;
 
-        return MaxDate.HasValue && MaxDate.Value < now ? MaxDate : now;
+        return MaxDate.HasValue && MaxDate.Value < endOfToday ? MaxDate : endOfToday;
     }
 
     private bool IsWeekDayOutOfMinAndMaxDate(DateTime date)
