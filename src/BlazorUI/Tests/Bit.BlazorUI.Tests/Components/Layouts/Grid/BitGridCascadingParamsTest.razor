@@ -1,0 +1,66 @@
+@* Covers BitGridParams and BitGridItemParams: the cascaded values fill in the parameters the grid and
+   its items did not set themselves, and never overwrite the ones they did. *@
+
+<BitParams Parameters="@(new IBitComponentParams[]
+                         {
+                             new BitGridParams
+                             {
+                                 Columns = 6,
+                                 ColumnsXs = 2,
+                                 ColumnsSm = 3,
+                                 ColumnsMd = 4,
+                                 ColumnsLg = 5,
+                                 ColumnsXl = 8,
+                                 ColumnsXxl = 10,
+                                 Span = 2,
+                                 Spacing = "1rem",
+                                 VerticalSpacing = "2rem",
+                                 AlignContent = BitAlignment.SpaceBetween,
+                                 HorizontalAlign = BitAlignment.Center,
+                                 VerticalAlign = BitAlignment.Stretch,
+                                 Element = "section",
+                                 NoWrap = true,
+                                 Reversed = true,
+                             },
+                             new BitGridItemParams
+                             {
+                                 ColumnSpan = 2,
+                                 Xs = 12,
+                                 Sm = 6,
+                                 Md = 4,
+                                 Lg = 3,
+                                 Xl = 2,
+                                 Xxl = 1,
+                                 Offset = 1,
+                                 OffsetMd = 2,
+                                 Order = 3,
+                                 OrderMd = 4,
+                                 Element = "article",
+                                 AlignSelf = BitAlignment.Center,
+                             }
+                         })">
+    <BitGrid>
+        <BitGridItem>Cascaded</BitGridItem>
+        <BitGridItem ColumnSpan="5">Own span</BitGridItem>
+    </BitGrid>
+    <BitGrid Columns="3" Element="div" NoWrap="false">Own columns</BitGrid>
+</BitParams>
+
+@* The two parameters that claim the same slot as one that is already cascaded above, kept apart so each of
+   them is read against an item that asked for nothing and an item that asked for the opposite. *@
+<BitParams Parameters="@(new IBitComponentParams[]
+                         {
+                             new BitGridItemParams
+                             {
+                                 Auto = true,
+                                 Grow = true,
+                                 AutoOffset = true,
+                                 AutoMd = false,
+                                 GrowLg = true,
+                             }
+                         })">
+    <BitGrid Columns="4">
+        <BitGridItem>Cascaded</BitGridItem>
+        <BitGridItem Auto="false" AutoOffset="false" AutoMd="true" Offset="2">Own</BitGridItem>
+    </BitGrid>
+</BitParams>

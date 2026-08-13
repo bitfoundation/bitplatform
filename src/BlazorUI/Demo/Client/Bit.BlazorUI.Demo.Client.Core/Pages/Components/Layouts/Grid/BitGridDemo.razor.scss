@@ -1,9 +1,38 @@
-﻿::deep .grid-item {
-    height: 75px;
+::deep .grid-item {
     padding: 8px;
-    min-width: 58px;
+    min-height: 56px;
+    font-size: 0.75rem;
     text-align: center;
     border-radius: 2px;
     align-content: center;
     border: 1px solid gray;
+}
+
+::deep .grid-item.tall {
+    min-height: 128px;
+}
+
+::deep .grid-item.medium {
+    min-height: 88px;
+}
+
+::deep .tall-grid {
+    height: 320px;
+}
+
+::deep .grid-item.nested {
+    min-height: 40px;
+    border-style: dashed;
+}
+
+::deep .grid-item.custom-item {
+    color: white;
+    border-color: transparent;
+    background: rebeccapurple;
+}
+
+::deep .plain-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }

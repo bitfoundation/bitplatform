@@ -1,25 +1,154 @@
 @import "../../../Styles/functions.scss";
 @import "../../../Styles/media-queries.scss";
 
+$bit-grd-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
+
+/*
+ * The grid is a wrapping flex line whose items are sized in the columns of the container. Everything an item
+ * needs to size itself - the column count, the horizontal gap and the default span - is declared here as a
+ * custom property and inherited, so an item never has to be handed a parameter of its grid, and a nested grid
+ * shadows every one of them for its own items.
+ *
+ * Each per breakpoint property falls back to the breakpoint below it rather than to the base value, which is
+ * what makes them mobile first: a column count set for sm keeps applying to md, lg, xl and xxl until one of
+ * those replaces it. The BitGrid component only declares the breakpoints that were actually asked for, and this
+ * chain fills in all the others.
+ */
 .bit-grd {
+    --bit-grd-span: 1;
+    --bit-grd-cols: 12;
+    --bit-grd-cgap: 4px;
+    --bit-grd-rgap: 4px;
+    --bit-grd-cols-xs: var(--bit-grd-cols);
+    --bit-grd-cols-sm: var(--bit-grd-cols-xs);
+    --bit-grd-cols-md: var(--bit-grd-cols-sm);
+    --bit-grd-cols-lg: var(--bit-grd-cols-md);
+    --bit-grd-cols-xl: var(--bit-grd-cols-lg);
+    --bit-grd-cols-xxl: var(--bit-grd-cols-xl);
+
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing);
     box-sizing: border-box;
     align-items: flex-start;
     justify-content: flex-start;
+    row-gap: var(--bit-grd-rgap);
+    column-gap: var(--bit-grd-cgap);
+}
+
+.bit-grd-nwr {
+    flex-wrap: nowrap;
+}
+
+.bit-grd-rev {
+    flex-direction: row-reverse;
 }
 
 .bit-grd-itm {
-    flex-basis: calc((100% / var(--columns) * var(--span)) - var(--spacing));
+    /* The base of the span chain is inherited from the grid, so an item that sets no span of its own follows
+       the Span of its container. The fallback keeps an item that is rendered outside a grid at a single column. */
+    --bit-grd-xs: var(--bit-grd-span, 1);
+    --bit-grd-sm: var(--bit-grd-xs);
+    --bit-grd-md: var(--bit-grd-sm);
+    --bit-grd-lg: var(--bit-grd-md);
+    --bit-grd-xl: var(--bit-grd-lg);
+    --bit-grd-xxl: var(--bit-grd-xl);
 
-    $breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
+    /* The offset and the order are per item, so their bases are declared (and not just defaulted through a
+       var() fallback) to keep them from being inherited from an enclosing item into a nested grid. */
+    --bit-grd-off: 0;
+    --bit-grd-off-xs: var(--bit-grd-off);
+    --bit-grd-off-sm: var(--bit-grd-off-xs);
+    --bit-grd-off-md: var(--bit-grd-off-sm);
+    --bit-grd-off-lg: var(--bit-grd-off-md);
+    --bit-grd-off-xl: var(--bit-grd-off-lg);
+    --bit-grd-off-xxl: var(--bit-grd-off-xl);
 
-    @each $name, $breakpoint in $breakpoints {
+    --bit-grd-ord: 0;
+    --bit-grd-ord-xs: var(--bit-grd-ord);
+    --bit-grd-ord-sm: var(--bit-grd-ord-xs);
+    --bit-grd-ord-md: var(--bit-grd-ord-sm);
+    --bit-grd-ord-lg: var(--bit-grd-ord-md);
+    --bit-grd-ord-xl: var(--bit-grd-ord-lg);
+    --bit-grd-ord-xxl: var(--bit-grd-ord-xl);
+
+    /* A percentage width only lines up with the columns when the paddings and the borders of the item are part
+       of it, and a flex item refuses to shrink below its content unless it is allowed to, which is what keeps a
+       long unbreakable word from pushing the whole row out of the grid. The cap catches a span that asks for
+       more columns than the grid has: such an item takes a full row instead of overflowing it. */
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    /*
+     * The width of an item is its share of what is left of the row once the gaps between the columns are taken
+     * out of it:
+     *
+     *     100% * span / columns - gap * (columns - span) / columns
+     *
+     * which is the exact width a run of `span` single column items and the `span - 1` gaps between them would
+     * have. That is what keeps a row of any mix of spans adding up to the full width of the grid, and what keeps
+     * the edges of the items of one row on the same tracks as the edges of the items of the next.
+     *
+     * The offset is the same measure applied to the start margin, gap included, so an offset of n lines the item
+     * up exactly where the n + 1st column starts.
+     *
+     * The width is floored at zero because a flex-basis cannot be negative: a span of none, or a grid narrow
+     * enough for the gaps of a row to outweigh the share of one column, would otherwise compute a negative
+     * length, which is invalid and takes the whole declaration - and with it the entire column layout - down
+     * with it. The floor turns both of those into an item of no width instead.
+     *
+     * The three rules below it are the same three ways of taking up room - a number of columns, the width of the
+     * content, and whatever is left over - written once per breakpoint so that an item can change which of them
+     * it follows as the screen widens. An item that never changes carries none of these and is sized by the
+     * declaration above and by the two classes at the end of this file instead.
+     *
+     * Only one of the three is ever handed to an item at any one breakpoint, so within a breakpoint they cannot
+     * fight; and because every breakpoint from the widest matching one down is in play at once, the one that wins
+     * is the one written last, which is the one belonging to the widest breakpoint the screen has reached. That
+     * is what carries a value upwards, and it is also why the width of a counted item has to be restated here
+     * rather than left to the declaration above: the rule that survives has to be the one holding the columns of
+     * the breakpoint actually being painted.
+     */
+    @each $name, $breakpoint in $bit-grd-breakpoints {
         @media (min-width: $breakpoint) {
-            --#{$name}: var(--span);
-            --columns-#{$name}: var(--columns);
-            flex-basis: calc((100% / var(--columns-#{$name}) * var(--#{$name})) - var(--spacing));
+            flex-basis: max(0px, calc(100% * var(--bit-grd-#{$name}) / var(--bit-grd-cols-#{$name}, 12) - var(--bit-grd-cgap, 0px) * (var(--bit-grd-cols-#{$name}, 12) - var(--bit-grd-#{$name})) / var(--bit-grd-cols-#{$name}, 12)));
+
+            &.bit-grd-itm-spn-#{$name} {
+                flex: 0 1 max(0px, calc(100% * var(--bit-grd-#{$name}) / var(--bit-grd-cols-#{$name}, 12) - var(--bit-grd-cgap, 0px) * (var(--bit-grd-cols-#{$name}, 12) - var(--bit-grd-#{$name})) / var(--bit-grd-cols-#{$name}, 12)));
+            }
+
+            &.bit-grd-itm-atc-#{$name} {
+                flex: 0 0 auto;
+            }
+
+            &.bit-grd-itm-grw-#{$name} {
+                flex: 1 0 0%;
+            }
+
+            &.bit-grd-itm-off {
+                margin-inline-start: calc((100% + var(--bit-grd-cgap, 0px)) * var(--bit-grd-off-#{$name}) / var(--bit-grd-cols-#{$name}, 12));
+            }
+
+            &.bit-grd-itm-ord {
+                order: var(--bit-grd-ord-#{$name});
+            }
         }
     }
+}
+
+/* Both of these leave the column tracks behind, so they are written with the specificity to beat the sizes the
+   media queries above hand out at every breakpoint. */
+.bit-grd-itm.bit-grd-itm-atc {
+    flex: 0 0 auto;
+}
+
+.bit-grd-itm.bit-grd-itm-grw {
+    flex: 1 0 0%;
+}
+
+/* The whole of the room left before the item rather than a counted number of columns of it, which is what lands
+   an item on the end edge of a row whose other items are not measured in columns at all. It is written after
+   the media queries above so that it beats the counted offset at every breakpoint. */
+.bit-grd-itm.bit-grd-itm-aof {
+    margin-inline-start: auto;
 }
