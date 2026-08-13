@@ -556,7 +556,9 @@ public class BitGridItemTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-grd-itm-ord"));
     }
 
-    [TestMethod]
+    // The culture it swaps in is process wide for the length of the render, so it is kept away from anything
+    // that could be reading a number at the same time.
+    [TestMethod, DoNotParallelize]
     public void BitGridItemShouldRenderANegativeOrderTheBrowserCanRead()
     {
         // Not every culture writes a negative number with the hyphen CSS expects: several of them use the

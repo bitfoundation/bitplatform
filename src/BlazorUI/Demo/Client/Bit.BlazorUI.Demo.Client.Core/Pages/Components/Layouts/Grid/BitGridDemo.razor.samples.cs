@@ -144,6 +144,21 @@ public partial class BitGridDemo
 </BitGrid>";
 
     private readonly string example6RazorCode = @"
+<style>
+    .grid-item.tall {
+        min-height: 128px;
+    }
+
+    .grid-item.medium {
+        min-height: 88px;
+    }
+
+    .tall-grid {
+        height: 320px;
+    }
+</style>
+
+
 <BitChoiceGroup @bind-Value=""horizontalAlign""
                 Horizontal
                 Label=""HorizontalAlign""
@@ -204,12 +219,6 @@ public partial class BitGridDemo
     <BitGridItem Class=""grid-item"" ColumnSpan=""3"">HorizontalAlign End</BitGridItem>
 </BitGrid>
 
-
-<style>
-    .tall-grid {
-        height: 320px;
-    }
-</style>
 
 <BitChoiceGroup @bind-Value=""alignContent""
                 Horizontal
@@ -417,6 +426,14 @@ private double minItemWidth = 10;
 </BitGrid>";
 
     private readonly string example13RazorCode = @"
+<style>
+    .grid-item.nested {
+        min-height: 40px;
+        border-style: dashed;
+    }
+</style>
+
+
 <BitGrid Columns=""12"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""8"">
         <div>Outer item, span 8, holding a grid of its own</div>

@@ -1042,10 +1042,9 @@ public class BitGridTests : BunitTestContext
             expected[property.Name] = value;
         }
 
-        // Auto and Grow are two ways of saying the same thing and Auto wins, so asking for both and then asking
-        // whether Grow was read would prove nothing about whether it was copied across.
-        expected.Remove("Auto");
-
+        // Auto and Grow are two ways of saying the same thing and Auto wins over Grow in the layout, but each of
+        // them is copied across on its own and read back from its own property, so both are asserted here: what
+        // is being proved is that neither was forgotten in UpdateParameters, not what they lay out together.
         return expected;
     }
 

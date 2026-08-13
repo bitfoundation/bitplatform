@@ -51,9 +51,13 @@ public partial class BitGrid : BitComponentBase
     /// A grid that is not taller than its content, or one that is kept on a single row by <see cref="NoWrap"/>,
     /// has nothing left over to share out and is unaffected.
     /// <br />
-    /// Every member of <see cref="BitAlignment"/> means something here: Start, Center and End park the block of
-    /// rows at one end of the grid, the three space distributions spread the rows apart, and Stretch grows the
-    /// rows themselves until they fill the height.
+    /// Start, Center and End park the block of rows at one end of the grid, the three space distributions spread
+    /// the rows apart, and Stretch grows the rows themselves until they fill the height.
+    /// <br />
+    /// Baseline is the one member that has nothing dependable to do here: align-content has no baseline behavior
+    /// on a flex container, so the declaration is dropped and the rows are left where they were. Aligning
+    /// the items of a row on their baselines is what <see cref="VerticalAlign"/>, or <see cref="Alignment"/> as
+    /// its shorthand, is for, since those reach align-items instead.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? AlignContent { get; set; }
@@ -565,8 +569,10 @@ public partial class BitGrid : BitComponentBase
             _ => string.Empty
         });
 
-        // Every member means something to align-content, since it is the one alignment that has both a block of
-        // rows to park and a set of rows to spread apart.
+        // align-content is the one alignment that has both a block of rows to park and a set of rows to spread
+        // apart, so every member but Baseline means something to it. Baseline is written out as it was given
+        // rather than swallowed here, and a flex container, which has no baseline behavior for align-content,
+        // drops the declaration on its own.
         StyleBuilder.Register(() => AlignContent switch
         {
             BitAlignment.Start => "align-content:flex-start",
