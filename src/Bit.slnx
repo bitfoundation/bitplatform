@@ -99,20 +99,20 @@
     <Project Path="Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Demos/" />
-  <Folder Name="/Brouter/Demos/Auto/">
-    <Project Path="Brouter/Demos/Auto/Bit.Brouter.Demos.Auto/Bit.Brouter.Demos.Auto.csproj" />
-    <Project Path="Brouter/Demos/Auto/Bit.Brouter.Demos.Auto.Client/Bit.Brouter.Demos.Auto.Client.csproj" />
+  <Folder Name="/Brouter/Samples/" />
+  <Folder Name="/Brouter/Samples/Auto/">
+    <Project Path="Brouter/Samples/Auto/Bit.Brouter.Samples.Auto/Bit.Brouter.Samples.Auto.csproj" />
+    <Project Path="Brouter/Samples/Auto/Bit.Brouter.Samples.Auto.Client/Bit.Brouter.Samples.Auto.Client.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Demos/Core/">
-    <Project Path="Brouter/Demos/Core/Bit.Brouter.Demos.Core.csproj" />
+  <Folder Name="/Brouter/Samples/Core/">
+    <Project Path="Brouter/Samples/Core/Bit.Brouter.Samples.Core.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Demos/Server/">
-    <Project Path="Brouter/Demos/Server/Bit.Brouter.Demos.Server.csproj" />
+  <Folder Name="/Brouter/Samples/Server/">
+    <Project Path="Brouter/Samples/Server/Bit.Brouter.Samples.Server.csproj" />
   </Folder>
-  <Folder Name="/Brouter/Demos/Wasm/">
-    <Project Path="Brouter/Demos/Wasm/Bit.Brouter.Demos.Wasm/Bit.Brouter.Demos.Wasm.csproj" />
-    <Project Path="Brouter/Demos/Wasm/Bit.Brouter.Demos.Wasm.Client/Bit.Brouter.Demos.Wasm.Client.csproj" />
+  <Folder Name="/Brouter/Samples/Wasm/">
+    <Project Path="Brouter/Samples/Wasm/Bit.Brouter.Samples.Wasm/Bit.Brouter.Samples.Wasm.csproj" />
+    <Project Path="Brouter/Samples/Wasm/Bit.Brouter.Samples.Wasm.Client/Bit.Brouter.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Brouter/Tests/">
     <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />

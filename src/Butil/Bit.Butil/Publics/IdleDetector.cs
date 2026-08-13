@@ -64,6 +64,7 @@ public class IdleDetector(IJSRuntime js) : IAsyncDisposable
     /// Starts watching for idle changes. The handler fires whenever user/screen state changes.
     /// </summary>
     /// <param name="threshold">Idle threshold in seconds. Spec minimum is 60.</param>
+    /// <param name="handler">Called with the new user/screen state each time either changes.</param>
     [DynamicDependency(nameof(InvokeIdleDetector), typeof(IdleDetector))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IdleState))]
     public async Task<ButilSubscription> Start(int threshold, Action<IdleState> handler)

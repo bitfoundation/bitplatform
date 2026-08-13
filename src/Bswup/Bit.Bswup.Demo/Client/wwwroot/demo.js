@@ -184,23 +184,76 @@
 
     // ---------------------------------------------------------------- theme & layout
 
+    // The theme lives in the data-theme attribute on <html>, written by this site alone. The
+    // suffix test mirrors the stylesheet's [data-theme$='dark'] rules, which are carried over
+    // from the BlazorUI demo, so a prefixed value ('fluent-dark') is read the same as a plain
+    // 'dark'. The inline script in the host document applies the persisted value before first
+    // paint; this only flips it afterwards.
     function toggleTheme() {
         const root = document.documentElement;
-        const dark = root.getAttribute('data-theme') === 'dark';
-        if (dark) {
-            root.removeAttribute('data-theme');
-        } else {
-            root.setAttribute('data-theme', 'dark');
+        const theme = (root.getAttribute('data-theme') || '').endsWith('dark') ? 'light' : 'dark';
+        root.setAttribute('data-theme', theme);
+        try { localStorage.setItem('bswup-demo-theme', theme); } catch (err) { }
+    }
+
+    // The drawer's open state lives in a body class (the stylesheet's only handle on it), so
+    // the button's aria-expanded has to be written from here to stay truthful. Re-read from
+    // the class rather than tracked separately, and re-applied from hydrate() as well, because
+    // Blazor re-renders the header on every client-side navigation and restores the attribute
+    // to the "false" the markup declares.
+    function syncNavPanelState() {
+        const open = document.body.classList.contains('nav-panel-open');
+        const btn = document.querySelector('.menu-btn');
+        if (btn) btn.setAttribute('aria-expanded', String(open));
+    }
+
+    function toggleNavPanel() {
+        document.body.classList.toggle('nav-panel-open');
+        syncNavPanelState();
+    }
+
+    function closeNavPanel() {
+        document.body.classList.remove('nav-panel-open');
+        syncNavPanelState();
+    }
+
+    function goToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ---------------------------------------------------------------- nav search
+
+    // The last query typed, kept outside the DOM so it can be re-applied after Blazor replaces
+    // the nav panel's markup (client-side navigation re-renders the NavLinks).
+    let navQuery = '';
+
+    function filterNav() {
+        const list = document.querySelector('.nav-list');
+        if (!list) return;
+        const query = navQuery.trim().toLowerCase();
+
+        // Walk the children in order so a group header can be hidden by the items that follow
+        // it: the headers are siblings of the items, not their parents.
+        let group = null;
+        let groupMatches = 0;
+        let total = 0;
+
+        const flush = () => { if (group) group.classList.toggle('nav-hidden', groupMatches === 0); };
+
+        for (const child of list.children) {
+            if (child.classList.contains('nav-group')) {
+                flush();
+                group = child;
+                groupMatches = 0;
+            } else if (child.classList.contains('nav-item')) {
+                const match = query === '' || (child.textContent || '').toLowerCase().includes(query);
+                child.classList.toggle('nav-hidden', !match);
+                if (match) { groupMatches++; total++; }
+            }
         }
-        try { localStorage.setItem('bswup-demo-theme', dark ? 'light' : 'dark'); } catch (err) { }
-    }
+        flush();
 
-    function toggleSidebar() {
-        document.body.classList.toggle('sidebar-open');
-    }
-
-    function closeSidebar() {
-        document.body.classList.remove('sidebar-open');
+        list.classList.toggle('is-empty', total === 0);
     }
 
     function copyCode(button) {
@@ -226,6 +279,12 @@
             playground.dataset.init = 'true';
             refreshStatus();
         }
+        // Blazor re-renders the nav panel on every client-side navigation, which restores the
+        // markup to its unfiltered state and blanks the (unbound) search box. Put both back.
+        const search = document.querySelector('[data-demo-nav-search]');
+        if (search && search.value !== navQuery) search.value = navQuery;
+        filterNav();
+        syncNavPanelState();
     }
 
     // Called once up front because the host prerenders on the server: on a direct load of
@@ -250,8 +309,9 @@
     const actions = {
         'copy-code': copyCode,
         'toggle-theme': toggleTheme,
-        'toggle-sidebar': toggleSidebar,
-        'close-sidebar': closeSidebar,
+        'toggle-nav-panel': toggleNavPanel,
+        'close-nav-panel': closeNavPanel,
+        'go-to-top': goToTop,
         'refresh-status': refreshStatus,
         'check-for-update': checkForUpdate,
         'skip-waiting': skipWaiting,
@@ -259,15 +319,45 @@
         'force-refresh': forceRefresh
     };
     document.addEventListener('click', function (e) {
-        const trigger = e.target instanceof Element ? e.target.closest('[data-demo-action]') : null;
+        const target = e.target instanceof Element ? e.target : null;
+        if (!target) return;
+
+        // Any in-app link in the chrome dismisses the mobile drawer: the nav panel's own links,
+        // and the header's, which are reachable above the open drawer and would otherwise leave
+        // it open over the next page.
+        if (target.closest('.header a[href], .nav-panel a[href]')) closeNavPanel();
+
+        const trigger = target.closest('[data-demo-action]');
         const action = trigger && actions[trigger.getAttribute('data-demo-action')];
         if (action) action(trigger);
     });
 
+    // Escape dismisses the open drawer - it is a modal overlay on narrow screens (backdrop and
+    // all), and focus goes back to the button that opened it so keyboard users are not dropped
+    // at the top of the document.
+    document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (!document.body.classList.contains('nav-panel-open')) return;
+        closeNavPanel();
+        const btn = document.querySelector('.menu-btn');
+        if (btn) btn.focus();
+    });
+
+    // Delegated for the same reason as the click handler: the search box is inside a Blazor
+    // component and is replaced on every client-side navigation, so there is no stable element
+    // to bind to.
+    document.addEventListener('input', function (e) {
+        const target = e.target instanceof Element ? e.target : null;
+        if (!target || !target.matches('[data-demo-nav-search]')) return;
+        navQuery = target.value || '';
+        filterNav();
+    });
+
     window.BswupDemo = {
         toggleTheme: toggleTheme,
-        toggleSidebar: toggleSidebar,
-        closeSidebar: closeSidebar,
+        toggleNavPanel: toggleNavPanel,
+        closeNavPanel: closeNavPanel,
+        goToTop: goToTop,
         copyCode: copyCode,
         refreshStatus: refreshStatus,
         checkForUpdate: checkForUpdate,

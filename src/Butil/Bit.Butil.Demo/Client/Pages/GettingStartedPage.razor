@@ -1,4 +1,6 @@
-﻿@page "/getting-started"
+@page "/getting-started"
+@inject Bit.Butil.Window window
+@inject Bit.Butil.LocalStorage localStorage
 
 <PageTitle>Getting started - Bit.Butil</PageTitle>
 
@@ -7,20 +9,20 @@
             Lead="Bit.Butil ships as a single NuGet package plus one script tag. Three steps and every browser API on this site is available as an injectable C# service." />
 
 <DemoSection Title="1. Install the package"
-             Description="Bit.Butil targets .NET 8, 9 and 10, works in Blazor WebAssembly, Blazor Server and Blazor Hybrid (MAUI), and is fully trimmable."
+             Description="Bit.Butil targets .NET 8, 9 and 10, works in Blazor WebAssembly, Blazor Server and Blazor Hybrid (MAUI, WPF, WinForms), and is annotated for trimming."
              Code=@("dotnet add package Bit.Butil")
              Language="shell" />
 
 <DemoSection Title="2. Add the script"
-             Description="Add the Butil bridge script to your host page (index.html, App.razor or _Host.cshtml), next to the Blazor script."
+             Description="Add the Butil bridge script to your host page, before the Blazor script - the app boots as soon as that second script runs, so window.BitButil has to exist by then. Which host page it is depends on how you host: index.html for standalone WebAssembly and for Hybrid, Components/App.razor for a Blazor Web App, _Host.cshtml for a classic Blazor Server app."
              Code=@("""
 <script src="_content/Bit.Butil/bit-butil.js"></script>
-<script src="_framework/blazor.webassembly.js"></script>
+<script src="_framework/blazor.web.js"></script>
 """)
              Language="html" />
 
 <DemoSection Title="3. Register the services"
-             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model."
+             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places."
              Code=@("""
 using Bit.Butil;
 
@@ -32,7 +34,7 @@ await builder.Build().RunAsync();
 """) />
 
 <DemoSection Title="Use any API"
-             Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included."
+             Description="Inject the class you need and call it - no IJSRuntime, no JSON juggling, no hand-written interop. Full IntelliSense included. The one habit worth forming from the start: touch the browser from OnAfterRenderAsync or an event handler, never from OnInitialized, so the code also works under prerendering."
              Code=@("""
 @inject Bit.Butil.Clipboard clipboard
 @inject Bit.Butil.Crypto crypto
@@ -51,9 +53,23 @@ await builder.Build().RunAsync();
 """)
              Language="razor" />
 
+<DemoSection Title="Check that it worked"
+             Description="A round trip through the bridge and back. If this reads and writes without throwing, the script is loaded, the services are registered and the runtime is live - which rules out every setup problem at once. The buttons below run exactly this code on this page."
+             Code=@("""
+await localStorage.SetItem("butil-check", DateTime.Now.ToString("HH:mm:ss"));
+
+var value = await localStorage.GetItem("butil-check");
+var secure = await window.IsSecureContext();
+""")>
+    <div class="controls">
+        <button @onclick="RunCheck">Run the check</button>
+    </div>
+    <DemoConsole @ref="checkOutput" Title="setup check output" />
+</DemoSection>
+
 <DemoSection Title="Optional: fast invoke"
              Api="BitButil.UseFastInvoke"
-             Description="On Blazor WebAssembly, APIs backed by synchronous JavaScript (LocalStorage, Cookie, Console, Location, ...) can skip the async interop machinery entirely. Call it once at startup; asynchronous browser APIs are unaffected."
+             Description="On Blazor WebAssembly, APIs backed by synchronous JavaScript (LocalStorage, SessionStorage, Cookie, Console, Location) can skip the async interop machinery entirely. Call it once at startup; asynchronous browser APIs are unaffected, so it cannot break them, and on Blazor Server it is a no-op."
              Code=@("""
 BitButil.UseFastInvoke();
 
@@ -63,12 +79,44 @@ BitButil.UseNormalInvoke();
 
 <Callout Type="warning" Title="Browser support varies by API">
     Butil exposes the browser's own capabilities, so each feature is only as available as the underlying
-    web API. Pages on this site link to the relevant MDN reference, and experimental APIs (NFC, Idle
-    Detection, Eye Dropper, ...) are called out explicitly.
+    web API. Every page links to its MDN reference, and the <a href="browser-support">browser-support page</a>
+    lists which APIs need HTTPS, a permission prompt or a specific engine - and will feature-detect all of
+    them live in whatever browser you are reading this in.
 </Callout>
 
 <Callout Type="info" Title="Where to next?">
-    Browse the sidebar, or start with the most popular APIs:
+    <a href="render-modes">Render modes</a> covers how Butil behaves under WebAssembly, Server, Hybrid and
+    prerendering - worth ten minutes before you write much. Otherwise, start with the most used APIs:
     <a href="storage">LocalStorage</a>, <a href="clipboard">Clipboard</a>, <a href="keyboard">Keyboard</a>,
     <a href="crypto">Crypto</a> and <a href="web-authn">WebAuthn</a>.
 </Callout>
+
+@code {
+    private DemoConsole checkOutput = default!;
+
+    private async Task RunCheck()
+    {
+        try
+        {
+            var stamp = DateTime.Now.ToString("HH:mm:ss");
+
+            await localStorage.SetItem("butil-check", stamp);
+            var value = await localStorage.GetItem("butil-check");
+
+            if (value == stamp)
+            {
+                await checkOutput.Success("Round trip →", $"wrote and read back \"{value}\" - the bridge is live.");
+            }
+            else
+            {
+                await checkOutput.Warn("Round trip →", $"expected \"{stamp}\" but read \"{value}\".");
+            }
+
+            await checkOutput.Info("Window.IsSecureContext() →", await window.IsSecureContext());
+        }
+        catch (Exception ex)
+        {
+            await checkOutput.Error("Check failed →", $"{ex.GetType().Name}: {ex.Message}");
+        }
+    }
+}

@@ -157,39 +157,29 @@ public class BmValue<T> : IDisposable
     /// <summary>
     /// Map from an input range to an output range using linear interpolation.
     /// </summary>
-    public BmValue<double> Transform(double[] inputRange, double[] outputRange)
+    /// <param name="inputRange">Strictly increasing input points.</param>
+    /// <param name="outputRange">The output point for each input point.</param>
+    /// <param name="clamp">
+    /// When <c>true</c> (default), inputs outside <paramref name="inputRange"/> clamp to the
+    /// output ends. When <c>false</c>, the outermost segments extrapolate instead - motion.dev's
+    /// <c>useTransform(..., { clamp: false })</c>, which is what parallax and other unbounded
+    /// scroll effects need.
+    /// </param>
+    public BmValue<double> Transform(double[] inputRange, double[] outputRange, bool clamp = true)
     {
         ArgumentNullException.ThrowIfNull(inputRange);
         ArgumentNullException.ThrowIfNull(outputRange);
         if (!_numericTypes.Contains(typeof(T)))
             throw new ArgumentException(
                 $"Transform(inputRange, outputRange) only supports numeric value types; '{typeof(T).Name}' is not numeric.");
-        if (inputRange.Length != outputRange.Length)
-            throw new ArgumentException("inputRange and outputRange must have the same length.");
-        if (inputRange.Length < 2)
-            throw new ArgumentException("inputRange and outputRange must contain at least 2 points.");
-        for (int i = 0; i < inputRange.Length - 1; i++)
-            if (inputRange[i + 1] <= inputRange[i])
-                throw new ArgumentException("inputRange must be strictly increasing (no repeated or decreasing points).");
+        BmRangeMap.Validate(inputRange, outputRange);
 
         // Snapshot the ranges so the Map closure isn't affected by the caller mutating the
         // passed-in arrays after this method returns (which would bypass the validation above).
         var inRange = (double[])inputRange.Clone();
         var outRange = (double[])outputRange.Clone();
 
-        double Map(T v)
-        {
-            double x = Convert.ToDouble(v);
-            for (int i = 0; i < inRange.Length - 1; i++)
-            {
-                if (x >= inRange[i] && x <= inRange[i + 1])
-                {
-                    double t = (x - inRange[i]) / (inRange[i + 1] - inRange[i]);
-                    return outRange[i] + t * (outRange[i + 1] - outRange[i]);
-                }
-            }
-            return x < inRange[0] ? outRange[0] : outRange[^1];
-        }
+        double Map(T v) => BmRangeMap.Map(Convert.ToDouble(v), inRange, outRange, clamp);
 
         var derived = new BmValue<double>($"{_id}_tr", Map(_value));
         derived.AttachUpstream(SubscribeWeak(derived, Map));

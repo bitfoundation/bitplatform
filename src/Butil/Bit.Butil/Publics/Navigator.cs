@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Bit.Butil;
@@ -113,6 +114,51 @@ public class Navigator(IJSRuntime js)
     /// </remarks>
     public async Task<bool> IsWebDriver()
         => await js.Invoke<bool>("BitButil.navigator.webdriver");
+
+    /// <summary>
+    /// Whether the browser will accept cookies at all.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/cookieEnabled</see>
+    /// </summary>
+    /// <remarks>
+    /// Reports the global setting, not whether <em>this</em> document can set one - a third-party
+    /// iframe with partitioned or blocked cookies still reads true here. Use
+    /// <see cref="StorageAccess"/> for that question.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public async Task<bool> IsCookieEnabled()
+        => await js.Invoke<bool>("BitButil.navigator.cookieEnabled");
+
+    /// <summary>
+    /// The user's Do Not Track preference: <c>"1"</c>, <c>"0"</c>, or null when unset.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/doNotTrack">https://developer.mozilla.org/en-US/docs/Web/API/Navigator/doNotTrack</see>
+    /// </summary>
+    /// <remarks>
+    /// Being removed from browsers - Chrome and Firefox no longer expose it - so treat a null as
+    /// "no signal" rather than "the user consents".
+    /// </remarks>
+    public async Task<string?> GetDoNotTrack()
+        => await js.Invoke<string?>("BitButil.navigator.doNotTrack");
+
+    /// <summary>
+    /// Whether the user has interacted with the page, and whether that interaction is still recent
+    /// enough to spend.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/UserActivation">https://developer.mozilla.org/en-US/docs/Web/API/UserActivation</see>
+    /// </summary>
+    /// <returns>Null on a browser without <c>navigator.userActivation</c> (Safari at the time of writing).</returns>
+    /// <remarks>
+    /// Check <see cref="UserActivationState.IsActive"/> before calling an API that demands a
+    /// transient user gesture - opening a window, reading the clipboard, requesting storage access -
+    /// to fail fast with your own message instead of an opaque browser rejection.
+    /// </remarks>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(UserActivationState))]
+    public async Task<UserActivationState?> GetUserActivation()
+        => await js.Invoke<UserActivationState?>("BitButil.navigator.userActivation");
 
     /// <summary>
     /// Returns true if a call to Navigator.share() would succeed.

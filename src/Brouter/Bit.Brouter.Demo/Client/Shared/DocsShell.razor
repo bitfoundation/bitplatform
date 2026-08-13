@@ -1,0 +1,74 @@
+@inject IBrouter brouter
+@implements IDisposable
+
+@* The documentation shell - rendered as the Content of the parent /docs route, with every
+   docs page nested under it. The sidebar stays mounted while the outlet swaps pages, so
+   scroll position and expanded state survive navigation (nested routes doing what they're for).
+   Sidebar and pager are both driven by DocsCatalog.
+
+   Three columns, the arrangement the Bit.BlazorUI demo uses: the nav panel, the page, and the
+   "on this page" rail. The rail's contents are built by site.js from whatever headings the page
+   rendered - see the note on the <nav> below. *@
+
+<div class="bb-docs">
+    <button type="button" class="bb-docs-menu-toggle btn btn-outline" aria-expanded="@(_menuOpen ? "true" : "false")" @onclick="() => _menuOpen = !_menuOpen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+        @(_menuOpen ? "Hide" : "Show") docs menu
+    </button>
+
+    <aside class="bb-docs-sidebar @(_menuOpen ? "bb-open" : null)" aria-label="Documentation navigation">
+        @foreach (var section in DocsCatalog.Sections)
+        {
+            <div class="bb-docs-section">
+                <h4>@section.Title</h4>
+                <ul>
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li @key="entry.Url">
+                            <BrouterLink Href="@entry.Url" Match="BrouterLinkMatch.All">@entry.Title</BrouterLink>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </aside>
+
+    <div class="bb-docs-content">
+        <BrouterOutlet />
+        <DocsPager />
+    </div>
+
+    @* Deliberately empty in the render tree: site.js fills it from the headings of whichever page
+       the outlet just rendered, so no docs page had to be edited to gain a rail. Blazor never
+       diffs into it because this component's output for the element never changes - the same
+       reason the copy buttons can be appended into a <pre>. The column is rendered even while
+       empty so the content column does not stretch and snap back a frame later. *@
+    <nav class="bb-rail" aria-label="On this page"></nav>
+</div>
+
+@code {
+    private bool _menuOpen;
+    private Func<BrouterNavigationContext, ValueTask>? _onNavigated;
+
+    protected override void OnInitialized()
+    {
+        // Collapse the mobile menu after a sidebar link commits.
+        _onNavigated = ctx =>
+        {
+            if (_menuOpen)
+            {
+                _menuOpen = false;
+                _ = InvokeAsync(StateHasChanged);
+            }
+            return ValueTask.CompletedTask;
+        };
+        brouter.OnNavigated += _onNavigated;
+    }
+
+    public void Dispose()
+    {
+        if (_onNavigated is not null) brouter.OnNavigated -= _onNavigated;
+    }
+}

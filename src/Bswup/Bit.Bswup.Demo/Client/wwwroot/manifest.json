@@ -4,8 +4,8 @@
     "description": "Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps.",
     "start_url": "./",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#03173d",
+    "background_color": "#0F1318",
+    "theme_color": "#0F1318",
     "icons": [
         {
             "src": "icon-512.png",

@@ -1,4 +1,4 @@
-@page "/visual-viewport"
+﻿@page "/visual-viewport"
 @implements IAsyncDisposable
 @inject Bit.Butil.VisualViewport visualViewport
 
@@ -135,6 +135,9 @@ await visualViewport.RemoveAllEventHandlers();
     <ApiMember Name="RemoveAllEventHandlers" Signature="ValueTask RemoveAllEventHandlers()" Description="Removes every resize and scroll listener registered on this instance." />
     <ApiMember Name="InvokeVisualViewport" Signature="void InvokeVisualViewport(Guid id)" Description="JS interop bridge invoked by the browser on resize/scroll events; not intended for application code." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
+    <ApiMember Name="SubscribeScrollEnd"
+               Signature="ValueTask<ButilSubscription> SubscribeScrollEnd(Action handler)"
+               Description="Fires once when a visual-viewport scroll settles rather than on every frame of it. Prefer this over SubscribeScroll for expensive work. Not implemented in Safari, where the handler never fires." />
 </ApiTable>
 
 @code {

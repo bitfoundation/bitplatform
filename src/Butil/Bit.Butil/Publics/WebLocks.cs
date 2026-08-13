@@ -36,8 +36,11 @@ public class WebLocks(IJSRuntime js)
     /// <summary>
     /// Acquires the named lock. Dispose the returned handle to release.
     /// </summary>
+    /// <param name="name">The lock name. Any two callers - in this tab or another - that pass the same name contend for the same lock.</param>
+    /// <param name="mode">Exclusive (one holder) or shared (any number of shared holders, but no exclusive one).</param>
     /// <param name="ifAvailable">When true, returns a null handle immediately if the lock isn't available.</param>
     /// <param name="steal">When true, steals the lock from the current holder. Use with care.</param>
+    /// <param name="cancellationToken">Abandons the wait for the lock. Has no effect once the lock is held.</param>
     public async ValueTask<IAsyncDisposable?> Acquire(string name,
         WebLockMode mode = WebLockMode.Exclusive,
         bool ifAvailable = false,

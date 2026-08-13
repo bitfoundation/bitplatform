@@ -1135,17 +1135,14 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Lösenordslös inloggning har inaktiverats</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>Din nyckel kunde inte verifieras och togs därför inte bort. Försök igen.</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>Den här nyckeln finns inte längre på servern; den har tagits bort från den här enheten.</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>Rensa</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Skicka</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>Använd accentfärgen {0}</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>Avbrutet</value>
@@ -1153,6 +1150,27 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chattpanel</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Diktera ditt meddelande</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Sluta diktera</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Diktering</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Åtkomsten till mikrofonen är blockerad. Tillåt den för den här webbplatsen för att kunna diktera.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dikteringen stoppades: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Läs upp</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Sluta läsa upp</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hej{0}! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>

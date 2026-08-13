@@ -41,23 +41,25 @@ var status = await networkInformation.GetStatus();
     </DemoSection>
 
     <DemoSection Title="React to connectivity changes"
-                 Api="Window.SubscribeEvent + ButilEvents.Online / Offline"
-                 Description="NetworkInformation itself is snapshot-based; connectivity transitions arrive as the standard online and offline window events. Subscribe to them through Bit.Butil.Window and re-read GetStatus when they fire. Test it by toggling the Offline checkbox in the DevTools Network tab (or by disabling your network adapter)."
+                 Api="SubscribeChange"
+                 Description="SubscribeChange delivers a fresh snapshot whenever connectivity shifts, so you never poll GetStatus. It attaches to the window's online and offline events as well as navigator.connection's change, which means it works on every browser - it just won't report quality changes where IsSupported is false. Test it by toggling the Offline checkbox in the DevTools Network tab (or by disabling your network adapter)."
                  Code=@("""
-// @inject Bit.Butil.Window window
+private ButilSubscription? subscription;
 
-var onlineSub = await window.SubscribeEvent<object>(ButilEvents.Online, _ =>
+subscription = await networkInformation.SubscribeChange(status =>
 {
-    // back online - refresh data, flush queued work, ...
+    if (status.Online)
+    {
+        // back online - refresh data, flush queued work, ...
+    }
+    else
+    {
+        // connection lost - switch the UI to offline mode
+    }
 });
 
-var offlineSub = await window.SubscribeEvent<object>(ButilEvents.Offline, _ =>
-{
-    // connection lost - switch the UI to offline mode
-});
-
-await onlineSub.DisposeAsync();
-await offlineSub.DisposeAsync();
+// later
+await subscription.DisposeAsync();
 """)>
         <div class="controls">
             <button @onclick="Watch">Watch connectivity</button>
@@ -66,8 +68,15 @@ await offlineSub.DisposeAsync();
         <DemoConsole @ref="connectivityOutput" Title="connectivity output" />
     </DemoSection>
 
+    <Callout Type="info" Title="Online is not reachable">
+        <code>Online</code> only means the device has a network attached - a captive portal or a
+        down backend still reports online. Treat a transition as a hint to retry, not as a guarantee
+        that your API is up.
+    </Callout>
+
     <ApiTable Title="API reference">
         <ApiMember Name="GetStatus" Signature="ValueTask<NetworkConnectionStatus> GetStatus()" Description="One-shot snapshot of the network state." />
+        <ApiMember Name="SubscribeChange" Signature="ValueTask<ButilSubscription> SubscribeChange(Action<NetworkConnectionStatus> handler)" Description="Calls the handler with a fresh snapshot on every connectivity change. Covers online/offline everywhere, plus connection-quality changes on Chromium." />
         <ApiMember Name="NetworkConnectionStatus.Online" Signature="bool Online { get; set; }" Description="True when the user-agent considers itself online (navigator.onLine)." />
         <ApiMember Name="NetworkConnectionStatus.EffectiveType" Signature="string? EffectiveType { get; set; }" Description="Effective connection type: slow-2g, 2g, 3g, 4g, or null." />
         <ApiMember Name="NetworkConnectionStatus.Type" Signature="string? Type { get; set; }" Description="Underlying connection type: wifi, cellular, ethernet, etc., or null." />
@@ -82,8 +91,7 @@ await offlineSub.DisposeAsync();
 @code {
     private DemoConsole statusOutput = default!;
     private DemoConsole connectivityOutput = default!;
-    private ButilSubscription? onlineSub;
-    private ButilSubscription? offlineSub;
+    private ButilSubscription? changeSub;
 
     private async Task ReadStatus()
     {
@@ -105,15 +113,14 @@ await offlineSub.DisposeAsync();
     {
         try
         {
-            if (onlineSub is not null)
+            if (changeSub is not null)
             {
                 await connectivityOutput.Warn("Already watching.");
                 return;
             }
 
-            onlineSub = await window.SubscribeEvent<object>(ButilEvents.Online, evt => { _ = InvokeAsync(() => OnConnectivityChanged("online")); });
-            offlineSub = await window.SubscribeEvent<object>(ButilEvents.Offline, evt => { _ = InvokeAsync(() => OnConnectivityChanged("offline")); });
-            await connectivityOutput.Success("Watching the online / offline window events. Toggle Offline in the DevTools Network tab to trigger them.");
+            changeSub = await networkInformation.SubscribeChange(status => { _ = InvokeAsync(() => OnConnectivityChanged(status)); });
+            await connectivityOutput.Success("Watching connectivity. Toggle Offline in the DevTools Network tab to trigger a change.");
         }
         catch (Exception ex)
         {
@@ -121,12 +128,11 @@ await offlineSub.DisposeAsync();
         }
     }
 
-    private async Task OnConnectivityChanged(string eventName)
+    private async Task OnConnectivityChanged(NetworkConnectionStatus status)
     {
         try
         {
-            var status = await networkInformation.GetStatus();
-            await connectivityOutput.Info($"'{eventName}' event fired - Online: {status.Online} | EffectiveType: {status.EffectiveType ?? "null"} | Downlink: {(status.Downlink.HasValue ? status.Downlink.Value + " Mbps" : "null")}");
+            await connectivityOutput.Info($"change → Online: {status.Online} | EffectiveType: {status.EffectiveType ?? "null"} | Downlink: {(status.Downlink.HasValue ? status.Downlink.Value + " Mbps" : "null")}");
         }
         catch (Exception ex)
         {
@@ -138,7 +144,7 @@ await offlineSub.DisposeAsync();
     {
         try
         {
-            if (onlineSub is null && offlineSub is null)
+            if (changeSub is null)
             {
                 await connectivityOutput.Warn("Not watching.");
                 return;
@@ -155,16 +161,10 @@ await offlineSub.DisposeAsync();
 
     private async Task DisposeSubscriptions()
     {
-        if (onlineSub is not null)
+        if (changeSub is not null)
         {
-            await onlineSub.DisposeAsync();
-            onlineSub = null;
-        }
-
-        if (offlineSub is not null)
-        {
-            await offlineSub.DisposeAsync();
-            offlineSub = null;
+            await changeSub.DisposeAsync();
+            changeSub = null;
         }
     }
 

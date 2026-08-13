@@ -210,10 +210,16 @@ This is implemented in [`src/Server/Boilerplate.Server.Api/Infrastructure/Signal
 
 ```csharp
 /// <inheritdoc cref="SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE"/>
-[Authorize(Policy = AppFeatures.System.ManageLogs)]
-public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext)
+[HubMethodName(SharedAppMessages.GetUserSessionLogs)]
+public async Task<DiagnosticLogDto[]> GetUserSessionLogs(Guid userSessionId, [FromServices] AppDbContext dbContext, [FromServices] IAuthorizationService authorizationService)
 {
-    ...
+    var user = Context.GetHttpContext()!.User;
+
+    if ((await authorizationService.AuthorizeAsync(user, AppFeatures.System.Logs_View)).Succeeded is false)
+        throw new HubException(nameof(AppStrings.UnauthorizedException)).WithData("ConnectionId", Context.ConnectionId);
+
+    // ... resolves the session's SignalRConnectionId, scoped to the caller's tenant, then:
+    return await Clients.Client(connectionId).InvokeAsync<DiagnosticLogDto[]>(SharedAppMessages.UPLOAD_DIAGNOSTIC_LOGGER_STORE, Context.ConnectionAborted);
 }
 ```
 

@@ -36,6 +36,11 @@ public partial class AppDiagnosticModal
     private bool isDescendingSort = true;
     private List<Action> unsubscribers = [];
     private IEnumerable<string>? filterCategoryValues;
+    private readonly HashSet<string> seenCategories = [];
+    /// <summary>
+    /// Logs fetched from another device for inspection. Null means the modal is showing this device's own store.
+    /// </summary>
+    private DiagnosticLogDto[]? inspectedLogs;
     private DiagnosticLogDto[] allLogs = default!;
     private BitDropdownItem<string>[] allCategoryItems = [];
     private DiagnosticLogDto[] filteredLogs = default!;
@@ -50,10 +55,12 @@ public partial class AppDiagnosticModal
     {
         await base.OnInitAsync();
 
-        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async _ =>
+        unsubscribers.Add(PubSubService.Subscribe(ClientAppMessages.SHOW_DIAGNOSTIC_MODAL, async payload =>
         {
             isOpen = true;
-            ReloadLogs();
+            // A payload means someone else's logs were fetched for inspection (UsersPage). Without one the modal
+            // shows this device's own store.
+            SetLogSource(payload as DiagnosticLogDto[]);
             await InvokeAsync(StateHasChanged);
         }));
 
@@ -122,7 +129,28 @@ public partial class AppDiagnosticModal
 
     private async Task ClearLogs()
     {
-        DiagnosticLogger.Store.Clear();
+        if (inspectedLogs is null)
+        {
+            DiagnosticLogger.ClearStore();
+        }
+        else
+        {
+            inspectedLogs = [];
+        }
+
+        ReloadLogs();
+    }
+
+    /// <summary>
+    /// Switches between this device's own log store (<paramref name="logs"/> null) and a set of logs fetched for
+    /// inspection. The category filter is reset on every switch, because the two sets do not share categories.
+    /// </summary>
+    private void SetLogSource(DiagnosticLogDto[]? logs)
+    {
+        inspectedLogs = logs;
+        seenCategories.Clear();
+        filterCategoryValues = null;
+
         ReloadLogs();
     }
 
@@ -136,7 +164,10 @@ public partial class AppDiagnosticModal
                                    .Order()
                                    .ToArray();
 
-        filterCategoryValues ??= [.. allCategories];
+        // Every category not seen before joins the selection. Latching the filter on the first load would silently
+        // hide whatever arrives later - including the exception the error boundary opened this modal to show - while
+        // still honouring a category the user has deliberately deselected.
+        filterCategoryValues = [.. (filterCategoryValues ?? []).Concat(allCategories.Where(seenCategories.Add))];
 
         allCategoryItems = [.. allCategories.Select(c => new BitDropdownItem<string>() { Text = c, Value = c })];
 
@@ -145,7 +176,7 @@ public partial class AppDiagnosticModal
 
     private void ReloadLogs()
     {
-        LoadLogs([.. DiagnosticLogger.Store]);
+        LoadLogs(inspectedLogs ?? [.. DiagnosticLogger.Store]);
     }
 
     private void FilterLogs()

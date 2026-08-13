@@ -1,0 +1,355 @@
+@page "/navigation"
+@implements IAsyncDisposable
+@inject Bit.Butil.Navigation navigation
+
+<PageTitle>Navigation - Bit.Butil</PageTitle>
+
+<PageHeader Category="Window & Browsing"
+            Title="Navigation"
+            Lead="The Navigation API is the modern successor to History, and it answers the one question the old API never could: is there anywhere to go back to? Read the session-history list, jump straight to a remembered entry, and store per-entry state without touching the URL."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Navigation_API"
+            InjectAs="Navigation navigation" />
+
+<Callout Type="info" Title="This is not a router">
+    Blazor's own router owns navigation inside the app - keep using <code>NavigationManager.NavigateTo</code>
+    for that. What this API adds is the ability to <em>see</em> the history list rather than only push onto
+    it. The interception half of the spec, which exists so that a router can take over navigations, is
+    deliberately not wrapped: a second router competing with Blazor's is not something this library should
+    make easy.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Can you go back?"
+                 Api="CanGoBack / CanGoForward"
+                 Description="The reason this class exists. history.length counts the whole session including other people's sites, so it cannot distinguish a freshly opened tab from one with a page behind it - which is why an in-app back button built on History is either always enabled and sometimes does nothing, or navigates and traps the user in a loop. These two are the direct answer, and they are what a back button's disabled state should be bound to."
+                 Code=@("""
+// exactly what an in-app back button should be:
+<button disabled="@(_canGoBack is false)" @onclick="() => navigation.Back()">Back</button>
+
+@code {
+    private bool _canGoBack;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _canGoBack = await navigation.CanGoBack();
+        StateHasChanged();
+    }
+}
+""")
+                 Language="razor">
+        <div class="controls">
+            <button @onclick="ReadCanGo">Read both</button>
+        </div>
+        @if (_probed)
+        {
+            <div class="support-summary">
+                <div class="support-summary-item">
+                    <span class="support-summary-label">Supported</span>
+                    <span class="support-summary-value @(_isSupported ? "ok" : "no")">@(_isSupported ? "yes" : "no")</span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">CanGoBack</span>
+                    <span class="support-summary-value @(_canGoBack ? "ok" : "no")">@(_canGoBack ? "yes" : "no")</span>
+                </div>
+                <div class="support-summary-item">
+                    <span class="support-summary-label">CanGoForward</span>
+                    <span class="support-summary-value @(_canGoForward ? "ok" : "no")">@(_canGoForward ? "yes" : "no")</span>
+                </div>
+            </div>
+        }
+        <DemoConsole @ref="canGoOutput" Title="canGoBack / canGoForward output" />
+    </DemoSection>
+
+    <DemoSection Title="Read the history list"
+                 Api="GetEntries / GetCurrentEntry"
+                 Description="Every entry belonging to this document, oldest first - the same list the browser's own back and forward buttons walk. Entries from other origins are not exposed at all, which is why this needs no permission. Key identifies the slot and survives leaving and returning; Id identifies the individual visit and changes each time."
+                 Code=@("""
+NavigationEntry[] entries = await navigation.GetEntries();
+
+NavigationEntry? current = await navigation.GetCurrentEntry();
+
+foreach (var entry in entries)
+{
+    Console.WriteLine($"{entry.Index}: {entry.Url} (key {entry.Key})");
+}
+""")>
+        <div class="controls">
+            <button @onclick="ReadEntries">GetEntries</button>
+            <button class="secondary" @onclick="ReadCurrentEntry">GetCurrentEntry</button>
+        </div>
+
+        @if (_entries.Length > 0)
+        {
+            <div class="table-view" role="table" aria-label="Session history entries">
+                <div class="th-row" role="row">
+                    <div class="th-cell" role="columnheader">#</div>
+                    <div class="th-cell" role="columnheader">URL</div>
+                    <div class="th-cell" role="columnheader">Key</div>
+                </div>
+                @foreach (var entry in _entries)
+                {
+                    <div class="tdata-row @(entry.Key == _currentKey ? "current" : "")" role="row">
+                        <div class="td-cell" role="cell">@entry.Index</div>
+                        <div class="td-cell" role="cell">@Shorten(entry.Url)</div>
+                        <div class="td-cell" role="cell"><code>@entry.Key</code></div>
+                    </div>
+                }
+            </div>
+        }
+
+        <DemoConsole @ref="entriesOutput" Title="entries output" />
+    </DemoSection>
+
+    <DemoSection Title="Traverse"
+                 Api="Back / Forward / TraverseTo"
+                 Description="Back and Forward move one step and return false rather than throwing when there is nowhere to go - a back button pressed at the start of the list is a normal outcome, not an exception. TraverseTo jumps straight to a remembered key however far away it is, which is how a 'back to results' button should work: not by calling Back a guessed number of times, and not by pushing a duplicate entry on top of the stack."
+                 Code=@("""
+// remember where the user was, then return there later
+var listEntry = await navigation.GetCurrentEntry();
+_listKey = listEntry?.Key;
+
+// ... the user wanders off through several pages ...
+
+await navigation.TraverseTo(_listKey!);   // straight back, one step
+
+bool moved = await navigation.Back();     // false when there was nowhere to go
+""")>
+        <div class="controls">
+            <button @onclick="GoBack">Back</button>
+            <button @onclick="GoForward">Forward</button>
+            <button class="secondary" @onclick="RememberHere">Remember this entry</button>
+            <button class="secondary" @onclick="TraverseToRemembered" disabled="@(_rememberedKey is null)">
+                Traverse to remembered
+            </button>
+        </div>
+        <DemoConsole @ref="traverseOutput" Title="traverse output" />
+    </DemoSection>
+
+    <DemoSection Title="Per-entry state"
+                 Api="UpdateCurrentEntry / GetCurrentState"
+                 Description="State attached to a history entry survives a reload and a traversal, which makes it the right place for 'where was the user in this view' - a scroll offset, an open panel, a filter selection - as opposed to application data. UpdateCurrentEntry writes it without navigating and without adding an entry, so it is safe to call on every change; unlike History.ReplaceState it does not make you restate the URL to do so."
+                 Code=@("""
+await navigation.UpdateCurrentEntry(new ViewState(Filter: "open", Scroll: 420));
+
+var state = await navigation.GetCurrentState<ViewState>();
+
+public record ViewState(string Filter, int Scroll);
+""")>
+        <div class="controls">
+            <div class="field">
+                <span class="field-label">Filter</span>
+                <input @bind="_filter" @bind:event="oninput" placeholder="open" />
+            </div>
+            <button @onclick="WriteState">UpdateCurrentEntry</button>
+            <button class="secondary" @onclick="ReadState">GetCurrentState</button>
+        </div>
+        <p class="section-desc">
+            Write a value, then reload the page: the state comes back, and no history entry was added.
+        </p>
+        <DemoConsole @ref="stateOutput" Title="state output" />
+    </DemoSection>
+
+    <DemoSection Title="Observe changes"
+                 Api="SubscribeCurrentEntryChange / SubscribeNavigateSuccess / SubscribeNavigateError"
+                 Description="currententrychange is the one to use instead of popstate: it fires for every kind of change - a traversal, a push, a replace, an in-place state update - rather than only for traversals, and NavigationType says which it was. Navigating around this site with the buttons above, or with the browser's own back button, will drive it."
+                 Code=@("""
+_subscription = await navigation.SubscribeCurrentEntryChange(info =>
+    InvokeAsync(() =>
+    {
+        _lastChange = info.NavigationType;
+        StateHasChanged();
+    }));
+
+// later
+await _subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="Subscribe" disabled="@(_subscription is not null)">Subscribe</button>
+            <button class="secondary" @onclick="Unsubscribe" disabled="@(_subscription is null)">Unsubscribe</button>
+        </div>
+        <DemoConsole @ref="eventsOutput" Title="currententrychange output" />
+    </DemoSection>
+</div>
+
+<ApiTable>
+    <ApiMember Name="IsSupported" Signature="ValueTask&lt;bool&gt; IsSupported()" Description="True when the runtime exposes window.navigation." />
+    <ApiMember Name="CanGoBack" Signature="ValueTask&lt;bool&gt; CanGoBack()" Description="True when there is an entry behind the current one to traverse to." />
+    <ApiMember Name="CanGoForward" Signature="ValueTask&lt;bool&gt; CanGoForward()" Description="True when there is an entry ahead of the current one." />
+    <ApiMember Name="GetCurrentEntry" Signature="ValueTask&lt;NavigationEntry?&gt; GetCurrentEntry()" Description="The entry the document is currently showing." />
+    <ApiMember Name="GetEntries" Signature="ValueTask&lt;NavigationEntry[]&gt; GetEntries()" Description="Every entry in this document's session history, oldest first." />
+    <ApiMember Name="GetCurrentState" Signature="ValueTask&lt;T?&gt; GetCurrentState&lt;T&gt;()" Description="The state object stored on the current entry, deserialized to T." />
+    <ApiMember Name="Back" Signature="ValueTask&lt;bool&gt; Back()" Description="Traverses one entry backwards; false when there was nowhere to go." />
+    <ApiMember Name="Forward" Signature="ValueTask&lt;bool&gt; Forward()" Description="Traverses one entry forwards; false when there was nowhere to go." />
+    <ApiMember Name="TraverseTo" Signature="ValueTask&lt;bool&gt; TraverseTo(string key)" Description="Jumps to the entry with the given key; false when it is no longer in the list." />
+    <ApiMember Name="Navigate" Signature="ValueTask&lt;bool&gt; Navigate(string url, object? state = null, NavigationHistoryBehavior history = Auto)" Description="Navigates to a URL, loading the document. Use NavigationManager.NavigateTo for in-app routing." />
+    <ApiMember Name="Reload" Signature="ValueTask&lt;bool&gt; Reload(object? state = null)" Description="Reloads the current entry, optionally replacing its state." />
+    <ApiMember Name="UpdateCurrentEntry" Signature="ValueTask&lt;bool&gt; UpdateCurrentEntry(object? state)" Description="Replaces the state on the current entry without navigating and without adding an entry." />
+    <ApiMember Name="SubscribeCurrentEntryChange" Signature="ValueTask&lt;ButilSubscription&gt; SubscribeCurrentEntryChange(Action&lt;NavigationEventInfo&gt;)" Description="Raised whenever the current entry changes, with the type of change." />
+    <ApiMember Name="SubscribeNavigateSuccess" Signature="ValueTask&lt;ButilSubscription&gt; SubscribeNavigateSuccess(Action&lt;NavigationEventInfo&gt;)" Description="Raised when a navigation completes successfully." />
+    <ApiMember Name="SubscribeNavigateError" Signature="ValueTask&lt;ButilSubscription&gt; SubscribeNavigateError(Action&lt;NavigationEventInfo&gt;)" Description="Raised when a navigation fails, with the reason in Message." />
+</ApiTable>
+
+<Callout Type="info" Title="History or Navigation?">
+    Reach for <a href="history">History</a> when you need to work with a browser that predates Baseline 2026,
+    or when all you do is push and replace. Reach for this when you need to read the list rather than only
+    add to it - which includes every case where a button's enabled state depends on whether the navigation
+    would actually go anywhere.
+</Callout>
+
+@code {
+    private DemoConsole canGoOutput = default!;
+    private DemoConsole entriesOutput = default!;
+    private DemoConsole traverseOutput = default!;
+    private DemoConsole stateOutput = default!;
+    private DemoConsole eventsOutput = default!;
+
+    private bool _probed;
+    private bool _isSupported;
+    private bool _canGoBack;
+    private bool _canGoForward;
+
+    private NavigationEntry[] _entries = [];
+    private string? _currentKey;
+    private string? _rememberedKey;
+    private string _filter = "open";
+
+    private ButilSubscription? _subscription;
+
+    private record ViewState(string Filter, int Scroll);
+
+    // Keys and urls are both long enough to blow the table's columns open on a narrow screen.
+    private static string Shorten(string url)
+    {
+        if (Uri.TryCreate(url, UriKind.Absolute, out var uri) is false) return url;
+
+        var tail = $"{uri.AbsolutePath}{uri.Query}";
+        return tail.Length > 48 ? $"…{tail[^47..]}" : tail;
+    }
+
+    private async Task ReadCanGo()
+    {
+        _isSupported = await navigation.IsSupported();
+        _canGoBack = await navigation.CanGoBack();
+        _canGoForward = await navigation.CanGoForward();
+        _probed = true;
+
+        await canGoOutput.Info("IsSupported() →", _isSupported);
+        await canGoOutput.Log("CanGoBack() →", _canGoBack);
+        await canGoOutput.Log("CanGoForward() →", _canGoForward);
+    }
+
+    private async Task ReadEntries()
+    {
+        _entries = await navigation.GetEntries();
+        _currentKey = (await navigation.GetCurrentEntry())?.Key;
+
+        if (_entries.Length == 0)
+        {
+            await entriesOutput.Warn("GetEntries() →", "empty - this browser has no Navigation API.");
+            return;
+        }
+
+        await entriesOutput.Success("GetEntries() →", $"{_entries.Length} entr{(_entries.Length == 1 ? "y" : "ies")} in this document's history.");
+    }
+
+    private async Task ReadCurrentEntry()
+    {
+        var current = await navigation.GetCurrentEntry();
+
+        if (current is null)
+        {
+            await entriesOutput.Warn("GetCurrentEntry() →", "null - this browser has no Navigation API.");
+            return;
+        }
+
+        _currentKey = current.Key;
+        await entriesOutput.Info("GetCurrentEntry() →", current);
+    }
+
+    private async Task GoBack()
+    {
+        var moved = await navigation.Back();
+        await Report(traverseOutput, moved, "Back()", "nothing behind this entry.");
+    }
+
+    private async Task GoForward()
+    {
+        var moved = await navigation.Forward();
+        await Report(traverseOutput, moved, "Forward()", "nothing ahead of this entry.");
+    }
+
+    private async Task RememberHere()
+    {
+        var current = await navigation.GetCurrentEntry();
+        _rememberedKey = current?.Key;
+
+        if (_rememberedKey is null)
+        {
+            await traverseOutput.Warn("Remember →", "no current entry to remember.");
+            return;
+        }
+
+        await traverseOutput.Success("Remembered →", $"key {_rememberedKey}. Navigate away, then come back with the button beside it.");
+    }
+
+    private async Task TraverseToRemembered()
+    {
+        if (_rememberedKey is null) return;
+
+        var moved = await navigation.TraverseTo(_rememberedKey);
+        await Report(traverseOutput, moved, $"TraverseTo(\"{_rememberedKey}\")", "that entry is no longer in the list.");
+    }
+
+    private async Task WriteState()
+    {
+        var written = await navigation.UpdateCurrentEntry(new ViewState(_filter, Scroll: 420));
+        await Report(stateOutput, written, "UpdateCurrentEntry()", "no current entry to update.");
+    }
+
+    private async Task ReadState()
+    {
+        var state = await navigation.GetCurrentState<ViewState>();
+
+        if (state is null)
+        {
+            await stateOutput.Info("GetCurrentState<ViewState>() →", "null - nothing has been stored on this entry yet.");
+            return;
+        }
+
+        await stateOutput.Success("GetCurrentState<ViewState>() →", state);
+    }
+
+    private async Task Subscribe()
+    {
+        // The callback arrives from JS, not from Blazor's dispatcher, so the write has to be
+        // marshalled back on. A sync lambda returning the InvokeAsync task - rather than an async
+        // one, which against Action<T> would be async void and would swallow anything it threw.
+        _subscription = await navigation.SubscribeCurrentEntryChange(info =>
+            InvokeAsync(() => eventsOutput.Log("currententrychange →",
+                $"{info.NavigationType ?? "state update"}{(info.From is null ? "" : $", from {Shorten(info.From.Url)}")}")));
+
+        await eventsOutput.Success("Subscribed.", "Use the Back / Forward buttons above, or the browser's own.");
+    }
+
+    private async Task Unsubscribe()
+    {
+        if (_subscription is null) return;
+
+        await _subscription.DisposeAsync();
+        _subscription = null;
+
+        await eventsOutput.Info("Unsubscribed.");
+    }
+
+    // Every traversal and write on this page returns a bool rather than throwing, so they all report
+    // the same way: what was called, and - when it declined - the reason it would have.
+    private static Task Report(DemoConsole output, bool ok, string call, string whyNot) =>
+        ok ? output.Success($"{call} →", "done.") : output.Warn($"{call} →", $"returned false - {whyNot}");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_subscription is not null) await _subscription.DisposeAsync();
+    }
+}

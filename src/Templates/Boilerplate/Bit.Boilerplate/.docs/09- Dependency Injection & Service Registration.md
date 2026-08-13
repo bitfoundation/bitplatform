@@ -196,7 +196,7 @@ Let's say you want to add a `FeedbackService` that works on all client platforms
 
 ```csharp
 // src/Client/Boilerplate.Client.Core/Services/FeedbackService.cs
-namespace Boilerplate.Client.Core.Services;
+namespace Boilerplate.Client.Core.Infrastructure.Services;
 
 public partial class FeedbackService
 {

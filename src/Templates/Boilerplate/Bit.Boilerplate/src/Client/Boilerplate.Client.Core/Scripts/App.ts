@@ -20,54 +20,37 @@ export class App {
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
-    public static openDevTools() {
-        const allScripts = Array.from(document.scripts).map(s => s.src);
-        const scriptAppended = allScripts.find(as => as.includes('npm/eruda'));
+    private static readonly erudaUrl = 'https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js';
+    private static readonly erudaIntegrity = 'sha384-F7xQBvh3l6dG/mMD6QPIeVmXtzWT4Ce3ZDu8ysPuzMWMx9bFOIMGnRPUhLuQipss';
+    private static readonly erudaScriptId = 'app-eruda-script';
 
-        if (scriptAppended) {
-            (window as any).eruda.show();
+    public static openDevTools() {
+        const eruda = (window as any).eruda;
+
+        if (eruda) {
+            eruda.show();
             return;
         }
 
+        // window.eruda only exists once the CDN script has run, so a second press while the first request is still
+        // in flight would append a second copy and init it twice. The element is the marker for that in-flight load.
+        if (document.getElementById(App.erudaScriptId)) return;
+
         const script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/eruda";
-        document.body.append(script);
-        script.onload = function () {
+        script.id = App.erudaScriptId;
+        script.src = App.erudaUrl;
+        script.integrity = App.erudaIntegrity;
+        script.crossOrigin = 'anonymous';
+        script.onload = () => {
             (window as any).eruda.init();
             (window as any).eruda.show();
-        }
-    }
-
-    //#if (notification == true)
-    public static async getPushNotificationSubscription(vapidPublicKey: string) {
-        const registration = await navigator.serviceWorker.ready;
-        if (!registration) return null;
-
-        const pushManager = registration.pushManager;
-        if (!pushManager) return null;
-
-        let subscription = await pushManager.getSubscription();
-
-        if (!subscription) {
-            subscription = await pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: vapidPublicKey
-            });
-        }
-
-        const pushChannel = subscription.toJSON();
-        const p256dh = pushChannel.keys!['p256dh'];
-        const auth = pushChannel.keys!['auth'];
-
-        return {
-            deviceId: `${p256dh}-${auth}`,
-            platform: 'browser',
-            p256dh: p256dh,
-            auth: auth,
-            endpoint: pushChannel.endpoint
         };
-    };
-    //#endif
+        script.onerror = () => {
+            script.remove();
+            console.error(`Failed to load the dev tools from ${App.erudaUrl}.`);
+        };
+        document.body.append(script);
+    }
 
     /* Checks for and applies updates if available.
        Called by `WebAppUpdateService.cs` when the user clicks the app version in `AppShell.razor`
@@ -86,17 +69,6 @@ export class App {
         bswupProgress.config({ autoReload });
 
         bswup.checkForUpdate();
-    }
-
-    /* Clears web browser / web view storages */
-    public static async clearWebStorages() {
-        await Promise.all([
-            ...await caches.keys().then(k => k.map(caches.delete.bind(caches))),
-            ...await indexedDB.databases().then(d => d.map(db => indexedDB.deleteDatabase(db.name!))),
-            localStorage.clear(),
-            sessionStorage.clear(),
-            document.cookie.split(';').forEach(c => document.cookie = c.split('=')[0].trim() + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/')
-        ]);
     }
 }
 

@@ -1135,17 +1135,14 @@
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>تم تعطيل تسجيل الدخول بدون كلمة مرور بنجاح</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>تعذّر التحقق من مفتاح المرور الخاص بك، لذلك لم تتم إزالته. يرجى المحاولة مرة أخرى.</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>لم يعد مفتاح المرور هذا موجودًا على الخادم؛ تمت إزالته من هذا الجهاز.</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>مسح</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>إرسال</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>تطبيق لون التمييز {0}</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>ملغى</value>
@@ -1153,6 +1150,27 @@
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>لوحة الدردشة بالذكاء الاصطناعي</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>أملِ رسالتك</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>إيقاف الإملاء</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>الإملاء</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>تم حظر الوصول إلى الميكروفون. اسمح به لهذا الموقع لكي تتمكن من الإملاء.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>توقف الإملاء: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>القراءة بصوت عالٍ</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>إيقاف القراءة</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>مرحبًا{0}! أنا هنا لجعل تجربة التطبيق رائعة! هل لديك سؤال أو تحتاج مساعدة؟</value>

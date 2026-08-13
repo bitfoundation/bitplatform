@@ -1,0 +1,541 @@
+@page "/animation"
+@implements IAsyncDisposable
+@inject IJSRuntime js
+
+<PageTitle>Animation - Bit.Butil</PageTitle>
+
+<PageHeader Category="DOM & Interaction"
+            Title="Animation"
+            Lead="Drive the Web Animations API from C#. Animate any ElementReference with a list of keyframes, then play, pause, reverse, seek and cancel the running animation through a handle - the browser's compositor does the work, so the frames never cross the interop boundary."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Element/animate" />
+
+<Callout Type="info" Title="An extension method, not a service">
+    Like the <a href="element">Element</a> APIs there is nothing to inject: <code>Animate</code> hangs off
+    <code>ElementReference</code> itself and takes an <code>IJSRuntime</code> so it can reach the browser.
+    Capture the element with <code>@@ref</code> and animate it from <code>OnAfterRenderAsync</code> or an
+    event handler.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Animate an element"
+                 Api="Animate"
+                 Description="Animate takes the keyframes to interpolate between and, optionally, the timing options. It returns an AnimationHandle immediately - the animation runs on the browser's own timeline from that moment, with no per-frame interop. Each keyframe is a dictionary of CSS property to value, exactly like the array you would pass to element.animate() in JavaScript."
+                 Code=@("""
+<div @ref="box">...</div>
+
+@code {
+    private ElementReference box;
+
+    private async Task Run()
+    {
+        await box.Animate(js,
+            [
+                new() { ["transform"] = "translateX(0)", ["opacity"] = "1" },
+                new() { ["transform"] = "translateX(180px)", ["opacity"] = "0.4" },
+                new() { ["transform"] = "translateX(0)", ["opacity"] = "1" },
+            ],
+            new AnimationOptions { Duration = 1200, Easing = "ease-in-out" });
+    }
+}
+""")
+                 Language="razor">
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_boxRef">Butil</div>
+        </div>
+        <div class="controls">
+            <button @onclick="RunSlide">Run animation</button>
+        </div>
+        <DemoConsole @ref="runOutput" Title="animate output" />
+    </DemoSection>
+
+    <DemoSection Title="Keyframes"
+                 Api="AnimationKeyframes"
+                 Description="AnimationKeyframes is a List of Dictionary<string, string>, so collection expressions and dictionary initializers build one inline. Every property must be spelled the way CSS spells it - kebab-case, not the camelCase form the JavaScript object syntax uses - and every keyframe should list the same properties so the engine has something to interpolate towards. Two keyframes mean 'from' and 'to'; more are distributed evenly across the duration."
+                 Code=@("""
+AnimationKeyframes pulse =
+[
+    new() { ["transform"] = "scale(1)",    ["background-color"] = "#1276C6" },
+    new() { ["transform"] = "scale(1.35)", ["background-color"] = "#FD7F36" },
+    new() { ["transform"] = "scale(1)",    ["background-color"] = "#1276C6" },
+];
+
+await box.Animate(js, pulse, new AnimationOptions { Duration = 900 });
+""")>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_pulseRef">Pulse</div>
+        </div>
+        <div class="controls">
+            <button @onclick="RunPulse">Run pulse</button>
+        </div>
+        <DemoConsole @ref="keyframesOutput" Title="keyframes output" />
+    </DemoSection>
+
+    <DemoSection Title="Timing options"
+                 Api="AnimationOptions"
+                 Description="AnimationOptions forwards the subset of KeyframeEffectOptions that survives the interop hop: Duration, Delay, EndDelay, Iterations, Easing, Direction, Fill and Composite. Set Iterations to double.PositiveInfinity to loop forever - Butil normalizes it on the JavaScript side, which JSON alone cannot express. Change the values below and re-run to feel the difference."
+                 Code=@("""
+var options = new AnimationOptions
+{
+    Duration = 1200,                       // ms
+    Delay = 0,                             // ms before the first frame
+    EndDelay = 0,                          // ms held after the last frame
+    Iterations = double.PositiveInfinity,  // loop forever
+    Easing = "cubic-bezier(0.33, 0, 0.67, 1)",
+    Direction = "alternate",               // normal | reverse | alternate | alternate-reverse
+    Fill = "forwards",                     // none | forwards | backwards | both | auto
+    Composite = "replace",                 // replace | add | accumulate
+};
+
+handle = await box.Animate(js, keyframes, options);
+""")>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_optionsRef">Timing</div>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <span class="field-label">Duration (ms)</span>
+                <input type="number" min="100" step="100" @bind="_duration" />
+            </div>
+            <div class="field">
+                <span class="field-label">Easing</span>
+                <select @bind="_easing">
+                    <option value="linear">linear</option>
+                    <option value="ease">ease</option>
+                    <option value="ease-in">ease-in</option>
+                    <option value="ease-out">ease-out</option>
+                    <option value="ease-in-out">ease-in-out</option>
+                    <option value="cubic-bezier(0.33, 0, 0.67, 1)">cubic-bezier(0.33, 0, 0.67, 1)</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Direction</span>
+                <select @bind="_direction">
+                    <option value="normal">normal</option>
+                    <option value="reverse">reverse</option>
+                    <option value="alternate">alternate</option>
+                    <option value="alternate-reverse">alternate-reverse</option>
+                </select>
+            </div>
+            <div class="field">
+                <span class="field-label">Fill</span>
+                <select @bind="_fill">
+                    <option value="none">none</option>
+                    <option value="forwards">forwards</option>
+                    <option value="backwards">backwards</option>
+                    <option value="both">both</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label class="check">
+                <input type="checkbox" @bind="_loop" />
+                Loop forever (Iterations = double.PositiveInfinity)
+            </label>
+        </div>
+        <div class="controls">
+            <button @onclick="RunOptions">Run with these options</button>
+            <button class="danger" @onclick="CancelOptions">Cancel</button>
+        </div>
+        <DemoConsole @ref="optionsOutput" Title="timing options output" />
+    </DemoSection>
+
+    <DemoSection Title="Control playback"
+                 Api="Play / Pause / Reverse / Finish / Cancel / SetPlaybackRate"
+                 Description="The returned AnimationHandle is a remote control for the running animation. Play and Pause stop and resume it in place, Reverse flips the direction from the current time, SetPlaybackRate speeds it up or slows it down (negative values run it backwards), Finish jumps to the end and Cancel removes it - snapping the element back to its unanimated styles. Start the looping animation below, then drive it."
+                 Code=@("""
+handle = await box.Animate(js, keyframes,
+    new AnimationOptions { Duration = 2000, Iterations = double.PositiveInfinity });
+
+await handle.Pause();
+await handle.SetPlaybackRate(0.25);   // quarter speed
+await handle.Play();
+await handle.Reverse();
+await handle.Finish();                // jump to the end
+await handle.Cancel();                // remove the animation entirely
+""")>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_controlRef">Orbit</div>
+        </div>
+        <div class="controls">
+            <button @onclick="StartControlled">Start looping</button>
+            <button class="secondary" @onclick="PlayControlled" disabled="@(_controlHandle is null)">Play</button>
+            <button class="secondary" @onclick="PauseControlled" disabled="@(_controlHandle is null)">Pause</button>
+            <button class="secondary" @onclick="ReverseControlled" disabled="@(_controlHandle is null)">Reverse</button>
+            <button class="secondary" @onclick="FinishControlled" disabled="@(_controlHandle is null)">Finish</button>
+            <button class="danger" @onclick="CancelControlled" disabled="@(_controlHandle is null)">Cancel</button>
+        </div>
+        <div class="field">
+            <span class="field-label">Playback rate: @_rate.ToString("0.00")x</span>
+            <input type="range" min="-2" max="3" step="0.25" @bind="_rate" @bind:event="oninput"
+                   @bind:after="ApplyRate" disabled="@(_controlHandle is null)" />
+        </div>
+        <DemoConsole @ref="controlOutput" Title="playback control output" />
+    </DemoSection>
+
+    <DemoSection Title="Await completion"
+                 Api="WhenFinished"
+                 Description="WhenFinished awaits the animation's own finished promise, which is how you sequence work after an animation without guessing at a Task.Delay. It completes when the animation finishes or is cancelled, so it is safe to await in a teardown path - but an animation with infinite Iterations never finishes, and awaiting one would hang forever."
+                 Code=@("""
+var handle = await panel.Animate(js, fadeOut,
+    new AnimationOptions { Duration = 300, Fill = "forwards" });
+
+await handle.WhenFinished();
+
+// the element is now visually gone - safe to drop it from the render tree
+isVisible = false;
+""")>
+        <div class="anim-stage">
+            <div class="anim-target" @ref="_sequenceRef">Steps</div>
+        </div>
+        <div class="controls">
+            <button @onclick="RunSequence" disabled="@_sequenceRunning">Run a three-step sequence</button>
+        </div>
+        <DemoConsole @ref="sequenceOutput" Title="sequencing output" />
+    </DemoSection>
+
+    <DemoSection Title="Dispose the handle"
+                 Api="AnimationHandle.DisposeAsync"
+                 Description="Every handle holds an entry in a JavaScript-side registry so the control methods can find the animation again. Disposing cancels the animation and drops that entry; without it, a Fill of forwards or both leaves the element pinned at its final frame and the registry entry alive for the lifetime of the page. Dispose is idempotent and swallows the usual teardown exceptions, so calling it from DisposeAsync during a circuit shutdown is safe."
+                 Code=@("""
+@implements IAsyncDisposable
+
+@code {
+    private AnimationHandle? handle;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (handle is not null)
+        {
+            await handle.DisposeAsync();
+        }
+    }
+}
+""")
+                 Language="razor" />
+</div>
+
+<Callout Type="info" Title="The animation runs in the browser, not over interop">
+    <code>Animate</code> is a single interop call that hands the keyframes to the browser; every frame after
+    that is computed by the compositor. That makes it dramatically cheaper than driving a style property from
+    a .NET timer, and it is why animations stay smooth on Blazor Server, where every render round-trips over
+    a circuit.
+</Callout>
+
+<Callout Type="warning" Title="Respect prefers-reduced-motion">
+    The Web Animations API does not consult the user's motion preference for you. Query it with
+    <a href="window">Window.MatchMedia</a> before starting anything decorative, and either skip the
+    animation or collapse it to a very short duration when
+    <code>(prefers-reduced-motion: reduce)</code> matches.
+</Callout>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="Animate"
+               Signature="Task<AnimationHandle> Animate(this ElementReference element, IJSRuntime js, AnimationKeyframes keyframes, AnimationOptions? options = null)"
+               Description="Starts a Web Animation on the element and returns a handle for controlling it. Options default to a 1000ms linear animation." />
+    <ApiMember Name="AnimationKeyframes"
+               Signature="class AnimationKeyframes : List<Dictionary<string, string>>"
+               Description="The keyframes to interpolate between: one dictionary of CSS property to value per frame." />
+    <ApiMember Name="AnimationOptions.Duration" Signature="double Duration = 1000" Description="Total duration of one iteration, in milliseconds." />
+    <ApiMember Name="AnimationOptions.Delay" Signature="double Delay = 0" Description="Milliseconds to wait before playback starts." />
+    <ApiMember Name="AnimationOptions.EndDelay" Signature="double EndDelay = 0" Description="Milliseconds to hold after playback completes." />
+    <ApiMember Name="AnimationOptions.Iterations" Signature="double Iterations = 1" Description="How many times to repeat. Use double.PositiveInfinity to loop forever." />
+    <ApiMember Name="AnimationOptions.Easing" Signature='string Easing = "linear"' Description="Any CSS easing function, for example ease-in-out or cubic-bezier(0, 0, 0.2, 1)." />
+    <ApiMember Name="AnimationOptions.Direction" Signature='string Direction = "normal"' Description="normal, reverse, alternate or alternate-reverse." />
+    <ApiMember Name="AnimationOptions.Fill" Signature='string Fill = "none"' Description="Which styles persist outside the active period: none, forwards, backwards, both or auto." />
+    <ApiMember Name="AnimationOptions.Composite" Signature='string Composite = "replace"' Description="How the animation combines with the element's underlying value: replace, add or accumulate." />
+    <ApiMember Name="AnimationHandle.Play" Signature="ValueTask Play()" Description="Resumes a paused animation." />
+    <ApiMember Name="AnimationHandle.Pause" Signature="ValueTask Pause()" Description="Pauses the animation at its current time." />
+    <ApiMember Name="AnimationHandle.Reverse" Signature="ValueTask Reverse()" Description="Reverses the playback direction from the current time." />
+    <ApiMember Name="AnimationHandle.Cancel" Signature="ValueTask Cancel()" Description="Cancels the animation and removes its effect from the element." />
+    <ApiMember Name="AnimationHandle.Finish" Signature="ValueTask Finish()" Description="Jumps to the end of the animation, applying Fill. No-ops when the engine rejects it, as it does for an infinitely-iterating animation." />
+    <ApiMember Name="AnimationHandle.WhenFinished" Signature="ValueTask WhenFinished()" Description="Awaits the animation's finished promise. Returns when it finishes or is cancelled; never returns for an infinite animation." />
+    <ApiMember Name="AnimationHandle.SetPlaybackRate" Signature="ValueTask SetPlaybackRate(double rate)" Description="Sets the playback rate: 1 is normal speed, 0.5 half speed, -1 reverse at normal speed." />
+    <ApiMember Name="AnimationHandle.DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Cancels the animation and releases the JavaScript-side registry entry. Idempotent and safe during teardown." />
+</ApiTable>
+
+@code {
+    private DemoConsole runOutput = default!;
+    private DemoConsole keyframesOutput = default!;
+    private DemoConsole optionsOutput = default!;
+    private DemoConsole controlOutput = default!;
+    private DemoConsole sequenceOutput = default!;
+
+    private ElementReference _boxRef;
+    private ElementReference _pulseRef;
+    private ElementReference _optionsRef;
+    private ElementReference _controlRef;
+    private ElementReference _sequenceRef;
+
+    private double _duration = 1200;
+    private string _easing = "ease-in-out";
+    private string _direction = "alternate";
+    private string _fill = "none";
+    private bool _loop;
+    private double _rate = 1;
+    private bool _sequenceRunning;
+
+    private AnimationHandle? _slideHandle;
+    private AnimationHandle? _pulseHandle;
+    private AnimationHandle? _optionsHandle;
+    private AnimationHandle? _controlHandle;
+    private readonly List<AnimationHandle> _sequenceHandles = [];
+
+    private static AnimationKeyframes Slide =>
+    [
+        new() { ["transform"] = "translateX(0)", ["opacity"] = "1" },
+        new() { ["transform"] = "translateX(180px)", ["opacity"] = "0.4" },
+        new() { ["transform"] = "translateX(0)", ["opacity"] = "1" },
+    ];
+
+    private async Task RunSlide()
+    {
+        try
+        {
+            // The animation runs once with the default Fill of "none", so the element is back to its
+            // stylesheet appearance the moment it ends - but the handle still owns a registry entry
+            // on the JavaScript side, so the previous run is disposed before a new one starts.
+            if (_slideHandle is not null)
+            {
+                await _slideHandle.DisposeAsync();
+                _slideHandle = null;
+            }
+
+            _slideHandle = await _boxRef.Animate(js, Slide, new AnimationOptions { Duration = 1200, Easing = "ease-in-out" });
+            await runOutput.Success("Animate →", "running a 1200ms slide.");
+        }
+        catch (Exception ex)
+        {
+            await runOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
+    private async Task RunPulse()
+    {
+        try
+        {
+            AnimationKeyframes pulse =
+            [
+                new() { ["transform"] = "scale(1)", ["background-color"] = "#1276C6" },
+                new() { ["transform"] = "scale(1.35)", ["background-color"] = "#FD7F36" },
+                new() { ["transform"] = "scale(1)", ["background-color"] = "#1276C6" },
+            ];
+
+            if (_pulseHandle is not null)
+            {
+                await _pulseHandle.DisposeAsync();
+                _pulseHandle = null;
+            }
+
+            _pulseHandle = await _pulseRef.Animate(js, pulse, new AnimationOptions { Duration = 900 });
+            await keyframesOutput.Success("Animate →", "3 keyframes over 900ms.");
+        }
+        catch (Exception ex)
+        {
+            await keyframesOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
+    private async Task RunOptions()
+    {
+        try
+        {
+            // The previous run is cancelled rather than layered: two animations touching the same
+            // properties with Composite = "replace" leave whichever started last in charge, and the
+            // older handle would keep its registry entry alive for nothing.
+            if (_optionsHandle is not null)
+            {
+                await _optionsHandle.DisposeAsync();
+                _optionsHandle = null;
+            }
+
+            var options = new AnimationOptions
+            {
+                Duration = _duration <= 0 ? 1200 : _duration,
+                Iterations = _loop ? double.PositiveInfinity : 1,
+                Easing = _easing,
+                Direction = _direction,
+                Fill = _fill,
+            };
+
+            _optionsHandle = await _optionsRef.Animate(js, Slide, options);
+
+            await optionsOutput.Success("Animate →",
+                $"Duration={options.Duration}ms, Easing={options.Easing}, Direction={options.Direction}, Fill={options.Fill}, Iterations={(_loop ? "Infinity" : "1")}");
+        }
+        catch (Exception ex)
+        {
+            await optionsOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
+    private async Task CancelOptions()
+    {
+        if (_optionsHandle is null)
+        {
+            await optionsOutput.Warn("Nothing is running - start an animation first.");
+            return;
+        }
+
+        await _optionsHandle.DisposeAsync();
+        _optionsHandle = null;
+        await optionsOutput.Info("Cancel →", "animation removed; the element snaps back to its stylesheet styles.");
+    }
+
+    private async Task StartControlled()
+    {
+        try
+        {
+            if (_controlHandle is not null)
+            {
+                await _controlHandle.DisposeAsync();
+            }
+
+            AnimationKeyframes orbit =
+            [
+                new() { ["transform"] = "translateX(0) rotate(0deg)" },
+                new() { ["transform"] = "translateX(180px) rotate(180deg)" },
+                new() { ["transform"] = "translateX(0) rotate(360deg)" },
+            ];
+
+            _rate = 1;
+            _controlHandle = await _controlRef.Animate(js, orbit, new AnimationOptions
+            {
+                Duration = 2000,
+                Iterations = double.PositiveInfinity,
+            });
+
+            await controlOutput.Success("Animate →", "looping forever - now use the controls.");
+        }
+        catch (Exception ex)
+        {
+            await controlOutput.Error("Animate failed →", ex.Message);
+        }
+    }
+
+    private Task PlayControlled() => Control(h => h.Play(), "Play");
+
+    private Task PauseControlled() => Control(h => h.Pause(), "Pause");
+
+    private Task ReverseControlled() => Control(h => h.Reverse(), "Reverse");
+
+    private Task FinishControlled() => Control(h => h.Finish(), "Finish");
+
+    private async Task CancelControlled()
+    {
+        if (_controlHandle is null) return;
+
+        await _controlHandle.DisposeAsync();
+        _controlHandle = null;
+        await controlOutput.Info("Cancel →", "the animation is gone and the handle is disposed.");
+    }
+
+    private async Task Control(Func<AnimationHandle, ValueTask> action, string name)
+    {
+        if (_controlHandle is null) return;
+
+        try
+        {
+            await action(_controlHandle);
+            await controlOutput.Info($"{name} →", "sent to the running animation.");
+        }
+        catch (Exception ex)
+        {
+            await controlOutput.Error($"{name} failed →", ex.Message);
+        }
+    }
+
+    private async Task ApplyRate()
+    {
+        if (_controlHandle is null) return;
+
+        await _controlHandle.SetPlaybackRate(_rate);
+        await controlOutput.Info("SetPlaybackRate →", $"{_rate:0.00}x");
+    }
+
+    private async Task RunSequence()
+    {
+        _sequenceRunning = true;
+
+        try
+        {
+            await DisposeSequenceHandles();
+
+            var steps = new (string Label, string From, string To)[]
+            {
+                ("Step 1", "translateX(0) scale(1)", "translateX(180px) scale(1)"),
+                ("Step 2", "translateX(180px) scale(1)", "translateX(180px) scale(1.4)"),
+                ("Step 3", "translateX(180px) scale(1.4)", "translateX(0) scale(1)"),
+            };
+
+            foreach (var (label, from, to) in steps)
+            {
+                await sequenceOutput.Info($"{label} →", "started");
+
+                AnimationKeyframes frames =
+                [
+                    new() { ["transform"] = from },
+                    new() { ["transform"] = to },
+                ];
+
+                // Fill = "forwards" holds each step's end state so the next one starts where the last
+                // stopped. The handles stay alive until the whole sequence is done - disposing one
+                // cancels its animation, which would drop the fill and snap the element back.
+                var handle = await _sequenceRef.Animate(js, frames,
+                    new AnimationOptions { Duration = 600, Easing = "ease-in-out", Fill = "forwards" });
+
+                _sequenceHandles.Add(handle);
+
+                await handle.WhenFinished();
+                await sequenceOutput.Success($"{label} →", "finished");
+            }
+
+            // The last step ends where the element started, so releasing the fills now is invisible.
+            await DisposeSequenceHandles();
+
+            await sequenceOutput.Success("Sequence →", "all three steps completed in order.");
+        }
+        catch (Exception ex)
+        {
+            await sequenceOutput.Error("Sequence failed →", ex.Message);
+        }
+        finally
+        {
+            _sequenceRunning = false;
+        }
+    }
+
+    private async Task DisposeSequenceHandles()
+    {
+        foreach (var handle in _sequenceHandles)
+        {
+            await handle.DisposeAsync();
+        }
+
+        _sequenceHandles.Clear();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_slideHandle is not null)
+        {
+            await _slideHandle.DisposeAsync();
+        }
+
+        if (_pulseHandle is not null)
+        {
+            await _pulseHandle.DisposeAsync();
+        }
+
+        if (_optionsHandle is not null)
+        {
+            await _optionsHandle.DisposeAsync();
+        }
+
+        if (_controlHandle is not null)
+        {
+            await _controlHandle.DisposeAsync();
+        }
+
+        await DisposeSequenceHandles();
+    }
+}

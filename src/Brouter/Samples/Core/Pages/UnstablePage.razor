@@ -1,0 +1,25 @@
+﻿@* The success side of the error-boundary route: its loader throws while UnstableShouldFail is
+   armed, and the route's own ErrorContent renders the failure with a heal-and-retry button. *@
+
+@inject IBrouter brouter
+@inject DemoState State
+
+<h1>Unstable route - loaded fine</h1>
+
+<p>@(Data?.GetOrDefault<string>())</p>
+
+<button @onclick="BreakItAgain">Break the loader and reload</button>
+
+<p class="muted">
+    The loader will throw again, and this route's <code>ErrorContent</code> replaces this content.
+</p>
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+
+    private Task BreakItAgain()
+    {
+        State.UnstableShouldFail = true;
+        return brouter.RevalidateAsync().AsTask();
+    }
+}

@@ -1,0 +1,21 @@
+﻿@* Constraints inside a complex segment convert exactly like whole-segment ones: both parts arrive
+   as real ints. *@
+
+<h1>API v@(Major).@(Minor)</h1>
+
+<dl>
+    <dt>major</dt>
+    <dd>@Major (@Major.GetType().Name)</dd>
+    <dt>minor</dt>
+    <dd>@Minor (@Minor.GetType().Name)</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/api/v2-10" class="btn">/api/v2-10</BrouterLink>
+    <BrouterLink Href="/api/vX-10" class="btn">/api/vX-10 → 404</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public int Major { get; set; }
+    [Parameter] public int Minor { get; set; }
+}

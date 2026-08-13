@@ -1,0 +1,53 @@
+@* The site header, laid out like the Bit.BlazorUI demo's AppHeader: a 65px translucent bar with
+   the bit mark and the top-level links at the start, and the GitHub mark and the theme toggle at
+   the end. The docs search box is Brouter's own addition - that site puts its search inside the
+   nav panel, this one keeps it in the bar so it works from any page. *@
+
+<header class="bb-header">
+    @* Brand, nav and tools are siblings rather than a start/end pair, so the narrow layout can
+       simply wrap the nav onto a second row instead of squeezing all three into one. *@
+    <div class="bb-header-inner">
+        <div class="bb-header-brand">
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-logo" aria-label="Homepage" />
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All" class="bb-wordmark">Brouter</BrouterLink>
+        </div>
+
+        <nav class="bb-nav" aria-label="Primary">
+            <BrouterLink Href="/" Match="BrouterLinkMatch.All">Home</BrouterLink>
+            <BrouterLink Href="/docs">Docs</BrouterLink>
+            <BrouterLink Href="/playground">Playground</BrouterLink>
+        </nav>
+
+        <div class="bb-header-end">
+            <SearchBox />
+
+            @* A mask rather than a picture, so the mark is painted with the theme's primary color
+               and re-tints with the theme - a colored asset could not. *@
+            <a class="bb-github-btn" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer"
+               title="GitHub repository" aria-label="GitHub repository"></a>
+
+            <button type="button" class="bb-theme-toggle" title="Toggle light/dark theme" aria-label="Toggle light/dark theme" @onclick="ToggleTheme">
+                <svg class="bb-icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg class="bb-icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    [Inject] private IJSRuntime jsRuntime { get; set; } = default!;
+
+    private async Task ToggleTheme()
+    {
+        // theme.js flips the bit-theme attribute on <html>; the sun/moon icon swap is pure CSS.
+        await jsRuntime.InvokeVoidAsync("bitBrouterTheme.toggle");
+    }
+}

@@ -1,0 +1,131 @@
+@page "/troubleshooting"
+
+<PageTitle>Troubleshooting - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="Troubleshooting"
+            Lead="Nine problems account for almost every issue people hit with Butil. Each one below is the symptom you actually see, what is really going on underneath, and the fix." />
+
+<div class="stack">
+    <DemoSection Title="Could not find 'BitButil.something' in 'window'"
+                 Description="The bridge script has not loaded. Either the script tag is missing from the host page, or it comes after the Blazor script and the app booted before window.BitButil existed. Put it first. If it is already first and still failing, check the network tab: a 404 on the _content path means static web assets are not being served, which usually means the host project does not reference Bit.Butil (a project reference from the client alone is not enough when a separate project does the hosting)."
+                 Code=@("""
+<!-- correct order -->
+<script src="_content/Bit.Butil/bit-butil.js"></script>
+<script src="_framework/blazor.web.js"></script>
+""")
+                 Language="html" />
+
+    <DemoSection Title="Cannot provide a value for property 'clipboard'"
+                 Description="AddBitButilServices was never called, or it was called in only one of the two containers your app has. A prerendering app instantiates every component twice - once on the server for the prerender pass and once in the browser - so both service collections have to register the same set, or prerendering fails with a missing-service exception before the browser ever sees the page."
+                 Code=@("""
+// Client/Program.cs
+builder.Services.AddBitButilServices();
+
+// Server/Program.cs - the prerender host needs it too
+builder.Services.AddBitButilServices();
+""") />
+
+    <DemoSection Title="The value is empty on the first render, correct afterwards"
+                 Description="This is prerendering working as designed. There is no browser during the server pass, so Butil returns a safe default - an empty string, an empty array, false, zero - rather than throwing. Reading in OnInitializedAsync therefore gets you the default, and reading again in the browser gets the real value. Move any read whose answer you branch on into OnAfterRenderAsync guarded by firstRender, and call StateHasChanged afterwards because the first render has already happened."
+                 Code=@("""
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender is false) return;
+
+    _token = await localStorage.GetItem("token");
+
+    StateHasChanged();
+}
+""") />
+
+    <DemoSection Title="An event fires, the log shows it, but the UI does not update"
+                 Description="The callback arrived from JavaScript rather than from Blazor's own event dispatch, so nothing told the renderer that state changed. Mutate your state in the handler and then ask for a re-render through InvokeAsync(StateHasChanged) - InvokeAsync, not StateHasChanged directly, because the callback may not be running on the renderer's synchronization context."
+                 Code=@("""
+await box.SubscribeEvent<ButilMouseEventArgs>(js, ButilEvents.Click, args =>
+{
+    _clicks++;
+    InvokeAsync(StateHasChanged);
+});
+""") />
+
+    <DemoSection Title="NotAllowedError, or a call that silently does nothing"
+                 Description="Three separate rules produce this, and the message rarely says which. The page may not be a secure context, so the API object does not exist at all. The user may have denied the permission, in which case it stays denied until they clear it in site settings. Or the call may have lost its user gesture - the window closes as soon as the handler yields to something slow, so a permission-gated call has to be the first await in a click handler, not the one after a server round trip."
+                 Code=@("""
+// Check which of the three it is before guessing:
+var secure = await window.IsSecureContext();          // false → no API at all
+var state = await permissions.Query("clipboard-write"); // Denied → user said no
+// still failing → the gesture was gone by the time you called
+""") />
+
+    <DemoSection Title="JSDisconnectedException while navigating away"
+                 Description="On Blazor Server the circuit can vanish before your teardown finishes, and an interop call in DisposeAsync then throws. Butil's own disposal paths already swallow the three exceptions that teardown legitimately produces - JSDisconnectedException, OperationCanceledException and ObjectDisposedException - so disposing a ButilSubscription or an AnimationHandle is safe. Your own interop in DisposeAsync is not covered by that and needs the same guard."
+                 Code=@("""
+public async ValueTask DisposeAsync()
+{
+    try
+    {
+        await subscription.DisposeAsync();   // already safe
+        await js.InvokeVoidAsync("myOwnCleanup");   // yours is not
+    }
+    catch (JSDisconnectedException) { }
+    catch (OperationCanceledException) { }
+    catch (ObjectDisposedException) { }
+}
+""") />
+
+    <DemoSection Title="Handlers keep firing after the component is gone"
+                 Description="A subscription that is never disposed keeps the JavaScript side holding a reference to your component's delegate, so it fires against a component that is no longer rendered - and the component cannot be collected. Every Butil subscription hands back a token for exactly this reason. Keep it, and dispose it. Watch out for the bulk removers too: Keyboard.RemoveAll clears every shortcut registered against that Keyboard instance, not only the ones your component added."
+                 Code=@("""
+@implements IAsyncDisposable
+
+@code {
+    private ButilSubscription? sub;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (sub is not null) await sub.DisposeAsync();
+    }
+}
+""")
+                 Language="razor" />
+
+    <DemoSection Title="It works on localhost and breaks in production"
+                 Description="Browsers treat localhost as a secure context so that development works over plain HTTP. The moment the app is served from a real host over HTTP, every secure-context API disappears - clipboard, crypto, geolocation, service workers, web locks, storage estimates and more. Serve over HTTPS. The browser-support page lists exactly which APIs are affected, and IsSupported() answers it per API: it probes for the object itself, which an insecure context does not have, so it reports false for exactly the reason you are chasing."
+                 Code=@("""
+if (await window.IsSecureContext() is false)
+{
+    // this is the difference between your machine and production
+}
+
+// per-API, and the same answer: false here means navigator.clipboard
+// does not exist, which over plain HTTP it never does
+if (await clipboard.IsSupported() is false) { /* ... */ }
+if (await crypto.IsSupported() is false) { /* SubtleCrypto is https-only */ }
+""") />
+
+    <DemoSection Title="It works in debug and breaks after publish"
+                 Description="Trimming removed a type that only the JSON serializer ever referenced. Butil's own types are annotated and survive, but your models crossing the interop boundary - anything you serialize into a Butil call or deserialize out of one - need to be reachable by the trimmer. Either keep them in a project that is not trimmed, or annotate them so the linker keeps their members."
+                 Code=@("""
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+public class MyPayload
+{
+    public string Name { get; set; } = "";
+}
+""") />
+</div>
+
+<Callout Type="info" Title="Narrowing it down quickly">
+    Most reports resolve to one of three questions. Is the bridge loaded - does
+    <code>window.BitButil</code> exist in the DevTools console? Is there a browser yet - is the code running
+    after the first render? Is the API even there - what does <code>IsSupported()</code> say? The
+    <a href="browser-support">browser-support page</a> answers the third one live for whichever browser you
+    are testing in.
+</Callout>
+
+<Callout Type="warning" Title="Still stuck?">
+    Open an issue on the
+    <a href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer">bitplatform repository</a>
+    with the render mode, the .NET version, the browser, and the exact exception. The render mode and the
+    browser between them explain most of what looks inexplicable.
+</Callout>

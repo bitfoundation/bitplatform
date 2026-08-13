@@ -1,0 +1,213 @@
+/* The bar itself: translucent over whatever scrolls beneath it, separated from the page by a
+   single secondary hairline - no shadow, because the blur is already the depth cue. */
+.bb-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: color-mix(in srgb, var(--bb-surface) 78%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--bb-border);
+    /* Everything without a view-transition-name is captured into the root snapshot, so the
+       header would glide/fade along with the page on every navigation even though it lives
+       outside the router. Naming it gives it its own transition group: old and new header
+       snapshots are (near-)identical, so it stays visually pinned while only the page content
+       animates - the standard way to exclude persistent chrome from view transitions. */
+    view-transition-name: bb-header;
+}
+
+/* Capped at the content width so the mark lines up with the page title underneath it. The bar's
+   own height is the published --bb-header-height, which every sticky offset on the site is
+   measured from, so the two can never drift apart. */
+.bb-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: var(--bb-header-height);
+    max-width: var(--bb-content-width);
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+.bb-header-brand {
+    display: flex;
+    align-items: center;
+    /* The logo artwork runs edge to edge in its own box (see the aspect-ratio note below), so all
+       of the breathing room between the mark and the wordmark has to come from here. */
+    gap: .625rem;
+    flex-shrink: 0;
+}
+
+/* The bit mark, drawn per theme - the light and dark logos are different artwork, not the same
+   glyph recolored, so this is an image swap rather than a mask.
+
+   The source svg is 239x161, and `contain` fits it to whichever edge binds first. In a square box
+   that is the width, which paints the glyph right up to both vertical edges and leaves it with no
+   side gutter at all; giving the box the artwork's own ratio makes its width the glyph's true
+   width, so the gap above is the whole gap and means what it says. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-brand ::deep a.bb-logo {
+    flex-shrink: 0;
+    height: 34px;
+    aspect-ratio: 239 / 161;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-brand ::deep a.bb-wordmark {
+    flex-shrink: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    color: var(--bb-text);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-header-brand ::deep a.bb-wordmark:hover {
+    color: var(--bb-text);
+    text-decoration: none;
+}
+
+/* Takes the slack, which is what pushes the tools to the end of the bar. */
+.bb-nav {
+    display: flex;
+    align-items: center;
+    gap: .125rem;
+    flex: 1;
+    /* Single-line header: the nav shrinks and scrolls horizontally instead of wrapping. */
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.bb-nav::-webkit-scrollbar {
+    display: none;
+}
+
+/* The nav anchors are rendered by <BrouterLink>, so they carry that component's scope - not
+   this file's. */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a {
+    display: flex;
+    align-items: center;
+    line-height: 1.5;
+    font-size: .9375rem;
+    white-space: nowrap;
+    text-decoration: none;
+    padding: .5rem .75rem;
+    border-radius: var(--bb-radius);
+    color: var(--bb-text-muted);
+    transition: color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                background var(--bb-motion-duration-short) var(--bb-motion-easing);
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a:hover {
+    color: var(--bb-text);
+    background: var(--bb-surface-hover);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-nav ::deep a.active {
+    font-weight: 600;
+    color: var(--bb-primary);
+    background: transparent;
+}
+
+.bb-header-end {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-shrink: 0;
+}
+
+/* Sized to match the theme toggle next to it. The octocat circle only spans ~87% of the svg's
+   viewBox, so the mark is drawn oversized to put the VISIBLE glyph at 32px; anything past the
+   ~13% built-in padding clips at the box edge, which is under half a pixel. */
+.bb-github-btn {
+    flex-shrink: 0;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    background-color: var(--bb-primary);
+    -webkit-mask: url('images/github-mark.svg') center / 37px 37px no-repeat;
+    mask: url('images/github-mark.svg') center / 37px 37px no-repeat;
+}
+
+/* The document's bit-theme attribute is the live theme state, kept current by theme.js, so the
+   logo swap keys off it - and the two selectors are exact complements, so exactly one artwork is
+   painted in every possible state (including before a preference has been resolved). */
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:root[bit-theme$='dark'] .bb-header-brand ::deep a.bb-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+:root:not([bit-theme$='dark']) .bb-header-brand ::deep a.bb-logo {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+@media (max-width: 960px) {
+    .bb-header-inner {
+        gap: 1rem;
+        padding: 0 .75rem;
+    }
+}
+
+/* Phones: three groups will not share one line without every one of them being squeezed, so the
+   nav takes a row of its own underneath. The bar grows by that row, and --bb-header-height grows
+   with it (app.css) so the sticky offsets and heading scroll-margins stay correct. */
+@media (max-width: 600px) {
+    .bb-header-inner {
+        flex-wrap: wrap;
+        gap: .25rem .5rem;
+        padding: .5rem .75rem;
+    }
+
+    .bb-header-brand {
+        flex-shrink: 0;
+    }
+
+    /* Takes the rest of the first row - the nav, which does this job on wider screens, is on the
+       next row now. The search box inside it expands to fill (SearchBox.razor.css). */
+    .bb-header-end {
+        flex: 1;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+    .bb-header-brand ::deep a.bb-logo {
+        height: 28px;
+    }
+
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+    .bb-header-brand ::deep a.bb-wordmark {
+        font-size: 1rem;
+    }
+
+    .bb-nav {
+        order: 1;
+        flex: 0 0 100%;
+    }
+
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+    .bb-nav ::deep a {
+        padding: .375rem .5rem;
+        font-size: .875rem;
+    }
+}
+
+/* The narrowest phones: the wordmark is the one thing here that repeats what is already on
+   screen - the mark beside it links to the same place and the page title says the same word. */
+@media (max-width: 400px) {
+    /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+    .bb-header-brand ::deep a.bb-wordmark {
+        display: none;
+    }
+}

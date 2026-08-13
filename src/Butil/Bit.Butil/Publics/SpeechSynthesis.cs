@@ -53,4 +53,15 @@ public class SpeechSynthesis(IJSRuntime js)
     /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
     /// </remarks>
     public ValueTask<bool> IsPending() => js.Invoke<bool>("BitButil.speech.isPending");
+
+    /// <summary>True when speech is paused - <see cref="Pause"/> was called and <see cref="Resume"/> hasn't been.</summary>
+    /// <remarks>
+    /// Independent of <see cref="IsSpeaking"/>, which stays true while paused mid-utterance. Check
+    /// this before offering a pause button so it doesn't toggle the wrong way.
+    /// <br/>
+    /// During prerender/SSR (no JS runtime) this returns <c>default</c> (e.g. <c>false</c>/<c>0</c>)
+    /// rather than throwing, so the result can't be distinguished from a genuine value. If you
+    /// branch on it, defer the read to <c>OnAfterRenderAsync</c>.
+    /// </remarks>
+    public ValueTask<bool> IsPaused() => js.Invoke<bool>("BitButil.speech.isPaused");
 }

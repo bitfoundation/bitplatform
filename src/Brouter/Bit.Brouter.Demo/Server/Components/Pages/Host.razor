@@ -1,0 +1,15 @@
+﻿@*
+    Catch-all host page. It exists so that EVERY url matches a Razor component endpoint and the
+    host document above is rendered for it; from there Bit.Brouter's <AppRouter /> - rendered by
+    Routes.razor in the client project - takes over and matches the real route. Brouter matches
+    during OnInitializedAsync, so the matched page's HTML is in the initial prerendered response.
+
+    It deliberately lives in the Server project: the client assembly is Brouter's AppAssembly, and
+    a "/{*path}" @page in there would be picked up by Brouter's own attribute-route discovery.
+*@
+@page "/"
+@page "/{*path}"
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

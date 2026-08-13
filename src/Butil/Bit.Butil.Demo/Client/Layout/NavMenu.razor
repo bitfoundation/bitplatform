@@ -1,56 +1,103 @@
-﻿@if (_open)
-{
-    <div class="scrim" @onclick="Close"></div>
-}
+@implements IAsyncDisposable
+@inject Bit.Butil.Keyboard keyboard
+@inject Bit.Butil.UserAgent userAgent
 
-<nav class="sidebar @(_open ? "open" : "")">
-    <a class="sidebar-brand" href="" @onclick="Close">
-        <img src="icon-512.png" alt="bit platform logo">
-        <span>
-            <span class="title">Butil</span><br />
-        </span>
-    </a>
+@* The BlazorUI demo's BitNavPanel: a filter box over grouped links, pinned under the header on
+   wide screens and sliding in over the content below the md breakpoint. Open/closed is the
+   layout's state, not this component's - the scrim that closes it lives outside the panel. *@
 
-    <div class="sidebar-search">
-        <input aria-label="Filter APIs" placeholder="Filter APIs..." @bind="_filter" @bind:event="oninput" />
+<nav id="nav-panel" class="nav-panel@(IsOpen ? " open" : "")" aria-label="Documentation">
+    <div class="nav-panel-search">
+        @* The hint is the standard way to advertise the shortcut, and it doubles as the label for
+           what the key does - so it is aria-hidden and the input's own label carries the wording
+           for a screen reader instead of it being read as loose text after the field. *@
+        <input @ref="_search" type="search" placeholder="Search docs"
+               aria-label="Search the documentation. Press Control K, or Command K on a Mac, to focus this field."
+               @bind="_filter" @bind:event="oninput" />
+        <kbd class="search-hint" aria-hidden="true">@(_isApple ? "⌘" : "Ctrl") K</kbd>
     </div>
 
-    <div class="sidebar-nav">
-        <div class="group-label">Overview</div>
-        <NavLink href="" Match="NavLinkMatch.All" @onclick="Close">
-            <span class="ico">🏠</span>
-            <span>Home</span>
-        </NavLink>
-        <NavLink href="getting-started" Match="NavLinkMatch.All" @onclick="Close">
-            <span class="ico">🚀</span>
-            <span>Getting started</span>
-        </NavLink>
+    <div class="nav-panel-items">
+        @* Home is the only entry that is not a documentation page, so it is the only one written
+           out here; everything else - guides included - comes from DocsNav and is filterable. *@
+        @if (string.IsNullOrWhiteSpace(_filter))
+        {
+            <NavLink class="nav-panel-item" href="" Match="NavLinkMatch.All" @onclick="OnNavigate">
+                <span class="ico">🏠</span>
+                <span>Home</span>
+            </NavLink>
+        }
 
+        @{
+            var matched = 0;
+        }
         @foreach (var group in DocsNav.Groups)
         {
             var links = group.Links.Where(Match).ToList();
             if (links.Count == 0) continue;
 
-            <div class="group-label">@group.Title</div>
+            matched += links.Count;
+
+            <div class="nav-panel-group">@group.Title</div>
             @foreach (var link in links)
             {
-                <NavLink href="@link.Url" Match="NavLinkMatch.All" @onclick="Close">
+                <NavLink class="nav-panel-item" href="@link.Url" Match="NavLinkMatch.All" @onclick="OnNavigate">
                     <span class="ico">@link.Icon</span>
                     <span>@link.Title</span>
                 </NavLink>
             }
         }
+
+        @if (matched == 0)
+        {
+            <div class="nav-panel-empty">Nothing matches "@_filter".</div>
+        }
     </div>
 </nav>
 
 @code {
-    private bool _open;
     private string _filter = "";
+    private bool _isApple;
+    private ElementReference _search;
+    private ButilSubscription? _ctrlK;
+    private ButilSubscription? _metaK;
 
-    public void Toggle() { _open = !_open; StateHasChanged(); }
-    public void Close() { _open = false; StateHasChanged(); }
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Raised when a link is followed, so the layout can close the small-screen drawer.</summary>
+    [Parameter] public EventCallback OnNavigate { get; set; }
 
     private bool Match(DocLink link) =>
         string.IsNullOrWhiteSpace(_filter) ||
-        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+        link.Title.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+        link.Summary.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+
+    // Ctrl+K / Cmd+K is what every developer already has in their fingers, and registering it
+    // through Bit.Butil.Keyboard is the site using the library it documents rather than a
+    // hand-written keydown listener. Both chords are registered rather than branching on the
+    // platform: an external keyboard on a Mac, or a Mac user on a Windows layout, should not have
+    // to guess which one this site chose.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _ctrlK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Ctrl);
+        _metaK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Meta);
+
+        // Only affects which glyph the hint shows, so a browser without UA-CH simply gets "Ctrl".
+        var platform = await userAgent.GetPlatform();
+        _isApple = platform.Contains("mac", StringComparison.OrdinalIgnoreCase);
+
+        StateHasChanged();
+    }
+
+    // Arrives from the JS listener rather than from Blazor's dispatcher, so the focus call is
+    // marshalled back onto it.
+    private void FocusSearch() => InvokeAsync(() => _search.FocusAsync().AsTask());
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_ctrlK is not null) await _ctrlK.DisposeAsync();
+        if (_metaK is not null) await _metaK.DisposeAsync();
+    }
 }

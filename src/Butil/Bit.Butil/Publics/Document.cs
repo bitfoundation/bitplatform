@@ -196,6 +196,34 @@ public class Document(IJSRuntime js) : IAsyncDisposable
         => await js.Invoke<string>("BitButil.document.referrer");
 
     /// <summary>
+    /// How far the document has got through loading: <c>"loading"</c>, <c>"interactive"</c> (DOM
+    /// parsed) or <c>"complete"</c> (subresources done).
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState">https://developer.mozilla.org/en-US/docs/Web/API/Document/readyState</see>
+    /// </summary>
+    /// <remarks>
+    /// In Blazor this is nearly always <c>"complete"</c> by the time a component can call it - the
+    /// framework has to have booted first. It's mainly useful for code that also runs outside the
+    /// component lifecycle, or for waiting on late subresources.
+    /// </remarks>
+    public async Task<string> GetReadyState()
+        => await js.Invoke<string>("BitButil.document.readyState");
+
+    /// <summary>
+    /// When the document was last modified, as the browser's locale-formatted string. Falls back to
+    /// the current time when the server sent no <c>Last-Modified</c> header.
+    /// <br />
+    /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified">https://developer.mozilla.org/en-US/docs/Web/API/Document/lastModified</see>
+    /// </summary>
+    /// <remarks>
+    /// The format follows the browser's locale, so parse it with care - there is no ISO-8601 form of
+    /// this property. Because a missing header yields "now" rather than null, it can't distinguish
+    /// "just modified" from "unknown".
+    /// </remarks>
+    public async Task<string> GetLastModified()
+        => await js.Invoke<string>("BitButil.document.lastModified");
+
+    /// <summary>
     /// Gets the title of the current document.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/title">https://developer.mozilla.org/en-US/docs/Web/API/Document/title</see>

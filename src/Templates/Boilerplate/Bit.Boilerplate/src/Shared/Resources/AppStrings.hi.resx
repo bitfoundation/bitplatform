@@ -1135,17 +1135,14 @@
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>पासवर्डरहित साइन-इन सफलतापूर्वक अक्षम</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>आपकी पासकी सत्यापित नहीं हो सकी, इसलिए इसे हटाया नहीं गया। कृपया पुनः प्रयास करें।</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>यह पासकी अब सर्वर पर मौजूद नहीं है; इसे इस डिवाइस से हटा दिया गया है।</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>साफ़ करें</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>भेजें</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>{0} एक्सेंट रंग लागू करें</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>रद्द</value>
@@ -1153,6 +1150,27 @@
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>एआई चैट पैनल</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>अपना संदेश बोलें</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>श्रुतलेख रोकें</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>श्रुतलेख</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>माइक्रोफ़ोन का उपयोग अवरुद्ध है। बोलकर लिखने के लिए इस साइट को अनुमति दें।</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>श्रुतलेख रुक गया: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>ज़ोर से पढ़ें</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>पढ़ना रोकें</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>नमस्ते{0}! मैं यहां आपके ऐप अनुभव को शानदार बनाने के लिए हूं! कोई प्रश्न है या मदद चाहिए?</value>

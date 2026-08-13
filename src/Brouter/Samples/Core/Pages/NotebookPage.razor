@@ -1,0 +1,40 @@
+﻿@* Per-parameter keep-alive: /notes/{id:int} is declared KeepAlive with KeepAliveMax="2", so each
+   visited id keeps its OWN instance up to the budget and the least-recently-used one is evicted
+   beyond it. The instance stamp changes only when this note was evicted and rebuilt. *@
+
+@inject IBrouter brouter
+
+<h1>Note @Id <span class="muted">(instance #@_instanceStamp)</span></h1>
+
+<div class="card">
+    <div class="row">
+        <strong>Clicks: @_clicks</strong>
+        <button @onclick="@(() => _clicks++)">Click me</button>
+    </div>
+    <textarea rows="2" style="margin-top: .5rem;" @bind="_draft" placeholder="Draft for note @Id…"></textarea>
+</div>
+
+<div class="row">
+    <BrouterLink Href="/notes/1" class="btn">Note 1</BrouterLink>
+    <BrouterLink Href="/notes/2" class="btn">Note 2</BrouterLink>
+    <BrouterLink Href="/notes/3" class="btn">Note 3</BrouterLink>
+    <button @onclick="@(() => brouter.ClearKeepAlive())">ClearKeepAlive()</button>
+</div>
+
+<p class="muted">
+    Edit notes 1 and 2, then visit note 3: the budget is 2, so the least-recently-used note is
+    evicted and returns with a fresh instance stamp and an empty draft. The cache key is the
+    template's parameter values, so query-string variations share one instance.
+    <code>ClearKeepAlive()</code> disposes every retained page across the app at once.
+</p>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private int _clicks;
+    private string _draft = string.Empty;
+
+    // Monotonic per-instance stamp, so eviction (recreate => new stamp) is visible in the UI.
+    private static int _nextStamp;
+    private readonly int _instanceStamp = System.Threading.Interlocked.Increment(ref _nextStamp);
+}

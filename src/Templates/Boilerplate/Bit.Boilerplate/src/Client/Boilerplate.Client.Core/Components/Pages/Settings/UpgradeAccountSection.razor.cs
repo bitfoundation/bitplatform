@@ -1,3 +1,4 @@
+//+:cnd:noEmit
 namespace Boilerplate.Client.Core.Components.Pages.Settings;
 
 public partial class UpgradeAccountSection
@@ -9,14 +10,17 @@ public partial class UpgradeAccountSection
 
     private bool adIsReady;
     private bool adIsShown;
-    private bool showTroubleButton;
     private AdWatchResult? watchResult = null;
+    //#if (signalR == true)
+    private bool showTroubleButton;
+    //#endif
 
 
     protected override async Task OnAfterFirstRenderAsync()
     {
         await base.OnAfterFirstRenderAsync();
 
+        //#if (signalR == true)
         _ = Task.Delay(5000).ContinueWith(_ =>
         {
             if (adIsReady) return;
@@ -24,11 +28,14 @@ public partial class UpgradeAccountSection
             showTroubleButton = true;
             InvokeAsync(StateHasChanged);
         });
+        //#endif
 
         await adsService.Init(clientCoreSettings.AdUnitPath);
 
         adIsReady = true;
+        //#if (signalR == true)
         showTroubleButton = false;
+        //#endif
 
         StateHasChanged();
     }
@@ -38,6 +45,7 @@ public partial class UpgradeAccountSection
     {
         if (adIsReady is false || adIsShown) return;
 
+        //#if (signalR == true)
         _ = Task.Delay(3000).ContinueWith(_ =>
         {
             if (watchResult is not null || adIsShown) return;
@@ -45,11 +53,14 @@ public partial class UpgradeAccountSection
             showTroubleButton = true;
             InvokeAsync(StateHasChanged);
         });
+        //#endif
 
         watchResult = await adsService.Watch();
 
         adIsShown = true;
+        //#if (signalR == true)
         showTroubleButton = false;
+        //#endif
 
         StateHasChanged();
 
@@ -63,9 +74,11 @@ public partial class UpgradeAccountSection
         }
     }
 
+    //#if (signalR == true)
     private async Task HandleAdTrouble()
     {
         logger.LogWarning("User having trouble with ads");
         PubSubService.Publish(ClientAppMessages.AD_HAVE_TROUBLE);
     }
+    //#endif
 }

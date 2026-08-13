@@ -1,0 +1,115 @@
+﻿@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+@* The "on this page" rail. It is built from the section headings found in the rendered page rather
+   than from a list each page has to maintain, so a page gets its entries by having sections. That
+   makes it empty until after the first render; the <nav> is rendered regardless to hold the column
+   open - dropping it would let the content column stretch and then snap back a frame later - but
+   its label and entries only appear once there is something to label. *@
+
+<nav class="side-rail" aria-label="On this page">
+    @if (_items.Length > 0)
+    {
+        <p class="side-rail-title">On this page</p>
+        <ul class="side-rail-list">
+            @foreach (var item in _items)
+            {
+                var isActive = item.Id == _activeId;
+                <li class="@(isActive ? "active" : null)">
+                    <a href="@($"#{item.Id}")" aria-current="@(isActive ? "location" : null)"
+                       @onclick="() => ScrollTo(item.Id)" @onclick:preventDefault>
+                        @item.Title
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</nav>
+
+@code {
+    /// <summary>One rail entry: the id of the heading it points at and the text shown for it.</summary>
+    public sealed record RailItem(string Id, string Title);
+
+    private RailItem[] _items = [];
+    private string? _activeId;
+    private bool _needsRefresh = true;
+    private DotNetObjectReference<SideRail>? _selfRef;
+
+    protected override void OnInitialized() => Nav.LocationChanged += OnLocationChanged;
+
+    // The headings of the page just navigated away from are gone, so the rail is emptied here and
+    // rebuilt from the new page's markup on the render that follows.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _items = [];
+        _activeId = null;
+        _needsRefresh = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsRefresh is false) return;
+
+        _needsRefresh = false;
+
+        try
+        {
+            _selfRef ??= DotNetObjectReference.Create(this);
+
+            var items = await JS.InvokeAsync<RailItem[]>("bmCollectSections");
+            if (items.Length == 0) return;
+
+            _items = items;
+            await JS.InvokeVoidAsync("bmObserveSections", _selfRef, items.Select(i => i.Id));
+            StateHasChanged();
+        }
+        catch
+        {
+            // Prerendering has no DOM to read and no JS runtime to read it with, and a browser that
+            // failed to load the script has nothing to collect either. The rail is a shortcut to
+            // content that is already on the page, so in both cases it simply stays empty.
+        }
+    }
+
+    /// <summary>Called by the scroll spy in demo.js as the reader moves between sections.</summary>
+    [JSInvokable]
+    public void SetActiveSection(string? id)
+    {
+        if (_activeId == id) return;
+
+        _activeId = id;
+        StateHasChanged();
+    }
+
+    private async Task ScrollTo(string id)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("bmScrollToSection", id);
+        }
+        catch
+        {
+            // The entries are real anchors, so the browser's own fragment navigation remains as the
+            // fallback; only the smooth scroll and the header offset are lost.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+
+        try
+        {
+            await JS.InvokeVoidAsync("bmDisposeSections");
+        }
+        catch
+        {
+            // Disposal races the circuit going away (and never has a JS runtime while prerendering);
+            // the listener it would remove dies with the page either way.
+        }
+
+        _selfRef?.Dispose();
+    }
+}

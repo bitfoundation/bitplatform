@@ -1,0 +1,347 @@
+﻿@page "/recipes"
+
+<PageTitle>Recipes - bit Bswup</PageTitle>
+
+<h1>Recipes</h1>
+<p class="docs-lead">
+    Task-shaped answers to the things teams actually hit in production: hosting headers, sub-path
+    deployments, build-stamped cache versions, custom update banners, and keeping your API out of the
+    service worker.
+</p>
+
+<h2 id="hosting">Deployment checklist</h2>
+<p>
+    Bswup is only as reliable as the headers your host sends. Three rules cover almost every problem:
+</p>
+<div class="docs-table-wrapper">
+    <table>
+        <thead>
+            <tr><th>File</th><th>Cache-Control</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>service-worker.js</code><br /><code>_content/Bit.Bswup/bit-bswup.sw.js</code></td>
+                <td><code>no-cache</code></td>
+                <td>These are how a client discovers there <em>is</em> an update. A cached worker script means clients never see new versions. Bswup already registers with <code>updateViaCache: 'none'</code>, but support is uneven on older Safari/iOS and intermediary proxies are not bound by it.</td>
+            </tr>
+            <tr>
+                <td>The host document (<code>index.html</code> / the shell)</td>
+                <td><code>no-cache</code></td>
+                <td>It carries the script tags and the fingerprinted asset references. Once the worker is installed it is served from cache anyway, so a short TTL costs nothing.</td>
+            </tr>
+            <tr>
+                <td>Everything else (<code>_framework/*</code>, assets)</td>
+                <td>long <code>max-age</code></td>
+                <td>Content-addressed by hash and verified by the worker, so a stale HTTP cache is never a correctness problem - only a speed win.</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<CodeBlock Language="csharp" Code="@HostingCode" />
+<Callout Type="warning" Title="Also verify these three">
+    <p>
+        <strong>HTTPS.</strong> Service workers only register over HTTPS (or <code>localhost</code>). On plain
+        HTTP nothing installs and the app silently runs with no offline support.
+    </p>
+    <p>
+        <strong>Both worker files.</strong> <code>wwwroot/service-worker.js</code> is used during development;
+        <code>wwwroot/service-worker.published.js</code> is what a published build actually ships, via the
+        <code>ServiceWorker</code> item's <code>PublishedContent</code> mapping. Editing only the first one is
+        the single most common "it works locally" bug.
+    </p>
+    <p>
+        <strong>The assets manifest.</strong> <code>&lt;ServiceWorkerAssetsManifest&gt;</code> must be set in
+        the WebAssembly project, or <code>service-worker-assets.js</code> is never generated and the worker
+        has nothing to cache.
+    </p>
+</Callout>
+
+<h2 id="sub-path">Host the app on a sub-path</h2>
+<p>
+    An app served from <code>https://host/myapp/</code> needs its scope narrowed - a worker can only control
+    URLs beneath its own folder:
+</p>
+<CodeBlock Language="html" Code="@SubPathCode" />
+<p>
+    Everything else follows automatically:
+    <a href="service-worker#assetsurl"><code>assetsUrl</code></a> resolves relative to the worker script's own
+    location (which is where .NET publishes the manifest), and the cache bucket is namespaced by the scope,
+    so a second app at <code>/otherapp/</code> keeps a fully independent cache. Only
+    <a href="service-worker#defaulturl"><code>defaultUrl</code></a> needs your attention: it must name an
+    asset that really exists.
+</p>
+<Callout Type="tip" Title="Hosting several apps on one origin">
+    Give each app its own <code>scope</code>. Their buckets never collide, and
+    <a href="javascript-api#forcerefresh"><code>BitBswup.forceRefresh()</code></a> only ever clears the
+    calling app's own registration and caches.
+</Callout>
+
+<h2 id="cache-version">Stamp the cache version from your build</h2>
+<p>
+    By default the cache bucket tracks Blazor's asset-manifest hash, which rotates whenever any asset hash
+    changes - and only then. That is usually what you want. Take manual control when a meaningful change
+    lives <em>outside</em> the manifest, or when noisy local rebuilds keep evicting the whole runtime:
+</p>
+<CodeBlock Language="javascript" Code="@CacheVersionCode" />
+<p>
+    Feed it something that bumps once per publish - a commit SHA, a build number, your app's informational
+    version. Pin it to a constant during development and dev rebuilds stop discarding the cached runtime on
+    every save.
+</p>
+
+<h2 id="update-banner">Replace the reload button with your own banner</h2>
+<p>
+    The built-in <a href="progress-ui">progress UI</a> is not all-or-nothing: the <code>Handler</code>
+    parameter chains your function <em>after</em> the built-in handling, so you can keep the splash and take
+    over just the update prompt. Hide the default button with CSS and show your own:
+</p>
+<CodeBlock Language="razor" Code="@BannerRazorCode" />
+<CodeBlock Language="javascript" Code="@BannerJsCode" />
+<Callout Type="note" Title="Why hide rather than omit">
+    <code>#bit-bswup-reload</code> is always rendered by the component, even with custom
+    <code>ChildContent</code> - it is the only way a finished update surfaces under the default
+    <code>AutoReload="false"</code>. Hiding it and driving your own element keeps that guarantee intact while
+    the UI stays yours.
+</Callout>
+
+<h2 id="api-calls">Keep your API out of the service worker</h2>
+<p>
+    Bswup caches your <em>application</em>, not your data. API responses are not in the assets manifest, so
+    they are already left alone by rule 5 of the <a href="how-it-works#request-pipeline">request pipeline</a>.
+    Declaring them explicitly is still worth it - it short-circuits the routing earlier and documents the
+    intent:
+</p>
+<CodeBlock Language="javascript" Code="@ApiCode" />
+<p>
+    <code>serverHandledUrls</code> means "never enter the offline pipeline"; <code>serverRenderedUrls</code>
+    means "this URL is a real server-rendered page, do not answer it with the SPA shell". Use the second one
+    for anything the server renders itself - a privacy page, a payment callback, a health endpoint.
+</p>
+
+<h2 id="external-assets">Cache assets from another origin</h2>
+<p>
+    Fonts, an analytics script, a CDN library - anything outside <code>service-worker-assets.js</code> - are
+    declared by hand:
+</p>
+<CodeBlock Language="javascript" Code="@ExternalCode" />
+<p>
+    Cross-origin entries are fetched with CORS first; if the host sends no CORS headers, Bswup retries with
+    <code>no-cors</code> and caches the resulting <em>opaque</em> response, which script and image tags consume
+    normally. Two things to know: browsers pad opaque responses in quota accounting (Chromium reserves several
+    megabytes each), and an opaque body cannot be integrity-verified, so the fallback is skipped for entries
+    carrying a <code>hash</code>. Prefer CORS-enabled hosts where you control them.
+</p>
+
+<h2 id="full-offline">Ship a fully offline app</h2>
+<p>
+    A <a href="service-worker#mode"><code>mode</code></a> is a preset bundle of defaults that only fills
+    settings you have not assigned yourself, so your explicit values always win:
+</p>
+<CodeBlock Language="javascript" Code="@FullOfflineCode" />
+<p>
+    Reach for <code>strict</code> tolerance alongside it when a partially populated cache is unacceptable:
+    an install that cannot fetch every required asset is discarded whole, and the previous version keeps
+    serving. The trade-off is real - one 404 on an optional asset then fails the entire install - so keep
+    <code>externalAssets</code> tight when you choose it.
+</p>
+<Callout Type="warning" Title="Every mode presets defaultUrl to '/'">
+    That URL is not in <code>service-worker-assets.js</code>, so unless your shell really is
+    <code>index.html</code> at the root you also need <code>self.externalAssets = [{ "url": "/" }]</code> -
+    otherwise navigations have nothing to fall back to and the app will not work offline. Bswup warns about
+    this at startup; see <a href="troubleshooting#offline-broken">the troubleshooting entry</a>.
+</Callout>
+
+<h2 id="passive">Boot fast, cache in the background</h2>
+<p>
+    The opposite trade-off: <a href="service-worker#ispassive"><code>isPassive</code></a> lets the first paint
+    happen immediately instead of waiting behind a full precache.
+</p>
+<CodeBlock Language="javascript" Code="self.isPassive = true;" />
+<p>
+    It does not mean "never download everything". Once Blazor has started, the worker tops the cache up in the
+    background with every asset not yet fetched, so the app still ends up fully offline-capable - what you buy
+    is that the user is never held behind a progress bar on their first visit. The cost is that assets the app
+    lazily requests during the top-up can be fetched twice: bandwidth, not correctness.
+</p>
+
+<h2 id="durable-storage">Ask for durable storage at the right moment</h2>
+<p>
+    Cached assets live in <em>best-effort</em> storage by default: browsers reclaim it under disk pressure, and
+    Safari deletes all storage for a site untouched for seven days - the user comes back offline to an app that
+    no longer boots. Requesting persistence exempts the origin, but grant odds are engagement-based, so
+    <em>when</em> you ask matters more than <em>whether</em> you ask:
+</p>
+<CodeBlock Language="javascript" Code="@PersistCode" />
+<p>
+    Prefer this to the <a href="script-options#persiststorage"><code>persistStorage</code></a> script attribute
+    (which asks at startup, before the user has demonstrated any intent) whenever your app has a natural
+    high-signal moment: after login, after a save, or from an explicit "make available offline" button.
+</p>
+
+<h2 id="check-button">Add a "check for updates" button</h2>
+<CodeBlock Language="javascript" Code="@CheckButtonCode" />
+<p>
+    A failed check does not reject - it flows through <code>UPDATE_CHECK_FAILED</code> so the built-in progress
+    UI never mistakes an offline moment for a broken install. The <code>catch</code> is only for genuinely
+    unexpected errors, such as calling before the registration is ready.
+</p>
+
+<h2 id="csp">Run under a strict Content-Security-Policy</h2>
+<p>
+    Nothing Bswup ships requires <code>unsafe-inline</code> or <code>unsafe-eval</code> of its own: the
+    <code>BswupProgress</code> component emits no inline <code>&lt;script&gt;</code>, passing its configuration
+    through <code>data-bit-bswup-*</code> attributes instead. That leaves only what Blazor WebAssembly itself
+    needs:
+</p>
+<CodeBlock Language="text" Code="@CspCode" />
+<Callout Type="danger" Title="The worker scripts are part of your trusted base">
+    A service worker intercepts every request, and neither <code>register()</code> nor
+    <code>importScripts()</code> supports Subresource Integrity - so a tampered
+    <code>service-worker.js</code> or <code>bit-bswup.sw.js</code> is effectively persistent,
+    fully-privileged XSS. This is not Bswup-specific (Workbox shares the limitation), but it does mean the
+    origin serving those two files must be one you control.
+</Callout>
+
+<h2 id="dev-loop">Develop without fighting the cache</h2>
+<ul>
+    <li>
+        <strong>Use "Update on reload"</strong> in dev tools → Application → Service Workers. It activates a
+        new worker on every reload, which removes the entire class of "why am I still seeing the old build".
+    </li>
+    <li>
+        <strong>Turn the logs up.</strong> <code>log="verbose"</code> on the script tag narrates the page-side
+        handshake; <code>self.enableDiagnostics = true</code> narrates the worker.
+        <code>enableFetchDiagnostics</code> adds every intercepted request - loud, but decisive when a request
+        is going somewhere unexpected.
+    </li>
+    <li>
+        <strong>Pin <code>cacheVersion</code></strong> to a constant locally so rebuilds stop rotating the
+        bucket.
+    </li>
+    <li>
+        <strong>Reach for <a href="javascript-api#forcerefresh"><code>BitBswup.forceRefresh()</code></a></strong>
+        when a client is genuinely wedged - it clears this app's caches, unregisters its worker, and reloads.
+    </li>
+</ul>
+
+<div class="pager">
+    <a href="playground">
+        <span class="pager-label">Previous</span>
+        <b>← Live Playground</b>
+    </a>
+    <a class="pager-next" href="troubleshooting">
+        <span class="pager-label">Next</span>
+        <b>Troubleshooting →</b>
+    </a>
+</div>
+
+@code {
+    private const string HostingCode = @"app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.Context.Request.Path.Value ?? string.Empty;
+        var headers = ctx.Context.Response.GetTypedHeaders();
+
+        // The worker scripts and any statically served shell must always revalidate.
+        // (A Blazor Web App's shell is rendered by MapRazorComponents, not by this
+        // middleware - set its headers there instead.)
+        if (path.EndsWith(""service-worker.js"", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith(""bit-bswup.sw.js"", StringComparison.OrdinalIgnoreCase) ||
+            path.EndsWith("".html"", StringComparison.OrdinalIgnoreCase))
+        {
+            headers.CacheControl = new() { NoCache = true };
+            return;
+        }
+
+        // Everything else is hash-versioned - cache it hard.
+        if (env.IsDevelopment() is false)
+        {
+            headers.CacheControl = new() { MaxAge = TimeSpan.FromDays(7), Public = true };
+        }
+    }
+});";
+
+    private const string SubPathCode = @"<script src=""_content/Bit.Bswup/bit-bswup.js""
+        scope=""/myapp/""
+        sw=""service-worker.js""></script>";
+
+    private const string CacheVersionCode = @"// service-worker.published.js - replaced at publish time by your CI
+self.cacheVersion = '#{BUILD_VERSION}#';   // e.g. '2026.08.12-a1b2c3d'
+
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');";
+
+    private const string BannerRazorCode = @"<BswupProgress AutoReload=""false"" HideApp=""true"" Handler=""appUpdateHandler"" />
+
+<div id=""my-update-banner"" hidden>
+    A new version is ready.
+    <button type=""button"" id=""my-update-accept"">Reload now</button>
+</div>
+
+<style>
+    /* The component still renders it; we just drive our own UI instead. */
+    #bit-bswup-reload { display: none !important; }
+</style>";
+
+    private const string BannerJsCode = @"// Chained AFTER the built-in handling, so the splash and failure panel keep working.
+window.appUpdateHandler = (type, data) => {
+    if (type !== BswupMessage.updateReady && type !== BswupMessage.downloadFinished) return;
+    if (data.firstInstall) return;   // a first install completes on its own - nothing to prompt
+
+    const banner = document.getElementById('my-update-banner');
+    banner.hidden = false;
+    document.getElementById('my-update-accept').onclick = data.reload;
+};";
+
+    private const string ApiCode = @"// Never enters the offline pipeline - straight to the network, every time.
+self.serverHandledUrls = [/\/api\//, /\/signalr\//, /\/health$/];
+
+// Real server-rendered pages: do not answer these with the SPA shell.
+self.serverRenderedUrls = [/\/privacy$/, /\/payment\/callback/];";
+
+    private const string ExternalCode = @"self.externalAssets = [
+    { ""url"": ""/"" },                                      // the host page itself (e.g. _Host.cshtml)
+    ""https://fonts.example.com/inter.woff2"",             // bare string shorthand
+    { ""url"": ""/lib/chart.js"", ""hash"": ""sha256-..."" },     // cache busting + integrity
+    { ""url"": /_framework\/resource-collection\..*\.js/ }  // server-generated name
+];";
+
+    private const string FullOfflineCode = @"self.mode = 'FullOffline';        // precache everything, serve from cache from the first load
+self.errorTolerance = 'strict';   // and refuse to install a partial cache
+
+self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');";
+
+    private const string PersistCode = @"// Ask right after the user has shown intent - a gesture is what moves the odds.
+document.getElementById('enable-offline').onclick = async () => {
+    const persisted = await BitBswup.persistStorage();
+    status.textContent = persisted
+        ? 'This app is now available offline and protected from eviction.'
+        : 'Offline mode is on, but the browser may reclaim it under storage pressure.';
+};";
+
+    private const string CheckButtonCode = @"const button = document.getElementById('check-updates');
+
+button.onclick = () => {
+    button.disabled = true;
+    BitBswup.checkForUpdate()
+        .catch(err => console.warn('unexpected update check error:', err));
+};
+
+window.appUpdateHandler = (type) => {
+    if (type === BswupMessage.updateNotFound) {
+        button.disabled = false;
+        status.textContent = 'You are on the latest version.';
+    }
+    if (type === BswupMessage.updateCheckFailed) {
+        button.disabled = false;
+        status.textContent = ""Couldn't check right now - you're still on the current version."";
+    }
+};";
+
+    private const string CspCode = @"Content-Security-Policy:
+    default-src 'self';
+    script-src 'self' 'wasm-unsafe-eval';
+    style-src 'self';
+    worker-src 'self';
+    connect-src 'self';";
+}

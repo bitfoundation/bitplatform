@@ -1,0 +1,43 @@
+﻿@* The MATCHED case is rendered by the constrained /c/{kind}/{v:token} routes; the REJECTED case by
+   the unconstrained /c/{kind}/{value} fallback, which only wins when the constrained sibling
+   refused the value. *@
+
+<h1>@(Rejected ? "Rejected" : "Matched")</h1>
+
+<dl>
+    <dt>constraint</dt>
+    <dd>@(Demo is null ? $"unknown kind '{Kind}'" : $"{{v:{Demo.Token}}}")</dd>
+    <dt>URL value</dt>
+    <dd>@(Value?.ToString() ?? "(null)")</dd>
+    <dt>matched route</dt>
+    <dd>@(Rejected ? "/c/{kind}/{value} (unconstrained fallback)" : $"/c/{Kind}/{{v:{Demo?.Token}}}")</dd>
+    @if (Rejected is false)
+    {
+        <dt>bound CLR type</dt>
+        <dd>@(Value?.GetType().Name ?? "null")</dd>
+    }
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/constraints" class="btn">All constraints</BrouterLink>
+    @if (Demo is not null)
+    {
+        var next = Rejected ? Demo.PassExample : Demo.FailExample;
+        <BrouterLink Href="@($"/c/{Demo.Kind}/{Uri.EscapeDataString(next)}")" class="btn">
+            try @(Rejected ? "a passing" : "a failing") value: @next
+        </BrouterLink>
+    }
+</div>
+
+@code {
+    /// <summary>The catalog kind - the literal middle segment of the /c/... route.</summary>
+    [Parameter] public string? Kind { get; set; }
+
+    /// <summary>The bound route value: typed when a type constraint matched, string otherwise.</summary>
+    [Parameter] public object? Value { get; set; }
+
+    /// <summary>True when rendered by the unconstrained fallback route.</summary>
+    [Parameter] public bool Rejected { get; set; }
+
+    private ConstraintDemo? Demo => ConstraintCatalog.Find(Kind);
+}

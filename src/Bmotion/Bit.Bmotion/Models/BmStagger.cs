@@ -68,6 +68,20 @@ public sealed class BmStagger
         return StartDelay + Math.Abs(index - origin) * Each;
     }
 
+    /// <summary>
+    /// Structural comparison so a stagger recreated inline on every render
+    /// (<c>childStagger: Bm.Stagger(0.05)</c>) doesn't read as a parameter change. A custom
+    /// generator is compared by target method, matching how inline delegates are handled elsewhere.
+    /// </summary>
+    internal static bool AreEquivalent(BmStagger? a, BmStagger? b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null) return false;
+        if (a._custom is not null || b._custom is not null)
+            return Equals(a._custom?.Method, b._custom?.Method);
+        return a.Each == b.Each && a.From == b.From && a.StartDelay == b.StartDelay && a.Grid == b.Grid;
+    }
+
     // Euclidean distance (in cells) from the From-origin cell to element `index`'s cell.
     private double GridDistance(int index, int cols, int rows)
     {

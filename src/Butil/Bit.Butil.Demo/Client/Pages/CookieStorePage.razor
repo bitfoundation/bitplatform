@@ -1,4 +1,5 @@
 @page "/cookie-store"
+@implements IAsyncDisposable
 @inject Bit.Butil.CookieStore cookieStore
 
 <PageTitle>CookieStore - Bit.Butil</PageTitle>
@@ -103,6 +104,33 @@ await cookieStore.Delete("butil-docs");
         <button class="danger" @onclick="DeleteItem">Delete</button>
         <DemoConsole @ref="deleteOutput" Title="delete output" />
     </DemoSection>
+
+    <DemoSection Title="Watch cookies for changes"
+                 Api="SubscribeChange"
+                 Description="The change event is the one thing document.cookie can never give you. It fires for cookies written by script, by a server's Set-Cookie header, and on expiry - which makes it the way to notice a session cookie dying without polling for it. Each notification carries both halves: cookies written and cookies removed. An overwrite arrives as a delete plus a set, so both lists can be non-empty at once."
+                 Code=@("""
+private ButilSubscription? subscription;
+
+subscription = await cookieStore.SubscribeChange(change =>
+{
+    foreach (var c in change.Changed) { /* written or updated */ }
+    foreach (var c in change.Deleted) { /* removed or expired */ }
+});
+
+if (subscription is null)
+{
+    // no CookieStore here - document.cookie has no change event to fall back on
+}
+
+// later
+await subscription.DisposeAsync();
+""")>
+        <div class="controls">
+            <button @onclick="WatchChanges" disabled="@(_changeSub is not null)">SubscribeChange</button>
+            <button class="secondary" @onclick="UnwatchChanges" disabled="@(_changeSub is null)">Dispose</button>
+        </div>
+        <DemoConsole @ref="changeOutput" Title="change output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Browser support: Chromium-only (for now)">
@@ -135,13 +163,68 @@ await cookieStore.Delete("butil-docs");
     <ApiMember Name="Delete"
                Signature="ValueTask Delete(string name)"
                Description="Deletes the named cookie." />
+    <ApiMember Name="SubscribeChange"
+               Signature="ValueTask<ButilSubscription?> SubscribeChange(Action<CookieStoreChange> handler)"
+               Description="Calls the handler whenever cookies are written or removed - by script, by a Set-Cookie header, or on expiry. Null where CookieStore is unsupported." />
     <ApiMember Name="CookieStoreItem"
                Signature="class CookieStoreItem { string Name; string Value; string? Domain; string? Path; DateTimeOffset? Expires; bool Secure; string? SameSite; bool? Partitioned; }"
                Description="Cookie model with the complete attribute set. Expires is null for session cookies; SameSite is one of strict, lax, none, or null." />
+    <ApiMember Name="CookieStoreChange"
+               Signature="class CookieStoreChange { CookieStoreItem[] Changed; CookieStoreItem[] Deleted; }"
+               Description="One batch of changes. Both lists can be non-empty at once, since an overwrite is reported as a delete followed by a set." />
 </ApiTable>
 
 @code {
     private DemoConsole supportOutput = default!;
+    private DemoConsole changeOutput = default!;
+    private ButilSubscription? _changeSub;
+
+    private async Task WatchChanges()
+    {
+        try
+        {
+            _changeSub = await cookieStore.SubscribeChange(change =>
+            {
+                _ = InvokeAsync(async () =>
+                {
+                    foreach (var c in change.Changed) await changeOutput.Success($"changed → {c.Name} = {c.Value}");
+                    foreach (var c in change.Deleted) await changeOutput.Warn($"deleted → {c.Name}");
+                });
+            });
+
+            if (_changeSub is null)
+            {
+                await changeOutput.Warn("SubscribeChange → null (no CookieStore in this browser).");
+                return;
+            }
+            await changeOutput.Log("Watching - use the Set and Delete sections above to see events.");
+        }
+        catch (Exception ex)
+        {
+            await changeOutput.Error(ex.Message);
+        }
+    }
+
+    private async Task UnwatchChanges()
+    {
+        if (_changeSub is null) return;
+        await _changeSub.DisposeAsync();
+        _changeSub = null;
+        await changeOutput.Log("Subscription disposed.");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_changeSub is not null) await _changeSub.DisposeAsync();
+        }
+        catch
+        {
+            // best-effort cleanup during teardown
+        }
+    }
+
     private DemoConsole setOutput = default!;
     private DemoConsole readOutput = default!;
     private DemoConsole deleteOutput = default!;

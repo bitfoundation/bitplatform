@@ -1,0 +1,223 @@
+@page "/compression"
+@inject Bit.Butil.Compression compression
+
+<PageTitle>Compression - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="Compression"
+            Lead="Gzip and deflate done by the browser's own native codec - useful on WebAssembly, where compressing a few megabytes in managed code runs on the single UI thread."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API"
+            InjectAs="Compression compression" />
+
+<Callout Type="info" Title="When to reach for this over GZipStream">
+    .NET already has <code>GZipStream</code>, and on Blazor Server that is the better tool. This
+    earns its place on WebAssembly: the browser's implementation is native rather than interpreted,
+    and not pulling the managed compression code into the published bundle is worth something on
+    its own.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes CompressionStream. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.Compression compression
+
+var supported = await compression.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Round-trip some text"
+                 Api="CompressText / DecompressText"
+                 Description="The convenience pair for the common case: shrink a JSON payload before putting it in LocalStorage or IndexedDb, and expand it on the way back out. Text is encoded as UTF-8 in both directions. A corrupt payload comes back as null rather than throwing - bad data from storage or the network is a normal outcome, not an exceptional one."
+                 Code=@("""
+var packed = await compression.CompressText(json);              // byte[]?
+var original = await compression.DecompressText(packed!);       // string?
+
+// pick a codec explicitly:
+var raw = await compression.CompressText(json, CompressionFormat.DeflateRaw);
+""")>
+        <div class="controls">
+            <label>Codec
+                <select @bind="_format">
+                    <option value="@CompressionFormat.Gzip">Gzip</option>
+                    <option value="@CompressionFormat.Deflate">Deflate (zlib)</option>
+                    <option value="@CompressionFormat.DeflateRaw">DeflateRaw</option>
+                </select>
+            </label>
+            <button class="secondary" @onclick="LoadSample">Load a sample payload</button>
+        </div>
+        <textarea @bind="_text" rows="6" placeholder="Type or paste something to compress."
+                  style="margin-top:1rem;width:100%;font-family:inherit"></textarea>
+        <div class="controls">
+            <button @onclick="RoundTrip">Compress and decompress</button>
+        </div>
+        @if (_originalSize > 0)
+        {
+            <div class="field">
+                <span class="field-label">Original</span>
+                <span>@_originalSize bytes</span>
+            </div>
+            <div class="field">
+                <span class="field-label">Compressed</span>
+                <span>
+                    @_compressedSize bytes
+                    (@((_compressedSize * 100.0 / _originalSize).ToString("0.#"))% of the original)
+                </span>
+            </div>
+            <div class="field">
+                <span class="field-label">Round-trip</span>
+                <span>@(_roundTripped ? "✅ identical to the input" : "❌ did not match")</span>
+            </div>
+        }
+        <DemoConsole @ref="textOutput" Title="round-trip output" />
+    </DemoSection>
+
+    <DemoSection Title="Bytes, and choosing a codec"
+                 Api="Compress / Decompress / CompressionFormat"
+                 Description="The byte overloads take whatever you have. Which codec to pick depends on what is at the other end: Gzip is the interoperable default and matches .NET's GZipStream. Deflate is the zlib-wrapped variant that matches ZLibStream - and note that .NET's DeflateStream is actually the raw variant, so pair that one with DeflateRaw."
+                 Code=@("""
+var packed = await compression.Compress(bytes, CompressionFormat.Gzip);
+var original = await compression.Decompress(packed!, CompressionFormat.Gzip);
+
+// matching .NET on the server:
+//   GZipStream    <-> CompressionFormat.Gzip
+//   ZLibStream    <-> CompressionFormat.Deflate
+//   DeflateStream <-> CompressionFormat.DeflateRaw
+""")>
+        <div class="controls">
+            <button @onclick="CompressRandom">Compress 64 KB of repeating bytes</button>
+            <button class="secondary" @onclick="CompressIncompressible">Compress 64 KB of random bytes</button>
+        </div>
+        <DemoConsole @ref="bytesOutput" Title="bytes output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes CompressionStream. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="Compress"
+               Signature="ValueTask<byte[]?> Compress(byte[] data, CompressionFormat format = CompressionFormat.Gzip)"
+               Description="Compresses bytes. Null when the API is unavailable or the stream errored." />
+    <ApiMember Name="Decompress"
+               Signature="ValueTask<byte[]?> Decompress(byte[] data, CompressionFormat format = CompressionFormat.Gzip)"
+               Description="Decompresses bytes. Null when the input is corrupt or the format doesn't match - nothing is thrown." />
+    <ApiMember Name="CompressText"
+               Signature="ValueTask<byte[]?> CompressText(string text, CompressionFormat format = CompressionFormat.Gzip)"
+               Description="Compresses text as UTF-8." />
+    <ApiMember Name="DecompressText"
+               Signature="ValueTask<string?> DecompressText(byte[] data, CompressionFormat format = CompressionFormat.Gzip)"
+               Description="Decompresses bytes back into UTF-8 text." />
+    <ApiMember Name="CompressionFormat"
+               Signature="Gzip | Deflate | DeflateRaw"
+               Description="Gzip matches .NET's GZipStream, Deflate matches ZLibStream, and DeflateRaw matches DeflateStream." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole textOutput = default!;
+    private DemoConsole bytesOutput = default!;
+
+    private CompressionFormat _format = CompressionFormat.Gzip;
+    private string _text = "";
+    private int _originalSize;
+    private int _compressedSize;
+    private bool _roundTripped;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await compression.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private void LoadSample()
+    {
+        // Repetitive JSON, because that is what this is actually for - and it makes the ratio
+        // visible rather than marginal.
+        var rows = Enumerable.Range(1, 60)
+            .Select(i => $$"""  { "id": {{i}}, "name": "Item number {{i}}", "active": true, "group": "demo" }""");
+
+        _text = "[\n" + string.Join(",\n", rows) + "\n]";
+    }
+
+    private async Task RoundTrip()
+    {
+        if (string.IsNullOrEmpty(_text))
+        {
+            await textOutput.Warn("Type something first, or load the sample payload.");
+            return;
+        }
+
+        try
+        {
+            var packed = await compression.CompressText(_text, _format);
+            if (packed is null)
+            {
+                await textOutput.Warn("CompressText returned null - Compression Streams are unavailable here.");
+                return;
+            }
+
+            var unpacked = await compression.DecompressText(packed, _format);
+
+            _originalSize = System.Text.Encoding.UTF8.GetByteCount(_text);
+            _compressedSize = packed.Length;
+            _roundTripped = unpacked == _text;
+
+            await textOutput.Success($"{_format}: {_originalSize} → {_compressedSize} bytes, round-trip {(_roundTripped ? "matched" : "FAILED")}.");
+        }
+        catch (Exception ex)
+        {
+            await textOutput.Error("Round-trip failed →", ex.Message);
+        }
+    }
+
+    private Task CompressRandom() => CompressBytes(
+        [.. Enumerable.Range(0, 64 * 1024).Select(i => (byte)(i % 16))],
+        "repeating");
+
+    private Task CompressIncompressible()
+    {
+        var bytes = new byte[64 * 1024];
+        Random.Shared.NextBytes(bytes);
+        return CompressBytes(bytes, "random");
+    }
+
+    private async Task CompressBytes(byte[] bytes, string label)
+    {
+        try
+        {
+            var packed = await compression.Compress(bytes, _format);
+            if (packed is null)
+            {
+                await bytesOutput.Warn("Compress returned null - Compression Streams are unavailable here.");
+                return;
+            }
+
+            var unpacked = await compression.Decompress(packed, _format);
+            var matched = unpacked is not null && unpacked.AsSpan().SequenceEqual(bytes);
+
+            await bytesOutput.Success(
+                $"{label}: {bytes.Length} → {packed.Length} bytes ({packed.Length * 100.0 / bytes.Length:0.#}%), round-trip {(matched ? "matched" : "FAILED")}.");
+
+            if (packed.Length > bytes.Length)
+            {
+                await bytesOutput.Log("Larger than the input - already-random data has nothing left to squeeze out, and the container adds a header.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await bytesOutput.Error("Compress failed →", ex.Message);
+        }
+    }
+}

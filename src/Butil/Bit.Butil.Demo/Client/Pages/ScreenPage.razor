@@ -1,4 +1,4 @@
-@page "/screen"
+﻿@page "/screen"
 @implements IAsyncDisposable
 @inject Bit.Butil.Screen screen
 
@@ -124,6 +124,12 @@ await screen.RemoveAllChanges();
     <ApiMember Name="RemoveAllChanges" Signature="ValueTask RemoveAllChanges()" Description="Removes every change listener registered on this instance." />
     <ApiMember Name="InvokeScreenChange" Signature="void InvokeScreenChange(Guid id)" Description="JS interop bridge invoked by the browser on the change event; not intended for application code." />
     <ApiMember Name="DisposeAsync" Signature="ValueTask DisposeAsync()" Description="Removes all listeners and releases the interop reference." />
+    <ApiMember Name="GetAvailableLeft"
+               Signature="Task<float> GetAvailableLeft()"
+               Description="X-coordinate of the left edge of the available screen area. Non-standard; reported as 0 where unimplemented, which is indistinguishable from a genuine 0." />
+    <ApiMember Name="GetAvailableTop"
+               Signature="Task<float> GetAvailableTop()"
+               Description="Y-coordinate of the top edge of the available screen area - the height of any OS bar docked at the top. Same non-standard caveat as GetAvailableLeft." />
 </ApiTable>
 
 @code {
