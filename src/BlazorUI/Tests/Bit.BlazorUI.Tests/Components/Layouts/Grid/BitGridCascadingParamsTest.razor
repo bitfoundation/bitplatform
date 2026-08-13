@@ -15,12 +15,18 @@
                                  Span = 2,
                                  Spacing = "1rem",
                                  VerticalSpacing = "2rem",
+                                 SpacingLg = "3rem",
+                                 HorizontalSpacingXl = "4rem",
+                                 VerticalSpacingXxl = "5rem",
                                  AlignContent = BitAlignment.SpaceBetween,
                                  HorizontalAlign = BitAlignment.Center,
                                  VerticalAlign = BitAlignment.Stretch,
                                  Element = "section",
                                  NoWrap = true,
                                  Reversed = true,
+                                 Container = true,
+                                 Grow = true,
+                                 MinItemWidth = "12rem",
                              },
                              new BitGridItemParams
                              {
@@ -43,7 +49,7 @@
         <BitGridItem>Cascaded</BitGridItem>
         <BitGridItem ColumnSpan="5">Own span</BitGridItem>
     </BitGrid>
-    <BitGrid Columns="3" Element="div" NoWrap="false">Own columns</BitGrid>
+    <BitGrid Columns="3" Element="div" NoWrap="false" SpacingLg="9rem">Own columns</BitGrid>
 </BitParams>
 
 @* The two parameters that claim the same slot as one that is already cascaded above, kept apart so each of

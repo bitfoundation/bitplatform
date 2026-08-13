@@ -95,14 +95,18 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitGridShouldGuardTheDefaultSpanAgainstNegativeValues()
+    [DataRow(0)]
+    [DataRow(-3)]
+    public void BitGridShouldGuardTheDefaultSpanAgainstValuesThatAreNotAWidth(int span)
     {
+        // A span of no columns is an item asking not to be shown, which only an item can mean. As the default of
+        // a grid it would leave every item that named no span of its own with no width and nothing said about it.
         var component = RenderComponent<BitGrid>(parameters =>
         {
-            parameters.Add(p => p.Span, -3);
+            parameters.Add(p => p.Span, span);
         });
 
-        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-span:0");
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-span:1");
     }
 
     [TestMethod]
@@ -218,6 +222,166 @@ public class BitGridTests : BunitTestContext
 
         StringAssert.Contains(style, "--bit-grd-cgap:10px");
         StringAssert.Contains(style, "--bit-grd-rgap:20px");
+    }
+
+    [TestMethod]
+    public void BitGridShouldRenderEveryResponsiveSpacing()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.SpacingXs, "1px");
+            parameters.Add(p => p.SpacingSm, "2px");
+            parameters.Add(p => p.SpacingMd, "3px");
+            parameters.Add(p => p.SpacingLg, "4px");
+            parameters.Add(p => p.SpacingXl, "5px");
+            parameters.Add(p => p.SpacingXxl, "6px");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        // The spacing of both axes is the base of the chain of each of them.
+        StringAssert.Contains(style, "--bit-grd-cgap-xs:1px");
+        StringAssert.Contains(style, "--bit-grd-rgap-xs:1px");
+        StringAssert.Contains(style, "--bit-grd-cgap-sm:2px");
+        StringAssert.Contains(style, "--bit-grd-rgap-sm:2px");
+        StringAssert.Contains(style, "--bit-grd-cgap-md:3px");
+        StringAssert.Contains(style, "--bit-grd-rgap-md:3px");
+        StringAssert.Contains(style, "--bit-grd-cgap-lg:4px");
+        StringAssert.Contains(style, "--bit-grd-rgap-lg:4px");
+        StringAssert.Contains(style, "--bit-grd-cgap-xl:5px");
+        StringAssert.Contains(style, "--bit-grd-rgap-xl:5px");
+        StringAssert.Contains(style, "--bit-grd-cgap-xxl:6px");
+        StringAssert.Contains(style, "--bit-grd-rgap-xxl:6px");
+    }
+
+    [TestMethod]
+    public void BitGridShouldOnlyRenderTheResponsiveSpacingsThatWereAskedFor()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Spacing, "1rem");
+            parameters.Add(p => p.SpacingMd, "2rem");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap:1rem");
+        StringAssert.Contains(style, "--bit-grd-cgap-md:2rem");
+        StringAssert.Contains(style, "--bit-grd-rgap-md:2rem");
+
+        // The breakpoints that were left alone are chained to the one below them by the stylesheet, which is
+        // what carries a spacing upwards and makes these mobile first.
+        Assert.IsFalse(style!.Contains("--bit-grd-cgap-xs"));
+        Assert.IsFalse(style.Contains("--bit-grd-cgap-sm"));
+        Assert.IsFalse(style.Contains("--bit-grd-cgap-lg"));
+        Assert.IsFalse(style.Contains("--bit-grd-rgap-xxl"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRenderEveryResponsiveSpacingOfEachAxis()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSpacingXs, "1px");
+            parameters.Add(p => p.HorizontalSpacingSm, "2px");
+            parameters.Add(p => p.HorizontalSpacingMd, "3px");
+            parameters.Add(p => p.HorizontalSpacingLg, "4px");
+            parameters.Add(p => p.HorizontalSpacingXl, "5px");
+            parameters.Add(p => p.HorizontalSpacingXxl, "6px");
+            parameters.Add(p => p.VerticalSpacingXs, "7px");
+            parameters.Add(p => p.VerticalSpacingSm, "8px");
+            parameters.Add(p => p.VerticalSpacingMd, "9px");
+            parameters.Add(p => p.VerticalSpacingLg, "10px");
+            parameters.Add(p => p.VerticalSpacingXl, "11px");
+            parameters.Add(p => p.VerticalSpacingXxl, "12px");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap-xs:1px");
+        StringAssert.Contains(style, "--bit-grd-cgap-sm:2px");
+        StringAssert.Contains(style, "--bit-grd-cgap-md:3px");
+        StringAssert.Contains(style, "--bit-grd-cgap-lg:4px");
+        StringAssert.Contains(style, "--bit-grd-cgap-xl:5px");
+        StringAssert.Contains(style, "--bit-grd-cgap-xxl:6px");
+
+        StringAssert.Contains(style, "--bit-grd-rgap-xs:7px");
+        StringAssert.Contains(style, "--bit-grd-rgap-sm:8px");
+        StringAssert.Contains(style, "--bit-grd-rgap-md:9px");
+        StringAssert.Contains(style, "--bit-grd-rgap-lg:10px");
+        StringAssert.Contains(style, "--bit-grd-rgap-xl:11px");
+        StringAssert.Contains(style, "--bit-grd-rgap-xxl:12px");
+    }
+
+    [TestMethod]
+    public void BitGridShouldLetTheResponsiveSpacingOfAnAxisWinOverTheOneOfBothAxes()
+    {
+        // The two ways of naming the room at one breakpoint stand in the same relation as the two at the base of
+        // the chain, so a grid that widens both axes at a size and then narrows one of them is written once.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.SpacingMd, "2rem");
+            parameters.Add(p => p.HorizontalSpacingMd, "1rem");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap-md:1rem");
+        StringAssert.Contains(style, "--bit-grd-rgap-md:2rem");
+    }
+
+    [TestMethod]
+    public void BitGridShouldReadAResponsiveSpacingWithNoUnitAsPixels()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.SpacingSm, "12");
+            parameters.Add(p => p.VerticalSpacingLg, "-4");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap-sm:12px");
+        StringAssert.Contains(style, "--bit-grd-rgap-sm:12px");
+        StringAssert.Contains(style, "--bit-grd-rgap-lg:0px");
+    }
+
+    [TestMethod]
+    public void BitGridShouldKeepTheBaseSpacingApartFromTheResponsiveOnes()
+    {
+        // The base is what every breakpoint below the first one that was named falls back to, so naming a wider
+        // breakpoint must not take the room away from the sizes underneath it.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Spacing, "8px");
+            parameters.Add(p => p.HorizontalSpacing, "16px");
+            parameters.Add(p => p.SpacingLg, "24px");
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap:16px");
+        StringAssert.Contains(style, "--bit-grd-rgap:8px");
+        StringAssert.Contains(style, "--bit-grd-cgap-lg:24px");
+        StringAssert.Contains(style, "--bit-grd-rgap-lg:24px");
+    }
+
+    [TestMethod]
+    public void BitGridShouldRelayoutWhenAResponsiveSpacingChanges()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.SpacingMd, "1rem");
+        });
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-cgap-md:1rem");
+
+        component.Render(parameters => parameters.Add(p => p.SpacingMd, "2rem"));
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap-md:2rem");
+        StringAssert.Contains(style, "--bit-grd-rgap-md:2rem");
     }
 
     [TestMethod]
@@ -508,6 +672,98 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitGridShouldRespectContainer()
+    {
+        // The class is what turns the grid into a query container, which is what moves every breakpoint of the
+        // grid and of its items off the window and onto the width of the grid itself.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Container, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd").ClassList.Contains("bit-grd-cnq"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRespectGrow()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Grow, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd").ClassList.Contains("bit-grd-grw"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRespectMinItemWidth()
+    {
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.MinItemWidth, "12rem");
+        });
+
+        var root = component.Find(".bit-grd");
+
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-mnw:12rem");
+        Assert.IsTrue(root.ClassList.Contains("bit-grd-mnw"));
+    }
+
+    [TestMethod]
+    [DataRow("240", "240px")]
+    [DataRow("0", "0px")]
+    [DataRow("-8", "0px")]
+    [DataRow("+16", "16px")]
+    public void BitGridShouldReadAMinItemWidthWithNoUnitAsPixels(string minItemWidth, string expected)
+    {
+        // A bare number is not a CSS length, and a flex-basis that is not a length is thrown away, which would
+        // leave the items at the size of their content rather than at the width that was asked for.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.MinItemWidth, minItemWidth);
+        });
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), $"--bit-grd-mnw:{expected}");
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(null)]
+    public void BitGridShouldNotClaimTheWidthOfTheItemsOfAGridThatAskedForNoMinimum(string? minItemWidth)
+    {
+        // The class is what the sizing hangs off, so a grid that was given nothing to read must not carry it and
+        // leave its items sized by a custom property that was never declared.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.MinItemWidth, minItemWidth);
+        });
+
+        var root = component.Find(".bit-grd");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-grd-mnw"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-grd-mnw"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRelayoutWhenTheMinItemWidthChanges()
+    {
+        var component = RenderComponent<BitGrid>();
+
+        Assert.IsFalse(component.Find(".bit-grd").ClassList.Contains("bit-grd-mnw"));
+
+        component.Render(parameters => parameters.Add(p => p.MinItemWidth, "10rem"));
+
+        var root = component.Find(".bit-grd");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-grd-mnw"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-mnw:10rem");
+
+        component.Render(parameters => parameters.Add(p => p.MinItemWidth, "20rem"));
+
+        StringAssert.Contains(component.Find(".bit-grd").GetAttribute("style"), "--bit-grd-mnw:20rem");
+    }
+
+    [TestMethod]
     public void BitGridShouldNotRenderTheModifierClassesByDefault()
     {
         var component = RenderComponent<BitGrid>();
@@ -516,6 +772,32 @@ public class BitGridTests : BunitTestContext
 
         Assert.IsFalse(classList.Contains("bit-grd-nwr"));
         Assert.IsFalse(classList.Contains("bit-grd-rev"));
+        Assert.IsFalse(classList.Contains("bit-grd-cnq"));
+        Assert.IsFalse(classList.Contains("bit-grd-grw"));
+        Assert.IsFalse(classList.Contains("bit-grd-mnw"));
+    }
+
+    [TestMethod]
+    public void BitGridShouldRenderEveryWayOfSizingItsItemsTogether()
+    {
+        // None of the four is exclusive of any other: a fluid grid of cards that fills out its last row inside a
+        // panel that measures its own width is all of them at once.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Grow, true);
+            parameters.Add(p => p.NoWrap, true);
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.Container, true);
+            parameters.Add(p => p.MinItemWidth, "8rem");
+        });
+
+        var classList = component.Find(".bit-grd").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-grw"));
+        Assert.IsTrue(classList.Contains("bit-grd-nwr"));
+        Assert.IsTrue(classList.Contains("bit-grd-rev"));
+        Assert.IsTrue(classList.Contains("bit-grd-cnq"));
+        Assert.IsTrue(classList.Contains("bit-grd-mnw"));
     }
 
     [TestMethod]
@@ -799,18 +1081,29 @@ public class BitGridTests : BunitTestContext
         StringAssert.Contains(cascaded, "--bit-grd-span:2");
         StringAssert.Contains(cascaded, "--bit-grd-cgap:1rem");
         StringAssert.Contains(cascaded, "--bit-grd-rgap:2rem");
+        StringAssert.Contains(cascaded, "--bit-grd-cgap-lg:3rem");
+        StringAssert.Contains(cascaded, "--bit-grd-rgap-lg:3rem");
+        StringAssert.Contains(cascaded, "--bit-grd-cgap-xl:4rem");
+        StringAssert.Contains(cascaded, "--bit-grd-rgap-xxl:5rem");
         StringAssert.Contains(cascaded, "justify-content:center");
         StringAssert.Contains(cascaded, "align-items:stretch");
         StringAssert.Contains(cascaded, "align-content:space-between");
+        StringAssert.Contains(cascaded, "--bit-grd-mnw:12rem");
         Assert.AreEqual("SECTION", grids[0].TagName);
         Assert.IsTrue(grids[0].ClassList.Contains("bit-grd-rev"));
         Assert.IsTrue(grids[0].ClassList.Contains("bit-grd-nwr"));
+        Assert.IsTrue(grids[0].ClassList.Contains("bit-grd-cnq"));
+        Assert.IsTrue(grids[0].ClassList.Contains("bit-grd-grw"));
+        Assert.IsTrue(grids[0].ClassList.Contains("bit-grd-mnw"));
 
         // The second one sets its own column count, element and wrapping, none of which the cascading
         // parameters may overwrite, while everything it left alone still comes from them.
         var own = grids[1].GetAttribute("style");
         StringAssert.Contains(own, "--bit-grd-cols:3");
         StringAssert.Contains(own, "--bit-grd-cgap:1rem");
+        StringAssert.Contains(own, "--bit-grd-cgap-lg:9rem");
+        StringAssert.Contains(own, "--bit-grd-rgap-lg:9rem");
+        StringAssert.Contains(own, "--bit-grd-cgap-xl:4rem");
         Assert.AreEqual("DIV", grids[1].TagName);
         Assert.IsFalse(grids[1].ClassList.Contains("bit-grd-nwr"));
     }

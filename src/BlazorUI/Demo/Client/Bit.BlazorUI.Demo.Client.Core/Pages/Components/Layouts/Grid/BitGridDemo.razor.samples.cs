@@ -71,6 +71,26 @@ public partial class BitGridDemo
     <BitGridItem Class=""grid-item"" Grow>Grow</BitGridItem>
 </BitGrid>
 
+
+<BitGrid Columns=""3"" Spacing=""0.5rem"">
+    @for (int i = 0; i < 5; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+    }
+</BitGrid>
+
+<BitGrid Columns=""3"" Grow Spacing=""0.5rem"">
+    @for (int i = 0; i < 5; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+    }
+</BitGrid>
+
+
 <BitGrid Columns=""12"" Spacing=""0.5rem"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""12"" AutoMd=""true"">Span 12, then Auto from Md</BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""12"" GrowMd=""true"">Span 12, then Grow from Md</BitGridItem>
@@ -102,6 +122,17 @@ public partial class BitGridDemo
 <BitGrid Columns=""12"">
     <BitGridItem Class=""grid-item"" Auto>An auto sized heading</BitGridItem>
     <BitGridItem Class=""grid-item"" Auto AutoOffset>Auto, AutoOffset</BitGridItem>
+</BitGrid>
+
+<BitGrid Columns=""12"" Spacing=""0.5rem"">
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""4"">A heading</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""3"" AutoOffsetMd=""true"">AutoOffset from Md only</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""4"" OffsetMd=""2"">Offset 2 from Md only</BitGridItem>
+</BitGrid>
+
+<BitGrid Columns=""12"" Reversed>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""3"">Span 3</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""3"" Offset=""2"">Span 3, Offset 2, reversed</BitGridItem>
 </BitGrid>";
 
     private readonly string example5RazorCode = @"
@@ -163,6 +194,16 @@ public partial class BitGridDemo
     <BitGridItem Class=""grid-item"" AlignSelf=""BitAlignment.End"">AlignSelf End</BitGridItem>
 </BitGrid>
 
+<BitGrid Columns=""12"" Alignment=""BitAlignment.Center"">
+    <BitGridItem Class=""grid-item tall"" ColumnSpan=""3"">A tall item</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""3"">Alignment Center</BitGridItem>
+</BitGrid>
+
+<BitGrid Columns=""12"" Alignment=""BitAlignment.Center"" HorizontalAlign=""BitAlignment.End"">
+    <BitGridItem Class=""grid-item tall"" ColumnSpan=""3"">A tall item</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""3"">HorizontalAlign End</BitGridItem>
+</BitGrid>
+
 
 <style>
     .tall-grid {
@@ -222,6 +263,24 @@ private BitAlignment alignContent = BitAlignment.Start;
 
         <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
     }
+</BitGrid>
+
+<BitGrid Columns=""4"" Spacing=""0.25rem"" SpacingSm=""0.75rem"" SpacingLg=""1.5rem"">
+    @for (int i = 0; i < 8; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+    }
+</BitGrid>
+
+<BitGrid Columns=""4"" Spacing=""0.5rem"" VerticalSpacingMd=""2rem"">
+    @for (int i = 0; i < 8; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+    }
 </BitGrid>";
     private readonly string example7CsharpCode = @"
 private double verticalSpacing = 0.5;
@@ -257,6 +316,79 @@ private double horizontalSpacing = 0.5;
 </BitGrid>";
 
     private readonly string example9RazorCode = @"
+<BitGrid Columns=""12"" Spacing=""0.5rem"">
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""8"">Always shown</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""0"" Md=""4"">Hidden below Md</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""0"">Hidden from Md</BitGridItem>
+</BitGrid>
+
+<BitGrid Columns=""12"" Spacing=""0.5rem"">
+    <BitGridItem Class=""grid-item"" ColumnSpan=""6"">Always shown</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""6"" Sm=""0"" Md=""6"">Hidden between Sm and Md</BitGridItem>
+</BitGrid>";
+
+    private readonly string example10RazorCode = @"
+<BitSlider Label=""MinItemWidth"" Min=""6"" Max=""24"" Step=""1"" ValueFormat=""0 rem"" @bind-Value=""@minItemWidth"" />
+
+<BitGrid Spacing=""0.5rem"" MinItemWidth=""@($""{minItemWidth}rem"")"">
+    @for (int i = 0; i < 8; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Item @item</BitGridItem>
+    }
+</BitGrid>
+
+<BitGrid Spacing=""0.5rem"" MinItemWidth=""10rem"">
+    <BitGridItem Class=""grid-item"" Auto>Auto</BitGridItem>
+    <BitGridItem Class=""grid-item"">Fluid</BitGridItem>
+    <BitGridItem Class=""grid-item"">Fluid</BitGridItem>
+    <BitGridItem Class=""grid-item"">Fluid</BitGridItem>
+</BitGrid>";
+    private readonly string example10CsharpCode = @"
+private double minItemWidth = 10;
+";
+
+    private readonly string example11RazorCode = @"
+<style>
+    .resizable {
+        resize: horizontal;
+        overflow: auto;
+        max-width: 100%;
+        min-width: 200px;
+        padding: 0.5rem;
+        border: 1px dashed gray;
+    }
+</style>
+
+
+<div class=""resizable"">
+    <div>Container: laid out by the width of this box</div>
+
+    <BitGrid Container Columns=""12"" Spacing=""0.5rem"">
+        @for (int i = 0; i < 4; i++)
+        {
+            var item = i + 1;
+
+            <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Sm=""6"" Md=""4"" Lg=""3"">Item @item</BitGridItem>
+        }
+    </BitGrid>
+</div>
+
+<div class=""resizable"">
+    <div>The same grid without it: laid out by the width of the window</div>
+
+    <BitGrid Columns=""12"" Spacing=""0.5rem"">
+        @for (int i = 0; i < 4; i++)
+        {
+            var item = i + 1;
+
+            <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Sm=""6"" Md=""4"" Lg=""3"">Item @item</BitGridItem>
+        }
+    </BitGrid>
+</div>";
+
+    private readonly string example12RazorCode = @"
 <BitGrid Columns=""4"">
     @for (int i = 0; i < 6; i++)
     {
@@ -284,7 +416,7 @@ private double horizontalSpacing = 0.5;
     }
 </BitGrid>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitGrid Columns=""12"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""8"">
         <div>Outer item, span 8, holding a grid of its own</div>
@@ -300,7 +432,7 @@ private double horizontalSpacing = 0.5;
     <BitGridItem Class=""grid-item"" ColumnSpan=""4"">Outer item, span 4</BitGridItem>
 </BitGrid>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
     .plain-list {
         margin: 0;
@@ -316,11 +448,11 @@ private double horizontalSpacing = 0.5;
         <BitGridItem Class=""grid-item"" Element=""li"">@fruit</BitGridItem>
     }
 </BitGrid>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private readonly string[] fruits = [""Apple"", ""Banana"", ""Cherry"", ""Date"", ""Elderberry"", ""Fig"", ""Grape"", ""Honeydew""];
 ";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitGrid Columns=""12"" Spacing=""0.5rem"" VerticalAlign=""BitAlignment.Center"">
     <BitGridItem Class=""grid-item"" Auto>Name</BitGridItem>
     <BitGridItem Class=""grid-item"" Grow>The field</BitGridItem>
@@ -336,9 +468,10 @@ private readonly string[] fruits = [""Apple"", ""Banana"", ""Cherry"", ""Date"",
 
 <BitGrid Columns=""12"" Spacing=""0.5rem"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Order=""0"">Header</BitGridItem>
-    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""8"" Order=""2"" OrderMd=""1"">Content</BitGridItem>
-    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""4"" Order=""1"" OrderMd=""2"">Sidebar</BitGridItem>
-    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Order=""3"">Footer</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""0"" Md=""12"" Order=""1"">Breadcrumb (hidden below Md)</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""8"" Order=""3"" OrderMd=""2"">Content</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""4"" Order=""2"" OrderMd=""3"">Sidebar</BitGridItem>
+    <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Order=""4"">Footer</BitGridItem>
 </BitGrid>
 
 
@@ -346,9 +479,19 @@ private readonly string[] fruits = [""Apple"", ""Banana"", ""Cherry"", ""Date"",
     <BitGridItem Class=""grid-item"" Auto>Documents</BitGridItem>
     <BitGridItem Class=""grid-item"" Auto AutoOffset>Filter</BitGridItem>
     <BitGridItem Class=""grid-item"" Auto>New</BitGridItem>
+</BitGrid>
+
+
+<BitGrid Spacing=""0.5rem"" MinItemWidth=""11rem"">
+    @for (int i = 0; i < 7; i++)
+    {
+        var item = i + 1;
+
+        <BitGridItem Class=""grid-item"">Card @item</BitGridItem>
+    }
 </BitGrid>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-item {
         color: white;
@@ -364,7 +507,7 @@ private readonly string[] fruits = [""Apple"", ""Banana"", ""Cherry"", ""Date"",
     <BitGridItem Class=""grid-item"" ColumnSpan=""2"" Style=""background: var(--bit-clr-suc); color: var(--bit-clr-suc-text);"">Style, span 2</BitGridItem>
 </BitGrid>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitGrid Dir=""BitDir.Rtl"" Columns=""12"">
     <BitGridItem Class=""grid-item"" ColumnSpan=""4"">راست‌چین ۴</BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""4"" Offset=""4"">راست‌چین ۴ با فاصله ۴</BitGridItem>

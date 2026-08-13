@@ -140,6 +140,175 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitGridItemShouldNotBeShownWhenItAsksForNoColumns()
+    {
+        // A span of no columns used to leave an item of no width whose content spilled out of it anyway. Asking
+        // for none of the grid is asking not to be there, which is what every other grid of this kind means by it.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 0);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldNotBeShownWhenItsColumnsAreGuardedAwayToNone()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, -3);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldBeShownWhenItAsksForColumns()
+    {
+        var withSpan = RenderComponent<BitGridItem>(parameters => parameters.Add(p => p.ColumnSpan, 4));
+        var withNothing = RenderComponent<BitGridItem>();
+
+        Assert.IsFalse(withSpan.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+
+        // An item that named no span at all follows the Span of its grid, which is not the same thing as
+        // asking for none of it.
+        Assert.IsFalse(withNothing.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldOnlyBeHiddenAtTheBreakpointsWhoseSpanIsNone()
+    {
+        // Being hidden is the one thing the breakpoint above does not restate on its own, so each breakpoint the
+        // item is away for has to be named, and the ones it comes back for must not be.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 0);
+            parameters.Add(p => p.Md, 4);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-xs"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-lg"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xl"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xxl"));
+
+        // The all-or-nothing class of an item that never changes must not be handed out alongside them.
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldCarryTheHidingUpwardsUntilASpanReplacesIt()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 12);
+            parameters.Add(p => p.Md, 0);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xs"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-lg"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-xl"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-xxl"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldBeHiddenForASingleBandWhenTheNextBreakpointGivesItColumnsBack()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 6);
+            parameters.Add(p => p.Sm, 0);
+            parameters.Add(p => p.Md, 6);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xs"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-md"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldNotBeHiddenWhileItIsSizedBySomethingOtherThanItsColumns()
+    {
+        // Being exactly as wide as its content, or taking whatever the row has left, is a width of its own and
+        // has nothing to do with a count of columns, so a leftover span of none must not take the item away.
+        var auto = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.Auto, true);
+            parameters.Add(p => p.ColumnSpan, 0);
+        });
+
+        var grow = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.Grow, true);
+            parameters.Add(p => p.ColumnSpan, 0);
+        });
+
+        Assert.IsFalse(auto.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+        Assert.IsFalse(grow.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldOnlyBeHiddenAtTheBreakpointsWhereItIsBackOnItsColumns()
+    {
+        // The item is as wide as its content up to the medium breakpoint and measured in columns from it, and it
+        // was given none of them, so it is away from there and shown below it.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.Auto, true);
+            parameters.Add(p => p.AutoMd, false);
+            parameters.Add(p => p.ColumnSpan, 0);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xs"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-xxl"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldRelayoutWhenTheSpanThatHidesItChanges()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 0);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+
+        component.Render(parameters => parameters.Add(p => p.ColumnSpan, 4));
+
+        Assert.IsFalse(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldRelayoutWhenAResponsiveSpanStopsHidingIt()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 6);
+            parameters.Add(p => p.Md, 0);
+        });
+
+        Assert.IsTrue(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non-md"));
+
+        component.Render(parameters => parameters.Add(p => p.Md, 3));
+
+        Assert.IsFalse(component.Find(".bit-grd-itm").ClassList.Contains("bit-grd-itm-non-md"));
+    }
+
+    [TestMethod]
     public void BitGridItemShouldRespectOffset()
     {
         var component = RenderComponent<BitGridItem>(parameters =>
@@ -241,6 +410,113 @@ public class BitGridItemTests : BunitTestContext
 
         Assert.IsTrue(classList.Contains("bit-grd-itm-aof"));
         Assert.IsFalse(classList.Contains("bit-grd-itm-off"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldOnlyClaimTheFreeRoomAtTheBreakpointsItAskedFor()
+    {
+        // A breakpoint can only be talked out of what the one below it was doing by naming its own, so an item
+        // that only claims the room left before it at some sizes has to name each of those sizes, and carries
+        // the counted margin the rest of the time.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AutoOffsetMd, true);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof-xs"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof-sm"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-lg"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-xl"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-xxl"));
+
+        // The margin itself hangs off the counted class, which is what the breakpoints below the medium one
+        // are left with, so it has to be handed out alongside them.
+        Assert.IsTrue(classList.Contains("bit-grd-itm-off"));
+
+        // The all-or-nothing class of an item that never changes must not be handed out with them.
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldHandTheRoomBackToTheCountedOffsetWhenItIsToldToStop()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AutoOffset, true);
+            parameters.Add(p => p.AutoOffsetMd, false);
+            parameters.Add(p => p.Offset, 2);
+        });
+
+        var root = component.Find(".bit-grd-itm");
+        var classList = root.ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-xs"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-sm"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof-md"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof-xxl"));
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-off"));
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-grd-off:2");
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldNotClaimTheStartMarginOfAnItemWhoseAutoOffsetsAllSayNo()
+    {
+        // Turning the push to the end edge off at a breakpoint is not asking for a margin, so an item that only
+        // ever said no keeps its own margin exactly as an item that said nothing at all does.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AutoOffsetMd, false);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.AreEqual(1, classList.Length);
+        Assert.IsFalse(classList.Contains("bit-grd-itm-off"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldKeepTheSingleAutoOffsetClassOfAnItemThatNeverChangesItsMind()
+    {
+        // The item that claims the free room at every size says so once, so the markup of every grid written
+        // before the responsive auto offset existed is left exactly as it was.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.AutoOffset, true);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.AreEqual(2, classList.Length);
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldRelayoutWhenAResponsiveAutoOffsetChanges()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.Offset, 2);
+            parameters.Add(p => p.AutoOffsetMd, true);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-aof-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-off"));
+
+        component.Render(parameters => parameters.Add(p => p.AutoOffsetMd, false));
+
+        classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-aof-md"));
+
+        // The counted offset the item still asks for is what it falls back to.
+        Assert.IsTrue(classList.Contains("bit-grd-itm-off"));
     }
 
     [TestMethod]

@@ -67,6 +67,36 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
     public bool? AutoOffset { get; set; }
 
     /// <summary>
+    /// Pushes the item to the end edge of its row from the extra small breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetXs { get; set; }
+
+    /// <summary>
+    /// Pushes the item to the end edge of its row from the small breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetSm { get; set; }
+
+    /// <summary>
+    /// Pushes the item to the end edge of its row from the medium breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetMd { get; set; }
+
+    /// <summary>
+    /// Pushes the item to the end edge of its row from the large breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetLg { get; set; }
+
+    /// <summary>
+    /// Pushes the item to the end edge of its row from the extra large breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetXl { get; set; }
+
+    /// <summary>
+    /// Pushes the item to the end edge of its row from the extra extra large breakpoint upwards.
+    /// </summary>
+    public bool? AutoOffsetXxl { get; set; }
+
+    /// <summary>
     /// Number of columns the item should fill.
     /// </summary>
     public int? ColumnSpan { get; set; }
@@ -255,6 +285,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.ColumnSpan = ColumnSpan.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -370,6 +401,48 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateOffsetParameters(BitGridItem bitGridItem)
     {
+        if (AutoOffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXs)))
+        {
+            bitGridItem.AutoOffsetXs = AutoOffsetXs.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
+        if (AutoOffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetSm)))
+        {
+            bitGridItem.AutoOffsetSm = AutoOffsetSm.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
+        if (AutoOffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetMd)))
+        {
+            bitGridItem.AutoOffsetMd = AutoOffsetMd.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
+        if (AutoOffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetLg)))
+        {
+            bitGridItem.AutoOffsetLg = AutoOffsetLg.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
+        if (AutoOffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXl)))
+        {
+            bitGridItem.AutoOffsetXl = AutoOffsetXl.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
+        if (AutoOffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXxl)))
+        {
+            bitGridItem.AutoOffsetXxl = AutoOffsetXxl.Value;
+
+            bitGridItem.ClassBuilder.Reset();
+        }
+
         if (Offset.HasValue && bitGridItem.HasNotBeenSet(nameof(Offset)))
         {
             bitGridItem.Offset = Offset.Value;
@@ -492,6 +565,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Xs = Xs.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -499,6 +573,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Sm = Sm.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -506,6 +581,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Md = Md.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -513,6 +589,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Lg = Lg.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -520,6 +597,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Xl = Xl.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
 
@@ -527,6 +605,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGridItem.Xxl = Xxl.Value;
 
+            bitGridItem.ClassBuilder.Reset();
             bitGridItem.StyleBuilder.Reset();
         }
     }

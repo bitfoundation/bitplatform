@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/grid"
             Title="Grid"
-            Description="The BitGrid component is a responsive 12 column layout with per breakpoint column counts, spans, offsets and ordering, content sized and space filling items, alignment on both axes and on the rows themselves, and grids that nest inside one another." />
+            Description="The BitGrid component is a responsive 12 column layout with per breakpoint column counts, spacing, spans, offsets, ordering and hiding, content sized and space filling items, a breakpoint free fluid mode, container queries, alignment on both axes and on the rows themselves, and grids that nest inside one another." />
 
 <div>
     <DemoPage Name="Grid"
-              Description="The BitGrid component divides the width it is given into a number of equal columns and lays its BitGridItem children out over those columns, wrapping onto a new row whenever the next item no longer fits. Every item states how many columns it fills, how many it is pushed by and where it sits among its siblings, and each of those can be given a different value per breakpoint, mobile first: a value set at one breakpoint keeps applying to every wider one until another value replaces it. An item can also leave the columns behind entirely and be exactly as wide as its content, or share whatever width is left over in its row with the other items that grow."
+              Description="The BitGrid component divides the width it is given into equal columns and lays its BitGridItem children out over them, wrapping onto a new row whenever the next item no longer fits. The column count, the spacing and each item's span, offset and order all take a value per breakpoint, mobile first, and a span of no columns hides the item. Items can leave the columns behind entirely - as wide as their own content, sharing whatever the row has left, or fitted to a minimum width - and the breakpoints follow the window, or the width of the grid itself when it is asked to be a container."
               Parameters="componentParameters"
               SubClasses="componentSubClasses"
               SubEnums="componentSubEnums"
@@ -101,7 +101,35 @@
             </BitGrid>
             <br /><br />
             <div>
-                Both of them are responsive in the same mobile first way as the spans: <b>AutoXs</b> to
+                The <b>Grow</b> of the grid is the same thing asked of every item at once. A full row has nothing
+                left over and is unchanged by it, so what it really decides is what the last row does: its items are
+                widened until they fill it instead of leaving a hole where the missing items would have been. Items
+                that are sized to their own content are left alone, since that is the whole of what they asked for -
+                and an item that is only sized to its content at some sizes is left alone at those sizes alone.
+            </div>
+            <br />
+            <div>Five items in a three column grid, first without and then with the Grow of the grid</div>
+            <br />
+            <BitGrid Columns="3" Spacing="0.5rem">
+                @for (int i = 0; i < 5; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                }
+            </BitGrid>
+            <br />
+            <BitGrid Columns="3" Grow Spacing="0.5rem">
+                @for (int i = 0; i < 5; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                }
+            </BitGrid>
+            <br /><br />
+            <div>
+                Auto and Grow are responsive in the same mobile first way as the spans: <b>AutoXs</b> to
                 <b>AutoXxl</b> and <b>GrowXs</b> to <b>GrowXxl</b> replace Auto and Grow from their own breakpoint
                 upwards, and a value of <b>false</b> is how an item that had left the column tracks is given its
                 columns back. That is what a label that is full width on a phone and only as wide as its text once
@@ -156,6 +184,31 @@
             <BitGrid Columns="12">
                 <BitGridItem Class="grid-item" Auto>An auto sized heading</BitGridItem>
                 <BitGridItem Class="grid-item" Auto AutoOffset>Auto, AutoOffset</BitGridItem>
+            </BitGrid>
+            <br /><br />
+            <div>
+                Both kinds of offset are responsive and mobile first. <b>OffsetXs</b> to <b>OffsetXxl</b> change the
+                number of columns per breakpoint, and <b>AutoOffsetXs</b> to <b>AutoOffsetXxl</b> turn the push to
+                the end edge on and off per breakpoint, where <b>false</b> hands the room back to the counted
+                offset. That is what an action that sits beside its heading on a desktop and stacks under it on a
+                phone needs. Resize the window to watch these change.
+            </div>
+            <br />
+            <BitGrid Columns="12" Spacing="0.5rem">
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="4">A heading</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="3" AutoOffsetMd="true">AutoOffset from Md only</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="4" OffsetMd="2">Offset 2 from Md only</BitGridItem>
+            </BitGrid>
+            <br /><br />
+            <div>
+                Both of them leave their room on the edge the row starts at rather than on a fixed side of the
+                screen, so they follow the text direction into a right-to-left grid and follow the flow into a
+                <b>Reversed</b> one, where the row is laid out backwards and "before the item" is the other end.
+            </div>
+            <br />
+            <BitGrid Columns="12" Reversed>
+                <BitGridItem Class="grid-item" ColumnSpan="3">Span 3</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="3" Offset="2">Span 3, Offset 2, reversed</BitGridItem>
             </BitGrid>
         </DemoExample>
 
@@ -250,6 +303,21 @@
             </BitGrid>
             <br /><br />
             <div>
+                The shorthand centering a row on both axes at once, and the same row taking its horizontal
+                distribution from HorizontalAlign instead while the shorthand keeps the vertical one
+            </div>
+            <br />
+            <BitGrid Columns="12" Alignment="BitAlignment.Center">
+                <BitGridItem Class="grid-item tall" ColumnSpan="3">A tall item</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="3">Alignment Center</BitGridItem>
+            </BitGrid>
+            <br />
+            <BitGrid Columns="12" Alignment="BitAlignment.Center" HorizontalAlign="BitAlignment.End">
+                <BitGridItem Class="grid-item tall" ColumnSpan="3">A tall item</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="3">HorizontalAlign End</BitGridItem>
+            </BitGrid>
+            <br /><br />
+            <div>
                 <b>AlignContent</b> is the one alignment that moves the rows themselves rather than the items
                 within a row, so it only shows up in a grid that wrapped onto more than one row and is taller than
                 those rows needed. Every member means something here: Start, Center and End park the block of rows
@@ -323,6 +391,41 @@
                     <BitGridItem Class="grid-item">Item @item</BitGridItem>
                 }
             </BitGrid>
+            <br /><br />
+            <div>
+                All three are also responsive and mobile first: <b>SpacingXs</b> to <b>SpacingXxl</b> change the
+                room on both axes from their own breakpoint upwards, and <b>HorizontalSpacingXs</b> to
+                <b>HorizontalSpacingXxl</b> and <b>VerticalSpacingXs</b> to <b>VerticalSpacingXxl</b> refine a
+                single axis there. That is the layout that is tight on a phone and given air on a desktop, written
+                as the sizes at which the room actually changes. Resize the window to watch these change.
+            </div>
+            <br />
+            <BitGrid Columns="4" Spacing="0.25rem" SpacingSm="0.75rem" SpacingLg="1.5rem">
+                @for (int i = 0; i < 8; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                }
+            </BitGrid>
+            <br /><br />
+            <div>Rows that are given more room than the columns from the medium breakpoint upwards</div>
+            <br />
+            <BitGrid Columns="4" Spacing="0.5rem" VerticalSpacingMd="2rem">
+                @for (int i = 0; i < 8; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                }
+            </BitGrid>
+            <br /><br />
+            <div>
+                The spacing is the one per breakpoint value that is still answered by the window inside a
+                <b>Container</b> grid, since the room between the items belongs to the grid itself and an element
+                cannot be measured against its own width. A spacing written in the container units -
+                <b>clamp(4px, 2cqw, 24px)</b> - is what follows the width of the grid instead.
+            </div>
         </DemoExample>
 
         <DemoExample Title="Breakpoints" RazorCode="@example8RazorCode" Id="example8">
@@ -375,7 +478,136 @@
             </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="Wrapping & direction" RazorCode="@example9RazorCode" Id="example9">
+        <DemoExample Title="Hiding" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                A span of <b>0</b> columns is an item that is not shown. Since the spans are responsive and mobile
+                first like everything else, that is the whole of what is needed to drop a piece of a layout at one
+                size and give it its columns back at another: <b>ColumnSpan="0" Md="4"</b> is a column that only
+                appears once there is room for it, and <b>ColumnSpan="6" Md="0"</b> is one that only exists while
+                the screen is narrow. Resize the window to watch these come and go.
+            </div>
+            <br />
+            <BitGrid Columns="12" Spacing="0.5rem">
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="8">Always shown</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="0" Md="4">Hidden below Md</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="0">Hidden from Md</BitGridItem>
+            </BitGrid>
+            <br /><br />
+            <div>
+                An item can also be dropped for one band only, by hiding it at a breakpoint and giving it a span
+                again at the next one: this one is gone between Sm and Md and shown on either side of that.
+            </div>
+            <br />
+            <BitGrid Columns="12" Spacing="0.5rem">
+                <BitGridItem Class="grid-item" ColumnSpan="6">Always shown</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="6" Sm="0" Md="6">Hidden between Sm and Md</BitGridItem>
+            </BitGrid>
+            <br /><br />
+            <div>
+                The item is still rendered into the page, only not painted, so this hides it from a screen reader
+                as well and is not a way to keep content available to assistive technologies alone. An item that is
+                sized to its content or asked to grow is never hidden this way either, since a width of its own has
+                nothing to do with a count of columns.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Fluid columns" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>MinItemWidth</b> turns the question around. Instead of naming a number of columns per
+                breakpoint, the grid is told the narrowest an item may be and simply fits as many equal items on a
+                row as that allows, wrapping the rest onto the next one. The number of columns becomes a
+                consequence of how much room there is, which is what a grid of cards of a known comfortable size
+                wants: the cards decide the layout, and they keep deciding it in a page, a panel or a dialog
+                without any of the three having to be told about the others.
+            </div>
+            <br />
+            <div>
+                It takes any CSS length, and a bare number is read as pixels. While it is set the column tracks are
+                left behind, so <b>Columns</b> and the spans of the items no longer size anything - though an item
+                that states <b>Auto</b> or <b>Grow</b> for itself is still sized the way it asked to be, at the
+                breakpoints it asked for it at.
+            </div>
+            <br />
+            <div>
+                The items of a row always share it equally, which the last row of a grid shares out as well: a row
+                that ends up holding a single item widens that item to the whole of it rather than leaving it at
+                the width of one column. A short last row that should keep the width of the rows above it is a
+                counted <b>Columns</b> layout rather than a fluid one.
+            </div>
+            <br />
+            <BitSlider Label="MinItemWidth" Min="6" Max="24" Step="1" ValueFormat="0 rem" @bind-Value="@minItemWidth" />
+            <br />
+            <BitGrid Spacing="0.5rem" MinItemWidth="@($"{minItemWidth}rem")">
+                @for (int i = 0; i < 8; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Item @item</BitGridItem>
+                }
+            </BitGrid>
+            <br /><br />
+            <div>An auto sized item keeps the width of its content while the rest of the row stays fluid</div>
+            <br />
+            <BitGrid Spacing="0.5rem" MinItemWidth="10rem">
+                <BitGridItem Class="grid-item" Auto>Auto</BitGridItem>
+                <BitGridItem Class="grid-item">Fluid</BitGridItem>
+                <BitGridItem Class="grid-item">Fluid</BitGridItem>
+                <BitGridItem Class="grid-item">Fluid</BitGridItem>
+            </BitGrid>
+        </DemoExample>
+
+        <DemoExample Title="Container queries" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                The breakpoints are measured against the window by default, which is the right answer for a page
+                and the wrong one for a piece of a page: a grid inside a narrow panel is still told that the window
+                is wide, and lays out four columns in the room for one. <b>Container</b> makes the grid a CSS query
+                container and measures every one of its breakpoints - the column counts, the spans, the offsets,
+                the orders, the sizing and the hiding - against the width of the grid itself instead.
+            </div>
+            <br />
+            <div>
+                The breakpoints keep their usual widths, so a grid in a 700px panel lays itself out the way the same
+                grid lays itself out in a 700px window. That is what lets one component carry its own layout into
+                every place it is used rather than being told about each of them.
+            </div>
+            <br />
+            <div>Drag the handle in the bottom right corner of each box to resize it.</div>
+            <br />
+            <div class="resizable">
+                <div>Container: laid out by the width of this box</div>
+                <br />
+                <BitGrid Container Columns="12" Spacing="0.5rem">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item" ColumnSpan="12" Sm="6" Md="4" Lg="3">Item @item</BitGridItem>
+                    }
+                </BitGrid>
+            </div>
+            <br />
+            <div class="resizable">
+                <div>The same grid without it: laid out by the width of the window</div>
+                <br />
+                <BitGrid Columns="12" Spacing="0.5rem">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        var item = i + 1;
+
+                        <BitGridItem Class="grid-item" ColumnSpan="12" Sm="6" Md="4" Lg="3">Item @item</BitGridItem>
+                    }
+                </BitGrid>
+            </div>
+            <br /><br />
+            <div>
+                A query container is also the containing block of the absolutely positioned elements inside it, and
+                its width can no longer be worked out from its content, which is why this is asked for rather than
+                assumed. Grids inside grids each answer for their own items, so a container grid nested in another
+                one is measured against itself and not against its parent.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Wrapping & direction" RazorCode="@example12RazorCode" Id="example12">
             <div>
                 A grid wraps by default: an item that no longer fits on a row moves to the next one. <b>NoWrap</b>
                 keeps every item on a single row and shrinks them to fit instead, which is what a toolbar or a
@@ -407,9 +639,9 @@
             <div>
                 <b>Reversed</b> paints the items from the end edge of the grid backwards. Only the painting is
                 reversed: the items are still read and reached in the order they are written. Reversing swaps the
-                edges the row is packed against too, so <b>HorizontalAlign</b> Start now packs the items against
-                the right of a left-to-right grid, while an <b>Offset</b> keeps indenting from the left, since it
-                follows the direction of the text rather than the direction of the flow.
+                edge the row starts at, so <b>HorizontalAlign</b> Start now packs the items against the right of a
+                left-to-right grid, and an <b>Offset</b> or an <b>AutoOffset</b> leaves its room on that same right
+                edge, since the room they leave is the room before the item in the order the row is laid out in.
             </div>
             <br />
             <BitGrid Columns="4" Reversed>
@@ -422,7 +654,7 @@
             </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="Nesting" RazorCode="@example10RazorCode" Id="example10">
+        <DemoExample Title="Nesting" RazorCode="@example13RazorCode" Id="example13">
             <div>
                 A grid inside a grid item divides the width of that item, not the width of the page, and it starts
                 from its own column count rather than inheriting the one of its parent. That is what lets a section
@@ -446,7 +678,7 @@
             </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="Element" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Element" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 The root of the grid and of its items is a <b>div</b> by default. <b>Element</b> replaces that tag
                 with any other one, which is how a grid of things that form a list becomes a real <b>ul</b> of
@@ -468,7 +700,7 @@
             </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="Layout patterns" RazorCode="@example12RazorCode" Id="example12">
+        <DemoExample Title="Layout patterns" RazorCode="@example15RazorCode" Id="example15">
             <div>
                 The parameters are worth more together than apart. These are the three layouts almost every page is
                 built from, each of them written with the piece of the grid that fits it best.
@@ -496,14 +728,15 @@
                 A <b>page shell</b>: a full width header, a sidebar and a content area that stack on a phone and sit
                 side by side from the medium breakpoint, and a full width footer. The sidebar is written after the
                 content and painted before it while the two are stacked, so the content stays first in the reading
-                order.
+                order, and the breadcrumb is dropped entirely while there is no room for it.
             </div>
             <br />
             <BitGrid Columns="12" Spacing="0.5rem">
                 <BitGridItem Class="grid-item" ColumnSpan="12" Order="0">Header</BitGridItem>
-                <BitGridItem Class="grid-item" ColumnSpan="12" Md="8" Order="2" OrderMd="1">Content</BitGridItem>
-                <BitGridItem Class="grid-item" ColumnSpan="12" Md="4" Order="1" OrderMd="2">Sidebar</BitGridItem>
-                <BitGridItem Class="grid-item" ColumnSpan="12" Order="3">Footer</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="0" Md="12" Order="1">Breadcrumb (hidden below Md)</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="8" Order="3" OrderMd="2">Content</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Md="4" Order="2" OrderMd="3">Sidebar</BitGridItem>
+                <BitGridItem Class="grid-item" ColumnSpan="12" Order="4">Footer</BitGridItem>
             </BitGrid>
             <br /><br />
             <div>
@@ -516,9 +749,24 @@
                 <BitGridItem Class="grid-item" Auto AutoOffset>Filter</BitGridItem>
                 <BitGridItem Class="grid-item" Auto>New</BitGridItem>
             </BitGrid>
+            <br /><br />
+            <div>
+                A <b>card gallery</b>: no breakpoints at all, just the narrowest a card may be. The row holds as
+                many cards as fit at that width and shares itself equally between them, so the gallery answers to
+                the room it is given in a page, a panel or a dialog without being told about any of the three.
+            </div>
+            <br />
+            <BitGrid Spacing="0.5rem" MinItemWidth="11rem">
+                @for (int i = 0; i < 7; i++)
+                {
+                    var item = i + 1;
+
+                    <BitGridItem Class="grid-item">Card @item</BitGridItem>
+                }
+            </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+        <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
             <div>
                 The <b>Style</b> and <b>Class</b> of the grid and of its items land on their root elements, next to
                 everything the component itself renders there. The layout is driven by inline custom properties, so
@@ -532,7 +780,7 @@
             </BitGrid>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+        <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
             <div>
                 In a right-to-left grid the start edge is the right one, so the items are laid out from the right,
                 <b>HorizontalAlign</b> packs them against the right edge, and an <b>Offset</b> indents an item from

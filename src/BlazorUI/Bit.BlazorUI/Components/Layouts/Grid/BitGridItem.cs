@@ -16,7 +16,8 @@ namespace Bit.BlazorUI;
 /// The width of an item is worked out from the column count and the horizontal spacing of the grid it sits in, so
 /// the items of a row always line up on the same tracks no matter how the grid is configured. An item can opt out
 /// of the tracks entirely and be as wide as its content (<see cref="Auto"/>) or share whatever width is left over
-/// with its siblings (<see cref="Grow"/>).
+/// with its siblings (<see cref="Grow"/>), and an item that asks for no columns at all is not shown, which is how
+/// a piece of a layout is dropped at one breakpoint and given its columns back at another.
 /// </remarks>
 public partial class BitGridItem : BitComponentBase
 {
@@ -143,11 +144,76 @@ public partial class BitGridItem : BitComponentBase
     /// It takes precedence over <see cref="Offset"/> and over every per breakpoint offset of the item, since it
     /// claims the whole of the room those would have measured out.
     /// <br />
-    /// Like <see cref="Offset"/>, it works on the inline start edge and so follows the text direction rather than
+    /// Like <see cref="Offset"/>, the room is left on the edge the row starts at, which is the left of a
+    /// left-to-right grid, the right of a right-to-left one, and the other end of either once the grid is
     /// <see cref="BitGrid.Reversed"/>.
+    /// <br />
+    /// This is the base of a mobile first chain like every other layout value of the item: the per breakpoint
+    /// <see cref="AutoOffsetXs"/> to <see cref="AutoOffsetXxl"/> replace it from their own breakpoint upwards,
+    /// and <c>false</c> hands the room back to <see cref="Offset"/> there.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool AutoOffset { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetXs { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetSm { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetMd { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetLg { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> is how
+    /// an item that is pushed to the end edge below this breakpoint falls back to <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetXl { get; set; }
+
+    /// <summary>
+    /// Pushes this item to the end edge of its row from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c> is how an item that is pushed to the end edge below this breakpoint falls back to
+    /// <see cref="Offset"/> from it upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? AutoOffsetXxl { get; set; }
 
     /// <summary>
     /// The content of the Grid item.
@@ -164,10 +230,14 @@ public partial class BitGridItem : BitComponentBase
     /// This is the span of every breakpoint that is not overridden, and the per breakpoint spans (<see cref="Xs"/>
     /// to <see cref="Xxl"/>) replace it from their own breakpoint upwards.
     /// <br />
+    /// A span of 0 is an item that is not shown at all, which is how a piece of a layout is dropped at one size
+    /// and given its columns back at another (<c>Xs="0" Md="4"</c> is a whole column that only appears once
+    /// there is room for it). The item is still rendered, so a screen reader will not read it either.
+    /// <br />
     /// When not set, the item falls back to the <see cref="BitGrid.Span"/> of its grid, which is a single column
     /// unless the grid says otherwise.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? ColumnSpan { get; set; }
 
     /// <summary>
@@ -266,9 +336,9 @@ public partial class BitGridItem : BitComponentBase
     /// This is the offset of every breakpoint that is not overridden, and the per breakpoint offsets
     /// (<see cref="OffsetXs"/> to <see cref="OffsetXxl"/>) replace it from their own breakpoint upwards.
     /// <br />
-    /// The offset is applied to the inline start edge, so it indents from the left of a left-to-right grid and
-    /// from the right of a right-to-left one. It follows the text direction and not
-    /// <see cref="BitGrid.Reversed"/>. Values below 0 are treated as 0.
+    /// The empty room is left on the edge the row starts at, so it indents from the left of a left-to-right
+    /// grid, from the right of a right-to-left one, and from the other end of either once the grid is
+    /// <see cref="BitGrid.Reversed"/> and lays its row out backwards. Values below 0 are treated as 0.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Offset { get; set; }
@@ -398,51 +468,59 @@ public partial class BitGridItem : BitComponentBase
     /// Number of columns this item should fill in the extra small breakpoint (from 0px).
     /// </summary>
     /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Xs { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the small breakpoint (from 600px).
     /// </summary>
     /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Sm { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the medium breakpoint (from 960px).
     /// </summary>
     /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Md { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the large breakpoint (from 1280px).
     /// </summary>
     /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Lg { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the extra large breakpoint (from 1920px).
     /// </summary>
     /// <remarks>
-    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and 0 hides the item
+    /// from this breakpoint upwards.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Xl { get; set; }
 
     /// <summary>
     /// Number of columns this item should fill in the extra extra large breakpoint (from 2560px).
     /// </summary>
-    [Parameter, ResetStyleBuilder]
+    /// <remarks>
+    /// A value of 0 hides the item from this breakpoint upwards.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Xxl { get; set; }
 
 
@@ -466,9 +544,19 @@ public partial class BitGridItem : BitComponentBase
         // neither keeps its own margin and its own order, whatever a stylesheet of the application gives it.
         // Claiming the whole of the free room and measuring a number of columns out of it are two ways of
         // writing the same margin, so only one of them is ever handed out.
-        ClassBuilder.Register(() => AutoOffset ? "bit-grd-itm-aof" : (_HasOffset ? "bit-grd-itm-off" : string.Empty));
+        //
+        // An item that claims the free room at every size says so once, which is the class that names the margin
+        // outright. An item that only claims it at some of them carries the counted margin and overwrites it with
+        // the free room at each breakpoint that asked for it, since a breakpoint can only be talked out of the
+        // one below it by naming its own.
+        ClassBuilder.Register(() => _OffsetClasses);
 
         ClassBuilder.Register(() => _HasOrder ? "bit-grd-itm-ord" : string.Empty);
+
+        // A span of no columns is an item that is not shown. An item whose span never changes is either shown
+        // or not at every size, and one whose span changes has to be answered for at each breakpoint, since
+        // being hidden is the one thing the breakpoint above does not restate on its own.
+        ClassBuilder.Register(() => _HiddenClasses);
     }
 
     protected override void RegisterCssStyles()
@@ -549,29 +637,33 @@ public partial class BitGridItem : BitComponentBase
                                       || GrowXs.HasValue || GrowSm.HasValue || GrowMd.HasValue
                                       || GrowLg.HasValue || GrowXl.HasValue || GrowXxl.HasValue;
 
-    // The way the item takes up room at each of the six breakpoints, each one carried up from the breakpoint
-    // below it until a value of its own replaces it, and named as the class the stylesheet reads at that
-    // breakpoint alone.
-    private string _SizingClasses
+    private bool _HasResponsiveSpan => Xs.HasValue || Sm.HasValue || Md.HasValue
+                                    || Lg.HasValue || Xl.HasValue || Xxl.HasValue;
+
+    // How the item takes up room, and how many columns it asks for, at each of the six breakpoints: both of
+    // them carried up from the breakpoint below until a value of its own replaces it. The span is left null
+    // where the item never named one, since what it falls back to then belongs to the grid rather than here.
+    private (string Breakpoint, _Sizing Sizing, int? Span)[] _Breakpoints
     {
         get
         {
-            (string Breakpoint, bool? Auto, bool? Grow)[] breakpoints =
+            (string Breakpoint, bool? Auto, bool? Grow, int? Span)[] breakpoints =
             [
-                ("xs", AutoXs, GrowXs),
-                ("sm", AutoSm, GrowSm),
-                ("md", AutoMd, GrowMd),
-                ("lg", AutoLg, GrowLg),
-                ("xl", AutoXl, GrowXl),
-                ("xxl", AutoXxl, GrowXxl)
+                ("xs", AutoXs, GrowXs, Xs),
+                ("sm", AutoSm, GrowSm, Sm),
+                ("md", AutoMd, GrowMd, Md),
+                ("lg", AutoLg, GrowLg, Lg),
+                ("xl", AutoXl, GrowXl, Xl),
+                ("xxl", AutoXxl, GrowXxl, Xxl)
             ];
 
-            var classes = new string[breakpoints.Length];
+            var result = new (string, _Sizing, int?)[breakpoints.Length];
             var sizing = Auto ? _Sizing.Auto : (Grow ? _Sizing.Grow : _Sizing.Span);
+            var span = ColumnSpan;
 
             for (var i = 0; i < breakpoints.Length; i++)
             {
-                var (breakpoint, auto, grow) = breakpoints[i];
+                var (breakpoint, auto, grow, ownSpan) = breakpoints[i];
 
                 // A breakpoint that was told nothing keeps what the one below it was doing, and one that was told
                 // to stop doing something falls back to the columns rather than to the other way of leaving them.
@@ -579,23 +671,108 @@ public partial class BitGridItem : BitComponentBase
                             ? _Sizing.Auto
                             : ((grow ?? (sizing is _Sizing.Grow)) ? _Sizing.Grow : _Sizing.Span);
 
-                var name = sizing switch
-                {
-                    _Sizing.Auto => "atc",
-                    _Sizing.Grow => "grw",
-                    _ => "spn"
-                };
+                span = ownSpan ?? span;
 
-                classes[i] = $"bit-grd-itm-{name}-{breakpoint}";
+                result[i] = (breakpoint, sizing, span);
             }
 
-            return string.Join(' ', classes);
+            return result;
+        }
+    }
+
+    // The way the item takes up room at each breakpoint, named as the class the stylesheet reads there alone.
+    private string _SizingClasses
+    {
+        get
+        {
+            return string.Join(' ', _Breakpoints.Select(b => b.Sizing switch
+            {
+                _Sizing.Auto => $"bit-grd-itm-atc-{b.Breakpoint}",
+                _Sizing.Grow => $"bit-grd-itm-grw-{b.Breakpoint}",
+                _ => $"bit-grd-itm-spn-{b.Breakpoint}"
+            }));
+        }
+    }
+
+    // The breakpoints at which the item asks for no columns at all, which is the item asking not to be shown.
+    // An item that leaves the tracks behind is never hidden by this: being exactly as wide as its content, or
+    // taking whatever the row has left, is a width of its own and has nothing to do with a count of columns.
+    private string _HiddenClasses
+    {
+        get
+        {
+            // An item whose sizing and span are the same at every size is either shown at all of them or at
+            // none of them, and says so once rather than six times.
+            if (_HasResponsiveSizing is false && _HasResponsiveSpan is false)
+            {
+                return (Auto is false && Grow is false && ColumnSpan <= 0) ? "bit-grd-itm-non" : string.Empty;
+            }
+
+            return string.Join(' ', _Breakpoints.Where(b => b.Sizing is _Sizing.Span && b.Span <= 0)
+                                                .Select(b => $"bit-grd-itm-non-{b.Breakpoint}"));
         }
     }
 
     private bool _HasOffset => Offset.HasValue
                             || OffsetXs.HasValue || OffsetSm.HasValue || OffsetMd.HasValue
                             || OffsetLg.HasValue || OffsetXl.HasValue || OffsetXxl.HasValue;
+
+    private bool _HasResponsiveAutoOffset => AutoOffsetXs.HasValue || AutoOffsetSm.HasValue || AutoOffsetMd.HasValue
+                                          || AutoOffsetLg.HasValue || AutoOffsetXl.HasValue || AutoOffsetXxl.HasValue;
+
+    // Which of the two margins the item is given, and at which breakpoints. An item that asked for neither is
+    // given none of them and keeps whatever margin a stylesheet of the application hands it.
+    private string _OffsetClasses
+    {
+        get
+        {
+            if (_HasResponsiveAutoOffset is false)
+            {
+                return AutoOffset ? "bit-grd-itm-aof" : (_HasOffset ? "bit-grd-itm-off" : string.Empty);
+            }
+
+            var autoOffsets = _AutoOffsetClasses;
+
+            // The margin itself hangs off the counted class, which is what the breakpoints that did not claim
+            // the free room are left with, so it is handed out alongside them.
+            return autoOffsets.Length > 0
+                    ? $"bit-grd-itm-off {autoOffsets}"
+                    : (_HasOffset ? "bit-grd-itm-off" : string.Empty);
+        }
+    }
+
+    // The breakpoints at which the item claims the whole of the room left before it, carried up from the
+    // breakpoint below until a value of its own replaces it, and named as the class the stylesheet reads there.
+    private string _AutoOffsetClasses
+    {
+        get
+        {
+            (string Breakpoint, bool? AutoOffset)[] breakpoints =
+            [
+                ("xs", AutoOffsetXs),
+                ("sm", AutoOffsetSm),
+                ("md", AutoOffsetMd),
+                ("lg", AutoOffsetLg),
+                ("xl", AutoOffsetXl),
+                ("xxl", AutoOffsetXxl)
+            ];
+
+            var classes = new List<string>(breakpoints.Length);
+            var autoOffset = AutoOffset;
+
+            foreach (var (breakpoint, ownAutoOffset) in breakpoints)
+            {
+                autoOffset = ownAutoOffset ?? autoOffset;
+
+                if (autoOffset)
+                {
+                    classes.Add($"bit-grd-itm-aof-{breakpoint}");
+                }
+            }
+
+            return string.Join(' ', classes);
+        }
+    }
 
     private bool _HasOrder => Order.HasValue
                            || OrderXs.HasValue || OrderSm.HasValue || OrderMd.HasValue

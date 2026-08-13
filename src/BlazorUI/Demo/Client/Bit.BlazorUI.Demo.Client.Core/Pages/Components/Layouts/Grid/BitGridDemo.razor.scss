@@ -31,6 +31,15 @@
     background: rebeccapurple;
 }
 
+::deep .resizable {
+    resize: horizontal;
+    overflow: auto;
+    max-width: 100%;
+    min-width: 200px;
+    padding: 0.5rem;
+    border: 1px dashed gray;
+}
+
 ::deep .plain-list {
     margin: 0;
     padding: 0;

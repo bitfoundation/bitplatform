@@ -14,11 +14,18 @@ namespace Bit.BlazorUI;
 /// <see cref="BitGridItem.ColumnSpan"/>, which makes the classic "two thirds next to one third" content layout a
 /// single number on each of two items.
 /// <br />
-/// Everything about that layout is responsive: the grid takes a different column count per breakpoint
-/// (<see cref="ColumnsXs"/> to <see cref="ColumnsXxl"/>) and every item takes a different span, offset and order
-/// per breakpoint. Those values are mobile first - a value set at one breakpoint keeps applying to every wider
+/// Everything about that layout is responsive: the grid takes a different column count and a different spacing
+/// per breakpoint (<see cref="ColumnsXs"/> to <see cref="ColumnsXxl"/>, <see cref="SpacingXs"/> to
+/// <see cref="SpacingXxl"/> and the per axis spacings beside them) and every item takes a different span, offset
+/// and order per breakpoint. Those values are mobile first - a value set at one breakpoint keeps applying to every wider
 /// one until another value replaces it - so a three column desktop layout collapses to a single column phone
-/// layout without repeating itself at every size in between.
+/// layout without repeating itself at every size in between. A span of no columns hides an item, which is how
+/// part of a layout is dropped at one size and given its columns back at another, and <see cref="Container"/>
+/// measures all of those breakpoints against the width of the grid itself rather than the width of the window.
+/// <br />
+/// The columns can also be left behind entirely: <see cref="MinItemWidth"/> fits as many equal items on a row as
+/// a width will allow and lets the rest wrap, which is a card grid that answers to the room it is given instead
+/// of to a list of breakpoints, and <see cref="Grow"/> shares out whatever a row did not use between its items.
 /// </remarks>
 public partial class BitGrid : BitComponentBase
 {
@@ -143,6 +150,25 @@ public partial class BitGrid : BitComponentBase
     public int? ColumnsXxl { get; set; }
 
     /// <summary>
+    /// Measures the breakpoints of this BitGrid against its own width instead of the width of the viewport.
+    /// </summary>
+    /// <remarks>
+    /// The grid becomes a CSS query container, and every per breakpoint value of the grid and of its items -
+    /// the column counts, the spans, the offsets, the orders and the sizing - is answered by how wide the grid
+    /// itself is. The breakpoints keep their usual widths, so a grid inside a 700px panel lays itself out the
+    /// way the same grid lays itself out in a 700px window, however wide the window actually is.
+    /// <br />
+    /// This is what a piece of a page that is reused at more than one width - a card that is a full column on
+    /// one page and a third of a row on another - needs in order to carry its own layout around with it
+    /// instead of being told about every place it is used.
+    /// <br />
+    /// A query container is also the containing block of the absolutely positioned elements inside it, and its
+    /// width can no longer be worked out from its content, so this is asked for rather than assumed.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Container { get; set; }
+
+    /// <summary>
     /// The custom html element used for the root node. The default is "div".
     /// </summary>
     /// <remarks>
@@ -152,6 +178,22 @@ public partial class BitGrid : BitComponentBase
     /// to assistive technologies.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Lets every child of the BitGrid grow into whatever width its row did not use.
+    /// </summary>
+    /// <remarks>
+    /// A full row has nothing left over and is unchanged, so what this really decides is what the last row of a
+    /// grid does: its items are widened until they fill it instead of leaving a hole where the missing items
+    /// would have been. It is also the shortest way to a row of equal items of no particular width, since items
+    /// that all grow from the same base share the row equally.
+    /// <br />
+    /// The items that are sized to their own content (<see cref="BitGridItem.Auto"/>) are left alone, since
+    /// being exactly as wide as their content is the whole of what they were asked for - and an item that is
+    /// only sized to its content at some breakpoints is left alone at those breakpoints alone.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Grow { get; set; }
 
     /// <summary>
     /// Defines the horizontal distribution of the children of the BitGrid (the CSS justify-content of the container).
@@ -184,6 +226,91 @@ public partial class BitGrid : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? HorizontalSpacing { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingSm"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingMd"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingLg"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXl"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the BitGrid from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// It takes precedence over the <see cref="SpacingXxl"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? HorizontalSpacingXxl { get; set; }
+
+    /// <summary>
+    /// Sizes the children of the BitGrid to a width they may not go below, instead of to a number of columns,
+    /// and fits as many of them on a row as that width allows.
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length (for example <c>16rem</c>, <c>240px</c> or <c>30%</c>). A bare number is read as pixels.
+    /// <br />
+    /// The items of a row are equal and share the row between them, and the row holds as many of them as fit at
+    /// this width before the rest wrap onto the next one. That makes the number of columns a consequence of how
+    /// wide the grid is rather than something to be listed breakpoint by breakpoint, which is what a grid of
+    /// cards of a known comfortable size wants: the cards decide how many columns there are, and they keep
+    /// deciding it inside a panel, a dialog or a page without any of the three being told about the others.
+    /// <br />
+    /// The last row is shared out in the same way, so a row that ends up holding a single item widens that item
+    /// to the whole of it rather than leaving it at the width of one column. A short last row that has to keep
+    /// the width of the rows above it is a counted <see cref="Columns"/> layout rather than a fluid one.
+    /// <br />
+    /// The column tracks are left behind while this is set, so <see cref="Columns"/>, <see cref="Span"/> and the
+    /// spans of the items no longer size anything - though the items that state <see cref="BitGridItem.Auto"/>
+    /// or <see cref="BitGridItem.Grow"/> for themselves are still sized the way they asked to be, at the
+    /// breakpoints they asked for it at. The offsets are still measured in the columns of the grid, since the
+    /// room left before an item is not a width of its own.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? MinItemWidth { get; set; }
 
     /// <summary>
     /// Keeps the children of the BitGrid on a single row instead of letting them wrap onto more rows.
@@ -222,9 +349,73 @@ public partial class BitGrid : BitComponentBase
     /// <br />
     /// <see cref="HorizontalSpacing"/> and <see cref="VerticalSpacing"/> each replace it on their own axis, which
     /// is what a grid of cards that needs more air between its rows than between its columns wants.
+    /// <br />
+    /// This is the spacing of every breakpoint that is not overridden, and the per breakpoint spacings
+    /// (<see cref="SpacingXs"/> to <see cref="SpacingXxl"/>) replace it from their own breakpoint upwards.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string Spacing { get; set; } = "4px";
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, which is how a layout
+    /// that is tight on a phone is given room to breathe on a desktop without a fluid length of its own.
+    /// <br />
+    /// <see cref="HorizontalSpacingXs"/> and <see cref="VerticalSpacingXs"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and
+    /// <see cref="HorizontalSpacingSm"/> and <see cref="VerticalSpacingSm"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and
+    /// <see cref="HorizontalSpacingMd"/> and <see cref="VerticalSpacingMd"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and
+    /// <see cref="HorizontalSpacingLg"/> and <see cref="VerticalSpacingLg"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and
+    /// <see cref="HorizontalSpacingXl"/> and <see cref="VerticalSpacingXl"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the BitGrid on both axes from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="HorizontalSpacingXxl"/> and <see cref="VerticalSpacingXxl"/> each replace it on their own axis.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? SpacingXxl { get; set; }
 
     /// <summary>
     /// Defines the number of columns the children of the BitGrid fill by default.
@@ -237,6 +428,10 @@ public partial class BitGrid : BitComponentBase
     /// <br />
     /// It is the base of the mobile first chain of an item too: an item that only sets a span for a wider
     /// breakpoint uses this one below that breakpoint.
+    /// <br />
+    /// Values below 1 are treated as 1. A span of no columns hides the item that asked for it, and a default of
+    /// none would be a grid whose every item is hidden, which is not what a default is for - so an item that is
+    /// meant to disappear says so with a <see cref="BitGridItem.ColumnSpan"/> of its own.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int Span { get; set; } = 1;
@@ -270,6 +465,65 @@ public partial class BitGrid : BitComponentBase
     [Parameter, ResetStyleBuilder]
     public string? VerticalSpacing { get; set; }
 
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXs"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingSm"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingMd"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingLg"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and it takes precedence
+    /// over the <see cref="SpacingXl"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the BitGrid from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// It takes precedence over the <see cref="SpacingXxl"/> of the same breakpoint.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? VerticalSpacingXxl { get; set; }
+
 
 
     protected override string RootElementClass => "bit-grd";
@@ -279,6 +533,13 @@ public partial class BitGrid : BitComponentBase
         ClassBuilder.Register(() => NoWrap ? "bit-grd-nwr" : string.Empty);
 
         ClassBuilder.Register(() => Reversed ? "bit-grd-rev" : string.Empty);
+
+        ClassBuilder.Register(() => Container ? "bit-grd-cnq" : string.Empty);
+
+        ClassBuilder.Register(() => Grow ? "bit-grd-grw" : string.Empty);
+
+        // The class is what turns the minimum width on, so it is only handed out alongside a width to read.
+        ClassBuilder.Register(() => MinItemWidth.HasValue() ? "bit-grd-mnw" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -322,10 +583,14 @@ public partial class BitGrid : BitComponentBase
         // The layout of an item is a pure function of these four custom properties, which is why they live on the
         // container: they are inherited by every item of this grid and by no item of a nested one, so a grid that
         // changes its column count or its spacing relays its items out without any of them having to be told.
-        StyleBuilder.Register(() => $"--bit-grd-span:{Math.Max(0, Span).ToString(CultureInfo.InvariantCulture)}");
+        // A default of no columns would leave every item that named no span of its own with no width and no way
+        // of saying so, since only an item can ask to be hidden, so the default falls back to a single column.
+        StyleBuilder.Register(() => $"--bit-grd-span:{Math.Max(1, Span).ToString(CultureInfo.InvariantCulture)}");
         StyleBuilder.Register(() => $"--bit-grd-cols:{Math.Max(1, Columns).ToString(CultureInfo.InvariantCulture)}");
         StyleBuilder.Register(() => $"--bit-grd-cgap:{GetSpacing(HorizontalSpacing)}");
         StyleBuilder.Register(() => $"--bit-grd-rgap:{GetSpacing(VerticalSpacing)}");
+
+        StyleBuilder.Register(() => MinItemWidth.HasValue() ? $"--bit-grd-mnw:{GetLength(MinItemWidth!)}" : string.Empty);
 
         // Only the breakpoints that were asked for are declared. The stylesheet chains every other one to the
         // breakpoint below it, which is what carries a value upwards and makes these mobile first.
@@ -335,6 +600,22 @@ public partial class BitGrid : BitComponentBase
         StyleBuilder.Register(() => GetColumnsVar("lg", ColumnsLg));
         StyleBuilder.Register(() => GetColumnsVar("xl", ColumnsXl));
         StyleBuilder.Register(() => GetColumnsVar("xxl", ColumnsXxl));
+
+        // The same chain for the room between the items. The spacing of one axis outranks the spacing of both
+        // axes at the same breakpoint, exactly as it does at the base of the chain.
+        StyleBuilder.Register(() => GetSpacingVar("c", "xs", HorizontalSpacingXs, SpacingXs));
+        StyleBuilder.Register(() => GetSpacingVar("c", "sm", HorizontalSpacingSm, SpacingSm));
+        StyleBuilder.Register(() => GetSpacingVar("c", "md", HorizontalSpacingMd, SpacingMd));
+        StyleBuilder.Register(() => GetSpacingVar("c", "lg", HorizontalSpacingLg, SpacingLg));
+        StyleBuilder.Register(() => GetSpacingVar("c", "xl", HorizontalSpacingXl, SpacingXl));
+        StyleBuilder.Register(() => GetSpacingVar("c", "xxl", HorizontalSpacingXxl, SpacingXxl));
+
+        StyleBuilder.Register(() => GetSpacingVar("r", "xs", VerticalSpacingXs, SpacingXs));
+        StyleBuilder.Register(() => GetSpacingVar("r", "sm", VerticalSpacingSm, SpacingSm));
+        StyleBuilder.Register(() => GetSpacingVar("r", "md", VerticalSpacingMd, SpacingMd));
+        StyleBuilder.Register(() => GetSpacingVar("r", "lg", VerticalSpacingLg, SpacingLg));
+        StyleBuilder.Register(() => GetSpacingVar("r", "xl", VerticalSpacingXl, SpacingXl));
+        StyleBuilder.Register(() => GetSpacingVar("r", "xxl", VerticalSpacingXxl, SpacingXxl));
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitGridParams))]
@@ -395,18 +676,23 @@ public partial class BitGrid : BitComponentBase
 
     private string GetSpacing(string? axisSpacing)
     {
-        var spacing = (axisSpacing.HasValue() ? axisSpacing! : (Spacing.HasValue() ? Spacing : "0px")).Trim();
+        return GetLength(axisSpacing.HasValue() ? axisSpacing! : (Spacing.HasValue() ? Spacing : "0px"));
+    }
+
+    private static string GetLength(string value)
+    {
+        var length = value.Trim();
 
         // A bare number is not a CSS length, and the width of every item is worked out from the horizontal gap
         // inside a calc() that a unitless value makes invalid - which throws the whole width away and leaves the
         // items at the size of their content. Reading a bare number as pixels is what was meant by it and what
         // keeps the layout standing, and it makes the very common "0" a gap of none rather than a broken grid.
-        if (double.TryParse(spacing, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number) is false) return spacing;
+        if (double.TryParse(length, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number) is false) return length;
 
-        // There is no such thing as a negative gap, and letting one through would widen the items past their
-        // tracks rather than narrow them, so it is read as no gap at all. The number is written out again
-        // rather than echoed, which is what turns the handful of forms CSS does not accept - a leading plus, a
-        // trailing decimal point - into the one it does.
+        // There is no such thing as a negative gap or a negative width, and letting one through would widen the
+        // items past their tracks rather than narrow them, so it is read as none at all. The number is written
+        // out again rather than echoed, which is what turns the handful of forms CSS does not accept - a leading
+        // plus, a trailing decimal point - into the one it does.
         return number > 0 ? $"{number.ToString(CultureInfo.InvariantCulture)}px" : "0px";
     }
 
@@ -415,5 +701,15 @@ public partial class BitGrid : BitComponentBase
         if (columns.HasValue is false) return string.Empty;
 
         return $"--bit-grd-cols-{breakpoint}:{Math.Max(1, columns.Value).ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    // The spacing of a single axis at a breakpoint, falling back to the spacing of both axes at that same
+    // breakpoint. A breakpoint that was told nothing is left undeclared, and the stylesheet carries the value of
+    // the breakpoint below it upwards in its place.
+    private static string GetSpacingVar(string axis, string breakpoint, string? axisSpacing, string? spacing)
+    {
+        var value = axisSpacing.HasValue() ? axisSpacing : spacing;
+
+        return value.HasValue() ? $"--bit-grd-{axis}gap-{breakpoint}:{GetLength(value!)}" : string.Empty;
     }
 }

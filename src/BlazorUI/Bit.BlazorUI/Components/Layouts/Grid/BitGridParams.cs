@@ -67,9 +67,19 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
     public int? ColumnsXxl { get; set; }
 
     /// <summary>
+    /// Measures the breakpoints of the grid against its own width instead of the width of the viewport.
+    /// </summary>
+    public bool? Container { get; set; }
+
+    /// <summary>
     /// The custom html element used for the root node.
     /// </summary>
     public string? Element { get; set; }
+
+    /// <summary>
+    /// Lets every child of the grid grow into whatever width its row did not use.
+    /// </summary>
+    public bool? Grow { get; set; }
 
     /// <summary>
     /// Defines the horizontal distribution of the children of the grid.
@@ -80,6 +90,42 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
     /// Defines the horizontal spacing between the children of the grid.
     /// </summary>
     public string? HorizontalSpacing { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the extra small breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the small breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the medium breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the large breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the extra large breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the horizontal spacing between the children of the grid from the extra extra large breakpoint upwards.
+    /// </summary>
+    public string? HorizontalSpacingXxl { get; set; }
+
+    /// <summary>
+    /// Sizes the children of the grid to a width they may not go below instead of to a number of columns, and
+    /// fits as many of them on a row as that width allows.
+    /// </summary>
+    public string? MinItemWidth { get; set; }
 
     /// <summary>
     /// Keeps the children of the grid on a single row instead of letting them wrap onto more rows.
@@ -97,6 +143,36 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
     public string? Spacing { get; set; }
 
     /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the extra small breakpoint upwards.
+    /// </summary>
+    public string? SpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the small breakpoint upwards.
+    /// </summary>
+    public string? SpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the medium breakpoint upwards.
+    /// </summary>
+    public string? SpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the large breakpoint upwards.
+    /// </summary>
+    public string? SpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the extra large breakpoint upwards.
+    /// </summary>
+    public string? SpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the spacing between the children of the grid on both axes from the extra extra large breakpoint upwards.
+    /// </summary>
+    public string? SpacingXxl { get; set; }
+
+    /// <summary>
     /// Defines the number of columns the children of the grid fill by default.
     /// </summary>
     public int? Span { get; set; }
@@ -110,6 +186,36 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
     /// Defines the vertical spacing between the rows of the grid.
     /// </summary>
     public string? VerticalSpacing { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the extra small breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingXs { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the small breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingSm { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the medium breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingMd { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the large breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingLg { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the extra large breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingXl { get; set; }
+
+    /// <summary>
+    /// Defines the vertical spacing between the rows of the grid from the extra extra large breakpoint upwards.
+    /// </summary>
+    public string? VerticalSpacingXxl { get; set; }
 
 
 
@@ -193,9 +299,23 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
             bitGrid.StyleBuilder.Reset();
         }
 
+        if (Container.HasValue && bitGrid.HasNotBeenSet(nameof(Container)))
+        {
+            bitGrid.Container = Container.Value;
+
+            bitGrid.ClassBuilder.Reset();
+        }
+
         if (Element.HasValue() && bitGrid.HasNotBeenSet(nameof(Element)))
         {
             bitGrid.Element = Element;
+        }
+
+        if (Grow.HasValue && bitGrid.HasNotBeenSet(nameof(Grow)))
+        {
+            bitGrid.Grow = Grow.Value;
+
+            bitGrid.ClassBuilder.Reset();
         }
 
         if (HorizontalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(HorizontalAlign)))
@@ -209,6 +329,14 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
         {
             bitGrid.HorizontalSpacing = HorizontalSpacing;
 
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (MinItemWidth.HasValue() && bitGrid.HasNotBeenSet(nameof(MinItemWidth)))
+        {
+            bitGrid.MinItemWidth = MinItemWidth;
+
+            bitGrid.ClassBuilder.Reset();
             bitGrid.StyleBuilder.Reset();
         }
 
@@ -250,6 +378,139 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
         if (VerticalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacing)))
         {
             bitGrid.VerticalSpacing = VerticalSpacing;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        UpdateResponsiveSpacingParameters(bitGrid);
+    }
+
+
+
+    private void UpdateResponsiveSpacingParameters(BitGrid bitGrid)
+    {
+        if (SpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXs)))
+        {
+            bitGrid.SpacingXs = SpacingXs;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (SpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingSm)))
+        {
+            bitGrid.SpacingSm = SpacingSm;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (SpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingMd)))
+        {
+            bitGrid.SpacingMd = SpacingMd;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (SpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingLg)))
+        {
+            bitGrid.SpacingLg = SpacingLg;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (SpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXl)))
+        {
+            bitGrid.SpacingXl = SpacingXl;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (SpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXxl)))
+        {
+            bitGrid.SpacingXxl = SpacingXxl;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXs)))
+        {
+            bitGrid.HorizontalSpacingXs = HorizontalSpacingXs;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingSm)))
+        {
+            bitGrid.HorizontalSpacingSm = HorizontalSpacingSm;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingMd)))
+        {
+            bitGrid.HorizontalSpacingMd = HorizontalSpacingMd;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingLg)))
+        {
+            bitGrid.HorizontalSpacingLg = HorizontalSpacingLg;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXl)))
+        {
+            bitGrid.HorizontalSpacingXl = HorizontalSpacingXl;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (HorizontalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXxl)))
+        {
+            bitGrid.HorizontalSpacingXxl = HorizontalSpacingXxl;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXs)))
+        {
+            bitGrid.VerticalSpacingXs = VerticalSpacingXs;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingSm)))
+        {
+            bitGrid.VerticalSpacingSm = VerticalSpacingSm;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingMd)))
+        {
+            bitGrid.VerticalSpacingMd = VerticalSpacingMd;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingLg)))
+        {
+            bitGrid.VerticalSpacingLg = VerticalSpacingLg;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXl)))
+        {
+            bitGrid.VerticalSpacingXl = VerticalSpacingXl;
+
+            bitGrid.StyleBuilder.Reset();
+        }
+
+        if (VerticalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXxl)))
+        {
+            bitGrid.VerticalSpacingXxl = VerticalSpacingXxl;
 
             bitGrid.StyleBuilder.Reset();
         }
