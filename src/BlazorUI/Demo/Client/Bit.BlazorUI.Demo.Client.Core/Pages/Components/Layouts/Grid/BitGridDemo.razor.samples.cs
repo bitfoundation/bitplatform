@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Grid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Grid;
 
 public partial class BitGridDemo
 {

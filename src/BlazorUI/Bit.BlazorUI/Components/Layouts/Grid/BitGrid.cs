@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.CompilerServices;
 
@@ -335,8 +335,9 @@ public partial class BitGrid : BitComponentBase
     /// Only the painted order is reversed; the order the items are read in by a screen reader and reached in by
     /// the keyboard stays the order they are written in, so this is a visual tool and not a way to reorder content.
     /// <br />
-    /// <see cref="BitGridItem.Offset"/> follows the text direction rather than this, so it keeps indenting from
-    /// the left of a reversed left-to-right grid, which is the trailing edge of a reversed row.
+    /// <see cref="BitGridItem.Offset"/> and <see cref="BitGridItem.AutoOffset"/> leave their room on the edge the
+    /// row starts at rather than on the side the text runs from, so reversing the grid moves that room across with
+    /// the row: an offset indents from the right of a reversed left-to-right grid, which is where its row begins.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Reversed { get; set; }
@@ -349,7 +350,8 @@ public partial class BitGrid : BitComponentBase
     /// <remarks>
     /// Takes any CSS length (for example <c>0.5rem</c>, <c>8px</c> or <c>2%</c>), including a fluid one such as
     /// <c>clamp(4px, 1vw, 16px)</c>, which is how the spacing follows the size of the viewport without a
-    /// breakpoint of its own. A bare number is read as pixels.
+    /// breakpoint of its own. A bare number is read as pixels, and a length written with a minus is read as no
+    /// room at all, whatever unit it carries, since there is no such thing as a gap that pulls the items together.
     /// <br />
     /// <see cref="HorizontalSpacing"/> and <see cref="VerticalSpacing"/> each replace it on their own axis, which
     /// is what a grid of cards that needs more air between its rows than between its columns wants.
@@ -663,16 +665,21 @@ public partial class BitGrid : BitComponentBase
 
 
     // Baseline and Stretch distribute nothing, so they are dropped here and picked up by the cross axis below
-    // instead of rendering a justify-content the browser throws away.
-    private BitAlignment? _JustifyContent => (HorizontalAlign ?? Alignment) switch
+    // instead of rendering a justify-content the browser throws away. A HorizontalAlign spelled with one of them
+    // is not a horizontal value at all, so this axis falls through to the shorthand rather than being silenced
+    // by it - the same way the cross axis below falls through to the shorthand for a distribution.
+    private BitAlignment? _JustifyContent => ((HorizontalAlign is BitAlignment.Baseline or BitAlignment.Stretch ? null : HorizontalAlign)
+                                              ?? Alignment) switch
     {
         BitAlignment.Baseline or BitAlignment.Stretch => null,
         var alignment => alignment
     };
 
     // The cross axis takes VerticalAlign, then the two members of HorizontalAlign that only make sense here, and
-    // finally the shorthand, so a baseline or stretched grid can be spelled either way.
-    private BitAlignment? _AlignItems => (VerticalAlign
+    // finally the shorthand, so a baseline or stretched grid can be spelled either way. A VerticalAlign spelled
+    // with one of the three distributions is ignored the way it is documented to be, which means stepping aside
+    // for whatever the shorthand had to say about this axis rather than silencing it.
+    private BitAlignment? _AlignItems => ((VerticalAlign is BitAlignment.SpaceBetween or BitAlignment.SpaceAround or BitAlignment.SpaceEvenly ? null : VerticalAlign)
                                           ?? (HorizontalAlign is BitAlignment.Baseline or BitAlignment.Stretch ? HorizontalAlign : null)
                                           ?? Alignment) switch
     {
@@ -689,17 +696,21 @@ public partial class BitGrid : BitComponentBase
     {
         var length = value.Trim();
 
+        // There is no such thing as a negative gap or a negative width, and letting one through would widen the
+        // items past their tracks rather than narrow them, so a length written with a leading minus is read as
+        // none at all - whether it carries a unit or not, since "-1rem" is every bit the negative gap "-16" is.
+        // A calc() or a var() that works out negative is left to the browser, as there is nothing to read here.
+        if (length.StartsWith('-')) return "0px";
+
         // A bare number is not a CSS length, and the width of every item is worked out from the horizontal gap
         // inside a calc() that a unitless value makes invalid - which throws the whole width away and leaves the
         // items at the size of their content. Reading a bare number as pixels is what was meant by it and what
         // keeps the layout standing, and it makes the very common "0" a gap of none rather than a broken grid.
         if (double.TryParse(length, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number) is false) return length;
 
-        // There is no such thing as a negative gap or a negative width, and letting one through would widen the
-        // items past their tracks rather than narrow them, so it is read as none at all. The number is written
-        // out again rather than echoed, which is what turns the handful of forms CSS does not accept - a leading
-        // plus, a trailing decimal point - into the one it does.
-        return number > 0 ? $"{number.ToString(CultureInfo.InvariantCulture)}px" : "0px";
+        // The number is written out again rather than echoed, which is what turns the handful of forms CSS does
+        // not accept - a leading plus, a trailing decimal point - into the one it does.
+        return $"{number.ToString(CultureInfo.InvariantCulture)}px";
     }
 
     private static string GetColumnsVar(string breakpoint, int? columns)

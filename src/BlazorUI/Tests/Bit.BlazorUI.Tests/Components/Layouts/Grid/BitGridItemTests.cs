@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

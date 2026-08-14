@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -347,6 +347,28 @@ public class BitGridTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow("-1rem")]
+    [DataRow("-16px")]
+    [DataRow("-2%")]
+    [DataRow("-8")]
+    public void BitGridShouldReadALengthWrittenWithAMinusAsNoLengthAtAll(string spacing)
+    {
+        // A negative gap widens the items past their tracks instead of narrowing them, and the unit it is
+        // written with makes no difference to that, so a minus is turned away wherever it is written.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Spacing, spacing);
+            parameters.Add(p => p.MinItemWidth, spacing);
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-grd-cgap:0px");
+        StringAssert.Contains(style, "--bit-grd-rgap:0px");
+        StringAssert.Contains(style, "--bit-grd-mnw:0px");
+    }
+
+    [TestMethod]
     public void BitGridShouldKeepTheBaseSpacingApartFromTheResponsiveOnes()
     {
         // The base is what every breakpoint below the first one that was named falls back to, so naming a wider
@@ -519,6 +541,46 @@ public class BitGridTests : BunitTestContext
 
         StringAssert.Contains(style, "justify-content:space-between");
         Assert.IsFalse(style!.Contains("align-items"));
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.Baseline, "baseline")]
+    [DataRow(BitAlignment.Stretch, "stretch")]
+    public void BitGridShouldKeepTheAlignmentShorthandOnTheMainAxisWhenTheHorizontalAlignLeftIt(BitAlignment alignment, string expected)
+    {
+        // A HorizontalAlign of Baseline or Stretch is a cross axis value spelled on the horizontal parameter, so
+        // it takes nothing away from the main axis and the shorthand is what is left to distribute the items.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.SpaceBetween);
+            parameters.Add(p => p.HorizontalAlign, alignment);
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "justify-content:space-between");
+        StringAssert.Contains(style, $"align-items:{expected}");
+    }
+
+    [TestMethod]
+    [DataRow(BitAlignment.SpaceBetween, "space-between")]
+    [DataRow(BitAlignment.SpaceAround, "space-around")]
+    [DataRow(BitAlignment.SpaceEvenly, "space-evenly")]
+    public void BitGridShouldKeepTheAlignmentShorthandOnTheCrossAxisWhenTheVerticalAlignLeftIt(BitAlignment alignment, string expected)
+    {
+        // A VerticalAlign of one of the three distributions is ignored on this axis, so it takes nothing away
+        // from it either and the shorthand is what is left to align the items within their row.
+        var component = RenderComponent<BitGrid>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
+            parameters.Add(p => p.VerticalAlign, alignment);
+        });
+
+        var style = component.Find(".bit-grd").GetAttribute("style");
+
+        StringAssert.Contains(style, "justify-content:center");
+        StringAssert.Contains(style, "align-items:center");
+        Assert.IsFalse(style!.Contains($"align-items:{expected}"));
     }
 
     [TestMethod]
