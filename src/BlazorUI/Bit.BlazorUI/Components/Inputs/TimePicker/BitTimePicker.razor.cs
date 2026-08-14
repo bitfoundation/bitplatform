@@ -80,7 +80,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
                 allowed = BitTimeSteps.FindAllowedNear(candidate, _hour, 24, IsHourAllowed);
             }
 
-            if (allowed.HasValue is false) return;
+            if (allowed.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
 
             _hour = allowed;
 
@@ -100,7 +104,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             SeedFromStartingValue();
 
             var allowed = BitTimeSteps.FindAllowedNear(Math.Clamp(val, 0, 59), _minute, 60, IsMinuteAllowed);
-            if (allowed.HasValue is false) return;
+            if (allowed.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
 
             _minute = allowed;
 
@@ -120,7 +128,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             SeedFromStartingValue();
 
             var allowed = BitTimeSteps.FindAllowedNear(Math.Clamp(val, 0, 59), _second, 60, IsSecondAllowed);
-            if (allowed.HasValue is false) return;
+            if (allowed.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
 
             _second = allowed;
 
@@ -1118,26 +1130,42 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
                 {
                     var start = _hour is >= 12 ? 12 : 0;
                     var inHalf = BitTimeSteps.FindAllowedFrom(first ? 0 : 11, first, 12, h => IsHourAllowed(start + h));
-                    if (inHalf.HasValue is false) return;
+                    if (inHalf.HasValue is false)
+                    {
+                        UndoSeed();
+                        return;
+                    }
                     _hour = start + inHalf.Value;
                 }
                 else
                 {
                     var hour = BitTimeSteps.FindAllowedFrom(first ? 0 : 23, first, 24, IsHourAllowed);
-                    if (hour.HasValue is false) return;
+                    if (hour.HasValue is false)
+                    {
+                        UndoSeed();
+                        return;
+                    }
                     _hour = hour;
                 }
                 break;
 
             case TimeUnit.Minute:
                 var minute = BitTimeSteps.FindAllowedFrom(first ? 0 : 59, first, 60, IsMinuteAllowed);
-                if (minute.HasValue is false) return;
+                if (minute.HasValue is false)
+                {
+                    UndoSeed();
+                    return;
+                }
                 _minute = minute;
                 break;
 
             case TimeUnit.Second:
                 var second = BitTimeSteps.FindAllowedFrom(first ? 0 : 59, first, 60, IsSecondAllowed);
-                if (second.HasValue is false) return;
+                if (second.HasValue is false)
+                {
+                    UndoSeed();
+                    return;
+                }
                 _second = second;
                 break;
         }
@@ -1258,7 +1286,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         var target = (_hour.Value % 12) + (pm ? 12 : 0);
 
         var allowed = SnapHourInHalf(target, current: null);
-        if (allowed.HasValue is false) return;
+        if (allowed.HasValue is false)
+        {
+            UndoSeed();
+            return;
+        }
 
         _hour = allowed;
 
@@ -1322,6 +1354,21 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (_hour.HasValue || _minute.HasValue || _second.HasValue) return;
 
         SetTimeParts(StartingValue);
+    }
+
+    // Seeding leaves the parts holding a time the value itself has not been given: every flow that seeds only
+    // reaches the value through UpdateCurrentValue, so parts without a value are a seed nothing committed yet.
+    private bool HasUncommittedSeed => CurrentValue.HasValue is false
+                                    && (_hour.HasValue || _minute.HasValue || _second.HasValue);
+
+    // A change that aborts hands the seed it took back. The starting value is where an empty picker begins,
+    // not a time it was given, so a change the constraints refused must leave the inputs as empty as it found
+    // them rather than showing a time the value does not have.
+    private void UndoSeed()
+    {
+        if (HasUncommittedSeed is false) return;
+
+        SetTimeParts(null);
     }
 
     private bool? IsAm()

@@ -1070,9 +1070,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         hour = ((hour % 24) + 24) % 24;
 
-        if (IsHourAllowed(hour) is false) return;
+        if (IsHourAllowed(hour) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_hour == hour) return;
+        // A pick that lands on the hour the picker was only seeded to is not the no-op it looks like: it is
+        // the pick that turns the seed into the value, so it goes through instead of being dropped.
+        if (_hour == hour && HasUncommittedSeed is false) return;
 
         _hour = hour;
 
@@ -1092,9 +1098,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         minute = ((minute % 60) + 60) % 60;
 
-        if (IsMinuteAllowed(minute) is false) return;
+        if (IsMinuteAllowed(minute) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_minute == minute) return;
+        // As with the hour, a pick that lands on the minute the picker was only seeded to is the pick that
+        // turns the seed into the value rather than a no-op.
+        if (_minute == minute && HasUncommittedSeed is false) return;
 
         _minute = minute;
 
@@ -1109,9 +1121,15 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         second = ((second % 60) + 60) % 60;
 
-        if (IsSecondAllowed(second) is false) return;
+        if (IsSecondAllowed(second) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_second == second) return;
+        // As with the hour, a pick that lands on the second the picker was only seeded to is the pick that
+        // turns the seed into the value rather than a no-op.
+        if (_second == second && HasUncommittedSeed is false) return;
 
         _second = second;
 
@@ -1276,7 +1294,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 break;
             }
 
-            if (fallback < 0) return;
+            if (fallback < 0)
+            {
+                UndoSeed();
+                return;
+            }
 
             hour = fallback;
         }
@@ -1366,6 +1388,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _hour = time.Hours;
         _minute = time.Minutes;
         _second = time.Seconds;
+    }
+
+    // Seeding leaves the parts holding a time the value itself has not been given: every flow that seeds only
+    // reaches the value through UpdateCurrentValue, so parts without a value are a seed nothing committed yet.
+    private bool HasUncommittedSeed => CurrentValue.HasValue is false
+                                    && (_hour.HasValue || _minute.HasValue || _second.HasValue);
+
+    // A change that aborts hands the seed it took back. The starting value is where an empty picker begins,
+    // not a time it was given, so a change the constraints refused must leave the dial as empty as it found
+    // it rather than showing a time the value does not have.
+    private void UndoSeed()
+    {
+        if (HasUncommittedSeed is false) return;
+
+        _hour = null;
+        _minute = null;
+        _second = null;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -1637,7 +1676,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             var target = _hour.HasValue ? current + (steps * step) : current;
 
             var hour = FindNearestAllowedHour(target, Math.Sign(steps));
-            if (hour.HasValue) await SetHour(hour.Value);
+            if (hour.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetHour(hour.Value);
 
             return;
         }
@@ -1649,12 +1694,24 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsMinuteView)
         {
             var minute = FindNearestAllowedMinute(((wanted % 60) + 60) % 60, Math.Sign(steps));
-            if (minute.HasValue) await SetMinute(minute.Value);
+            if (minute.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetMinute(minute.Value);
         }
         else
         {
             var second = FindNearestAllowedSecond(((wanted % 60) + 60) % 60, Math.Sign(steps));
-            if (second.HasValue) await SetSecond(second.Value);
+            if (second.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetSecond(second.Value);
         }
     }
 
@@ -1676,6 +1733,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 return;
             }
 
+            UndoSeed();
             return;
         }
 
@@ -1688,6 +1746,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             await (IsMinuteView ? SetMinute(value) : SetSecond(value));
             return;
         }
+
+        UndoSeed();
     }
 
     private async Task FocusInput()

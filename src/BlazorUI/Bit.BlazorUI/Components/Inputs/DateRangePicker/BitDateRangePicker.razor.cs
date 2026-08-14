@@ -1793,7 +1793,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (ReadOnly) return;
         if (IsEnabled is false || InvalidValueBinding()) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false && Standalone is false) return;
         if (IsDayDisabled(selectedDate)) return;
 
         _hoveredDate = null;
@@ -1826,7 +1825,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             curValue.EndDate = selectedDateTimeOffset;
 
-            if (AutoClose && Standalone is false)
+            // A one-way bound IsOpen cannot be closed by the selection, so the callout stays open on the
+            // range that was just completed instead - the selection itself still goes through.
+            if (AutoClose && Standalone is false &&
+                (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
             {
                 await AssignIsOpenInternal(false);
 
@@ -1886,7 +1888,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         if (ReadOnly) return;
         if (IsEnabled is false || preset.IsEnabled is false || InvalidValueBinding()) return;
-        if (IsOpenHasBeenSet && IsOpenChanged.HasDelegate is false && Standalone is false) return;
 
         var presetValue = preset.ValueProvider is not null ? preset.ValueProvider() : preset.Value;
         if (presetValue is null) return;
@@ -1946,7 +1947,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         await OnPresetSelect.InvokeAsync(preset);
 
-        if (AutoClose && Standalone is false)
+        // A one-way bound IsOpen cannot be closed by the preset, so the callout stays open on the range
+        // the preset just applied instead - the preset itself still goes through.
+        if (AutoClose && Standalone is false &&
+            (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
         {
             await AssignIsOpenInternal(false);
 
@@ -2604,9 +2608,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // Walks outwards from the start date once, instead of rescanning the whole span for every cell.
     private void BuildExcludedBounds()
     {
-        var maxDate = GetMaxDate();
-        var minDate = GetMinDate();
-
         _excludedLowerBound = null;
         _excludedUpperBound = null;
 

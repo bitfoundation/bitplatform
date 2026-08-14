@@ -154,13 +154,17 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// Disables every day after today, exactly as a <see cref="MaxDate"/> of today would.
     /// When both are set, the earlier of the two bounds wins.
     /// </summary>
-    [Parameter] public bool DisableFuture { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisableFuture { get; set; }
 
     /// <summary>
     /// Disables every day before today, exactly as a <see cref="MinDate"/> of today would.
     /// When both are set, the later of the two bounds wins.
     /// </summary>
-    [Parameter] public bool DisablePast { get; set; }
+    [Parameter]
+    [CallOnSet(nameof(OnSetParameters))]
+    public bool DisablePast { get; set; }
 
     /// <summary>
     /// The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate.
