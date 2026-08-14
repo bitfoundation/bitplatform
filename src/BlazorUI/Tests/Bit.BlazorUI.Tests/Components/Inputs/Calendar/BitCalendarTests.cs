@@ -1098,8 +1098,11 @@ public class BitCalendarTests : BunitTestContext
 
         component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
 
-        var timeText = component.Find(".bit-cal-eis").TextContent;
-        var expectedFormatted = new TimeOnly(14, 30).ToString("h:mm tt", culture);  // "2:30 PM"
+        // The calendar writes the time with the pattern of the culture, whose separator before the
+        // designator is a plain space on some ICU versions and a narrow no-break space on others, while
+        // the pattern below carries the plain space it is written with (see TestStrings.NormalizeSpaces).
+        var timeText = component.Find(".bit-cal-eis").TextContent.NormalizeSpaces();
+        var expectedFormatted = new TimeOnly(14, 30).ToString("h:mm tt", culture).NormalizeSpaces();  // "2:30 PM"
         var unexpected24h = new TimeOnly(14, 30).ToString("HH:mm", culture);     // "14:30"
 
         Assert.DoesNotContain(unexpected24h, timeText, "Should not use 24h format in 12h mode");

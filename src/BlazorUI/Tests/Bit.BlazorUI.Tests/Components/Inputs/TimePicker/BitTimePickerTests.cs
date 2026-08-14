@@ -314,7 +314,9 @@ public class BitTimePickerTests : BunitTestContext
             parameters.Add(p => p.Value, new TimeSpan(13, 45, 0));
         });
 
-        Assert.AreEqual("01:45 PM", component.Find(".bit-tpc-inp").GetAttribute("value"));
+        // The separator before the designator is the one en-US itself writes, which is a plain space on
+        // some ICU versions and a narrow no-break space on others (see TestStrings.NormalizeSpaces).
+        Assert.AreEqual("01:45 PM", component.Find(".bit-tpc-inp").GetAttribute("value").NormalizeSpaces());
     }
 
     [TestMethod]
