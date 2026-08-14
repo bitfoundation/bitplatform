@@ -115,7 +115,7 @@ BitBswup.forceRefresh(() => true);                // every cache on the origin
 BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
 BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set";
 
-    private const string VersionCode = @"console.log(BitBswup.version);   // e.g. '10.6.0-pre-01'";
+    private const string VersionCode = @"console.log(BitBswup.version);   // e.g. '10.6.0-pre-02'";
 
     private const string PollingCode = @"// an ordinary failed check (offline, server hiccup) does NOT reject - it is reported through
 // the UPDATE_CHECK_FAILED message below. This catch is only for unexpected errors, such as a

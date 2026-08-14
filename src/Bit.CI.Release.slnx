@@ -42,6 +42,7 @@
     <Project Path="BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
+    <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
   </Folder>
