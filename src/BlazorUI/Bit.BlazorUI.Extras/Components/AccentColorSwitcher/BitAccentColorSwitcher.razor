@@ -11,7 +11,14 @@
      aria-label="@(AriaLabel ?? "Accent color")">
     @{
         var activeToken = BitAccentColorSsr.NormalizeToken(_accentColorService.ActiveAccent);
+        @* With a CSS first-paint strategy the swatches carry their token for the marker CSS
+           BitAccentColorHead emits, which rings the one the bit-accent root attribute names - set
+           before anything is painted, so prerendered and cached markup rings the visitor's accent
+           instead of ringing the default until hydration. Until then the C# accent state is the
+           prerender's, i.e. possibly some other visitor's, so the class marking stays off; it takes
+           over once this instance is interactive and the real accent has been restored. *@
         var cssMarked = _config?.FirstPaintStrategy is not (null or BitAccentColorFirstPaintStrategy.None);
+        var classMarked = cssMarked is false || _hydrated;
     }
     @foreach (var item in _config?.Accents ?? DefaultAccents)
     {
@@ -23,22 +30,9 @@
                 title="@item.Name"
                 disabled="@(IsEnabled is false)"
                 bit-accent-swatch="@(cssMarked ? token : null)"
-                class="@GetSwatchClass(isActive, cssMarked)"
+                class="@GetSwatchClass(isActive, classMarked)"
                 style="@GetSwatchStyle(item, isActive)"
                 aria-pressed="@(isActive ? "true" : "false")"
                 aria-label="@GetSwatchAriaLabel(item)"></button>
     }
 </div>
-@if (cssMarked)
-{
-    var markerCss = GetPrePaintActiveMarkerCss();
-    if (markerCss.Length > 0)
-    {
-        @* With a CSS first-paint strategy the active ring keys on the bit-accent root attribute -
-           the same one the inline head script sets before anything is painted - so prerendered and
-           cached markup rings the visitor's swatch immediately instead of ringing the default and
-           jumping once hydration restores the accent. The C# state (which the None strategy's class
-           marking, aria-pressed and Classes.ActiveSwatch follow) catches up at hydration. *@
-        <style>@((MarkupString)markerCss)</style>
-    }
-}

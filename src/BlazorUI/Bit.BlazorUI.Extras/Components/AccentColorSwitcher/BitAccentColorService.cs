@@ -160,7 +160,10 @@ public class BitAccentColorService : IDisposable
 
         // Nothing restored and nothing seeded, so there is no overlay to apply and nothing to
         // persist. This is the path almost every visit takes, so it is worth keeping off the
-        // interop calls below.
+        // interop calls below. Nothing painted by the first-paint machinery survives here either:
+        // the inline head script removed the bit-accent attribute the StaticCss stylesheet keys on,
+        // and the guard script following the StoredCss style removed that style - both before first
+        // paint, which is earlier than anything reachable from this side of hydration.
         if (stored is null && IsNeutral(ActiveAccent)) return;
 
         var changed = false;
@@ -338,7 +341,7 @@ public class BitAccentColorService : IDisposable
     /// </summary>
     private string? Canonicalize(string? value)
     {
-        return Normalize(value) ?? (BitAccentColorSsr.NormalizeToken(value) is { } token ? $"#{token}" : null);
+        return Normalize(value) ?? BitAccentColorSsr.CanonicalizeHex(value);
     }
 
     private static bool IsNeutral(string accent)
@@ -386,11 +389,18 @@ public class BitAccentColorService : IDisposable
 
     public void Dispose()
     {
-        // Detached first: the handler is what starts a transition after this point, and a reapply
-        // racing the Dispose below would only find the gate already gone.
+        // Detaching the handler is the whole teardown: it is what would start a transition after
+        // this point. A transition already in flight is left to finish on its own - it only reaches
+        // a torn-down circuit through the JS interop calls in ApplyCoreAsync, which are caught and
+        // logged there.
         _themeNotifications.ThemeChanged -= OnThemeChanged;
 
-        _transitionGate.Dispose();
+        // The SemaphoreSlim is deliberately NOT disposed (same reasoning as BitThemeManager's
+        // registration lock): a pick or a scheme-switch reapply can be parked in WaitAsync, or on
+        // its way to the Release in a finally, when the circuit goes away - disposing under them
+        // turns an orderly teardown into an ObjectDisposedException surfacing from an event handler,
+        // where nothing can handle it. It holds an unmanaged handle only if AvailableWaitHandle is
+        // used (it is not), so leaving it to the GC costs nothing.
 
         GC.SuppressFinalize(this);
     }

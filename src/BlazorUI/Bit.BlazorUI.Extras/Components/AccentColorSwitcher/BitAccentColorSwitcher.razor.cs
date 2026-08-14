@@ -14,7 +14,8 @@ namespace Bit.BlazorUI;
 public partial class BitAccentColorSwitcher : BitComponentBase
 {
     /// <summary>
-    /// The accent colors offered when the <see cref="Accents"/> parameter is not set: the six
+    /// The accent colors offered when <see cref="BitAccentColorConfig.Accents"/> is not set (on the
+    /// <see cref="Config"/> parameter nor on the configuration registered in DI): the six
     /// <see cref="BitAccentColorPresets"/> hues, starting with the packaged palette's own primary.
     /// </summary>
     public static readonly IReadOnlyList<BitAccentColorItem> DefaultAccents =
@@ -42,6 +43,14 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     /// </summary>
     private BitAccentColorConfig? _config;
 
+    /// <summary>
+    /// Set once this instance is interactive and the accent has been restored, which is when the C#
+    /// accent state becomes the authority on which swatch to mark. Until then a CSS strategy leaves
+    /// the marking to <see cref="BitAccentColorSsr.BuildSwatchMarkerCss"/>, because prerendered
+    /// markup can be served from a cache to a visitor whose accent the server never saw.
+    /// </summary>
+    private bool _hydrated;
+
 
 
     /// <summary>
@@ -59,8 +68,9 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     /// shared BitAccentColorService - the first initialized instance (or an explicit
     /// BitAccentColorService.InitializeAsync call) fixes it - so state it once: register it in DI,
     /// or define one shared BitAccentColorConfig instance and hand the same one to every switcher
-    /// and to the host page's BitAccentColorHead. With a CSS strategy the built-in active ring
-    /// additionally keys on the bit-accent root attribute the inline head script sets pre-paint, so
+    /// and to the host page's BitAccentColorHead. With a CSS strategy the built-in active ring comes,
+    /// until this instance is interactive, from the marker CSS that BitAccentColorHead emits for its
+    /// own accents - keyed on the bit-accent root attribute the inline head script sets pre-paint, so
     /// prerendered and cached markup rings the visitor's swatch immediately instead of ringing the
     /// default until hydration restores the accent.
     /// </summary>
@@ -113,6 +123,15 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         if (firstRender)
         {
             await _accentColorService.InitializeAsync(_config);
+
+            // The restore above (or the confirmation that there was nothing to restore) is what makes
+            // the C# accent state authoritative for this client, so re-render to hand the active-swatch
+            // marking back to it. Rendered rather than left to the CSS marker for good: that marker
+            // only covers the accents the host page's BitAccentColorHead was configured with, while
+            // this instance may offer its own - and an app that skipped the head altogether still
+            // gets a ring.
+            _hydrated = true;
+            StateHasChanged();
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -120,62 +139,49 @@ public partial class BitAccentColorSwitcher : BitComponentBase
 
 
 
-    private string GetSwatchClass(bool isActive, bool cssMarked)
+    private string GetSwatchClass(bool isActive, bool classMarked)
     {
         return string.Join(' ', new[]
         {
             "bit-acs-swt",
-            // With a CSS first-paint strategy the built-in ring comes from GetPrePaintActiveMarkerCss
-            // (keyed on the bit-accent root attribute) instead of this class, so prerendered markup -
-            // where the C# state still holds the default - cannot ring the wrong swatch.
-            isActive && cssMarked is false ? "bit-acs-act" : null,
+            // Until this instance is interactive, a CSS strategy rings the swatch through the marker
+            // CSS BitAccentColorHead emits (keyed on the bit-accent root attribute) instead of this
+            // class, so prerendered markup - where the C# state is the server's, and a cached
+            // response's server never saw this visitor - cannot ring the wrong swatch.
+            isActive && classMarked ? "bit-acs-act" : null,
             Classes?.Swatch,
             isActive ? Classes?.ActiveSwatch : null
         }.Where(c => c.HasValue()));
-    }
-
-    /// <summary>
-    /// One rule ringing the swatch whose token the <c>bit-accent</c> root attribute carries (plus
-    /// the packaged primary's swatch when no attribute is set, i.e. "no override"). Scoped to this
-    /// instance through its id, so instances with different accent lists cannot cross-match. The
-    /// declarations mirror <c>.bit-acs-act</c> in <c>BitAccentColorSwitcher.scss</c>.
-    /// </summary>
-    private string GetPrePaintActiveMarkerCss()
-    {
-        var selectors = new List<string>();
-        var neutralToken = BitAccentColorSsr.NormalizeToken(BitAccentColorPresets.Blue);
-
-        foreach (var item in _config?.Accents ?? DefaultAccents)
-        {
-            var token = BitAccentColorSsr.NormalizeToken(item.Color);
-            if (token is null) continue;
-
-            selectors.Add($":root[{BitAccentColorNames.Attribute}=\"{token}\"] [id=\"{_Id}\"] [bit-accent-swatch=\"{token}\"]");
-
-            if (token == neutralToken)
-            {
-                selectors.Add($":root:not([{BitAccentColorNames.Attribute}]) [id=\"{_Id}\"] [bit-accent-swatch=\"{token}\"]");
-            }
-        }
-
-        if (selectors.Count is 0) return string.Empty;
-
-        return $"{string.Join(',', selectors)}{{outline:0.125rem solid var(--bit-acs-clr);outline-offset:0.125rem;}}";
     }
 
     private string GetSwatchStyle(BitAccentColorItem item, bool isActive)
     {
         return string.Join(';', new[]
         {
-            $"--bit-acs-clr:{item.Color}",
+            $"--bit-acs-clr:{GetSwatchColor(item.Color)}",
             Styles?.Swatch,
             isActive ? Styles?.ActiveSwatch : null
         }.Where(s => s.HasValue()));
     }
 
+    /// <summary>
+    /// The color the swatch paints itself with. An accent may be spelled as a bare token everywhere
+    /// else in the feature (see <see cref="BitAccentColorSsr.NormalizeToken"/>), but
+    /// <c>--bit-acs-clr:8764b8</c> is not a color and the swatch would paint nothing - so the
+    /// missing <c>#</c> is supplied. Only that: the author's spelling survives, and a value that is
+    /// not hex at all is passed through for CSS to judge.
+    /// </summary>
+    private static string GetSwatchColor(string? color)
+    {
+        var value = color?.Trim();
+        if (value.HasValue() is false) return string.Empty;
+
+        return value!.StartsWith('#') is false && BitAccentColorSsr.NormalizeToken(value) is not null ? $"#{value}" : value;
+    }
+
     private static string GetSwatchAriaLabel(BitAccentColorItem item)
     {
-        if (item.AriaLabel.HasValue()) return item.AriaLabel;
+        if (item.AriaLabel.HasValue()) return item.AriaLabel!;
 
         return item.Name.HasValue() ? $"Apply the {item.Name} accent color" : "Apply this accent color";
     }

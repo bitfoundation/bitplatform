@@ -131,6 +131,67 @@ public sealed class BitAccentColorSsrTests
     }
 
     [TestMethod]
+    public void BuildSwatchMarkerCssRingsTheSwatchTheRootAttributeNames()
+    {
+        var css = BitAccentColorSsr.BuildSwatchMarkerCss();
+
+        var purpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
+        StringAssert.Contains(css, $":root[{BitAccentColorNames.Attribute}=\"{purpleToken}\"] [{BitAccentColorNames.SwatchAttribute}=\"{purpleToken}\"]", StringComparison.Ordinal,
+            "The ring must key on the attribute the inline head script sets pre-paint, and on the token the swatch carries.");
+
+        var blueToken = BitAccentColorPresets.Blue.TrimStart('#').ToLowerInvariant();
+        StringAssert.Contains(css, $":root:not([{BitAccentColorNames.Attribute}]) [{BitAccentColorNames.SwatchAttribute}=\"{blueToken}\"]", StringComparison.Ordinal,
+            "With no bit-accent attribute set (no override), the packaged primary's swatch must ring.");
+
+        // The declarations mirror .bit-acs-act, which is what marks the swatch once the C# state
+        // takes over at hydration - a different ring would visibly change at that moment.
+        StringAssert.Contains(css, "outline:0.125rem solid var(--bit-acs-clr)", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BuildSwatchMarkerCssIsNotScopedToASwitcherInstance()
+    {
+        // A swatch is ringed exactly when its own token is the active accent, which holds for every
+        // instance offering that accent - so one rule set emitted once covers them all.
+        Assert.IsFalse(BitAccentColorSsr.BuildSwatchMarkerCss().Contains("[id=", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BuildStaticCssAcceptsAnAccentSpelledWithoutTheHash()
+    {
+        // The accents are validated with NormalizeToken, which accepts a bare token, so an Accents
+        // entry may legitimately carry one - and this runs while the host page's <head> is being
+        // rendered, where an ArgumentException from the palette factory takes the whole page down.
+        var css = BitAccentColorSsr.BuildStaticCss([new BitAccentColorItem { Name = "Crimson", Color = "DC143C" }]);
+
+        StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal);
+        StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal, "The palette must actually be derived, not just scoped.");
+    }
+
+    [TestMethod]
+    public void BuildStaticCssSkipsAnAccentThatIsNotHexAtAll()
+    {
+        var css = BitAccentColorSsr.BuildStaticCss(
+        [
+            new BitAccentColorItem { Name = "Nonsense", Color = "rebeccapurple" },
+            new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" },
+        ]);
+
+        StringAssert.Contains(css, $"[{BitAccentColorNames.Attribute}=\"dc143c\"]", StringComparison.Ordinal,
+            "One unusable entry must not cost the visitor the accents that are usable.");
+        Assert.IsFalse(css.Contains("rebeccapurple", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void BuildPrerenderCssAcceptsAnAccentSpelledWithoutTheHash()
+    {
+        var css = BitAccentColorSsr.BuildPrerenderCss("dc143c", [new BitAccentColorItem { Name = "Crimson", Color = "DC143C" }]);
+
+        Assert.IsNotNull(css, "A bare-token accent is offered like any other, so the per-request style has to derive it.");
+        StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void BuildPrerenderCssReturnsNullWhenThereIsNothingToOverride()
     {
         Assert.IsNull(BitAccentColorSsr.BuildPrerenderCss(null), "No stored accent means no override.");
@@ -151,6 +212,32 @@ public sealed class BitAccentColorSsrTests
             "The light rule must cover every non-dark theme, or a custom-named theme paints unaccented.");
         StringAssert.Contains(css, "--bit-clr-pri:", StringComparison.Ordinal,
             "The palette must actually carry the derived tokens.");
+    }
+
+    [TestMethod]
+    public void PrerenderCssGuardScriptTargetsOnlyTheServerEmittedStyle()
+    {
+        var script = BitAccentColorSsr.PrerenderCssGuardScript;
+
+        StringAssert.StartsWith(script, "<script>", StringComparison.Ordinal);
+        StringAssert.EndsWith(script, "</script>", StringComparison.Ordinal);
+
+        StringAssert.Contains(script, $"getAttribute('{BitAccentColorNames.Attribute}')", StringComparison.Ordinal,
+            "The guard compares against the accent the inline head script resolved onto the root element.");
+        StringAssert.Contains(script, $"style[id=\"{BitAccentColorNames.StyleElementId}\"][{BitAccentColorNames.StyleAccentAttribute}]", StringComparison.Ordinal,
+            "Only the marked (server-emitted) style may be dropped; the snapshot the inline head script injects carries the accent it just resolved.");
+    }
+
+    [TestMethod]
+    public void BuildPrerenderCssGuardScriptEmitsAnEncodedNonceAttribute()
+    {
+        Assert.AreEqual(BitAccentColorSsr.PrerenderCssGuardScript, BitAccentColorSsr.BuildPrerenderCssGuardScript(null));
+
+        StringAssert.StartsWith(BitAccentColorSsr.BuildPrerenderCssGuardScript("abc123"), "<script nonce=\"abc123\">", StringComparison.Ordinal,
+            "The guard runs under the same CSP as the inline head script, so it needs the nonce as much.");
+
+        StringAssert.Contains(BitAccentColorSsr.BuildPrerenderCssGuardScript("x\"><script>alert(1)</script>"), "nonce=\"x&quot;&gt;&lt;script&gt;", StringComparison.Ordinal,
+            "The nonce must be HTML-attribute-encoded so it cannot inject markup.");
     }
 
     [TestMethod]

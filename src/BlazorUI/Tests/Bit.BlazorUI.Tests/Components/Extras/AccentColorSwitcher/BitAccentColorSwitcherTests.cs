@@ -59,6 +59,23 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             "The swatch paints itself through the --bit-acs-clr custom property.");
     }
 
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldPaintAnAccentSpelledWithoutTheHash()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Accents = [new BitAccentColorItem { Name = "Crimson", Color = "DC143C" }]
+            });
+        });
+
+        StringAssert.Contains(component.Find(".bit-acs-swt").GetAttribute("style"), "--bit-acs-clr:#DC143C", System.StringComparison.Ordinal,
+            "A bare token is a valid accent everywhere else in the feature, and '--bit-acs-clr:DC143C' is not a color - the swatch would paint nothing.");
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)]
@@ -104,7 +121,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccentColorSwitcherWithACssStrategyShouldMarkTheActiveSwatchThroughTheRootAttribute()
+    public void BitAccentColorSwitcherWithACssStrategyShouldTagEachSwatchWithItsTokenAndEmitNoStyleOfItsOwn()
     {
         RegisterServices();
 
@@ -117,26 +134,68 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             });
         });
 
-        // The built-in ring must not come from the C# state: prerendered markup renders before the
-        // accent is restored, so a class-driven ring would mark the default swatch and visibly jump
-        // to the visitor's accent at hydration. The emitted rules key on the bit-accent root
-        // attribute instead, which the inline head script sets before first paint.
-        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
-            "With a CSS strategy the built-in ring is attribute-driven, so the class must not render.");
-
+        // Until the accent has been restored the ring cannot come from the C# state - prerendered
+        // markup renders before that, and a cached response's server never saw this visitor at all.
+        // It comes from the marker CSS BitAccentColorHead emits, which keys on the bit-accent root
+        // attribute and on the token each swatch carries here.
         var purpleToken = BitAccentColorPresets.Purple.TrimStart('#').ToLowerInvariant();
         var purple = component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple");
-        Assert.AreEqual(purpleToken, purple.GetAttribute("bit-accent-swatch"),
+        Assert.AreEqual(purpleToken, purple.GetAttribute(BitAccentColorNames.SwatchAttribute),
             "Each swatch must carry its token for the attribute-keyed rules to target.");
 
-        var style = component.Find("style").TextContent;
-        StringAssert.Contains(style, $":root[{BitAccentColorNames.Attribute}=\"{purpleToken}\"]", System.StringComparison.Ordinal);
-        StringAssert.Contains(style, $"[bit-accent-swatch=\"{purpleToken}\"]", System.StringComparison.Ordinal);
+        Assert.AreEqual(0, component.FindAll("style").Count,
+            "The marker CSS belongs to the head, where the response's CSP nonce is: a style element rendered here has none to carry, so a style-src 'nonce-…' policy would block it and leave no swatch marked.");
+    }
 
-        var blueToken = BitAccentColorPresets.Blue.TrimStart('#').ToLowerInvariant();
-        StringAssert.Contains(style, $":root:not([{BitAccentColorNames.Attribute}]) ", System.StringComparison.Ordinal);
-        StringAssert.Contains(style, $"[bit-accent-swatch=\"{blueToken}\"]", System.StringComparison.Ordinal,
-            "With no bit-accent attribute set (no override), the packaged primary's swatch must ring.");
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldNotLetTheIdEscapeIntoMarkup()
+    {
+        RegisterServices();
+
+        // The switcher renders no markup of its own construction (its pre-paint marker CSS moved to
+        // BitAccentColorHead, where the CSP nonce is), so the id can only reach the document through
+        // an encoded attribute. This pins that down: an id is caller-supplied, and it used to be
+        // interpolated into a stylesheet rendered as a MarkupString.
+        const string hostileId = "x\"></style><script>alert(1)</script><style>";
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Id, hostileId);
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
+        });
+
+        Assert.AreEqual(0, component.FindAll("script").Count, "A caller-supplied id must not be able to open an element of its own.");
+        Assert.AreEqual(0, component.FindAll("style").Count);
+        Assert.AreEqual(hostileId, component.Find(".bit-acs").GetAttribute("id"),
+            "The id must survive as one attribute value - parsed as anything else, it escaped.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherWithACssStrategyShouldMarkTheActiveSwatchByClassOnceItIsInteractive()
+    {
+        RegisterServices();
+
+        // bUnit renders interactively, so the switcher has already initialized the service: the C#
+        // accent state is this client's own and takes the marking back from the CSS. That is what
+        // rings the swatch of a switcher offering accents the head was not configured with - and of
+        // one in an app that skipped BitAccentColorHead altogether.
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
+        });
+
+        var active = component.FindAll(".bit-acs-act");
+        Assert.AreEqual(1, active.Count);
+        Assert.AreEqual("Blue", active[0].GetAttribute("title"),
+            "Nothing is persisted here, so the packaged primary is the active accent.");
     }
 
     [TestMethod]
@@ -173,12 +232,11 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var component = RenderComponent<BitAccentColorSwitcher>();
 
-        // The attribute-driven ring (instead of the class-driven one) is the observable proof that
-        // the CSS strategy reached the switcher without any Config parameter - the whole point of
-        // registering the configuration once in DI.
-        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
+        // The swatch tokens (which only a CSS strategy renders, for the head's marker rules to key
+        // on) are the observable proof that the strategy reached the switcher without any Config
+        // parameter - the whole point of registering the configuration once in DI.
+        Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)),
             "The DI-registered CSS strategy must reach a parameterless switcher.");
-        Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute("bit-accent-swatch")));
     }
 
     [TestMethod]

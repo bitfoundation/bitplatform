@@ -16,6 +16,23 @@
     }
     else if (_prerenderCss is not null)
     {
-        <style id="@BitAccentColorNames.StyleElementId" nonce="@Nonce">@((MarkupString)_prerenderCss)</style>
+        <style id="@BitAccentColorNames.StyleElementId" @attributes="_prerenderStyleAttributes" nonce="@Nonce">@((MarkupString)_prerenderCss)</style>
+        @* This style was built from the request's cookie, so it is wrong for every visitor a cached
+           response reaches - and the inline script above cannot drop it, having run before the parser
+           reached it. So the guard comes after it, still before first paint, and removes it unless it
+           carries the accent that script resolved from this visitor's own stores. Only emitted
+           alongside that script: with nothing persisted (Persistence.None) nothing resolves the
+           accent client-side, and the guard would drop the style the server just rendered. *@
+        @if (_config.Persistence is not BitAccentColorPersistence.None)
+        {
+            @((MarkupString)BitAccentColorSsr.BuildPrerenderCssGuardScript(Nonce))
+        }
     }
+    @* Rings the switcher swatch the bit-accent attribute names, so a prerendered (or cached) page
+       marks the visitor's accent from the first paint rather than ringing the default until the
+       C# state catches up at hydration. Emitted here, with the rest of the first-paint machinery,
+       because this is where the response's CSP nonce is: a style element rendered by the switcher
+       itself has none to carry - the value is per-response, and an interactively-rendered switcher
+       never sees it - so a style-src 'nonce-…' policy would block it and leave nothing marked. *@
+    <style nonce="@Nonce">@((MarkupString)BitAccentColorSsr.BuildSwatchMarkerCss(_config.Accents))</style>
 }

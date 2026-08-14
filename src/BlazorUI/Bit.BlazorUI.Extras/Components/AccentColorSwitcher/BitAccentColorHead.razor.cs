@@ -8,9 +8,11 @@ namespace Bit.BlazorUI;
 /// any stylesheet) and it emits everything the strategy selected by <see cref="Config"/>
 /// needs - the inline script that re-resolves the accent from localStorage / the preference cookie
 /// before anything is painted (which is what keeps the accent correct when the HTML comes out of a
-/// cache), plus the palette CSS: the all-accents stylesheet in
+/// cache), the palette CSS (the all-accents stylesheet in
 /// <see cref="BitAccentColorFirstPaintStrategy.StaticCss"/> mode, or the persisted accent's
-/// per-request style in <see cref="BitAccentColorFirstPaintStrategy.StoredCss"/> mode. With the
+/// per-request style plus its guard in <see cref="BitAccentColorFirstPaintStrategy.StoredCss"/>
+/// mode), and the <see cref="BitAccentColorSsr.BuildSwatchMarkerCss"/> rule that rings the
+/// <see cref="BitAccentColorSwitcher"/> swatch of the accent being painted. With the
 /// default <see cref="BitAccentColorFirstPaintStrategy.None"/> there is no first-paint machinery to
 /// set up, so it emits nothing. Renders no element of its own, so it does not inherit
 /// <see cref="BitComponentBase"/>.
@@ -26,6 +28,15 @@ namespace Bit.BlazorUI;
 public partial class BitAccentColorHead : ComponentBase
 {
     private string? _prerenderCss;
+
+    /// <summary>
+    /// The accent token <see cref="_prerenderCss"/> was built for, splatted onto the emitted style so
+    /// the guard script following it can drop the style when the inline head script resolved another
+    /// accent (or none) from the visitor's own stores - see
+    /// <see cref="BitAccentColorSsr.BuildPrerenderCssGuardScript"/>. Splatted rather than written as
+    /// a literal attribute so the name stays owned by <see cref="BitAccentColorNames"/>.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? _prerenderStyleAttributes;
 
     /// <summary>
     /// The configuration this instance emits the head half for: the Config parameter when one is
@@ -53,10 +64,11 @@ public partial class BitAccentColorHead : ComponentBase
     [Parameter] public BitAccentColorConfig? Config { get; set; }
 
     /// <summary>
-    /// Optional CSP nonce for the emitted inline script and the emitted palette style element, to
-    /// satisfy a script-src / style-src 'nonce-…' Content-Security-Policy. The inline script stamps
-    /// the same nonce onto the style element it injects from the localStorage snapshot, so the whole
-    /// first-paint chain passes under one nonce.
+    /// Optional CSP nonce for every inline script and style element emitted here, to satisfy a
+    /// script-src / style-src 'nonce-…' Content-Security-Policy. The inline script stamps the same
+    /// nonce onto the style element it injects from the localStorage snapshot, so the whole
+    /// first-paint chain - script, palette CSS and the switcher's swatch marker - passes under one
+    /// nonce.
     /// </summary>
     [Parameter] public string? Nonce { get; set; }
 
@@ -89,6 +101,15 @@ public partial class BitAccentColorHead : ComponentBase
         _prerenderCss = _config?.FirstPaintStrategy is BitAccentColorFirstPaintStrategy.StoredCss
             ? BitAccentColorSsr.BuildPrerenderCss(PersistedAccent, _config?.Accents)
             : null;
+
+        // Non-null exactly when the style is emitted: BuildPrerenderCss only returns CSS for a
+        // PersistedAccent that normalized to a token in the first place.
+        _prerenderStyleAttributes = _prerenderCss is null
+            ? null
+            : new Dictionary<string, object>(capacity: 1, StringComparer.Ordinal)
+            {
+                [BitAccentColorNames.StyleAccentAttribute] = BitAccentColorSsr.NormalizeToken(PersistedAccent)!
+            };
 
         base.OnParametersSet();
     }

@@ -60,6 +60,9 @@ public static class BitAccentColorSsr
     /// <summary>Rendered <see cref="BuildStaticCss"/> output, keyed by the joined accent tokens.</summary>
     private static readonly ConcurrentDictionary<string, string> _staticCss = new(StringComparer.Ordinal);
 
+    /// <summary>Rendered <see cref="BuildSwatchMarkerCss"/> output, keyed by the joined accent tokens.</summary>
+    private static readonly ConcurrentDictionary<string, string> _swatchMarkerCss = new(StringComparer.Ordinal);
+
     /// <summary>
     /// Rendered <see cref="BuildInlineHeadScriptBody"/> output, keyed by the persistence flags (only
     /// four combinations exist, so this stays tiny).
@@ -107,8 +110,55 @@ public static class BitAccentColorSsr
     public static string BuildInlineHeadScript(string? nonce = null, BitAccentColorPersistence persistence = BitAccentColorPersistence.All)
     {
         var body = BuildInlineHeadScriptBody(persistence);
-        if (body.Length is 0) return string.Empty;
 
+        return body.Length is 0 ? string.Empty : WrapScript(body, nonce);
+    }
+
+    /// <summary>
+    /// Script body without a wrapping <c>&lt;script&gt;</c> tag that drops the server-emitted
+    /// <see cref="BuildPrerenderCss"/> style when it does not carry the accent the inline head
+    /// script resolved from the visitor's own stores. Emit it right after that style (see
+    /// <see cref="BuildPrerenderCssGuardScript"/> for what it is for); concatenate it into your own
+    /// <c>&lt;script&gt;</c> element when you need full control over the attributes.
+    /// </summary>
+    public static string PrerenderCssGuardScript => BuildPrerenderCssGuardScript(nonce: null);
+
+    /// <summary>
+    /// The guard of the <see cref="BitAccentColorFirstPaintStrategy.StoredCss"/> strategy, as a
+    /// <c>&lt;script&gt;</c> element to emit immediately after the <see cref="BuildPrerenderCss"/>
+    /// style: it removes that style unless the accent it was built for is the one the inline head
+    /// script resolved from the visitor's own stores.
+    /// </summary>
+    /// <param name="nonce">Optional CSP nonce. When supplied, the value is HTML-attribute-encoded and emitted as <c>nonce="…"</c>.</param>
+    /// <remarks>
+    /// <para>
+    /// The inline head script cannot do this itself: it runs before the style is parsed, so all it
+    /// can reach is the <c>bit-accent</c> attribute - which the per-request style, carrying a single
+    /// accent, does not key on. Without the guard a cached response keeps painting the accent of
+    /// whichever visitor the origin rendered it for, right through to hydration.
+    /// </para>
+    /// <para>
+    /// It also settles the case where both styles are present: the snapshot the inline head script
+    /// injects lands earlier in <c>&lt;head&gt;</c> than the server's style, so at equal specificity
+    /// a cookie that lags behind localStorage would otherwise win the first paint.
+    /// </para>
+    /// </remarks>
+    public static string BuildPrerenderCssGuardScript(string? nonce = null)
+    {
+        // Only the server-emitted style carries the marker attribute, so the snapshot injected by the
+        // inline head script - which is by definition the accent that script just resolved - is left
+        // alone. A root element with no accent at all (nothing persisted) matches no marker either,
+        // which is exactly the cached-response case this exists for.
+        var body =
+            $"(function(){{var t=document.documentElement.getAttribute('{BitAccentColorNames.Attribute}')," +
+            $"l=document.querySelectorAll('style[id=\"{BitAccentColorNames.StyleElementId}\"][{BitAccentColorNames.StyleAccentAttribute}]');" +
+            $"for(var i=0;i<l.length;i++){{if(l[i].getAttribute('{BitAccentColorNames.StyleAccentAttribute}')!==t)l[i].remove();}}}})();";
+
+        return WrapScript(body, nonce);
+    }
+
+    private static string WrapScript(string body, string? nonce)
+    {
         if (string.IsNullOrWhiteSpace(nonce))
         {
             return $"<script>{body}</script>";
@@ -174,9 +224,8 @@ public static class BitAccentColorSsr
     /// The accents to include; <see langword="null"/> uses
     /// <see cref="BitAccentColorSwitcher.DefaultAccents"/>. An accent whose color is the packaged
     /// palette's own primary (<see cref="BitAccentColorPresets.Blue"/>) needs no override and is
-    /// skipped.
+    /// skipped, as is an accent whose color is not hex at all.
     /// </param>
-    /// <exception cref="ArgumentException">An accent color is not a valid <c>#RGB</c>/<c>#RRGGBB</c> hex.</exception>
     /// <remarks>
     /// <para>
     /// The doubled <c>:root:root</c> is there for specificity, not for matching: the packaged
@@ -215,6 +264,66 @@ public static class BitAccentColorSsr
     }
 
     /// <summary>
+    /// The pre-paint active-swatch marker the CSS strategies need: one rule ringing the
+    /// <see cref="BitAccentColorSwitcher"/> swatch whose token the <c>bit-accent</c> root attribute
+    /// carries (plus the packaged primary's swatch when no attribute is set, i.e. "no override"), so
+    /// prerendered and cached markup rings the visitor's swatch immediately instead of ringing the
+    /// default until hydration. Accent-agnostic like <see cref="BuildStaticCss"/>, so it is safe in a
+    /// cached response.
+    /// </summary>
+    /// <param name="accents">
+    /// The accents to mark; <see langword="null"/> uses
+    /// <see cref="BitAccentColorSwitcher.DefaultAccents"/>. An accent whose color is not hex is
+    /// skipped - it is not a swatch the switcher can paint either.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Emitted by <see cref="BitAccentColorHead"/> alongside the palette CSS rather than by the
+    /// switcher itself, because this is first-paint machinery like the rest of it: emitting it from
+    /// the host page's <c>&lt;head&gt;</c> costs one style element per response instead of one per
+    /// switcher instance, and - the reason it cannot stay in the component - it is the only place a
+    /// CSP nonce exists. A style element a switcher renders has no nonce to carry (the value is
+    /// per-response, and an interactively-rendered switcher never sees it), so a
+    /// <c>style-src 'nonce-…'</c> policy blocks it and no swatch is ever marked.
+    /// </para>
+    /// <para>
+    /// The rules deliberately do not scope to a switcher instance: a swatch is ringed exactly when
+    /// its own token is the active accent, which holds for every instance offering that accent. A
+    /// switcher configured with accents of its own (rather than the app-wide list this is built
+    /// from) is simply not covered pre-paint; its ring arrives with hydration, from the C# state.
+    /// The declarations mirror <c>.bit-acs-act</c> in <c>BitAccentColorSwitcher.scss</c>.
+    /// </para>
+    /// </remarks>
+    public static string BuildSwatchMarkerCss(IEnumerable<BitAccentColorItem>? accents = null)
+    {
+        var tokens = (accents ?? BitAccentColorSwitcher.DefaultAccents)
+                     .Select(a => NormalizeToken(a.Color))
+                     .Where(t => t is not null)
+                     .Distinct(StringComparer.Ordinal)
+                     .ToArray();
+
+        return _swatchMarkerCss.GetOrAdd(string.Join(',', tokens), _ =>
+        {
+            var neutral = NormalizeToken(BitAccentColorPresets.Blue);
+            var selectors = new List<string>();
+
+            foreach (var token in tokens)
+            {
+                selectors.Add($":root[{BitAccentColorNames.Attribute}=\"{token}\"] [{BitAccentColorNames.SwatchAttribute}=\"{token}\"]");
+
+                if (token == neutral)
+                {
+                    selectors.Add($":root:not([{BitAccentColorNames.Attribute}]) [{BitAccentColorNames.SwatchAttribute}=\"{token}\"]");
+                }
+            }
+
+            return selectors.Count is 0
+                ? string.Empty
+                : $"{string.Join(',', selectors)}{{outline:0.125rem solid var(--bit-acs-clr);outline-offset:0.125rem;}}";
+        });
+    }
+
+    /// <summary>
     /// The per-request style the server emits so an origin-rendered page paints the persisted accent
     /// immediately - the server half of the <see cref="BitAccentColorFirstPaintStrategy.StoredCss"/> strategy (in
     /// <see cref="BitAccentColorFirstPaintStrategy.StaticCss"/> strategy the static stylesheet plus
@@ -224,6 +333,13 @@ public static class BitAccentColorSsr
     /// script sets). Returns <see langword="null"/> when there is nothing to override - no stored
     /// accent, an unrecognized one, or the packaged primary.
     /// </summary>
+    /// <remarks>
+    /// The style is per-visitor, so mark it with
+    /// <c>@BitAccentColorNames.StyleAccentAttribute="&lt;token&gt;"</c> and emit
+    /// <see cref="BuildPrerenderCssGuardScript"/> right after it - that pair is what stops a cached
+    /// response from painting this accent for the next visitor. <see cref="BitAccentColorHead"/>
+    /// does all of it; this is for hosts that emit the head half themselves.
+    /// </remarks>
     /// <param name="persistedAccent">
     /// The stored accent token, usually the <see cref="BitAccentColorNames.CookieName"/> cookie value.
     /// </param>
@@ -280,6 +396,20 @@ public static class BitAccentColorSsr
     }
 
     /// <summary>
+    /// <see cref="NormalizeToken"/> as a color rather than a token: the canonical <c>#</c>-prefixed
+    /// lower-case hex, or <see langword="null"/> for anything that is not hex at all. This is the
+    /// shape <see cref="BitThemeFactory"/> and CSS both require, while the feature accepts a bare
+    /// token wherever it accepts a color (that is what <see cref="NormalizeToken"/> validates), so
+    /// every path that hands an accent to the factory or writes it into a declaration has to come
+    /// through here - otherwise an <c>Accents</c> entry spelled <c>8764b8</c> works in one half of
+    /// the feature and fails in the other.
+    /// </summary>
+    internal static string? CanonicalizeHex(string? value)
+    {
+        return NormalizeToken(value) is { } token ? $"#{token}" : null;
+    }
+
+    /// <summary>
     /// The cache stops growing past this many distinct accents. The offered accent lists this cache
     /// exists for are a handful of colors; only the programmatic <c>ApplyAsync</c> path can feed it
     /// arbitrary hexes (e.g. an app wiring a free-form color picker to it), and each entry pins two
@@ -290,17 +420,24 @@ public static class BitAccentColorSsr
 
     private static (string Dark, string Light) GetDeclarations(string accentHex)
     {
+        // The callers validate with NormalizeToken, which accepts a bare "8764b8" - the factory does
+        // not, so canonicalizing here is what keeps such an accent from throwing while the host
+        // page's <head> is being rendered. It also collapses every spelling of one accent onto a
+        // single cache entry. A value that is not hex at all is passed through for the factory to
+        // reject with its own message.
+        var seed = CanonicalizeHex(accentHex) ?? accentHex;
+
         // The dark/light split matches the library's own [bit-theme$=dark] convention, so "fluent-dark"
         // and any other dark preset land on the dark palette too.
-        if (_declarations.TryGetValue(accentHex, out var cached)) return cached;
+        if (_declarations.TryGetValue(seed, out var cached)) return cached;
 
-        var derived = (Declarations(BitThemeFactory.CreateDarkThemeFromSeed(accentHex)), Declarations(BitThemeFactory.CreateLightThemeFromSeed(accentHex)));
+        var derived = (Declarations(BitThemeFactory.CreateDarkThemeFromSeed(seed)), Declarations(BitThemeFactory.CreateLightThemeFromSeed(seed)));
 
         // Past the cap the derivation is repeated per call instead of cached: correct either way,
         // and the repeating caller is by definition off the offered lists.
         if (_declarations.Count < MaxCachedDeclarations)
         {
-            _declarations.TryAdd(accentHex, derived);
+            _declarations.TryAdd(seed, derived);
         }
 
         return derived;

@@ -18,7 +18,10 @@ public class BitAccentColorItem
 
     /// <summary>
     /// The accent color in <c>#RGB</c> or <c>#RRGGBB</c> hex format, fed to
-    /// <see cref="BitThemeFactory"/> as the seed the whole palette is derived from.
+    /// <see cref="BitThemeFactory"/> as the seed the whole palette is derived from. The <c>#</c> is
+    /// optional and the casing is free: the value is canonicalized on every path that consumes it,
+    /// so <c>8764B8</c> and <c>#8764b8</c> are the same accent. Anything that is not hex is not an
+    /// accent - such an item is skipped rather than painted.
     /// </summary>
     public string Color { get; set; } = default!;
 }

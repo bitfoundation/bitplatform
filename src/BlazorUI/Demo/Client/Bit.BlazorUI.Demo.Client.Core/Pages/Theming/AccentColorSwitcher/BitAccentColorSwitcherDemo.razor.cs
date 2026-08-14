@@ -282,7 +282,21 @@ public partial class BitAccentColorSwitcherDemo
                     Name = "BuildPrerenderCss",
                     Type = "string? BuildPrerenderCss(string? persistedAccent, IEnumerable<BitAccentColorItem>? accents = null)",
                     DefaultValue = "",
-                    Description = "The per-request style the server emits (as <style id=\"@BitAccentColorNames.StyleElementId\">) so an origin-rendered page paints the persisted accent immediately - the server half of the StoredCss mode.",
+                    Description = "The per-request style the server emits (as <style id=\"@BitAccentColorNames.StyleElementId\">) so an origin-rendered page paints the persisted accent immediately - the server half of the StoredCss mode. Mark that style with @BitAccentColorNames.StyleAccentAttribute=\"<token>\" and follow it with PrerenderCssGuardScript.",
+                },
+                new()
+                {
+                    Name = "BuildSwatchMarkerCss",
+                    Type = "string BuildSwatchMarkerCss(IEnumerable<BitAccentColorItem>? accents = null)",
+                    DefaultValue = "",
+                    Description = "The pre-paint active-swatch marker of the CSS strategies: one rule ringing the BitAccentColorSwitcher swatch whose token the bit-accent root attribute carries (plus the packaged primary's swatch when no attribute is set), so prerendered and cached markup rings the visitor's accent from the first paint. Accent-agnostic, so it is safe in a cached response. Emitted here rather than by the switcher because this is where the response's CSP nonce is - a style element the switcher rendered would have none to carry.",
+                },
+                new()
+                {
+                    Name = "PrerenderCssGuardScript",
+                    Type = "string",
+                    DefaultValue = "",
+                    Description = "Full <script> markup to emit immediately after the BuildPrerenderCss style: it drops that style unless the accent it was built for is the one the inline head script resolved from this visitor's own stores - which is what keeps a cached response from painting the accent of whichever visitor the origin rendered it for. The inline head script cannot do this itself, having run before that style was parsed. BuildPrerenderCssGuardScript(nonce) is the parameterized variant.",
                 },
             ]
         },

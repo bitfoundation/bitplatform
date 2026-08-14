@@ -30,7 +30,7 @@ public class BitAccentColorHeadTests : BunitTestContext
 
         StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
             "The DI-registered configuration must reach a parameterless head - stating the config once in shared registration is the whole point.");
-        Assert.AreEqual(1, component.FindAll("style").Count);
+        StringAssert.Contains(component.Markup, BitAccentColorSsr.BuildStaticCss(), StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -44,7 +44,7 @@ public class BitAccentColorHeadTests : BunitTestContext
             });
         });
 
-        Assert.AreEqual(1, component.FindAll("style").Count);
+        StringAssert.Contains(component.Markup, BitAccentColorSsr.BuildStaticCss(), StringComparison.Ordinal);
         Assert.IsFalse(component.Markup.Contains("<script", StringComparison.Ordinal),
             "With the default Persistence of None nothing is ever persisted, so there is nothing for an inline script to restore.");
     }
@@ -64,9 +64,7 @@ public class BitAccentColorHeadTests : BunitTestContext
         StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
             "The inline script is what personalizes a cached response pre-paint; without it the component solves nothing.");
 
-        var styles = component.FindAll("style");
-        Assert.AreEqual(1, styles.Count);
-        StringAssert.Contains(styles[0].TextContent, $"[{BitAccentColorNames.Attribute}=\"8764b8\"]", StringComparison.Ordinal,
+        StringAssert.Contains(component.Find("style").TextContent, $"[{BitAccentColorNames.Attribute}=\"8764b8\"]", StringComparison.Ordinal,
             "With no StylesheetHref, the all-accents stylesheet must be inlined so no endpoint is required.");
 
         Assert.AreEqual(0, component.FindAll("link").Count, "Inlined and linked stylesheets are alternatives, not companions.");
@@ -89,7 +87,8 @@ public class BitAccentColorHeadTests : BunitTestContext
         Assert.AreEqual($"accent-colors.css?v={BitAccentColorSsr.Version}", link.GetAttribute("href"),
             "The library version must ride along as a cache-buster, or an immutable-cached stylesheet outlives a palette-changing release.");
 
-        Assert.AreEqual(0, component.FindAll("style").Count, "A linked stylesheet must not also be inlined.");
+        Assert.IsFalse(component.Markup.Contains($"[{BitThemeAttributeNames.Theme}$=dark]{{", StringComparison.Ordinal),
+            "A linked stylesheet must not also be inlined - only the (endpoint-less) swatch marker stays inline.");
     }
 
     [TestMethod]
@@ -177,6 +176,47 @@ public class BitAccentColorHeadTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll("link").Count, "StoredCss strategy needs no stylesheet.");
     }
 
+    [TestMethod]
+    public void BitAccentColorHeadInStoredCssModeShouldGuardThePrerenderStyleAgainstACachedResponse()
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
+            parameters.Add(p => p.PersistedAccent, "#8764B8");
+        });
+
+        var style = component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]");
+        Assert.AreEqual("8764b8", style.GetAttribute(BitAccentColorNames.StyleAccentAttribute),
+            "The per-request style has to say which accent it was built for, or the guard cannot tell it from the visitor's own snapshot.");
+
+        StringAssert.Contains(component.Markup, BitAccentColorSsr.PrerenderCssGuardScript, StringComparison.Ordinal,
+            "Without the guard, a cached response paints the accent of whichever visitor the origin rendered it for.");
+
+        Assert.IsTrue(component.Markup.IndexOf(BitAccentColorSsr.PrerenderCssGuardScript, StringComparison.Ordinal) > component.Markup.IndexOf("<style", StringComparison.Ordinal),
+            "The guard must come after the style: it exists precisely because that element is not parsed yet when the inline head script runs.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorHeadInStoredCssModeShouldNotGuardThePrerenderStyleWithoutPersistence()
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss,
+            });
+            parameters.Add(p => p.PersistedAccent, "8764b8");
+        });
+
+        Assert.IsNotNull(component.Find($"style[id=\"{BitAccentColorNames.StyleElementId}\"]"));
+        Assert.IsFalse(component.Markup.Contains("<script", StringComparison.Ordinal),
+            "With nothing persisted, no inline script resolves the accent client-side - a guard would only drop the style the server just rendered.");
+    }
+
     [DataTestMethod,
         DataRow(null, DisplayName = "No persisted accent"),
         DataRow("1276c6", DisplayName = "The packaged primary needs no override"),
@@ -193,9 +233,50 @@ public class BitAccentColorHeadTests : BunitTestContext
             parameters.Add(p => p.PersistedAccent, persisted);
         });
 
-        Assert.AreEqual(0, component.FindAll("style").Count);
+        Assert.AreEqual(0, component.FindAll($"style[id=\"{BitAccentColorNames.StyleElementId}\"]").Count);
         StringAssert.Contains(component.Markup, BitAccentColorSsr.InlineHeadScriptBody, StringComparison.Ordinal,
             "The inline script must be emitted regardless - it is what restores the accent from the visitor's own stores.");
+    }
+
+    [DataTestMethod,
+        DataRow(BitAccentColorFirstPaintStrategy.StaticCss),
+        DataRow(BitAccentColorFirstPaintStrategy.StoredCss)]
+    public void BitAccentColorHeadShouldEmitTheSwatchMarkerForEveryCssStrategy(BitAccentColorFirstPaintStrategy strategy)
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = strategy,
+                Persistence = BitAccentColorPersistence.All,
+            });
+            parameters.Add(p => p.Nonce, "abc123");
+        });
+
+        StringAssert.Contains(component.Markup, BitAccentColorSsr.BuildSwatchMarkerCss(), StringComparison.Ordinal,
+            "Both CSS strategies set the bit-accent root attribute pre-paint, so both can - and must - ring the matching swatch from here.");
+
+        var marker = component.FindAll("style").Last();
+        Assert.AreEqual("abc123", marker.GetAttribute("nonce"),
+            "Carrying the nonce is the whole reason the marker is emitted here rather than by the switcher.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorHeadShouldMarkTheSwatchesOfItsOwnAccentList()
+    {
+        var component = RenderComponent<BitAccentColorHead>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Accents = [new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" }],
+            });
+        });
+
+        var marker = component.FindAll("style").Last().TextContent;
+        StringAssert.Contains(marker, $"[{BitAccentColorNames.SwatchAttribute}=\"dc143c\"]", StringComparison.Ordinal);
+        Assert.IsFalse(marker.Contains("8764b8", StringComparison.Ordinal),
+            "A custom accent list replaces the defaults here as everywhere else.");
     }
 
     [TestMethod]

@@ -18,6 +18,14 @@ public static class BitAccentColorNames
     public const string Attribute = "bit-accent";
 
     /// <summary>
+    /// The attribute a <see cref="BitAccentColorSwitcher"/> swatch carries its own accent token in,
+    /// which is what lets <see cref="BitAccentColorSsr.BuildSwatchMarkerCss"/> ring the swatch
+    /// matching <see cref="Attribute"/> before hydration. Only set under a CSS first-paint strategy,
+    /// where that marker CSS is emitted.
+    /// </summary>
+    public const string SwatchAttribute = "bit-accent-swatch";
+
+    /// <summary>
     /// The localStorage key holding the persisted accent token.
     /// </summary>
     public const string StorageKey = "bit-accent-color";
@@ -47,4 +55,12 @@ public static class BitAccentColorNames
     /// removes the element through this id.
     /// </summary>
     public const string StyleElementId = "bit-accent-css";
+
+    /// <summary>
+    /// Marks a server-emitted <see cref="StyleElementId"/> style with the accent token it was built
+    /// for, so <see cref="BitAccentColorSsr.PrerenderCssGuardScript"/> can tell it apart from the
+    /// snapshot the inline head script injects and drop it when it does not match the accent that
+    /// script resolved - see <see cref="BitAccentColorSsr.BuildPrerenderCssGuardScript"/>.
+    /// </summary>
+    public const string StyleAccentAttribute = "data-bit-accent";
 }
