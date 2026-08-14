@@ -31,15 +31,54 @@ public class BitFullCalendarTests : BunitTestContext
         new() { Id = "r1", Title = "Room 1" }
     ];
 
+    /// <summary>
+    /// Renders a calendar over the shared event, carrying only the parameters the caller asks for so
+    /// each test reads as the configuration it is about. Tests that bind a parameter or hook a
+    /// callback build their own parameter set instead.
+    /// </summary>
+    private IRenderedComponent<BitFullCalendar> RenderCalendar(bool readOnly = false,
+                                                               BitFullCalendarView? defaultView = null,
+                                                               IReadOnlyList<BitFullCalendarView>? views = null,
+                                                               bool resources = false,
+                                                               BitFullCalendarMode? defaultMode = null)
+    {
+        return RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+
+            if (readOnly)
+            {
+                parameters.Add(p => p.ReadOnly, true);
+            }
+
+            if (defaultView is not null)
+            {
+                parameters.Add(p => p.DefaultView, defaultView);
+            }
+
+            if (views is not null)
+            {
+                parameters.Add(p => p.Views, views);
+            }
+
+            if (resources)
+            {
+                parameters.Add(p => p.Resources, Resources());
+            }
+
+            if (defaultMode is not null)
+            {
+                parameters.Add(p => p.DefaultMode, defaultMode);
+            }
+        });
+    }
+
     #region ReadOnly
 
     [TestMethod]
     public void BitFullCalendarShouldRenderTheAddAffordancesByDefault()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var component = RenderCalendar();
 
         Assert.IsFalse(component.Find(".bit-bfc").ClassList.Contains("bit-bfc-readonly"));
         Assert.AreEqual(1, component.FindAll(AddButtonSelector).Count);
@@ -49,11 +88,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldHideTheAddButtonAndCellHints()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var component = RenderCalendar(readOnly: true);
 
         Assert.IsTrue(component.Find(".bit-bfc").ClassList.Contains("bit-bfc-readonly"));
         Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
@@ -63,11 +98,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldKeepNavigationAndFiltering()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var component = RenderCalendar(readOnly: true);
 
         // Everything that does not modify events has to survive read-only.
         Assert.AreEqual(5, component.FindAll(".bit-bfc-view-tab").Count);
@@ -78,17 +109,10 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldMakeMonthEventsNonDraggable()
     {
-        var editable = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var editable = RenderCalendar();
         Assert.AreEqual("true", editable.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
 
-        var readOnly = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var readOnly = RenderCalendar(readOnly: true);
 
         Assert.AreEqual("false", readOnly.Find(".bit-bfc-event-badge").GetAttribute("draggable"));
     }
@@ -96,11 +120,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldNotOpenTheAddDialogFromAMonthCell()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var component = RenderCalendar(readOnly: true);
 
         component.Find(".bit-bfc-month-cell").Click();
 
@@ -111,10 +131,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldOpenTheAddDialogFromAMonthCellWhenEditable()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var component = RenderCalendar();
 
         component.Find(".bit-bfc-month-cell").Click();
 
@@ -148,19 +165,12 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldDropEditAndDeleteFromTheEventDetails()
     {
-        var editable = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var editable = RenderCalendar();
         editable.Find(".bit-bfc-event-badge").Click();
         Assert.AreEqual(1, editable.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Count);
         Assert.AreEqual(3, editable.FindAll(".bit-bfc-dialog-footer button").Count);
 
-        var readOnly = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var readOnly = RenderCalendar(readOnly: true);
         readOnly.Find(".bit-bfc-event-badge").Click();
 
         // The details stay readable; only the mutating actions go, leaving Close on its own.
@@ -198,21 +208,12 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldStripTheHourSlotButtonSemantics()
     {
-        var editable = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-        });
+        var editable = RenderCalendar(defaultView: BitFullCalendarView.Day);
         var editableSlot = editable.Find(".bit-bfc-hour-slot");
         Assert.AreEqual("button", editableSlot.GetAttribute("role"));
         Assert.AreEqual("0", editableSlot.GetAttribute("tabindex"));
 
-        var readOnly = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var readOnly = RenderCalendar(readOnly: true, defaultView: BitFullCalendarView.Day);
 
         // An inert slot must not be announced or reachable by keyboard.
         var readOnlySlot = readOnly.Find(".bit-bfc-hour-slot");
@@ -224,19 +225,10 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldRemoveTheResizeHandles()
     {
-        var editable = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-        });
+        var editable = RenderCalendar(defaultView: BitFullCalendarView.Day);
         Assert.AreEqual(2, editable.FindAll(".bit-bfc-resize-handle").Count);
 
-        var readOnly = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var readOnly = RenderCalendar(readOnly: true, defaultView: BitFullCalendarView.Day);
 
         Assert.AreEqual(0, readOnly.FindAll(".bit-bfc-resize-handle").Count);
         Assert.AreEqual("false", readOnly.Find(".bit-bfc-event-block").GetAttribute("draggable"));
@@ -323,24 +315,11 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarReadOnlyShouldStripTheTimelineSlotButtonSemantics()
     {
-        var editable = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-        });
+        var editable = RenderCalendar(defaultView: BitFullCalendarView.Day, resources: true, defaultMode: BitFullCalendarMode.Timeline);
         Assert.AreEqual("button", editable.Find(".bit-bfc-tl-cell-slot").GetAttribute("role"));
         Assert.IsTrue(editable.FindAll(".bit-bfc-cell-add-hint").Count > 0);
 
-        var readOnly = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var readOnly = RenderCalendar(readOnly: true, defaultView: BitFullCalendarView.Day, resources: true, defaultMode: BitFullCalendarMode.Timeline);
 
         var slot = readOnly.Find(".bit-bfc-tl-cell-slot");
         Assert.IsNull(slot.GetAttribute("role"));
@@ -352,11 +331,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRestoreTheAffordancesWhenReadOnlyIsTurnedOff()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.ReadOnly, true);
-        });
+        var component = RenderCalendar(readOnly: true);
         Assert.AreEqual(0, component.FindAll(AddButtonSelector).Count);
 
         component.Render(parameters =>
@@ -377,10 +352,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarShouldRenderEveryViewTabByDefault()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var component = RenderCalendar();
 
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
@@ -390,11 +362,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldRestrictAndOrderTheTabs()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Agenda, BitFullCalendarView.Week]);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Agenda, BitFullCalendarView.Week]);
 
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
@@ -404,11 +372,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldCollapseTheTabStripForASingleView()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Month]);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Month]);
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-view-tabs").Count);
         Assert.IsNotNull(component.Find(".bit-bfc-month"));
@@ -417,11 +381,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldClampTheActiveViewIntoTheAllowedSet()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Agenda, BitFullCalendarView.Week]);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Agenda, BitFullCalendarView.Week]);
 
         // Month is the component default and is excluded here, so the first allowed view renders.
         Assert.AreEqual(BitFullCalendarView.Agenda, component.Instance.View);
@@ -431,12 +391,8 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldClampAnExcludedDefaultView()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Week, BitFullCalendarView.Day]);
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Year);
-        });
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Year,
+                                       views: [BitFullCalendarView.Week, BitFullCalendarView.Day]);
 
         Assert.AreEqual(BitFullCalendarView.Week, component.Instance.View);
     }
@@ -507,11 +463,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewTabShouldSwitchTheRenderedView()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Month, BitFullCalendarView.Agenda]);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Month, BitFullCalendarView.Agenda]);
         Assert.IsNotNull(component.Find(".bit-bfc-month"));
 
         component.FindAll(".bit-bfc-view-tab")[1].Click();
@@ -526,11 +478,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldMakeTheYearDrillDownStayPutWhenMonthIsExcluded()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Year, BitFullCalendarView.Day]);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Year, BitFullCalendarView.Day]);
         Assert.AreEqual(BitFullCalendarView.Year, component.Instance.View);
 
         component.Find(".bit-bfc-year-month-title").Click();
@@ -542,11 +490,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldStillDrillIntoTheMonthWhenItIsAllowed()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.DefaultView, BitFullCalendarView.Year);
-        });
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Year);
 
         component.Find(".bit-bfc-year-month-title").Click();
 
@@ -556,19 +500,10 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldHideTheModeTabsWhenNoViewSupportsTheTimeline()
     {
-        var withTimeline = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-        });
+        var withTimeline = RenderCalendar(resources: true);
         Assert.AreEqual(1, withTimeline.FindAll(".bit-bfc-mode-tabs").Count);
 
-        var withoutTimeline = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Year, BitFullCalendarView.Agenda]);
-        });
+        var withoutTimeline = RenderCalendar(views: [BitFullCalendarView.Year, BitFullCalendarView.Agenda], resources: true);
 
         Assert.AreEqual(0, withoutTimeline.FindAll(".bit-bfc-mode-tabs").Count);
     }
@@ -576,13 +511,9 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldIgnoreAnExcludedTimelineModeDefault()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Year, BitFullCalendarView.Agenda]);
-            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Year, BitFullCalendarView.Agenda],
+                                       resources: true,
+                                       defaultMode: BitFullCalendarMode.Timeline);
 
         Assert.AreEqual(BitFullCalendarMode.Event, component.Instance.Mode);
         Assert.AreEqual(BitFullCalendarView.Year, component.Instance.View);
@@ -591,13 +522,9 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldIntersectWithTheTimelineLayouts()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-            parameters.Add(p => p.Resources, Resources());
-            parameters.Add(p => p.Views, [BitFullCalendarView.Agenda, BitFullCalendarView.Week, BitFullCalendarView.Day]);
-            parameters.Add(p => p.DefaultMode, BitFullCalendarMode.Timeline);
-        });
+        var component = RenderCalendar(views: [BitFullCalendarView.Agenda, BitFullCalendarView.Week, BitFullCalendarView.Day],
+                                       resources: true,
+                                       defaultMode: BitFullCalendarMode.Timeline);
 
         var labels = component.FindAll(".bit-bfc-view-tab").Select(t => t.TextContent.Trim()).ToArray();
 
@@ -608,10 +535,7 @@ public class BitFullCalendarTests : BunitTestContext
     [TestMethod]
     public void BitFullCalendarViewsShouldReactToALaterChange()
     {
-        var component = RenderComponent<BitFullCalendar>(parameters =>
-        {
-            parameters.Add(p => p.Events, Events());
-        });
+        var component = RenderCalendar();
         Assert.AreEqual(5, component.FindAll(".bit-bfc-view-tab").Count);
 
         component.Render(parameters =>
