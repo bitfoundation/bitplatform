@@ -18,36 +18,13 @@ public enum AccentColorSwitcherPlacement
 }
 
 /// <summary>
-/// The accent swatches: one brand color fed to <see cref="BitThemeFactory"/> re-themes the whole app
-/// live, which demonstrates the theming system better than describing it could. The accent itself is
-/// owned by <see cref="AppAccentColorService"/> - this only renders it and hands clicks over, so
-/// every place the switcher appears shows and sets the same one color.
+/// The app-chrome shell around <see cref="BitAccentColorSwitcher"/>: one brand color fed to
+/// <see cref="BitThemeFactory"/> re-themes the whole app live, which demonstrates the theming system
+/// better than describing it could. The component (and its <see cref="BitAccentColorService"/>) owns
+/// the accent itself - state, persistence and first paint - so this only decides where the swatches
+/// sit and how big they render there.
 /// </summary>
 public partial class AccentColorSwitcher
 {
     [Parameter] public AccentColorSwitcherPlacement Placement { get; set; }
-
-    [AutoInject] private AppAccentColorService _accentColorService { get; set; } = default!;
-
-    protected override Task OnInitAsync()
-    {
-        // Subscribed this early - rather than after the first render, the way a JS-backed
-        // notification would have to be - so the restore the layout kicks off cannot land in the gap
-        // between rendering the swatches and listening for the accent they mark.
-        _accentColorService.AccentChanged += OnAccentChanged;
-
-        return base.OnInitAsync();
-    }
-
-    private void OnAccentChanged(object? sender, EventArgs e)
-    {
-        _ = InvokeAsync(StateHasChanged);
-    }
-
-    protected override ValueTask DisposeAsync(bool disposing)
-    {
-        _accentColorService.AccentChanged -= OnAccentChanged;
-
-        return base.DisposeAsync(disposing);
-    }
 }

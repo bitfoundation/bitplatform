@@ -1,0 +1,48 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+.bit-acs {
+    --bit-acs-size: #{rem2(24px)};
+    --bit-acs-gap: #{rem2(10px)};
+
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--bit-acs-gap);
+}
+
+.bit-acs-swt {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+    box-sizing: border-box;
+    width: var(--bit-acs-size);
+    height: var(--bit-acs-size);
+    background-color: var(--bit-acs-clr);
+    border: rem2(1px) solid $clr-brd-sec;
+    transition: transform $mot-duration $mot-easing;
+
+    &:hover {
+        transform: scale(1.15);
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+.bit-acs-act {
+    outline: rem2(2px) solid var(--bit-acs-clr);
+    outline-offset: rem2(2px);
+}
+
+.bit-acs.bit-dis {
+    .bit-acs-swt {
+        cursor: default;
+        opacity: 0.5;
+
+        &:hover {
+            transform: none;
+        }
+    }
+}

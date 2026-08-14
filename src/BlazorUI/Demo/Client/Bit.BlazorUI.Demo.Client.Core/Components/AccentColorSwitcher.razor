@@ -17,18 +17,10 @@
         <BitText Element="span" Typography="BitTypography.Caption1" Class="accent-switcher-label">Accent color</BitText>
     }
 
-    <div class="accent-swatches">
-        @foreach (var (name, hex) in AppAccentColorService.Presets)
-        {
-            var isActive = _accentColorService.ActiveAccent == hex;
-
-            <button type="button"
-                    title="@name"
-                    aria-pressed="@(isActive ? "true" : "false")"
-                    aria-label="@($"Apply the {name} accent color")"
-                    class="accent-swatch@(isActive ? " accent-swatch--active" : null)"
-                    style="--swatch-color: @hex"
-                    @onclick="() => _accentColorService.ApplyAsync(hex)"></button>
-        }
-    </div>
+    @* The configuration comes from the BitAccentColorConfig registered in DI (see
+       AddClientSharedServices), which is also what the host page's BitAccentColorHead (App.razor
+       in the Server project) emits the head half for - stated once, so the two halves cannot
+       diverge. It is fixed app-wide by the first initialized instance; these chrome instances
+       render in the layout on every page, so one of them is always that first instance. *@
+    <BitAccentColorSwitcher />
 </div>

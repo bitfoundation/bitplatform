@@ -64,6 +64,17 @@
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- The accent runtime client hardcodes the attribute, store and flag values that
+             BitAccentColorNames / BitAccentColorPersistence declare on the C# side; the two are wired
+             together by nothing but those literals, so BitAccentColorNamesContractTests reads the
+             TypeScript source itself to fail on a drift. BitTheme.ts rides along because the accent
+             cookie's max-age is documented to match the theme cookie's. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\AccentColorSwitcher\BitAccentColor.ts" Link="ts-sources\BitAccentColor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Utils\Theme\BitTheme.ts" Link="ts-sources\BitTheme.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

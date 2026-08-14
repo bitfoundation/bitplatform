@@ -191,8 +191,16 @@ public partial class MainLayout
                 new() { Text = "RichTextEditorLegacy", Url = "/components/legacy/richtexteditor" },
             ]
         },
+        new()
+        {
+            Text = "Theming",
+            ChildItems =
+            [
+                new() { Text = "Theming", Url = "/theming", Description = "Theme, DesignTokens, Dark, Light" },
+                new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
+            ]
+        },
         new() { Text = "Iconography", Url = "/iconography" },
-        new() { Text = "Theming", Url = "/theming" },
     ];
 }
 

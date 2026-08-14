@@ -16,12 +16,6 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSessioned<IPubSubService, PubSubService>();
 
-        // Scoped rather than sessioned: it holds the BitThemeManager / BitThemeNotifications the
-        // library registers per scope, and a scope already spans the whole visit everywhere this app
-        // runs. That is the lifetime the accent needs - the swatches read it back to mark the active
-        // one, so it has to outlive the home page itself.
-        services.TryAddScoped<AppAccentColorService>();
-
         services.TryAddTransient<RequestHeadersDelegationHandler>();
         services.TryAddTransient<RetryDelegatingHandler>();
         services.TryAddTransient<ExceptionDelegatingHandler>();
@@ -30,7 +24,16 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<LazyAssemblyLoader>();
 
         services.AddBitBlazorUIServices(trySingleton: AppRenderMode.IsBlazorHybrid);
-        services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid);
+        // The app-wide accent configuration, stated once here - this method runs in the server and
+        // in every client flavor, so the BitAccentColorHead in the host page (App.razor in the
+        // Server project) and the AccentColorSwitcher chrome instances all resolve the same values.
+        // StoredCss + All explicitly: the BitAccentColorConfig defaults persist nothing and skip
+        // first paint.
+        services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid, accentColor: options =>
+        {
+            options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
+            options.Persistence = BitAccentColorPersistence.All;
+        });
         services.AddBitBlazorUILegacyServices(trySingleton: AppRenderMode.IsBlazorHybrid);
         services.AddSharedServices();
 

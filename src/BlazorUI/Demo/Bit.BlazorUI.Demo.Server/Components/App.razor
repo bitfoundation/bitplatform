@@ -46,12 +46,6 @@
                         ? themeName as string
                         : null;
     var themeColor = resolvedTheme?.EndsWith("dark", StringComparison.Ordinal) is false ? lightThemeColor : darkThemeColor;
-    // The accented palette, so a visitor who picked one of the "Make it yours" colors is not shown
-    // the packaged blue first. Null unless a non-default accent is stored - see BuildPrerenderCss.
-    // Startup/Services.cs reads this same cookie a second time and cascades it as PrerenderedAccentColor,
-    // which is what marks the right swatch as active; this half only paints. Two reads rather than one
-    // because a host page cannot cascade a value and a component cannot write into <head>.
-    var accentCss = AppAccentColorService.BuildPrerenderCss(HttpContext.Request.Cookies[AppAccentColorService.CookieName]);
 }
 
 <!DOCTYPE html>
@@ -67,18 +61,22 @@
        reached us, so this is what covers the rest - following the OS (which the server cannot read),
        and a localStorage value newer than the cookie. *@
     @((MarkupString)BitThemeSsr.InlineHeadScript)
-    @if (accentCss is not null)
-    {
-        @* Next to the theme bootstrap because it is the same job: get the palette right before the
-           first paint rather than repainting it on hydration. Outranks the packaged palette on
-           specificity, so it works from <head> regardless of where the stylesheets are (see
-           BuildPrerenderCss). The id is how the client drops it once it owns the overlay.
-           Keep this AFTER the inline script above - the ordering is load-bearing, not tidiness. The
-           two rules below are split on bit-theme, and that script is what puts the attribute on <html>
-           for a visitor who follows the OS. Emitted first, the :not() rule would match the not-yet-set
-           attribute and paint a dark-OS visitor the light accent palette. *@
-        <style id="@AppAccentColorService.PrerenderStyleElementId">@((MarkupString)accentCss)</style>
-    }
+    @* The accent counterpart of the script above, as one component: emits the inline script that,
+       before anything is painted, re-resolves bit-accent from localStorage / the accent cookie and
+       injects the palette snapshot the StoredCss strategy keeps in localStorage - which is what
+       keeps the accent correct even when this markup comes out of a cache (e.g. a CDN) that served
+       it to a visitor whose cookie never reached the server. Kept AFTER the theme script above: the
+       snapshot's rules split on the bit-theme attribute that script sets, so painting must not
+       start before it has run, which the parser guarantees for styles that come later in <head>.
+       The configuration comes from the BitAccentColorConfig registered in DI (see
+       AddClientSharedServices, which this server also runs) - the same one the app's
+       AccentColorSwitcher chrome instances configure the shared service with (the snapshot only
+       gets stored while the service runs StoredCss); this component only emits the matching head
+       half. PersistedAccent is the accent counterpart of the theme cookie read above: with the
+       StoredCss strategy it is what lets an origin-rendered response paint the accent itself,
+       instead of leaving the first paint to the snapshot the inline script above restores (which
+       only exists once the visitor has picked an accent on this device). *@
+    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
     <ResourcePreloader />
     <base href="/" />
     <meta charset="utf-8" />

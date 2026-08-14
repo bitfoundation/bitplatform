@@ -879,6 +879,15 @@ var tuned = BitThemeFactory.CreateLightThemeFromSeed("#7C3AED", new BitThemeSeed
             <br />
 
             <BitText>
+                This switcher ships ready-made as the <BitTag>BitAccentColorSwitcher</BitTag> component in the
+                <BitTag>Bit.BlazorUI.Extras</BitTag> package &mdash; swatches, persistence, dark/light re-derivation
+                and the first-paint (SSR / CDN cache) setup included. See the
+                <BitLink Href="/components/accentcolorswitcher">AccentColorSwitcher demo page</BitLink> for the full API.
+            </BitText>
+
+            <br />
+
+            <BitText>
                 Under the hood, <BitTag>BitThemeColorDerivation</BitTag> fills the role steps (<BitTag>Main</BitTag>, <BitTag>MainHover</BitTag>, <BitTag>MainActive</BitTag>, <BitTag>Dark</BitTag>, <BitTag>Light</BitTag>, <BitTag>Disabled</BitTag>, <BitTag>Focus</BitTag>, <BitTag>Text</BitTag>, &hellip;) from a single main color in the perceptually uniform OKLCH space, at constant hue, with step sizes calibrated to the packaged Fluent palettes &mdash; so a derived role behaves like a packaged one, including the interaction direction: in the <b>light</b> scheme the states step down in lightness, in the <b>dark</b> scheme they step <i>up</i> (toward the light source), matching the packaged dark palette. Derived interactive fills keep &#8805;3:1 against the auto-selected <BitTag>Text</BitTag> for any seed. Caller-set values are preserved, so you can pin any slot and derive the rest.
             </BitText>
 

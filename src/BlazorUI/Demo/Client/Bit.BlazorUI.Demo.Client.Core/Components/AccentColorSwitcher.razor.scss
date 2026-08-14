@@ -7,51 +7,14 @@
     align-items: center;
 }
 
-.accent-swatches {
-    display: flex;
-    flex-flow: row wrap;
-    align-items: center;
-    gap: rem2(10px);
-}
-
-.accent-swatch {
-    margin: 0;
-    padding: 0;
-    cursor: pointer;
-    width: rem2(24px);
-    height: rem2(24px);
-    border-radius: 50%;
-    box-sizing: border-box;
-    background-color: var(--swatch-color);
-    border: rem2(1px) solid $bit-color-border-secondary;
-    transition: transform $bit-motion-duration $bit-motion-easing;
-
-    &:hover {
-        transform: scale(1.15);
-    }
-
-    &:focus-visible {
-        outline: rem2(2px) solid $bit-color-primary;
-        outline-offset: rem2(2px);
-    }
-
-    &--active {
-        outline: rem2(2px) solid var(--swatch-color);
-        outline-offset: rem2(2px);
-    }
-}
-
 // ── Header ────────────────────────────────────────────────────────────────────────────────────
 // Small enough to sit in the header's icon row without crowding the two buttons beside it, still a
-// comfortable pointer target on the pointer-driven widths this placement is limited to.
+// comfortable pointer target on the pointer-driven widths this placement is limited to. The sizes
+// override the custom properties BitAccentColorSwitcher's own stylesheet declares.
 .accent-switcher--header {
-    .accent-swatches {
-        gap: rem2(7px);
-    }
-
-    .accent-swatch {
-        width: rem2(18px);
-        height: rem2(18px);
+    ::deep .bit-acs {
+        --bit-acs-gap: #{rem2(7px)};
+        --bit-acs-size: #{rem2(18px)};
     }
 
     // At the width where the nav collapses into the hamburger, the header no longer has room for six
@@ -90,15 +53,11 @@
         color: $bit-color-foreground-secondary;
     }
 
-    // Sized to fit the panel's 222px on one row (6 × 26 + 5 × 8 = 196 inside the 24px of padding)
-    // while staying a comfortable touch target. Wrapping is still on, so a narrower drawer just
-    // takes two rows rather than overflowing.
-    .accent-swatches {
-        gap: rem2(8px);
-    }
-
-    .accent-swatch {
-        width: rem2(26px);
-        height: rem2(26px);
+    // Sized to fit the panel's 222px on one row while staying a comfortable touch target. Wrapping
+    // is still on in the library component, so a narrower drawer just takes two rows rather than
+    // overflowing.
+    ::deep .bit-acs {
+        --bit-acs-gap: #{rem2(8px)};
+        --bit-acs-size: #{rem2(26px)};
     }
 }
