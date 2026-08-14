@@ -514,8 +514,11 @@
             <br />
             <div>IsOpen: @isCalloutOpen</div>
             <br />
-            <BitButton OnClick="() => programmaticPicker?.OpenCallout()">OpenCallout()</BitButton>
-            <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticPicker?.DismissCallout()">
+            <BitButton OnClick="() => programmaticPicker!.OpenCallout()">
+                OpenCallout()
+            </BitButton>
+            <br />
+            <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticPicker!.DismissCallout()">
                 DismissCallout()
             </BitButton>
         </div>
@@ -708,7 +711,7 @@
             <div class="example-content">
                 <BitTimePicker Dir="BitDir.Rtl"
                                Standalone
-                               Label="تایم"
+                               Label="زمان"
                                Value="new(10, 24, 0)"
                                TimeFormat="BitTimeFormat.TwelveHours" />
 
@@ -717,8 +720,8 @@
 
                 <BitTimePicker Dir="BitDir.Rtl"
                                ShowCloseButton
-                               Label="تایم"
-                               Placeholder="تایم خود را انتخاب کنید..." />
+                               Label="زمان"
+                               Placeholder="زمان خود را انتخاب کنید..." />
             </div>
         </div>
     </DemoExample>

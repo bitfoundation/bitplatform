@@ -277,8 +277,8 @@ private void Log(string message)
 <BitTimePicker @ref=""programmaticPicker"" @bind-IsOpen=""isCalloutOpen"" Label=""Controlled callout"" />
 <div>IsOpen: @isCalloutOpen</div>
 
-<BitButton OnClick=""() => programmaticPicker?.OpenCallout()"">OpenCallout()</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticPicker?.DismissCallout()"">
+<BitButton OnClick=""() => programmaticPicker!.OpenCallout()"">OpenCallout()</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""() => programmaticPicker!.DismissCallout()"">
     DismissCallout()
 </BitButton>";
     private readonly string example20CsharpCode = @"
@@ -496,12 +496,12 @@ private TimeSpan? classesValue;";
     private readonly string example26RazorCode = @"
 <BitTimePicker Dir=""BitDir.Rtl""
                Standalone
-               Label=""تایم""
+               Label=""زمان""
                Value=""new(10, 24, 0)""
                TimeFormat=""BitTimeFormat.TwelveHours"" />
 
 <BitTimePicker Dir=""BitDir.Rtl""
                ShowCloseButton
-               Label=""تایم""
-               Placeholder=""تایم خود را انتخاب کنید..."" />";
+               Label=""زمان""
+               Placeholder=""زمان خود را انتخاب کنید..."" />";
 }
