@@ -79,12 +79,14 @@ public class BitAccentColorHeadTests : BunitTestContext
             {
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
             });
-            parameters.Add(p => p.StylesheetHref, "accent-colors.css");
+            // Root-relative, as the docs prescribe: the link sits before any <base>, so a relative
+            // href would resolve against the current page path and 404 on every non-root route.
+            parameters.Add(p => p.StylesheetHref, "/accent-colors.css");
         });
 
         var link = component.Find("link");
         Assert.AreEqual("stylesheet", link.GetAttribute("rel"));
-        Assert.AreEqual($"accent-colors.css?v={BitAccentColorSsr.Version}", link.GetAttribute("href"),
+        Assert.AreEqual($"/accent-colors.css?v={BitAccentColorSsr.Version}", link.GetAttribute("href"),
             "The library version must ride along as a cache-buster, or an immutable-cached stylesheet outlives a palette-changing release.");
 
         Assert.IsFalse(component.Markup.Contains($"[{BitThemeAttributeNames.Theme}$=dark]{{", StringComparison.Ordinal),
@@ -100,10 +102,10 @@ public class BitAccentColorHeadTests : BunitTestContext
             {
                 FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
             });
-            parameters.Add(p => p.StylesheetHref, "accent-colors.css?tenant=a");
+            parameters.Add(p => p.StylesheetHref, "/accent-colors.css?tenant=a");
         });
 
-        Assert.AreEqual($"accent-colors.css?tenant=a&v={BitAccentColorSsr.Version}", component.Find("link").GetAttribute("href"));
+        Assert.AreEqual($"/accent-colors.css?tenant=a&v={BitAccentColorSsr.Version}", component.Find("link").GetAttribute("href"));
     }
 
     [TestMethod]

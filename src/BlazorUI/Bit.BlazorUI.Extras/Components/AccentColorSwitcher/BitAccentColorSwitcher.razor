@@ -31,7 +31,7 @@
                 disabled="@(IsEnabled is false)"
                 bit-accent-swatch="@(cssMarked ? token : null)"
                 class="@GetSwatchClass(isActive, classMarked)"
-                style="@GetSwatchStyle(item, isActive)"
+                style="@GetSwatchStyle(item, isActive, classMarked)"
                 aria-pressed="@(isActive ? "true" : "false")"
                 aria-label="@GetSwatchAriaLabel(item)"></button>
     }

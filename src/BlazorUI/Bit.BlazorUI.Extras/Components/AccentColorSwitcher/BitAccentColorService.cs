@@ -144,7 +144,9 @@ public class BitAccentColorService : IDisposable
             }
         }
 
-        if (persisted is null)
+        // Blank counts as "the custom store has nothing", same as null: a store returning an empty
+        // string would otherwise skip the web stores and restore no accent at all.
+        if (string.IsNullOrEmpty(persisted))
         {
             try
             {

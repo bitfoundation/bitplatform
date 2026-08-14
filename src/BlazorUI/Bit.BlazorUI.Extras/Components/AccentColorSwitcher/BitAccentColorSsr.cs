@@ -64,6 +64,35 @@ public static class BitAccentColorSsr
     private static readonly ConcurrentDictionary<string, string> _swatchMarkerCss = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// The number of distinct accent sets <see cref="_staticCss"/> and <see cref="_swatchMarkerCss"/>
+    /// keep rendered output for. An app states its accents once, so a handful of sets covers every
+    /// normal setup; the cap is what keeps a per-request or per-tenant accent list - or a switcher
+    /// rendering with accents of its own - from pinning one full stylesheet per variation in a
+    /// process-wide static, on Blazor Server for the lifetime of the process.
+    /// </summary>
+    private const int MaxCachedAccentSets = 32;
+
+    /// <summary>
+    /// <see cref="ConcurrentDictionary{TKey, TValue}.GetOrAdd(TKey, Func{TKey, TValue})"/> that stops
+    /// adding past <see cref="MaxCachedAccentSets"/>: beyond the cap the output is rebuilt per call
+    /// instead of cached - correct either way, and the repeating caller is by definition off the
+    /// app-wide accent list this cache exists for.
+    /// </summary>
+    private static string GetOrBuild(ConcurrentDictionary<string, string> cache, string key, Func<string> build)
+    {
+        if (cache.TryGetValue(key, out var cached)) return cached;
+
+        var built = build();
+
+        if (cache.Count < MaxCachedAccentSets)
+        {
+            cache.TryAdd(key, built);
+        }
+
+        return built;
+    }
+
+    /// <summary>
     /// Rendered <see cref="BuildInlineHeadScriptBody"/> output, keyed by the persistence flags (only
     /// four combinations exist, so this stays tiny).
     /// </summary>
@@ -235,9 +264,10 @@ public static class BitAccentColorSsr
     /// </para>
     /// <para>
     /// The rendered stylesheet is cached for the process lifetime, one entry per distinct accent
-    /// token set, and never evicted. Reuse one fixed accent list (hoist it to a static or a
-    /// singleton) rather than building a list per request or per tenant - every distinct set pins
-    /// another full stylesheet in that cache.
+    /// token set, up to a fixed number of sets (past it the stylesheet is rendered per call). Reuse
+    /// one fixed accent list (hoist it to a static or a singleton) rather than building a list per
+    /// request or per tenant - every distinct set pins another full stylesheet in that cache, and
+    /// enough of them turn every call into a full re-render.
     /// </para>
     /// </remarks>
     public static string BuildStaticCss(IEnumerable<BitAccentColorItem>? accents = null)
@@ -250,7 +280,7 @@ public static class BitAccentColorSsr
 
         var cacheKey = string.Join(',', items.Select(a => a.Token));
 
-        return _staticCss.GetOrAdd(cacheKey, _ =>
+        return GetOrBuild(_staticCss, cacheKey, () =>
         {
             var builder = new System.Text.StringBuilder();
             foreach (var (token, hex) in items)
@@ -302,7 +332,7 @@ public static class BitAccentColorSsr
                      .Distinct(StringComparer.Ordinal)
                      .ToArray();
 
-        return _swatchMarkerCss.GetOrAdd(string.Join(',', tokens), _ =>
+        return GetOrBuild(_swatchMarkerCss, string.Join(',', tokens), () =>
         {
             var neutral = NormalizeToken(BitAccentColorPresets.Blue);
             var selectors = new List<string>();

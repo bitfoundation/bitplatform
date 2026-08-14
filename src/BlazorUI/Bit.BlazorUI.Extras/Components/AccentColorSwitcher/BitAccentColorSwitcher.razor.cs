@@ -150,17 +150,21 @@ public partial class BitAccentColorSwitcher : BitComponentBase
             // response's server never saw this visitor - cannot ring the wrong swatch.
             isActive && classMarked ? "bit-acs-act" : null,
             Classes?.Swatch,
-            isActive ? Classes?.ActiveSwatch : null
+            isActive && classMarked ? Classes?.ActiveSwatch : null
         }.Where(c => c.HasValue()));
     }
 
-    private string GetSwatchStyle(BitAccentColorItem item, bool isActive)
+    private string GetSwatchStyle(BitAccentColorItem item, bool isActive, bool classMarked)
     {
         return string.Join(';', new[]
         {
             $"--bit-acs-clr:{GetSwatchColor(item.Color)}",
             Styles?.Swatch,
-            isActive ? Styles?.ActiveSwatch : null
+            // Gated exactly like the built-in ring in GetSwatchClass: before this instance is
+            // interactive the C# accent is the prerender's, so applying the custom active styling
+            // here would mark the wrong swatch on a cached response - the one case the CSS marker
+            // exists to get right.
+            isActive && classMarked ? Styles?.ActiveSwatch : null
         }.Where(s => s.HasValue()));
     }
 

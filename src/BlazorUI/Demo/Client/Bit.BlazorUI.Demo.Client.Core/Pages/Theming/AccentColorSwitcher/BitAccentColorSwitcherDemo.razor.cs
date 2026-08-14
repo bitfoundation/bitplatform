@@ -475,7 +475,23 @@ private string? changedAccentColor;";
 
 @* Independent of the choice above: wherever the switcher renders (a layout, a settings page, ...) -
    it falls back to the same DI-registered configuration: *@
-<BitAccentColorSwitcher />";
+<BitAccentColorSwitcher />
+
+@* The other half of the cascading value the C# tab registers: consume it in the component hosting
+   the switcher (the layout, typically) and seed the service before the first render, so the
+   prerendered markup already marks the visitor's swatch instead of the default one. *@
+@code {
+    [Inject] private BitAccentColorService accentColorService { get; set; } = default!;
+
+    [CascadingParameter(Name = ""PrerenderedAccentColor"")] private string? prerenderedAccentColor { get; set; }
+
+    protected override void OnInitialized()
+    {
+        accentColorService.SeedFromPrerender(prerenderedAccentColor);
+
+        base.OnInitialized();
+    }
+}";
 
     private readonly string example6CsharpCode = @"
 // The app-wide configuration, stated ONCE in the service-registration method both the server and
