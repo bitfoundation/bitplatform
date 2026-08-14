@@ -198,6 +198,44 @@
             } catch (e) { console.error("BitBlazorUI.Utils.selectText:", e); }
         }
 
+        // Everything that can hold the focus inside a container. A roving tabindex takes every item of a grid
+        // but one out of the tab sequence, which is why tabindex="-1" is excluded here. The controls a header
+        // or footer template brings along are part of the container too, so the whole set of natively
+        // focusable elements is listed rather than only the ones the components render themselves.
+        private static readonly _focusables =
+            'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
+            'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), ' +
+            '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
+            '[tabindex]:not([tabindex="-1"])';
+
+        // Keeps Tab and Shift+Tab cycling inside a container, which is what a popup that reports itself a modal
+        // dialog has to do: the tab order runs on into the page behind it otherwise, leaving the focus somewhere
+        // an overlay swallows every click that could bring it back. The keydown is left alone where the focus is
+        // not on the edge of the container, so tabbing within it moves as it normally would.
+        public static wrapFocus(root: HTMLElement, e: KeyboardEvent) {
+            if (!root) return;
+
+            // A hidden element is not a place the focus can land, and a callout carries parts that are only
+            // rendered for some of its states.
+            const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
+                .filter(el => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
+
+            if (focusables.length === 0) return;
+
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            const active = document.activeElement;
+
+            if (e.shiftKey && active === first) {
+                last.focus();
+                e.preventDefault();
+            } else if (!e.shiftKey && active === last) {
+                first.focus();
+                e.preventDefault();
+            }
+        }
+
         public static setStyle(element: HTMLElement, key: string, value: string) {
             if (!element || !element.style) return;
 

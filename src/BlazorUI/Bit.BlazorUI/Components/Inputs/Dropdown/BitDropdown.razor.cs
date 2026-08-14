@@ -3976,38 +3976,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     private string GetSizeClass()
     {
-        return Size switch
-        {
-            BitSize.Small => "bit-drp-sm",
-            BitSize.Medium => "bit-drp-md",
-            BitSize.Large => "bit-drp-lg",
-            _ => string.Empty
-        };
+        return BitCssClasses.Size(Size, "bit-drp");
     }
 
     private string GetColorClass()
     {
-        return Color switch
-        {
-            BitColor.Primary => "bit-drp-pri",
-            BitColor.Secondary => "bit-drp-sec",
-            BitColor.Tertiary => "bit-drp-ter",
-            BitColor.Info => "bit-drp-inf",
-            BitColor.Success => "bit-drp-suc",
-            BitColor.Warning => "bit-drp-wrn",
-            BitColor.SevereWarning => "bit-drp-swr",
-            BitColor.Error => "bit-drp-err",
-            BitColor.PrimaryBackground => "bit-drp-pbg",
-            BitColor.SecondaryBackground => "bit-drp-sbg",
-            BitColor.TertiaryBackground => "bit-drp-tbg",
-            BitColor.PrimaryForeground => "bit-drp-pfg",
-            BitColor.SecondaryForeground => "bit-drp-sfg",
-            BitColor.TertiaryForeground => "bit-drp-tfg",
-            BitColor.PrimaryBorder => "bit-drp-pbr",
-            BitColor.SecondaryBorder => "bit-drp-sbr",
-            BitColor.TertiaryBorder => "bit-drp-tbr",
-            _ => "bit-drp-pri"
-        };
+        return BitCssClasses.Color(Color, "bit-drp");
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)

@@ -107,7 +107,7 @@ public class BitDatePickerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the Go to now button of the BitDatePicker.
     /// </summary>
-    public string? GoToNowButton { get; set; }
+    public string? NowButton { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the hide time-picker button of the BitDatePicker.
@@ -127,7 +127,7 @@ public class BitDatePickerClassStyles
     /// <summary>
     /// Custom CSS classes/styles for the Go to now icon of the BitDatePicker.
     /// </summary>
-    public string? GoToNowIcon { get; set; }
+    public string? NowButtonIcon { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the close button of the BitDatePicker.

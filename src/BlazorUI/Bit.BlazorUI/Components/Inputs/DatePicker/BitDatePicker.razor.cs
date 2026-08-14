@@ -34,6 +34,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private readonly DateTime?[,] _daysOfCurrentMonth = new DateTime?[DEFAULT_WEEK_COUNT, DEFAULT_DAY_COUNT_PER_WEEK];
 
     private bool _focusDayOnOpen;
+    private bool _internalIsOpenChange;
     private bool _focusTimePickerAfterRender;
     private int? _focusedYearCell;
     private int? _focusedMonthCell;
@@ -142,6 +143,15 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool AutoClose { get; set; } = true;
 
     /// <summary>
+    /// Whether the input of the picker gets the focus as soon as it renders for the first time.
+    /// </summary>
+    /// <remarks>
+    /// A standalone picker carries its value in a hidden input nobody is meant to land on, so it has nothing
+    /// to place the focus on and the parameter does nothing there.
+    /// </remarks>
+    [Parameter] public bool AutoFocus { get; set; }
+
+    /// <summary>
     /// Aria label of the DatePicker's callout for screen readers.
     /// </summary>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Calendar";
@@ -195,9 +205,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string? CloseButtonIconName { get; set; }
 
     /// <summary>
-    /// The title of the CloseDatePicker button (tooltip).
+    /// The title of the close button (tooltip).
     /// </summary>
-    [Parameter] public string CloseDatePickerTitle { get; set; } = "Close date picker";
+    [Parameter] public string CloseButtonTitle { get; set; } = "Close date picker";
 
     /// <summary>
     /// The general color of the DatePicker that applies to the today day button, the highlighted current month,
@@ -205,6 +215,18 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The delay in milliseconds before the hour/minute of the time picker starts changing continuously while an
+    /// increase/decrease button is held down.
+    /// </summary>
+    [Parameter] public int ContinuousSpinDelay { get; set; } = 400;
+
+    /// <summary>
+    /// The interval in milliseconds between two consecutive changes while an increase/decrease
+    /// button is held down.
+    /// </summary>
+    [Parameter] public int ContinuousSpinInterval { get; set; } = 75;
 
     /// <summary>
     /// CultureInfo for the DatePicker.
@@ -299,22 +321,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string GoToNextYearTitle { get; set; } = "Go to next year {0}";
 
     /// <summary>
-    /// The icon to display inside the GoToNow button.
-    /// Takes precedence over <see cref="GoToNowIconName"/> when both are set.
-    /// </summary>
-    [Parameter] public BitIconInfo? GoToNowIcon { get; set; }
-
-    /// <summary>
-    /// The name of the GoToNow button's icon from the built-in Fluent UI icon set.
-    /// </summary>
-    [Parameter] public string? GoToNowIconName { get; set; }
-
-    /// <summary>
-    /// The title of the GoToNow button (tooltip).
-    /// </summary>
-    [Parameter] public string GoToNowTitle { get; set; } = "Go to now";
-
-    /// <summary>
     /// The title of the Go to previous month button (tooltip).
     /// </summary>
     [Parameter] public string GoToPrevMonthTitle { get; set; } = "Go to previous month";
@@ -389,8 +395,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool HighlightToday { get; set; } = true;
 
     /// <summary>
-    /// Determines increment/decrement steps for date-picker's hour.
+    /// The step, in hours, the spin buttons of the time picker move the hour by.
     /// </summary>
+    /// <remarks>
+    /// A step greater than 1 lays a grid over the day that every hour the buttons produce sits on, starting at
+    /// midnight, so a picker that only accepts times on a three-hour grid can say so. A time entered as text is
+    /// not held to it. Values below 1 are treated as 1.
+    /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
 
     /// <summary>
@@ -450,6 +461,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// Whether or not the DatePicker's callout is open
     /// </summary>
     [Parameter, ResetClassBuilder, TwoWayBound]
+    [CallOnSet(nameof(OnSetIsOpen))]
     public bool IsOpen { get; set; }
 
     /// <summary>
@@ -477,8 +489,13 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     public DateTimeOffset? MinDate { get; set; }
 
     /// <summary>
-    /// Determines increment/decrement steps for date-picker's minute.
+    /// The step, in minutes, the spin buttons of the time picker move the minute by.
     /// </summary>
+    /// <remarks>
+    /// A step greater than 1 lays a grid over the hour that every minute the buttons produce sits on, starting
+    /// at the top of the hour, which is what turns it into a five-minute or quarter-hour picker. A time entered
+    /// as text is not held to it. Values below 1 are treated as 1.
+    /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
     /// <summary>
@@ -532,6 +549,22 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public string? NextYearRangeNavIconName { get; set; }
 
     /// <summary>
+    /// The icon to display inside the now button.
+    /// Takes precedence over <see cref="NowButtonIconName"/> when both are set.
+    /// </summary>
+    [Parameter] public BitIconInfo? NowButtonIcon { get; set; }
+
+    /// <summary>
+    /// The name of the now button's icon from the built-in Fluent UI icon set.
+    /// </summary>
+    [Parameter] public string? NowButtonIconName { get; set; }
+
+    /// <summary>
+    /// The title of the now button (tooltip).
+    /// </summary>
+    [Parameter] public string NowButtonTitle { get; set; } = "Go to now";
+
+    /// <summary>
     /// The callback that is called when the value gets cleared by the clear button.
     /// </summary>
     [Parameter] public EventCallback OnClear { get; set; }
@@ -540,6 +573,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The callback for clicking on the DatePicker's input.
     /// </summary>
     [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// The callback for when the callout of the DatePicker is closed.
+    /// </summary>
+    [Parameter] public EventCallback OnClose { get; set; }
 
     /// <summary>
     /// The callback for focusing the DatePicker's input.
@@ -561,6 +599,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// The argument is the first day of the newly displayed month.
     /// </summary>
     [Parameter] public EventCallback<DateTimeOffset> OnMonthChange { get; set; }
+
+    /// <summary>
+    /// The callback for when the callout of the DatePicker is opened.
+    /// </summary>
+    [Parameter] public EventCallback OnOpen { get; set; }
 
     /// <summary>
     /// The callback for when the user selects a date.
@@ -632,11 +675,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter] public bool ShowCloseButton { get; set; }
 
     /// <summary>
-    /// Whether the GoToNow button should be shown or not.
-    /// </summary>
-    [Parameter] public bool ShowGoToNow { get; set; } = true;
-
-    /// <summary>
     /// Whether the GoToToday button should be shown or not.
     /// </summary>
     [Parameter] public bool ShowGoToToday { get; set; } = true;
@@ -647,6 +685,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
     public bool ShowMonthPickerAsOverlay { get; set; }
+
+    /// <summary>
+    /// Whether the now button should be shown or not.
+    /// </summary>
+    [Parameter] public bool ShowNowButton { get; set; } = true;
 
     /// <summary>
     /// Whether the days of the previous and next months should be shown in the day picker.
@@ -826,7 +869,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (Standalone) return;
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await AssignIsOpenInternal(false) is false) return;
+
+        // The focus is on its way to whatever callout is being opened in this one's place, so this is the
+        // one close that must not pull it back onto the field.
+        await OnClose.InvokeAsync();
 
         StateHasChanged();
     }
@@ -881,7 +928,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => (Dir is null && _culture.TextInfo.IsRightToLeft) ? "bit-rtl" : string.Empty);
+        ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
 
         ClassBuilder.Register(GetColorClass);
 
@@ -947,15 +994,42 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
             try
             {
-                // Prevents the default behavior (scrolling) of the navigation keys handled by the grid
-                // cells' keydown handlers, since Blazor cannot conditionally preventDefault per key, and
-                // keeps the focus inside the callout while it is the modal dialog it reports itself to be.
-                await _js.BitCalendarsSetup(_calloutId, Standalone is false);
+                // Prevents the default behavior (scrolling the page) of the keys handled by the keydown
+                // handlers of the grid cells and of the field, since Blazor cannot conditionally
+                // preventDefault per key, and keeps the focus inside the callout while it is the modal
+                // dialog it reports itself to be. A standalone picker has no field to pass along: what it
+                // carries instead is a hidden input nobody can land on.
+                await _js.BitCalendarsSetup(_calloutId, Standalone is false, Standalone ? null : _datePickerId);
 
                 // The swipe dismisses the callout, and standalone there is no callout to dismiss.
                 if (Responsive && Standalone is false)
                 {
                     await _js.BitSwipesSetup(_calloutId, 0.25m, BitPanelPosition.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
+                }
+                // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
+                // callout element to toggle yet, so the open state is applied here instead - with the focus
+                // handling and the event of the hook, so a picker that starts open and one opened from the
+                // outside a moment later end up in the same state.
+                if (IsOpen && Standalone is false)
+                {
+                    await ToggleCallout();
+
+                    if (AllowTextInput is false || ReadOnly)
+                    {
+                        FocusCalloutOnOpen();
+                        StateHasChanged();
+                    }
+
+                    await OnOpen.InvokeAsync();
+                }
+
+                // The autofocus attribute is only honored by the browser for an element that is part of the
+                // initial document, which the input of an interactively rendered picker is not, so the focus
+                // is placed from here instead. A standalone picker carries the value in a hidden input nobody
+                // is meant to land on, so it has nothing to focus.
+                if (AutoFocus && IsEnabled && Standalone is false)
+                {
+                    await InputElement.FocusAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1079,96 +1153,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return pattern;
     }
 
-    private string GetTimePattern()
-    {
-        var shortTimePattern = _culture.DateTimeFormat.ShortTimePattern;
-
-        // A lowercase 'h' hour specifier (outside any quoted literal) indicates the culture uses a
-        // 12-hour clock, an uppercase 'H' a 24-hour clock.
-        var isCulture12Hours = HasSpecifier(shortTimePattern, 'h');
-
-        if (TimeFormat == BitTimeFormat.TwelveHours)
-        {
-            if (isCulture12Hours) return shortTimePattern;
-
-            // Convert the culture's 24-hour pattern to 12-hour by switching the hour specifier
-            // and appending the AM/PM designator.
-            return $"{ReplaceSpecifier(shortTimePattern, 'H', 'h')} tt";
-        }
-
-        if (isCulture12Hours is false) return shortTimePattern;
-
-        // Convert the culture's 12-hour pattern to 24-hour by switching the hour specifier
-        // and removing the AM/PM ('t'/'tt') designator.
-        return RemoveSpecifier(ReplaceSpecifier(shortTimePattern, 'h', 'H'), 't');
-    }
-
-    // Determines whether the given format specifier appears outside of any quoted literal.
-    private static bool HasSpecifier(string pattern, char specifier)
-    {
-        var quote = '\0';
-        foreach (var ch in pattern)
-        {
-            if (quote != '\0')
-            {
-                if (ch == quote) quote = '\0';
-                continue;
-            }
-
-            if (ch is '\'' or '"') { quote = ch; continue; }
-
-            if (ch == specifier) return true;
-        }
-
-        return false;
-    }
-
-    // Replaces the given format specifier with another, leaving quoted literals untouched.
-    private static string ReplaceSpecifier(string pattern, char from, char to)
-    {
-        var builder = new StringBuilder(pattern.Length);
-        var quote = '\0';
-        foreach (var ch in pattern)
-        {
-            if (quote != '\0')
-            {
-                builder.Append(ch);
-                if (ch == quote) quote = '\0';
-                continue;
-            }
-
-            if (ch is '\'' or '"') { quote = ch; builder.Append(ch); continue; }
-
-            builder.Append(ch == from ? to : ch);
-        }
-
-        return builder.ToString();
-    }
-
-    // Removes the given format specifier (and any resulting redundant whitespace), leaving quoted literals untouched.
-    private static string RemoveSpecifier(string pattern, char specifier)
-    {
-        var builder = new StringBuilder(pattern.Length);
-        var quote = '\0';
-        foreach (var ch in pattern)
-        {
-            if (quote != '\0')
-            {
-                builder.Append(ch);
-                if (ch == quote) quote = '\0';
-                continue;
-            }
-
-            if (ch is '\'' or '"') { quote = ch; builder.Append(ch); continue; }
-
-            if (ch == specifier) continue;
-
-            builder.Append(ch);
-        }
-
-        // Collapse any double spaces left behind by the removed designator and trim the edges.
-        return builder.ToString().Replace("  ", " ").Trim();
-    }
+    // The pattern of the time of day, in the clock format of the component, built out of the patterns
+    // of the culture (see BitTimePatterns) so the DatePicker and the TimePicker write times the same way.
+    private string GetTimePattern() => BitTimePatterns.GetTimePattern(_culture, TimeFormat, withSeconds: false);
 
 
 
@@ -1179,12 +1166,42 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         var wasOpen = IsOpen;
 
-        if (await AssignIsOpen(true) is false)
+        if (await AssignIsOpenInternal(true) is false)
         {
             _focusDayOnOpen = false;
             return;
         }
 
+        await PrepareCalloutForOpen();
+
+        // A click on the field of an already open picker is not a second opening: the callout is shown and
+        // positioned, and reporting it open again would have the application counting one opening per click.
+        if (wasOpen is false)
+        {
+            await ToggleCallout();
+
+            await OnOpen.InvokeAsync();
+        }
+
+        // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
+        // the date from inside it. The exception is a pointer press on a picker whose input accepts
+        // text: there the user is about to type the date, and the focus has to stay where they typed.
+        if (wasOpen is false && (_focusDayOnOpen || AllowTextInput is false || ReadOnly))
+        {
+            FocusCalloutOnOpen();
+        }
+
+        _focusDayOnOpen = false;
+
+        await OnClick.InvokeAsync();
+    }
+
+    // Everything the callout has to be brought to before it is shown: the pickers back at their starting
+    // view, the overlay decisions remade against the width available right now, and the calendar moved onto
+    // the current value. Every path that opens the callout runs it, so a click, a call to OpenCallout and an
+    // IsOpen pushed in from the outside all open onto the same state.
+    private async Task PrepareCalloutForOpen()
+    {
         ResetPickersState();
 
         var bodyWidth = await _js.BitUtilsGetBodyWidth();
@@ -1214,31 +1231,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             CheckCurrentCalendarMatchesCurrentValue();
         }
-
-        await ToggleCallout();
-
-        // The callout is a modal dialog, so it takes the focus with it and the user browses and picks
-        // the date from inside it. The exception is a pointer press on a picker whose input accepts
-        // text: there the user is about to type the date, and the focus has to stay where they typed.
-        if (wasOpen is false && (_focusDayOnOpen || AllowTextInput is false || ReadOnly))
-        {
-            if (ShowDayPicker())
-            {
-                _focusedDate = GetFocusableDay();
-                _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
-            }
-            else if (ShowMonthPicker())
-            {
-                // With no day picker on screen (the MonthPicker mode, or the month picker as an overlay)
-                // the month grid is what the callout opens onto.
-                _focusedMonthCell = GetFocusableMonth();
-                _focusElementIdAfterRender = GetMonthButtonId(_focusedMonthCell.Value);
-            }
-        }
-
-        _focusDayOnOpen = false;
-
-        await OnClick.InvokeAsync();
     }
 
     // The keys the input answers itself, per the APG combobox pattern: the popup opens with
@@ -1465,9 +1457,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         if (AutoClose && Standalone is false && ShowTimePicker is false &&
             (IsOpenHasBeenSet is false || IsOpenChanged.HasDelegate))
         {
-            await AssignIsOpen(false);
+            await AssignIsOpenInternal(false);
 
             await ToggleCallout();
+
+            await OnClose.InvokeAsync();
 
             // The day that was activated is inside the callout that just closed, so the focus has to be
             // handed back to the input - otherwise a keyboard selection drops the focus onto the body.
@@ -2514,7 +2508,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private bool IsRtl()
     {
-        return Dir == BitDir.Rtl || (Dir is null && _culture.TextInfo.IsRightToLeft);
+        return BitCssClasses.IsRtl(Dir, _culture);
     }
 
     // The single day of the grid that is in the tab sequence (the roving tabindex of the APG grid
@@ -2659,38 +2653,12 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
     private string GetColorClass()
     {
-        return Color switch
-        {
-            BitColor.Primary => "bit-dtp-pri",
-            BitColor.Secondary => "bit-dtp-sec",
-            BitColor.Tertiary => "bit-dtp-ter",
-            BitColor.Info => "bit-dtp-inf",
-            BitColor.Success => "bit-dtp-suc",
-            BitColor.Warning => "bit-dtp-wrn",
-            BitColor.SevereWarning => "bit-dtp-swr",
-            BitColor.Error => "bit-dtp-err",
-            BitColor.PrimaryBackground => "bit-dtp-pbg",
-            BitColor.SecondaryBackground => "bit-dtp-sbg",
-            BitColor.TertiaryBackground => "bit-dtp-tbg",
-            BitColor.PrimaryForeground => "bit-dtp-pfg",
-            BitColor.SecondaryForeground => "bit-dtp-sfg",
-            BitColor.TertiaryForeground => "bit-dtp-tfg",
-            BitColor.PrimaryBorder => "bit-dtp-pbr",
-            BitColor.SecondaryBorder => "bit-dtp-sbr",
-            BitColor.TertiaryBorder => "bit-dtp-tbr",
-            _ => "bit-dtp-pri"
-        };
+        return BitCssClasses.Color(Color, "bit-dtp");
     }
 
     private string GetSizeClass()
     {
-        return Size switch
-        {
-            BitSize.Small => "bit-dtp-sm",
-            BitSize.Medium => "bit-dtp-md",
-            BitSize.Large => "bit-dtp-lg",
-            _ => string.Empty
-        };
+        return BitCssClasses.Size(Size, "bit-dtp");
     }
 
     private Task UpdateCurrentValue()
@@ -2777,33 +2745,60 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         ResetCts();
 
-        var cts = _cancellationTokenSource;
-        try
-        {
-            await Task.Run(async () =>
-            {
-                await InvokeAsync(async () =>
-                {
-                    await Task.Delay(400);
-                    await ContinuousChangeTime(isNext, isHour, cts);
-                });
-            }, cts.Token);
-        }
-        catch (OperationCanceledException) { }
+        // The press-and-hold spin is deliberately not awaited: it lives as long as the button is held, so
+        // awaiting it would leave the pointerdown event handler (and the render it drives) pending for the
+        // whole duration of the press. Its lifetime is owned by the cancellation token source instead, which
+        // HandleOnPointerUpOrOut and DisposeAsync cancel.
+        _ = ContinuousChangeTimeAfterDelay(isNext, isHour, _cancellationTokenSource);
     }
 
+    /// <summary>
+    /// Waits out the <see cref="ContinuousSpinDelay"/> and then starts the continuous spin, unless the
+    /// button was released (or the component went away) in the meantime.
+    /// </summary>
+    private async Task ContinuousChangeTimeAfterDelay(bool isNext, bool isHour, CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(Math.Max(1, ContinuousSpinDelay), cts.Token);
+
+            await InvokeAsync(() => ContinuousChangeTime(isNext, isHour, cts));
+        }
+        catch (OperationCanceledException) { } // the button was released before the continuous spin started
+        catch (ObjectDisposedException) { } // the component was disposed while the delay was pending
+    }
+
+    // A loop rather than a call that ends in another one of itself: a button held for a few seconds is
+    // hundreds of ticks, and every one of them would otherwise leave a frame of its own alive until the whole
+    // chain unwinds at the end of the press.
     private async Task ContinuousChangeTime(bool isNext, bool isHour, CancellationTokenSource cts)
     {
-        if (cts.IsCancellationRequested || IsDisposed) return;
+        while (cts.IsCancellationRequested is false && IsDisposed is false)
+        {
+            var partBeforeStep = isHour ? _hour : _minute;
 
-        await ChangeTime(isNext, isHour);
+            await ChangeTime(isNext, isHour);
 
-        if (IsDisposed) return;
+            if (cts.IsCancellationRequested || IsDisposed) return;
 
-        StateHasChanged();
+            // A tick that moved nothing will not move anything on the next one either - a step of a whole
+            // range leaves a single value on the grid - so the held button has run out of room. Without this
+            // it would spend the rest of the press re-rendering a value that never changes again.
+            if ((isHour ? _hour : _minute) == partBeforeStep) return;
 
-        await Task.Delay(75);
-        await ContinuousChangeTime(isNext, isHour, cts);
+            StateHasChanged();
+
+            try
+            {
+                await Task.Delay(Math.Max(1, ContinuousSpinInterval), cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // The button was released while the next tick was pending; ending the loop here stops the
+                // spin right away instead of waiting the interval out first.
+                return;
+            }
+        }
     }
 
     private async Task ChangeTime(bool isNext, bool isHour)
@@ -2832,31 +2827,103 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _cancellationTokenSource = new();
     }
 
+    // The step lays a grid over the day rather than adding itself to whatever the hour happens to be, so every
+    // hour the buttons produce is a multiple of it - a bound value between two grid points moves onto the next
+    // one, and a step that does not divide the day wraps to the top of the grid instead of drifting off it.
     private async Task ChangeHour(bool isNext)
     {
-        var hourStep = Math.Clamp(Math.Abs(HourStep), 1, 23);
-
-        _hour = (_hour + (isNext ? hourStep : -hourStep) + 24) % 24;
+        _hour = BitTimeSteps.StepToAllowed(_hour, isNext, 24, h => BitTimeSteps.IsOnGrid(h, HourStep, 0, 24)) ?? _hour;
 
         await UpdateCurrentValue();
     }
 
+    /// <inheritdoc cref="ChangeHour"/>
     private async Task ChangeMinute(bool isNext)
     {
-        var minuteStep = Math.Clamp(Math.Abs(MinuteStep), 1, 59);
-
-        _minute = (_minute + (isNext ? minuteStep : -minuteStep) + 60) % 60;
+        _minute = BitTimeSteps.StepToAllowed(_minute, isNext, 60, m => BitTimeSteps.IsOnGrid(m, MinuteStep, 0, 60)) ?? _minute;
 
         await UpdateCurrentValue();
+    }
+
+    // Where the focus lands when the callout opens: the grid the callout opens onto, which is the day picker
+    // unless the picker is in a mode that starts on the months.
+    private void FocusCalloutOnOpen()
+    {
+        if (ShowDayPicker())
+        {
+            _focusedDate = GetFocusableDay();
+            _focusElementIdAfterRender = GetDayButtonId(_focusedDate.Value);
+        }
+        else if (ShowMonthPicker())
+        {
+            // With no day picker on screen (the MonthPicker mode, or the month picker as an overlay)
+            // the month grid is what the callout opens onto.
+            _focusedMonthCell = GetFocusableMonth();
+            _focusElementIdAfterRender = GetMonthButtonId(_focusedMonthCell.Value);
+        }
+    }
+
+    private void OnSetIsOpen()
+    {
+        // Captured now: the lambda below runs later, so a rapid second change to IsOpen before it has run
+        // must not make both invocations act on the same (latest) state.
+        var isOpen = IsOpen;
+
+        // The internal open/close flows toggle the callout themselves right after assigning IsOpen, so they
+        // can await the toggle and order their focus work after it. The hook only toggles for a change pushed
+        // from the outside through the IsOpen parameter, which otherwise has no path to the JS side that
+        // actually shows and hides the callout. Before the first render there is no element to toggle (and
+        // during prerendering not even a JS runtime to call); an initial IsOpen is applied by OnAfterRenderAsync.
+        if (_internalIsOpenChange || IsRendered is false || Standalone) return;
+
+        _ = InvokeAsync(async () =>
+        {
+            if (isOpen)
+            {
+                await PrepareCalloutForOpen();
+                StateHasChanged();
+            }
+
+            await ToggleCallout();
+
+            // The callout holds the tab order while it is open, so an open pushed in from the outside has to
+            // move the focus into it exactly as a click on the field does - otherwise the focus is left on the
+            // page behind an overlay that it can no longer reach. The exception is the same one the click makes:
+            // an editable field keeps the focus, since the text the person came to type has to keep it.
+            if (isOpen && (AllowTextInput is false || ReadOnly))
+            {
+                FocusCalloutOnOpen();
+                StateHasChanged();
+            }
+
+            await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
+        });
+    }
+
+    // The flows that follow AssignIsOpen with their own awaited ToggleCallout mark the change as internal,
+    // so the OnSetIsOpen hook does not toggle the callout a second time.
+    private async Task<bool> AssignIsOpenInternal(bool value)
+    {
+        _internalIsOpenChange = true;
+        try
+        {
+            return await AssignIsOpen(value);
+        }
+        finally
+        {
+            _internalIsOpenChange = false;
+        }
     }
 
     private async Task CloseCallout()
     {
         if (IsEnabled is false) return;
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await AssignIsOpenInternal(false) is false) return;
 
         await ToggleCallout();
+
+        await OnClose.InvokeAsync();
 
         StateHasChanged();
     }
@@ -2986,7 +3053,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return string.Join(' ', classes).Trim();
     }
 
-    private async Task HandleGoToNow()
+    private async Task HandleNowButtonClick()
     {
         if (ReadOnly) return;
         if (IsEnabled is false) return;

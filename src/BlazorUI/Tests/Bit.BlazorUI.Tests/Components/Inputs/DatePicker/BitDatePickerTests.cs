@@ -590,43 +590,43 @@ public class BitDatePickerTests : BunitTestContext
         DataRow("ClockRegular", "bit-icon--ClockRegular"),
         DataRow(null, "bit-icon--Clock")
     ]
-    public void BitDatePickerGoToNowIconNameTest(string? iconName, string expectedClass)
+    public void BitDatePickerNowButtonIconNameTest(string? iconName, string expectedClass)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
-            parameters.Add(p => p.ShowGoToNow, true);
+            parameters.Add(p => p.ShowNowButton, true);
 
             if (iconName is not null)
             {
-                parameters.Add(p => p.GoToNowIconName, iconName);
+                parameters.Add(p => p.NowButtonIconName, iconName);
             }
         });
 
         var icon = component.Find(".bit-dtp-gtn i");
 
         Assert.IsTrue(icon.ClassList.Contains(expectedClass),
-            $"Expected class '{expectedClass}' on GoToNowIcon but got: {string.Join(' ', icon.ClassList)}");
+            $"Expected class '{expectedClass}' on NowButtonIcon but got: {string.Join(' ', icon.ClassList)}");
     }
 
     [TestMethod]
-    public void BitDatePickerGoToNowIconTest()
+    public void BitDatePickerNowButtonIconTest()
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.ShowTimePicker, true);
-            parameters.Add(p => p.ShowGoToNow, true);
-            parameters.Add(p => p.GoToNowIcon, BitIconInfo.Css("fa-solid fa-clock"));
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.NowButtonIcon, BitIconInfo.Css("fa-solid fa-clock"));
         });
 
         var icon = component.Find(".bit-dtp-gtn i");
 
         Assert.IsTrue(icon.ClassList.Contains("fa-solid"),
-            $"Expected 'fa-solid' on GoToNowIcon but got: {string.Join(' ', icon.ClassList)}");
+            $"Expected 'fa-solid' on NowButtonIcon but got: {string.Join(' ', icon.ClassList)}");
         Assert.IsTrue(icon.ClassList.Contains("fa-clock"),
-            $"Expected 'fa-clock' on GoToNowIcon but got: {string.Join(' ', icon.ClassList)}");
+            $"Expected 'fa-clock' on NowButtonIcon but got: {string.Join(' ', icon.ClassList)}");
     }
 
     [TestMethod,
@@ -1767,7 +1767,9 @@ public class BitDatePickerTests : BunitTestContext
 
         callout = component.Find(".bit-dtp-cac");
 
-        Assert.IsFalse(callout.HasAttribute("role"));
+        // Standalone the calendar is part of the page, where announcing a dialog would announce one the user
+        // can never leave - but it is still a group of controls the label names.
+        Assert.AreEqual("group", callout.GetAttribute("role"));
         Assert.IsFalse(callout.HasAttribute("aria-modal"));
     }
 
@@ -2835,6 +2837,153 @@ public class BitDatePickerTests : BunitTestContext
         // The header sits above the pickers of the callout, and the footer below them.
         Assert.IsTrue(header.NextElementSibling!.ClassList.Contains("bit-dtp-grp"));
         Assert.IsTrue(footer.PreviousElementSibling!.ClassList.Contains("bit-dtp-grp"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldReportOpeningAndClosingTheCallout()
+    {
+        var opened = 0;
+        var closed = 0;
+        var isOpen = false;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        component.Find(".bit-dtp-wrp").Click();
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(0, closed);
+
+        component.Find(".bit-dtp-ovl").Click();
+        Assert.AreEqual(1, opened);
+        Assert.AreEqual(1, closed);
+    }
+
+    [TestMethod]
+    public async Task BitDatePickerShouldShowTheCalloutWhenIsOpenIsSetFromOutside()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        var before = Context.JSInterop.Invocations
+                            .Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The hook does its toggling on the renderer's dispatcher rather than inline, so the queue is
+        // drained before the invocations are counted.
+        await component.InvokeAsync(() => Task.CompletedTask);
+
+        var after = Context.JSInterop.Invocations
+                           .Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The callout is shown and positioned from the JS side, so an IsOpen pushed in through the
+        // parameter has to reach it too - otherwise the picker reports itself open while nothing appears.
+        Assert.IsTrue(after > before);
+    }
+
+    [TestMethod]
+    public async Task BitDatePickerShouldOpenOnTheValueMonthWhenIsOpenIsSetFromOutside()
+    {
+        var day = new DateTime(2026, 1, 15);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, new DateTimeOffset(day, TimeZoneInfo.Local.GetUtcOffset(day)));
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+        });
+
+        // Opened by hand, walked a month past the value and closed again.
+        component.Find(".bit-dtp-wrp").Click();
+        component.Find(".bit-dtp-pkh .bit-dtp-nbt:last-child").Click();
+        Assert.Contains("February", component.Find(".bit-dtp-pkt, .bit-dtp-ptb").TextContent);
+
+        component.Find(".bit-dtp-ovl").Click();
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // The hook does its work on the renderer's dispatcher rather than inline, so the queue is
+        // drained before the callout is read.
+        await component.InvokeAsync(() => Task.CompletedTask);
+
+        // An open pushed in from the outside prepares the callout exactly as a click on the field does, so
+        // it comes back on the month holding the value instead of the month the last visit was left on.
+        Assert.Contains("January", component.Find(".bit-dtp-pkt, .bit-dtp-ptb").TextContent);
+    }
+
+    [TestMethod]
+    public void BitDatePickerHourStepShouldLayAGridOverTheDay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.HourStep, 3);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // The step lays a grid over the day - 0, 3, 6 ... 21 - rather than adding itself to whatever the hour
+        // happens to be, so an hour that sits between two grid points moves onto the next one, not three past
+        // itself.
+        var increaseHour = component.FindAll(".bit-dtp-tbt")[0];
+        increaseHour.PointerDown();
+        increaseHour.PointerUp();
+
+        Assert.AreEqual(12, value!.Value.Hour);
+    }
+
+    [TestMethod]
+    public async Task BitDatePickerShouldNotStartTheContinuousSpinBeforeTheContinuousSpinDelay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 0);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            // Longer than the press below, so the held button contributes the one step every press makes
+            // and the continuous spin never starts.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.FindAll(".bit-dtp-tbt")[0].PointerDown();
+
+        await Task.Delay(600);
+
+        Assert.AreEqual(11, value!.Value.Hour);
+
+        component.FindAll(".bit-dtp-tbt")[0].PointerUp();
+    }
+
+    [TestMethod]
+    public void BitDatePickerMinuteStepShouldLayAGridOverTheHour()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        DateTimeOffset? value = GetLocalDate(2026, 1, 15, 10, 7);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        var decreaseMinute = component.FindAll(".bit-dtp-tbt")[3];
+        decreaseMinute.PointerDown();
+        decreaseMinute.PointerUp();
+
+        Assert.AreEqual(0, value!.Value.Minute);
     }
 
     // The component counts months with CultureInfo.Calendar, which has no public setter and is not

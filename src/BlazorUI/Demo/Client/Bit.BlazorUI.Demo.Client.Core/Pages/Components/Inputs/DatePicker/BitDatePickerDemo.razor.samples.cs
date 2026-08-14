@@ -97,7 +97,7 @@ private bool showMonthPickerAsOverlay;";
 
 <BitDatePicker Label=""ShowTimePickerAsOverlay"" ShowTimePicker ShowTimePickerAsOverlay />
 
-<BitDatePicker Label=""Without the GoToNow button"" ShowTimePicker ShowGoToNow=""false"" />";
+<BitDatePicker Label=""Without the now button"" ShowTimePicker ShowNowButton=""false"" />";
     private readonly string example7CsharpCode = @"
 private DateTimeOffset? selectedDateTime;";
 
@@ -349,14 +349,22 @@ private async Task SelectPreset(int days)
 <div>Clicked: @clickCount times</div>
 <div>Focused in: @focusInCount times</div>
 <div>Focused out: @focusOutCount times</div>
-<div>Cleared: @clearCount times</div>";
+<div>Cleared: @clearCount times</div>
+
+<BitDatePicker Label=""OnOpen & OnClose""
+               OnOpen=""() => openCount++""
+               OnClose=""() => closeCount++"" />
+<div>Opened: @openCount times</div>
+<div>Closed: @closeCount times</div>";
     private readonly string example19CsharpCode = @"
 private int clickCount;
 private int clearCount;
 private int focusInCount;
 private int focusOutCount;
 private DateTimeOffset? displayedMonth;
-private DateTimeOffset? selectedDateEvent;";
+private DateTimeOffset? selectedDateEvent;
+private int openCount;
+private int closeCount;";
 
     private readonly string example20RazorCode = @"
 <BitDatePicker Label=""Try the keyboard"" ShowWeekNumbers />
@@ -468,7 +476,7 @@ private BitDatePicker? programmaticPicker;";
 <BitDatePicker Label=""TimePicker icons (FA)""
                ShowTimePicker
                ShowClearButton
-               GoToNowIcon=""@BitIconInfo.Fa(""solid clock"")""
+               NowButtonIcon=""@BitIconInfo.Fa(""solid clock"")""
                HideTimePickerIcon=""@BitIconInfo.Fa(""solid calendar"")""
                TimePickerIncreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-up"")""
                TimePickerDecreaseHourIcon=""@BitIconInfo.Fa(""solid chevron-down"")""

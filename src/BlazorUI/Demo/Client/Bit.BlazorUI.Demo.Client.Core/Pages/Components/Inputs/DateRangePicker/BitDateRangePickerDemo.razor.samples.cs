@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.DateRangePicker;
 
 public partial class BitDateRangePickerDemo
 {
@@ -80,6 +80,9 @@ private readonly BitDateRangePickerPreset[] presets =
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
 <BitDateRangePicker MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
+
+<BitDateRangePicker DisablePast />
+<BitDateRangePicker DisableFuture />
 <BitDateRangePicker MaxRange=""new TimeSpan(2, 4, 30, 0)"" ShowTimePicker />
 <BitDateRangePicker MinRange=""TimeSpan.FromDays(3)"" />
 <BitDateRangePicker MinRange=""TimeSpan.FromDays(2)"" MaxRange=""TimeSpan.FromDays(7)"" />";
@@ -282,6 +285,15 @@ private BitDateRangePickerValue? readOnlyDateRange = new()
             <span class=""year-suffix"">AC</span>
         </span>
     </YearCellTemplate>
+</BitDateRangePicker>
+
+<BitDateRangePicker Label=""Callout header & footer"">
+    <CalloutHeaderTemplate>
+        <div style=""padding:0.5rem"">Pick a range</div>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <div style=""padding:0.5rem"">Dates are local</div>
+    </CalloutFooterTemplate>
 </BitDateRangePicker>";
     private readonly string example16CsharpCode = @"
 private CultureInfo culture = CultureInfo.CurrentUICulture;";

@@ -20,10 +20,31 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the input of the picker gets the focus as soon as it renders for the first time. A standalone picker carries its value in a hidden input nobody is meant to land on, so it has nothing to place the focus on.",
+        },
+        new()
+        {
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Calendar",
             Description = "Aria label of the DateRangePicker's callout for screen readers."
+        },
+        new()
+        {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the bottom of the callout, below everything it holds.",
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the top of the callout, above everything it holds.",
         },
         new()
         {
@@ -105,6 +126,13 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "ContinuousSpinInterval",
+            Type = "int",
+            DefaultValue = "75",
+            Description = "The interval in milliseconds between two consecutive changes while an increase/decrease button of the time picker is held down.",
+        },
+        new()
+        {
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "null",
@@ -123,6 +151,20 @@ public partial class BitDateRangePickerDemo
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
             Description = "Custom template to render the day cells of the DateRangePicker."
+        },
+        new()
+        {
+            Name = "DisableFuture",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
+        },
+        new()
+        {
+            Name = "DisablePast",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
         },
         new()
         {
@@ -393,7 +435,7 @@ public partial class BitDateRangePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for DateRangePicker's hour.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it.",
         },
         new()
         {
@@ -502,7 +544,7 @@ public partial class BitDateRangePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "Determines increment/decrement steps for DateRangePicker's minute.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
         },
         new()
         {
@@ -582,9 +624,21 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "Callback for when the value is cleared using the clear button.",
+        },
+        new()
+        {
             Name = "OnClick",
             Type = "EventCallback",
             Description = "The callback for clicking on the DateRangePicker's input.",
+        },
+        new()
+        {
+            Name = "OnClose",
+            Type = "EventCallback",
+            Description = "Callback for when the callout is closed.",
         },
         new()
         {
@@ -612,6 +666,12 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "OnOpen",
+            Type = "EventCallback",
+            Description = "Callback for when the callout is opened.",
+        },
+        new()
+        {
             Name = "OnPresetSelect",
             Type = "EventCallback<BitDateRangePickerPreset>",
             Description = "The callback for when a preset is selected. The argument is the selected preset.",
@@ -624,6 +684,13 @@ public partial class BitDateRangePickerDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Whether the previous and next navigation buttons move the calendar by all of its rendered months instead of one, so consecutive pages of a multi-month calendar never overlap. It has no effect when MonthCount renders a single month.",
+        },
+        new()
+        {
+            Name = "OutOfRangeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a range entered as text that breaks the bounds, the disabled days, or MinRange and MaxRange. Text that does not read as a range at all reports InvalidErrorMessage instead.",
         },
         new()
         {
@@ -1164,6 +1231,20 @@ public partial class BitDateRangePickerDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the callout container of the BitDateRangePicker."
+                },
+                new()
+                {
+                    Name = "CalloutHeader",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout header, the container of the CalloutHeaderTemplate."
+                },
+                new()
+                {
+                    Name = "CalloutFooter",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the callout footer, the container of the CalloutFooterTemplate."
                 },
                 new()
                 {
