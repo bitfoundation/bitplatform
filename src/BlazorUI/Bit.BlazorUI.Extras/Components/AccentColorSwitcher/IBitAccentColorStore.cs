@@ -10,9 +10,11 @@
 /// the built-in stores or run on it alone with <see cref="BitAccentColorPersistence.None"/>.
 /// </summary>
 /// <remarks>
-/// A restored value goes through the same validation as the built-in stores: it is matched against
-/// the configured accents and anything unrecognized is treated as "nothing persisted". Store
-/// failures are logged and swallowed - losing the preference is never an error the app sees.
+/// A restored value goes through the same validation as the built-in stores: an accent outside the
+/// configured ones is still restored (as <see cref="BitAccentColorService.ApplyAsync"/> can apply
+/// one), re-validated as plain hex, and anything that is not hex at all is treated as "nothing
+/// persisted". Store failures are logged and swallowed - losing the preference is never an error
+/// the app sees.
 /// </remarks>
 public interface IBitAccentColorStore
 {

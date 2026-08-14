@@ -24,7 +24,12 @@ public class BitAccentColorService : IDisposable
     private readonly BitAccentColorConfig? _registeredConfig;
     private readonly BitThemeNotifications _themeNotifications;
 
-    private bool _initialized;
+    /// <summary>
+    /// The one interactive restore, kept from the call that started it so every later caller awaits
+    /// that same work instead of returning while it is still in flight. Null until an interactive
+    /// call gets past the runtime check, which is also what "the stores have been read" is tested by.
+    /// </summary>
+    private Task? _initialization;
     private BitAccentColorFirstPaintStrategy _firstPaintStrategy = BitAccentColorFirstPaintStrategy.None;
     private BitAccentColorPersistence _persistence = BitAccentColorPersistence.None;
     private IReadOnlyList<BitAccentColorItem> _accents = BitAccentColorSwitcher.DefaultAccents;
@@ -83,7 +88,7 @@ public class BitAccentColorService : IDisposable
     {
         // The interactive pass has already read the authoritative store; letting a (possibly stale)
         // cascaded value overwrite it afterwards would undo a fresh pick.
-        if (_initialized) return;
+        if (_initialization is not null) return;
 
         var normalized = Canonicalize(accent);
         if (normalized is null || normalized == ActiveAccent) return;
@@ -98,19 +103,28 @@ public class BitAccentColorService : IDisposable
     /// the stores needs interactivity, so callers have to wait for the first render; calling it
     /// during prerendering is a no-op that leaves the service ready to initialize on the retry.
     /// Safe to call repeatedly - only the first interactive call does the work, and its
-    /// <paramref name="config"/> becomes the app-wide restore configuration.
+    /// <paramref name="config"/> becomes the app-wide restore configuration - and the returned task
+    /// completes for every caller only once that work has, so a call made while it is in flight is
+    /// a wait for it rather than a pass through an accent that has not been read yet.
     /// </summary>
     /// <param name="config">
     /// The app-wide accent configuration; <see langword="null"/> falls back to the
     /// <see cref="BitAccentColorConfig"/> registered in DI (the accentColor option of
     /// AddBitBlazorUIExtrasServices), and with neither, <see cref="BitAccentColorSwitcher.DefaultAccents"/>
-    /// are kept with no persistence and no first-paint machinery. The stores are visitor-editable,
-    /// so a persisted value outside the configured accents is treated as "nothing persisted" rather
-    /// than handed to <see cref="BitThemeFactory"/> as-is.
+    /// are kept with no persistence and no first-paint machinery. A persisted accent outside the
+    /// configured ones is restored all the same - <see cref="ApplyAsync"/> can apply and persist one,
+    /// and the first-paint machinery paints whatever the stores carry - re-validated as plain hex,
+    /// which is what keeps a tampered store value out of <see cref="BitThemeFactory"/>. No swatch
+    /// marks it active, because none of them is it.
     /// </param>
-    public async Task InitializeAsync(BitAccentColorConfig? config = null)
+    public Task InitializeAsync(BitAccentColorConfig? config = null)
     {
-        if (_initialized) return;
+        // Every caller is handed the one restore, rather than the ones arriving after it started
+        // returning to a still-default ActiveAccent: a second switcher whose first render completes
+        // mid-restore would take that default for the restored accent and mark its swatch active,
+        // ringing the packaged primary next to the CSS-marked one the visitor actually picked until
+        // the restore lands and re-renders it away.
+        if (_initialization is not null) return _initialization;
 
         config ??= _registeredConfig;
 
@@ -118,10 +132,15 @@ public class BitAccentColorService : IDisposable
         _firstPaintStrategy = config?.FirstPaintStrategy ?? BitAccentColorFirstPaintStrategy.None;
         _persistence = config?.Persistence ?? BitAccentColorPersistence.None;
 
-        if (_js.IsRuntimeInvalid()) return; // prerendering / disconnected circuit: retry on the next call.
+        // Prerendering / disconnected circuit: nothing is restored and nothing is remembered, so the
+        // next call - the interactive one - runs this from the top again.
+        if (_js.IsRuntimeInvalid()) return Task.CompletedTask;
 
-        _initialized = true;
+        return _initialization = RestoreAsync();
+    }
 
+    private async Task RestoreAsync()
+    {
         // Subscribed here rather than in the constructor because attaching the handler kicks off the
         // JS notifier registration, which can only succeed once the client is live.
         _themeNotifications.ThemeChanged += OnThemeChanged;
@@ -158,7 +177,15 @@ public class BitAccentColorService : IDisposable
             }
         }
 
-        var stored = Normalize(persisted);
+        // Validated as hex rather than against the offered accents, the same policy ApplyAsync and
+        // SeedFromPrerender apply: an accent this switcher does not offer as a swatch is still a real
+        // accent - ApplyAsync takes one and persists it - and it is what the first-paint machinery has
+        // already painted from the very store read above. Dropping it here would restore the packaged
+        // primary onto a page painted in the visitor's accent, and the switchers, which take this state
+        // for the answer, would mark the default swatch active where the pre-paint marker (keyed on the
+        // stored token) had correctly marked none. A value that is not hex at all is still rejected, and
+        // a hex one only ever reaches the factory for the visitor whose own store carried it.
+        var stored = Canonicalize(persisted);
 
         // Nothing restored and nothing seeded, so there is no overlay to apply and nothing to
         // persist. This is the path almost every visit takes, so it is worth keeping off the
@@ -317,8 +344,9 @@ public class BitAccentColorService : IDisposable
     }
 
     /// <summary>
-    /// Matches a value from any of the (visitor-editable) stores against the configured accents,
-    /// returning the canonical hex or <see langword="null"/>.
+    /// Matches a value against the configured accents, returning that accent's own spelling of
+    /// itself or <see langword="null"/>. The list half of <see cref="Canonicalize"/>, which every
+    /// accent entering this service - restored, seeded or picked - comes through.
     /// </summary>
     private string? Normalize(string? value)
     {

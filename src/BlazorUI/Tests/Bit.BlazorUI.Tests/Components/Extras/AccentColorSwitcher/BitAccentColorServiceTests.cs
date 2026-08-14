@@ -51,6 +51,65 @@ public class BitAccentColorServiceTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitAccentColorServiceShouldMakeEveryInitializeAwaitTheRestoreInFlight()
+    {
+        // Left unanswered on purpose: this is the window between one switcher starting the restore
+        // and the stores answering it.
+        var getPersisted = Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true);
+
+        var service = GetService();
+        var config = new BitAccentColorConfig { Persistence = BitAccentColorPersistence.All };
+
+        var first = service.InitializeAsync(config);
+        // The second switcher of the app chrome, initializing from its own first render while the
+        // restore above is still in flight. Returning to it here - with ActiveAccent still the
+        // packaged primary - is what made it mark the default swatch active next to the one the
+        // first-paint CSS had already marked from the visitor's stores.
+        var second = service.InitializeAsync(config);
+
+        Assert.IsFalse(first.IsCompleted);
+        Assert.IsFalse(second.IsCompleted);
+
+        getPersisted.SetResult(BitAccentColorPresets.Purple.TrimStart('#'));
+
+        await Task.WhenAll(first, second);
+
+        Assert.AreEqual(BitAccentColorPresets.Purple, service.ActiveAccent);
+    }
+
+    [TestMethod]
+    public async Task BitAccentColorServiceShouldRestoreAnAccentOutsideTheOfferedOnes()
+    {
+        // What ApplyAsync persists for an accent the app applies programmatically without offering
+        // it as a swatch - and what the first-paint machinery has already painted by the time the
+        // restore runs. Dropped here, the service would report the packaged primary instead, and the
+        // switchers would mark its swatch active on a page painted in this accent.
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true)
+               .SetResult("123456");
+
+        var service = GetService();
+
+        await service.InitializeAsync(new BitAccentColorConfig { Persistence = BitAccentColorPersistence.All });
+
+        Assert.AreEqual("#123456", service.ActiveAccent);
+    }
+
+    [TestMethod]
+    public async Task BitAccentColorServiceShouldIgnoreAPersistedValueThatIsNotHex()
+    {
+        // The stores are visitor-editable, so this is the tampered / stale-format case: nothing to
+        // restore, and nothing that could reach BitThemeFactory.
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true)
+               .SetResult("not-a-color");
+
+        var service = GetService();
+
+        await service.InitializeAsync(new BitAccentColorConfig { Persistence = BitAccentColorPersistence.All });
+
+        Assert.AreEqual(BitAccentColorPresets.Blue, service.ActiveAccent);
+    }
+
+    [TestMethod]
     public void BitAccentColorServiceShouldTolerateRepeatedDisposal()
     {
         var service = GetService();

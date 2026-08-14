@@ -122,6 +122,10 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     {
         if (firstRender)
         {
+            // Awaited rather than fired off, and awaited even when another instance is the one
+            // actually restoring (the service hands every caller the same task): what follows takes
+            // the accent state for the answer, so it must not run while the stores are still being
+            // read - that is what would ring the default next to the visitor's own swatch.
             await _accentColorService.InitializeAsync(_config);
 
             // The restore above (or the confirmation that there was nothing to restore) is what makes

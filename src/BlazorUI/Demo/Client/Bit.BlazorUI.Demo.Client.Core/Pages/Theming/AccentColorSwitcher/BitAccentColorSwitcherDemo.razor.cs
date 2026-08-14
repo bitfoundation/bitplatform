@@ -169,7 +169,7 @@ public partial class BitAccentColorSwitcherDemo
                     Name = "InitializeAsync",
                     Type = "Task InitializeAsync(BitAccentColorConfig? config = null)",
                     DefaultValue = "",
-                    Description = "Restores the persisted accent, applies it, and starts tracking dark/light switches. Call it after the first interactive render (the switcher does this itself); only the first interactive call does the work, and its config (falling back to the DI-registered BitAccentColorConfig when null) becomes the app-wide configuration.",
+                    Description = "Restores the persisted accent, applies it, and starts tracking dark/light switches. Call it after the first interactive render (the switcher does this itself); only the first interactive call does the work, and its config (falling back to the DI-registered BitAccentColorConfig when null) becomes the app-wide configuration - and every later call awaits that same restore rather than returning before the accent has been read. A persisted accent outside the configured ones is restored as well (re-validated as plain hex, like ApplyAsync); no swatch marks it active, because none of them is it.",
                 },
                 new()
                 {
