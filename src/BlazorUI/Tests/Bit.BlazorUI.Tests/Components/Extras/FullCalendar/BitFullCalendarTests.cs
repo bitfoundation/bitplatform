@@ -461,6 +461,50 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFullCalendarViewsShouldPushBackAnExcludedBoundViewThatClampsToTheActiveView()
+    {
+        var view = BitFullCalendarView.Agenda;
+
+        // Month is both the active view and the clamp target here, so the state reports no change at
+        // all - the excluded bound value still has to be corrected.
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Views, [BitFullCalendarView.Month, BitFullCalendarView.Week]);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Month, view);
+            Assert.AreEqual(BitFullCalendarView.Month, component.Instance.View);
+            Assert.IsNotNull(component.Find(".bit-bfc-month"));
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarViewsShouldPushBackARefusedBoundTimelineMode()
+    {
+        var mode = BitFullCalendarMode.Timeline;
+
+        // No allowed view supports the timeline layout, so the refused mode resolves to the Event mode
+        // that is already active and the binding has to be corrected without a state change to react to.
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Add(p => p.Views, [BitFullCalendarView.Year, BitFullCalendarView.Agenda]);
+            parameters.Bind(p => p.Mode, mode, m => mode = m);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarMode.Event, mode);
+            Assert.AreEqual(BitFullCalendarMode.Event, component.Instance.Mode);
+        });
+    }
+
+    [TestMethod]
     public void BitFullCalendarViewTabShouldSwitchTheRenderedView()
     {
         var component = RenderComponent<BitFullCalendar>(parameters =>

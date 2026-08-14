@@ -348,6 +348,13 @@ public partial class BitFullCalendar : IDisposable
             _pendingDateChange = null;
             InvokeAsync(() => OnDateChange.InvokeAsync(pending));
         }
+
+        // A bound View/Mode the state refuses can resolve to the value that is already active, which
+        // emits no state change and so reaches no reconciliation through HandleStateChanged. Reconcile
+        // explicitly here so the corrected value is always pushed back into the binding. This is an
+        // echo of the parameters just applied, so it stays silent (raiseEvents: false) like the
+        // reconciliations queued during the parameter-application window.
+        InvokeAsync(() => ReconcileBoundState(raiseEvents: false));
     }
 
     private void ApplyBoundState()
@@ -434,19 +441,27 @@ public partial class BitFullCalendar : IDisposable
     // additional event is raised here for the date.
     private async Task ReconcileBoundState(bool raiseEvents)
     {
-        if (!EqualityComparer<BitFullCalendarMode>.Default.Equals(_lastMode, State.Mode))
+        var modeChanged = !EqualityComparer<BitFullCalendarMode>.Default.Equals(_lastMode, State.Mode);
+        // A refused bound Mode (Timeline without the resources or timeline-capable views it needs) can
+        // resolve to the mode that is already active. The state then reports no change at all, so the
+        // divergence has to be detected against the parameter itself - otherwise the binding would keep
+        // reporting a mode the calendar never entered. Only a genuine state change raises OnModeChange.
+        if (modeChanged || (ModeHasBeenSet && !EqualityComparer<BitFullCalendarMode>.Default.Equals(Mode, State.Mode)))
         {
             _lastMode = State.Mode;
             await AssignMode(State.Mode);
-            if (raiseEvents)
+            if (modeChanged && raiseEvents)
                 await OnModeChange.InvokeAsync(State.Mode);
         }
 
-        if (!EqualityComparer<BitFullCalendarView>.Default.Equals(_lastView, State.View))
+        var viewChanged = !EqualityComparer<BitFullCalendarView>.Default.Equals(_lastView, State.View);
+        // Same for a bound View excluded by Views: when the clamp lands on the active view there is no
+        // state change to reconcile against, only a parameter that no longer matches what is rendered.
+        if (viewChanged || (ViewHasBeenSet && !EqualityComparer<BitFullCalendarView>.Default.Equals(View, State.View)))
         {
             _lastView = State.View;
             await AssignView(State.View);
-            if (raiseEvents)
+            if (viewChanged && raiseEvents)
                 await OnViewChange.InvokeAsync(State.View);
         }
 
