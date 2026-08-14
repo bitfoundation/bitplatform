@@ -76,7 +76,7 @@ pre-confirmed accounts whose password is **`123456`**:
 
 | E-mail | Password | Role |
 |---|---|---|
-| `test@bitplatform.dev` | `123456` | `g-admin` — **global administrator, holds every feature** |
+| `test@bitplatform.dev` | `123456` | `g-admin` - **global administrator, holds every feature** |
 <!--#if (multitenant == true)-->
 | `store-admin@bitplatform.dev` | `123456` | `t-admin` of the seeded `store` tenant |
 | `store-user@bitplatform.dev` | `123456` | `demo` member of the seeded `store` tenant |

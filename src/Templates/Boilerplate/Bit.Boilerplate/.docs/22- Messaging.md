@@ -23,7 +23,7 @@ At the heart of the Boilerplate messaging architecture is **AppMessages** - a ce
 
 ### Message Structure
 
-**SharedAppMessages** (Server ↔ Client, `signalR` only) —
+**SharedAppMessages** (Server ↔ Client, `signalR` only) -
 [`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs):
 
 ```csharp
@@ -214,7 +214,7 @@ The `window.postMessage` API allows communication between different JavaScript c
 - Integration with third-party scripts loaded into the app's own page
 
 **Same-origin only**: window messages from another origin are dropped. Do not remove that check to make a
-cross-origin integration work — it is what stops an arbitrary page that holds a handle to this window from driving
+cross-origin integration work - it is what stops an arbitrary page that holds a handle to this window from driving
 `PubSubService`. Use a same-origin proxy page instead.
 
 **Publishing via window.postMessage**:

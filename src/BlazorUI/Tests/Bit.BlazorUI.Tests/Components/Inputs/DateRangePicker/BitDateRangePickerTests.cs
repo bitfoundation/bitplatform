@@ -2959,7 +2959,7 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.IsOpen, true);
             parameters.Add(p => p.MaxRange, TimeSpan.FromDays(5));
             // The advertised end (3/10) is fine, but the MaxRange clamp moves the applied end
-            // to 3/6, which is a blocked day — so the preset must be rejected.
+            // to 3/6, which is a blocked day - so the preset must be rejected.
             parameters.Add(p => p.DisabledDates, new[] { FixedDate(2024, 3, 6) });
             parameters.Add(p => p.Presets, new BitDateRangePickerPreset[]
             {

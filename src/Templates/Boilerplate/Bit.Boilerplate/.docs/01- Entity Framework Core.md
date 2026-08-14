@@ -461,7 +461,7 @@ Conventions:
 > the repository and never consult `AsQueryableAsync`, which is the only method that filters on `UserId`. The
 > shipped `TodoItemTableRepository` deliberately does **not** add a per-user check there: at sync time a device may
 > be pushing operations queued while it was in another user's hands. If your app has no such requirement, add the
-> ownership check in the wrapper — that is the only place it can live.
+> ownership check in the wrapper - that is the only place it can live.
 
 ### Additional Resources
 
