@@ -64,11 +64,16 @@
                 </div>
             </div>
         </div>
-        <div class="bit-bfc-dialog-footer" style="justify-content:space-between;">
-            <div style="display:flex;gap:8px;">
-                <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
-                <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
-            </div>
+        @* Read-only keeps the details readable but drops the mutating actions, leaving Close alone
+           in the footer - so the row switches from space-between to a plain trailing alignment. *@
+        <div class="bit-bfc-dialog-footer" style="justify-content:@(State.ReadOnly ? "flex-end" : "space-between");">
+            @if (!State.ReadOnly)
+            {
+                <div style="display:flex;gap:8px;">
+                    <button type="button" class="bit-bfc-btn" @onclick="Edit">@Texts.EditButton</button>
+                    <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
+                </div>
+            }
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CloseButton</button>
         </div>
     </div>

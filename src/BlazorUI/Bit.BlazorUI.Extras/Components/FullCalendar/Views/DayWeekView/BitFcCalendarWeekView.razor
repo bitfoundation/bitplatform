@@ -51,8 +51,8 @@
                                     <div style="position:absolute;top:0;left:0;right:0;border-top:1px solid var(--bit-bfc-border);"></div>
                                 }
                                 <div class="bit-bfc-hour-slot bit-bfc-droppable @GetWeekDropClass(d, hour, 0)"
-                                     role="button"
-                                     tabindex="0"
+                                     role="@_slotRole"
+                                     tabindex="@_slotTabIndex"
                                      aria-label="@HourSlotAriaLabel(d, hour)"
                                      @ondragenter="() => OnDragEnterSlot(d, hour, 0)"
                                      @ondragover:preventDefault="true"
@@ -60,18 +60,21 @@
                                      @onclick="() => OnHourClickAsync(d, hour)"
                                      @onkeydown="e => OnHourKeyDownAsync(e, d, hour)"></div>
                                 <div class="bit-bfc-hour-row-half bit-bfc-droppable @GetWeekDropClass(d, hour, 30)"
-                                     role="button"
-                                     tabindex="0"
+                                     role="@_slotRole"
+                                     tabindex="@_slotTabIndex"
                                      aria-label="@HourSlotAriaLabel(d, hour, 30)"
                                      @ondragenter="() => OnDragEnterSlot(d, hour, 30)"
                                      @ondragover:preventDefault="true"
                                      @ondrop="() => OnDrop(d, hour, 30)"
                                      @onclick="() => OnHourClickAsync(d, hour, 30)"
                                      @onkeydown="e => OnHourKeyDownAsync(e, d, hour, 30)"></div>
-                                <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                    @Texts.AddEventHoverHint
-                                </div>
+                                @if (!State.ReadOnly)
+                                {
+                                    <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        @Texts.AddEventHoverHint
+                                    </div>
+                                }
                             </div>
                         }
 

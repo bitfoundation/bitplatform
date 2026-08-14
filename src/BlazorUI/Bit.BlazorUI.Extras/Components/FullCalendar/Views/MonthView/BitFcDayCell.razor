@@ -12,13 +12,16 @@
      @onclick="() => OnCellClick()">
 
     <div class="bit-bfc-month-cell-day @(isToday ? "today" : "")">@Cell.Day</div>
-    <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
-            aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("d", State.Culture)}")"
-            @onclick="() => OnCellClick()"
-            @onclick:stopPropagation="true">
-        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        @Texts.AddEventHoverHint
-    </button>
+    @if (!State.ReadOnly)
+    {
+        <button type="button" class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-month"
+                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("d", State.Culture)}")"
+                @onclick="() => OnCellClick()"
+                @onclick:stopPropagation="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            @Texts.AddEventHoverHint
+        </button>
+    }
 
     <div class="bit-bfc-month-events">
         @for (int i = 0; i < 3; i++)
