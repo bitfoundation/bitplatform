@@ -344,7 +344,49 @@ public partial class BitCarouselDemo
             Name = "VisibleItemsCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "Number of items that is visible in the carousel."
+            Description = "Number of items that is visible in the carousel. The Xs to Xxl variants override it responsively, based on the width of the carousel itself."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXs",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra small breakpoint (from 0 up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountSm",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the small breakpoint (from 600px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountMd",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the medium breakpoint (from 960px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountLg",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the large breakpoint (from 1280px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra large breakpoint (from 1920px up)."
+        },
+        new()
+        {
+            Name = "VisibleItemsCountXxl",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Number of visible items in the extra extra large breakpoint (from 2560px up)."
         },
         new()
         {
@@ -691,6 +733,9 @@ public partial class BitCarouselDemo
     private int number = 1;
     private int currentPage;
     private BitCarousel carousel = default!;
+
+    private int thumbsCurrentPage;
+    private BitCarousel thumbsCarousel = default!;
 
     private async Task GoNext()
     {

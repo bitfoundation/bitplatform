@@ -28,13 +28,14 @@ public partial class BitCarousel : BitComponentBase
     private bool _navigating;
     private bool _pageHidden;
     private bool _needsReset;
+    private bool _needsRegister;
     private bool _isPointerDown;
     private bool _afterFirstRender;
     private bool _defaultPageApplied;
-    private double _rootWidth;
     private int _laidOutItemsCount = -1;
     private (bool Playing, bool Paused) _playbackState;
     private string _layoutSignature = string.Empty;
+    private string _preventSignature = string.Empty;
     private int[] _othersIndices = [];
     private int[] _currentIndices = [];
     private DateTime _lastWheel = DateTime.MinValue;
@@ -46,6 +47,14 @@ public partial class BitCarousel : BitComponentBase
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
     private ElementReference _carouselContainer = default!;
+
+    // The one size the carousel is laid out against: the box the slides live in. Both places it can
+    // arrive from (the resize observer and the measurement of ResetDimensionsAsync) look at that same
+    // element, so the breakpoints below and the sizes the slides are given cannot disagree with each
+    // other depending on which of the two ran last.
+    private double _containerWidth;
+    private double _containerHeight;
+
     private DotNetObjectReference<BitCarousel> _dotnetObj = default!;
 
     // The keys the carousel acts on are also the keys the browser scrolls the page with, so they are
@@ -447,7 +456,45 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// Number of items that is visible in the carousel.
     /// </summary>
+    /// <remarks>
+    /// The XS to XXL variants of the parameter override it responsively, based on the width the
+    /// carousel itself is laid out at (not the width of the viewport). They apply from their
+    /// breakpoint upwards, so a carousel that only sets a couple of them keeps the value of the
+    /// largest one below its width, and falls back to this parameter below the smallest one.
+    /// The breakpoints are the shared ones of bit BlazorUI: 600, 960, 1280, 1920 and 2560 pixels.
+    /// A matching <see cref="ResponsiveOptions"/> entry takes precedence over all of them.
+    /// </remarks>
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// Number of visible items in the extra small breakpoint (from 0 up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXs { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the small breakpoint (from 600px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the medium breakpoint (from 960px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountMd { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the large breakpoint (from 1280px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountLg { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the extra large breakpoint (from 1920px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXl { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the extra extra large breakpoint (from 2560px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXxl { get; set; }
 
     /// <summary>
     /// Navigates the carousel with the wheel of the mouse (or with a two finger scroll on a trackpad).
@@ -456,8 +503,11 @@ public partial class BitCarousel : BitComponentBase
     /// The carousel keeps the wheel to itself while this is enabled, so the page underneath it does not
     /// scroll while the pointer is over the carousel.
     /// <br />
-    /// Scrolling away from the reader (down, or right) moves the carousel forwards, whichever way its
-    /// slides are laid out, since a wheel is not a grab of the slides the way a drag is.
+    /// Rolling the wheel away from the reader (down) moves the carousel forwards, whichever way its
+    /// slides are laid out, since a wheel is not a grab of the slides the way a drag is. A horizontal
+    /// scroll, on the other hand, is a motion along the slides, so it follows the visual direction of the
+    /// carousel (scrolling to the right reveals the slides sitting on the right). A vertical carousel
+    /// ignores it, since there the horizontal axis runs across the slides rather than along them.
     /// </remarks>
     [Parameter] public bool Wheel { get; set; }
 
@@ -578,11 +628,12 @@ public partial class BitCarousel : BitComponentBase
     {
         if (IsDisposed) return;
 
-        // The width the responsive options are matched against is the width of the carousel itself, which
-        // is exactly what the observer reports here.
+        // The size the responsive options are matched against (and the slides are sized from) is the one
+        // of the container the observer is registered on, which is exactly what it reports here.
         if (rect is not null && rect.Width > 0)
         {
-            _rootWidth = rect.Width;
+            _containerWidth = rect.Width;
+            _containerHeight = rect.Height;
         }
 
         await ResetDimensionsAsync();
@@ -696,16 +747,25 @@ public partial class BitCarousel : BitComponentBase
 
         ClampCounts();
 
-        // Everything that changes where the slides sit is folded into one signature, so a single
-        // comparison decides whether the carousel has to be measured and laid out again.
-        var signature = FormattableString.Invariant(
-            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{IsEnabled}");
+        var signature = ComputeLayoutSignature();
 
         if (_layoutSignature != signature)
         {
             _layoutSignature = signature;
 
             _needsReset = _afterFirstRender;
+        }
+
+        // What the carousel takes away from the browser is kept apart from where its slides sit, so
+        // turning the wheel navigation on or off costs a flag on a listener rather than a round trip
+        // to measure the carousel and a re-layout of every one of its slides.
+        var preventSignature = FormattableString.Invariant($"{Vertical}|{NoKeyboard}|{NoDrag}|{Wheel}|{IsEnabled}");
+
+        if (_preventSignature != preventSignature)
+        {
+            _preventSignature = preventSignature;
+
+            _needsRegister = _afterFirstRender;
         }
 
         UpdateAutoPlayTimer();
@@ -719,10 +779,13 @@ public partial class BitCarousel : BitComponentBase
         {
             _dotnetObj = DotNetObjectReference.Create(this);
 
-            await _js.BitObserversRegisterResize(UniqueId, RootElement, _dotnetObj);
+            // The observer watches the container rather than the root, since that is the box the slides
+            // are laid out in: the root also holds the row of dots, which is none of their business.
+            await _js.BitObserversRegisterResize(UniqueId, _carouselContainer, _dotnetObj);
 
             _afterFirstRender = true;
             _needsReset = false;
+            _needsRegister = false;
 
             await ResetDimensionsAsync();
 
@@ -732,13 +795,21 @@ public partial class BitCarousel : BitComponentBase
 
             UpdateAutoPlayTimer();
         }
-        else if (_needsReset)
+        else
         {
-            _needsReset = false;
+            if (_needsReset)
+            {
+                _needsReset = false;
 
-            await ResetDimensionsAsync();
+                await ResetDimensionsAsync();
+            }
 
-            await RegisterPreventDefaultsAsync();
+            if (_needsRegister)
+            {
+                _needsRegister = false;
+
+                await RegisterPreventDefaultsAsync();
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -756,6 +827,39 @@ public partial class BitCarousel : BitComponentBase
         // suppressed in the browser rather than with Blazor's static preventDefault directive, so a
         // pointerdown on the next/prev buttons is left alone and they can still take the focus.
         await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled);
+
+        // Keeping the wheel to the carousel is suppressed in the browser as well, since the listener
+        // Blazor's preventDefault directive goes through is a passive one before net10.0, which makes
+        // preventing the wheel through it a no-op there. Only the axis the carousel navigates on is
+        // taken, matching HandleWheel: a vertical carousel leaves a sideways scroll to the page.
+        await _js.BitUtilsRegisterPreventWheel(_carouselContainer, Wheel && IsEnabled, Vertical);
+    }
+
+    // Everything that changes where the slides sit is folded into one signature, so a single comparison
+    // decides whether the carousel has to be measured and laid out again.
+    private string ComputeLayoutSignature()
+    {
+        return FormattableString.Invariant(
+            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{IsEnabled}");
+    }
+
+    // The responsive variants of VisibleItemsCount apply from their breakpoint (of the width of the
+    // carousel itself) upwards, like the columns of BitGrid, so the one that wins is the largest
+    // breakpoint the carousel has grown past that was actually set. Before the first measurement
+    // (and on prerendering, where there is nothing to measure) the base value is used.
+    private int ResolveVisibleItemsCount()
+    {
+        if (_containerWidth <= 0) return VisibleItemsCount;
+
+        int? resolved = VisibleItemsCountXs;
+
+        if (_containerWidth >= BitBreakpoints.Sm) resolved = VisibleItemsCountSm ?? resolved;
+        if (_containerWidth >= BitBreakpoints.Md) resolved = VisibleItemsCountMd ?? resolved;
+        if (_containerWidth >= BitBreakpoints.Lg) resolved = VisibleItemsCountLg ?? resolved;
+        if (_containerWidth >= BitBreakpoints.Xl) resolved = VisibleItemsCountXl ?? resolved;
+        if (_containerWidth >= BitBreakpoints.Xxl) resolved = VisibleItemsCountXxl ?? resolved;
+
+        return resolved ?? VisibleItemsCount;
     }
 
     // The narrowest option the carousel still fits in wins, so the options can be listed in any order. A
@@ -763,14 +867,14 @@ public partial class BitCarousel : BitComponentBase
     private BitCarouselResponsiveOption? GetResponsiveOption()
     {
         if (ResponsiveOptions is null) return null;
-        if (_rootWidth <= 0) return null;
+        if (_containerWidth <= 0) return null;
 
         BitCarouselResponsiveOption? matched = null;
 
         foreach (var option in ResponsiveOptions)
         {
             if (option is null) continue;
-            if (option.Breakpoint < _rootWidth) continue;
+            if (option.Breakpoint < _containerWidth) continue;
             if (matched is null || option.Breakpoint < matched.Breakpoint)
             {
                 matched = option;
@@ -786,9 +890,11 @@ public partial class BitCarousel : BitComponentBase
     {
         var itemsCount = _allItems.Count;
 
+        // A matching responsive option is the most specific thing the carousel was told about its width, so
+        // it wins over the breakpoint variants of VisibleItemsCount, which in turn win over the base value.
         var option = GetResponsiveOption();
 
-        var visible = Fade ? 1 : Math.Max(1, option?.VisibleItemsCount ?? VisibleItemsCount);
+        var visible = Fade ? 1 : Math.Max(1, option?.VisibleItemsCount ?? ResolveVisibleItemsCount());
 
         if (itemsCount > 0 && visible > itemsCount)
         {
@@ -843,18 +949,26 @@ public partial class BitCarousel : BitComponentBase
             return;
         }
 
-        // The measurement comes first because the width it reports is also what the responsive options are
-        // matched against, so the counts below are the ones the carousel actually has room for.
+        // The measurement comes first because the width it reports is also what the responsive options (and
+        // the breakpoint variants of VisibleItemsCount) are matched against, so the counts below are the ones
+        // the carousel actually has room for. It is the same element the resize observer watches, so a
+        // layout that follows a resize and one that follows a change of the items measure the same box.
         var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
 
         if (IsDisposed) return;
 
         if (rect is not null && rect.Width > 0)
         {
-            _rootWidth = rect.Width;
+            _containerWidth = rect.Width;
+            _containerHeight = rect.Height;
         }
 
         ClampCounts();
+
+        // The counts the measurement landed on are the ones the next comparison has to be made against,
+        // so a breakpoint the carousel just crossed does not read as a parameter change and buy a second
+        // measurement and re-layout of everything on the next time its parameters are set.
+        _layoutSignature = ComputeLayoutSignature();
 
         var itemsCount = _allItems.Count;
         var visible = _internalVisibleItemsCount;
@@ -920,9 +1034,13 @@ public partial class BitCarousel : BitComponentBase
             }
         }
 
-        if (rect is not null)
+        // The slides are sized from the axis the carousel runs on, out of the last measurement that
+        // landed. A carousel that has not been measured yet (or was measured while it was collapsed)
+        // is left to the stylesheet, which shows its first slide rather than an empty box.
+        var size = Vertical ? _containerHeight : _containerWidth;
+
+        if (size > 0)
         {
-            var size = Vertical ? rect.Height : rect.Width;
             var itemSize = visible > 0 ? size / visible : size;
             var sign = (Vertical is false && Dir == BitDir.Rtl) ? -1 : 1;
 
@@ -1393,7 +1511,13 @@ public partial class BitCarousel : BitComponentBase
         if (Wheel is false) return;
         if (IsEnabled is false) return;
 
-        var delta = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX) ? e.DeltaY : e.DeltaX;
+        var mainAxis = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX);
+
+        // A horizontal scroll over a vertical carousel is a motion across it, not along it, so it is
+        // left alone the same way a drag across the carousel is.
+        if (mainAxis is false && Vertical) return;
+
+        var delta = mainAxis ? e.DeltaY : e.DeltaX;
 
         if (delta == 0) return;
 
@@ -1405,9 +1529,19 @@ public partial class BitCarousel : BitComponentBase
 
         _lastWheel = now;
 
-        // A wheel is not a grab of the slides, so it is read the way a wheel always is: away from the
-        // reader (down, or right) moves the carousel forwards, whichever way its slides are laid out.
-        await (delta > 0 ? HandleNext() : HandlePrev());
+        if (mainAxis)
+        {
+            // A wheel is not a grab of the slides, so its main axis is read the way a wheel always is:
+            // rolling it forward (away from the reader) moves the carousel forwards through the content,
+            // whichever way its slides are laid out.
+            await (delta > 0 ? HandleNext() : HandlePrev());
+        }
+        else
+        {
+            // A horizontal scroll is a physical motion along the slides, so it maps to the visual
+            // direction of the carousel (which is what flips it for right-to-left).
+            await (delta > 0 ? HandleGoLeft() : HandleGoRight());
+        }
     }
 
     private async Task HandlePointerMove(PointerEventArgs e)
@@ -1666,7 +1800,7 @@ public partial class BitCarousel : BitComponentBase
             //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
-                await _js.BitObserversUnregisterResize(UniqueId, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(UniqueId, _carouselContainer, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
         }

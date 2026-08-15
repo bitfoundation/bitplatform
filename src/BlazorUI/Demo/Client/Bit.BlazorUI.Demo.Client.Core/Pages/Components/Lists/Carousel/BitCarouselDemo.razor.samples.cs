@@ -269,6 +269,36 @@ private async Task GoTo()
 </BitCarousel>";
 
     private readonly string example7RazorCode = @"
+<BitCarousel Style=""height: 100px""
+             VisibleItemsCount=""4""
+             ScrollItemsCount=""4""
+             InfiniteScrolling
+             ResponsiveOptions=""@([new() { Breakpoint = 640, VisibleItemsCount = 1, ScrollItemsCount = 1 },
+                                   new() { Breakpoint = 960, VisibleItemsCount = 2, ScrollItemsCount = 2 },
+                                   new() { Breakpoint = 1280, VisibleItemsCount = 3, ScrollItemsCount = 3 }])"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" InfiniteScrolling
+             VisibleItemsCountSm=""2"" VisibleItemsCountMd=""3"" VisibleItemsCountLg=""4"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example8RazorCode = @"
 <style>
     .gap-item {
         height: 100%;
@@ -285,7 +315,7 @@ private async Task GoTo()
     <BitCarouselItem><div class=""item gap-item"">6</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example9RazorCode = @"
 <BitCarousel Vertical Style=""height: 200px"" InfiniteScrolling>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
@@ -305,7 +335,7 @@ private async Task GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <BitCarousel Fade InfiniteScrolling>
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
@@ -325,7 +355,7 @@ private async Task GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <BitCarousel Wheel NoDrag InfiniteScrolling Style=""height: 100px"" VisibleItemsCount=""3"" ScrollItemsCount=""1"">
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -335,7 +365,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <style>
     .item {
         text-align: center;
@@ -363,31 +393,13 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitCarousel Style=""height: 100px"" DefaultPage=""3"">
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
-</BitCarousel>";
-
-    private readonly string example13RazorCode = @"
-<BitCarousel Style=""height: 100px""
-             VisibleItemsCount=""4""
-             ScrollItemsCount=""4""
-             InfiniteScrolling
-             ResponsiveOptions=""@([new() { Breakpoint = 640, VisibleItemsCount = 1, ScrollItemsCount = 1 },
-                                   new() { Breakpoint = 960, VisibleItemsCount = 2, ScrollItemsCount = 2 },
-                                   new() { Breakpoint = 1280, VisibleItemsCount = 3, ScrollItemsCount = 3 }])"">
-    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>5</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>6</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>7</div></BitCarouselItem>
-    <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
 </BitCarousel>";
 
     private readonly string example14RazorCode = @"
@@ -445,6 +457,72 @@ private async Task GoTo()
 </BitCarousel>";
 
     private readonly string example15RazorCode = @"
+<style>
+    .image {
+        width: 100%;
+        height: 100%;
+    }
+
+    .thumbs-container {
+        gap: 0.5rem;
+        display: flex;
+        margin-top: 0.5rem;
+        justify-content: center;
+    }
+
+    .thumb-button {
+        padding: 0;
+        cursor: pointer;
+        background: none;
+        width: 4.5rem;
+        height: 3rem;
+        border: 2px solid transparent;
+    }
+
+    .thumb-button img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .thumb-button-current {
+        border-color: var(--bit-clr-pri);
+    }
+</style>
+
+<BitCarousel @ref=""thumbsCarousel"" HideDots InfiniteScrolling OnChange=""v => thumbsCurrentPage = v"">
+    <BitCarouselItem>
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
+    </BitCarouselItem>
+</BitCarousel>
+<div class=""thumbs-container"">
+    @for (int i = 0; i < 4; i++)
+    {
+        var index = i;
+        <button type=""button""
+                aria-label=""@($""Slide {index + 1}"")""
+                aria-current=""@(thumbsCurrentPage == index ? ""true"" : null)""
+                class=""thumb-button @(thumbsCurrentPage == index ? ""thumb-button-current"" : null)""
+                @onclick=""() => thumbsCarousel.GoTo(index + 1)"">
+            <img alt="""" src=""img@(index + 1).jpg"" />
+        </button>
+    }
+</div>";
+
+    private readonly string example15CsharpCode = @"
+private int thumbsCurrentPage;
+private BitCarousel thumbsCarousel = default!;";
+
+    private readonly string example16RazorCode = @"
 <BitCarousel AutoPlay
              ShowPlayPause
              InfiniteScrolling
@@ -467,7 +545,7 @@ private async Task GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitCarousel Color=""BitColor.Primary"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -492,7 +570,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome (circle-arrow icons):</div>
@@ -549,7 +627,7 @@ private async Task GoTo()
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitCarousel Size=""BitSize.Small"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -568,7 +646,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-item {
         color: white;
@@ -589,7 +667,7 @@ private async Task GoTo()
     <BitCarouselItem><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .item {
         text-align: center;

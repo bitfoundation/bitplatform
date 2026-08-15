@@ -144,10 +144,14 @@
 
         // Registers a pointerdown listener on the element that suppresses the browser's default
         // action (dragging an image, selecting text) so the element can be dragged by the pointer
-        // instead. A pointerdown on a button inside the element is left alone, since preventing it
-        // would keep the button from taking the focus. Calling it again updates the active flag in
-        // place, so no separate unregister call is needed - the listener is garbage-collected with
-        // the element itself.
+        // instead. A pointerdown on a control inside the element keeps its default action, since
+        // preventing it would keep the control from taking the focus (and would keep the text of an
+        // input inside it from being selected with the pointer). The event itself is always left to
+        // travel on: Blazor dispatches pointerdown from a single listener on the document, so
+        // stopping it here would take it away from every Blazor handler in the tree, including the
+        // ones of the components sitting inside the element. Calling it again updates the active
+        // flag in place, so no separate unregister call is needed - the listener is
+        // garbage-collected with the element itself.
         public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
             if (!element) return;
 
@@ -160,10 +164,53 @@
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
                     if (!(element as any).__bitPreventPointerDown) return;
-                    if (e.target instanceof Element && e.target.closest('button')) return;
+
+                    if (e.target instanceof Element) {
+                        // The lookup is bounded by the element itself, since a control the element
+                        // happens to sit inside of (a card that is a link, for one) says nothing
+                        // about what was pressed within it. An explicit contenteditable="false"
+                        // marks content that is not editable after all, so it is not a control here.
+                        const control = e.target.closest(
+                            'button,a,input,textarea,select,[contenteditable]:not([contenteditable="false"])');
+
+                        if (control && element !== control && element.contains(control)) return;
+                    }
+
                     e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
+        }
+
+        // Registers a wheel listener on the element that suppresses the scrolling of the page while
+        // the element handles the wheel itself. It is registered here rather than through Blazor's
+        // preventDefault directive because that one goes through a delegated listener the browser
+        // treats as passive, which makes preventing a wheel a no-op before net10.0. Calling it again
+        // updates the flags in place, so no separate unregister call is needed - the listener is
+        // garbage-collected with the element itself. An element that never turns the suppression
+        // on gets no listener at all, since a non-passive wheel listener is not free to the browser.
+        // Only the wheel the element actually consumes is taken from the page: with verticalOnly a
+        // scroll that runs mostly sideways is left alone, the same way the element leaves it alone.
+        public static registerPreventWheel(element: HTMLElement, active: boolean, verticalOnly: boolean) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitPreventWheel = active;
+                el.__bitPreventWheelVerticalOnly = verticalOnly;
+
+                if (active === false) return;
+                if (el.__bitPreventWheelRegistered) return;
+                el.__bitPreventWheelRegistered = true;
+
+                element.addEventListener('wheel', (e: WheelEvent) => {
+                    const el = element as any;
+
+                    if (!el.__bitPreventWheel) return;
+                    if (el.__bitPreventWheelVerticalOnly && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+                    e.preventDefault();
+                }, { passive: false });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerPreventWheel:", e); }
         }
 
         // Registers a keydown listener on the element that suppresses the browser's default action
@@ -171,6 +218,11 @@
         // them as value changes). Calling it again updates the key list in place, and an empty list
         // effectively disables the suppression, so no separate unregister call is needed - the
         // listener is garbage-collected with the element itself.
+        // A key typed into an editable element inside the container (an input in a carousel slide,
+        // for example) belongs to that element (the arrow keys move its caret), so its default
+        // action is left alone. The event itself still travels on: Blazor dispatches keydown from a
+        // single listener on the document, so stopping it here would take the key away from the
+        // editable element's own handler too, which is the one it was being left to.
         public static registerPreventKeys(element: HTMLElement, keys: string[]) {
             if (!element) return;
 
@@ -183,9 +235,15 @@
 
                 element.addEventListener('keydown', (e: KeyboardEvent) => {
                     const currentKeys = (element as any).__bitPreventKeys as string[];
-                    if (currentKeys && currentKeys.indexOf(e.key) >= 0 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-                        e.preventDefault();
+                    if (!currentKeys || currentKeys.indexOf(e.key) < 0 || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+
+                    const target = e.target;
+                    if (target !== element && target instanceof Element &&
+                        ((target as HTMLElement).isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) {
+                        return;
                     }
+
+                    e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventKeys:", e); }
         }

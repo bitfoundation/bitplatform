@@ -952,6 +952,277 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCarouselShouldRenderControlsBeforeSlides()
+    {
+        var component = RenderComponent<BitCarouselTest>();
+
+        // The carousel pattern of the ARIA authoring practices puts the controls before the content
+        // they control, so the next/prev buttons have to come before the slides in the DOM. Between
+        // the two buttons, the one at the start of the reading order comes first, so tabbing through
+        // the carousel does not run backwards over it: the "right" (previous) button sits at the left
+        // edge of a left-to-right carousel and is therefore the one reached first.
+        var container = component.Find(".bit-csl-cnt");
+
+        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-rbt"));
+        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-lbt"));
+        Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
+
+        Assert.AreEqual("false", container.GetAttribute("aria-atomic"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRenderControlsInReadingOrderInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        // The buttons keep their physical sides in right-to-left, which is read the other way around,
+        // so the "left" button (the one at the right edge, which goes back there) comes first.
+        var container = component.Find(".bit-csl-cnt");
+
+        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-lbt"));
+        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-rbt"));
+        Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNavigateVisuallyOnHorizontalWheelInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Wheel, true);
+            parameters.Add(p => p.InfiniteScrolling, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        var container = component.Find(".bit-csl-cnt");
+        var carousel = component.Instance.Carousel;
+
+        // A horizontal scroll is a physical motion along the slides, so in right-to-left scrolling
+        // to the right reveals the slides sitting on the right, which are the previous ones.
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaX = 100 });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldIgnoreWheelWhenDisabled()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Wheel, true);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        var container = component.Find(".bit-csl-cnt");
+        var carousel = component.Instance.Carousel;
+
+        // The page count only comes out of the measurement, so waiting for it is waiting for the
+        // carousel to be laid out: the wheel below is the reason the page does not move, not the
+        // carousel not being ready yet.
+        component.WaitForAssertion(() => Assert.AreEqual(3, carousel.PagesCount));
+
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
+
+        Assert.AreEqual(0, carousel.CurrentPage);
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldIgnoreHorizontalWheelWhenVertical()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Wheel, true);
+            parameters.Add(p => p.Vertical, true);
+            parameters.Add(p => p.InfiniteScrolling, true);
+        });
+
+        var container = component.Find(".bit-csl-cnt");
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, carousel.PagesCount));
+
+        // A horizontal scroll runs across a vertical carousel rather than along it, so it is left to
+        // the page the same way a drag across the carousel is.
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaX = 100 });
+
+        Assert.AreEqual(0, carousel.CurrentPage);
+
+        // The axis the carousel does run on still moves it.
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldForceSinglePageItemsWithFade()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Fade, true);
+            parameters.Add(p => p.ItemsCount, 4);
+            parameters.Add(p => p.VisibleItemsCount, 3);
+        });
+
+        // A fading carousel shows exactly one slide at a time, so the visible count collapses to 1
+        // and every item becomes a page of its own.
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.Instance.Carousel.PagesCount));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldCrossFadeSlidesWithFade()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Fade, true);
+        });
+
+        // The opacities belong to a laid out carousel, so it is handed a size the way the browser
+        // hands it one: through the resize observer of the container its slides live in.
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 900, Height = 300 }));
+
+        component.WaitForAssertion(() =>
+        {
+            var items = component.FindAll(".bit-crsi");
+            StringAssert.Contains(items[0].GetAttribute("style"), "opacity:1");
+            StringAssert.Contains(items[1].GetAttribute("style"), "opacity:0");
+        });
+
+        await component.InvokeAsync(component.Instance.Carousel.GoNext);
+
+        // The slides cross-fade in place: the incoming one is stacked on top and faded in while the
+        // outgoing one is faded out, with no transform involved.
+        component.WaitForAssertion(() =>
+        {
+            var items = component.FindAll(".bit-crsi");
+            StringAssert.Contains(items[1].GetAttribute("style"), "opacity:1");
+            StringAssert.Contains(items[1].GetAttribute("style"), "transition:opacity");
+            StringAssert.Contains(items[0].GetAttribute("style"), "opacity:0");
+            Assert.IsFalse(items[1].GetAttribute("style")!.Contains("translate"));
+        });
+    }
+
+    [TestMethod]
+    [DataRow(700d, 2)]
+    [DataRow(1000d, 3)]
+    public async Task BitCarouselShouldResolveResponsiveVisibleItemsCount(double width, int expectedVisible)
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 6);
+            parameters.Add(p => p.VisibleItemsCountSm, 2);
+            parameters.Add(p => p.VisibleItemsCountMd, 3);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = width, Height = 300 }));
+
+        // The breakpoints go by the width of the carousel itself: from 600px up the Sm value
+        // applies, and from 960px up the Md value overrides it.
+        component.WaitForAssertion(() => Assert.AreEqual(expectedVisible, component.FindAll(".bit-crsi-cur").Count));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldFallBackToBaseVisibleItemsCountBelowBreakpoints()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 6);
+            parameters.Add(p => p.VisibleItemsCount, 4);
+            parameters.Add(p => p.VisibleItemsCountSm, 2);
+            parameters.Add(p => p.VisibleItemsCountMd, 3);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 500, Height = 300 }));
+
+        // Below the smallest breakpoint that was set, the base VisibleItemsCount applies. It is set
+        // to something other than the default of a single slide, so a carousel that fell through to
+        // one of the variants instead does not pass this by accident.
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-crsi-cur").Count));
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldPreferResponsiveOptionsOverVisibleItemsCountVariants()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 6);
+            parameters.Add(p => p.VisibleItemsCountSm, 2);
+            parameters.Add(p => p.ResponsiveOptions, [new BitCarouselResponsiveOption { Breakpoint = 800, VisibleItemsCount = 4 }]);
+        });
+
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 700, Height = 300 }));
+
+        // A matching responsive option is the most specific thing the carousel was told about its
+        // width, so it wins over the breakpoint variants of VisibleItemsCount.
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-crsi-cur").Count));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRespectAnimationDuration()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AnimationDuration, 1.5);
+        });
+
+        var root = component.Find(".bit-csl");
+
+        // The duration is handed to the stylesheet as the -full token, so the reduced-motion
+        // media query can still collapse it.
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:1.5s");
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldClampNegativeAnimationDurationToZero()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AnimationDuration, -3d);
+        });
+
+        var root = component.Find(".bit-csl");
+
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-csl-dur-full:0s");
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRespectCustomIconNames()
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.GoLeftIconName, "Add");
+            parameters.Add(p => p.GoRightIconName, "Remove");
+        });
+
+        var leftIcon = component.Find(".bit-csl-lbt i");
+        var rightIcon = component.Find(".bit-csl-rbt i");
+
+        Assert.IsTrue(leftIcon.ClassList.Contains("bit-icon--Add"));
+        Assert.IsTrue(rightIcon.ClassList.Contains("bit-icon--Remove"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRenderVerticalDefaultIcons()
+    {
+        var component = RenderComponent<BitCarousel>(parameters =>
+        {
+            parameters.Add(p => p.Vertical, true);
+        });
+
+        // The "left" (next) button moves to the bottom of a vertical carousel and the "right"
+        // (prev) one to the top, so their default chevrons point down and up.
+        var leftIcon = component.Find(".bit-csl-lbt i");
+        var rightIcon = component.Find(".bit-csl-rbt i");
+
+        Assert.IsTrue(leftIcon.ClassList.Contains("bit-icon--ChevronDown"));
+        Assert.IsTrue(rightIcon.ClassList.Contains("bit-icon--ChevronUp"));
+    }
+
+    [TestMethod]
     public async Task BitCarouselShouldAlignLastPageToLastItemOnGoTo()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
@@ -1436,17 +1707,6 @@ public partial class BitCarouselTests : BunitTestContext
             StringAssert.Contains(items[1].GetAttribute("style"), "opacity:1");
             StringAssert.Contains(items[0].GetAttribute("style"), "opacity:0");
         });
-    }
-
-    [TestMethod]
-    public void BitCarouselShouldRespectAnimationDuration()
-    {
-        var component = RenderComponent<BitCarouselTest>(parameters =>
-        {
-            parameters.Add(p => p.AnimationDuration, 1.25);
-        });
-
-        StringAssert.Contains(component.Find(".bit-csl").GetAttribute("style"), "--bit-csl-dur-full:1.25s");
     }
 
     [TestMethod]

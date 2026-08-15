@@ -36,6 +36,8 @@
               VisibleItemsCount="VisibleItemsCount"
               InfiniteScrolling="InfiniteScrolling"
               StopOnInteraction="StopOnInteraction"
+              VisibleItemsCountSm="VisibleItemsCountSm"
+              VisibleItemsCountMd="VisibleItemsCountMd"
               ItemAriaLabelFormat="@ItemAriaLabelFormat">
     @for (int i = 1; i <= ItemsCount; i++)
     {
@@ -74,6 +76,8 @@
     [Parameter] public double AutoPlayInterval { get; set; } = 2000;
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
+    [Parameter] public int? VisibleItemsCountMd { get; set; }
     [Parameter] public BitColorKind? Accent { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
     [Parameter] public string DotAriaLabel { get; set; } = "Slide";

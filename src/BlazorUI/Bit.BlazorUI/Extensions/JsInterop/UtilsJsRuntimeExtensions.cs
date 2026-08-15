@@ -44,6 +44,12 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask BitUtilsRegisterPreventWheel(this IJSRuntime jsRuntime, ElementReference element, bool active, bool verticalOnly)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventWheel", element, active, verticalOnly);
+    }
+
+
     internal static ValueTask BitUtilsRegisterPreventKeys(this IJSRuntime jsRuntime, ElementReference element, string[] keys)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventKeys", element, keys);

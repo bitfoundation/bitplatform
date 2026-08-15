@@ -63,49 +63,67 @@
         </div>
     }
 
+    @* The wheel is kept to the carousel by the listener RegisterPreventDefaultsAsync registers, not by
+       Blazor's preventDefault directive here: the directive goes through a listener the browser treats
+       as passive before net10.0, and it cannot tell the axis the carousel navigates on from the one it
+       leaves to the page. *@
     <div @ref="_carouselContainer"
          id="@_ContainerId"
          @onwheel="HandleWheel"
-         @onwheel:preventDefault="Wheel"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
+         aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
          class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
 
-        <CascadingValue Value="this" IsFixed="true">
-            @ChildContent
-        </CascadingValue>
-
+        @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
+           the controls before the content they control), and the stylesheet places them over the slides.
+           Between the two of them, the one the keyboard reaches first is the one sitting at the start of
+           the reading order, so the focus does not run backwards across the carousel: the buttons keep
+           their physical sides (the "left" one is the one at the right edge, which goes forwards), while
+           a right-to-left carousel is read the other way around. *@
         @if (HideNextPrev is false)
         {
             var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
             var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
-            <button @onclick="HandleGoLeft"
-                    type="button"
-                    aria-controls="@_ContainerId"
-                    aria-label="@GetGoLeftAriaLabel()"
-                    disabled="@(IsEnabled is false)"
-                    class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                    style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
-                <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
-                   class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
-            </button>
 
-            <button @onclick="HandleGoRight"
-                    type="button"
-                    aria-controls="@_ContainerId"
-                    aria-label="@GetGoRightAriaLabel()"
-                    disabled="@(IsEnabled is false)"
-                    class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                    style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
-                <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
-                   class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
-            </button>
+            RenderFragment goLeftButton =
+                @<button @onclick="HandleGoLeft"
+                         type="button"
+                         aria-controls="@_ContainerId"
+                         aria-label="@GetGoLeftAriaLabel()"
+                         disabled="@(IsEnabled is false)"
+                         class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
+                         style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
+                    <i aria-hidden="true"
+                       style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
+                       class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
+                </button>;
+
+            RenderFragment goRightButton =
+                @<button @onclick="HandleGoRight"
+                         type="button"
+                         aria-controls="@_ContainerId"
+                         aria-label="@GetGoRightAriaLabel()"
+                         disabled="@(IsEnabled is false)"
+                         class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
+                         style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
+                    <i aria-hidden="true"
+                       style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
+                       class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
+                </button>;
+
+            var goLeftIsFirst = Vertical is false && Dir == BitDir.Rtl;
+
+            @(goLeftIsFirst ? goLeftButton : goRightButton)
+            @(goLeftIsFirst ? goRightButton : goLeftButton)
         }
+
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
     </div>
 </div>

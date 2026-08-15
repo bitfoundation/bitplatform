@@ -64,6 +64,32 @@
     box-sizing: border-box;
 }
 
+.thumbs-container {
+    gap: rem2(8px);
+    display: flex;
+    margin-top: rem2(8px);
+    justify-content: center;
+}
+
+.thumb-button {
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    width: rem2(72px);
+    height: rem2(48px);
+    border: rem2(2px) solid transparent;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.thumb-button-current {
+    border-color: $bit-color-primary;
+}
+
 .colors-container {
     gap: 1rem;
     display: grid;
