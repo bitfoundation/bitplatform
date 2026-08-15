@@ -946,14 +946,16 @@ public class BitHeaderTests : BunitTestContext
     [TestMethod]
     public async Task BitHeaderShouldDisposeTheScrollScriptWhenTheComponentGoesAway()
     {
-        var component = RenderComponent<BitHeader>(parameters =>
+        RenderComponent<BitHeader>(parameters =>
         {
             parameters.Add(p => p.Reveal, true);
             parameters.Add(p => p.Fixed, true);
             parameters.Add(p => p.Id, "header-disposed");
         });
 
-        await component.Instance.DisposeAsync();
+        // Disposed through the renderer rather than by calling DisposeAsync on the instance, so this
+        // goes down the same path a component removed from the render tree does.
+        await Context.DisposeComponentsAsync();
 
         var disposes = Context.JSInterop.Invocations
                               .Where(i => i.Identifier == "BitBlazorUI.Headers.dispose")
@@ -1387,6 +1389,7 @@ public class BitHeaderTests : BunitTestContext
                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                             .ToArray();
 
+        Assert.AreEqual(2, setups.Length);
         CollectionAssert.AreEqual(new object[] { 80, 80 }, setups.Select(i => i.Arguments[2]).ToArray());
         CollectionAssert.AreEqual(new object[] { 30, 30 }, setups.Select(i => i.Arguments[3]).ToArray());
         CollectionAssert.AreEqual(new object[] { "#pane", "#pane" }, setups.Select(i => i.Arguments[6]).ToArray());

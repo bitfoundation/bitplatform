@@ -3,8 +3,9 @@
 builder.Configuration.AddClientConfigurations();
 
 // UseUrls overrides the urls and the http(s)_ports configuration alike, however they were provided
-// (--urls / --http-ports on the command line, ASPNETCORE_URLS / ASPNETCORE_HTTP(S)_PORTS in the
-// environment, launchSettings), so the debug defaults only apply when none of them is set.
+// (--urls / --http_ports / --https_ports on the command line, ASPNETCORE_URLS /
+// ASPNETCORE_HTTP(S)_PORTS in the environment, launchSettings), so the debug defaults only apply
+// when none of them is set.
 if (BuildConfiguration.IsDebug() &&
     builder.Configuration["urls"] is null &&
     builder.Configuration["http_ports"] is null &&

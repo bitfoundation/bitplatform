@@ -9,13 +9,21 @@ namespace BitBlazorUI {
             // and dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
-            // Puts the scroll padding of the scroller back the way it was found, whichever box is
-            // carrying it at that moment.
+            // Gives up the claim of this header on the scroll padding of the scroller, whichever box is
+            // carrying it at that moment, and puts the padding back once no header is holding it anymore.
             clearPadding: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
         }>();
+
+        // The scroll padding of a box is shared ground: two pinned headers over the same scroller (an app
+        // shell whose pane carries both) would each otherwise capture the write of the other as "the
+        // value it had before", so the first one to go would wipe the padding the second still needs and
+        // the second would hand the box back a value the page never had. The value found before any of
+        // them touched the box is kept here instead, together with the headers reserving padding on it,
+        // and only the last one to let go puts it back.
+        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Set<string> }>();
 
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the header back and forth on every frame.
@@ -69,14 +77,27 @@ namespace BitBlazorUI {
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
 
-            // The box carrying the scroll padding, with the inline value it had before the header touched
-            // it, so the page is handed back exactly what it started with.
-            let padded: { element: HTMLElement, previous: string } | undefined;
+            // The box this header is reserving scroll padding on, if it is reserving any.
+            let padded: HTMLElement | undefined;
 
             const clearPadding = () => {
                 if (!padded) return;
 
-                padded.element.style.scrollPaddingBlockStart = padded.previous;
+                const shared = Headers._paddings.get(padded);
+
+                if (shared) {
+                    shared.owners.delete(id);
+
+                    // The header leaving is not necessarily the one that wrote the padding that is on the
+                    // box right now, so the value is only put back once nothing is reserving any anymore.
+                    // Until then it is left to the headers still holding it, which write it again on their
+                    // next layout change anyway.
+                    if (shared.owners.size === 0) {
+                        padded.style.scrollPaddingBlockStart = shared.previous;
+
+                        Headers._paddings.delete(padded);
+                    }
+                }
 
                 padded = undefined;
             };
@@ -94,12 +115,22 @@ namespace BitBlazorUI {
                     ? document.documentElement
                     : target.current as HTMLElement;
 
-                if (padded && padded.element !== box) {
+                if (padded && padded !== box) {
                     clearPadding();
                 }
 
                 if (!padded) {
-                    padded = { element: box, previous: box.style.scrollPaddingBlockStart };
+                    let shared = Headers._paddings.get(box);
+
+                    if (!shared) {
+                        shared = { previous: box.style.scrollPaddingBlockStart, owners: new Set() };
+
+                        Headers._paddings.set(box, shared);
+                    }
+
+                    shared.owners.add(id);
+
+                    padded = box;
                 }
 
                 box.style.scrollPaddingBlockStart = `${element.offsetHeight}px`;
