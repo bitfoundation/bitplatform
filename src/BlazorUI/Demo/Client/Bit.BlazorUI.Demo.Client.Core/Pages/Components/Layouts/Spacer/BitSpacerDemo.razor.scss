@@ -1,5 +1,64 @@
-﻿::deep .custom-class {
+// Every example needs a bounded flex container for the spacer to have leftover space to work with,
+// and visible children so the space it generates is actually legible on the page.
+.demo-row {
+    width: 100%;
+    display: flex;
     padding: 0.5rem;
-    border: 1px solid red;
-    max-width: max-content;
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px solid gray;
+}
+
+.demo-col {
+    height: 20rem;
+    display: flex;
+    padding: 0.5rem;
+    flex-flow: column;
+    align-items: flex-start;
+    box-sizing: border-box;
+    border: 1px solid gray;
+}
+
+// The Element example needs a real list to put an "li" spacer in, without the bullets and the indent a
+// list carries by default.
+.demo-list {
+    margin: 0;
+    list-style: none;
+}
+
+// The fixed vertical gaps of the Size example are legible on their own, so that column does not need the
+// tall box the flexible examples need to grow into.
+.demo-col-auto {
+    height: auto;
+}
+
+.demo-box {
+    color: white;
+    white-space: nowrap;
+    background: #0078d4;
+    padding: 0.25rem 0.75rem;
+}
+
+// The MinGap example only tells its story while the container is being squeezed, so the reader
+// gets a native resize handle to squeeze it with.
+.demo-resizable {
+    resize: horizontal;
+    overflow: auto;
+    max-width: 100%;
+    min-width: 10rem;
+}
+
+// The element is rendered by BitSpacer itself, so it carries its own scope and only ::deep rules
+// can reach the classes handed to it through Class.
+::deep .custom-class {
+    min-width: 4rem;
+    border: 1px dashed red;
+    background: rgba(255, 0, 0, 0.15);
+}
+
+// A fixed spacer is a zero-width box, so the side its margin lands on is only observable once the
+// box itself is given a width and a color. That is what makes the RTL example readable.
+::deep .visible-spacer {
+    min-width: 1rem;
+    background: tomato;
 }
