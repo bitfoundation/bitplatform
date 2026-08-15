@@ -71,12 +71,6 @@ public partial class ClientAppMessages
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
 
     /// <summary>
-    /// A publisher that publishes this message notifies that the app's accent (main theme) color has changed.
-    /// The payload is the new accent's hex value (See <see cref="AppAccentColorService"/>).
-    /// </summary>
-    public const string ACCENT_COLOR_CHANGED = nameof(ACCENT_COLOR_CHANGED);
-
-    /// <summary>
     /// A publisher that publishes this message notifies that the app culture has changed.
     /// </summary>
     public const string CULTURE_CHANGED = nameof(CULTURE_CHANGED);

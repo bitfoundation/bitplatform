@@ -56,7 +56,15 @@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
 
-    <AccentColorPrerenderStyle />
+    @* The head half of the accent (main theme) color feature: emits the inline script that, before anything is
+       painted, re-resolves the persisted accent from localStorage / the accent cookie and injects the palette
+       snapshot the StoredCss strategy keeps - which is what keeps the accent correct even when this markup comes
+       out of a cache that served it to a visitor whose cookie never reached the server. The configuration comes
+       from the BitAccentColorConfig registered in DI (see AddClientCoreProjectServices) - the same one the
+       AppMenu's BitAccentColorSwitcher configures the shared BitAccentColorService with. PersistedAccent is what
+       lets an origin-rendered response paint the visitor's accent itself, instead of leaving the first paint to
+       the localStorage snapshot (which only exists once an accent has been picked on this device). *@
+    <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">
