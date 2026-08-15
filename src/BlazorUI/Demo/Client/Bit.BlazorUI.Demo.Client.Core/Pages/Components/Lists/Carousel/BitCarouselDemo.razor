@@ -331,8 +331,9 @@
         <br /><br />
         <div>
             The responsive variants of VisibleItemsCount (Xs, Sm, Md, Lg, Xl and Xxl) are the shorthand for the common
-            case: each one applies from its breakpoint (600, 960, 1280, 1920 and 2560 pixels, the shared breakpoints of
-            bit BlazorUI) upwards, and the base VisibleItemsCount covers everything below the smallest one that is set.
+            case: each one applies from its breakpoint upwards (Xs from 0, Sm from 600, Md from 960, Lg from 1280,
+            Xl from 1920 and Xxl from 2560 pixels, the shared breakpoints of bit BlazorUI), and the base
+            VisibleItemsCount covers everything below the smallest one that is set (so nothing at all when Xs is set).
             They are matched against the width of the carousel itself too, and a matching ResponsiveOptions entry takes
             precedence over them. The carousel below changes from one visible slide up to four:
         </div>
@@ -576,6 +577,7 @@
                     var index = i;
                     <button type="button"
                             aria-label="@($"Slide {index + 1}")"
+                            aria-current="@(thumbsCurrentPage == index ? "true" : null)"
                             class="thumb-button @(thumbsCurrentPage == index ? "thumb-button-current" : null)"
                             @onclick="() => thumbsCarousel.GoTo(index + 1)">
                         <img alt="" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(index + 1).jpg" />

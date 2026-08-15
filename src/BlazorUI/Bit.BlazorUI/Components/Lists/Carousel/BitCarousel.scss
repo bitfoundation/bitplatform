@@ -119,11 +119,15 @@
     }
 }
 
+// The next/prev buttons are rendered before the slides (see the comment in the markup) and the slide
+// of the Fade effect carries a z-index of its own, so they are stacked above it explicitly; equal
+// z-indexes would leave the slide, the later element, painting over them.
 .bit-csl-lbt,
 .bit-csl-rbt {
     top: 0;
     bottom: 0;
     width: 10%;
+    z-index: 2;
     position: absolute;
 }
 

@@ -144,10 +144,12 @@
 
         // Registers a pointerdown listener on the element that suppresses the browser's default
         // action (dragging an image, selecting text) so the element can be dragged by the pointer
-        // instead. A pointerdown on a button inside the element is left alone, since preventing it
-        // would keep the button from taking the focus. Calling it again updates the active flag in
-        // place, so no separate unregister call is needed - the listener is garbage-collected with
-        // the element itself.
+        // instead. A pointerdown on a control inside the element keeps its default action, since
+        // preventing it would keep the control from taking the focus, but it is stopped from
+        // bubbling on to the element's own handling: pressing a button inside a slide is a press of
+        // that button, not the start of a drag of the slide. Calling it again updates the active
+        // flag in place, so no separate unregister call is needed - the listener is
+        // garbage-collected with the element itself.
         public static registerPreventPointerDown(element: HTMLElement, active: boolean) {
             if (!element) return;
 
@@ -160,10 +162,37 @@
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
                     if (!(element as any).__bitPreventPointerDown) return;
-                    if (e.target instanceof Element && e.target.closest('button,a,input,textarea,select,[contenteditable]')) return;
+                    if (e.target instanceof Element && e.target.closest('button,a,input,textarea,select,[contenteditable]')) {
+                        e.stopPropagation();
+                        return;
+                    }
                     e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
+        }
+
+        // Registers a wheel listener on the element that suppresses the scrolling of the page while
+        // the element handles the wheel itself. It is registered here rather than through Blazor's
+        // preventDefault directive because that one goes through a delegated listener the browser
+        // treats as passive, which makes preventing a wheel a no-op before net10.0. Calling it again
+        // updates the active flag in place, so no separate unregister call is needed - the listener
+        // is garbage-collected with the element itself.
+        public static registerPreventWheel(element: HTMLElement, active: boolean) {
+            if (!element) return;
+
+            try {
+                const el = element as any;
+                el.__bitPreventWheel = active;
+
+                if (el.__bitPreventWheelRegistered) return;
+                el.__bitPreventWheelRegistered = true;
+
+                element.addEventListener('wheel', (e: WheelEvent) => {
+                    if ((element as any).__bitPreventWheel) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            } catch (e) { console.error("BitBlazorUI.Utils.registerPreventWheel:", e); }
         }
 
         // Registers a keydown listener on the element that suppresses the browser's default action

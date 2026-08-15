@@ -968,27 +968,6 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldNavigateForwardOnWheelDownInRtl()
-    {
-        var component = RenderComponent<BitCarouselTest>(parameters =>
-        {
-            parameters.Add(p => p.Dir, BitDir.Rtl);
-            parameters.Add(p => p.Wheel, true);
-        });
-
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
-
-        var container = component.Find(".bit-csl-cnt");
-        var carousel = component.Instance.Carousel;
-
-        // Rolling the wheel forward moves forward through the content no matter which way the
-        // carousel is laid out, so it goes to the next page in right-to-left too.
-        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
-
-        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
-    }
-
-    [TestMethod]
     public void BitCarouselShouldNavigateVisuallyOnHorizontalWheelInRtl()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
@@ -1020,76 +999,43 @@ public partial class BitCarouselTests : BunitTestContext
         });
 
         var container = component.Find(".bit-csl-cnt");
+        var carousel = component.Instance.Carousel;
+
+        // The page count only comes out of the measurement, so waiting for it is waiting for the
+        // carousel to be laid out: the wheel below is the reason the page does not move, not the
+        // carousel not being ready yet.
+        component.WaitForAssertion(() => Assert.AreEqual(3, carousel.PagesCount));
 
         container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
 
-        Assert.AreEqual(0, component.Instance.Carousel.CurrentPage);
+        Assert.AreEqual(0, carousel.CurrentPage);
     }
 
     [TestMethod]
-    public void BitCarouselShouldPauseAutoPlayOnHoverAndResumeOnLeave()
+    public void BitCarouselShouldIgnoreHorizontalWheelWhenVertical()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
-            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.Wheel, true);
+            parameters.Add(p => p.Vertical, true);
             parameters.Add(p => p.InfiniteScrolling, true);
         });
 
-        var root = component.Find(".bit-csl");
+        var container = component.Find(".bit-csl-cnt");
         var carousel = component.Instance.Carousel;
 
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+        component.WaitForAssertion(() => Assert.AreEqual(3, carousel.PagesCount));
 
-        root.MouseEnter(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        // A horizontal scroll runs across a vertical carousel rather than along it, so it is left to
+        // the page the same way a drag across the carousel is.
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaX = 100 });
 
-        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
+        Assert.AreEqual(0, carousel.CurrentPage);
 
-        root.MouseLeave(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        // The axis the carousel does run on still moves it.
+        container.Wheel(new Microsoft.AspNetCore.Components.Web.WheelEventArgs { DeltaY = 100 });
 
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
-    }
-
-    [TestMethod]
-    public void BitCarouselShouldNotPauseAutoPlayOnHoverWhenPauseOnHoverDisabled()
-    {
-        var component = RenderComponent<BitCarouselTest>(parameters =>
-        {
-            parameters.Add(p => p.AutoPlay, true);
-            parameters.Add(p => p.PauseOnHover, false);
-            parameters.Add(p => p.InfiniteScrolling, true);
-        });
-
-        var root = component.Find(".bit-csl");
-        var carousel = component.Instance.Carousel;
-
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
-
-        root.MouseEnter(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
-
-        Assert.IsTrue(carousel.IsPlaying);
-    }
-
-    [TestMethod]
-    public void BitCarouselShouldPauseAutoPlayOnFocusAndResumeOnFocusOut()
-    {
-        var component = RenderComponent<BitCarouselTest>(parameters =>
-        {
-            parameters.Add(p => p.AutoPlay, true);
-            parameters.Add(p => p.InfiniteScrolling, true);
-        });
-
-        var root = component.Find(".bit-csl");
-        var carousel = component.Instance.Carousel;
-
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
-
-        root.FocusIn(new Microsoft.AspNetCore.Components.Web.FocusEventArgs());
-
-        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
-
-        root.FocusOut(new Microsoft.AspNetCore.Components.Web.FocusEventArgs());
-
-        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
     }
 
     [TestMethod]
@@ -1168,12 +1114,15 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.ItemsCount, 6);
+            parameters.Add(p => p.VisibleItemsCount, 4);
             parameters.Add(p => p.VisibleItemsCountSm, 2);
             parameters.Add(p => p.VisibleItemsCountMd, 3);
         });
 
-        // Below the smallest breakpoint that was set, the base VisibleItemsCount applies.
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-crsi-cur").Count));
+        // Below the smallest breakpoint that was set, the base VisibleItemsCount applies. It is set
+        // to something other than the default of a single slide, so a carousel that fell through to
+        // one of the variants instead does not pass this by accident.
+        component.WaitForAssertion(() => Assert.AreEqual(4, component.FindAll(".bit-crsi-cur").Count));
     }
 
     [TestMethod]

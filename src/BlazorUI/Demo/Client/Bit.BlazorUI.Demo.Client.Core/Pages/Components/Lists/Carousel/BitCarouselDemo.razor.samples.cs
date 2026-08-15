@@ -509,6 +509,7 @@ private async Task GoTo()
         var index = i;
         <button type=""button""
                 aria-label=""@($""Slide {index + 1}"")""
+                aria-current=""@(thumbsCurrentPage == index ? ""true"" : null)""
                 class=""thumb-button @(thumbsCurrentPage == index ? ""thumb-button-current"" : null)""
                 @onclick=""() => thumbsCarousel.GoTo(index + 1)"">
             <img alt="""" src=""img@(index + 1).jpg"" />

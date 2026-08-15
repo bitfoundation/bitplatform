@@ -497,7 +497,8 @@ public partial class BitCarousel : BitComponentBase
     /// Rolling the wheel away from the reader (down) moves the carousel forwards, whichever way its
     /// slides are laid out, since a wheel is not a grab of the slides the way a drag is. A horizontal
     /// scroll, on the other hand, is a motion along the slides, so it follows the visual direction of the
-    /// carousel (scrolling to the right reveals the slides sitting on the right).
+    /// carousel (scrolling to the right reveals the slides sitting on the right). A vertical carousel
+    /// ignores it, since there the horizontal axis runs across the slides rather than along them.
     /// </remarks>
     [Parameter] public bool Wheel { get; set; }
 
@@ -739,7 +740,7 @@ public partial class BitCarousel : BitComponentBase
         // Everything that changes where the slides sit is folded into one signature, so a single
         // comparison decides whether the carousel has to be measured and laid out again.
         var signature = FormattableString.Invariant(
-            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{IsEnabled}");
+            $"{_internalVisibleItemsCount}|{_internalScrollItemsCount}|{Vertical}|{Fade}|{InfiniteScrolling}|{Dir}|{NoKeyboard}|{NoDrag}|{Wheel}|{IsEnabled}");
 
         if (_layoutSignature != signature)
         {
@@ -796,6 +797,11 @@ public partial class BitCarousel : BitComponentBase
         // suppressed in the browser rather than with Blazor's static preventDefault directive, so a
         // pointerdown on the next/prev buttons is left alone and they can still take the focus.
         await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled);
+
+        // Keeping the wheel to the carousel is suppressed in the browser as well, since the listener
+        // Blazor's preventDefault directive goes through is a passive one before net10.0, which makes
+        // preventing the wheel through it a no-op there.
+        await _js.BitUtilsRegisterPreventWheel(_carouselContainer, Wheel && IsEnabled);
     }
 
     // The responsive variants of VisibleItemsCount apply from their breakpoint (of the width of the
@@ -1456,6 +1462,11 @@ public partial class BitCarousel : BitComponentBase
         if (IsEnabled is false) return;
 
         var mainAxis = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX);
+
+        // A horizontal scroll over a vertical carousel is a motion across it, not along it, so it is
+        // left alone the same way a drag across the carousel is.
+        if (mainAxis is false && Vertical) return;
+
         var delta = mainAxis ? e.DeltaY : e.DeltaX;
 
         if (delta == 0) return;
