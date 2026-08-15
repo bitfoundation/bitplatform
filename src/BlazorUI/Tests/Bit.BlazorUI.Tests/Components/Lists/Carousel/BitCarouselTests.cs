@@ -957,14 +957,34 @@ public partial class BitCarouselTests : BunitTestContext
         var component = RenderComponent<BitCarouselTest>();
 
         // The carousel pattern of the ARIA authoring practices puts the controls before the content
-        // they control, so the next/prev buttons have to come before the slides in the DOM.
+        // they control, so the next/prev buttons have to come before the slides in the DOM. Between
+        // the two buttons, the one at the start of the reading order comes first, so tabbing through
+        // the carousel does not run backwards over it: the "right" (previous) button sits at the left
+        // edge of a left-to-right carousel and is therefore the one reached first.
+        var container = component.Find(".bit-csl-cnt");
+
+        Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-rbt"));
+        Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-lbt"));
+        Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
+
+        Assert.AreEqual("false", container.GetAttribute("aria-atomic"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldRenderControlsInReadingOrderInRtl()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        // The buttons keep their physical sides in right-to-left, which is read the other way around,
+        // so the "left" button (the one at the right edge, which goes back there) comes first.
         var container = component.Find(".bit-csl-cnt");
 
         Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-lbt"));
         Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-rbt"));
         Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
-
-        Assert.AreEqual("false", container.GetAttribute("aria-atomic"));
     }
 
     [TestMethod]
@@ -1056,13 +1076,14 @@ public partial class BitCarouselTests : BunitTestContext
     [TestMethod]
     public async Task BitCarouselShouldCrossFadeSlidesWithFade()
     {
-        Context.JSInterop.Setup<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", _ => true)
-            .SetResult(new BoundingClientRect { Width = 900, Height = 300 });
-
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.Fade, true);
         });
+
+        // The opacities belong to a laid out carousel, so it is handed a size the way the browser
+        // hands it one: through the resize observer of the container its slides live in.
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 900, Height = 300 }));
 
         component.WaitForAssertion(() =>
         {
@@ -1088,11 +1109,8 @@ public partial class BitCarouselTests : BunitTestContext
     [TestMethod]
     [DataRow(700d, 2)]
     [DataRow(1000d, 3)]
-    public void BitCarouselShouldResolveResponsiveVisibleItemsCount(double width, int expectedVisible)
+    public async Task BitCarouselShouldResolveResponsiveVisibleItemsCount(double width, int expectedVisible)
     {
-        Context.JSInterop.Setup<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", _ => true)
-            .SetResult(new BoundingClientRect { Width = width, Height = 300 });
-
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.ItemsCount, 6);
@@ -1100,17 +1118,16 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.VisibleItemsCountMd, 3);
         });
 
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = width, Height = 300 }));
+
         // The breakpoints go by the width of the carousel itself: from 600px up the Sm value
         // applies, and from 960px up the Md value overrides it.
         component.WaitForAssertion(() => Assert.AreEqual(expectedVisible, component.FindAll(".bit-crsi-cur").Count));
     }
 
     [TestMethod]
-    public void BitCarouselShouldFallBackToBaseVisibleItemsCountBelowBreakpoints()
+    public async Task BitCarouselShouldFallBackToBaseVisibleItemsCountBelowBreakpoints()
     {
-        Context.JSInterop.Setup<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", _ => true)
-            .SetResult(new BoundingClientRect { Width = 500, Height = 300 });
-
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.ItemsCount, 6);
@@ -1119,6 +1136,8 @@ public partial class BitCarouselTests : BunitTestContext
             parameters.Add(p => p.VisibleItemsCountMd, 3);
         });
 
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 500, Height = 300 }));
+
         // Below the smallest breakpoint that was set, the base VisibleItemsCount applies. It is set
         // to something other than the default of a single slide, so a carousel that fell through to
         // one of the variants instead does not pass this by accident.
@@ -1126,17 +1145,16 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCarouselShouldPreferResponsiveOptionsOverVisibleItemsCountVariants()
+    public async Task BitCarouselShouldPreferResponsiveOptionsOverVisibleItemsCountVariants()
     {
-        Context.JSInterop.Setup<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", _ => true)
-            .SetResult(new BoundingClientRect { Width = 700, Height = 300 });
-
         var component = RenderComponent<BitCarouselTest>(parameters =>
         {
             parameters.Add(p => p.ItemsCount, 6);
             parameters.Add(p => p.VisibleItemsCountSm, 2);
             parameters.Add(p => p.ResponsiveOptions, [new BitCarouselResponsiveOption { Breakpoint = 800, VisibleItemsCount = 4 }]);
         });
+
+        await component.InvokeAsync(() => component.Instance.Carousel._OnResize(new ContentRect { Width = 700, Height = 300 }));
 
         // A matching responsive option is the most specific thing the carousel was told about its
         // width, so it wins over the breakpoint variants of VisibleItemsCount.

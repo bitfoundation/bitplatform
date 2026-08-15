@@ -58,6 +58,15 @@
     padding-inline: calc(var(--bit-csl-gap) / 2);
 }
 
+// The slides are hidden until the carousel lays them out, except the first one, so a prerendered
+// carousel is not a blank box. The first slide carries a class of its own, put there by the carousel
+// out of the index it hands the item: neither :first-child nor :first-of-type would find it, since
+// the next/prev buttons come before the slides and the slides need not be children of the container
+// at all (whatever markup the content brings along sits between the two).
+.bit-crsi-fst {
+    display: unset;
+}
+
 .bit-csl-cnt {
     width: 100%;
     height: 100%;
@@ -68,13 +77,6 @@
     user-select: none;
     position: relative;
     touch-action: pan-y;
-
-    // The slides are hidden until the carousel lays them out, except the first one, so a
-    // prerendered carousel is not a blank box. The next/prev buttons sit before the slides
-    // in the markup, so the first slide is picked by its class rather than by :first-child.
-    > .bit-crsi:first-of-type {
-        display: unset;
-    }
 }
 
 .bit-csl-ndr {

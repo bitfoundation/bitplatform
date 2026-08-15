@@ -267,6 +267,7 @@ private async Task GoTo()
     <BitCarouselItem Class=""item""><div>8</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>9</div></BitCarouselItem>
 </BitCarousel>";
+
     private readonly string example7RazorCode = @"
 <BitCarousel Style=""height: 100px""
              VisibleItemsCount=""4""

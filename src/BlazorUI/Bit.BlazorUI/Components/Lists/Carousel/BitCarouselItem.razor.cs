@@ -30,7 +30,18 @@ public partial class BitCarouselItem : BitComponentBase
     /// It is assigned by the carousel when the item registers itself, and kept up to date when
     /// items are added to or removed from the carousel at runtime.
     /// </remarks>
-    public int Index { get; internal set; }
+    public int Index
+    {
+        get => index;
+        internal set
+        {
+            if (index == value) return;
+
+            index = value;
+            ClassBuilder.Reset();
+        }
+    }
+    private int index;
 
 
 
@@ -119,6 +130,11 @@ public partial class BitCarouselItem : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Carousel?.Classes?.Item);
+
+        // The stylesheet keeps the first slide on screen until the carousel has laid the slides out, so
+        // a prerendered carousel is not a blank box. It is marked here rather than picked out with a
+        // positional selector, which would fall over the moment anything else sits before the slides.
+        ClassBuilder.Register(() => Index == 0 ? "bit-crsi-fst" : string.Empty);
 
         ClassBuilder.Register(() => InternalIsCurrent
                                     ? $"bit-crsi-cur {Carousel?.Classes?.CurrentItem}".Trim()

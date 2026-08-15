@@ -1,10 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-/// <summary>
-/// The size of an element and its position relative to the viewport, as returned by the
-/// getBoundingClientRect function of the browser.
-/// </summary>
-public class BoundingClientRect
+internal class BoundingClientRect
 {
     public double Bottom { get; set; }
     public double Height { get; set; }
