@@ -174,7 +174,16 @@ namespace BitBlazorUI {
                 observer.observe(document.documentElement);
 
                 if (target.current !== window) {
-                    observer.observe(target.current as HTMLElement);
+                    const box = target.current as HTMLElement;
+
+                    observer.observe(box);
+
+                    // A pane of a fixed height keeps the same border box however much content is put into
+                    // it, so watching the box alone never reports the growth that turns it into the scroller
+                    // of the header. Its content wrapper is the box that actually grows with the content.
+                    if (box.firstElementChild) {
+                        observer.observe(box.firstElementChild);
+                    }
                 }
 
                 if (scrollPadding) {

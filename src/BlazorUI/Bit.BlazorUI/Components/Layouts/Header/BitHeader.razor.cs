@@ -21,6 +21,8 @@ public partial class BitHeader : BitComponentBase
     private bool _hidden;
     private bool _scrolled;
     private bool _slidable;
+    private bool _settingUp;
+    private bool _setupPending;
     private string? _attachedId;
     private string? _attachedSignature;
     private DotNetObjectReference<BitHeader>? _dotnetObj;
@@ -595,6 +597,38 @@ public partial class BitHeader : BitComponentBase
 
         if (IsDisposed) return;
 
+        // Setting the listener up is a disposal and a setup with the bookkeeping of the attached id and signature
+        // in between, so a render arriving while one of those awaits is in flight would interleave with it and
+        // could leave the flags naming a registration that is not the one on the element anymore. A render that
+        // finds the sequence running only leaves a mark, and the call in flight runs it again afterwards, reading
+        // the parameters and the id as they are by then.
+        if (_settingUp)
+        {
+            _setupPending = true;
+            return;
+        }
+
+        _settingUp = true;
+
+        try
+        {
+            do
+            {
+                _setupPending = false;
+
+                await SetupScrollListener();
+            }
+            while (_setupPending && IsDisposed is false);
+        }
+        finally
+        {
+            // Released even when the interop threw, so the flag cannot keep every later render out of the setup.
+            _settingUp = false;
+        }
+    }
+
+    private async Task SetupScrollListener()
+    {
         // Only a pinned header has anything to slide over, to lift itself above, or to cover at the top of the
         // scrolling area, so the scroll listener is attached for those alone. Toggling any of these parameters
         // at runtime attaches or detaches it accordingly.
