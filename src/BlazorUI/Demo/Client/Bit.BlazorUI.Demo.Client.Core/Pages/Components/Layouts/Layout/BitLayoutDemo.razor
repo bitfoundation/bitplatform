@@ -1,16 +1,23 @@
-﻿@page "/components/layout"
+@page "/components/layout"
 
 <PageOutlet Url="components/layout"
             Title="Layout"
-            Description="Layout can be used to create a base UI structure for an application." />
+            Description="The BitLayout component builds the base UI structure of an application: a header, a footer and a middle row holding a nav panel, the main content and an aside, with semantic landmarks, sticky sections and a skip link." />
 
 <DemoPage Name="Layout"
-          Description="Layout can be used to create a base UI structure for an application."
+          Description="The BitLayout component builds the base UI structure of an application: a header, a footer and a middle row that holds a nav panel, the main content and an aside. Every section renders the HTML element that carries its landmark role, so a screen reader can jump straight to any of them, and an optional skip link gives a keyboard user the same shortcut to the content. The layout is only as tall as its content, which lets it be dropped into a box of any size, and each of its sections can be sized, hidden, bordered, pinned while the page scrolls or given a scrollport of its own."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubUrl="Layouts/Layout/BitLayout.razor"
           GitHubDemoUrl="Layouts/Layout/BitLayoutDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>
+            The three sections of a page in their reading order: <b>Header</b>, <b>Main</b> and <b>Footer</b>. They render
+            as a <code>header</code>, a <code>main</code> and a <code>footer</code> element, which are the banner, main and
+            contentinfo landmarks of the page. The header and the footer are only rendered when they are given content, so
+            a layout with a Main alone is just that one section.
+        </div>
+        <br />
         <div class="container">
             <BitLayout>
                 <Header>
@@ -27,15 +34,24 @@
     </DemoExample>
 
     <DemoExample Title="NavPanel" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-        <BitToggle Label="Hide NavPanel" @bind-Value="HideNavPanel" />
+        <div>
+            The <b>NavPanel</b> sits next to the main content in the middle row and renders as a <code>nav</code> element,
+            the navigation landmark of the page. <b>NavPanelWidth</b> is the room the main content leaves for it in pixels;
+            the panel itself keeps sizing to its own content, so a panel that collapses to a rail or turns into an overlay
+            drawer on a small screen only has to be given a width of 0 for the main content to span the whole row again.
+            <b>HideNavPanel</b> takes the section out of the markup altogether, which is what a landing page or a full
+            screen editor inside the same layout needs.
+        </div>
+        <br />
+        <BitToggle Label="Hide NavPanel" @bind-Value="hideNavPanel" />
         <br />
         <div class="container">
-            <BitLayout HideNavPanel="HideNavPanel">
+            <BitLayout NavPanelWidth="120" HideNavPanel="hideNavPanel">
                 <Header>
                     <div class="header">Header</div>
                 </Header>
                 <NavPanel>
-                    <div class="nav-menu">NavPanel</div>
+                    <div class="nav-panel">NavPanel</div>
                 </NavPanel>
                 <Main>
                     <div class="main">Main</div>
@@ -47,18 +63,486 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Styles & Classes" RazorCode="@example3RazorCode" Id="example3">
+    <DemoExample Title="Aside" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            The <b>Aside</b> is the panel on the other side of the main content, rendered as an <code>aside</code> element -
+            the complementary landmark - which is where a table of contents, a filter panel or an inspector belongs. It works
+            exactly like the nav panel: <b>AsideWidth</b> reserves its room in the main content and <b>HideAside</b> gives it
+            back. With both panels present the layout is the classic three column page.
+        </div>
+        <br />
+        <BitToggle Label="Hide Aside" @bind-Value="hideAside" />
+        <br />
         <div class="container">
-            <BitLayout Styles="@(new() { Main = "height: 19rem;" })"
-                       Classes="@(new() { Header = "header2",
-                                              Main = "main2",
-                                              NavPanel = "nav-menu2",
-                                              MainContent = "main-content2",
-                                              Footer = "footer2" })">
+            <BitLayout NavPanelWidth="120" AsideWidth="120" HideAside="hideAside">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Reverse" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+        <div>
+            The middle row is laid out in the reading direction, so the nav panel starts on the left in an LTR layout and on
+            the right in an RTL one. <b>ReverseNavPanel</b> flips that order: the nav panel moves to the end of the row and
+            the aside to its start, without either of them changing what it means to a screen reader.
+        </div>
+        <br />
+        <BitToggle Label="Reverse NavPanel" @bind-Value="reverseNavPanel" />
+        <br />
+        <div class="container">
+            <BitLayout NavPanelWidth="120" AsideWidth="120" ReverseNavPanel="reverseNavPanel">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="FullHeightPanels" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+        <div>
+            By default the header runs across the top of everything and the panels sit under it, which is the shape of a web
+            page. <b>FullHeightPanels</b> gives the shape of an application instead: the nav panel and the aside run down the
+            whole height of the layout and the header, the main content and the footer share the column left between them -
+            a workspace with a permanent side navigation, an inspector or a tool rail. The order of the sections in the markup
+            does not change, so a screen reader still reads the header first.
+        </div>
+        <br />
+        <div>
+            The panels are columns of their own here rather than flex items beside the main content, so <b>NavPanelWidth</b>
+            and <b>AsideWidth</b> are applied to the panels themselves, and <b>Gap</b> separates the header and the footer
+            from the main content as well. <b>ReverseNavPanel</b>, <b>Bordered</b> and the sticky sections all follow along.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap Gap="1rem">
+            <BitToggle Label="FullHeightPanels" @bind-Value="fullHeightPanels" />
+            <BitToggle Label="Reverse NavPanel" @bind-Value="reverseNavPanel2" />
+        </BitStack>
+        <br />
+        <div class="container">
+            <BitLayout Bordered
+                       NavPanelWidth="120"
+                       AsideWidth="100"
+                       FullHeightPanels="fullHeightPanels"
+                       ReverseNavPanel="reverseNavPanel2">
+                <Header>
+                    <div class="pad">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="pad">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="pad">Main</div>
+                </Main>
+                <Aside>
+                    <div class="pad">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="pad">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Hiding sections" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+        <div>
+            Every section around the main content can be switched off on its own with <b>HideHeader</b>, <b>HideNavPanel</b>,
+            <b>HideAside</b> and <b>HideFooter</b>. The section leaves the markup rather than being hidden with CSS, so it
+            costs nothing while it is off and the sections that stay take the room it used to hold. This is how one layout
+            serves a whole application: the chrome a page does not need is turned off from that page instead of a second
+            layout being built for it. The main section is always rendered, since a page is expected to have exactly one of it.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap Gap="1rem">
+            <BitToggle Label="Hide Header" @bind-Value="hideHeader" />
+            <BitToggle Label="Hide NavPanel" @bind-Value="hideNavPanel2" />
+            <BitToggle Label="Hide Aside" @bind-Value="hideAside2" />
+            <BitToggle Label="Hide Footer" @bind-Value="hideFooter" />
+        </BitStack>
+        <br />
+        <div class="container">
+            <BitLayout NavPanelWidth="120"
+                       AsideWidth="120"
+                       HideHeader="hideHeader"
+                       HideNavPanel="hideNavPanel2"
+                       HideAside="hideAside2"
+                       HideFooter="hideFooter">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Section heights" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            <b>HeaderHeight</b> and <b>FooterHeight</b> pin the two bars to an exact height in pixels instead of letting them
+            grow with their content, which is what keeps the chrome of every page of an application the same size. Both are
+            border-boxes, so the height covers their paddings and borders. The header height doubles as the offset a pinned
+            nav panel or aside uses, which is what the next example relies on.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout HeaderHeight="64" FooterHeight="40">
+                <Header>
+                    <div class="header fill">64px header</div>
+                </Header>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Footer>
+                    <div class="footer fill">40px footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Sticky sections" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+        <div>
+            <b>StickyHeader</b>, <b>StickyFooter</b>, <b>StickyNavPanel</b> and <b>StickyAside</b> pin a section in place while
+            the rest of the page scrolls past it. Sticky positioning keeps the sections in the normal flow, so they never
+            overlap the content and need no room reserved for them; it does need a scrolling ancestor to stick within (the box
+            below, or the page itself). That container is the one that scrolls, so it is free to carry an <b>overflow</b> of its
+            own - what breaks the stickiness is an ancestor <i>between</i> it and the sticky section setting an overflow other
+            than visible, which turns that inner element into the scroll container instead. The two panels are pinned <b>HeaderHeight</b>
+            pixels from the top, which is what keeps them clear of a sticky header, and each is given the rest of the viewport
+            with its own scrollbar so a panel taller than the screen stays reachable. Scroll the box to see it.
+        </div>
+        <br />
+        <div>
+            A pinned header is also what an in-page anchor lands under, so the layout offsets the scroll of its main section by
+            the header height - the skip link of the last example lands on the content rather than behind the header. <b>ZIndex</b>
+            is the stacking order the pinned sections take, which is what decides whether they pass over or under the other layers
+            of the application; the skip link always stays above them.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap Gap="1rem">
+            <BitToggle Label="Sticky Header" @bind-Value="stickyHeader" />
+            <BitToggle Label="Sticky NavPanel" @bind-Value="stickyNavPanel" />
+            <BitToggle Label="Sticky Aside" @bind-Value="stickyAside" />
+            <BitToggle Label="Sticky Footer" @bind-Value="stickyFooter" />
+        </BitStack>
+        <br />
+        <div class="container">
+            <BitLayout HeaderHeight="40"
+                       NavPanelWidth="120"
+                       AsideWidth="120"
+                       StickyHeader="stickyHeader"
+                       StickyNavPanel="stickyNavPanel"
+                       StickyAside="stickyAside"
+                       StickyFooter="stickyFooter">
+                <Header>
+                    <div class="header fill">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main tall">Scroll me</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="FullHeight" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            By default the layout is as tall as its content and as tall as its parent allows, which is what lets it be dropped
+            into a card, a dialog or a box of a fixed height like the ones on this page. <b>FullHeight</b> is what a page level
+            layout wants instead: the middle row grows into the leftover space so the footer of a page with barely any content
+            still sits at the bottom of the screen rather than half way up it. The height follows the browser chrome of a mobile
+            device as it retracts, so the layout is never taller than the part of the screen that is really visible.
+        </div>
+        <br />
+        <BitToggle Label="FullHeight" @bind-Value="fullHeight" />
+        <br />
+        <div class="container">
+            <BitLayout FullHeight="fullHeight">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="ScrollableMain" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>ScrollableMain</b> keeps the header and the footer where they are and gives the sections of the middle row a
+            scrollport of their own: the chrome of the window never moves and only the content under it scrolls. This is what
+            a sticky section cannot do inside a box that does not scroll with the page, which is why it is the shape an
+            application shell - or a layout inside a dialog - takes. The nav panel and the aside scroll on their own too, so
+            a panel with more items than fit stays reachable without moving the content beside it.
+        </div>
+        <br />
+        <div>
+            It needs a height to fill, since it is the leftover of that height that becomes the scrollport: <b>FullHeight</b>
+            on a page, or a parent of a definite height like the box below. Turn it off to see the same content push the box
+            itself into scrolling instead.
+        </div>
+        <br />
+        <BitToggle Label="ScrollableMain" @bind-Value="scrollableMain" />
+        <br />
+        <div class="container">
+            <BitLayout Bordered NavPanelWidth="120" ScrollableMain="scrollableMain">
+                <Header>
+                    <div class="pad">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="pad tall">Scroll me</div>
+                </NavPanel>
+                <Main>
+                    <div class="pad tall">Scroll me</div>
+                </Main>
+                <Footer>
+                    <div class="pad">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gap & Padding" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            <b>Gap</b> is the space between the nav panel, the main content and the aside, and <b>Padding</b> is the room around
+            the content of the main section. Both take any CSS length (Gap also takes the two value form of the gap shorthand).
+            The main section is a border-box, so its padding is taken out of the width it already has rather than added to it,
+            which keeps the row from overflowing.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout Gap="1rem" Padding="1rem" NavPanelWidth="120" AsideWidth="120">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Bordered" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            <b>Bordered</b> draws the dividers that separate the sections: under the header, above the footer, and between the
+            main content and each of the two panels beside it. The two vertical dividers follow the reading direction and swap
+            sides along with <b>ReverseNavPanel</b>, so they always stay between a panel and the content rather than on the
+            outer edge of the layout.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout Bordered NavPanelWidth="120" AsideWidth="120">
+                <Header>
+                    <div class="pad">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="pad">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="pad">Main</div>
+                </Main>
+                <Aside>
+                    <div class="pad">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="pad">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Nested" RazorCode="@example13RazorCode" Id="example13">
+        <div>
+            A layout can hold another one - a workspace inside the content of the page, a settings area with a nav panel of its
+            own. A page may only have one main landmark though, so the inner layout is given <b>Nested</b>: its main section
+            renders as a plain element instead of a second <code>main</code>. It keeps its id, its classes and its place as the
+            target of a skip link, and only stops claiming a landmark the page already has.
+        </div>
+        <br />
+        <div>
+            The other sections need nothing of the sort: a <code>header</code> or a <code>footer</code> stops being a banner or
+            a contentinfo on its own once it sits inside the content of another one, and a page may hold any number of navigation
+            and complementary landmarks.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout Bordered NavPanelWidth="120">
+                <Header>
+                    <div class="pad">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="pad">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <BitLayout Nested Bordered NavPanelWidth="100" Padding="0.5rem">
+                        <Header>
+                            <div class="pad">Nested header</div>
+                        </Header>
+                        <NavPanel>
+                            <div class="pad">Nested nav</div>
+                        </NavPanel>
+                        <Main>
+                            Nested main
+                        </Main>
+                    </BitLayout>
+                </Main>
+                <Footer>
+                    <div class="pad">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <b>SkipLink</b> renders a link as the first focusable element of the layout that jumps straight to the main section,
+            so a keyboard or screen reader user does not have to walk through the whole header and nav panel on every page. It
+            stays out of sight until it is focused, so it costs a mouse user nothing - press <kbd>Tab</kbd> with the focus just
+            before the box below to see it appear. It is drawn above every pinned section, since a focus that lands behind a
+            sticky header is a focus nobody can see. <b>SkipLinkText</b> changes its wording, which is also what a screen reader
+            announces for it.
+        </div>
+        <br />
+        <div>
+            A page usually holds more than one navigation landmark, and a label is what tells them apart in the landmark list of
+            a screen reader. <b>NavPanelAriaLabel</b> and <b>AsideAriaLabel</b> name those two sections; the words "navigation"
+            and "complementary" are announced already, so the labels should not repeat them.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout SkipLink
+                       SkipLinkText="Skip to the content"
+                       NavPanelWidth="120"
+                       AsideWidth="120"
+                       NavPanelAriaLabel="Main"
+                       AsideAriaLabel="On this page">
+                <Header>
+                    <div class="header">Header</div>
+                </Header>
+                <NavPanel>
+                    <div class="nav-panel">NavPanel</div>
+                </NavPanel>
+                <Main>
+                    <div class="main">Main</div>
+                </Main>
+                <Aside>
+                    <div class="aside">Aside</div>
+                </Aside>
+                <Footer>
+                    <div class="footer">Footer</div>
+                </Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element of the layout, while <b>Styles</b> and <b>Classes</b> reach every
+            section of it by name: Root, SkipLink, Header, Main (the middle row), NavPanel, MainContent, Aside and Footer. Note
+            that <b>Main</b> is the row that holds the three middle sections and <b>MainContent</b> is the main section itself,
+            which is what the two are named after in the markup.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout NavPanelWidth="120"
+                       AsideWidth="120"
+                       Class="custom-root"
+                       Style="border-radius: 0.5rem;"
+                       Styles="@(new() { Main = "min-height: 12rem;" })"
+                       Classes="@(new() { Header = "custom-header",
+                                          NavPanel = "custom-nav-panel",
+                                          MainContent = "custom-main-content",
+                                          Aside = "custom-aside",
+                                          Footer = "custom-footer" })">
                 <Header>Header</Header>
                 <NavPanel>NavPanel</NavPanel>
                 <Main>Main</Main>
+                <Aside>Aside</Aside>
                 <Footer>Footer</Footer>
+            </BitLayout>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            Set <b>Dir</b> to <b>BitDir.Rtl</b> to lay the sections out right to left. The middle row follows the reading
+            direction, so the nav panel moves to the right and the aside to the left, and the dividers of a bordered layout
+            follow them - no separate RTL markup and no mirrored styles of your own. The direction is cascaded to the content
+            of the layout as well, so the bit components inside it need not be told about it a second time.
+        </div>
+        <br />
+        <div class="container">
+            <BitLayout Bordered Dir="BitDir.Rtl" NavPanelWidth="120" AsideWidth="120">
+                <Header>
+                    <div class="pad">سربرگ</div>
+                </Header>
+                <NavPanel>
+                    <div class="pad">منو</div>
+                </NavPanel>
+                <Main>
+                    <div class="pad">محتوا</div>
+                </Main>
+                <Aside>
+                    <div class="pad">کناره</div>
+                </Aside>
+                <Footer>
+                    <div class="pad">پاورقی</div>
+                </Footer>
             </BitLayout>
         </div>
     </DemoExample>
