@@ -1,4 +1,26 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
+// The spacer has no look of its own: every bit of its behavior is an inline style, so the root class only
+// has to make sure the box itself is reachable by the styles of the consumer.
 .bit-spc {
+    // The spacer holds no content, so in a container that centers or aligns its items the box would be zero
+    // along the cross axis and any background, border or class given to it would be invisible. Stretching it
+    // costs nothing (an empty box adds nothing to the cross size of the container) and makes it decorable,
+    // which is what a spacer used as a layout aid or as a click target needs.
+    align-self: stretch;
+}
+
+// The three steps of the spacing scale of the theme, so a sized spacer follows the spacing unit and the
+// density of the current theme rather than a hardcoded length. The component reads them back through
+// var(--bit-spc-size) on the axis the spacer targets.
+.bit-spc-sm {
+    --bit-spc-size: #{spacing(1)};
+}
+
+.bit-spc-md {
+    --bit-spc-size: #{spacing(2)};
+}
+
+.bit-spc-lg {
+    --bit-spc-size: #{spacing(4)};
 }
