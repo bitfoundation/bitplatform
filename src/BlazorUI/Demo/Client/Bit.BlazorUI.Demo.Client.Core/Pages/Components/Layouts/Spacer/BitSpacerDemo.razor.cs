@@ -30,7 +30,7 @@ public partial class BitSpacerDemo
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the fixed amount of space the spacer generates along the block (vertical) axis, in pixels. This is the parameter to reach for inside a vertical (column) layout, where the inline-axis Width creates no visible space. Setting it turns the spacer from a flexible one into a fixed one, so Grow no longer applies.",
+            Description = "Gets or sets the fixed amount of space the spacer generates along the block (vertical) axis, in pixels. This is the parameter to reach for inside a vertical (column) layout, where the inline-axis Width creates no visible space. Setting it turns the spacer from a flexible one into a fixed one, so Grow and MinGap no longer apply.",
         },
         new()
         {
