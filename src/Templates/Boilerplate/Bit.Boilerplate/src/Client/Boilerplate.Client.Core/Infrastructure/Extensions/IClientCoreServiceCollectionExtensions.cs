@@ -75,10 +75,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             //#if (brouter == true)
             services.AddBitBrouterServices();
             //#endif
-            // The app-wide accent (main theme) color configuration, stated once here - this method runs in the server and
-            // in every client flavor, so the BitAccentColorHead in the host page (App.razor in the Server.Web project) and
-            // the BitAccentColorSwitcher instance in AppMenu all resolve the same values. StoredCss + All explicitly:
-            // the BitAccentColorConfig defaults persist nothing and skip first paint.
+            
             services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid, accentColor: options =>
             {
                 options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;

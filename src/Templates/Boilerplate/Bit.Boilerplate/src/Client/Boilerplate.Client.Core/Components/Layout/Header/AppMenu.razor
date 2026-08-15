@@ -109,11 +109,7 @@
                             </BitActionButton>
                             <BitToggle OnChange="ToggleTheme" Value="CurrentTheme == AppThemeType.Light" ValueChanged="v => { }" />
                         </BitStack>
-
-                        @* One brand color fed to BitThemeFactory re-themes the whole app live. The component (and its
-                           BitAccentColorService) owns the accent itself - state, persistence and first paint - per the
-                           BitAccentColorConfig registered in DI (see AddClientCoreProjectServices), which is also what
-                           the host page's BitAccentColorHead (App.razor in the Server.Web project) emits the head half for. *@
+                        
                         <BitAccentColorSwitcher Class="accent-color-switcher" />
 
                         <AuthorizeView>

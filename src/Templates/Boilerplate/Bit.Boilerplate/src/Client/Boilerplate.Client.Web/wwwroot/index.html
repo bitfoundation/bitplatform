@@ -7,12 +7,6 @@
      - src/Client/Boilerplate.Client.Maui/wwwroot/index.html
      [mirror] bswup progress bar markup and css - keep in sync with:
      - src/Client/Boilerplate.Client.Web/Components/AppBswupProgressBar.razor
-     [mirror] exempt: the accent (main theme) color head half App.razor emits through BitAccentColorHead has no
-     counterpart here. It is generated C# whose palette snapshot is only accepted when it carries the exact
-     Bit.BlazorUI.Extras version that wrote it, so a hand-copied script would hardcode that version and silently
-     stop injecting on the next package bump. This host also serves no prerendered content, so the accent lands
-     during startup (see AppClientCoordinator) rather than pre-paint - read the full note next to the
-     BitAccentColorHead tag in App.razor.
 -->
 
 <html bit-theme-system bit-theme-persist bit-theme-view-transition>

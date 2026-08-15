@@ -102,8 +102,6 @@ public partial class AppClientCoordinator : AppComponentBase
             });
             //#endif
 
-            // Restores the persisted accent (main theme) color, if any, even when the current page renders no
-            // BitAccentColorSwitcher; the configuration comes from the BitAccentColorConfig registered in DI.
             await accentColorService.InitializeAsync();
 
             NavigationManager.LocationChanged += NavigationManager_LocationChanged;

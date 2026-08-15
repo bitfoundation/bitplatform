@@ -36,8 +36,6 @@
         }
     }
 
-    // Sized down from the library's defaults to sit comfortably in the menu's action-button column.
-    // The custom properties override the ones BitAccentColorSwitcher's own stylesheet declares.
     .accent-color-switcher {
         width: 100%;
         padding: 0 8px;
