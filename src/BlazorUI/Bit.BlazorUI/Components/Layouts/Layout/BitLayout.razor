@@ -1,38 +1,69 @@
-﻿@namespace Bit.BlazorUI
+@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@{
-    var showNavPanel = NavPanel is not null && HideNavPanel is false;
-}
-
+@* Each section renders the element that carries its landmark role, and the nav panel and the aside are
+   siblings of the main content rather than children of it, so "skip to main content" really does skip
+   the navigation instead of landing in front of it. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
     <CascadingValue Value="Dir">
-        @if (Header is not null)
+        @if (SkipLink)
+        {
+            <a href="@($"#{_MainId}")" style="@Styles?.SkipLink" class="bit-lyt-skp @Classes?.SkipLink">
+                @(SkipLinkText ?? "Skip to main content")
+            </a>
+        }
+
+        @if (_ShowHeader)
         {
             <header style="@Styles?.Header" class="bit-lyt-hdr @Classes?.Header">
                 @Header
             </header>
         }
 
-        <main style="@(ReverseNavPanel ? "flex-direction:row-reverse;" : "") @Styles?.Main" class="bit-lyt-man @Classes?.Main">
-            @if (showNavPanel)
+        <div style="@Styles?.Main" class="bit-lyt-man @Classes?.Main">
+            @if (_ShowNavPanel)
             {
-                <div style="@Styles?.NavPanel" class="bit-lyt-nmn @Classes?.NavPanel">
+                <nav aria-label="@NavPanelAriaLabel" style="@_NavPanelStyle" class="bit-lyt-nmn @Classes?.NavPanel">
                     @NavPanel
-                </div>
+                </nav>
             }
 
-            <div style="@($"{(showNavPanel ? FormattableString.Invariant($"width:calc(100% - {NavPanelWidth}px);") : "")}") @Styles?.MainContent" 
-                 class="bit-lyt-mcn @Classes?.MainContent">
-                @Main
-            </div>
-        </main>
+            @* A page may hold only one main landmark, so a layout nested inside another one renders the very
+               same section as a plain div: it keeps its id, its classes and its place as the skip link target,
+               and only stops claiming a landmark the page already has. *@
+            @if (Nested)
+            {
+                <div id="@_MainId"
+                     tabindex="@(SkipLink ? "-1" : null)"
+                     style="@_MainContentStyle"
+                     class="bit-lyt-mcn @Classes?.MainContent">
+                    @Main
+                </div>
+            }
+            else
+            {
+                <main id="@_MainId"
+                      tabindex="@(SkipLink ? "-1" : null)"
+                      style="@_MainContentStyle"
+                      class="bit-lyt-mcn @Classes?.MainContent">
+                    @Main
+                </main>
+            }
 
-        @if (Footer is not null)
+            @if (_ShowAside)
+            {
+                <aside aria-label="@AsideAriaLabel" style="@_AsideStyle" class="bit-lyt-asd @Classes?.Aside">
+                    @Aside
+                </aside>
+            }
+        </div>
+
+        @if (_ShowFooter)
         {
             <footer style="@Styles?.Footer" class="bit-lyt-ftr @Classes?.Footer">
                 @Footer

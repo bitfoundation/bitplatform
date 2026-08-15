@@ -1,4 +1,4 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-lyt {
     margin: 0;
@@ -10,18 +10,162 @@
     position: relative;
     box-sizing: border-box;
 
+    --bit-lyt-zin: #{$zindex-base};
+
     &.bit-dis {
         color: $clr-fg-dis;
     }
 }
 
+// The layout is otherwise only as tall as its content and as tall as its parent allows, which is what lets
+// it be dropped into a card or a box of a fixed height. This is the page level counterpart: the middle row
+// grows into the leftover space, so the footer of a short page still sits at the bottom of the screen.
+// dvh follows the browser chrome of a mobile device as it retracts, and vh is the fallback for the engines
+// that do not know it - 100vh there is the old, slightly too tall behavior rather than no height at all.
+.bit-lyt-flh {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+// The header and the footer keep their own height rather than being squeezed by a middle row that grew
+// past the layout, and take the height they were given when there is one.
+.bit-lyt-hdr {
+    width: 100%;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    height: var(--bit-lyt-hdr-h, auto);
+}
+
+.bit-lyt-ftr {
+    width: 100%;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    height: var(--bit-lyt-ftr-h, auto);
+}
+
+// The middle row. flex-grow is what pushes the footer to the bottom of a layout taller than its content;
+// the row deliberately has no minimum height of its own, so a layout dropped into a 300px box is 300px
+// tall instead of a viewport tall (which is what FullHeight is for).
+.bit-lyt-man {
+    flex-grow: 1;
+    display: flex;
+    box-sizing: border-box;
+    gap: var(--bit-lyt-gap, 0);
+}
+
+.bit-lyt-rnv > .bit-lyt-man {
+    flex-direction: row-reverse;
+}
+
+// The panels beside the main content keep the width their own content asks for: they are never squeezed
+// by a main content that grew, and never stretched by a row that has room left over.
+.bit-lyt-nmn,
+.bit-lyt-asd {
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+// min-width is what keeps a wide child (a table, a long line of code) from pushing the main content past
+// the row and taking the panels beside it along; the content scrolls inside its own box instead.
+.bit-lyt-mcn {
+    width: 100%;
+    flex-grow: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--bit-lyt-pad, 0);
+}
+
+// The panels beside the main content take the space of an application: they run down the full height and the
+// header, the main content and the footer share the column left between them. display:contents is what lets the
+// three sections of the middle row be placed on the grid of the root without the row around them being taken
+// apart, and the grid lines follow the reading direction, so the nav panel stays on the starting side in RTL.
+// The gap is drawn by the sections themselves rather than by the grid: a track of a panel that is not there
+// is still a track, and the gap around it would leave the content short of the edge it should reach.
+.bit-lyt-fhp {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+
+    > .bit-lyt-hdr {
+        grid-row: 1;
+        grid-column: 2;
+        margin-block-end: var(--bit-lyt-gap, 0);
+    }
+
+    > .bit-lyt-ftr {
+        grid-row: 3;
+        grid-column: 2;
+        margin-block-start: var(--bit-lyt-gap, 0);
+    }
+
+    > .bit-lyt-man {
+        display: contents;
+
+        > .bit-lyt-nmn {
+            grid-column: 1;
+            grid-row: 1 / -1;
+            margin-inline-end: var(--bit-lyt-gap, 0);
+        }
+
+        > .bit-lyt-mcn {
+            grid-row: 2;
+            grid-column: 2;
+        }
+
+        > .bit-lyt-asd {
+            grid-column: 3;
+            grid-row: 1 / -1;
+            margin-inline-start: var(--bit-lyt-gap, 0);
+        }
+    }
+}
+
+.bit-lyt-fhp.bit-lyt-rnv > .bit-lyt-man {
+    > .bit-lyt-nmn {
+        grid-column: 3;
+        margin-inline: var(--bit-lyt-gap, 0) 0;
+    }
+
+    > .bit-lyt-asd {
+        grid-column: 1;
+        margin-inline: 0 var(--bit-lyt-gap, 0);
+    }
+}
+
+// The application shell: the header and the footer keep their place without being pinned to anything, and what
+// is left of the height of the layout becomes the scrollport of the sections of the middle row. A sticky section
+// cannot do this, since it needs the page around it to be what scrolls.
+.bit-lyt-scm {
+    height: 100%;
+    overflow: hidden;
+
+    > .bit-lyt-man {
+        min-height: 0;
+
+        > .bit-lyt-nmn,
+        > .bit-lyt-mcn,
+        > .bit-lyt-asd {
+            overflow: hidden auto;
+            overscroll-behavior: contain;
+        }
+    }
+}
+
+// The root is kept at the height of its content so it does not stretch to a flex parent, which would leave
+// the sticky section nothing to travel in. scroll-padding is what keeps an anchor inside the layout - the skip
+// link first of all - from landing under the header it just scrolled past.
 .bit-lyt-shd {
     height: fit-content;
+    scroll-padding-block-start: var(--bit-lyt-hdr-h, 0px);
 
     > .bit-lyt-hdr {
         top: 0;
         position: sticky;
-        z-index: $zindex-base;
+        z-index: calc(var(--bit-lyt-zin) + 1);
+    }
+
+    > .bit-lyt-man > .bit-lyt-mcn {
+        scroll-margin-block-start: var(--bit-lyt-hdr-h, 0px);
     }
 }
 
@@ -31,33 +175,129 @@
     > .bit-lyt-ftr {
         bottom: 0;
         position: sticky;
-        z-index: $zindex-base;
+        z-index: calc(var(--bit-lyt-zin) + 1);
     }
 }
 
-.bit-lyt-hdr {
-    width: 100%;
-    box-sizing: border-box;
+// A pinned panel is offset by the height of the header, so it starts right below a sticky header instead of
+// sliding underneath it, and align-self keeps it at the height of its own content - a panel stretched to the
+// height of the row has no room left to travel in and never appears to stick at all. What is left of the
+// viewport becomes its own scrollport, so a panel with more items than fit on the screen stays reachable.
+.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
+    position: sticky;
+    overflow: hidden auto;
+    align-self: flex-start;
+    overscroll-behavior: contain;
+    z-index: var(--bit-lyt-zin);
+    top: var(--bit-lyt-hdr-h, 0px);
+    max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px));
 }
 
-.bit-lyt-man {
-    flex-grow: 1;
-    display: flex;
-    min-height: 100vh;
-    box-sizing: border-box;
+// A panel that already spans the full height of the layout has no header above it to stay clear of.
+.bit-lyt-fhp.bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+.bit-lyt-fhp.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
+    top: 0;
+    align-self: start;
+    max-height: 100dvh;
 }
 
-.bit-lyt-nmn {
-    box-sizing: border-box;
+.bit-lyt-brd {
+    > .bit-lyt-hdr {
+        border-block-end: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    > .bit-lyt-ftr {
+        border-block-start: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    > .bit-lyt-man > .bit-lyt-nmn {
+        border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    > .bit-lyt-man > .bit-lyt-asd {
+        border-inline-start: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
 }
 
-.bit-lyt-mcn {
-    width: 100%;
-    flex-grow: 1;
-    box-sizing: border-box;
+// row-reverse puts the nav panel at the end of the line and the aside at its start, while the logical border
+// properties still follow the reading direction, so the two dividers swap the edge they are drawn on to stay
+// between the panels and the main content.
+.bit-lyt-brd.bit-lyt-rnv {
+    > .bit-lyt-man > .bit-lyt-nmn {
+        border-inline-end: none;
+        border-inline-start: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
+
+    > .bit-lyt-man > .bit-lyt-asd {
+        border-inline-start: none;
+        border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
+    }
 }
 
-.bit-lyt-ftr {
-    width: 100%;
+// Translated out of the view rather than hidden, so it keeps its place in the tab order and in the
+// accessibility tree and is still the first thing a keyboard user reaches, while costing a mouse user nothing.
+// It sits above every pinned section of the layout: a focused element hidden behind a sticky header is
+// exactly what WCAG 2.4.11 is about, and the skip link is the first element to reach one.
+.bit-lyt-skp {
+    top: 0;
+    position: absolute;
+    inset-inline-start: 0;
+    color: $clr-fg-pri;
+    text-decoration: none;
     box-sizing: border-box;
+    z-index: calc(var(--bit-lyt-zin) + 2);
+    padding: spacing(1) spacing(2);
+    background-color: $clr-bg-pri;
+    line-height: $tg-line-height;
+    font-family: $tg-font-family;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    transition: transform $mot-duration $mot-easing;
+    transform: translateY(-200%);
+
+    &:focus {
+        transform: none;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// The main section only takes the focus because the skip link sent it there, and the section it lands on is
+// the whole page: a focus ring around all of it says nothing about where the focus went. The heading the
+// reader lands in front of is the real feedback.
+.bit-lyt-mcn:focus {
+    outline: none;
+}
+
+// On paper there is no viewport to pin anything to, and no keyboard to hand the skip link to: a pinned
+// section would either repeat on every sheet or sit over the content, a section with its own scrollport
+// would print only the part of itself that happened to be scrolled into view, and a layout as tall as a
+// screen would push whatever follows it onto a sheet of its own.
+@media print {
+    .bit-lyt-skp {
+        display: none;
+    }
+
+    .bit-lyt-flh {
+        min-height: auto;
+    }
+
+    .bit-lyt-scm {
+        height: auto;
+        overflow: visible;
+    }
+
+    .bit-lyt-shd > .bit-lyt-hdr,
+    .bit-lyt-sft > .bit-lyt-ftr,
+    .bit-lyt-snv > .bit-lyt-man > .bit-lyt-nmn,
+    .bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd,
+    .bit-lyt-scm > .bit-lyt-man > .bit-lyt-nmn,
+    .bit-lyt-scm > .bit-lyt-man > .bit-lyt-mcn,
+    .bit-lyt-scm > .bit-lyt-man > .bit-lyt-asd {
+        position: static;
+        max-height: none;
+        overflow: visible;
+    }
 }

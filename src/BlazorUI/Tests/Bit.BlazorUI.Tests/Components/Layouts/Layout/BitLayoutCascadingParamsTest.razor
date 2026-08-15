@@ -1,0 +1,41 @@
+@* Covers BitLayoutParams: the cascaded values fill in the parameters the layout did not set itself,
+   and never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitLayoutParams[]
+                         {
+                             new()
+                             {
+                                 Bordered = true,
+                                 FullHeight = true,
+                                 FullHeightPanels = true,
+                                 ScrollableMain = true,
+                                 Nested = true,
+                                 StickyHeader = true,
+                                 StickyFooter = true,
+                                 StickyNavPanel = true,
+                                 StickyAside = true,
+                                 ReverseNavPanel = true,
+                                 SkipLink = true,
+                                 SkipLinkText = "Cascaded skip",
+                                 Gap = "1rem",
+                                 Padding = "2rem",
+                                 HeaderHeight = 64,
+                                 FooterHeight = 40,
+                                 NavPanelWidth = 200,
+                                 AsideWidth = 100,
+                                 NavPanelAriaLabel = "Cascaded nav",
+                                 AsideAriaLabel = "Cascaded aside",
+                                 ZIndex = 7,
+                             }
+                         })">
+    <BitLayout>
+        <NavPanel>Nav</NavPanel>
+        <Main>Cascaded</Main>
+        <Aside>Aside</Aside>
+    </BitLayout>
+    <BitLayout Bordered="false" Gap="2rem" SkipLinkText="Own skip" NavPanelAriaLabel="Own nav" Nested="false">
+        <NavPanel>Nav</NavPanel>
+        <Main>Own values</Main>
+        <Aside>Aside</Aside>
+    </BitLayout>
+</BitParams>
