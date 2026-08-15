@@ -55,7 +55,7 @@ public partial class BitHeader : BitComponentBase
     /// <br />
     /// <see cref="Fixed"/> takes precedence over it, and it takes precedence over <see cref="Sticky"/>.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Absolute { get; set; }
 
     /// <summary>
@@ -320,9 +320,10 @@ public partial class BitHeader : BitComponentBase
     /// Renders the header with a sticky position at the top of the viewport.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="Fixed"/>, a sticky header stays in the normal flow, so it never overlaps the content
-    /// and needs no extra room reserved for it. It requires an ancestor that scrolls (commonly the page itself)
-    /// and no ancestor with an overflow other than visible.
+    /// Unlike <see cref="Fixed"/>, a sticky header keeps the room it occupies in the layout, so nothing has to
+    /// be reserved for it at the top of the page - it only starts covering the content once the scroll has
+    /// carried that content up to it. It requires an ancestor that scrolls (commonly the page itself) and no
+    /// ancestor with an overflow other than visible.
     /// <br />
     /// It is the position of last resort: both <see cref="Fixed"/> and <see cref="Absolute"/> take precedence over it.
     /// </remarks>
@@ -647,6 +648,12 @@ public partial class BitHeader : BitComponentBase
         {
             await _js.BitHeadersDispose(_attachedId);
 
+            // The component can go away while that call is in flight, and its own disposal has released
+            // the reference and taken the listeners off the element by the time this resumes. Going on
+            // from here would hand the script a disposed reference and leave behind a registration that
+            // nothing is left to dispose.
+            if (IsDisposed) return;
+
             _attachedId = null;
             _attachedSignature = null;
         }
@@ -656,6 +663,20 @@ public partial class BitHeader : BitComponentBase
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
             await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding);
+
+            if (IsDisposed)
+            {
+                try
+                {
+                    // The disposal of the component may have run its own cleanup before the setup above
+                    // came back, in which case the registration just made is the one it could not see.
+                    // Disposing an id that is not registered anymore is a no-op, so this is safe either way.
+                    await _js.BitHeadersDispose(_Id);
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
+
+                return;
+            }
 
             // The flags are only moved once the interop call has gone through, so a call that failed
             // leaves them as they were and the next render tries to set the listener up again.

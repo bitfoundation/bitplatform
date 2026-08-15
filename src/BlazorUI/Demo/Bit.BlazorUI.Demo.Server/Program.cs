@@ -2,8 +2,13 @@
 
 builder.Configuration.AddClientConfigurations();
 
-// UseUrls overrides --urls and ASPNETCORE_URLS, so only apply the debug defaults when no url is provided.
-if (BuildConfiguration.IsDebug() && builder.Configuration["urls"] is null)
+// UseUrls overrides the urls and the http(s)_ports configuration alike, however they were provided
+// (--urls / --http-ports on the command line, ASPNETCORE_URLS / ASPNETCORE_HTTP(S)_PORTS in the
+// environment, launchSettings), so the debug defaults only apply when none of them is set.
+if (BuildConfiguration.IsDebug() &&
+    builder.Configuration["urls"] is null &&
+    builder.Configuration["http_ports"] is null &&
+    builder.Configuration["https_ports"] is null)
 {
     // The following line (using the * in the URL), allows the emulators and mobile devices to access the app using the host IP address.
     if (OperatingSystem.IsWindows())

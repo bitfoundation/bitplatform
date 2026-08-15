@@ -39,9 +39,15 @@ namespace BitBlazorUI {
             // leaving the header without a scroller at all.
             const resolveTarget = (): HTMLElement | Window => {
                 if (scrollTarget) {
-                    const found = document.querySelector(scrollTarget);
+                    // A selector that is not valid CSS makes querySelector throw rather than return
+                    // nothing, and this runs again on every resize and every layout change, so a typo in
+                    // the parameter would otherwise break the setup and then every re-resolution after it.
+                    // It is treated as the selector that matched nothing it is.
+                    try {
+                        const found = document.querySelector(scrollTarget);
 
-                    if (found) return found as HTMLElement;
+                        if (found) return found as HTMLElement;
+                    } catch { }
                 }
 
                 return Headers.scrollParent(element);

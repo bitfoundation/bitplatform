@@ -185,7 +185,7 @@ public partial class BitHeaderDemo
             Name = "Sticky",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the header with a sticky position at the top of the viewport. Unlike Fixed, it stays in the normal flow, so it never overlaps the content.",
+            Description = "Renders the header with a sticky position at the top of the viewport. Unlike Fixed, it keeps the room it occupies in the layout, so nothing has to be reserved for it, and it only covers the content once that content scrolls up to it.",
         },
         new()
         {

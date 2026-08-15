@@ -175,11 +175,15 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitHeader);
 
+        // The three positions decide whether the header is pinned to the top of the screen, which is what
+        // the safe area inset added to an explicit Height keys off, so each of them resets the styles as
+        // well as the classes.
         if (Absolute.HasValue && bitHeader.HasNotBeenSet(nameof(Absolute)))
         {
             bitHeader.Absolute = Absolute.Value;
 
             bitHeader.ClassBuilder.Reset();
+            bitHeader.StyleBuilder.Reset();
         }
 
         if (Alignment.HasValue && bitHeader.HasNotBeenSet(nameof(Alignment)))
@@ -234,6 +238,7 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.Fixed = Fixed.Value;
 
             bitHeader.ClassBuilder.Reset();
+            bitHeader.StyleBuilder.Reset();
         }
 
         if (Gap is not null && bitHeader.HasNotBeenSet(nameof(Gap)))
@@ -315,6 +320,7 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.Sticky = Sticky.Value;
 
             bitHeader.ClassBuilder.Reset();
+            bitHeader.StyleBuilder.Reset();
         }
 
         if (Styles is not null && bitHeader.HasNotBeenSet(nameof(Styles)))
