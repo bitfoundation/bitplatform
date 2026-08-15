@@ -485,7 +485,7 @@ private async Task GoTo()
     }
 
     .thumb-button-current {
-        border-color: dodgerblue;
+        border-color: var(--bit-clr-pri);
     }
 </style>
 

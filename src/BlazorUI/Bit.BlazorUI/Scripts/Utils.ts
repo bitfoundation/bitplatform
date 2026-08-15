@@ -176,7 +176,8 @@
         // preventDefault directive because that one goes through a delegated listener the browser
         // treats as passive, which makes preventing a wheel a no-op before net10.0. Calling it again
         // updates the active flag in place, so no separate unregister call is needed - the listener
-        // is garbage-collected with the element itself.
+        // is garbage-collected with the element itself. An element that never turns the suppression
+        // on gets no listener at all, since a non-passive wheel listener is not free to the browser.
         public static registerPreventWheel(element: HTMLElement, active: boolean) {
             if (!element) return;
 
@@ -184,6 +185,7 @@
                 const el = element as any;
                 el.__bitPreventWheel = active;
 
+                if (active === false) return;
                 if (el.__bitPreventWheelRegistered) return;
                 el.__bitPreventWheelRegistered = true;
 
