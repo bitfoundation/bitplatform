@@ -238,8 +238,10 @@
         <div>
             <b>StickyHeader</b>, <b>StickyFooter</b>, <b>StickyNavPanel</b> and <b>StickyAside</b> pin a section in place while
             the rest of the page scrolls past it. Sticky positioning keeps the sections in the normal flow, so they never
-            overlap the content and need no room reserved for them; it does need a scrolling ancestor (the box below, or the
-            page itself) and no ancestor with an overflow other than visible. The two panels are pinned <b>HeaderHeight</b>
+            overlap the content and need no room reserved for them; it does need a scrolling ancestor to stick within (the box
+            below, or the page itself). That container is the one that scrolls, so it is free to carry an <b>overflow</b> of its
+            own - what breaks the stickiness is an ancestor <i>between</i> it and the sticky section setting an overflow other
+            than visible, which turns that inner element into the scroll container instead. The two panels are pinned <b>HeaderHeight</b>
             pixels from the top, which is what keeps them clear of a sticky header, and each is given the rest of the viewport
             with its own scrollbar so a panel taller than the screen stays reachable. Scroll the box to see it.
         </div>

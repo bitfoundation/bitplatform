@@ -299,7 +299,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Main, builder => builder.AddMarkupContent(1, "<div>Main</div>"));
         });
 
-        Assert.IsTrue(component.Find(".bit-lyt-mcn").GetAttribute("style")!.Contains("width:calc(100% - 250px)"));
+        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 250px)");
     }
 
     [TestMethod]
@@ -314,7 +314,7 @@ public class BitLayoutTests : BunitTestContext
             parameters.Add<RenderFragment>(p => p.Aside, builder => builder.AddMarkupContent(2, "<div>Aside</div>"));
         });
 
-        Assert.IsTrue(component.Find(".bit-lyt-mcn").GetAttribute("style")!.Contains("width:calc(100% - 400px)"));
+        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 400px)");
     }
 
     [TestMethod]
@@ -331,7 +331,7 @@ public class BitLayoutTests : BunitTestContext
         });
 
         // Only the aside is left to reserve room for.
-        Assert.IsTrue(component.Find(".bit-lyt-mcn").GetAttribute("style")!.Contains("width:calc(100% - 150px)"));
+        StringAssert.Contains(component.Find(".bit-lyt-mcn").GetAttribute("style")!, "width:calc(100% - 150px)");
     }
 
     [TestMethod]
@@ -498,8 +498,8 @@ public class BitLayoutTests : BunitTestContext
 
         // The heights are handed down as custom properties, so the header height is also readable by the
         // sticky panels that pin themselves at that offset.
-        Assert.IsTrue(style.Contains("--bit-lyt-hdr-h:64px"));
-        Assert.IsTrue(style.Contains("--bit-lyt-ftr-h:40px"));
+        StringAssert.Contains(style, "--bit-lyt-hdr-h:64px");
+        StringAssert.Contains(style, "--bit-lyt-ftr-h:40px");
     }
 
     [TestMethod]
@@ -513,8 +513,8 @@ public class BitLayoutTests : BunitTestContext
 
         var style = component.Find(".bit-lyt").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("--bit-lyt-gap:1rem"));
-        Assert.IsTrue(style.Contains("--bit-lyt-pad:16px 24px"));
+        StringAssert.Contains(style, "--bit-lyt-gap:1rem");
+        StringAssert.Contains(style, "--bit-lyt-pad:16px 24px");
     }
 
     [TestMethod]
@@ -662,14 +662,14 @@ public class BitLayoutTests : BunitTestContext
         Assert.IsTrue(aside.ClassList.Contains("custom-aside"));
         Assert.IsTrue(footer.ClassList.Contains("custom-footer"));
 
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
-        Assert.IsTrue(skip.GetAttribute("style")!.Contains("font-weight: bold"));
-        Assert.IsTrue(header.GetAttribute("style")!.Contains("tomato"));
-        Assert.IsTrue(main.GetAttribute("style")!.Contains("height: 10rem"));
-        Assert.IsTrue(nav.GetAttribute("style")!.Contains("yellow"));
-        Assert.IsTrue(mainContent.GetAttribute("style")!.Contains("padding: 4px"));
-        Assert.IsTrue(aside.GetAttribute("style")!.Contains("teal"));
-        Assert.IsTrue(footer.GetAttribute("style")!.Contains("blue"));
+        StringAssert.Contains(root.GetAttribute("style")!, "color: red");
+        StringAssert.Contains(skip.GetAttribute("style")!, "font-weight: bold");
+        StringAssert.Contains(header.GetAttribute("style")!, "tomato");
+        StringAssert.Contains(main.GetAttribute("style")!, "height: 10rem");
+        StringAssert.Contains(nav.GetAttribute("style")!, "yellow");
+        StringAssert.Contains(mainContent.GetAttribute("style")!, "padding: 4px");
+        StringAssert.Contains(aside.GetAttribute("style")!, "teal");
+        StringAssert.Contains(footer.GetAttribute("style")!, "blue");
     }
 
     [TestMethod]
@@ -685,8 +685,8 @@ public class BitLayoutTests : BunitTestContext
 
         var style = component.Find(".bit-lyt-mcn").GetAttribute("style")!;
 
-        Assert.IsTrue(style.Contains("width:calc(100% - 250px)"));
-        Assert.IsTrue(style.Contains("padding: 4px"));
+        StringAssert.Contains(style, "width:calc(100% - 250px)");
+        StringAssert.Contains(style, "padding: 4px");
     }
 
     [TestMethod]
@@ -745,7 +745,7 @@ public class BitLayoutTests : BunitTestContext
         var root = component.Find(".bit-lyt");
 
         Assert.IsTrue(root.ClassList.Contains("custom-class"));
-        Assert.IsTrue(root.GetAttribute("style")!.Contains("color: red"));
+        StringAssert.Contains(root.GetAttribute("style")!, "color: red");
     }
 
     [TestMethod]
