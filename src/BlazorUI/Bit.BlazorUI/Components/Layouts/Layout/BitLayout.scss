@@ -191,6 +191,7 @@
     overscroll-behavior: contain;
     z-index: var(--bit-lyt-zin);
     top: var(--bit-lyt-hdr-h, 0px);
+    max-height: calc(100vh - var(--bit-lyt-hdr-h, 0px));
     max-height: calc(100dvh - var(--bit-lyt-hdr-h, 0px));
 }
 
@@ -199,6 +200,7 @@
 .bit-lyt-fhp.bit-lyt-sas > .bit-lyt-man > .bit-lyt-asd {
     top: 0;
     align-self: start;
+    max-height: 100vh;
     max-height: 100dvh;
 }
 

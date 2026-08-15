@@ -5,17 +5,19 @@ public partial class BitLayoutDemo
     private readonly string example1RazorCode = @"
 <style>
     .header,
-    .footer,
-    .nav-panel,
-    .aside {
+    .footer {
         padding: 0.5rem;
+        box-sizing: border-box;
         border: 1px solid gray;
     }
 
-    .main {
+    .nav-panel,
+    .main,
+    .aside {
         width: 100%;
         height: 100%;
         padding: 0.5rem;
+        box-sizing: border-box;
         border: 1px solid gray;
     }
 

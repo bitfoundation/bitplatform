@@ -803,6 +803,7 @@ public class BitLayoutTests : BunitTestContext
         Assert.IsFalse(layouts[1].ClassList.Contains("bit-lyt-brd"));
         Assert.IsTrue(layouts[1].ClassList.Contains("bit-lyt-flh"));
         StringAssert.Contains(layouts[1].GetAttribute("style")!, "--bit-lyt-gap:2rem");
+        StringAssert.Contains(layouts[1].GetAttribute("style")!, "--bit-lyt-zin:3");
         Assert.AreEqual("Own skip", layouts[1].QuerySelector(".bit-lyt-skp")!.TextContent.Trim());
         Assert.AreEqual("Own nav", layouts[1].QuerySelector(".bit-lyt-nmn")!.GetAttribute("aria-label"));
         Assert.AreEqual("Cascaded aside", layouts[1].QuerySelector(".bit-lyt-asd")!.GetAttribute("aria-label"));
