@@ -26,7 +26,6 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddScoped<ThemeService>();
             services.AddScoped<CultureService>();
-            services.AddScoped<AppAccentColorService>();
             services.AddScoped<LazyAssemblyLoader>();
             services.AddScoped<SignInModalService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -76,8 +75,12 @@ public static partial class IClientCoreServiceCollectionExtensions
             //#if (brouter == true)
             services.AddBitBrouterServices();
             //#endif
-            services.AddBitBlazorUIServices();
-            services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid);
+
+            services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid, accentColor: options =>
+            {
+                options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
+                options.Persistence = BitAccentColorPersistence.All;
+            });
 
             // Read HttpMessageHandlersChainFactory comments for more info.
             services.AddScoped<HttpMessageHandlersChainFactory>(serviceProvider => transportHandler =>

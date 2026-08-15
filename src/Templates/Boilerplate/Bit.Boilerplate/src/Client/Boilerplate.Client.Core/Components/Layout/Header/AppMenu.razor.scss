@@ -36,6 +36,13 @@
         }
     }
 
+    .accent-color-switcher {
+        width: 100%;
+        padding: 0 8px;
+        --bit-acs-gap: 8px;
+        --bit-acs-size: 20px;
+    }
+
     .menu-icon {
         width: 32px;
         height: 32px;
