@@ -1,28 +1,536 @@
-﻿@page "/components/header"
+@page "/components/header"
 
 <PageOutlet Url="components/header"
             Title="Header"
-            Description="The BitHeader component is used to display a title (and possibly other components) in a colored bar at the top of a site or application." />
+            Description="The BitHeader component renders the bar at the top of a site or an application, with theme colors, variants, sizes, alignment, wrapping, spacing, pinned positioning and scroll driven reveal and elevation." />
 
 <DemoPage Name="Header"
-          Description="The BitHeader component is used to display a title (and possibly other components) in a colored bar at the top of a site or application. For the background color it uses the current primary background color."
+          Description="The BitHeader component renders a bar at the top of a site or an application, holding whatever belongs there: a brand, a navigation toggle, a search box or a row of account actions. It renders a semantic header element - the banner landmark of the page - and lays its content out in a horizontal line whose color, variant, size, alignment, wrapping, gutters, spacing and maximum width are all parameters. It can stay in the flow or be pinned to the top of the viewport, hiding itself while the page is scrolled down, lifting itself off the content once the page has left its top, or sliding out of the way on demand - and it carries the accessibility a pinned bar owes its users, from the skip link past it to the room it reserves so nothing scrolled to lands underneath it."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           GitHubUrl="Layouts/Header/BitHeader.razor"
           GitHubDemoUrl="Layouts/Header/BitHeaderDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>The header renders its content in a bar that is as tall as that content plus the paddings of its size. The <b>Height</b> parameter pins it to an exact height in pixels instead.</div>
+        <br />
         <div class="container">
             <BitHeader>I'm a Header</BitHeader>
         </div>
-    </DemoExample>
-    <DemoExample Title="Usage" RazorCode="@example2RazorCode" Id="example2">
+        <br />
         <div class="container">
-            <BitHeader Style="gap: 1rem;">
+            <BitHeader Height="80">I'm a Header with a fixed 80px height</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader IsEnabled="false">I'm a disabled Header</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Variant" RazorCode="@example2RazorCode" Id="example2">
+        <div>
+            The variant decides how the color of the header is painted: <b>Fill</b> (the default) uses it as the background,
+            <b>Outline</b> keeps the background transparent and draws a border in it, and <b>Text</b> keeps the background
+            transparent with no border, which lets the page show through the header.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Variant="BitVariant.Fill" Color="BitColor.Info">Fill</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Variant="BitVariant.Outline" Color="BitColor.Info">Outline</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Variant="BitVariant.Text" Color="BitColor.Info">Text</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Alignment" RazorCode="@example3RazorCode" Id="example3">
+        <div>
+            The content of the header is a horizontal flex line, and <b>Alignment</b> decides how the free space of
+            that line is shared. <b>SpaceBetween</b> is the classic app bar: a brand on one edge and the account actions
+            on the other. <b>Baseline</b> and <b>Stretch</b> distribute nothing, so those two align the content on the
+            cross axis instead of the horizontal one.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.Start" Bordered>
+                <BitTag Text="Start" />
+                <BitTag Text="of" />
+                <BitTag Text="the line" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.Center" Bordered>
+                <BitTag Text="Center" />
+                <BitTag Text="of" />
+                <BitTag Text="the line" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.End" Bordered>
+                <BitTag Text="End" />
+                <BitTag Text="of" />
+                <BitTag Text="the line" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.SpaceBetween" Bordered>
+                <BitTag Text="Space" />
+                <BitTag Text="between" />
+                <BitTag Text="the items" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.SpaceAround" Bordered>
+                <BitTag Text="Space" />
+                <BitTag Text="around" />
+                <BitTag Text="the items" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Alignment="BitAlignment.SpaceEvenly" Bordered>
+                <BitTag Text="Space" />
+                <BitTag Text="evenly" />
+                <BitTag Text="around the items" />
+            </BitHeader>
+        </div>
+        <br /><br />
+        <div>
+            <b>VerticalAlign</b> is the other axis: it decides where the content sits in the height of a header that is
+            taller than its content, which is what a header with an explicit <b>Height</b> or a stretched neighbour
+            needs. It is centered by default, and the three space distributions have no meaning here.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Height="72" Bordered VerticalAlign="BitAlignment.Start">
+                <BitTag Text="Top of the header" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Height="72" Bordered VerticalAlign="BitAlignment.Center">
+                <BitTag Text="Middle of the header" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Height="72" Bordered VerticalAlign="BitAlignment.End">
+                <BitTag Text="Bottom of the header" />
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Wrap" RazorCode="@example4RazorCode" Id="example4">
+        <div>
+            The content of the header is a single line by default, which squeezes every item once there is not enough
+            room for all of them. <b>Wrap</b> lets it break onto more lines instead, so a header that holds a brand, a
+            set of navigation links and a row of actions stays readable on a narrow screen. The lines are separated by
+            the row part of <b>Gap</b> and packed by <b>VerticalAlign</b>.
+        </div>
+        <br />
+        <div class="container wrap-demo">
+            <BitHeader Bordered Gap="0.25rem 0.5rem">
+                @for (var i = 1; i <= 8; i++)
+                {
+                    <BitTag Text="@($"No wrap {i}")" />
+                }
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container wrap-demo">
+            <BitHeader Bordered Wrap Gap="0.25rem 0.5rem" Alignment="BitAlignment.Center">
+                @for (var i = 1; i <= 8; i++)
+                {
+                    <BitTag Text="@($"Wrapped {i}")" />
+                }
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Border & elevation" RazorCode="@example5RazorCode" Id="example5">
+        <div>
+            <b>Bordered</b> draws a divider on the bottom edge of the header, and <b>Elevated</b> casts a shadow
+            downwards. Both separate the header from the content below it, which matters most when the header is pinned
+            over that content: a border is the flatter, quieter option and the shadow reads as the header floating above
+            the page.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered>Bordered</BitHeader>
+        </div>
+        <br />
+        <br />
+        <div class="container">
+            <BitHeader Elevated>Elevated</BitHeader>
+        </div>
+        <br />
+        <br />
+        <div class="container">
+            <BitHeader Bordered Elevated Color="BitColor.Tertiary" Variant="BitVariant.Outline">Bordered & Elevated</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gutter" RazorCode="@example6RazorCode" Id="example6">
+        <div>
+            The content of the header sits in a container with paddings around it (the gutter). <b>NoGutter</b> removes
+            them, so the content can run edge to edge - for a full width progress bar, a toolbar of buttons or any content
+            bringing its own spacing.
+        </div>
+        <br />
+        <div>With the default gutter:</div>
+        <div class="container">
+            <BitHeader Bordered>With the default gutter</BitHeader>
+        </div>
+        <br />
+        <div>NoGutter:</div>
+        <div class="container">
+            <BitHeader Bordered NoGutter>
+                <BitProgress Percent="60" />
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gap" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            The children of the header sit right next to each other by default. <b>Gap</b> puts space between them,
+            and it takes any CSS length (or the two value form of the gap shorthand) - so the same header works for a
+            tight row of icon buttons and for a widely spaced set of navigation links.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered>
+                <BitTag Text="No" />
+                <BitTag Text="gap" />
+                <BitTag Text="at all" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered Gap="0.5rem">
+                <BitTag Text="A" />
+                <BitTag Text="0.5rem" />
+                <BitTag Text="gap" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered Gap="2rem" Alignment="BitAlignment.Center">
+                <BitTag Text="A" />
+                <BitTag Text="2rem" />
+                <BitTag Text="gap" />
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Max width" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>MaxWidth</b> caps the content of the header and centers it, while the header itself keeps spanning
+            the full width - its background, its border and its shadow still run edge to edge. It is what lines a
+            bar up with a page body that is centered in a column of the same width, which is the layout of nearly
+            every documentation and marketing site. It takes any CSS length.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered Color="BitColor.SecondaryBackground" Alignment="BitAlignment.SpaceBetween">
+                <BitTag Text="Full width content" />
+                <BitTag Text="Edge to edge" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered MaxWidth="24rem" Color="BitColor.SecondaryBackground" Alignment="BitAlignment.SpaceBetween">
+                <BitTag Text="Capped at 24rem" />
+                <BitTag Text="And centered" />
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Position" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            <b>Sticky</b> keeps the header in the flow but pins it to the top of the scrolling area once its own place in
+            the content has been passed, so it never covers anything. <b>Fixed</b> takes it out of the flow and anchors it
+            to the top of the page, which does overlap the content: reserve room for it at the start of the page.
+            <b>Absolute</b> is that same overlap scoped to a box - the header of a card, a panel or a dialog - and it needs
+            an ancestor with a position of its own to pin itself to. Only one position can win, and Fixed beats Absolute,
+            which beats Sticky.
+        </div>
+        <br />
+        <div>
+            The two that really sit at the top of the screen, Fixed and Sticky, also add the top safe area inset of the
+            device, so the header never lands under a status bar or a notch - and an explicit <b>Height</b> grows by that
+            inset instead of losing part of itself to it.
+        </div>
+        <br />
+        <div>Sticky (scroll inside the box):</div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Bordered Color="BitColor.SecondaryBackground">I'm a sticky Header</BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+        <br />
+        <br />
+        <div>Fixed (scoped to the box below for the sake of the demo):</div>
+        <br />
+        <div class="fixed-demo">
+            <BitHeader Fixed Elevated Color="BitColor.Primary">I'm a fixed Header</BitHeader>
+            <div class="scroll-demo-row scroll-demo-row--offset">The fixed header covers the top of its page.</div>
+        </div>
+        <br />
+        <br />
+        <div>Absolute (pinned to the top of the box that holds it, with no scoping trick needed):</div>
+        <br />
+        <div class="absolute-demo">
+            <BitHeader Absolute Bordered Color="BitColor.TertiaryBackground">I'm an absolute Header</BitHeader>
+            <div class="scroll-demo-row scroll-demo-row--offset">The absolute header covers the top of its container.</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Reveal" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>Reveal</b> hides a pinned header while the scroll goes down and slides it back in as soon as the scroll goes
+            up, so it gives the content the whole viewport while the user is reading and returns the moment they look for
+            it. It is always revealed at the very top of the scrolling area, and it needs <b>Fixed</b> or <b>Sticky</b> to
+            have anything to slide over. The <b>OnRevealChanged</b> callback reports every flip of that state, and the
+            read-only <b>IsRevealed</b> member holds it. A header that hides itself never strands a keyboard user either:
+            it comes back as soon as anything inside it takes the focus.
+        </div>
+        <br />
+        <div>Scroll inside the box to hide and reveal the header: <b>@(isHeaderRevealed ? "revealed" : "hidden")</b></div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Reveal Elevated
+                       Color="BitColor.Primary"
+                       Alignment="BitAlignment.Center"
+                       OnRevealChanged="v => isHeaderRevealed = v">
+                I hide myself while you scroll down
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+        <br />
+        <br />
+        <div>
+            <b>RevealOffset</b> holds the header in place until the scroll has travelled that many pixels from the top,
+            which keeps it from flickering away on a scroll that has barely started:
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Reveal Elevated
+                       RevealOffset="100"
+                       Color="BitColor.Tertiary"
+                       Alignment="BitAlignment.Center">
+                I stay until you scroll past 100px
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Elevate on scroll" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <div>
+            A pinned header that is shadowed from the start looks detached from a page that has not moved yet.
+            <b>ElevateOnScroll</b> keeps it flat while the scrolling area sits at its top and fades the shadow in the
+            moment content starts passing underneath it, which is the whole "you are no longer at the top" signal in one
+            parameter. <b>ElevateOffset</b> decides how far the scroll has to travel first, and <b>Elevated</b> takes
+            precedence: a header that is always lifted has nothing left to gain from a scroll.
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky ElevateOnScroll Color="BitColor.PrimaryBackground">I gain my shadow once you scroll</BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+        <br />
+        <br />
+        <div>
+            The <b>OnScrolledChanged</b> callback reports the same flip, and the read-only <b>IsScrolled</b> member holds
+            it - which is what a header that has to do more than cast a shadow at that moment hooks into. Here it shrinks
+            the header and swaps its title for a compact one:
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky ElevateOnScroll
+                       ElevateOffset="40"
+                       Color="BitColor.PrimaryBackground"
+                       Height="@(isHeaderScrolled ? 48 : 80)"
+                       OnScrolledChanged="v => isHeaderScrolled = v">
+                <BitText Typography="@(isHeaderScrolled ? BitTypography.Subtitle2 : BitTypography.H5)">
+                    @(isHeaderScrolled ? "My App" : "My Awesome Application")
+                </BitText>
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Scroll target" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            Both scroll behaviors need to know which box is doing the scrolling, and the header finds it on its own
+            by walking up from itself - which covers the page and any pane it sits inside. <b>ScrollTarget</b> names
+            that box with a CSS selector instead, for the app shell layout where the bar and the scrolling content
+            are siblings rather than one inside the other. A selector that matches nothing falls back to the walk,
+            so a target rendered later never leaves the header without a scrolling area at all.
+        </div>
+        <br />
+        <div>The header below sits outside the scrolling pane, and reacts to it by name:</div>
+        <br />
+        <div class="split-demo">
+            <BitHeader Sticky ElevateOnScroll Bordered
+                       ScrollTarget="#header-scroll-pane"
+                       Color="BitColor.PrimaryBackground">
+                I react to the pane below me
+            </BitHeader>
+            <div id="header-scroll-pane" class="split-demo-pane">
+                @for (var i = 1; i <= 12; i++)
+                {
+                    <div class="scroll-demo-row">Row @i</div>
+                }
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Hidden" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>Hidden</b> is the programmatic counterpart of Reveal: the header slides away because the application says
+            so rather than because the page is being scrolled, which is what a distraction free reading mode or a full
+            screen media view needs. Unlike <b>Visibility</b>, which switches the header off at once, it animates in and
+            out and keeps the room the header occupies. A hidden header is also marked <b>inert</b>, so none of its
+            buttons can be clicked or reached with the keyboard while it is out of the view.
+        </div>
+        <br />
+        <div class="fixed-demo">
+            <BitHeader Fixed Elevated
+                       Gap="0.5rem"
+                       Color="BitColor.Primary"
+                       Hidden="@isImmersiveMode"
+                       Alignment="BitAlignment.SpaceBetween"
+                       AriaLabel="Reader actions">
+                <span>Chapter 3</span>
+                <BitButton Size="BitSize.Small" Variant="BitVariant.Text">Contents</BitButton>
+            </BitHeader>
+            <div class="scroll-demo-row scroll-demo-row--offset">
+                <BitToggleButton @bind-IsChecked="isImmersiveMode" OnText="Leave immersive mode" OffText="Enter immersive mode" />
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Translucent" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <b>Translucent</b> softens the background of the header and blurs what passes behind it, so a pinned header
+            hints at the content it covers instead of cutting it off - the frosted glass of a native mobile bar. Only the
+            Fill variant has a background to soften.
+        </div>
+        <br />
+        <div class="translucent-demo">
+            <BitHeader Sticky Translucent Bordered Color="BitColor.PrimaryBackground">I'm a translucent Header</BitHeader>
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="scroll-demo-row">Content behind the header - row @i</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accessibility" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            The header renders a semantic <b>header</b> element, which the browser exposes as the <b>banner</b> landmark
+            of the page - the region screen reader users jump to for the brand, the global navigation and the account
+            actions. That mapping only holds while the element is not nested in an article, aside, main, nav or section,
+            so a page level header belongs outside of them.
+        </div>
+        <br />
+        <div>
+            A page is meant to expose that landmark once, so a second header (a toolbar, a bar that belongs to one pane)
+            needs an <b>AriaLabel</b> to tell the two apart when they are listed. There is no need to spell out the word
+            header in that label - the role is announced already.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader AriaLabel="Editor actions" Alignment="BitAlignment.End" Gap="0.5rem" Bordered>
+                <BitButton Variant="BitVariant.Text">Discard</BitButton>
+                <BitButton>Save</BitButton>
+            </BitHeader>
+        </div>
+        <br /><br />
+        <div>
+            A header is also the block of links every keyboard user has to walk through before they reach anything they
+            came for. <b>SkipLinkHref</b> renders the shortcut past it (WCAG 2.4.1, Bypass Blocks) as the very first
+            focusable element of the header, out of sight until it is focused, so it costs a sighted user nothing.
+            <b>SkipLinkText</b> changes its wording. Give the target a <b>tabindex="-1"</b> so the browser really moves
+            the focus there instead of only scrolling to it.
+        </div>
+        <br />
+        <div>Click the header below and press Tab to bring the skip link into view:</div>
+        <br />
+        <div class="container">
+            <BitHeader SkipLinkHref="#header-skip-target" Gap="0.5rem" Bordered>
+                <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" Title="Open navigation" />
+                <BitText Typography="BitTypography.Subtitle2">My Awesome App</BitText>
+            </BitHeader>
+        </div>
+        <div id="header-skip-target" tabindex="-1" class="skip-target">The skip link lands here.</div>
+        <br /><br />
+        <div>
+            A pinned header also covers the top of the content, so anything the browser scrolls into view - a
+            control that has just taken the focus, the target of an anchor, a call to scrollIntoView - stops with
+            that thing hidden behind the bar (WCAG 2.4.11, Focus Not Obscured). <b>ScrollPadding</b> reserves the
+            height of the header at the top of the scrolling area, which is what makes those scrolls stop short of
+            it, and it keeps that reservation in step while the header changes size.
+        </div>
+        <br />
+        <div>Click the first button of each box and hold Tab to walk down it:</div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Elevated Color="BitColor.Error" AriaLabel="Without scroll padding">
+                Without ScrollPadding - the focus lands under me
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row"><BitButton Variant="BitVariant.Text">Button @i</BitButton></div>
+            }
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Elevated ScrollPadding Color="BitColor.Success" AriaLabel="With scroll padding">
+                With ScrollPadding - the focus stops below me
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row"><BitButton Variant="BitVariant.Text">Button @i</BitButton></div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Usage" RazorCode="@example16RazorCode" Id="example16">
+        <div>A complete application header: a navigation toggle and a brand on one side, the account actions on the other, with a BitSpacer pushing the two groups apart.</div>
+        <br />
+        <div class="container">
+            <BitHeader Gap="1rem">
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.GlobalNavButton" Title="Open Navigation" />
                 <BitText Typography="BitTypography.Caption1">My Awesome App</BitText>
                 <BitSpacer />
                 <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Contact" Title="Sign in" />
                 <BitMenuButton TItem="BitMenuButtonOption"
-                               ChevronDownIcon="@BitIconName.More"
+                               ChevronDownIconName="@BitIconName.More"
                                Variant="BitVariant.Text"
                                title="See more"
                                Styles="@(new() { OperatorButton = "padding: 0.5rem;" })">
@@ -30,6 +538,141 @@
                     <BitMenuButtonOption Text="About" IconName="@BitIconName.Info" />
                     <BitMenuButtonOption Text="Feedback" IconName="@BitIconName.Feedback" />
                 </BitMenuButton>
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            The general colors of the theme are all available, and each of them works with every variant. Without a color
+            the header keeps the primary background and foreground of the theme, which is what a page level header usually wants.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Primary">Primary</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Secondary">Secondary</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Tertiary">Tertiary</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Info">Info</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Success">Success</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Warning">Warning</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.SevereWarning">SevereWarning</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.Error">Error</BitHeader>
+        </div>
+        <br /><br />
+        <div class="container">
+            <BitHeader Color="BitColor.PrimaryBackground">PrimaryBackground</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.SecondaryBackground">SecondaryBackground</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.TertiaryBackground">TertiaryBackground</BitHeader>
+        </div>
+        <br /><br />
+        <div class="container">
+            <BitHeader Color="BitColor.PrimaryForeground">PrimaryForeground</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.SecondaryForeground">SecondaryForeground</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.TertiaryForeground">TertiaryForeground</BitHeader>
+        </div>
+        <br /><br />
+        <div class="container">
+            <BitHeader Color="BitColor.PrimaryBorder" Variant="BitVariant.Outline">PrimaryBorder</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.SecondaryBorder" Variant="BitVariant.Outline">SecondaryBorder</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Color="BitColor.TertiaryBorder" Variant="BitVariant.Outline">TertiaryBorder</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
+        <div>The size sets the paddings around the content, which is what makes a header compact or roomy when its height is left to the content.</div>
+        <br />
+        <div class="container">
+            <BitHeader Size="BitSize.Small" Bordered>Small</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Size="BitSize.Medium" Bordered>Medium</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Size="BitSize.Large" Bordered>Large</BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
+        <div>
+            <b>Style</b> and <b>Class</b> reach the root element of the header, while <b>Styles</b> and <b>Classes</b> reach
+            each of its parts by name - the root, the container that holds the content, and the skip link.
+        </div>
+        <br /><br />
+        <div>Component's Style & Class:</div>
+        <br />
+        <div class="container">
+            <BitHeader Style="background: linear-gradient(90deg, #7e57c2, #26c6da); color: white;">Styled Header</BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Class="custom-class">Classed Header</BitHeader>
+        </div>
+        <br /><br />
+        <div><b>Styles</b> & <b>Classes</b>:</div>
+        <br />
+        <div class="container">
+            <BitHeader Styles="@(new() { Root = "border-block-end: 2px dashed tomato;",
+                                         Container = "justify-content: center; font-weight: bold; color: tomato;" })">
+                Styles
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Classes="@(new() { Root = "custom-root", Container = "custom-container" })">
+                Classes
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
+        <div>Use the <b>Dir</b> parameter to change the direction of the header, which flips the alignment of its content and the side its paddings sit on.</div>
+        <br />
+        <div class="container">
+            <BitHeader Dir="BitDir.Rtl" Alignment="BitAlignment.SpaceBetween" Bordered>
+                <BitTag Text="یک" />
+                <BitTag Text="دو" />
+                <BitTag Text="سه" />
             </BitHeader>
         </div>
     </DemoExample>
