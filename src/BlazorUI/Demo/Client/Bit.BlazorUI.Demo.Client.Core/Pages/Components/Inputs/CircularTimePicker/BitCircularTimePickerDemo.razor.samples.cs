@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
 
 public partial class BitCircularTimePickerDemo
 {
@@ -81,7 +81,9 @@ private BitCircularTimePickerView? changedView;";
 <BitCircularTimePicker Label=""Working hours only, on the half hour"" Standalone
                        AllowedHours=""@(h => h is >= 9 and <= 17)""
                        AllowedMinutes=""@(m => m is 0 or 30)""
-                       DefaultValue=""@(new TimeSpan(9, 0, 0))"" />";
+                       DefaultValue=""@(new TimeSpan(9, 0, 0))"" />
+
+<BitCircularTimePicker Label=""Later today only"" Standalone DisablePast />";
 
     private readonly string example8RazorCode = @"
 <BitCircularTimePicker Label=""Now & Clear"" ShowNowButton ShowClearButton Placeholder=""Select a time"" />
@@ -202,6 +204,15 @@ private TimeSpan? readOnlyTime = new(2, 50, 0);";
     <IconTemplate>
         <img src=""https://img.icons8.com/fluency/2x/clock.png"" width=""24"" height=""24"" />
     </IconTemplate>
+</BitCircularTimePicker>
+
+<BitCircularTimePicker Label=""Custom callout header & footer"" Placeholder=""Select a time"">
+    <CalloutHeaderTemplate>
+        <div style=""padding:0.5rem"">Pick a time</div>
+    </CalloutHeaderTemplate>
+    <CalloutFooterTemplate>
+        <div style=""padding:0.5rem"">Times are local</div>
+    </CalloutFooterTemplate>
 </BitCircularTimePicker>";
     private readonly string example16CsharpCode = @"
 private BitCircularTimePicker circularTimePicker = default!;

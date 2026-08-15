@@ -1,10 +1,15 @@
+@*+:cnd:noEmit*@
 @inherits AppComponentBase
 
 <section>
     <BitStack>
-        @if (adIsReady is false)
+        @if (adInitResult is null)
         {
             <BitRollingSquareLoading />
+        }
+        else if (adInitResult is not AdInitResult.Ready)
+        {
+            <BitMessage Color="BitColor.Warning">@Localizer[nameof(AppStrings.UpgradeAdNotAvailableMessage)]</BitMessage>
         }
         else if (adIsShown is false)
         {
@@ -25,11 +30,13 @@
             }
         }
 
+        @*#if (signalR == true)*@
         @if (showTroubleButton)
         {
             <BitButton OnClick="WrapHandled(HandleAdTrouble)">
                 @Localizer[nameof(AppStrings.UpgradeAdHaveTrouble)]
             </BitButton>
         }
+        @*#endif*@
     </BitStack>
 </section>

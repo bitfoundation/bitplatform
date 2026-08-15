@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+        <!-- The host owns the launch profile: this project is never started on its own. -->
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <!-- Publishes this project's wwwroot at the app root (not under _content/), the way a
+             Blazor Web App's client project is expected to contribute its static assets. That
+             is what lets the host document reference app.css / theme.js / site.js directly. -->
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Brouter\Bit.Brouter.csproj" />
+        <!-- Source generator: produces the typed BrouterRoutes URL builders from this project's
+             @page directives and <Broute> declarations (see Shared/Header.razor for usage). -->
+        <ProjectReference Include="..\..\Bit.Brouter.Generators\Bit.Brouter.Generators.csproj"
+                          OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

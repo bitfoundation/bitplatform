@@ -46,7 +46,7 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="8.0.29" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="9.0.18" />
-        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.10" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebView" Version="10.0.11" />
     </ItemGroup>
 
     <ItemGroup>
@@ -62,6 +62,17 @@
         <!-- Full library Styles tree for the reverse token-contract test: every mapper-emitted
              bit token (CSS custom property) must be declared or consumed somewhere in these stylesheets. -->
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <!-- The accent runtime client hardcodes the attribute, store and flag values that
+             BitAccentColorNames / BitAccentColorPersistence declare on the C# side; the two are wired
+             together by nothing but those literals, so BitAccentColorNamesContractTests reads the
+             TypeScript source itself to fail on a drift. BitTheme.ts rides along because the accent
+             cookie's max-age is documented to match the theme cookie's. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Components\AccentColorSwitcher\BitAccentColor.ts" Link="ts-sources\BitAccentColor.ts">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="..\..\Bit.BlazorUI\Utils\Theme\BitTheme.ts" Link="ts-sources\BitTheme.ts">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

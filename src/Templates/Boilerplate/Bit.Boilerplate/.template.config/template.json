@@ -547,8 +547,17 @@
                     "exclude": [
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
+                        "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",
+                        "src/Tests/Features/Identity/AccessTokenParsingTests.cs",
+                        "src/Tests/Features/Identity/IStorageServiceContractTests.cs",
                         "src/Tests/Infrastructure/Components/BitOtpInputUtils.cs",
                         "src/Tests/Features/Todo/OfflineTodoTests.cs",
+                        "src/Tests/Features/Urls/ODataQueryFilterTests.cs",
+                        "src/Tests/Features/Diagnostics/TelemetryScopeTests.cs",
+                        "src/Tests/Features/Diagnostics/LoggingConfigurationTests.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs",
+                        "src/Tests/Features/Ads/AdsServiceTests.cs",
+                        "src/Tests/Features/Configuration/ClientSettingsValidationTests.cs",
                         "src/Tests/Features/Identity/TrustedOriginsTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInTests.cs",
                         "src/Tests/Features/Identity/MagicLinkSignInUtils.cs",
@@ -570,13 +579,14 @@
                         "src/Tests/Features/Tenants/TenantInvitationIsolationTests.cs",
                         "src/Tests/Features/MinimalApiSample/IntegrationTests.cs",
                         "src/Tests/Features/Configuration/AppConfigurationBuilderTests.cs",
+                        "src/Tests/Features/Configuration/ServiceRegistrationTests.cs",
                         "src/Tests/Features/PubSub/PubSubServiceTests.cs",
                         "src/Tests/Features/Diagnostics/HealthCheckIntegrationTests.cs",
                         "src/Tests/Features/Attachments/UserProfilePictureWebPTests.cs",
                         "src/Tests/Features/WellKnown/AppleAppSiteAssociationTests.cs",
                         "src/Tests/Features/Theme/ThemeTogglePersistenceUITests.cs",
                         "src/Tests/Features/Culture/CultureSelectionUITests.cs",
-                        "src/Tests/Features/Identity/PhoneNumberNormalizationUITests.cs",
+                        "src/Tests/Features/Identity/PhoneNumberNormalizationTests.cs",
                         "src/Tests/Features/Identity/WebAuthnPasswordlessUITests.cs",
                         "src/Tests/Features/Identity/SigningKeyRotationTests.cs",
                         "src/Tests/Features/Identity/OpenIdConfigurationIntegrationTests.cs",
@@ -606,7 +616,8 @@
                 {
                     "condition": "(advancedTests != true || aspire != true)",
                     "exclude": [
-                        "src/Tests/Features/Identity/ExternalIdentityTests.cs"
+                        "src/Tests/Features/Identity/ExternalIdentityTests.cs",
+                        "src/Tests/Features/AppHost/**"
                     ]
                 },
                 {
@@ -620,7 +631,9 @@
                     // Tenant is the only `long Version` entity that exists without a module or signalR.
                     "condition": "(advancedTests != true || multitenant != true)",
                     "exclude": [
-                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs"
+                        "src/Tests/Features/Data/ConcurrencyTokenTests.cs",
+                        // The rule it pins - a tenant filtered body gets no client max-age - only exists under multitenant.
+                        "src/Tests/Features/Caching/ResponseCachePolicyClientCacheTests.cs"
                     ]
                 },
                 {
@@ -631,6 +644,8 @@
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelReadAloudUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs"
                     ]
@@ -727,7 +742,8 @@
                 {
                     "condition": "(appInsights != true)",
                     "exclude": [
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AppInsightsJsSdkService.cs",
+                        "src/Tests/Features/Diagnostics/AppInsightsReadinessTests.cs"
                     ]
                 },
                 {
@@ -753,7 +769,8 @@
                 {
                     "condition": "(aspire == false)",
                     "exclude": [
-                        "src/Server/Boilerplate.Server.AppHost/**"
+                        "src/Server/Boilerplate.Server.AppHost/**",
+                        "aspire.config.json"
                     ]
                 },
                 {
@@ -784,7 +801,8 @@
                         "src/Client/Boilerplate.Client.Core/Components/Pages/Settings/UpgradeAccountSection*.*",
                         "src/Client/Boilerplate.Client.Core/Scripts/Ads.ts",
                         "src/Client/Boilerplate.Client.Core/Infrastructure/Services/Contracts/IAdsService.cs",
-                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs"
+                        "src/Client/Boilerplate.Client.Core/Infrastructure/Services/AdsService.cs",
+                        "src/Tests/Features/Ads/AdsServiceTests.cs"
                     ]
                 },
                 {

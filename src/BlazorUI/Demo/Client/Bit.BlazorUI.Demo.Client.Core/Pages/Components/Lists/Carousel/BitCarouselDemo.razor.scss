@@ -71,7 +71,7 @@
     justify-content: center;
 }
 
-.thumb {
+.thumb-button {
     padding: 0;
     cursor: pointer;
     background: none;
@@ -86,7 +86,7 @@
     }
 }
 
-.thumb-current {
+.thumb-button-current {
     border-color: $bit-color-primary;
 }
 
@@ -94,6 +94,26 @@
     gap: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(rem2(220px), 1fr));
+}
+
+::deep .thumb-dot {
+    width: rem2(48px);
+    height: rem2(32px);
+    padding: 0;
+    opacity: 0.5;
+    overflow: hidden;
+    border-radius: rem2(4px);
+}
+
+::deep .thumb-dot-current {
+    opacity: 1;
+    outline: rem2(2px) solid $bit-color-primary;
+}
+
+::deep .thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 ::deep .custom-item {

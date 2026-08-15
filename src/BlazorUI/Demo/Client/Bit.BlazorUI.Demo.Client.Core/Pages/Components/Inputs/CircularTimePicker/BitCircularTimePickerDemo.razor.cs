@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePicker;
 
@@ -61,6 +61,20 @@ public partial class BitCircularTimePickerDemo
             Type = "string",
             DefaultValue = "Clock",
             Description = "Aria label for time picker popup for screen reader users."
+        },
+        new()
+        {
+            Name = "CalloutFooterTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the bottom of the callout, below everything it holds.",
+        },
+        new()
+        {
+            Name = "CalloutHeaderTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "Custom template to render at the top of the callout, above everything it holds.",
         },
         new()
         {
@@ -157,7 +171,7 @@ public partial class BitCircularTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the dial and the keyboard move the hour by. A step greater than 1 dims the hours in between."
+            Description = "The step, in hours, the dial and the keyboard move the hour by. A step greater than 1 lays a grid over the day that the pick snaps to, dimming the hours in between, starting at the hour of MinTime and at midnight where there is none."
         },
         new()
         {
@@ -257,7 +271,7 @@ public partial class BitCircularTimePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the dial and the keyboard move the minute by. A step greater than 1 snaps the pick to the nearest multiple of it."
+            Description = "The step, in minutes, the dial and the keyboard move the minute by. A step greater than 1 lays a grid over the hour that the pick snaps to, starting at the minute of MinTime and at the top of the hour where there is none."
         },
         new()
         {
@@ -272,6 +286,12 @@ public partial class BitCircularTimePickerDemo
             Type = "string",
             DefaultValue = "Now",
             Description = "The text of the button that sets the TimePicker to the current time."
+        },
+        new()
+        {
+            Name = "OnClear",
+            Type = "EventCallback",
+            Description = "Callback for when the value is cleared using the clear button.",
         },
         new()
         {
@@ -325,6 +345,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "OutOfRangeErrorMessage",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom validation error message for a time entered as text that falls outside of MinTime and MaxTime. Text that does not read as a time at all reports InvalidErrorMessage instead.",
+        },
+        new()
+        {
             Name = "Placeholder",
             Type = "string?",
             DefaultValue = "null",
@@ -349,7 +376,7 @@ public partial class BitCircularTimePickerDemo
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in seconds, the dial and the keyboard move the second by. A step greater than 1 snaps the pick to the nearest multiple of it."
+            Description = "The step, in seconds, the dial and the keyboard move the second by. A step greater than 1 lays a grid over the minute that the pick snaps to, starting at the second of MinTime and at the top of the minute where there is none."
         },
         new()
         {
@@ -397,6 +424,13 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "StartingValue",
+            Type = "TimeSpan?",
+            DefaultValue = "null",
+            Description = "The time an empty TimePicker starts from, instead of midnight. It is not a value: an untouched picker stays empty and the dial shows nothing selected - it is only where the first change lands.",
+        },
+        new()
+        {
             Name = "StartView",
             Type = "BitCircularTimePickerView",
             DefaultValue = "BitCircularTimePickerView.Hour",
@@ -434,7 +468,7 @@ public partial class BitCircularTimePickerDemo
             Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the TimeFormat and ShowSeconds.",
+            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the time pattern of the culture, rewritten into the TimeFormat, extended with the seconds where ShowSeconds is set and padded with the leading zeros.",
         }
     ];
 

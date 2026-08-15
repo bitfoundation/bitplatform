@@ -62,6 +62,14 @@
 </p>
 <CodeBlock Language="javascript" Code="@ForceRefreshCode" />
 
+<h2 id="version">BitBswup.version</h2>
+<p>
+    The version of Bswup the page is running, as a string. Also mirrored on
+    <code>window['bit-bswup version']</code>. Useful in a bug report, and the fastest way to confirm which
+    build a deployed client actually loaded:
+</p>
+<CodeBlock Language="javascript" Code="@VersionCode" />
+
 <h2>Polling for updates</h2>
 <p>
     By default a service worker is only re-checked by the browser on navigation and roughly every 24 hours,
@@ -106,6 +114,8 @@
 BitBswup.forceRefresh(() => true);                // every cache on the origin
 BitBswup.forceRefresh('bit-bswup');               // only Bswup's own caches
 BitBswup.forceRefresh(/^(bit-bswup|my-app-data)/) // a specific set";
+
+    private const string VersionCode = @"console.log(BitBswup.version);   // e.g. '10.6.0-pre-02'";
 
     private const string PollingCode = @"// an ordinary failed check (offline, server hiccup) does NOT reject - it is reported through
 // the UPDATE_CHECK_FAILED message below. This catch is only for unexpected errors, such as a

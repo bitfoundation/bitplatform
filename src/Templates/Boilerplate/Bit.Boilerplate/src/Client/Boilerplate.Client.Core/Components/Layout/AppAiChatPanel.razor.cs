@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
+// Speech in and speech out live in AppAiChatPanel.razor.SpeechRecognition.cs and
+// AppAiChatPanel.razor.SpeechSynthesis.cs. What is left here is the conversation itself.
 public partial class AppAiChatPanel
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
@@ -14,6 +16,7 @@ public partial class AppAiChatPanel
     [CascadingParameter] public UserDto? CurrentUser { get; set; }
 
 
+    [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private HubConnection hubConnection = default!;
 
 
@@ -79,6 +82,7 @@ public partial class AppAiChatPanel
     protected override async Task OnAfterFirstRenderAsync()
     {
         SetDefaultValues();
+        (isDictationSupported, isReadAloudSupported) = (await speechRecognition.IsSupported(), await speechSynthesis.IsSupported());
         StateHasChanged();
         hubConnection.Reconnected += HubConnection_Reconnected;
 
@@ -102,6 +106,11 @@ public partial class AppAiChatPanel
 
     private async Task SendMessage()
     {
+        // Dictation rebuilds userInput from dictationPrefix plus the whole transcript on every result, so a recognizer
+        // still running across a send would refill the emptied box with the text that was just sent. Stopping first
+        // also lets a final transcript still in flight land before the message is taken.
+        await StopDictation();
+
         if (channel is null)
         {
             _ = StartChannel();
@@ -116,6 +125,14 @@ public partial class AppAiChatPanel
         lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
         chatMessages.Add(lastAssistantMessage);
 
+        if (readAloudEnabled)
+        {
+            // The answer to this prompt is what read aloud follows from here on, and what is left of the previous
+            // answer is dropped the moment this one has enough to say - not now, which would leave the user in
+            // silence for as long as the model takes to reply.
+            FollowReadAloud(lastAssistantMessage);
+        }
+
         StateHasChanged();
 
         await channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
@@ -123,6 +140,9 @@ public partial class AppAiChatPanel
 
     private async Task ClearChat()
     {
+        // The answer read aloud was following is one of the messages being thrown away.
+        await StopReadAloud();
+
         SetDefaultValues();
 
         await RestartChannel();
@@ -145,7 +165,21 @@ public partial class AppAiChatPanel
 
     private async Task HandleOnDismissPanel()
     {
+        await StopDictation();
+
+        await StopReadAloud();
+
         await StopChannel();
+    }
+
+
+    private async Task CopyMessage(AiChatMessage message)
+    {
+        if (message.Content is not { Length: > 0 } content) return;
+
+        await clipboard.WriteText(content);
+
+        SnackBarService.Info(Localizer[nameof(AppStrings.Copied)]);
     }
 
     private async Task HandleOnUserInputEnter(KeyboardEventArgs e)
@@ -184,6 +218,7 @@ public partial class AppAiChatPanel
                 {
                     responseCounter++;
                     isLoading = false;
+                    await ReadAloudArrivedContent(final: true); // Nothing more is coming, so the tail goes out short.
                 }
                 else if (response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
@@ -199,6 +234,7 @@ public partial class AppAiChatPanel
                     if ((responseCounter + 1) == expectedResponsesCount)
                     {
                         lastAssistantMessage!.Content += response;
+                        await ReadAloudArrivedContent(final: false);
                     }
                 }
             }
@@ -233,6 +269,10 @@ public partial class AppAiChatPanel
         //#endif
 
         hubConnection.Reconnected -= HubConnection_Reconnected;
+
+        await StopDictation();
+
+        await StopReadAloud();
 
         await StopChannel();
 

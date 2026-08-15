@@ -35,4 +35,8 @@
     .left {
         padding-left: 0.5rem;
     }
+
+    ::deep .bit-ico {
+        color: inherit;
+    }
 }

@@ -22,6 +22,27 @@ internal sealed class BmotionElementAnimationState
     internal readonly Dictionary<string, string> StringValues = new();
 
     /// <summary>
+    /// Optional consumer rewrite of the composed transform string (see <see cref="BmTransformTemplate"/>).
+    /// Every path that writes this element's transform goes through <see cref="ComposeTransform"/>,
+    /// so the template can't be bypassed by one of them.
+    /// </summary>
+    internal BmTransformTemplate? TransformTemplate;
+
+    /// <summary>
+    /// Composes <paramref name="components"/> into a CSS transform string and applies the
+    /// element's <see cref="TransformTemplate"/>, if any. A template that throws or returns null is
+    /// ignored rather than allowed to break the frame - this runs inside the rAF tick, where an
+    /// exception would evict the element from the engine.
+    /// </summary>
+    internal string ComposeTransform(Dictionary<string, double> components)
+    {
+        var generated = BmotionTransformComposer.Build(components);
+        if (TransformTemplate is null) return generated;
+        try { return TransformTemplate(components, generated) ?? generated; }
+        catch { return generated; }
+    }
+
+    /// <summary>
     /// Number of live owners holding this element (a wrapping &lt;Bmotion&gt;, controllers, and
     /// in-flight AnimateAsync calls). The engine only tears the element down when this hits zero.
     /// </summary>
@@ -149,7 +170,7 @@ internal sealed class BmotionElementAnimationState
         // the moment the suspension window ends.
         bool transformSuspended = IsTransformSuspended(timestamp);
         if (_transformDirty && !transformSuspended)
-            updates["transform"] = BmotionTransformComposer.Build(Transforms);
+            updates["transform"] = ComposeTransform(Transforms);
 
         foreach (var prop in _dirtyProps)
         {
@@ -233,7 +254,7 @@ internal sealed class BmotionElementAnimationState
 
         if (Transforms.Count > 0)
         {
-            var tr = BmotionTransformComposer.Build(Transforms);
+            var tr = ComposeTransform(Transforms);
             if (!string.IsNullOrEmpty(tr)) d["transform"] = tr;
         }
 
@@ -280,9 +301,15 @@ internal sealed class BmotionElementAnimationState
         HashSet<string>? driverKeys = completionSource != null ? new HashSet<string>() : null;
         int activeBefore;
 
+        // An arc couples x and y, so it has to be resolved before the per-key loop and those keys
+        // then skipped - two independent drivers can only describe the straight line between the
+        // endpoints. Returns the keys the arc took ownership of.
+        var arcKeys = TryCreateArcDriver(values, transition, driverKeys);
+
         foreach (var (key, value) in values)
         {
             if (value == null) continue;
+            if (arcKeys is not null && arcKeys.Contains(key)) continue;
             var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition ?? new BmotionTransitionConfig();
             // Blazor Server fallback: no rAF loop exists, so every animation must settle in one
             // flush tick. Collapse to a zero-duration tween, but keep the (possibly per-key)
@@ -613,6 +640,59 @@ internal sealed class BmotionElementAnimationState
     // ═══════════════════════════════════════════════════════════════════════════
     // Driver factory helpers
     // ═══════════════════════════════════════════════════════════════════════════
+
+    // The keys an arc owns, registered under each so a later animation on x (or y) supersedes the
+    // whole arc rather than leaving half of it running.
+    private static readonly string[] _arcKeys = ["x", "y"];
+    private static readonly string[] _arcKeysWithRotation = ["x", "y", "rotate"];
+
+    /// <summary>
+    /// Creates the coupled arc driver when this target qualifies, returning the keys it claimed
+    /// (or <c>null</c> when the animation should take the ordinary straight-line path).
+    /// <para>
+    /// It qualifies only when a path is configured and both <c>x</c> and <c>y</c> are present as
+    /// single finite numbers: a curve is defined by two endpoints, so a keyframe sequence on either
+    /// axis is already describing its own path and must be left alone.
+    /// </para>
+    /// </summary>
+    private HashSet<string>? TryCreateArcDriver(
+        Dictionary<string, object?> values, BmotionTransitionConfig? transition, HashSet<string>? driverKeys)
+    {
+        if (transition?.Path is not { } arc) return null;
+        // Blazor Server has no frame loop, so everything snaps; there is no journey to curve.
+        if (ForceInstant) return null;
+        // Same predicate the compositor offload consults, so the two can never disagree about
+        // whether this animation is curved.
+        if (!BmotionArcTargets.Applies(values)) return null;
+        if (!TryConvertToDouble(values["x"]!, out double toX) || !TryConvertToDouble(values["y"]!, out double toY))
+            return null;
+
+        double fromX = Transforms.GetValueOrDefault("x", DefaultTransformValue("x"));
+        double fromY = Transforms.GetValueOrDefault("y", DefaultTransformValue("y"));
+        var curve = arc.BuildCurve(fromX, fromY, toX, toY);
+        bool rotates = arc.FollowsTangent;
+
+        // Supersede anything already animating the keys the arc is about to own, exactly as the
+        // per-key path does - including a rotate the arc is taking over.
+        var claimed = new HashSet<string>(rotates ? _arcKeysWithRotation : _arcKeys, StringComparer.Ordinal);
+        foreach (var key in claimed) CancelProp(key);
+
+        var driver = new BmotionArcDriver(curve, transition, (x, y, rotation) =>
+        {
+            ApplyTransform("x", x);
+            ApplyTransform("y", y);
+            if (rotation.HasValue) ApplyTransform("rotate", rotation.Value);
+        });
+
+        // One driver instance registered under every key it owns: cancelling or superseding any one
+        // of them tears down the whole arc, which is the only coherent outcome for a coupled motion.
+        foreach (var key in claimed)
+        {
+            _activeAnims[key] = driver;
+            driverKeys?.Add(key);
+        }
+        return claimed;
+    }
 
     private void CreateNumericDriver(string key, double toValue, BmotionTransitionConfig config)
     {

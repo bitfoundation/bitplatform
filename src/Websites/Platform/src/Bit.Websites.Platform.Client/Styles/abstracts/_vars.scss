@@ -1,3 +1,7 @@
 ﻿$NavMenuWidth: 300px;
 $HeaderHeight: 80px;
 $HeaderSecondRowHeight: 44px;
+
+// The site-wide easing curve. Use this instead of literal cubic-bezier/ease values so all
+// components animate with one consistent feel and the motion can be tuned in one place.
+$MotionEase: cubic-bezier(.4, 0, .2, 1);

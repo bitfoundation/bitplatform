@@ -19,7 +19,7 @@ public static class TestServiceCollectionExtensions
             // "stats could not be loaded" branch (no NullReferenceException) without hitting the real API.
             // GetGitHubStats is skipped during pre-rendering and its failures are swallowed by the page, so it needs no setup.
             A.CallTo(() => statisticsController.GetNugetStats(A<string>._, A<CancellationToken>._))
-                .Returns(Task.FromResult<NugetStatsDto>(null!));
+                .ReturnsLazily(() => NoNugetStats());
 
             services.RemoveAll<IStatisticsController>();
             services.AddScoped(_ => statisticsController);
@@ -35,5 +35,19 @@ public static class TestServiceCollectionExtensions
 
             return services;
         }
+    }
+
+    /// <summary>
+    /// Yields before returning, so the home page's <c>OnInitAsync</c> does not complete inside the first render pass -
+    /// which is what the real controller (an http call to nuget.org) does, and what makes the page stream. A
+    /// synchronously completed task renders the whole page in one pass and leaves the response with no
+    /// <c>blazor-ssr</c> block at all, so every assertion about streaming would silently be asserting about nothing.
+    /// That is configuration dependent: with the Sales module the home page also awaits the product sections and
+    /// streams either way, while with Admin / no module the statistics call is the only async work on the page.
+    /// </summary>
+    private static async Task<NugetStatsDto> NoNugetStats()
+    {
+        await Task.Yield();
+        return null!;
     }
 }

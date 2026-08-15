@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,7 +13,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 {
-    private static readonly TimeSpan _endOfDay = new(23, 59, 59);
 
     private int? _hour;
     private int? _minute;
@@ -29,6 +28,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private ElementReference _calloutRef;
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
+    private string _headerId = string.Empty;
+    private string _footerId = string.Empty;
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _circularTimePickerId = string.Empty;
@@ -114,6 +115,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     [Parameter] public string CalloutAriaLabel { get; set; } = "Clock";
 
     /// <summary>
+    /// Custom template to render at the bottom of the TimePicker's callout, below everything it holds
+    /// (e.g. preset buttons that set the value from the code).
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutFooterTemplate { get; set; }
+
+    /// <summary>
+    /// Custom template to render at the top of the TimePicker's callout, above everything it holds.
+    /// </summary>
+    [Parameter] public RenderFragment? CalloutHeaderTemplate { get; set; }
+
+    /// <summary>
     /// Capture and render additional attributes in addition to the main callout's parameters
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
@@ -165,6 +177,23 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public CultureInfo? Culture { get; set; }
 
     /// <summary>
+    /// Disables every time of day after the current time, exactly as a <see cref="MaxTime"/> of now would.
+    /// When both are set, the earlier of the two bounds wins.
+    /// </summary>
+    /// <remarks>
+    /// The current time is taken to the precision the dial shows - to the minute unless
+    /// <see cref="ShowSeconds"/> is set - so the minute that is running is still one that can be picked.
+    /// </remarks>
+    [Parameter] public bool DisableFuture { get; set; }
+
+    /// <summary>
+    /// Disables every time of day before the current time, exactly as a <see cref="MinTime"/> of now would.
+    /// When both are set, the later of the two bounds wins.
+    /// </summary>
+    /// <inheritdoc cref="DisableFuture" path="/remarks"/>
+    [Parameter] public bool DisablePast { get; set; }
+
+    /// <summary>
     /// Determines the allowed drop directions of the callout.
     /// </summary>
     [Parameter] public BitDropDirection DropDirection { get; set; } = BitDropDirection.TopAndBottom;
@@ -186,8 +215,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// The step, in hours, the dial and the keyboard move the hour by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 snaps the hour to the nearest multiple of it and dims the hours in between, so a
-    /// picker that only accepts times on a three-hour grid can say so. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the day that the hour snaps to, dimming the hours in between, so
+    /// a picker that only accepts times on a three-hour grid can say so. The grid starts at the hour of
+    /// <see cref="MinTime"/>, and at midnight where there is none. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int HourStep { get; set; } = 1;
 
@@ -299,8 +329,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// The step, in minutes, the dial and the keyboard move the minute by.
     /// </summary>
     /// <remarks>
-    /// A step greater than 1 snaps the minute to the nearest multiple of it, which is what turns the dial into
-    /// a five-minute or quarter-hour picker. Values below 1 are treated as 1.
+    /// A step greater than 1 lays a grid over the hour that the minute snaps to, which is what turns the dial
+    /// into a five-minute or quarter-hour picker. The grid starts at the minute of <see cref="MinTime"/>, and
+    /// at the top of the hour where there is none. Values below 1 are treated as 1.
     /// </remarks>
     [Parameter] public int MinuteStep { get; set; } = 1;
 
@@ -318,6 +349,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// The text of the button that sets the TimePicker to the current time.
     /// </summary>
     [Parameter] public string NowButtonText { get; set; } = "Now";
+
+    /// <summary>
+    /// Callback for when the value is cleared using the clear button.
+    /// </summary>
+    [Parameter] public EventCallback OnClear { get; set; }
 
     /// <summary>
     /// Callback for when clicking on TimePicker input
@@ -360,6 +396,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// Callback for when the dial switches between the hours, the minutes and the seconds.
     /// </summary>
     [Parameter] public EventCallback<BitCircularTimePickerView> OnViewChange { get; set; }
+
+    /// <summary>
+    /// The custom validation error message for a time entered as text that falls outside of
+    /// <see cref="MinTime"/> and <see cref="MaxTime"/>.
+    /// </summary>
+    [Parameter] public string? OutOfRangeErrorMessage { get; set; }
 
     /// <summary>
     /// Placeholder text for the TimePicker.
@@ -421,6 +463,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// The time an empty TimePicker starts from, instead of midnight.
+    /// </summary>
+    /// <remarks>
+    /// It is not a value: an untouched picker stays empty and the dial shows nothing selected. It is only
+    /// where the first change lands - moving the hour of an empty picker whose starting value is 09:30
+    /// keeps the 30 minutes rather than resetting them - so a picker that mostly gets times around the
+    /// working day does not have to be dragged there from midnight every time.
+    /// </remarks>
+    [Parameter] public TimeSpan? StartingValue { get; set; }
 
     /// <summary>
     /// The part of the time the clock starts on when the picker opens.
@@ -670,6 +723,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         _labelId = $"{_circularTimePickerId}-label";
         _inputId = $"{_circularTimePickerId}-input";
         _clockId = $"{_circularTimePickerId}-clock";
+        _headerId = $"{_circularTimePickerId}-header";
+        _footerId = $"{_circularTimePickerId}-footer";
         _calloutId = $"{_circularTimePickerId}-callout";
         _overlayId = $"{_circularTimePickerId}-overlay";
 
@@ -1011,11 +1066,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // one place whichever of the two moved the hour.
     private async Task SetHour(int hour)
     {
+        SeedFromStartingValue();
+
         hour = ((hour % 24) + 24) % 24;
 
-        if (IsHourAllowed(hour) is false) return;
+        if (IsHourAllowed(hour) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_hour == hour) return;
+        // A pick that lands on the hour the picker was only seeded to is not the no-op it looks like: it is
+        // the pick that turns the seed into the value, so it goes through instead of being dropped.
+        if (_hour == hour && HasUncommittedSeed is false) return;
 
         _hour = hour;
 
@@ -1031,11 +1094,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task SetMinute(int minute)
     {
+        SeedFromStartingValue();
+
         minute = ((minute % 60) + 60) % 60;
 
-        if (IsMinuteAllowed(minute) is false) return;
+        if (IsMinuteAllowed(minute) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_minute == minute) return;
+        // As with the hour, a pick that lands on the minute the picker was only seeded to is the pick that
+        // turns the seed into the value rather than a no-op.
+        if (_minute == minute && HasUncommittedSeed is false) return;
 
         _minute = minute;
 
@@ -1046,11 +1117,19 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private async Task SetSecond(int second)
     {
+        SeedFromStartingValue();
+
         second = ((second % 60) + 60) % 60;
 
-        if (IsSecondAllowed(second) is false) return;
+        if (IsSecondAllowed(second) is false)
+        {
+            UndoSeed();
+            return;
+        }
 
-        if (_second == second) return;
+        // As with the hour, a pick that lands on the second the picker was only seeded to is the pick that
+        // turns the seed into the value rather than a no-op.
+        if (_second == second && HasUncommittedSeed is false) return;
 
         _second = second;
 
@@ -1195,6 +1274,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsInteractive is false) return;
 
+        SeedFromStartingValue();
+
         var offset = isAm ? 0 : 12;
         var hour = (GetAmPmHours(_hour.GetValueOrDefault()) % 12) + offset;
 
@@ -1213,7 +1294,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 break;
             }
 
-            if (fallback < 0) return;
+            if (fallback < 0)
+            {
+                UndoSeed();
+                return;
+            }
 
             hour = fallback;
         }
@@ -1227,13 +1312,42 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
         var now = DateTime.Now.TimeOfDay;
 
-        var hour = FindNearestAllowedHour(RoundToStep(now.Hours, HourStep, 24));
+        // The step is already part of what the allowed-value checks accept, so the current time only has to be
+        // walked to the nearest they do accept - rounding it to the grid first would round it to a grid pinned
+        // to the top of the range rather than to the one the picker actually uses.
+        var hour = FindNearestAllowedHour(now.Hours);
 
         if (hour.HasValue is false) return;
 
+        // Each part is put in place before the next one is searched for, since what a minute is allowed to be
+        // depends on the hour it sits in and a second on the minute. A part the constraints leave without a
+        // single allowed value takes the parts already placed back with it: the time is set whole or not at
+        // all, rather than falling back to a zero those same constraints may well have ruled out.
+        var previousHour = _hour;
+        var previousMinute = _minute;
+
         _hour = hour;
-        _minute = FindNearestAllowedMinute(RoundToStep(now.Minutes, MinuteStep, 60));
-        _second = HasSeconds ? FindNearestAllowedSecond(RoundToStep(now.Seconds, SecondStep, 60)) : 0;
+
+        var minute = FindNearestAllowedMinute(now.Minutes);
+
+        if (minute.HasValue is false)
+        {
+            _hour = previousHour;
+            return;
+        }
+
+        _minute = minute;
+
+        var second = HasSeconds ? FindNearestAllowedSecond(now.Seconds) : 0;
+
+        if (second.HasValue is false)
+        {
+            _hour = previousHour;
+            _minute = previousMinute;
+            return;
+        }
+
+        _second = second;
 
         await UpdateCurrentValue();
 
@@ -1256,6 +1370,41 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         await UpdateCurrentValue();
 
         await ChangeView(GetInitialView());
+
+        await OnClear.InvokeAsync();
+    }
+
+    // Where an empty picker begins: the parts of the starting value, so the first change made to it lands
+    // around there instead of around midnight. Without a starting value an empty picker stays empty, and a
+    // picker that already holds a time is left alone.
+    private void SeedFromStartingValue()
+    {
+        if (StartingValue.HasValue is false) return;
+
+        if (_hour.HasValue || _minute.HasValue || _second.HasValue) return;
+
+        var time = BitTimeSteps.ClampToDay(StartingValue)!.Value;
+
+        _hour = time.Hours;
+        _minute = time.Minutes;
+        _second = time.Seconds;
+    }
+
+    // Seeding leaves the parts holding a time the value itself has not been given: every flow that seeds only
+    // reaches the value through UpdateCurrentValue, so parts without a value are a seed nothing committed yet.
+    private bool HasUncommittedSeed => CurrentValue.HasValue is false
+                                    && (_hour.HasValue || _minute.HasValue || _second.HasValue);
+
+    // A change that aborts hands the seed it took back. The starting value is where an empty picker begins,
+    // not a time it was given, so a change the constraints refused must leave the dial as empty as it found
+    // it rather than showing a time the value does not have.
+    private void UndoSeed()
+    {
+        if (HasUncommittedSeed is false) return;
+
+        _hour = null;
+        _minute = null;
+        _second = null;
     }
 
     private void HandleOnValueChanged(object? sender, EventArgs args)
@@ -1287,13 +1436,31 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         return false;
     }
 
+    // The format the value is written in: the one the application asked for, otherwise the pattern of the
+    // culture, rewritten into the clock format of the picker (see BitTimePatterns) - so a time is written
+    // with the separators, the order and the designators of the culture rather than a pattern hardcoded here.
+    // The parts are padded, since a clock face reads a time as two digits either side of the separator.
     private string GetValueFormat()
     {
         if (ValueFormat.HasValue()) return ValueFormat!;
 
-        return TimeFormat == BitTimeFormat.TwentyFourHours
-            ? (HasSeconds ? "HH:mm:ss" : "HH:mm")
-            : (HasSeconds ? "hh:mm:ss tt" : "hh:mm tt");
+        return BitTimePatterns.GetTimePattern(_culture, TimeFormat, HasSeconds, padded: true);
+    }
+
+    // What a typed time is read with. A format the application set is taken literally - it asked for that one -
+    // but the default is only how the picker writes a time, not the only way a person may write it: the same
+    // time with the leading zeros left off is the same time, so it is accepted as well and rewritten into the
+    // padded form afterwards. A padded specifier accepts nothing but a padded value, which is why the narrow
+    // pattern has to be in the list of its own.
+    private string[] GetParseFormats()
+    {
+        if (ValueFormat.HasValue()) return [ValueFormat!];
+
+        return
+        [
+            BitTimePatterns.GetTimePattern(_culture, TimeFormat, HasSeconds, padded: true),
+            BitTimePatterns.GetTimePattern(_culture, TimeFormat, HasSeconds)
+        ];
     }
 
     private async Task ToggleCallout()
@@ -1314,8 +1481,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             isRtl: Dir is BitDir.Rtl,
             scrollContainerId: "",
             scrollOffset: 0,
-            headerId: "",
-            footerId: "",
+            headerId: CalloutHeaderTemplate is not null ? _headerId : "",
+            footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0);
@@ -1358,7 +1525,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return true;
         }
 
-        var value = RoundToStep((int)Math.Round(angle / 6) % 60, IsMinuteView ? MinuteStep : SecondStep, 60);
+        var value = BitTimeSteps.SnapToGrid((int)Math.Round(angle / 6) % 60,
+                                            IsMinuteView ? MinuteStep : SecondStep,
+                                            (IsMinuteView ? GridAnchor?.Minutes : GridAnchor?.Seconds) ?? 0,
+                                            60);
 
         if (IsSelectable(value) is false) return false;
 
@@ -1495,6 +1665,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsInteractive is false) return;
 
+        // Seeded before the parts are read rather than inside the setter below: the step is measured from
+        // where the picker already is, so an empty one has to start from the starting value first.
+        SeedFromStartingValue();
+
         if (IsHourView)
         {
             var step = Math.Max(1, HourStep);
@@ -1502,7 +1676,13 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             var target = _hour.HasValue ? current + (steps * step) : current;
 
             var hour = FindNearestAllowedHour(target, Math.Sign(steps));
-            if (hour.HasValue) await SetHour(hour.Value);
+            if (hour.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetHour(hour.Value);
 
             return;
         }
@@ -1514,18 +1694,32 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         if (IsMinuteView)
         {
             var minute = FindNearestAllowedMinute(((wanted % 60) + 60) % 60, Math.Sign(steps));
-            if (minute.HasValue) await SetMinute(minute.Value);
+            if (minute.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetMinute(minute.Value);
         }
         else
         {
             var second = FindNearestAllowedSecond(((wanted % 60) + 60) % 60, Math.Sign(steps));
-            if (second.HasValue) await SetSecond(second.Value);
+            if (second.HasValue is false)
+            {
+                UndoSeed();
+                return;
+            }
+
+            await SetSecond(second.Value);
         }
     }
 
     private async Task MoveToEdge(bool first)
     {
         if (IsInteractive is false) return;
+
+        SeedFromStartingValue();
 
         if (IsHourView)
         {
@@ -1539,6 +1733,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
                 return;
             }
 
+            UndoSeed();
             return;
         }
 
@@ -1551,6 +1746,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             await (IsMinuteView ? SetMinute(value) : SetSecond(value));
             return;
         }
+
+        UndoSeed();
     }
 
     private async Task FocusInput()
@@ -1750,27 +1947,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // disable the buttons inside it, so a picker that is switched off does not also change height.
     private bool HasActions => ShowNowButton || ShowClearButton;
 
-    private string ColorClass => Color switch
-    {
-        BitColor.Primary => "bit-ctp-pri",
-        BitColor.Secondary => "bit-ctp-sec",
-        BitColor.Tertiary => "bit-ctp-ter",
-        BitColor.Info => "bit-ctp-inf",
-        BitColor.Success => "bit-ctp-suc",
-        BitColor.Warning => "bit-ctp-wrn",
-        BitColor.SevereWarning => "bit-ctp-swr",
-        BitColor.Error => "bit-ctp-err",
-        BitColor.PrimaryBackground => "bit-ctp-pbg",
-        BitColor.SecondaryBackground => "bit-ctp-sbg",
-        BitColor.TertiaryBackground => "bit-ctp-tbg",
-        BitColor.PrimaryForeground => "bit-ctp-pfg",
-        BitColor.SecondaryForeground => "bit-ctp-sfg",
-        BitColor.TertiaryForeground => "bit-ctp-tfg",
-        BitColor.PrimaryBorder => "bit-ctp-pbr",
-        BitColor.SecondaryBorder => "bit-ctp-sbr",
-        BitColor.TertiaryBorder => "bit-ctp-tbr",
-        _ => "bit-ctp-pri"
-    };
+    private string ColorClass => BitCssClasses.Color(Color, "bit-ctp");
 
     private string SizeClass => Size switch
     {
@@ -1812,25 +1989,58 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // The bounds are times of day, so one that falls outside of a day is pulled back into one before anything
     // is compared against it. Without it the dial reads the parts of a bound (a MinTime of 25:00 has an Hours
     // of 1) while the typed input compares the whole span, and the two would disagree about the same value.
-    private TimeSpan? MinBound => ClampToDay(MinTime);
+    // Disabling the past or the future puts the current time in as a bound of its own, and where that and a
+    // declared bound overlap the narrower of the two wins.
+    private TimeSpan? MinBound
+    {
+        get
+        {
+            var min = BitTimeSteps.ClampToDay(MinTime);
+
+            if (DisablePast is false) return min;
+
+            var now = NowBound();
+
+            return (min.HasValue && min.Value > now) ? min : now;
+        }
+    }
 
     /// <inheritdoc cref="MinBound"/>
-    private TimeSpan? MaxBound => ClampToDay(MaxTime);
-
-    private static TimeSpan? ClampToDay(TimeSpan? time)
+    private TimeSpan? MaxBound
     {
-        if (time.HasValue is false) return null;
+        get
+        {
+            var max = BitTimeSteps.ClampToDay(MaxTime);
 
-        if (time.Value < TimeSpan.Zero) return TimeSpan.Zero;
+            if (DisableFuture is false) return max;
 
-        return time.Value > _endOfDay ? _endOfDay : time.Value;
+            var now = NowBound();
+
+            return (max.HasValue && max.Value < now) ? max : now;
+        }
     }
+
+    // The current time at the precision the dial works in, so the minute that is running is still one that can
+    // be picked: a bound of 10:30:45 would leave 10:30 in the past on a picker that cannot pick seconds.
+    private TimeSpan NowBound()
+    {
+        var now = DateTime.Now.TimeOfDay;
+
+        return HasSeconds
+            ? new TimeSpan(now.Hours, now.Minutes, now.Seconds)
+            : new TimeSpan(now.Hours, now.Minutes, 0);
+    }
+
+    // Where the grids of the steps start: the minimum the application declared, so a picker whose range begins
+    // at 09:07 can still be set to 09:07. A grid pinned to the top of the range instead would leave the first
+    // time of the range itself off it.
+    private TimeSpan? GridAnchor => BitTimeSteps.ClampToDay(MinTime);
 
     private bool IsHourAllowed(int hour)
     {
         if (hour is < 0 or > 23) return false;
 
-        if (HourStep > 1 && hour % HourStep != 0) return false;
+        if (BitTimeSteps.IsOnGrid(hour, HourStep, GridAnchor?.Hours ?? 0, 24) is false) return false;
 
         if (AllowedHours is not null && AllowedHours(hour) is false) return false;
 
@@ -1848,7 +2058,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (minute is < 0 or > 59) return false;
 
-        if (MinuteStep > 1 && minute % MinuteStep != 0) return false;
+        if (BitTimeSteps.IsOnGrid(minute, MinuteStep, GridAnchor?.Minutes ?? 0, 60) is false) return false;
 
         if (AllowedMinutes is not null && AllowedMinutes(minute) is false) return false;
 
@@ -1872,7 +2082,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (second is < 0 or > 59) return false;
 
-        if (SecondStep > 1 && second % SecondStep != 0) return false;
+        if (BitTimeSteps.IsOnGrid(second, SecondStep, GridAnchor?.Seconds ?? 0, 60) is false) return false;
 
         if (AllowedSeconds is not null && AllowedSeconds(second) is false) return false;
 
@@ -1895,61 +2105,37 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // a "now" that falls into a disabled gap moves past it instead of stopping dead on it.
     private int? FindNearestAllowedHour(int hour, int direction = 0)
     {
-        hour = ((hour % 24) + 24) % 24;
-
-        for (var offset = 0; offset < 24; offset++)
-        {
-            if (direction >= 0 && IsHourAllowed((hour + offset) % 24)) return (hour + offset) % 24;
-
-            if (direction <= 0 && IsHourAllowed(((hour - offset) % 24 + 24) % 24)) return ((hour - offset) % 24 + 24) % 24;
-        }
-
-        return null;
+        return FindNearestAllowed(hour, direction, 24, IsHourAllowed);
     }
 
     private int? FindNearestAllowedMinute(int minute, int direction = 0)
     {
-        return FindNearestAllowed(minute, direction, IsMinuteAllowed);
+        return FindNearestAllowed(minute, direction, 60, IsMinuteAllowed);
     }
 
     private int? FindNearestAllowedSecond(int second, int direction = 0)
     {
-        return FindNearestAllowed(second, direction, IsSecondAllowed);
+        return FindNearestAllowed(second, direction, 60, IsSecondAllowed);
     }
 
-    private static int? FindNearestAllowed(int value, int direction, Func<int, bool> isAllowed)
+    // A direction of zero walks outwards from the value and takes the first allowed one on either side; one
+    // of 1 or -1 only walks the way it was given, which is what a keyboard step that fell into a disabled gap
+    // needs so it carries on the way it was going instead of turning back.
+    private static int? FindNearestAllowed(int value, int direction, int range, Func<int, bool> isAllowed)
     {
-        value = ((value % 60) + 60) % 60;
+        value = BitTimeSteps.Wrap(value, range);
 
-        for (var offset = 0; offset < 60; offset++)
-        {
-            if (direction >= 0 && isAllowed((value + offset) % 60)) return (value + offset) % 60;
+        if (direction > 0) return BitTimeSteps.FindAllowedFrom(value, true, range, isAllowed);
 
-            if (direction <= 0 && isAllowed(((value - offset) % 60 + 60) % 60)) return ((value - offset) % 60 + 60) % 60;
-        }
+        if (direction < 0) return BitTimeSteps.FindAllowedFrom(value, false, range, isAllowed);
 
-        return null;
+        return BitTimeSteps.FindNearestAllowed(value, range, isAllowed);
     }
 
     private static int GetAmPmHours(int hours)
     {
         var result = hours % 12;
         return result == 0 ? 12 : result;
-    }
-
-    // Rounds to the nearest multiple of the step, wrapping a result that lands on the top of the range back
-    // onto its bottom (60 minutes is 0, 24 hours is 0). A step of a whole range or more is clamped to the
-    // range rather than folded into it, which leaves the bottom of the range as its only value - exactly what
-    // the allowed-value checks make of such a step too.
-    private static int RoundToStep(int value, int step, int range)
-    {
-        if (step <= 1) return value;
-
-        step = Math.Min(step, range);
-
-        var result = (value + (step / 2)) / step * step;
-
-        return result >= range ? 0 : result;
     }
 
 
@@ -1967,20 +2153,33 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             return true;
         }
 
-        if (DateTime.TryParseExact(value, GetValueFormat(), _culture, DateTimeStyles.None, out DateTime parsedValue) &&
-            IsWithinBounds(parsedValue.TimeOfDay))
+        if (DateTime.TryParseExact(value, GetParseFormats(), _culture, DateTimeStyles.None, out DateTime parsedValue) is false)
         {
-            result = parsedValue.TimeOfDay;
-            _hour = result.Value.Hours;
-            _minute = result.Value.Minutes;
-            _second = result.Value.Seconds;
-            validationErrorMessage = null;
-            return true;
+            result = default;
+            validationErrorMessage = InvalidErrorMessage.HasValue()
+                ? InvalidErrorMessage!
+                : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
+            return false;
         }
 
-        result = default;
-        validationErrorMessage = InvalidErrorMessage.HasValue() ? InvalidErrorMessage! : $"The {DisplayName ?? FieldIdentifier.FieldName} field is not valid.";
-        return false;
+        // Text is the only way a time the dial itself refuses can reach the component, so a time that reads
+        // correctly but falls outside of the range is reported as the range problem it is rather than as an
+        // unreadable one - the two are different mistakes and deserve different messages.
+        if (IsWithinBounds(parsedValue.TimeOfDay) is false)
+        {
+            result = default;
+            validationErrorMessage = OutOfRangeErrorMessage.HasValue()
+                ? OutOfRangeErrorMessage!
+                : $"The {DisplayName ?? FieldIdentifier.FieldName} field is out of the allowed range.";
+            return false;
+        }
+
+        result = parsedValue.TimeOfDay;
+        _hour = result.Value.Hours;
+        _minute = result.Value.Minutes;
+        _second = result.Value.Seconds;
+        validationErrorMessage = null;
+        return true;
     }
 
     protected override string? FormatValueAsString(TimeSpan? value)

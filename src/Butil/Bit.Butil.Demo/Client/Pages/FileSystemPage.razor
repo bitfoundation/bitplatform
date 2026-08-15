@@ -1,0 +1,524 @@
+@page "/file-system"
+@implements IAsyncDisposable
+@inject Bit.Butil.FileSystem fileSystem
+
+<PageTitle>FileSystem - Bit.Butil</PageTitle>
+
+<PageHeader Category="Files & Data"
+            Title="FileSystem"
+            Lead="Let the user pick a real file or folder on their machine, then read it, write back to it, and keep the handle - the difference between a download and a working Save."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API#file_system_access_api"
+            InjectAs="FileSystem fileSystem" />
+
+<Callout Type="warning" Title="Chromium only, for now">
+    Firefox and Safari implement neither picker. Check <code>IsSupported</code> and keep a
+    download-based fallback - <a href="file-reader">FileReader</a> for reading and
+    <a href="object-urls">ObjectUrls</a> for handing a file back are the everywhere-else path.
+</Callout>
+
+<Callout Type="info" Title="Every picker needs a click">
+    <code>ShowOpenFilePicker</code>, <code>ShowSaveFilePicker</code> and
+    <code>ShowDirectoryPicker</code> must be called from a user-gesture handler, and each returns
+    null when the user cancels rather than throwing - dismissing a dialog is not an error.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported / IsDirectorySupported"
+                 Description="The file pickers and the directory picker ship together in practice, but they are separate entry points, so both are checkable. During prerender/SSR both return false rather than throwing."
+                 Code=@("""
+@inject Bit.Butil.FileSystem fileSystem
+
+var files = await fileSystem.IsSupported();
+var folders = await fileSystem.IsDirectorySupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">Check support</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Open and read"
+                 Api="ShowOpenFilePicker / ReadText / GetFileInfo"
+                 Description="The accept list is what turns the picker's filter dropdown from '*.*' into named groups. A group with no extensions is dropped rather than sent, because the underlying API rejects an empty filter outright. GetFileInfo reads name, size, type and last-modified without loading the contents."
+                 Code=@("""
+var picked = await fileSystem.ShowOpenFilePicker(
+    multiple: false,
+    accept:
+    [
+        new FilePickerType
+        {
+            Description = "Text files",
+            MimeType = "text/plain",
+            Extensions = [".txt", ".md", ".json"],
+        },
+    ]);
+
+if (picked is { Length: > 0 })
+{
+    var info = await fileSystem.GetFileInfo(picked[0]);
+    var text = await fileSystem.ReadText(picked[0]);
+}
+""")>
+        <div class="controls">
+            <button @onclick="OpenFile">ShowOpenFilePicker</button>
+            <button class="secondary" @onclick="ReadPicked">ReadText</button>
+        </div>
+        @if (_file is not null)
+        {
+            <div class="field">
+                <span class="field-label">Picked</span>
+                <span><code>@_file.Name</code> @(_fileInfo is null ? "" : $"- {_fileInfo.Size} bytes, {(string.IsNullOrEmpty(_fileInfo.Type) ? "unknown type" : _fileInfo.Type)}, modified {_fileInfo.LastModifiedUtc.LocalDateTime:g}")</span>
+            </div>
+        }
+        <textarea @bind="_contents" rows="6" placeholder="File contents appear here, and are what gets written back."
+                  style="margin-top:1rem;width:100%;font-family:inherit"></textarea>
+        <DemoConsole @ref="openOutput" Title="open output" />
+    </DemoSection>
+
+    <DemoSection Title="Save, and save again"
+                 Api="ShowSaveFilePicker / WriteText"
+                 Description="This is the part a download cannot do. ShowSaveFilePicker reserves a name but writes nothing; the handle it returns can then be written to as often as you like, so the second Save goes straight to the same file with no dialog. Nothing here needs a server round-trip."
+                 Code=@("""
+_target = await fileSystem.ShowSaveFilePicker(
+    suggestedName: "notes.txt",
+    accept: [new FilePickerType { Description = "Text", MimeType = "text/plain", Extensions = [".txt"] }]);
+
+// as many times as you like, no further prompts:
+await fileSystem.WriteText(_target!, _contents);
+""")>
+        <div class="controls">
+            <button @onclick="PickSaveTarget">ShowSaveFilePicker</button>
+            <button class="secondary" @onclick="SaveToTarget">WriteText</button>
+        </div>
+        @if (_saveTarget is not null)
+        {
+            <div class="field">
+                <span class="field-label">Save target</span>
+                <span><code>@_saveTarget.Name</code> - saved @_saveCount time(s)</span>
+            </div>
+        }
+        <DemoConsole @ref="saveOutput" Title="save output" />
+    </DemoSection>
+
+    <DemoSection Title="Walk a folder"
+                 Api="ShowDirectoryPicker / ListDirectory / GetFile / Remove"
+                 Description="A directory handle grants access to everything under it. ListDirectory returns the immediate children only - descend by calling it again on a child whose IsDirectory is true. GetFile fetches a named entry, optionally creating it, and takes a bare name: this API has no path traversal."
+                 Code=@("""
+var folder = await fileSystem.ShowDirectoryPicker(write: true);
+if (folder is not null)
+{
+    foreach (var entry in await fileSystem.ListDirectory(folder))
+    {
+        // entry.IsDirectory to recurse, entry.Name to show
+    }
+
+    // create a file inside it and write to it:
+    var created = await fileSystem.GetFile(folder, "hello.txt", create: true);
+    await fileSystem.WriteText(created!, "written from Blazor");
+
+    await fileSystem.Remove(folder, "hello.txt");
+}
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_folderWrite" /> Ask for write access</label>
+        </div>
+        <div class="controls">
+            <button @onclick="PickFolder">ShowDirectoryPicker</button>
+            <button class="secondary" @onclick="CreateInFolder">Create hello.txt</button>
+            <button class="danger" @onclick="RemoveFromFolder">Remove hello.txt</button>
+        </div>
+        @if (_folder is not null)
+        {
+            <div class="field">
+                <span class="field-label">@_folder.Name</span>
+                <span>@_entries.Length entr@(_entries.Length == 1 ? "y" : "ies")</span>
+            </div>
+            @if (_entries.Length > 0)
+            {
+                <ul style="margin:0;padding-left:1.2rem;max-height:14rem;overflow:auto">
+                    @foreach (var entry in _entries)
+                    {
+                        <li>@(entry.IsDirectory ? "📁" : "📄") @entry.Name</li>
+                    }
+                </ul>
+            }
+        }
+        <DemoConsole @ref="folderOutput" Title="folder output" />
+    </DemoSection>
+
+    <DemoSection Title="Permissions"
+                 Api="QueryPermission / RequestPermission / Release"
+                 Description="A handle you persisted from a previous session comes back as Prompt rather than Granted - the grant does not survive a reload. RequestPermission, from a user gesture, is what makes it usable again. Release drops a handle you are finished with; handles are held on the JS side for as long as your app might use them."
+                 Code=@("""
+var state = await fileSystem.QueryPermission(handle, write: true);
+if (state == FileSystemPermission.Prompt)
+{
+    // from a click handler:
+    state = await fileSystem.RequestPermission(handle, write: true);
+}
+
+// when you're done with it:
+await fileSystem.Release(handle);
+""")>
+        <div class="controls">
+            <button @onclick="() => CheckPermission(false)">QueryPermission (read)</button>
+            <button @onclick="() => CheckPermission(true)">QueryPermission (write)</button>
+            <button class="secondary" @onclick="AskPermission">RequestPermission (write)</button>
+        </div>
+        <DemoConsole @ref="permissionOutput" Title="permission output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes window.showOpenFilePicker. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="IsDirectorySupported"
+               Signature="ValueTask<bool> IsDirectorySupported()"
+               Description="True when the runtime exposes window.showDirectoryPicker." />
+    <ApiMember Name="ShowOpenFilePicker"
+               Signature="ValueTask<FileSystemHandleInfo[]?> ShowOpenFilePicker(bool multiple = false, FilePickerType[]? accept = null, bool excludeAcceptAllOption = false, string startIn = &quot;&quot;)"
+               Description="Shows the open-file picker. Null when cancelled or unavailable. Requires a user gesture." />
+    <ApiMember Name="ShowSaveFilePicker"
+               Signature="ValueTask<FileSystemHandleInfo?> ShowSaveFilePicker(string suggestedName = &quot;&quot;, FilePickerType[]? accept = null, bool excludeAcceptAllOption = false, string startIn = &quot;&quot;)"
+               Description="Shows the save-file picker. Reserves a name; nothing is written until you call a Write method." />
+    <ApiMember Name="ShowDirectoryPicker"
+               Signature="ValueTask<FileSystemHandleInfo?> ShowDirectoryPicker(bool write = false, string startIn = &quot;&quot;)"
+               Description="Shows the directory picker, granting access to a whole folder." />
+    <ApiMember Name="ListDirectory"
+               Signature="ValueTask<FileSystemHandleInfo[]> ListDirectory(FileSystemHandleInfo directory)"
+               Description="The directory's immediate children. Not recursive." />
+    <ApiMember Name="ReadText"
+               Signature="ValueTask<string?> ReadText(FileSystemHandleInfo file)"
+               Description="Reads a file as text. Null when it is unreadable - moved, deleted, or permission revoked." />
+    <ApiMember Name="ReadBytes"
+               Signature="ValueTask<byte[]?> ReadBytes(FileSystemHandleInfo file)"
+               Description="Reads a file as bytes." />
+    <ApiMember Name="GetFileInfo"
+               Signature="ValueTask<FileSystemFileInfo?> GetFileInfo(FileSystemHandleInfo file)"
+               Description="Name, size, MIME type and last-modified, without reading the contents." />
+    <ApiMember Name="WriteText"
+               Signature="ValueTask<bool> WriteText(FileSystemHandleInfo file, string text)"
+               Description="Overwrites a file with text. False when the write was refused." />
+    <ApiMember Name="WriteBytes"
+               Signature="ValueTask<bool> WriteBytes(FileSystemHandleInfo file, byte[] data)"
+               Description="Overwrites a file with bytes." />
+    <ApiMember Name="GetFile"
+               Signature="ValueTask<FileSystemHandleInfo?> GetFile(FileSystemHandleInfo directory, string name, bool create = false)"
+               Description="A named file inside a directory. Null when missing and create is false." />
+    <ApiMember Name="Remove"
+               Signature="ValueTask<bool> Remove(FileSystemHandleInfo directory, string name, bool recursive = false)"
+               Description="Deletes an entry. False when missing or refused." />
+    <ApiMember Name="QueryPermission"
+               Signature="ValueTask<FileSystemPermission> QueryPermission(FileSystemHandleInfo handle, bool write = false)"
+               Description="The current permission, without prompting." />
+    <ApiMember Name="RequestPermission"
+               Signature="ValueTask<FileSystemPermission> RequestPermission(FileSystemHandleInfo handle, bool write = false)"
+               Description="Prompts for permission - what makes a handle restored from a previous session usable again. Requires a user gesture." />
+    <ApiMember Name="Release"
+               Signature="ValueTask Release(FileSystemHandleInfo handle)"
+               Description="Drops a handle you're finished with." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, drops every handle this app was holding." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole openOutput = default!;
+    private DemoConsole saveOutput = default!;
+    private DemoConsole folderOutput = default!;
+    private DemoConsole permissionOutput = default!;
+
+    private FileSystemHandleInfo? _file;
+    private FileSystemHandleInfo? _saveTarget;
+    private FileSystemHandleInfo? _folder;
+    private FileSystemFileInfo? _fileInfo;
+    private FileSystemHandleInfo[] _entries = [];
+    private string _contents = "";
+    private int _saveCount;
+    private bool _folderWrite = true;
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            var files = await fileSystem.IsSupported();
+            var folders = await fileSystem.IsDirectorySupported();
+            if (files)
+            {
+                await supportOutput.Success($"File pickers → {files}, directory picker → {folders}.");
+            }
+            else
+            {
+                await supportOutput.Warn("Not supported here - this is Chromium-only at the time of writing.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("Support check failed →", ex.Message);
+        }
+    }
+
+    private async Task OpenFile()
+    {
+        try
+        {
+            var picked = await fileSystem.ShowOpenFilePicker(accept:
+            [
+                new FilePickerType
+                {
+                    Description = "Text files",
+                    MimeType = "text/plain",
+                    Extensions = [".txt", ".md", ".json", ".csv", ".log"],
+                },
+            ]);
+
+            if (picked is null or { Length: 0 })
+            {
+                await openOutput.Warn("Nothing picked - the dialog was cancelled, or the API is unavailable.");
+                return;
+            }
+
+            _file = picked[0];
+            _fileInfo = await fileSystem.GetFileInfo(_file);
+            await openOutput.Success("Picked →", _file.Name);
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error("ShowOpenFilePicker failed →", ex.Message);
+        }
+    }
+
+    private async Task ReadPicked()
+    {
+        if (_file is null)
+        {
+            await openOutput.Warn("Pick a file first.");
+            return;
+        }
+
+        try
+        {
+            var text = await fileSystem.ReadText(_file);
+            if (text is null)
+            {
+                await openOutput.Warn("ReadText returned null - the file has moved, or permission lapsed.");
+                return;
+            }
+
+            _contents = text;
+            await openOutput.Success($"ReadText → {text.Length} character(s).");
+        }
+        catch (Exception ex)
+        {
+            await openOutput.Error("ReadText failed →", ex.Message);
+        }
+    }
+
+    private async Task PickSaveTarget()
+    {
+        try
+        {
+            _saveTarget = await fileSystem.ShowSaveFilePicker("butil-notes.txt",
+            [
+                new FilePickerType { Description = "Text", MimeType = "text/plain", Extensions = [".txt"] },
+            ]);
+
+            if (_saveTarget is null)
+            {
+                await saveOutput.Warn("Nothing picked - the dialog was cancelled, or the API is unavailable.");
+                return;
+            }
+
+            _saveCount = 0;
+            await saveOutput.Success("Save target →", _saveTarget.Name);
+        }
+        catch (Exception ex)
+        {
+            await saveOutput.Error("ShowSaveFilePicker failed →", ex.Message);
+        }
+    }
+
+    private async Task SaveToTarget()
+    {
+        if (_saveTarget is null)
+        {
+            await saveOutput.Warn("Pick a save target first.");
+            return;
+        }
+
+        try
+        {
+            var written = await fileSystem.WriteText(_saveTarget, _contents);
+            if (written)
+            {
+                _saveCount++;
+                await saveOutput.Success($"WriteText → saved {_contents.Length} character(s) - no dialog this time.");
+            }
+            else
+            {
+                await saveOutput.Warn("WriteText → refused. The handle may be read-only, or permission lapsed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await saveOutput.Error("WriteText failed →", ex.Message);
+        }
+    }
+
+    private async Task PickFolder()
+    {
+        try
+        {
+            _folder = await fileSystem.ShowDirectoryPicker(_folderWrite);
+            if (_folder is null)
+            {
+                await folderOutput.Warn("Nothing picked - the dialog was cancelled, or the API is unavailable.");
+                return;
+            }
+
+            await RefreshFolder();
+            await folderOutput.Success($"Picked → {_folder.Name} ({_entries.Length} entries).");
+        }
+        catch (Exception ex)
+        {
+            await folderOutput.Error("ShowDirectoryPicker failed →", ex.Message);
+        }
+    }
+
+    private async Task RefreshFolder()
+    {
+        if (_folder is null) return;
+
+        _entries = await fileSystem.ListDirectory(_folder);
+    }
+
+    private async Task CreateInFolder()
+    {
+        if (_folder is null)
+        {
+            await folderOutput.Warn("Pick a folder first.");
+            return;
+        }
+
+        try
+        {
+            var created = await fileSystem.GetFile(_folder, "hello.txt", create: true);
+            if (created is null)
+            {
+                await folderOutput.Warn("GetFile returned null - write access was not granted for this folder.");
+                return;
+            }
+
+            var written = await fileSystem.WriteText(created, $"Written from Blazor at {DateTime.Now:s}.");
+            await RefreshFolder();
+
+            if (written)
+            {
+                await folderOutput.Success("Created and wrote hello.txt.");
+            }
+            else
+            {
+                await folderOutput.Warn("hello.txt was created but the write was refused.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await folderOutput.Error("Create failed →", ex.Message);
+        }
+    }
+
+    private async Task RemoveFromFolder()
+    {
+        if (_folder is null)
+        {
+            await folderOutput.Warn("Pick a folder first.");
+            return;
+        }
+
+        try
+        {
+            var removed = await fileSystem.Remove(_folder, "hello.txt");
+            await RefreshFolder();
+
+            if (removed)
+            {
+                await folderOutput.Log("Removed hello.txt.");
+            }
+            else
+            {
+                await folderOutput.Warn("Remove → nothing to remove, or it was refused.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await folderOutput.Error("Remove failed →", ex.Message);
+        }
+    }
+
+    // Whichever handle the page currently has, so the permission demo works no matter which of the
+    // pickers was used.
+    private FileSystemHandleInfo? CurrentHandle => _saveTarget ?? _folder ?? _file;
+
+    private async Task CheckPermission(bool write)
+    {
+        if (CurrentHandle is null)
+        {
+            await permissionOutput.Warn("Pick a file or folder first.");
+            return;
+        }
+
+        try
+        {
+            var state = await fileSystem.QueryPermission(CurrentHandle, write);
+            await permissionOutput.Success($"QueryPermission({(write ? "write" : "read")}) on {CurrentHandle.Name} →", state);
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("QueryPermission failed →", ex.Message);
+        }
+    }
+
+    private async Task AskPermission()
+    {
+        if (CurrentHandle is null)
+        {
+            await permissionOutput.Warn("Pick a file or folder first.");
+            return;
+        }
+
+        try
+        {
+            var state = await fileSystem.RequestPermission(CurrentHandle, write: true);
+            if (state == FileSystemPermission.Granted)
+            {
+                await permissionOutput.Success("RequestPermission → granted.");
+            }
+            else
+            {
+                await permissionOutput.Warn("RequestPermission →", state);
+            }
+        }
+        catch (Exception ex)
+        {
+            await permissionOutput.Error("RequestPermission failed →", ex.Message);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            foreach (var handle in new[] { _file, _saveTarget, _folder })
+            {
+                if (handle is not null) await fileSystem.Release(handle);
+            }
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

@@ -15,13 +15,16 @@ At the heart of the Boilerplate messaging architecture is **AppMessages** - a ce
 - From JavaScript to C# code
 - From web service workers to the C# code
 
-**Location**: [`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs)
-
 **Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
+
+> **SignalR only.** `SharedAppMessages`, the SignalR channel (Channel 2) and everything below that depends on a
+> `HubConnection` exist only when the project was generated with `--signalR true`. Without it, `ClientAppMessages`
+> has no base class and Channels 1, 3, 4 and 5 are the whole picture.
 
 ### Message Structure
 
-**SharedAppMessages** (Server ↔ Client):
+**SharedAppMessages** (Server ↔ Client, `signalR` only) -
+[`src/Shared/Infrastructure/Services/SharedAppMessages.cs`](/src/Shared/Infrastructure/Services/SharedAppMessages.cs):
 
 ```csharp
 public partial class SharedAppMessages
@@ -49,7 +52,7 @@ public partial class SharedAppMessages
 **Location**: [`src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs`](/src/Client/Boilerplate.Client.Core/Infrastructure/Services/ClientAppMessages.cs)
 
 ```csharp
-public partial class ClientAppMessages : SharedAppMessages
+public partial class ClientAppMessages // : SharedAppMessages, when signalR is enabled
 {    
     // Theme and culture
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
@@ -62,7 +65,7 @@ public partial class ClientAppMessages : SharedAppMessages
 }
 ```
 
-**Note**: `ClientAppMessages` inherits from `SharedAppMessages`, so client-side code has access to both shared and client-only messages.
+**Note**: with SignalR enabled, `ClientAppMessages` inherits from `SharedAppMessages`, so client-side code has access to both shared and client-only messages.
 
 ---
 
@@ -92,24 +95,30 @@ PubSubService.Publish(ClientAppMessages.THEME_CHANGED, newTheme);
 **Subscribing to messages**:
 
 ```csharp
-// In component code
+// In component code. AppComponentBase exposes OnInitAsync / DisposeAsync(bool) - use those, not OnInitialized.
 private Action? unsubscribe;
 
-protected override void OnInitialized()
+protected override async Task OnInitAsync()
 {
+    await base.OnInitAsync();
+
     unsubscribe = PubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
     {
-        currentTheme = (string)payload;
+        currentTheme = (string?)payload;
         await InvokeAsync(StateHasChanged);
     });
 }
 
-protected override void Dispose(bool disposing)
+protected override async ValueTask DisposeAsync(bool disposing)
 {
+    await base.DisposeAsync(disposing);
     unsubscribe?.Invoke();
-    base.Dispose(disposing);
 }
 ```
+
+The handler holds only a **weak** reference to its target, so a component that is collected stops receiving
+messages whether or not it unsubscribed. Call `unsubscribe` anyway: it is what removes the entry immediately, and
+the weak reference is a safety net rather than the contract.
 
 **Persistent Messages**:
 
@@ -174,8 +183,9 @@ unsubscribe = PubSubService.Subscribe(SharedAppMessages.DASHBOARD_DATA_CHANGED, 
 **Publishing from JavaScript**:
 
 ```javascript
-// From any JavaScript code
-App.publishMessage('CUSTOM_EVENT', { data: 'some data' });
+// From any JavaScript code. The payload parameter is a string - serialize anything else yourself, because the
+// interop call fails (and its promise rejects, silently) when it cannot be deserialized into string?.
+App.publishMessage('CUSTOM_EVENT', JSON.stringify({ data: 'some data' }));
 
 // Show diagnostic modal
 App.showDiagnostic(); // Publishes SHOW_DIAGNOSTIC_MODAL message
@@ -200,19 +210,22 @@ The `window.postMessage` API allows communication between different JavaScript c
 **Location**: [`src/Client/Boilerplate.Client.Core/Scripts/events.ts`](/src/Client/Boilerplate.Client.Core/Scripts/events.ts)
 
 **When to use**:
-- Communication from iframes
-- Integration with third-party scripts
-- Cross-origin messaging
+- Communication from a same-origin iframe, popup or opener
+- Integration with third-party scripts loaded into the app's own page
+
+**Same-origin only**: window messages from another origin are dropped. Do not remove that check to make a
+cross-origin integration work - it is what stops an arbitrary page that holds a handle to this window from driving
+`PubSubService`. Use a same-origin proxy page instead.
 
 **Publishing via window.postMessage**:
 
 ```javascript
-// From any JavaScript context (including iframes)
+// From a same-origin JavaScript context. The payload must be a string; see Channel 3.
 window.postMessage({ 
     key: 'PUBLISH_MESSAGE', 
     message: 'CUSTOM_EVENT', 
-    payload: { data: 'value' } 
-}, '*');
+    payload: 'value'
+}, window.location.origin);
 ```
 
 **How it works**:
@@ -222,6 +235,12 @@ window.postMessage({
 window.addEventListener('message', handleMessage);
 
 function handleMessage(e: MessageEvent) {
+    // Window messages must be same-origin. Service-worker messages (Channel 5) reach this same handler with an
+    // empty origin and are exempt, because a service worker is same-origin by registration.
+    const isFromWindow = e.currentTarget === window;
+    const isCrossOrigin = e.origin !== window.location.origin;
+    if (isFromWindow && (isCrossOrigin || !e.origin)) return;
+
     if (e.data?.key === 'PUBLISH_MESSAGE') {
         // Bridge to C# PubSubService via AppJsBridge
         App.publishMessage(e.data?.message, e.data?.payload);
@@ -260,16 +279,9 @@ self.addEventListener('notificationclick', (event) => {
 **How it works**:
 
 ```typescript
-// events.ts - Listens for service worker messages
+// events.ts - the same handler as Channel 4, also registered for service worker messages
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', handleMessage);
-}
-
-function handleMessage(e: MessageEvent) {
-    if (e.data?.key === 'PUBLISH_MESSAGE') {
-        // Bridge to C# PubSubService
-        App.publishMessage(e.data?.message, e.data?.payload);
-    }
 }
 ```
 

@@ -1,0 +1,143 @@
+using Bit.Butil;
+
+namespace Bit.Websites.Platform.Client.Pages.Templates;
+
+public partial class Templates02GettingStartedPage
+{
+    [Inject] private Clipboard clipboard { get; set; } = default!;
+
+    private bool installVs;
+    private bool installVsCode;
+    private bool showCrossPlatform;
+    private bool enableCrossPlatform;
+    private string devOS = "Windows";
+    private bool enableVirtualization;
+    private string copyButtonText = "Copy commands";
+
+    private List<(string text, string command)> GetSelectedCommands()
+    {
+        List<(string text, string command)> result =
+        [
+            (text:"echo 'Set execution policy';",
+            command:"Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force;"),
+
+            (text:"echo 'Install/Update Windows Package Manager (winget) https://learn.microsoft.com/en-us/windows/package-manager/winget/#install-winget-on-windows-sandbox';",
+            command:"$progressPreference = 'silentlyContinue'; Install-PackageProvider -Name NuGet -Force | Out-Null; Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null; Repair-WinGetPackageManager -AllUsers;"),
+
+            (text:@"echo 'Install .NET SDK https://dotnet.microsoft.com/en-us/download';",
+            command: $"winget install Microsoft.DotNet.SDK.10 --accept-source-agreements --accept-package-agreements;"),
+            
+            (text:@"echo 'Install Microsoft DevTunnels https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started?tabs=windows#install';",
+            command: $"winget install Microsoft.devtunnel --accept-source-agreements --accept-package-agreements;"),
+
+            (text:@"echo 'Discover installed .NET SDK';",
+            command:"$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
+
+            (text:@"echo 'Install Node.js https://nodejs.org/en/download/package-manager/all#windows-1';",
+            command:"winget install OpenJS.NodeJS --accept-source-agreements --accept-package-agreements;"),
+
+            (text:@"echo 'Install WebAssembly workloads https://learn.microsoft.com/en-us/aspnet/core/blazor/webassembly-build-tools-and-aot#net-webassembly-build-tools';",
+            command:"dotnet nuget add source \"https://api.nuget.org/v3/index.json\" --name \"nuget.org\"; dotnet workload install wasm-tools;"),
+
+            (text:@"echo 'Install Aspire CLI tool';",
+            command:"dotnet tool install -g Aspire.Cli"),
+
+            (text:@"echo 'Install the Bit.Boilerplate project template https://www.nuget.org/packages/Bit.Boilerplate';",
+            command:"dotnet new install Bit.Boilerplate;")
+        ];
+
+        if (enableVirtualization)
+        {
+            result.AddRange([
+                (text:@"echo 'Install WSL';",
+                command:"wsl --install;"),
+
+                (text:@"echo 'Install HyperV';",
+                command:"Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online -NoRestart;"),
+
+                (text:@"echo 'Install HyperVisior Platform';",
+                command:"Enable-WindowsOptionalFeature -FeatureName HypervisorPlatform -Online -NoRestart;"),
+
+                (text:@"echo 'Install Virtual Machine Platform';",
+                command:"Enable-WindowsOptionalFeature -FeatureName VirtualMachinePlatform -Online -NoRestart;"),
+
+                (text:@"echo 'Install Docker Desktop';",
+                command:"winget install Docker.DockerDesktop --accept-source-agreements --accept-package-agreements;")]
+            );
+        }
+
+        if (enableCrossPlatform)
+        {
+            result.AddRange([
+                (text:@"echo 'Install MAUI workloads https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=visual-studio-code#install-net-and-net-maui-workloads';",
+                command:"dotnet workload install maui;"),
+
+                (text:@"echo 'Enable long paths files in Windows https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation';",
+                command:@"New-ItemProperty -Path ""HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem"" -Name ""LongPathsEnabled"" -Value 1 -PropertyType DWORD -Force;"),
+
+                (text:@"echo 'Enable Windows developer mode https://learn.microsoft.com/en-us/windows/apps/get-started/developer-mode-features-and-debugging#use-regedit-to-enable-your-device';",
+                command:@"New-ItemProperty -Path ""HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"" -Name ""AllowDevelopmentWithoutDevLicense"" -Value 1 -PropertyType DWORD -Force;")]
+            );
+        }
+
+        if (installVsCode)
+        {
+            result.AddRange([
+                (text: @"echo 'Install Visual Studio Code https://code.visualstudio.com/download';",
+                command: "winget install -e --id Microsoft.VisualStudioCode --scope machine --accept-source-agreements --accept-package-agreements;"),
+
+                (text: @"echo 'Discover installed Visual Studio Code';",
+                command: "$env:Path = [System.Environment]::GetEnvironmentVariable(\"Path\",\"Machine\") + \";\" + [System.Environment]::GetEnvironmentVariable(\"Path\",\"User\");"),
+
+                (text: @"echo 'Install the C# Dev Kit extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit';",
+                command: "code --install-extension ms-dotnettools.csdevkit;"),
+
+                (text: @"echo 'Install the GitHub Copilot extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';",
+                command: "code --install-extension GitHub.copilot;"),
+
+                (text: @"echo 'Install the GitHub Copilot Chat extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat';",
+                command: "code --install-extension GitHub.copilot-chat;"),
+
+                (text: @"echo 'Install the C# extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp';",
+                command: "code --install-extension ms-dotnettools.csharp;"),
+
+                (text: @"echo 'Install the Docker extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker';",
+                command: "code --install-extension ms-azuretools.vscode-docker;"),
+
+                (text: @"echo 'Install Dev Containers extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers';",
+                command: "code --install-extension ms-vscode-remote.remote-containers;"),
+
+                (text: @"echo 'Install the Microsoft.AspNetCore.Razor.VSCode.BlazorWasmDebuggingExtension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.blazorwasm-companion';",
+                command: "code --install-extension ms-dotnettools.blazorwasm-companion;"),
+
+                (text: @"echo 'Install the .NET Install Tool extension for Visual Studio Code https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.vscode-dotnet-runtime';",
+                command: "code --install-extension ms-dotnettools.vscode-dotnet-runtime;")
+            ]);
+        }
+
+        if (installVs)
+        {
+            result.Add((text: @"echo 'Install Visual Studio 2026 Community Edition https://visualstudio.microsoft.com/downloads/';",
+                command: $"winget install --id Microsoft.VisualStudio.Community.Insiders --exact --silent --custom \"--add Microsoft.VisualStudio.Workload.NetWeb{(enableCrossPlatform ? " --add Microsoft.VisualStudio.Workload.NetCrossPlat --add Component.Android.SDK.MAUI" : "")}\" --accept-source-agreements --accept-package-agreements --disable-interactivity;"));
+        }
+
+        return result;
+    }
+
+    private string GetReadyToRunSelectedCommands()
+    {
+        return string.Join(" ", GetSelectedCommands().Select(c => $"{c.text} {c.command}"));
+    }
+
+    private string GetDisplayableSelectedCommands()
+    {
+        return string.Join($"{Environment.NewLine}", GetSelectedCommands().Select(c => $"{c.text}{Environment.NewLine}{c.command}{Environment.NewLine}"));
+    }
+
+    private async Task CopyCommandsToClipboard()
+    {
+        var commands = GetReadyToRunSelectedCommands();
+        await clipboard.WriteText(commands);
+        copyButtonText = "Now paste commands in Windows PowerShell";
+    }
+}

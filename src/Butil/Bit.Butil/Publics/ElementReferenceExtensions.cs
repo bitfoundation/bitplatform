@@ -33,6 +33,13 @@ public static class ElementReferenceExtensions
     }
 
     /// <summary>
+    /// The runtime an <see cref="ElementReference"/> was created by, for the sibling extension
+    /// classes that live in <c>Publics/Element</c>. Internal because the unwrapping is an
+    /// implementation detail - callers already hold the reference, not the runtime.
+    /// </summary>
+    internal static IJSRuntime GetRuntime(ElementReference elementReference) => GetJSRuntime(elementReference);
+
+    /// <summary>
     /// Removes keyboard focus from the currently focused element.
     /// <br />
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/blur</see>

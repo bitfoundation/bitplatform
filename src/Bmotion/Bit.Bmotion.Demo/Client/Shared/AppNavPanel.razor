@@ -1,0 +1,49 @@
+﻿@* The docs navigation. A sticky column beside the content on wide screens and a drawer over it on
+   narrow ones - the switch is entirely in CSS, so the same markup and the same state serve both. *@
+
+<nav id="nav-panel" class="nav-panel @(IsOpen ? "open" : null)" aria-label="Bmotion demos">
+    <div class="nav-panel-search">
+        <input type="search" placeholder="Search demo" aria-label="Search demo"
+               value="@_filter" @oninput="OnFilterInput" disabled="@Disabled" />
+    </div>
+
+    <ul class="nav-panel-list">
+        @foreach (var item in _visibleItems)
+        {
+            <li>
+                @* Match.All throughout: every href is a distinct leaf route with nothing nested
+                   under it, and prefix matching would light up "Layout" the moment a
+                   "LayoutSomething" route existed - as well as lighting up the home entry, whose
+                   empty href prefixes every page. *@
+                <NavLink href="@item.Href" Match="NavLinkMatch.All">
+                    @item.Title
+                </NavLink>
+            </li>
+        }
+    </ul>
+
+    @if (_visibleItems.Length == 0)
+    {
+        <span class="nav-panel-empty">No demo matches "@_filter".</span>
+    }
+</nav>
+
+@code {
+    /// <summary>Whether the drawer is open. Ignored above the breakpoint, where the panel is always in place.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Disables the search box while the prerendered markup is still waiting for the runtime.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private string _filter = "";
+    private NavItem[] _visibleItems = NavItem.All;
+
+    private void OnFilterInput(ChangeEventArgs e)
+    {
+        _filter = e.Value?.ToString() ?? "";
+
+        _visibleItems = _filter.Trim() is { Length: > 0 } term
+            ? NavItem.All.Where(i => i.Title.Contains(term, StringComparison.OrdinalIgnoreCase)).ToArray()
+            : NavItem.All;
+    }
+}

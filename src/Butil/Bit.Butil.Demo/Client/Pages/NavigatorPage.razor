@@ -1,4 +1,4 @@
-@page "/navigator"
+﻿@page "/navigator"
 @inject Bit.Butil.Navigator navigator
 
 <PageTitle>Navigator - Bit.Butil</PageTitle>
@@ -141,6 +141,18 @@ bool accepted = await navigator.Vibrate([200, 100, 200]);
     <ApiMember Name="ClearAppBadge" Signature="Task ClearAppBadge()" Description="Removes the badge from the app icon." />
     <ApiMember Name="SendBeacon" Signature="Task<bool> SendBeacon(string url, object? data = null)" Description="Queues a small asynchronous HTTP transfer that survives page unload; true when queued." />
     <ApiMember Name="Vibrate" Signature="Task<bool> Vibrate(int[] pattern)" Description="Plays a vibration/pause pattern (ms) on supporting devices; no-op elsewhere." />
+    <ApiMember Name="IsCookieEnabled"
+               Signature="Task<bool> IsCookieEnabled()"
+               Description="Whether the browser accepts cookies at all. Reports the global setting, not whether this document can set one - a third-party iframe with partitioned cookies still reads true. Use StorageAccess for that question." />
+    <ApiMember Name="GetDoNotTrack"
+               Signature="Task<string?> GetDoNotTrack()"
+               Description="The user's Do Not Track preference: 1, 0, or null when unset. Being removed from browsers, so treat null as no signal rather than as consent." />
+    <ApiMember Name="GetUserActivation"
+               Signature="Task<UserActivationState?> GetUserActivation()"
+               Description="Whether the user has interacted with the page and whether that interaction is still spendable. Null on browsers without navigator.userActivation." />
+    <ApiMember Name="UserActivationState"
+               Signature="class UserActivationState { bool HasBeenActive; bool IsActive; }"
+               Description="Sticky activation (has ever interacted) and transient activation (recent enough for a gesture-gated API). Check IsActive before calling one, to fail fast with your own message instead of an opaque browser rejection." />
 </ApiTable>
 
 @code {

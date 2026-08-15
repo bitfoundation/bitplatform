@@ -1135,17 +1135,14 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Wachtwoordloze aanmelding succesvol uitgeschakeld</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>Je toegangssleutel kon niet worden geverifieerd en is daarom niet verwijderd. Probeer het opnieuw.</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>Deze toegangssleutel bestaat niet meer op de server; hij is van dit apparaat verwijderd.</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>Wissen</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Verzenden</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>De accentkleur {0} toepassen</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>Geannuleerd</value>
@@ -1153,6 +1150,27 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI-chatpaneel</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Uw bericht dicteren</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Dicteren stoppen</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dicteren</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Toegang tot de microfoon is geblokkeerd. Sta deze toe voor deze site om te kunnen dicteren.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dicteren gestopt: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Voorlezen</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Voorlezen stoppen</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>
@@ -1195,6 +1213,9 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Account-upgrade mislukt.</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>Er zijn op dit moment geen advertenties beschikbaar. Probeer het later opnieuw.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Problemen met het bekijken van advertentie?</value>

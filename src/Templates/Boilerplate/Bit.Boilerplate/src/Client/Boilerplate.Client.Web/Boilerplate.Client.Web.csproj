@@ -65,6 +65,8 @@
         <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+        <!-- Optimization flag for the AOT'ed assemblies bitcode, which defaults to -O2 in Release and is not covered by EmccCompileOptimizationFlag. -->
+        <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
     <!--

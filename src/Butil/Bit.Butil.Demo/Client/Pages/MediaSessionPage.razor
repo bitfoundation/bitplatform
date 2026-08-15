@@ -1,0 +1,374 @@
+@page "/media-session"
+@implements IAsyncDisposable
+@inject Bit.Butil.MediaSession mediaSession
+
+<PageTitle>MediaSession - Bit.Butil</PageTitle>
+
+<PageHeader Category="Media & Speech"
+            Title="MediaSession"
+            Lead="Tell the operating system what your app is playing, so the lock screen, notification shade, media keys and headset buttons show your track and control it - without your page being in the foreground."
+            MdnUrl="https://developer.mozilla.org/en-US/docs/Web/API/Media_Session_API"
+            InjectAs="MediaSession mediaSession" />
+
+<Callout Type="info" Title="This describes playback, it does not play anything">
+    A media session is metadata plus a remote control. Something else has to actually make sound -
+    an <code>&lt;audio&gt;</code> element, <a href="web-audio">WebAudio</a>, a
+    <code>MediaStream</code> - and most platforms only surface the session once audio is genuinely
+    playing, so setting metadata on a silent page usually shows nothing.
+</Callout>
+
+<div class="stack">
+    <DemoSection Title="Support check"
+                 Api="IsSupported"
+                 Description="Returns true when the runtime exposes navigator.mediaSession. During prerender/SSR the check returns false rather than throwing, so defer it to OnAfterRenderAsync."
+                 Code=@("""
+@inject Bit.Butil.MediaSession mediaSession
+
+var supported = await mediaSession.IsSupported();
+""")>
+        <div class="controls">
+            <button @onclick="CheckSupported">IsSupported</button>
+        </div>
+        <DemoConsole @ref="supportOutput" Title="support check output" />
+    </DemoSection>
+
+    <DemoSection Title="Play something, and describe it"
+                 Api="SetMetadata / SetPlaybackState"
+                 Description="SetMetadata is what the platform shows: title, artist, album and artwork. Offering several artwork sizes lets each surface pick what fits. SetPlaybackState keeps the system's play/pause icon in step with reality - set it on every play and pause, or the lock screen will disagree with your page."
+                 Code=@("""
+await mediaSession.SetMetadata(new MediaMetadata
+{
+    Title = "A test tone",
+    Artist = "Bit.Butil",
+    Album = "MediaSession demo",
+    Artwork =
+    [
+        new MediaArtwork { Src = "images/cover-512.png", Sizes = "512x512", Type = "image/png" },
+    ],
+});
+
+await mediaSession.SetPlaybackState(MediaSessionPlaybackState.Playing);
+""")>
+        <div class="controls">
+            <label>Title <input style="width:12rem" @bind="_title" /></label>
+            <label>Artist <input style="width:12rem" @bind="_artist" /></label>
+        </div>
+        <div class="controls">
+            <button @onclick="PublishMetadata">SetMetadata</button>
+            <button class="secondary" @onclick="() => SetState(MediaSessionPlaybackState.Playing)">State: Playing</button>
+            <button class="secondary" @onclick="() => SetState(MediaSessionPlaybackState.Paused)">State: Paused</button>
+            <button class="danger" @onclick="() => SetState(MediaSessionPlaybackState.None)">State: None</button>
+        </div>
+        @* The session only surfaces while something is really playing, so the demo needs a real
+           source. A short generated tone avoids shipping an audio file with the site; the element's
+           own play/pause events keep SetPlaybackState honest without any extra interop. *@
+        <audio src="@ToneDataUrl" loop controls style="margin-top:1rem;width:100%"
+               @onplay="() => SetState(MediaSessionPlaybackState.Playing)"
+               @onpause="() => SetState(MediaSessionPlaybackState.Paused)"></audio>
+        <div class="field">
+            <span class="field-label">Playback state</span>
+            <span>@_playbackState</span>
+        </div>
+        <DemoConsole @ref="metadataOutput" Title="metadata output" />
+    </DemoSection>
+
+    <DemoSection Title="Hardware and lock-screen controls"
+                 Api="SetActionHandler / ClearActionHandler"
+                 Description="Registering a handler is also what makes the corresponding control appear on the platform. Engines implement different subsets, so SetActionHandler returns false for the ones this one doesn't know - which is the normal way to discover that SeekTo or the skip actions are unavailable. Try a media key on your keyboard, or the transport controls in your OS."
+                 Code=@("""
+var ok = await mediaSession.SetActionHandler(MediaSessionAction.Play, _ => Play());
+await mediaSession.SetActionHandler(MediaSessionAction.Pause, _ => Pause());
+await mediaSession.SetActionHandler(MediaSessionAction.NextTrack, _ => Next());
+
+// seek actions carry their offset or target in the details:
+await mediaSession.SetActionHandler(MediaSessionAction.SeekTo,
+    details => SeekTo(details.SeekTime ?? 0));
+
+await mediaSession.SetActionHandler(MediaSessionAction.SeekForward,
+    details => SeekBy(details.SeekOffset ?? 10));
+
+// remove a handler (and hide its control):
+await mediaSession.ClearActionHandler(MediaSessionAction.NextTrack);
+""")>
+        <div class="controls">
+            <button @onclick="RegisterHandlers">Register handlers</button>
+            <button class="danger" @onclick="ClearHandlers">Clear handlers</button>
+        </div>
+        @if (_registered.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Registered</span>
+                <span><code>@string.Join(", ", _registered)</code></span>
+            </div>
+        }
+        @if (_unsupported.Count > 0)
+        {
+            <div class="field">
+                <span class="field-label">Not supported here</span>
+                <span><code>@string.Join(", ", _unsupported)</code></span>
+            </div>
+        }
+        <DemoConsole @ref="actionOutput" Title="action output" />
+    </DemoSection>
+
+    <DemoSection Title="The scrubber"
+                 Api="SetPositionState / ClearPositionState"
+                 Description="Publishes duration, position and rate so the platform can draw an accurate progress bar and let the user seek from outside your page. It extrapolates between updates, so this needs calling when you seek or change rate - not once per frame. The position is clamped into the track's range here, because the spec throws when it overshoots the duration."
+                 Code=@("""
+await mediaSession.SetPositionState(
+    durationSeconds: 240,
+    positionSeconds: 37.5,
+    playbackRate: 1);
+
+// when playback ends entirely:
+await mediaSession.ClearPositionState();
+""")>
+        <div class="controls">
+            <button @onclick="PublishPosition">SetPositionState</button>
+            <button class="danger" @onclick="ClearPosition">ClearPositionState</button>
+        </div>
+        <DemoConsole @ref="positionOutput" Title="position output" />
+    </DemoSection>
+</div>
+
+<ApiTable Title="API reference">
+    <ApiMember Name="IsSupported"
+               Signature="ValueTask<bool> IsSupported()"
+               Description="True when the runtime exposes navigator.mediaSession. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="SetMetadata"
+               Signature="ValueTask<bool> SetMetadata(MediaMetadata? metadata)"
+               Description="Describes the current track. Pass null to clear it. False when there is no media session, or the artwork was rejected." />
+    <ApiMember Name="SetPlaybackState"
+               Signature="ValueTask SetPlaybackState(MediaSessionPlaybackState state)"
+               Description="None, Paused or Playing - what the platform's play/pause icon reflects." />
+    <ApiMember Name="SetPositionState"
+               Signature="ValueTask<bool> SetPositionState(double durationSeconds, double positionSeconds, double playbackRate = 1)"
+               Description="Publishes the playback position for the platform's scrubber. Position is clamped into range; a rate of 0 is treated as 1." />
+    <ApiMember Name="ClearPositionState"
+               Signature="ValueTask ClearPositionState()"
+               Description="Drops the published position, e.g. when playback stops entirely." />
+    <ApiMember Name="SetActionHandler"
+               Signature="ValueTask<bool> SetActionHandler(MediaSessionAction action, Action<MediaSessionActionDetails> handler)"
+               Description="Handles a platform control, which is also what makes it appear. False when this engine doesn't implement that action. Registering twice replaces." />
+    <ApiMember Name="ClearActionHandler"
+               Signature="ValueTask ClearActionHandler(MediaSessionAction action)"
+               Description="Removes a handler, which also hides the corresponding control." />
+    <ApiMember Name="DisposeAsync"
+               Signature="ValueTask DisposeAsync()"
+               Description="On scope/circuit teardown, clears every handler this instance registered and resets the session." />
+    <ApiMember Name="MediaSessionActionDetails"
+               Signature="Action, SeekTime, SeekOffset, FastSeek"
+               Description="SeekTime is the absolute target for SeekTo; SeekOffset is the step for the seek-by actions, and is null when the platform left the choice to you." />
+</ApiTable>
+
+@code {
+    private DemoConsole supportOutput = default!;
+    private DemoConsole metadataOutput = default!;
+    private DemoConsole actionOutput = default!;
+    private DemoConsole positionOutput = default!;
+
+    private string _title = "A test tone";
+    private string _artist = "Bit.Butil";
+    private string _playbackState = "None";
+    private readonly List<string> _registered = [];
+    private readonly List<string> _unsupported = [];
+
+    // The handlers the demo registers. Play/Pause are universal; the rest are the ones engines
+    // differ on, which is what makes the false return value from SetActionHandler worth showing.
+    private static readonly MediaSessionAction[] DemoActions =
+    [
+        MediaSessionAction.Play,
+        MediaSessionAction.Pause,
+        MediaSessionAction.Stop,
+        MediaSessionAction.PreviousTrack,
+        MediaSessionAction.NextTrack,
+        MediaSessionAction.SeekBackward,
+        MediaSessionAction.SeekForward,
+        MediaSessionAction.SeekTo,
+    ];
+
+    private async Task CheckSupported()
+    {
+        try
+        {
+            await supportOutput.Success("IsSupported →", await mediaSession.IsSupported());
+        }
+        catch (Exception ex)
+        {
+            await supportOutput.Error("IsSupported failed →", ex.Message);
+        }
+    }
+
+    private async Task SetState(MediaSessionPlaybackState state)
+    {
+        try
+        {
+            await mediaSession.SetPlaybackState(state);
+            _playbackState = state.ToString();
+            await metadataOutput.Log("SetPlaybackState →", state);
+        }
+        catch (Exception ex)
+        {
+            await metadataOutput.Error("SetPlaybackState failed →", ex.Message);
+        }
+    }
+
+    private async Task PublishMetadata()
+    {
+        try
+        {
+            var ok = await mediaSession.SetMetadata(new MediaMetadata
+            {
+                Title = _title,
+                Artist = _artist,
+                Album = "MediaSession demo",
+            });
+
+            if (ok)
+            {
+                await metadataOutput.Success($"SetMetadata → \"{_title}\" by {_artist}.");
+            }
+            else
+            {
+                await metadataOutput.Warn("SetMetadata → refused (no media session, or the artwork was rejected).");
+            }
+        }
+        catch (Exception ex)
+        {
+            await metadataOutput.Error("SetMetadata failed →", ex.Message);
+        }
+    }
+
+    private async Task RegisterHandlers()
+    {
+        _registered.Clear();
+        _unsupported.Clear();
+
+        try
+        {
+            foreach (var action in DemoActions)
+            {
+                var ok = await mediaSession.SetActionHandler(action, details => InvokeAsync(async () =>
+                {
+                    var extra = details.SeekTime is not null ? $" to {details.SeekTime:0.0}s"
+                        : details.SeekOffset is not null ? $" by {details.SeekOffset:0.0}s"
+                        : "";
+                    await actionOutput.Success($"Platform triggered {details.Action}{extra}.");
+                }));
+
+                (ok ? _registered : _unsupported).Add(action.ToString());
+            }
+
+            await actionOutput.Success($"Registered {_registered.Count} handler(s); {_unsupported.Count} unsupported here.");
+        }
+        catch (Exception ex)
+        {
+            await actionOutput.Error("SetActionHandler failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearHandlers()
+    {
+        try
+        {
+            foreach (var action in DemoActions)
+            {
+                await mediaSession.ClearActionHandler(action);
+            }
+
+            _registered.Clear();
+            _unsupported.Clear();
+            await actionOutput.Log("All handlers cleared.");
+        }
+        catch (Exception ex)
+        {
+            await actionOutput.Error("ClearActionHandler failed →", ex.Message);
+        }
+    }
+
+    private async Task PublishPosition()
+    {
+        try
+        {
+            var ok = await mediaSession.SetPositionState(240, 37.5);
+            if (ok)
+            {
+                await positionOutput.Success("SetPositionState → 37.5s of 240s at 1x.");
+            }
+            else
+            {
+                await positionOutput.Warn("SetPositionState → this engine has no setPositionState.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await positionOutput.Error("SetPositionState failed →", ex.Message);
+        }
+    }
+
+    private async Task ClearPosition()
+    {
+        try
+        {
+            await mediaSession.ClearPositionState();
+            await positionOutput.Log("ClearPositionState → cleared.");
+        }
+        catch (Exception ex)
+        {
+            await positionOutput.Error("ClearPositionState failed →", ex.Message);
+        }
+    }
+
+    // A one-second 440 Hz tone, generated once rather than shipped as a file.
+    private static readonly string ToneDataUrl = BuildTone();
+
+    private static string BuildTone()
+    {
+        const int sampleRate = 8000;
+        const int samples = sampleRate;   // one second
+        var data = new byte[44 + samples];
+
+        void WriteAscii(int offset, string text)
+        {
+            for (var i = 0; i < text.Length; i++) data[offset + i] = (byte)text[i];
+        }
+
+        void WriteInt32(int offset, int value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+        void WriteInt16(int offset, short value) => BitConverter.GetBytes(value).CopyTo(data, offset);
+
+        WriteAscii(0, "RIFF");
+        WriteInt32(4, 36 + samples);
+        WriteAscii(8, "WAVEfmt ");
+        WriteInt32(16, 16);          // PCM header size
+        WriteInt16(20, 1);           // PCM
+        WriteInt16(22, 1);           // mono
+        WriteInt32(24, sampleRate);
+        WriteInt32(28, sampleRate);  // byte rate: 8-bit mono
+        WriteInt16(32, 1);           // block align
+        WriteInt16(34, 8);           // bits per sample
+        WriteAscii(36, "data");
+        WriteInt32(40, samples);
+
+        for (var i = 0; i < samples; i++)
+        {
+            var value = Math.Sin(2 * Math.PI * 440 * i / sampleRate);
+            data[44 + i] = (byte)(128 + value * 40);   // quiet on purpose
+        }
+
+        return "data:audio/wav;base64," + Convert.ToBase64String(data);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await ClearHandlers();
+            await mediaSession.SetMetadata(null);
+            await mediaSession.SetPlaybackState(MediaSessionPlaybackState.None);
+        }
+        catch (Exception)
+        {
+            // teardown - the circuit/runtime may already be gone
+        }
+    }
+}

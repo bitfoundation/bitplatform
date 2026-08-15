@@ -4,8 +4,11 @@
         <TargetFramework>net10.0</TargetFramework>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
-        <InvariantTimezone>true</InvariantTimezone>
-        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- Like WasmEnableSIMD below, these two are on the wasm SDK's relink-trigger list: any
+             non-default value pulls the native tooling (ManagedToNativeGenerator & co) into every
+             incremental build. Trim the runtime in Release only; dev keeps full icu/tz data. -->
+        <InvariantTimezone Condition="'$(Configuration)' == 'Release'">true</InvariantTimezone>
+        <InvariantGlobalization Condition="'$(Configuration)' == 'Release'">true</InvariantGlobalization>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
         <ResolveStaticWebAssetsInputsDependsOn>
             BeforeBuildTasks;
@@ -15,7 +18,10 @@
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
-        <WasmEnableSIMD>false</WasmEnableSIMD>
+        <!-- Disabling SIMD flips WasmBuildNative on, which drags the wasm native tooling
+             (ManagedToNativeGenerator & co) into every incremental build (~3s each). Only
+             production needs the SIMD-less runtime for old-browser support, so scope it to Release. -->
+        <WasmEnableSIMD Condition="'$(Configuration)' == 'Release'">false</WasmEnableSIMD>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,30 +29,27 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.11" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="compilerconfig.json" />
-        <None Include="compilerconfig.json" />
-
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.Bswup" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.Butil" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Extras" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-01">
+        <PackageReference Include="Bit.Bswup" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.Butil" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Extras" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.11" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />
@@ -58,7 +61,15 @@
         <Using Include="Bit.Websites.Platform.Client.Services" />
         <Using Include="Bit.Websites.Platform.Shared" />
 
-        <Watch Remove="*.scss" />
+        <!-- dotnet watch: watch the ts sources (so edits trigger the tsc target on rebuilds) AND the
+             generated .razor.css files (so dotnet watch's scoped-css hot reload pushes style changes to
+             the browser when the in-app scss compiler regenerates them - see ScssCompilerService in the
+             server project). Scss sources are intentionally not watched here: the in-app compiler recompiles
+             them without a rebuild. Paths are rooted with $(MSBuildProjectDirectory) because dotnet watch
+             resolves relative Watch items of referenced projects against the startup project's directory. -->
+        <Watch Remove="**\*.scss" />
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.ts" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**;$(MSBuildProjectDirectory)\**\*.d.ts" />
+        <Watch Include="$(MSBuildProjectDirectory)\**\*.razor.css" Exclude="$(MSBuildProjectDirectory)\node_modules\**;$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -78,9 +89,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <IsolatedScssFiles Include="**\*.razor.scss" />
+        <IsolatedScssFiles Include="**\*.razor.scss" Exclude="node_modules\**;bin\**;obj\**" />
         <GlobalScssFiles Include="Styles\**\*.scss" />
-        <TypeScriptFiles Include="**\*.ts" />
+        <!-- Exclude node_modules & build output: stray newer files there would defeat the
+             BuildJavaScript target's up-to-date check and re-run tsc on every build. -->
+        <TypeScriptFiles Include="**\*.ts" Exclude="node_modules\**;bin\**;obj\**" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
@@ -100,7 +113,7 @@
     </Target>
 
     <Target Name="BuildIsolatedScssFiles" Inputs="@(IsolatedScssFiles)" Outputs="@(IsolatedScssFiles-&gt;Replace('.scss', '.css'))">
-        <Exec Command="node_modules/.bin/sass .:. --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+        <Exec Command="node_modules/.bin/sass .:. --update --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <Target Name="BuildGlobalScssFiles" Inputs="@(GlobalScssFiles)" Outputs="wwwroot/styles/app.css">        
@@ -119,6 +132,8 @@
         <!-- https://github.com/dotnet/runtime/blob/main/src/mono/wasm/build/WasmApp.Common.targets -->
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+        <!-- Optimization flag for the AOT'ed assemblies bitcode, which defaults to -O2 in Release and is not covered by EmccCompileOptimizationFlag. -->
+        <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 
 </Project>

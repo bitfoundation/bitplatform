@@ -1,71 +1,215 @@
 ﻿@page "/"
 
+@* The landing page. It is not a documentation page and does not get the docs shell around it -
+   no nav panel, no "on this page" rail, no content column (see Layout/MainLayout.razor). Instead
+   it lays out its own full-bleed sections, alternating surfaces the way the Bit.BlazorUI home page
+   does, and its own navigation into the docs - which is the job the nav panel would otherwise be
+   doing here. Its styles live under "Home page" in wwwroot/css/app.css. *@
+
 <PageTitle>Bmotion - a Blazor-native animation library</PageTitle>
 
-<div class="page-hero">
-    <Bmotion Initial="Bm.To(opacity: 0, y: 30)"
-            Animate="Bm.To(opacity: 1, y: 0)"
-            Transition="Bm.Spring(stiffness: 80, damping: 15)">
-        <h1>
-            Bmotion
-        </h1>
-    </Bmotion>
+<div class="homepage">
 
-    <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
-            Animate="Bm.To(opacity: 1, y: 0)"
-            Transition="Bm.Tween(0.6, delay: 0.2)">
-        <p>
-            A Blazor-native animation library inspired by Framer Motion.
-            Springs, gestures, layout animations, variants &mdash; zero external dependencies.
-        </p>
-    </Bmotion>
+    @* ── Hero ──────────────────────────────────────────────────────────────── *@
+    <section class="homepage-section hero-section">
+        <div class="homepage-section-content">
+            <div class="hero-copy">
+                <Bmotion Initial="Bm.To(opacity: 0, y: 30)"
+                         Animate="Bm.To(opacity: 1, y: 0)"
+                         Transition="Bm.Spring(stiffness: 80, damping: 15)">
+                    <h1>
+                        Bmotion
+                    </h1>
+                </Bmotion>
 
-    <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
-            Animate="Bm.To(opacity: 1, y: 0)"
-            Transition="Bm.Tween(0.5, delay: 0.4)">
-        <div class="badge-list">
-            @foreach (var f in _features)
-            {
-                <span class="badge">@f</span>
-            }
+                <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+                         Animate="Bm.To(opacity: 1, y: 0)"
+                         Transition="Bm.Tween(0.6, delay: 0.2)">
+                    <p class="hero-lead">
+                        A Blazor-native animation library inspired by Framer Motion. Springs,
+                        gestures, layout animations and variants &mdash; all of the maths in C#,
+                        none of the JavaScript wiring, and no animation library shipped alongside it.
+                    </p>
+                </Bmotion>
+
+                <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
+                         Animate="Bm.To(opacity: 1, y: 0)"
+                         Transition="Bm.Tween(0.5, delay: 0.35)">
+                    <div class="hero-actions">
+                        <a class="hero-btn" href="/basic">Get started</a>
+                        <a class="hero-btn ghost" target="_blank" rel="noopener noreferrer"
+                           href="https://github.com/bitfoundation/bitplatform">
+                            <span class="github-mark" aria-hidden="true"></span>GitHub
+                        </a>
+                    </div>
+                </Bmotion>
+
+                <Bmotion Initial="Bm.To(opacity: 0, y: 15)"
+                         Animate="Bm.To(opacity: 1, y: 0)"
+                         Transition="Bm.Tween(0.5, delay: 0.4)">
+                    <div class="badge-list">
+                        @foreach (var f in _features)
+                        {
+                            <span class="badge">@f</span>
+                        }
+                    </div>
+                </Bmotion>
+            </div>
+
+            @* The hero says what the library does; this shows it. Each tile plays its own entrance
+               and answers the pointer, so the first thing a reader sees on the page is the thing
+               the page is about. *@
+            <div class="hero-stage">
+                @for (var i = 0; i < _tiles.Length; i++)
+                {
+                    var tile = _tiles[i];
+                    var delay = 0.45 + (i * 0.09);
+                    <Bmotion Initial="Bm.To(opacity: 0, y: 26, scale: 0.9)"
+                             Animate="Bm.To(opacity: 1, y: 0, scale: 1)"
+                             WhileHover="Bm.To(scale: 1.06, y: -6)"
+                             WhileTap="Bm.To(scale: 0.95)"
+                             Transition="Bm.Spring(stiffness: 220, damping: 20, delay: delay)">
+                        <a class="hero-tile" href="@($"/{tile.Href}")">
+                            <span class="hero-tile-mark"></span>
+                            <span class="hero-tile-title">@tile.Title</span>
+                            <span class="hero-tile-desc">@tile.Description</span>
+                        </a>
+                    </Bmotion>
+                }
+            </div>
         </div>
-    </Bmotion>
-</div>
+    </section>
 
-<div class="demo-section">
-    <h2>Quick start</h2>
-    <div class="demo-row">
-        <div class="demo-card">
-            <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
-                    Animate="Bm.To(scale: 1, opacity: 1)"
-                    WhileHover="Bm.To(scale: 1.15, rotate: 5)"
-                    WhileTap="Bm.To(scale: 0.9)"
-                    Transition="Bm.Spring(stiffness: 300, damping: 20)">
-                <div class="box" />
-            </Bmotion>
+    @* ── Quick start ───────────────────────────────────────────────────────── *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <h2>Quick start</h2>
+            <p class="section-lead">
+                One component, two parameters: where the element starts and where it is going.
+                Everything else &mdash; springs, gestures, keyframes, drag, layout &mdash; is the
+                same component with more of them. Hover the box, then press it.
+            </p>
+
+            <div class="demo-row">
+                <div class="demo-card">
+                    <Bmotion Initial="Bm.To(scale: 0, opacity: 0)"
+                             Animate="Bm.To(scale: 1, opacity: 1)"
+                             WhileHover="Bm.To(scale: 1.15, rotate: 5)"
+                             WhileTap="Bm.To(scale: 0.9)"
+                             Transition="Bm.Spring(stiffness: 300, damping: 20)">
+                        <div class="box" />
+                    </Bmotion>
+                </div>
+            </div>
+
+            <CodeSnippet Code="@_quickStart" />
         </div>
-    </div>
+    </section>
 
-    <CodeSnippet Code="@_quickStart" />
+    @* ── What is in the box ────────────────────────────────────────────────── *@
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <h2>What's in the box</h2>
+            <p class="section-lead">
+                Every animation below is computed in C#. Compositor-eligible work &mdash; tweens and
+                settled springs on transform and opacity, which is most enter, exit, hover and
+                variant animation &mdash; is pre-sampled and handed to the browser's Web Animations
+                API, so it plays off the main thread with no per-frame interop at all.
+            </p>
+
+            <div class="feature-grid">
+                @foreach (var feature in _capabilities)
+                {
+                    <a class="feature-card" href="@($"/{feature.Href}")">
+                        <h3>@feature.Title</h3>
+                        <p>@feature.Description</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Every demo ────────────────────────────────────────────────────────── *@
+    @* The landing page has no nav panel, so the full index of demos lives here instead: a reader
+       who arrives at the root should be able to reach any page of the docs without first having to
+       find their way into them. *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <h2>Explore the demos</h2>
+            <p class="section-lead">Every page of the documentation, in the order it is meant to be read.</p>
+
+            <div class="demo-index">
+                @foreach (var item in NavItem.All.Where(i => i.Href.Length > 0))
+                {
+                    <a class="demo-index-link" href="@($"/{item.Href}")">@item.Title</a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Closing call to action ────────────────────────────────────────────── *@
+    <section class="homepage-section">
+        <div class="homepage-section-content cta-content">
+            <h2>Start animating</h2>
+            <p class="section-lead">
+                Bmotion is part of bit platform, free and open source. The whole engine lives in the
+                repository, so you can read it, file an issue against it, or send a pull request.
+            </p>
+            <div class="hero-actions">
+                <a class="hero-btn" href="/basic">Get started</a>
+                <a class="hero-btn ghost" target="_blank" rel="noopener noreferrer"
+                   href="https://github.com/bitfoundation/bitplatform">
+                    <span class="github-mark" aria-hidden="true"></span>GitHub
+                </a>
+            </div>
+        </div>
+    </section>
 </div>
 
 @code {
+    /// <summary>A hero tile: a headline capability, its one-line pitch and the demo behind it.</summary>
+    private sealed record Tile(string Title, string Description, string Href);
+
     private readonly string[] _features =
     [
         "Spring physics", "Tween", "Inertia", "Keyframes",
-        "Gestures", "Drag", "AnimatePresence", "Variants",
-        "whileInView", "Layout FLIP", "MotionValue", "Scroll tracking",
-        ".NET 8+", "Minimal JS"
+        "Gestures", "Drag", "Reorder", "AnimatePresence", "Variants", "Split text",
+        "whileInView", "Layout FLIP", "MotionValue", "Scroll timelines",
+        "Sequences", "SVG paths", "OKLab", ".NET 8+", "Minimal JS"
+    ];
+
+    private readonly Tile[] _tiles =
+    [
+        new("Springs", "Real physics, not eased curves.", "springs"),
+        new("Gestures", "Hover, tap, focus and drag states.", "gestures"),
+        new("Variants", "Named states that cascade to children.", "variants"),
+        new("Layout", "FLIP transitions between two layouts.", "layout"),
+    ];
+
+    private readonly Tile[] _capabilities =
+    [
+        new("Springs, tweens and inertia", "Stiffness and damping, or bounce and duration if that is how you think - plus the full easings.net family, per property if you want.", "springs"),
+        new("Gestures", "WhileHover, WhileTap and WhileFocus overlay a state on the base animation and revert themselves. Tap is keyboard-accessible out of the box.", "gestures"),
+        new("Variants", "Name your states once, then switch a whole subtree to one of them and stagger the children into place - even from a per-element function.", "variants"),
+        new("Keyframes", "Sequences of values with their own offsets, per-segment easing and repeat behaviour, written as plain collection expressions.", "keyframes"),
+        new("Split text", "Headlines that assemble a character, a word or a line at a time - split in C#, so nothing re-splits on re-render and a screen reader still reads the sentence.", "split-text"),
+        new("AnimatePresence", "Exit animations that run before the element actually leaves the DOM - for one element, a keyed list, or content being replaced.", "presence"),
+        new("Drag and reorder", "Axis locks, container constraints, elastic edges, momentum - and lists that reorder themselves under the pointer without re-rendering.", "drag"),
+        new("Layout animations", "FLIP the gap between two layouts, with border-radius correction and child counter-scaling handled for you.", "layout"),
+        new("Scroll and viewport", "Hand a scroll-linked animation to the browser's native scroll timelines - no handler, no interop - or scrub it yourself as a MotionValue, or trigger it the first time an element comes into view.", "scroll"),
+        new("Programmatic control", "Animate by selector, interpolate a bare number, build a timeline with overlapping steps, then pause it and change its speed.", "programmatic"),
+        new("SVG and motion paths", "Send an element along a path, draw a stroke on with pathLength, or morph one shape into another.", "motion-path"),
+        new("Accessibility and diagnostics", "prefers-reduced-motion that softens rather than deletes, keyboard-accessible taps, and an inspector that shows what the engine is doing.", "accessibility"),
     ];
 
     private const string _quickStart = """
         @using Bit.Bmotion
 
         <style>
-            :root { --bm-primary: #6c47ff; --bm-secondary: #ff4785; --bm-card: #1e1e2e; }
+            :root { --bm-primary: #1276C6; --bm-primary-text: #fff; --bm-secondary: #FD7F36; --bm-text: #1A1A1A; --bm-muted: #525252; --bm-card: #F5F5F5; --bm-track: #EBEBEB; --bm-border: #E0E0E0; --bm-radius: 2px; --bm-accent-soft: rgba(18,118,198,.12); --bm-accent-line: rgba(18,118,198,.35); }
             .demo-card {
-                background: var(--bm-card); border: 1px solid rgba(255,255,255,.07);
-                border-radius: 12px; padding: 2rem; min-height: 160px;
+                background: var(--bm-card); border: 1px solid var(--bm-border);
+                border-radius: 2px; padding: 2rem; min-height: 160px;
                 display: flex; align-items: center; justify-content: center;
             }
             .box {

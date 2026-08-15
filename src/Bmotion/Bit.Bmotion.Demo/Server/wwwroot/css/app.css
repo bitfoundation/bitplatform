@@ -1,53 +1,1094 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+/* Bit.Bmotion Demo - base + site chrome.
+
+   The shell (header, nav panel, content column, "on this page" rail, footer) mirrors the layout
+   of the Bit.BlazorUI docs site so the two read as one product. It is written by hand against the
+   tokens in theme.css rather than built from Bit.BlazorUI components, because this demo carries no
+   dependency other than Bit.Bmotion itself - the same promise the library makes.
+
+   Page-level styles (sections, cards, code boxes, the sample chrome) live in motion-samples.css. */
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
-h1:focus {
+* {
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--demo-font-sans);
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+code, kbd, pre, samp {
+    font-family: var(--demo-font-mono);
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+}
+
+/* Scoped to the docs chrome on purpose: a scrollbar inside .demo-card belongs to the sample being
+   demonstrated and should look like whatever that sample renders. */
+html, body, .site-content, .nav-panel, .side-rail, pre {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-clr-brd-ter) transparent;
+}
+
+h1:focus, h2:focus {
     outline: none;
 }
 
-h1:focus-visible {
-    outline: 2px solid #0071c1;
-    outline-offset: 2px;
+h1:focus-visible, h2:focus-visible {
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
 }
 
-a, .btn-link {
-    color: #0071c1;
+a {
+    color: var(--bit-clr-pri);
 }
 
-#blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
+a:hover {
+    color: var(--bit-clr-pri-hover);
 }
-
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
-    }
-
-.blazor-error-boundary {
-    background: #b32121;
-    padding: 1rem 1rem 1rem 3.7rem;
-    color: white;
-}
-
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
-
-/* No .loading-progress rules here on purpose: the app is prerendered, so the first paint is the
-   real page rather than a boot spinner. The nav shows a "loading" hint while the WebAssembly
-   runtime downloads - see .bm-hydrating in motion-samples.css. */
 
 code {
-    color: #c02d76;
+    color: var(--bit-clr-fg-pri);
 }
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+
+.app-shell {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.layout-row {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    min-height: 0;
+}
+
+.site-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: var(--bit-clr-bg-sec);
+}
+
+/* The content column and the "on this page" rail sit side by side; min-width:0 is what lets a wide
+   example or a long code line scroll inside the column instead of stretching it and pushing the
+   rail off screen. */
+.page-row {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.page-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    margin: 0 auto;
+    max-width: var(--demo-content-width);
+    padding: 2.5rem 2rem 4rem;
+}
+
+@media (max-width: 63.9375rem) {
+    .page-container {
+        padding: 2rem 1.5rem 3rem;
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .page-container {
+        padding: 1.5rem 1rem 2.5rem;
+    }
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+.header {
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    position: sticky;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: color-mix(in srgb, var(--bit-clr-bg-pri) 82%, transparent);
+    border-bottom: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+/* Declared on the chrome rather than globally: inside a sample the focus ring belongs to whatever
+   is being demonstrated, and a second outline over it would show readers something the sample does
+   not actually render. */
+.header a:focus-visible,
+.header button:focus-visible,
+.footer a:focus-visible,
+.footer button:focus-visible,
+.nav-panel a:focus-visible,
+.nav-panel button:focus-visible,
+.nav-panel input:focus-visible,
+.side-rail a:focus-visible {
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.header .container {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--demo-header-height);
+    padding: 0 1.25rem;
+}
+
+/* On the landing page the bar lines up with that page's own column instead of running the full
+   width of the window, so the mark sits directly over the hero rather than out in the margin. */
+.header .container.home-page {
+    max-width: var(--demo-content-width);
+}
+
+@media (max-width: 63.9375rem) {
+    .header .container {
+        padding: 0 0.625rem;
+    }
+}
+
+.header-start,
+.header-end {
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+}
+
+.header-start {
+    gap: 0;
+}
+
+.header-end {
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.header .logo {
+    flex: none;
+    width: 3.125rem;
+    height: 3.125rem;
+    cursor: pointer;
+    margin-right: 1rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* The wordmark. The library's own name is set in the accent so the header states which of the bit
+   sites this is - the mark alone is shared with all of them. */
+.header .wordmark {
+    flex: none;
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-right: 1.5rem;
+    color: var(--bit-clr-fg-pri);
+    text-decoration: none;
+}
+
+.header .link {
+    height: 100%;
+    display: flex;
+    cursor: pointer;
+    line-height: 1.5;
+    white-space: nowrap;
+    align-items: center;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    color: var(--bit-clr-fg-sec);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.header .link:hover {
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.header .link.active {
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+}
+
+/* Sized to match the theme toggle next to it. The svg is a mask rather than a picture, so the mark
+   is painted with the theme's accent and follows it in both themes - a colored asset could not. */
+.github-btn {
+    flex: none;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    background-color: var(--bit-clr-pri);
+    -webkit-mask: url('../images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
+    mask: url('../images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
+}
+
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    flex: none;
+    cursor: pointer;
+    display: flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
+}
+
+.toggle-theme-btn svg {
+    width: 1.0625rem;
+    height: 1.0625rem;
+    fill: currentColor;
+}
+
+/* The two selectors are exact complements, so exactly one of the pair is visible in every possible
+   state - including the prerendered document, which carries no data-theme attribute yet. */
+:root[data-theme$='dark'] .light-theme {
+    display: none;
+}
+
+:root:not([data-theme$='dark']) .dark-theme {
+    display: none;
+}
+
+:root[data-theme$='dark'] .header .logo,
+:root[data-theme$='dark'] .footer .bit-logo {
+    background-image: url('../images/bit-logo-dark.svg');
+}
+
+:root:not([data-theme$='dark']) .header .logo,
+:root:not([data-theme$='dark']) .footer .bit-logo {
+    background-image: url('../images/bit-logo-light.svg');
+}
+
+/* The nav drawer's handle. It only exists at the widths where the panel is a drawer. */
+.menu-btn {
+    display: none;
+    padding: 0;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--bit-clr-fg-pri);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.menu-btn:hover {
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.menu-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: currentColor;
+}
+
+@media (max-width: 63.9375rem) {
+    .menu-btn {
+        display: flex;
+    }
+
+    .header .logo {
+        margin: 0 0.625rem;
+    }
+}
+
+/* At the narrowest widths the bar has room for the mark, the two destinations and the controls,
+   but not for the wordmark as well. The mark carries the identity there. */
+@media (max-width: 29.9375rem) {
+    .header .wordmark {
+        display: none;
+    }
+}
+
+/* Hydration hint - rendered by MainLayout only while RendererInfo.IsInteractive is false, i.e. on
+   the prerendered HTML the server sends before the WebAssembly runtime boots. */
+.hydrating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    color: var(--bit-clr-fg-ter);
+}
+
+.hydrating i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--bit-clr-pri);
+    animation: bm-hydrating-pulse 1s ease-in-out infinite;
+}
+
+@keyframes bm-hydrating-pulse {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hydrating i {
+        animation: none;
+    }
+}
+
+@media (max-width: 35.9375rem) {
+    .hydrating span {
+        display: none;
+    }
+}
+
+/* ── Nav panel ─────────────────────────────────────────────────────────────── */
+
+.nav-panel {
+    top: var(--demo-header-height);
+    z-index: 900;
+    flex: 0 0 var(--demo-nav-width);
+    position: sticky;
+    overflow: hidden auto;
+    padding: 0.75rem 0 1.5rem;
+    scrollbar-width: none;
+    background-color: var(--bit-clr-bg-pri);
+    height: calc(100vh - var(--demo-header-height));
+    border-inline-end: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+.nav-panel-search {
+    padding: 0 0.5rem 0.75rem;
+}
+
+.nav-panel-search input {
+    width: 100%;
+    outline: none;
+    font-size: 0.875rem;
+    padding: 0.4375rem 0.625rem;
+    font-family: inherit;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    border: 0.0625rem solid var(--bit-clr-brd-sec);
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.nav-panel-search input::placeholder {
+    color: var(--bit-clr-fg-ter);
+}
+
+.nav-panel-search input:hover {
+    border-color: var(--bit-clr-brd-pri);
+}
+
+.nav-panel-search input:focus {
+    border-color: var(--bit-clr-pri);
+}
+
+.nav-panel-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-panel-list a {
+    gap: 0.5rem;
+    display: flex;
+    line-height: 1.5;
+    align-items: center;
+    font-size: 0.875rem;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    color: var(--bit-clr-fg-pri);
+    border-inline-start: 0.125rem solid transparent;
+    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.nav-panel-list a:hover {
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.nav-panel-list a.active {
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+    border-inline-start-color: var(--bit-clr-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.nav-panel-empty {
+    display: block;
+    font-size: 0.8125rem;
+    padding: 0.75rem 1rem;
+    color: var(--bit-clr-fg-ter);
+}
+
+/* Below the panel's breakpoint it becomes a drawer over the page, opened from the header's menu
+   button - the same move the "on this page" rail makes into its floating button. */
+.nav-panel-overlay {
+    display: none;
+}
+
+@media (max-width: 63.9375rem) {
+    /* visibility, not just the off-screen transform: a translated drawer is still focusable, so
+       without it the closed panel's search box and every nav link stay in the tab order of the page
+       they are covering. Transitioning it keeps the panel painted for the whole slide out, because
+       visibility only flips to hidden once the transform has finished. */
+    .nav-panel {
+        top: 0;
+        left: 0;
+        z-index: 1200;
+        position: fixed;
+        height: 100dvh;
+        width: 17rem;
+        flex-basis: 0;
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform var(--bit-mot-duration) var(--bit-mot-easing),
+                    visibility var(--bit-mot-duration);
+    }
+
+    .nav-panel.open {
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    .nav-panel-overlay {
+        inset: 0;
+        z-index: 1100;
+        display: block;
+        border: none;
+        padding: 0;
+        position: fixed;
+        background-color: var(--bit-clr-bg-overlay);
+    }
+}
+
+/* ── "On this page" rail ───────────────────────────────────────────────────── */
+
+/* Navigation, not content, so it only earns its space on wide screens. */
+.side-rail {
+    top: 5.625rem;
+    overflow: auto;
+    position: sticky;
+    height: fit-content;
+    flex: 0 0 14.5rem;
+    padding: 0 1.5rem 2rem;
+    max-height: calc(100vh - 6.875rem);
+}
+
+.side-rail-title {
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 2.66;
+    letter-spacing: 0.08333em;
+    text-transform: uppercase;
+    color: var(--bit-clr-fg-ter);
+}
+
+/* The hairline is the rail's spine: it ties the entries together and, being the only rule in the
+   margin, marks the column as secondary without adding another box to the page. */
+.side-rail-list {
+    padding: 0;
+    list-style: none;
+    margin: 0.625rem 0 0;
+    border-inline-start: 0.125rem solid var(--bit-clr-brd-ter);
+}
+
+.side-rail-list li {
+    position: relative;
+    padding: 0.1875rem 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+.side-rail-list a {
+    display: block;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.714;
+    text-decoration: none;
+    color: var(--bit-clr-inf);
+    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.side-rail-list a:hover {
+    color: var(--bit-clr-fg-pri);
+}
+
+/* The current section: its entry takes the accent and some weight, and its stretch of the spine
+   lights up in the same color - drawn as an overlay on the list's own hairline so active and
+   inactive entries keep exactly the same geometry. */
+.side-rail-list li.active::before {
+    content: '';
+    top: 0;
+    bottom: 0;
+    width: 0.125rem;
+    position: absolute;
+    inset-inline-start: -0.125rem;
+    background-color: var(--bit-clr-pri);
+}
+
+.side-rail-list li.active a {
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+}
+
+@media (max-width: 84.375rem) {
+    .side-rail {
+        display: none;
+    }
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+
+.footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background-color: var(--bit-clr-bg-pri);
+    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+.footer section {
+    width: 100%;
+    position: relative;
+    max-width: var(--demo-content-width);
+    padding: 4rem 1rem;
+}
+
+.footer section:first-child {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+    grid-auto-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+}
+
+.footer section:last-child {
+    display: flex;
+    align-items: center;
+    padding: 2.5rem 1.25rem;
+    justify-content: space-between;
+    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+.footer a {
+    text-decoration: none;
+}
+
+.footer .blurb {
+    font-size: 0.875rem;
+    line-height: 1.714;
+    max-width: var(--demo-measure);
+    color: var(--bit-clr-fg-sec);
+}
+
+.footer .bit-logo {
+    width: 2rem;
+    height: 1.6875rem;
+    margin-bottom: 1.25rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.footer .link-columns {
+    gap: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.footer .link-column {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.footer .link-column h6 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.0075em;
+    margin-bottom: 0.35em;
+    color: var(--bit-clr-fg-pri);
+}
+
+.footer .link-column a {
+    line-height: 1.75rem;
+    font-size: 0.9375rem;
+    color: var(--bit-clr-pri);
+}
+
+.footer .link-column a:hover {
+    color: var(--bit-clr-pri-hover);
+    text-decoration: underline;
+}
+
+.footer .go-to-top {
+    bottom: 0;
+    cursor: pointer;
+    right: 0.125rem;
+    position: absolute;
+    font-family: inherit;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--bit-clr-fg-pri);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.footer .go-to-top:hover {
+    background-color: var(--bit-clr-bg-sec-hover);
+}
+
+.footer .address-info {
+    display: flex;
+    gap: 0.1875rem;
+    flex-flow: column nowrap;
+    font-size: 0.9375rem;
+}
+
+.footer .address-info .address,
+.footer .address-info .tel,
+.footer .address-info .country {
+    padding-left: 1.25rem;
+    background-repeat: no-repeat;
+    background-position-y: 0.25rem;
+}
+
+.footer .address-info .address,
+.footer .address-info .tel {
+    color: var(--bit-clr-pri);
+}
+
+.footer .address-info .address:hover,
+.footer .address-info .tel:hover {
+    color: var(--bit-clr-pri-hover);
+}
+
+.footer .address-info .address {
+    background-image: url('../images/footer/location-icon.svg');
+}
+
+.footer .address-info .tel {
+    background-image: url('../images/footer/tel-icon.svg');
+}
+
+.footer .social-link-group {
+    gap: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer .social-link {
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #888;
+    background-size: 1.125rem;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.footer .twitter-link { background-image: url('../images/footer/twitter-icon.svg'); }
+.footer .twitter-link:hover { background-color: #1DA1F2; }
+.footer .github-link { background-image: url('../images/footer/github-icon.svg'); }
+.footer .github-link:hover { background-color: #000; }
+.footer .youtube-link { background-image: url('../images/footer/youtube-icon.svg'); }
+.footer .youtube-link:hover { background-color: #FF0000; }
+.footer .linkedin-link { background-image: url('../images/footer/linkedin-icon.svg'); }
+.footer .linkedin-link:hover { background-color: #0077B5; }
+
+.footer .copy-right-txt {
+    line-height: 1.5;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+@media (max-width: 63.9375rem) {
+    .footer section {
+        padding: 3rem 1.875rem;
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .footer section:first-child {
+        grid-template-columns: 1fr;
+    }
+
+    .footer section:last-child {
+        align-items: center;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+
+    .footer .address-info {
+        margin-bottom: 1.875rem;
+    }
+
+    .footer .social-link-group {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ── Home page ─────────────────────────────────────────────────────────────── */
+
+/* The landing page is not a document, so it does not get the docs' reading column: it owns the
+   full width and lays out its own sections, which alternate surfaces and are separated by the same
+   hairline the rest of the chrome uses instead of shadows. The layout renders it without the nav
+   panel and the rail entirely - see Layout/MainLayout.razor. */
+
+.site-content.home {
+    background-color: var(--bit-clr-bg-pri);
+}
+
+.homepage {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+}
+
+.homepage-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.homepage-section.alt-section {
+    background-color: var(--bit-clr-bg-sec);
+    border-top: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-bottom: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+.homepage-section-content {
+    width: 100%;
+    margin: 0 auto;
+    max-width: var(--demo-content-width);
+    padding: 5rem 1.25rem;
+}
+
+.homepage h2 {
+    font-weight: 400;
+    line-height: 1.412;
+    font-size: 2.125rem;
+    letter-spacing: 0.00735em;
+    margin-bottom: 0.75rem;
+    color: var(--bit-clr-fg-pri);
+}
+
+.homepage .section-lead {
+    line-height: 1.5;
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    max-width: var(--demo-measure);
+    color: var(--bit-clr-fg-sec);
+}
+
+.homepage a:focus-visible {
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
+}
+
+/* The hero: what the library is on one side, what it does on the other. */
+.hero-section .homepage-section-content {
+    gap: 3rem;
+    display: grid;
+    align-items: center;
+    padding-top: 4.5rem;
+    padding-bottom: 4.5rem;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+}
+
+.hero-copy h1 {
+    font-weight: 300;
+    line-height: 1.167;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01562em;
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    background: linear-gradient(135deg, var(--bit-clr-fg-pri) 25%, var(--bit-clr-pri));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* A forced-colors palette drops the gradient but keeps the transparent fill, which would leave the
+   headline invisible. Hand the text back to the system colour instead. */
+@media (forced-colors: active) {
+    .hero-copy h1 {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: currentColor;
+    }
+}
+
+.hero-lead {
+    line-height: 1.5;
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    max-width: 34rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.hero-actions {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.hero-btn {
+    gap: 0.5rem;
+    display: inline-flex;
+    cursor: pointer;
+    font-weight: 600;
+    align-items: center;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    padding: 0.6875rem 1.5rem;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
+    border: 0.0625rem solid var(--bit-clr-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.hero-btn:hover {
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri-hover);
+    border-color: var(--bit-clr-pri-hover);
+}
+
+/* The outline twin. It fills with the accent on hover, which is why the mark inside it is a mask
+   painted with currentColor rather than a picture - a coloured asset could not follow that. */
+.hero-btn.ghost {
+    color: var(--bit-clr-pri);
+    background-color: transparent;
+}
+
+.hero-btn.ghost:hover {
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri-hover);
+}
+
+.hero-btn .github-mark {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: currentColor;
+    -webkit-mask: url('../images/github-mark.svg') center / contain no-repeat;
+    mask: url('../images/github-mark.svg') center / contain no-repeat;
+}
+
+/* The badge list is centred where the docs use it (the 404 and error heroes); here it runs under a
+   left-aligned column and follows it. */
+.hero-copy .badge-list {
+    justify-content: flex-start;
+}
+
+/* The hero says what the library does; the stage shows it. Each tile plays its own entrance and
+   answers the pointer, so the first thing on the page is the thing the page is about. */
+.hero-stage {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hero-tile {
+    gap: 0.375rem;
+    display: flex;
+    cursor: pointer;
+    padding: 1.5rem;
+    text-decoration: none;
+    flex-flow: column nowrap;
+    background-color: var(--bit-clr-bg-sec);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.hero-tile-mark {
+    width: 2rem;
+    height: 0.375rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.1875rem;
+    background: linear-gradient(90deg, var(--bit-clr-pri), var(--bit-clr-sec));
+}
+
+.hero-tile-title {
+    font-weight: 600;
+    font-size: 1.0625rem;
+    color: var(--bit-clr-fg-pri);
+}
+
+.hero-tile-desc {
+    line-height: 1.5;
+    font-size: 0.8125rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* What is in the box: one card per capability, each a link into the demo that proves it. */
+.feature-grid {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+
+.feature-card {
+    display: block;
+    padding: 1.5rem;
+    text-decoration: none;
+    background-color: var(--bit-clr-bg-sec);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.feature-card:hover {
+    border-color: var(--bit-clr-pri);
+}
+
+.feature-card h3 {
+    font-weight: 600;
+    line-height: 1.4;
+    font-size: 1.0625rem;
+    margin-bottom: 0.5rem;
+    color: var(--bit-clr-fg-pri);
+}
+
+.feature-card p {
+    line-height: 1.6;
+    font-size: 0.875rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* The landing page has no nav panel, so the full index of the docs lives here instead. */
+.demo-index {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.demo-index-link {
+    display: inline-flex;
+    font-weight: 600;
+    align-items: center;
+    font-size: 0.875rem;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.demo-index-link:hover {
+    color: var(--bit-clr-pri);
+    border-color: var(--bit-clr-pri);
+}
+
+.cta-content .hero-actions {
+    margin-bottom: 0;
+}
+
+@media (max-width: 63.9375rem) {
+    .homepage-section-content {
+        padding: 3.75rem 1.875rem;
+    }
+
+    .hero-section .homepage-section-content {
+        gap: 2.5rem;
+        padding-top: 3rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .homepage-section-content {
+        padding: 2.5rem 1rem;
+    }
+
+    .hero-stage {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ── Blazor error UI ───────────────────────────────────────────────────────── */
+
+#blazor-error-ui {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    padding: 0.6rem 1.25rem 0.7rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-ter);
+    border-top: 0.0625rem solid var(--bit-clr-brd-sec);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.blazor-error-boundary {
+    padding: 1rem;
+    color: #FFFFFF;
+    background: #b32121;
+}
+
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
+
+/* No .loading-progress rules here on purpose: the app is prerendered, so the first paint is the
+   real page rather than a boot spinner. The header shows a "loading" hint while the WebAssembly
+   runtime downloads - see .hydrating above. */

@@ -7,7 +7,7 @@ public abstract partial class PushNotificationServiceBase : IPushNotificationSer
     [AutoInject] protected ILogger<PushNotificationServiceBase> Logger = default!;
     [AutoInject] protected IPushNotificationController pushNotificationController = default!;
 
-    public virtual string Token { get; set; }
+    public virtual string? Token { get; set; }
     public virtual Task<bool> IsAvailable(CancellationToken cancellationToken) => Task.FromResult(false);
     public abstract Task<PushNotificationSubscriptionDto?> GetSubscription(CancellationToken cancellationToken);
     public abstract Task RequestPermission(CancellationToken cancellationToken);

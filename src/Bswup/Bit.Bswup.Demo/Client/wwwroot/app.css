@@ -1,96 +1,147 @@
 ﻿/* ============================================================================
    bit Bswup docs - design system
-   Light/dark theming via CSS custom properties; the html[data-theme="dark"]
-   attribute is set before first paint by the inline script in index.html.
+
+   A hand-written port of the Bit.BlazorUI demo site's look and feel. This site
+   deliberately takes no dependency on Bit.BlazorUI (it is the Bswup demo, and
+   Bswup itself has none), so the library's design tokens are inlined here
+   instead of coming from bit.blazorui.css.
+
+   The token names and values are copied verbatim from Bit.BlazorUI's Fluent
+   theme (src/BlazorUI/Bit.BlazorUI/Styles/Fluent), so anything ported from the
+   BlazorUI demo's stylesheets can be pasted in with its $bit-color-* variables
+   mechanically rewritten to var(--bit-clr-*). Only the families this site
+   actually paints with are carried over.
+
+   The theme is selected by the `data-theme` attribute on <html> - written by
+   this site alone, not by the library's own theme script - and is applied
+   before first paint by the inline script in the host document
+   (Server/Components/App.razor). The [data-theme$='dark'] suffix match is
+   carried over from the BlazorUI demo's stylesheets, so a prefixed value such
+   as "fluent-dark" keeps resolving alongside a plain "dark".
    ============================================================================ */
 
-:root {
-    --brand: #0065ef;
-    --brand-strong: #004fc0;
-    --brand-soft: rgba(0, 101, 239, 0.10);
-    --navy: #03173d;
-
-    --bg: #ffffff;
-    --bg-soft: #f6f8fb;
-    --bg-header: rgba(255, 255, 255, 0.85);
-    --surface: #ffffff;
-    --border: #e3e8f0;
-    --text: #1c2433;
-    --text-soft: #55627a;
-    --text-faint: #8b95a9;
-    --code-bg: #0e1726;
-    --code-text: #dce4f2;
-    --inline-code-bg: #eef2f8;
-    --inline-code-text: #b02a63;
-    --shadow: 0 1px 3px rgba(16, 24, 40, 0.07), 0 8px 24px rgba(16, 24, 40, 0.05);
-
-    --note: #0065ef;
-    --tip: #0e9f6e;
-    --warning: #c27803;
-    --danger: #d92d20;
-
-    --header-height: 3.75rem;
-    --sidebar-width: 17rem;
-    --content-width: 52rem;
+:root,
+:root[data-theme='light'] {
+    color-scheme: light;
+    /* primary */
+    --bit-clr-pri: #1276C6;
+    --bit-clr-pri-hover: #0B6AB4;
+    --bit-clr-pri-active: #0460A5;
+    --bit-clr-pri-text: #FFFFFF;
+    /* success / warning / error */
+    --bit-clr-suc: #228422;
+    --bit-clr-wrn: #EDAE12;
+    --bit-clr-err: #D2393B;
+    /* foregrounds */
+    --bit-clr-fg-pri: #1A1A1A;
+    --bit-clr-fg-sec: #525252;
+    --bit-clr-fg-ter: #707070;
+    /* backgrounds */
+    --bit-clr-bg-pri: #FFFFFF;
+    --bit-clr-bg-pri-hover: #F5F5F5;
+    --bit-clr-bg-sec: #F5F5F5;
+    --bit-clr-bg-sec-hover: #EDEDED;
+    --bit-clr-bg-ter: #EBEBEB;
+    --bit-clr-bg-overlay: rgba(0, 0, 0, 0.4);
+    /* borders */
+    --bit-clr-brd-pri: #707070;
+    --bit-clr-brd-sec: #ADADAD;
+    --bit-clr-brd-ter: #E0E0E0;
+    /* the header's translucent fill: bg-pri at the alpha the backdrop blur reads through */
+    --bit-clr-bg-pri-alpha: rgba(255, 255, 255, 0.8);
+    /* shadows */
+    --bit-shd-cal: 0px 0px 5px 0px rgba(0, 0, 0, 0.2), 0px 0px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
-html[data-theme="dark"] {
-    --brand: #4d94ff;
-    --brand-strong: #77adff;
-    --brand-soft: rgba(77, 148, 255, 0.14);
+:root[data-theme$='dark'] {
+    color-scheme: dark;
+    /* primary */
+    --bit-clr-pri: #4FA3F4;
+    --bit-clr-pri-hover: #61AEFB;
+    --bit-clr-pri-active: #6EB6FF;
+    --bit-clr-pri-text: #141414;
+    /* success / warning / error */
+    --bit-clr-suc: #78B774;
+    --bit-clr-wrn: #F0BB52;
+    --bit-clr-err: #E67A73;
+    /* foregrounds */
+    --bit-clr-fg-pri: #E6ECF2;
+    --bit-clr-fg-sec: #B9BEC4;
+    --bit-clr-fg-ter: #8E9398;
+    /* backgrounds */
+    --bit-clr-bg-pri: #0F1318;
+    --bit-clr-bg-pri-hover: #151A1F;
+    --bit-clr-bg-sec: #1B2025;
+    --bit-clr-bg-sec-hover: #22272C;
+    --bit-clr-bg-ter: #272C31;
+    --bit-clr-bg-overlay: rgba(0, 0, 0, 0.6);
+    /* borders */
+    --bit-clr-brd-pri: #757B81;
+    --bit-clr-brd-sec: #53595F;
+    --bit-clr-brd-ter: #383E43;
+    --bit-clr-bg-pri-alpha: rgba(15, 19, 24, 0.8);
+    /* shadows */
+    --bit-shd-cal: 0px 0px 5px 0px rgba(255, 255, 255, 0.2), 0px 0px 2px 0px rgba(255, 255, 255, 0.1);
+}
 
-    --bg: #0b1220;
-    --bg-soft: #101a2c;
-    --bg-header: rgba(11, 18, 32, 0.85);
-    --surface: #121d31;
-    --border: #223047;
-    --text: #e6ecf5;
-    --text-soft: #a7b4c9;
-    --text-faint: #6d7c94;
-    --code-bg: #0a111e;
-    --code-text: #d7e1f0;
-    --inline-code-bg: #1b2940;
-    --inline-code-text: #ff8fb8;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+/* Shape, motion and typography are theme-independent in the Fluent theme, so they are
+   declared once. The 2px radius is the library's own: surfaces on a documentation page
+   repeat dozens of times, and rounding every one of them is the decoration the hairline
+   borders are there to avoid. */
+:root {
+    --bit-shp-brd-radius: 0.125rem;
+    --bit-shp-brd-width: 0.0625rem;
+    --bit-mot-duration: 200ms;
+    --bit-mot-duration-short: 100ms;
+    --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+
+    /* The docs shell's own decisions, matching the BlazorUI demo's Styles/app.scss. */
+    --demo-font-sans: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    --demo-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --demo-content-width: 75rem;
+    --demo-header-height: 4.0625rem;
+    --demo-nav-panel-width: 13.875rem;
 }
 
 * {
     box-sizing: border-box;
+    font-family: var(--demo-font-sans);
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html {
-    scroll-padding-top: calc(var(--header-height) + 1rem);
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--demo-header-height) + 1rem);
+}
+
+html, body, .site-content, pre, .docs-table-wrapper, .nav-panel {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-clr-brd-pri) transparent;
 }
 
 body {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     font-size: 1rem;
-    line-height: 1.65;
-    -webkit-text-size-adjust: 100%;
+    line-height: 1.5;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
 }
 
-/* ---------------------------------------------------------------- boot screen */
-
-.app-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    min-height: 100vh;
-    color: var(--text-soft);
+code, kbd, pre, samp {
+    font-family: var(--demo-font-mono);
 }
 
 /* ---------------------------------------------------------------- Bswup splash
-   Branded overrides on top of _content/Bit.Bswup/bit-bswup.progress.css. */
+   Branded overrides on top of _content/Bit.Bswup/bit-bswup.progress.css. The splash is
+   painted by the host document before any theme-aware CSS variable is meaningful, so it
+   carries its own fixed palette rather than reading the tokens above. */
 
 #bit-bswup {
-    background: var(--navy);
-    background: linear-gradient(160deg, #03173d 0%, #0a2a66 60%, #0065ef 160%);
-    color: #eaf1ff;
+    background: #0F1318;
+    background: linear-gradient(160deg, #0F1318 0%, #10314F 60%, #1276C6 170%);
+    color: #E6ECF2;
 }
 
 .splash-container {
@@ -99,281 +150,641 @@ body {
 }
 
 .splash-logo {
-    border-radius: 1.25rem;
     margin-bottom: 0.75rem;
 }
 
 #bit-bswup .bit-bswup-title {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: 500;
     margin: 0.25rem 0;
 }
 
 #bit-bswup .bit-bswup-description {
-    color: #b9cdf3;
+    color: #B9BEC4;
 }
 
 #bit-bswup .bit-bswup-progress {
-    background-color: rgba(255, 255, 255, 0.18);
-    border-radius: 999px;
-    height: 0.375rem;
+    background-color: rgba(255, 255, 255, 0.16);
+    height: 0.25rem;
     overflow: hidden;
 }
 
 #bit-bswup #bit-bswup-progress-bar {
-    background: #ffffff;
-    height: 0.375rem;
-    border-radius: 999px;
+    background: #4FA3F4;
+    height: 0.25rem;
     transition: width 0.2s ease;
 }
 
 #bit-bswup #bit-bswup-percent {
-    color: #ffffff;
+    color: #FFFFFF;
     font-variant-numeric: tabular-nums;
 }
 
 #bit-bswup-reload {
-    background: var(--brand);
-    color: #ffffff;
+    background: #1276C6;
+    color: #FFFFFF;
     border: none;
-    border-radius: 999px;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    border-radius: 0.125rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
-    box-shadow: var(--shadow);
 }
 
 #bit-bswup-reload:hover {
-    background: var(--brand-strong);
+    background: #0B6AB4;
 }
 
-/* ---------------------------------------------------------------- shell */
+/* ---------------------------------------------------------------- header
+   Ported from the BlazorUI demo's AppHeader.razor.scss. */
 
-.docs-header {
-    position: fixed;
+.header {
     top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    height: var(--header-height);
-    padding: 0 1rem;
-    background: var(--bg-header);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    width: 100%;
+    position: sticky;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-color: var(--bit-clr-bg-pri-alpha);
+    border-bottom: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
 }
 
-.brand {
+/* Declared on the chrome rather than globally: inside a code sample or the playground the
+   focus ring belongs to the control being demonstrated. */
+.header a:focus-visible,
+.header button:focus-visible,
+.footer a:focus-visible,
+.footer button:focus-visible,
+.nav-panel a:focus-visible,
+.nav-panel button:focus-visible {
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.header .container {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
+    justify-content: space-between;
+    min-height: var(--demo-header-height);
+    padding: 0 1.25rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* The home page has no nav rail, so its header lines up with the centred page content
+   instead of spanning the viewport. */
+.header .container.home-page {
+    max-width: var(--demo-content-width);
+}
+
+.header-group {
+    display: flex;
+    align-items: center;
+}
+
+.header-group + .header-group {
+    gap: 0.5rem;
+}
+
+.logo {
+    cursor: pointer;
+    width: 3.125rem;
+    height: 3.125rem;
+    margin-right: 1.875rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.header .link {
+    height: 100%;
+    display: flex;
+    cursor: pointer;
+    line-height: 1.5;
+    align-items: center;
+    font-size: 0.9375rem;
     text-decoration: none;
-    color: var(--text);
-    font-weight: 700;
-    font-size: 1.125rem;
+    box-sizing: border-box;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--bit-shp-brd-radius);
+    color: var(--bit-clr-fg-sec);
+    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing);
 }
 
-.brand img {
+.header .link:hover {
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.header .link.active {
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+}
+
+/* Sized to match the theme toggle beside it. The svg is a mask rather than a picture, so
+   the mark is painted with the theme's primary color instead of shipping two assets. */
+.github-btn {
+    cursor: pointer;
     width: 2rem;
     height: 2rem;
-    border-radius: 0.5rem;
+    background-color: var(--bit-clr-pri);
+    -webkit-mask: url('images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
+    mask: url('images/github-mark.svg') center / 2.3125rem 2.3125rem no-repeat;
 }
 
-.brand-product {
-    color: var(--text-faint);
-    font-weight: 400;
-}
-
-.version-badge {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--brand);
-    background: var(--brand-soft);
-    border-radius: 999px;
-    padding: 0.125rem 0.625rem;
-}
-
-.header-spacer {
-    flex: 1;
-}
-
-.header-link {
-    color: var(--text-soft);
-    text-decoration: none;
-    font-size: 0.875rem;
-    padding: 0.375rem 0.625rem;
-    border-radius: 0.5rem;
-}
-
-.header-link:hover {
-    color: var(--text);
-    background: var(--bg-soft);
-}
-
-.icon-button {
+.toggle-theme-btn {
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    height: 2rem;
+    min-width: 2rem;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
+}
+
+.toggle-theme-btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    display: block;
+}
+
+.menu-btn {
+    display: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
     width: 2.25rem;
     height: 2.25rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
+    margin-right: 0.25rem;
     background: transparent;
-    color: var(--text-soft);
-    cursor: pointer;
-    font-size: 1rem;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-clr-fg-sec);
+    border-radius: var(--bit-shp-brd-radius);
 }
 
-.icon-button:hover {
-    color: var(--text);
-    background: var(--bg-soft);
+.menu-btn:hover {
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
 }
 
-.menu-button {
+.menu-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* The document's data-theme attribute is the live theme state, so the dark/light swap keys
+   off it - and the selector pairs are exact complements, so exactly one of each pair is
+   visible in every possible state. */
+:root[data-theme$='dark'] .light-theme {
     display: none;
 }
 
-.theme-icon-dark,
-html[data-theme="dark"] .theme-icon-light {
+:root[data-theme$='dark'] .logo,
+:root[data-theme$='dark'] .bit-logo {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([data-theme$='dark']) .dark-theme {
     display: none;
 }
 
-html[data-theme="dark"] .theme-icon-dark {
-    display: inline;
+:root:not([data-theme$='dark']) .logo,
+:root:not([data-theme$='dark']) .bit-logo {
+    background-image: url('images/bit-logo-light.svg');
 }
 
-/* ---------------------------------------------------------------- sidebar */
+/* ---------------------------------------------------------------- nav panel
+   The shape of BitNavPanel as the BlazorUI demo configures it: a fixed-width rail under
+   the sticky header, a search box at the top, and grouped links whose selected state is an
+   inline-start border rather than a filled pill. */
 
-.docs-sidebar {
-    position: fixed;
-    top: var(--header-height);
-    bottom: 0;
-    left: 0;
-    width: var(--sidebar-width);
+.layout-body {
+    display: flex;
+    align-items: flex-start;
+}
+
+.nav-panel {
+    flex: 0 0 var(--demo-nav-panel-width);
+    width: var(--demo-nav-panel-width);
+    position: sticky;
+    top: var(--demo-header-height);
+    height: calc(100vh - var(--demo-header-height));
     overflow-y: auto;
-    padding: 1.25rem 0.875rem 2rem;
-    border-right: 1px solid var(--border);
-    background: var(--bg);
+    /* BitNavPanel hides its own scrollbar; scrollbar-color is inherited, so the standard
+       property has to do it rather than a ::-webkit-scrollbar rule. */
+    scrollbar-width: none;
+    padding: 0.5rem 0 2rem;
+    background-color: var(--bit-clr-bg-pri);
+    border-right: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
 }
 
-.docs-nav {
+.nav-search {
+    padding: 0.5rem;
+}
+
+.nav-search-input {
+    width: 100%;
+    font-size: 0.875rem;
+    padding: 0.4375rem 0.625rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.nav-search-input:hover {
+    border-color: var(--bit-clr-brd-pri);
+}
+
+.nav-search-input:focus {
+    outline: none;
+    border-color: var(--bit-clr-pri);
+    box-shadow: inset 0 0 0 0.0625rem var(--bit-clr-pri);
+}
+
+.nav-search-input::placeholder {
+    color: var(--bit-clr-fg-ter);
+}
+
+.nav-list {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    padding: 0 0.5rem;
 }
 
-.nav-section {
-    margin: 1.25rem 0.625rem 0.375rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-}
-
-.nav-section:first-child {
-    margin-top: 0;
-}
-
-.docs-nav a {
-    display: block;
-    padding: 0.4375rem 0.625rem;
-    border-radius: 0.5rem;
-    color: var(--text-soft);
-    text-decoration: none;
-    font-size: 0.9063rem;
-}
-
-.docs-nav a:hover {
-    color: var(--text);
-    background: var(--bg-soft);
-}
-
-.docs-nav a.active {
-    color: var(--brand);
-    background: var(--brand-soft);
+.nav-group {
+    margin: 1rem 0.5rem 0.25rem;
+    font-size: 0.75rem;
     font-weight: 600;
+    letter-spacing: 0.03333em;
+    color: var(--bit-clr-fg-ter);
 }
 
-.docs-sidebar-backdrop {
+.nav-group:first-child {
+    margin-top: 0.25rem;
+}
+
+.nav-list a {
+    display: flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.625rem;
+    font-size: 0.875rem;
+    text-decoration: none;
+    color: var(--bit-clr-fg-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    border-inline-start: 0.1875rem solid transparent;
+    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.nav-list a:hover {
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.nav-list a.active {
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+    border-inline-start-color: var(--bit-clr-pri);
+    background-color: var(--bit-clr-bg-sec);
+}
+
+/* Set by the search filter in demo.js on the links and groups that no longer match. */
+.nav-hidden {
+    display: none !important;
+}
+
+.nav-empty {
+    display: none;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.875rem;
+    color: var(--bit-clr-fg-ter);
+}
+
+.nav-list.is-empty .nav-empty {
+    display: block;
+}
+
+.nav-panel-backdrop {
     display: none;
 }
 
 /* ---------------------------------------------------------------- main */
 
-.docs-main {
-    padding: calc(var(--header-height) + 2rem) 2rem 2rem;
-    margin-left: var(--sidebar-width);
+.site-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+    background-color: var(--bit-clr-bg-sec);
 }
 
-.docs-content {
-    max-width: var(--content-width);
+.page-container {
+    width: 100%;
     margin: 0 auto;
+    max-width: var(--demo-content-width);
+    padding: 2.5rem 2rem 4rem;
 }
 
-.docs-footer {
-    max-width: var(--content-width);
-    margin: 4rem auto 0;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
+/* The prose equivalent of the BlazorUI demo's .page-section BitCards: full width, primary
+   background, secondary border, no shadow. The demo splits a page into one card per
+   section; these pages are continuous prose, so the article is the card and the h2 rules
+   below draw the section boundaries inside it. */
+.page-content {
+    padding: 2rem;
+    color: var(--bit-clr-fg-sec);
+    background-color: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+/* The home page's hero and feature cards ARE the sections, so they sit on the page
+   background directly rather than inside one more frame. */
+.page-container.home-page .page-content {
+    padding: 0;
+    background-color: transparent;
+    border: none;
+}
+
+/* Without the article's card behind it, the home page's table needs its own surface to sit
+   on - otherwise its header row is the same color as the page. */
+.page-container.home-page .docs-table-wrapper {
+    background-color: var(--bit-clr-bg-pri);
+}
+
+/* ---------------------------------------------------------------- footer
+   Ported from the BlazorUI demo's AppFooter.razor.scss. */
+
+.footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    background-color: var(--bit-clr-bg-pri);
+    border-top: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+}
+
+.footer a {
+    text-decoration: none;
+    color: var(--bit-clr-pri);
+}
+
+.footer a:hover {
+    color: var(--bit-clr-pri-hover);
+}
+
+.footer section {
+    width: 100%;
+    position: relative;
+    box-sizing: border-box;
+    max-width: var(--demo-content-width);
+    padding: 4rem 1rem;
+}
+
+.footer section:first-child {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+    grid-auto-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+}
+
+.footer section:last-child {
+    display: flex;
+    align-items: center;
+    padding: 2.5rem 1.25rem;
+    justify-content: space-between;
+    border-top: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+}
+
+.footer-blurb {
+    font-size: 0.875rem;
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
+}
+
+.bit-logo {
+    width: 2rem;
+    height: 1.6875rem;
+    margin-bottom: 1.25rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.footer-columns {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
-    color: var(--text-faint);
-    font-size: 0.8438rem;
+    gap: 1.25rem;
+    justify-content: space-evenly;
 }
 
-.docs-footer a {
-    color: var(--text-soft);
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
 }
 
-/* ---------------------------------------------------------------- typography */
+.footer-column-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin: 0 0 0.35em;
+    color: var(--bit-clr-fg-pri);
+}
 
-.docs-content h1 {
+.go-to-top {
+    bottom: 0;
+    right: 0.125rem;
+    cursor: pointer;
+    position: absolute;
+    color: var(--bit-clr-fg-pri);
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.go-to-top:hover {
+    background-color: var(--bit-clr-bg-sec-hover);
+}
+
+.address-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1875rem;
+    width: fit-content;
+    font-size: 0.875rem;
+}
+
+.address-info .address,
+.address-info .tel,
+.address-info .country {
+    padding-left: 1.25rem;
+    background-repeat: no-repeat;
+    background-position-y: 0.25rem;
+}
+
+.address-info .country {
+    color: var(--bit-clr-fg-sec);
+}
+
+.address-info .address {
+    background-image: url('images/footer/location-icon.svg');
+}
+
+.address-info .tel {
+    background-image: url('images/footer/tel-icon.svg');
+}
+
+.social-link-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+}
+
+.social-link {
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #888;
+    background-size: 1.125rem;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.twitter-link {
+    background-image: url('images/footer/twitter-icon.svg');
+}
+
+.twitter-link:hover {
+    background-color: #1DA1F2;
+}
+
+.github-link {
+    background-image: url('images/footer/github-icon.svg');
+}
+
+.github-link:hover {
+    background-color: #000;
+}
+
+.youtube-link {
+    background-image: url('images/footer/youtube-icon.svg');
+}
+
+.youtube-link:hover {
+    background-color: #FF0000;
+}
+
+.linkedin-link {
+    background-image: url('images/footer/linkedin-icon.svg');
+}
+
+.linkedin-link:hover {
+    background-color: #0077B5;
+}
+
+.copy-right-txt {
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* ---------------------------------------------------------------- typography
+   Sizes come from the library's Fluent type ramp, matching the levels the BlazorUI demo
+   picks for a page: H4 for the page title, H5 for a section heading, H6 for the level
+   below it. */
+
+.page-content h1 {
     font-size: 2.125rem;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
+    font-weight: 400;
+    line-height: 1.412;
+    letter-spacing: 0.00735em;
+    color: var(--bit-clr-fg-pri);
+    margin: 0 0 1.25rem;
+    overflow-wrap: anywhere;
 }
 
-.docs-content h2 {
+/* The BlazorUI demo separates sections with a BitSeparator under the heading; the border
+   here is that separator. */
+.page-content h2 {
     font-size: 1.5rem;
-    letter-spacing: -0.01em;
-    margin: 2.5rem 0 0.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
+    font-weight: 400;
+    line-height: 1.333;
+    color: var(--bit-clr-fg-pri);
+    margin: 3rem 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    overflow-wrap: anywhere;
 }
 
-.docs-content h3 {
-    font-size: 1.1875rem;
-    margin: 1.75rem 0 0.5rem;
+.page-content h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.0075em;
+    color: var(--bit-clr-fg-pri);
+    margin: 2rem 0 0.5rem;
+    overflow-wrap: anywhere;
 }
 
-.docs-content a {
-    color: var(--brand);
+.page-content p,
+.page-content li {
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
+    /* Prose is full of unbreakable identifiers (_framework/blazor.web.<fingerprint>.js,
+       wwwroot/service-worker.published.js). At a phone's measure a single one of those is
+       wider than the column and would push the whole page into a horizontal scroll. */
+    overflow-wrap: break-word;
+}
+
+.page-content strong,
+.page-content b {
+    color: var(--bit-clr-fg-pri);
+}
+
+.page-content a {
+    color: var(--bit-clr-pri);
     text-decoration: none;
 }
 
-.docs-content a:hover {
+.page-content a:hover {
+    color: var(--bit-clr-pri-hover);
     text-decoration: underline;
 }
 
+/* The lead reads as prose, not one more boxed section. */
 .docs-lead {
-    font-size: 1.125rem;
-    color: var(--text-soft);
-    margin: 0 0 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--bit-clr-fg-sec);
+    margin: 0 0 2.5rem;
 }
 
-.docs-content code:not(pre code) {
-    font-family: Consolas, "Cascadia Code", Menlo, monospace;
+.page-content code:not(pre code) {
+    font-family: var(--demo-font-mono);
     font-size: 0.85em;
-    background: var(--inline-code-bg);
-    color: var(--inline-code-text);
-    border-radius: 0.3125rem;
+    background: var(--bit-clr-bg-ter);
+    color: var(--bit-clr-fg-pri);
+    border-radius: var(--bit-shp-brd-radius);
     padding: 0.125rem 0.375rem;
+    /* anywhere rather than break-word: an inline identifier has no spaces to break at, so
+       break-word would still let it overhang. Sample CODE keeps its own overflow-x scroll -
+       this only applies to code set inline in a sentence. */
+    overflow-wrap: anywhere;
 }
 
 /* ---------------------------------------------------------------- tables */
@@ -381,50 +792,63 @@ html[data-theme="dark"] .theme-icon-dark {
 .docs-table-wrapper {
     overflow-x: auto;
     margin: 1rem 0;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
 }
 
-.docs-content table {
+.page-content table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9063rem;
+    font-size: 0.875rem;
 }
 
-.docs-content th {
+/* The description column carries a floor so a narrow screen SCROLLS the wrapper rather than
+   crushing the prose to one word per line. width:100% above is only a preferred width - a
+   table cannot lay out below its minimum content width, so once this floor no longer fits the
+   table outgrows .docs-table-wrapper and its overflow-x takes over. Keyed off the last column
+   rather than a min-width on the table itself, so it holds for the two- and three-column
+   tables alike without either needing to know the other's shape. */
+.page-content td:last-child,
+.page-content th:last-child {
+    min-width: 16rem;
+}
+
+.page-content th {
     text-align: left;
-    font-size: 0.8125rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-faint);
-    background: var(--bg-soft);
-    padding: 0.625rem 0.875rem;
-    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
+    background: var(--bit-clr-bg-sec);
+    padding: 0.75rem 0.875rem;
+    border-bottom: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
     white-space: nowrap;
 }
 
-.docs-content td {
-    padding: 0.625rem 0.875rem;
-    border-bottom: 1px solid var(--border);
+.page-content td {
+    padding: 0.75rem 0.875rem;
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
+    border-bottom: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
     vertical-align: top;
 }
 
-.docs-content tr:last-child td {
+.page-content tr:last-child td {
     border-bottom: none;
 }
 
-.docs-content td:first-child {
+.page-content td:first-child {
     white-space: nowrap;
 }
 
-/* ---------------------------------------------------------------- code blocks */
+/* ---------------------------------------------------------------- code blocks
+   The BlazorUI demo renders code on the secondary background with a hairline border rather
+   than as a dark IDE panel, so a sample sits on the page at the same weight as a table. */
 
 .code-block {
     margin: 1rem 0;
-    border-radius: 0.75rem;
     overflow: hidden;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
 }
 
 .code-block-header {
@@ -432,45 +856,51 @@ html[data-theme="dark"] .theme-icon-dark {
     align-items: center;
     justify-content: space-between;
     padding: 0.375rem 0.5rem 0.375rem 1rem;
-    background: var(--code-bg);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bit-clr-bg-ter);
+    border-bottom: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
 }
 
 .code-block-lang {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03333em;
     text-transform: uppercase;
-    color: #7d8db0;
+    color: var(--bit-clr-fg-ter);
 }
 
 .code-block-copy {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: transparent;
-    color: #aebad2;
-    font-size: 0.75rem;
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.625rem;
     cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    color: var(--bit-clr-fg-sec);
+    background: transparent;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+    border-radius: var(--bit-shp-brd-radius);
 }
 
 .code-block-copy:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
+    color: var(--bit-clr-fg-pri);
+    background: var(--bit-clr-bg-sec-hover);
 }
 
 .code-block pre {
     margin: 0;
+    width: 100%;
+    display: block;
+    overflow: auto;
+    direction: ltr;
+    line-height: 1.6;
+    font-size: 0.8125rem;
+    max-height: 29rem;
+    box-sizing: border-box;
     padding: 1rem;
-    overflow-x: auto;
-    background: var(--code-bg);
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
 }
 
 .code-block code {
-    font-family: Consolas, "Cascadia Code", Menlo, monospace;
-    font-size: 0.8438rem;
+    font-family: var(--demo-font-mono);
     line-height: 1.6;
-    color: var(--code-text);
     white-space: pre;
 }
 
@@ -481,107 +911,128 @@ html[data-theme="dark"] .theme-icon-dark {
     gap: 0.25rem;
     margin: 1.25rem 0;
     padding: 0.875rem 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--border);
-    border-left: 0.25rem solid var(--note);
-    background: var(--bg-soft);
-    font-size: 0.9375rem;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-left: 0.1875rem solid var(--bit-clr-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    background: var(--bit-clr-bg-sec);
+    font-size: 0.875rem;
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
 }
 
 .callout-title {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.875rem;
 }
 
-.callout-note { border-left-color: var(--note); }
-.callout-note .callout-title { color: var(--note); }
-.callout-tip { border-left-color: var(--tip); }
-.callout-tip .callout-title { color: var(--tip); }
-.callout-warning { border-left-color: var(--warning); }
-.callout-warning .callout-title { color: var(--warning); }
-.callout-danger { border-left-color: var(--danger); }
-.callout-danger .callout-title { color: var(--danger); }
+.callout-note { border-left-color: var(--bit-clr-pri); }
+.callout-note .callout-title { color: var(--bit-clr-pri); }
+.callout-tip { border-left-color: var(--bit-clr-suc); }
+.callout-tip .callout-title { color: var(--bit-clr-suc); }
+.callout-warning { border-left-color: var(--bit-clr-wrn); }
+.callout-warning .callout-title { color: var(--bit-clr-wrn); }
+.callout-danger { border-left-color: var(--bit-clr-err); }
+.callout-danger .callout-title { color: var(--bit-clr-err); }
 
 .callout p {
     margin: 0.25rem 0;
 }
 
-/* ---------------------------------------------------------------- buttons */
+/* ---------------------------------------------------------------- buttons
+   BitButton's Fill and Outline variants at the default size. */
 
 .button-primary,
 .button-secondary {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    border-radius: 0.625rem;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    min-height: 2rem;
+    padding: 0.375rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.714;
     cursor: pointer;
     text-decoration: none;
-    border: 1px solid transparent;
+    border-radius: var(--bit-shp-brd-radius);
+    border: var(--bit-shp-brd-width) solid transparent;
+    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
 }
 
 .button-primary {
-    background: var(--brand);
-    color: #ffffff !important;
+    background: var(--bit-clr-pri);
+    color: var(--bit-clr-pri-text) !important;
+    border-color: var(--bit-clr-pri);
 }
 
 .button-primary:hover {
-    background: var(--brand-strong);
+    background: var(--bit-clr-pri-hover);
+    border-color: var(--bit-clr-pri-hover);
     text-decoration: none !important;
 }
 
+.button-primary:active {
+    background: var(--bit-clr-pri-active);
+    border-color: var(--bit-clr-pri-active);
+}
+
 .button-secondary {
-    background: var(--surface);
-    color: var(--text);
-    border-color: var(--border);
+    background: transparent;
+    color: var(--bit-clr-pri) !important;
+    border-color: var(--bit-clr-pri);
 }
 
 .button-secondary:hover {
-    background: var(--bg-soft);
+    background: var(--bit-clr-bg-sec-hover);
     text-decoration: none !important;
 }
 
 .button-danger {
-    border-color: var(--danger);
-    color: var(--danger);
+    color: var(--bit-clr-err) !important;
+    border-color: var(--bit-clr-err);
 }
 
 /* ---------------------------------------------------------------- home page */
 
 .hero {
-    padding: 2.5rem 0 1rem;
+    padding: 1rem 0 2rem;
     text-align: center;
 }
 
 .hero-badge {
     display: inline-block;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--brand);
-    background: var(--brand-soft);
-    border-radius: 999px;
-    padding: 0.25rem 0.875rem;
-    margin-bottom: 1.25rem;
+    letter-spacing: 0.03333em;
+    color: var(--bit-clr-pri);
+    background: transparent;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    padding: 0.1875rem 0.625rem;
+    margin-bottom: 1.5rem;
 }
 
 .hero h1 {
-    font-size: 2.875rem;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 1.333;
+    letter-spacing: 0;
+    color: var(--bit-clr-fg-pri);
     margin: 0 0 1rem;
+    border: none;
+    padding: 0;
 }
 
 .hero .accent {
-    color: var(--brand);
+    color: var(--bit-clr-pri);
 }
 
 .hero p {
-    max-width: 38rem;
+    max-width: 44rem;
     margin: 0 auto 1.75rem;
-    font-size: 1.1875rem;
-    color: var(--text-soft);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--bit-clr-fg-sec);
 }
 
 .hero-actions {
@@ -596,76 +1047,250 @@ html[data-theme="dark"] .theme-icon-dark {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
+    max-width: 100%;
     margin-top: 0.75rem;
-    font-family: Consolas, "Cascadia Code", Menlo, monospace;
-    font-size: 0.9063rem;
-    background: var(--code-bg);
-    color: var(--code-text);
-    border-radius: 0.625rem;
+    font-family: var(--demo-font-mono);
+    font-size: 0.875rem;
+    color: var(--bit-clr-fg-pri);
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
     padding: 0.625rem 1.125rem;
+}
+
+.hero-install span {
+    font-family: inherit;
 }
 
 .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    /* min() rather than a bare 15rem: below that width an auto-fill track keeps its floor and
+       the grid overhangs its container instead of collapsing to one column. */
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
     gap: 1rem;
     margin: 2.5rem 0;
 }
 
 .feature-card {
     display: block;
-    padding: 1.125rem 1.25rem;
-    border: 1px solid var(--border);
-    border-radius: 0.875rem;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-    color: var(--text) !important;
+    padding: 1.25rem;
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    color: var(--bit-clr-fg-pri) !important;
     text-decoration: none !important;
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
 }
 
 .feature-card:hover {
-    border-color: var(--brand);
-    transform: translateY(-2px);
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    border-color: var(--bit-clr-pri);
+    background: var(--bit-clr-bg-pri-hover);
 }
 
 .feature-icon {
     font-size: 1.5rem;
     line-height: 1;
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.75rem;
 }
 
 .feature-card h3 {
     margin: 0 0 0.375rem;
-    font-size: 1.0313rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
 }
 
 .feature-card p {
     margin: 0;
     font-size: 0.875rem;
-    color: var(--text-soft);
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* ---------------------------------------------------------------- reading paths
+   The home page's "Where to start" row: the same card as .feature-card, ordered rather than
+   catalogued, so a first-time reader is given a route through the docs instead of an index. */
+
+.path-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0 2.5rem;
+}
+
+.path-card {
+    display: block;
+    padding: 1.25rem;
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    color: var(--bit-clr-fg-pri) !important;
+    text-decoration: none !important;
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+}
+
+.path-card:hover {
+    border-color: var(--bit-clr-pri);
+    background: var(--bit-clr-bg-pri-hover);
+}
+
+.path-step {
+    display: inline-block;
+    margin-bottom: 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06667em;
+    text-transform: uppercase;
+    color: var(--bit-clr-pri);
+}
+
+.path-card h3 {
+    margin: 0 0 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
+}
+
+.path-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.714;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* ---------------------------------------------------------------- numbered steps
+   An <ol> whose markers are drawn rather than inherited, so a sequence of steps reads as a
+   procedure at a glance. list-style is dropped and the marker is a ::before, because the
+   native marker cannot be given a background without taking the whole list item with it. */
+
+.page-content ol.docs-steps {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+    counter-reset: docs-step;
+}
+
+.page-content ol.docs-steps > li {
+    counter-increment: docs-step;
+    position: relative;
+    padding-left: 2.5rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.page-content ol.docs-steps > li::before {
+    content: counter(docs-step);
+    position: absolute;
+    left: 0;
+    top: 0.0625rem;
+    width: 1.625rem;
+    height: 1.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--bit-clr-pri);
+    background: var(--bit-clr-bg-sec);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: 50%;
+}
+
+/* ---------------------------------------------------------------- flow diagram
+   An inline SVG rather than an image: it inherits the theme tokens below, so it repaints with
+   the light/dark toggle and stays crisp at any width instead of shipping two raster copies. */
+
+.diagram-wrapper {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+/* A floor rather than a fixed width: below it the wrapper's overflow-x takes over, because the
+   labels inside are real text that cannot reflow when the viewBox scales down. */
+.flow-diagram {
+    display: block;
+    width: 100%;
+    min-width: 34rem;
+    height: auto;
+}
+
+.flow-box {
+    fill: var(--bit-clr-bg-sec);
+    stroke: var(--bit-clr-brd-ter);
+    stroke-width: 1;
+}
+
+.flow-box-accent {
+    stroke: var(--bit-clr-pri);
+}
+
+.flow-box-final {
+    fill: var(--bit-clr-bg-ter);
+    stroke: var(--bit-clr-brd-sec);
+}
+
+.flow-label {
+    font-family: var(--demo-font-sans);
+    font-size: 12.5px;
+    fill: var(--bit-clr-fg-sec);
+}
+
+.flow-heading {
+    font-family: var(--demo-font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    fill: var(--bit-clr-fg-pri);
+}
+
+.flow-subheading {
+    font-family: var(--demo-font-sans);
+    font-size: 11.5px;
+    fill: var(--bit-clr-fg-ter);
+}
+
+.flow-arrow {
+    stroke: var(--bit-clr-brd-sec);
+    stroke-width: 1.5;
+}
+
+.flow-arrowhead {
+    fill: var(--bit-clr-brd-sec);
+}
+
+.flow-divider {
+    stroke: var(--bit-clr-brd-ter);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
 }
 
 /* ---------------------------------------------------------------- playground */
 
 .playground-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
     gap: 1rem;
     margin: 1.5rem 0;
 }
 
 .playground-card {
-    border: 1px solid var(--border);
-    border-radius: 0.875rem;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-    padding: 1.125rem 1.25rem;
+    padding: 1.25rem;
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
 }
 
 .playground-card h3 {
     margin: 0 0 0.75rem;
-    font-size: 1.0313rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
 }
 
 .playground-card .actions {
@@ -679,32 +1304,37 @@ html[data-theme="dark"] .theme-icon-dark {
     margin: 0;
     display: grid;
     gap: 0.375rem;
-    font-size: 0.9063rem;
+    font-size: 0.875rem;
 }
 
+/* The values here are sentences ("yes - an update is staged", a full worker scope URL), not
+   short tokens, so the row wraps and the value falls under its label rather than being
+   squeezed into a column a few characters wide. */
 .status-list > div {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0 1rem;
 }
 
 .status-list dt {
-    color: var(--text-soft);
+    color: var(--bit-clr-fg-sec);
 }
 
 .status-list dd {
     margin: 0;
     font-weight: 600;
     text-align: right;
+    color: var(--bit-clr-fg-pri);
     overflow-wrap: anywhere;
 }
 
 .cache-list {
     margin: 0.5rem 0 0;
     padding-left: 1.25rem;
-    font-family: Consolas, "Cascadia Code", Menlo, monospace;
+    font-family: var(--demo-font-mono);
     font-size: 0.8125rem;
-    color: var(--text-soft);
+    color: var(--bit-clr-fg-sec);
 }
 
 .event-log {
@@ -713,42 +1343,46 @@ html[data-theme="dark"] .theme-icon-dark {
     padding: 0.5rem;
     max-height: 22rem;
     overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    background: var(--bg-soft);
-    font-family: Consolas, "Cascadia Code", Menlo, monospace;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    background: var(--bit-clr-bg-sec);
+    font-family: var(--demo-font-mono);
     font-size: 0.8125rem;
 }
 
+/* The timestamp and the event name never shrink, and an event name runs to
+   UPDATE_CHECK_FAILED - together they leave a phone almost no room for the detail, so the
+   detail is allowed to drop onto its own line instead. */
 .event-log li {
     display: flex;
-    gap: 0.625rem;
+    flex-wrap: wrap;
+    gap: 0 0.625rem;
     padding: 0.25rem 0.5rem;
-    border-radius: 0.375rem;
     align-items: baseline;
+    color: var(--bit-clr-fg-sec);
 }
 
 .event-log li:nth-child(odd) {
-    background: var(--bg);
+    background: var(--bit-clr-bg-pri);
 }
 
 .event-time {
-    color: var(--text-faint);
+    color: var(--bit-clr-fg-ter);
     flex-shrink: 0;
 }
 
 .event-type {
-    color: var(--brand);
+    color: var(--bit-clr-pri);
     flex-shrink: 0;
 }
 
 .event-detail {
-    color: var(--text-soft);
+    color: var(--bit-clr-fg-sec);
     overflow-wrap: anywhere;
 }
 
 .event-empty {
-    color: var(--text-faint);
+    color: var(--bit-clr-fg-ter);
 }
 
 /* ---------------------------------------------------------------- misc */
@@ -759,12 +1393,15 @@ html[data-theme="dark"] .theme-icon-dark {
 }
 
 .docs-not-found h1 {
-    font-size: 4rem;
+    font-size: 3.75rem;
+    font-weight: 300;
+    line-height: 1.2;
     margin-bottom: 0;
 }
 
 .pager {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 1rem;
     margin-top: 3rem;
@@ -775,20 +1412,24 @@ html[data-theme="dark"] .theme-icon-dark {
     flex-direction: column;
     gap: 0.125rem;
     padding: 0.75rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
     text-decoration: none !important;
-    color: var(--text) !important;
-    min-width: 10rem;
+    color: var(--bit-clr-fg-pri) !important;
+    /* Two of these side by side are wider than a phone, so they wrap - and the floor has to
+       yield at that point, or each one still overhangs on its own row. */
+    min-width: min(10rem, 100%);
+    overflow-wrap: anywhere;
 }
 
 .pager a:hover {
-    border-color: var(--brand);
+    border-color: var(--bit-clr-pri);
+    background: var(--bit-clr-bg-pri-hover);
 }
 
 .pager .pager-label {
     font-size: 0.75rem;
-    color: var(--text-faint);
+    color: var(--bit-clr-fg-ter);
 }
 
 .pager .pager-next {
@@ -797,46 +1438,114 @@ html[data-theme="dark"] .theme-icon-dark {
 }
 
 .pager b {
-    color: var(--brand);
+    color: var(--bit-clr-pri);
 }
 
-/* ---------------------------------------------------------------- responsive */
+/* ---------------------------------------------------------------- responsive
+   Breakpoints mirror the BlazorUI demo's scss mixins: gt-md is 961px (where the header
+   hides its menu button and the nav rail is permanent), and sm is 600px. */
 
-@media (max-width: 60rem) {
-    .menu-button {
+@media screen and (max-width: 60rem) {
+    .header .container {
+        padding: 0 0.625rem;
+    }
+
+    .logo {
+        margin: 0 0.625rem;
+    }
+
+    .menu-btn {
         display: inline-flex;
     }
 
-    .header-link {
+    .nav-panel {
+        position: fixed;
+        top: var(--demo-header-height);
+        bottom: 0;
+        left: 0;
+        height: auto;
+        z-index: 90;
+        flex-basis: 0;
+        transform: translateX(-100%);
+        transition: transform var(--bit-mot-duration) var(--bit-mot-easing);
+    }
+
+    body.nav-panel-open .nav-panel {
+        transform: translateX(0);
+        box-shadow: var(--bit-shd-cal);
+    }
+
+    body.nav-panel-open .nav-panel-backdrop {
+        display: block;
+        position: fixed;
+        inset: var(--demo-header-height) 0 0 0;
+        z-index: 80;
+        background: var(--bit-clr-bg-overlay);
+    }
+
+    .page-container {
+        padding: 2rem 1.5rem 3rem;
+    }
+
+    .footer section:first-child {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 37.5rem) {
+    .header .link {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    /* Home, Docs, the two icon buttons and the logo already fill the bar at this width.
+       NuGet is the one header link that is also in the footer's Quick links, so it is the one
+       that goes. */
+    .header .link[target="_blank"] {
         display: none;
     }
 
-    .docs-sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.2s ease;
-        z-index: 90;
-        box-shadow: none;
+    .logo {
+        width: 2.5rem;
+        height: 2.5rem;
     }
 
-    body.sidebar-open .docs-sidebar {
-        transform: translateX(0);
-        box-shadow: var(--shadow);
+    .page-container {
+        padding: 1.5rem 1rem 2.5rem;
     }
 
-    body.sidebar-open .docs-sidebar-backdrop {
-        display: block;
-        position: fixed;
-        inset: var(--header-height) 0 0 0;
-        z-index: 80;
-        background: rgba(3, 10, 24, 0.45);
+    .page-content {
+        padding: 1.25rem;
     }
 
-    .docs-main {
-        margin-left: 0;
-        padding: calc(var(--header-height) + 1.25rem) 1rem 1.5rem;
+    /* The key column is held on one line at desktop widths so it reads as a label. On a phone
+       the table already scrolls, and keeping it unbreakable there spends most of the scroll
+       width on a column that is only a few words long - so it wraps instead and the
+       description column gets the room. */
+    .page-content td:first-child {
+        white-space: normal;
     }
 
     .hero h1 {
         font-size: 2.125rem;
+        line-height: 1.412;
+    }
+
+    .footer section {
+        padding: 2.5rem 1.875rem;
+    }
+
+    .footer section:last-child {
+        align-items: center;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+
+    .address-info {
+        margin-bottom: 1.875rem;
+    }
+
+    .social-link-group {
+        margin-bottom: 0.5rem;
     }
 }

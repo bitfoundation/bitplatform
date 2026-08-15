@@ -171,6 +171,41 @@
             <br />
             <BitFullCalendar Events="basicEvents" HideFilters HideSettings />
         </DemoExample>
+
+        <DemoExample Title="Views" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                Restrict which views the calendar offers - and in which order they appear - with the
+                <code>Views</code> parameter. Excluded views become unreachable: their tabs are gone,
+                and the active view is clamped into the list no matter how it was requested. A single
+                allowed view collapses the tab strip altogether.
+            </div>
+            <br />
+            <BitChoiceGroup Horizontal
+                            Label="Available views"
+                            TItem="BitChoiceGroupOption<string>"
+                            TValue="string"
+                            @bind-Value="viewsPreset">
+                <BitChoiceGroupOption Text="Week and Day" Value="@("week-day")" />
+                <BitChoiceGroupOption Text="Month and Agenda" Value="@("month-agenda")" />
+                <BitChoiceGroupOption Text="Month only" Value="@("month")" />
+            </BitChoiceGroup>
+            <br />
+            <BitFullCalendar Events="viewsEvents" Views="SelectedViews" />
+        </DemoExample>
+
+        <DemoExample Title="Read-only" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                Present the calendar without letting anyone change it. <code>ReadOnly</code> hides the
+                "Add Event" button and the per-cell add affordances, stops events from being dragged or
+                resized, and drops the edit and delete actions from the event details dialog.
+                Navigating dates, switching views, filtering, the settings panel, and opening an event
+                to read its details all keep working.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isReadOnly" Text="Read-only" />
+            <br />
+            <BitFullCalendar Events="readOnlyEvents" ReadOnly="isReadOnly" />
+        </DemoExample>
     </Examples>
 </DemoPage>
 

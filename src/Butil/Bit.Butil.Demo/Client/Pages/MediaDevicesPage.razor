@@ -113,6 +113,57 @@ var mic = await mediaDevices.GetUserMedia(
     audio: true,
     audioConstraints: new { deviceId = new { exact = someDeviceId } });
 """) />
+
+    <DemoSection Title="Capture a screen, window or tab"
+                 Api="GetDisplayMedia / GetDisplaySettings"
+                 Description="The Screen Capture API. GetDisplayMedia shows the browser's own surface picker and hands back the same MediaStreamHandle a camera does - AttachTo, SetEnabled and DisposeAsync all work the same way. Unlike a camera it grants nothing persistent: every call prompts again. The onEnded callback is the only way to hear about the user ending the share from the browser's own 'Stop sharing' bar."
+                 Code=@("""
+_screen = await mediaDevices.GetDisplayMedia(
+    audio: false,
+    options: new DisplayMediaOptions
+    {
+        DisplaySurface = "monitor",     // pre-select a whole screen
+        SelfBrowserSurface = "exclude", // don't offer this tab (avoids the hall of mirrors)
+    },
+    onEnded: () => InvokeAsync(() =>
+    {
+        _screen = null;
+        StateHasChanged();
+    }));
+
+if (_screen is not null)
+{
+    await _screen.AttachTo(_screenPreview);
+
+    // what the user actually picked, not what was asked for:
+    var settings = await mediaDevices.GetDisplaySettings(_screen);
+    // settings.DisplaySurface: "monitor" | "window" | "browser"
+    // settings.Width / Height / FrameRate
+}
+""")>
+        <div class="controls">
+            <label><input type="checkbox" @bind="_captureAudio" /> Request audio too</label>
+            <label><input type="checkbox" @bind="_excludeSelf" /> Exclude this tab</label>
+        </div>
+        <div class="controls">
+            <button @onclick="StartCapture">GetDisplayMedia</button>
+            <button class="secondary" @onclick="ReadDisplaySettings">GetDisplaySettings</button>
+            <button class="danger" @onclick="StopCapture">Stop sharing</button>
+        </div>
+        @if (_displaySettings is not null)
+        {
+            <div class="field">
+                <span class="field-label">Captured surface</span>
+                <span>
+                    @(string.IsNullOrEmpty(_displaySettings.DisplaySurface) ? "unreported" : _displaySettings.DisplaySurface)
+                    - @_displaySettings.Width x @_displaySettings.Height at @_displaySettings.FrameRate.ToString("0.#") fps
+                </span>
+            </div>
+        }
+        <video @ref="_screenPreview" autoplay playsinline muted
+               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+        <DemoConsole @ref="captureOutput" Title="screen capture output" />
+    </DemoSection>
 </div>
 
 <Callout Type="warning" Title="Always stop what you start">
@@ -131,6 +182,15 @@ var mic = await mediaDevices.GetUserMedia(
     <ApiMember Name="GetUserMedia"
                Signature="ValueTask<MediaStreamHandle?> GetUserMedia(bool audio = true, bool video = false, object? audioConstraints = null, object? videoConstraints = null)"
                Description="Requests audio and/or video access. Returns a handle when accepted, null when denied or unsatisfiable. Throws ArgumentException when both audio and video are false." />
+    <ApiMember Name="IsDisplayCaptureSupported"
+               Signature="ValueTask<bool> IsDisplayCaptureSupported()"
+               Description="True when the runtime exposes navigator.mediaDevices.getDisplayMedia. Returns default (false) during prerender/SSR instead of throwing." />
+    <ApiMember Name="GetDisplayMedia"
+               Signature="ValueTask<MediaStreamHandle?> GetDisplayMedia(bool audio = false, DisplayMediaOptions? options = null, object? videoConstraints = null, Action? onEnded = null)"
+               Description="Prompts the user to pick a screen, window or tab. Returns a handle when accepted, null when dismissed or blocked. Requires a user gesture; grants nothing persistent. onEnded fires when the user stops the share from the browser's own bar." />
+    <ApiMember Name="GetDisplaySettings"
+               Signature="ValueTask<DisplayMediaSettings?> GetDisplaySettings(MediaStreamHandle stream)"
+               Description="What the capture track actually negotiated: surface kind, size and frame rate. Null when the stream is already gone." />
     <ApiMember Name="DisposeAsync"
                Signature="ValueTask DisposeAsync()"
                Description="On scope/circuit teardown, stops any streams whose handle was never disposed so hardware can't stay live." />
@@ -152,12 +212,18 @@ var mic = await mediaDevices.GetUserMedia(
     private DemoConsole supportOutput = default!;
     private DemoConsole enumerateOutput = default!;
     private DemoConsole streamOutput = default!;
+    private DemoConsole captureOutput = default!;
     private ElementReference _preview;
+    private ElementReference _screenPreview;
     private MediaDeviceInfo[] _devices = [];
     private MediaStreamHandle? _stream;
+    private MediaStreamHandle? _screen;
+    private DisplayMediaSettings? _displaySettings;
     private bool _requestAudio = true;
     private bool _requestVideo = true;
     private bool _enabled = true;
+    private bool _captureAudio;
+    private bool _excludeSelf = true;
 
     private async Task CheckSupported()
     {
@@ -248,12 +314,91 @@ var mic = await mediaDevices.GetUserMedia(
         await streamOutput.Log("Stream stopped.");
     }
 
+    private async Task StartCapture()
+    {
+        await StopCapture();
+
+        try
+        {
+            if (!await mediaDevices.IsDisplayCaptureSupported())
+            {
+                await captureOutput.Warn("getDisplayMedia is not available in this browser.");
+                return;
+            }
+
+            var options = new DisplayMediaOptions
+            {
+                SelfBrowserSurface = _excludeSelf ? "exclude" : "include",
+            };
+
+            _screen = await mediaDevices.GetDisplayMedia(_captureAudio, options, onEnded: OnShareEnded);
+            if (_screen is null)
+            {
+                await captureOutput.Warn("GetDisplayMedia returned null - the picker was dismissed, or display capture is blocked here.");
+                return;
+            }
+
+            await _screen.AttachTo(_screenPreview);
+            _displaySettings = await mediaDevices.GetDisplaySettings(_screen);
+            await captureOutput.Success("Capture started →", _screen.Id);
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("GetDisplayMedia failed →", ex.Message);
+        }
+    }
+
+    // Fired from JS when the user hits the browser's own "Stop sharing" bar, i.e. not through any
+    // control on this page - so the page has to be told to re-render.
+    private void OnShareEnded() => InvokeAsync(async () =>
+    {
+        _screen = null;
+        _displaySettings = null;
+        await captureOutput.Log("The user ended the share from the browser's own bar.");
+        StateHasChanged();
+    });
+
+    private async Task ReadDisplaySettings()
+    {
+        if (_screen is null)
+        {
+            await captureOutput.Warn("Start a capture first.");
+            return;
+        }
+
+        try
+        {
+            _displaySettings = await mediaDevices.GetDisplaySettings(_screen);
+            await captureOutput.Success("GetDisplaySettings →", _displaySettings);
+        }
+        catch (Exception ex)
+        {
+            await captureOutput.Error("GetDisplaySettings failed →", ex.Message);
+        }
+    }
+
+    private async Task StopCapture()
+    {
+        if (_screen is null) return;
+
+        await _screen.DisposeAsync();
+        _screen = null;
+        _displaySettings = null;
+        await captureOutput.Log("Capture stopped.");
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_stream is not null)
         {
             await _stream.DisposeAsync();
             _stream = null;
+        }
+
+        if (_screen is not null)
+        {
+            await _screen.DisposeAsync();
+            _screen = null;
         }
     }
 }

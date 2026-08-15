@@ -7,12 +7,13 @@
     <BitButton Float
                Draggable
                FloatOffset="2rem"
+               Color="BitColor.Primary"
                Class="open-panel-button"
-               Variant="BitVariant.Outline"
                OnClick="() => isOpen = true"
-               Color="BitColor.PrimaryBackground"
+               IconName="@BitIconName.ChatBot"
                FloatPosition="BitPosition.BottomRight"
-               IconUrl="_content/Boilerplate.Client.Core/images/icons/ai-chat-icon-64.webp" />
+               Title="@Localizer[nameof(AppStrings.AiChatPanelTitle)]"
+               AriaLabel="@Localizer[nameof(AppStrings.AiChatPanelTitle)]" />
 
     <BitProPanel @bind-IsOpen="isOpen"
                  ShowCloseButton
@@ -43,25 +44,53 @@
                                    AutoScroll
                                    Class="scr-container"
                                    ScrollbarWidth="BitScrollbarWidth.Thin">
-                    <BitStack>
+                    <BitStack Gap="0">
                         @foreach (var message in chatMessages)
                         {
-                            if (message.Role is AiChatMessageRole.User)
-                            {
-                                <BitCard Background="BitColorKind.Tertiary" Class="user-message">
-                                    <BitText Element="pre">@message.Content</BitText>
-                                </BitCard>
-                            }
-                            else
-                            {
-                                <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownPipelines.Advanced" />
-                                @if (message.Successful is false)
+                            <BitStack @key="message"
+                                      FitHeight
+                                      Gap="0"
+                                      Class="@($"message-row{(message.Role is AiChatMessageRole.User ? " user" : null)}")">
+
+                                @if (message.Role is AiChatMessageRole.User)
                                 {
-                                    <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">
-                                        @Localizer[nameof(AppStrings.Canceled)]
-                                    </BitTag>
+                                    <BitCard Background="BitColorKind.Tertiary" Class="user-message">
+                                        <BitText Element="pre">@message.Content</BitText>
+                                    </BitCard>
                                 }
-                            }
+                                else
+                                {
+                                    <BitMarkdownViewer Markdown="@message.Content" Pipeline="BitMarkdownPipelines.Advanced" />
+                                    @if (message.Successful is false)
+                                    {
+                                        <BitTag Color="BitColor.Error" Size="BitSize.Small" Style="min-height:18px">
+                                            @Localizer[nameof(AppStrings.Canceled)]
+                                        </BitTag>
+                                    }
+                                }
+
+                                <BitStack Horizontal FitHeight Gap="0.25rem" Class="message-actions">
+                                    @if (string.IsNullOrWhiteSpace(message.Content) is false)
+                                    {
+                                        <BitButton IconOnly
+                                                   Variant="BitVariant.Text"
+                                                   IconName="@BitIconName.Copy"
+                                                   Title="@Localizer[nameof(AppStrings.Copy)]"
+                                                   OnClick="WrapHandled(() => CopyMessage(message))" />
+
+                                        @if (isReadAloudSupported)
+                                        {
+                                            var isReading = ReferenceEquals(readAloudMessage, message);
+
+                                            <BitButton IconOnly
+                                                       Variant="BitVariant.Text"
+                                                       OnClick="WrapHandled(() => ToggleReadAloud(message))"
+                                                       IconName="@(isReading ? BitIconName.CircleStopSolid : BitIconName.Volume3)"
+                                                       Title="@(isReading ? Localizer[nameof(AppStrings.AiChatPanelStopReading)] : Localizer[nameof(AppStrings.AiChatPanelReadAloud)])" />
+                                        }
+                                    }
+                                </BitStack>
+                            </BitStack>
                         }
 
                         <BitStack Alignment="BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
@@ -125,8 +154,24 @@
                                   Style="width:100%"
                                   @bind-Value="@userInput"
                                   OnEnter="WrapHandled((KeyboardEventArgs e) => HandleOnUserInputEnter(e))"
-                                  Styles="@(new() { FieldGroup = "padding:0.5rem; padding-inline-end:2.5rem", Input = "min-height:unset" })"
+                                  Styles="@(new() { FieldGroup = $"padding:0.5rem; padding-inline-end:{(isDictationSupported ? "5rem" : "2.5rem")}", Input = "min-height:unset" })"
                                   Placeholder="@(Localizer[nameof(AppStrings.AiChatPanelPlaceholder)])" />
+
+                    @* Speech-to-text. Hidden outright where the browser has no SpeechRecognition, rather than shown
+                       disabled: a control that can never become usable is noise. *@
+                    @if (isDictationSupported)
+                    {
+                        <BitButton Float
+                                   IconOnly
+                                   FloatAbsolute
+                                   FloatOffset="0.5rem"
+                                   Variant="BitVariant.Text"
+                                   Class="@($"dictate-button{(isListening ? " listening" : null)}")"
+                                   OnClick="WrapHandled(ToggleDictation)"
+                                   Color="@(isListening ? BitColor.Error : BitColor.SecondaryForeground)"
+                                   IconName="@(isListening ? BitIconName.CircleStopSolid : BitIconName.Microphone)"
+                                   Title="@(isListening ? Localizer[nameof(AppStrings.AiChatPanelStopDictation)] : Localizer[nameof(AppStrings.AiChatPanelDictate)])" />
+                    }
 
                     <BitButton Float
                                AutoLoading

@@ -312,10 +312,12 @@ a container, pre-loaded from
 | Username | Password | Group |
 |---|---|---|
 | test | 123456 | `g-admin` |
+| store-admin | 123456 | `t-admin`, used when multi-tenancy is enabled |
 | bob | bob | `demo` |
 | alice | alice | `demo` |
 
-The realm also carries a `t-admin` group, used when multi-tenancy is enabled.
+The realm is imported only on the first run - see
+[its README](/src/Server/Boilerplate.Server.AppHost/Infrastructure/Realms/README.md) before editing it.
 
 **How it maps.** Keycloak **groups** become ASP.NET Core **roles**, and Keycloak **user attributes** become claims.
 Keycloak's own *roles* (which are a different concept) are not mapped. Tokens are still issued by the app, not by
@@ -330,8 +332,8 @@ still valid it is reused without contacting the server.
 > **Keycloak is a trusted claims authority, by design.** Its groups become roles and its `features` attribute
 > becomes app permissions directly - so whoever administers the realm can grant application-level global admin.
 > That is the intended trade-off of federating identity. The exception is the per-session claims the server owns
-> (session id, privileged/elevated session, tenant): those are dropped from the copy, so a realm attribute cannot
-> forge an elevated session or select a tenant.
+> (session id, privileged/elevated session, max privileged sessions, tenant): those are dropped from the copy, so a
+> realm attribute cannot forge an elevated session, raise its own device limit, or select a tenant.
 
 **Sharing tokens with other services.** Signing is already asymmetric, so hand another service the *public* key and
 let it validate normally. The private key never leaves the API.

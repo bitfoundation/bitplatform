@@ -1,0 +1,294 @@
+@page "/split-text"
+
+<PageTitle>Split text - Bit.Bmotion</PageTitle>
+
+<h1>Split text</h1>
+
+<p class="page-intro">
+    The headline that assembles itself one letter at a time is the oldest trick in motion design,
+    and everywhere else it means cutting a sentence into spans with a script and hoping nothing
+    re-renders underneath it. <strong>BmotionSplitText</strong> does the splitting in C#: each
+    character, word or line becomes a real animated element in the render tree, so there is nothing
+    to re-split, nothing to undo, and the text still wraps, selects and copies like the original.
+</p>
+
+<div class="demo-section">
+    <h2>Characters, words, lines</h2>
+    <p>
+        One parameter picks the unit. <code>By="BmSplitBy.Chars"</code> is the headline treatment;
+        <code>Words</code> keeps the count sane on longer copy; <code>Lines</code> splits on the
+        newlines you authored, which is what you want for a stanza or an address block. Every unit
+        gets the same <code>Initial</code> / <code>Animate</code> pair, offset by the stagger.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">By: Chars</span>
+            <BmotionSplitText @key="_runId" Class="split-headline"
+                              Text="Every character"
+                              By="BmSplitBy.Chars"
+                              Initial="Bm.To(opacity: 0, y: 24, rotate: -12)"
+                              Animate="Bm.To(opacity: 1, y: 0, rotate: 0)"
+                              Stagger="Bm.Stagger(0.03)"
+                              Transition="Bm.Spring(bounce: 0.35, duration: 0.7)" />
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">By: Words</span>
+            <BmotionSplitText @key="_runId" Class="split-headline"
+                              Text="One word at a time"
+                              By="BmSplitBy.Words"
+                              Initial="Bm.To(opacity: 0, y: 20)"
+                              Animate="Bm.To(opacity: 1, y: 0)"
+                              Stagger="Bm.Stagger(0.08)"
+                              Transition="Bm.Spring(bounce: 0.25, duration: 0.6)" />
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">By: Lines</span>
+            <BmotionSplitText @key="_runId" Class="split-lines"
+                              Text="@_stanza"
+                              By="BmSplitBy.Lines"
+                              Initial='Bm.To(opacity: 0, x: -30, filter: "blur(6px)")'
+                              Animate='Bm.To(opacity: 1, x: 0, filter: "blur(0px)")'
+                              Stagger="Bm.Stagger(0.12)"
+                              Transition="Bm.Tween(0.6, BmEase.Out)" />
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="Replay">Replay</button>
+    </div>
+
+    <CodeSnippet Code="@_basicsCode" />
+</div>
+
+<div class="demo-section">
+    <h2>Where the cascade starts</h2>
+    <p>
+        The stagger is a <code>Bm.Stagger</code> like any other, so the same origins apply:
+        <code>First</code> runs left to right, <code>Last</code> right to left, and
+        <code>Center</code> opens outwards from the middle of the line. A custom
+        <code>(index, total)</code> function covers everything else - the last stage below reverses
+        every other character by hand.
+    </p>
+
+    <div class="demo-row">
+        @foreach (var mode in _staggerModes)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@mode.Label</span>
+                <BmotionSplitText @key="@($"{_runId}-{mode.Label}")" Class="split-headline"
+                                  Text="Cascade"
+                                  Initial="Bm.To(opacity: 0, scale: 0.4, y: 18)"
+                                  Animate="Bm.To(opacity: 1, scale: 1, y: 0)"
+                                  Stagger="mode.Stagger"
+                                  Transition="Bm.Spring(bounce: 0.4, duration: 0.6)" />
+            </div>
+        }
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="Replay">Replay</button>
+    </div>
+
+    <CodeSnippet Code="@_staggerCode" />
+</div>
+
+<div class="demo-section">
+    <h2>On scroll, and under the pointer</h2>
+    <p>
+        Because every unit is a full <code>Bmotion</code> element, it takes the gesture parameters
+        too. <code>WhileInView</code> with <code>Once</code> gives the classic reveal-as-you-scroll
+        headline; <code>WhileHover</code> lands on the individual character the pointer is actually
+        over, which is a per-letter interaction you would otherwise have to wire up by hand.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">WhileHover &middot; hover a letter</span>
+            <BmotionSplitText Class="split-headline"
+                              Text="Hover me"
+                              WhileHover='Bm.To(y: -14, scale: 1.25, color: "#FD7F36")'
+                              Transition="Bm.Spring(stiffness: 400, damping: 18)" />
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">WhileInView + Once &middot; scroll it into view</span>
+            <BmotionSplitText Class="split-headline"
+                              Text="Reveal on scroll"
+                              By="BmSplitBy.Words"
+                              Initial="Bm.To(opacity: 0, y: 28)"
+                              WhileInView="Bm.To(opacity: 1, y: 0)"
+                              Once="true"
+                              Stagger="Bm.Stagger(0.08)"
+                              Transition="Bm.Spring(bounce: 0.3, duration: 0.7)" />
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_gestureCode" />
+</div>
+
+<div class="demo-section">
+    <h2>It still reads as a sentence</h2>
+    <p>
+        Splitting text is the classic way to break it for everyone who is not looking at it: a
+        screen reader handed forty one-character spans spells the headline out. By default the
+        container carries the whole string as its <code>aria-label</code> and every unit is
+        <code>aria-hidden</code>, so assistive technology reads the sentence once. Whitespace is
+        rendered as whitespace rather than as units, and in <code>Chars</code> mode each word is
+        wrapped in an inline-block of its own - so the text wraps between words, never mid-word,
+        and selecting it copies the original string back.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Narrow container &middot; still wraps between words</span>
+            <div class="split-narrow">
+                <BmotionSplitText @key="_runId" Class="split-body"
+                                  Text="Long copy still wraps between words, never inside one."
+                                  Initial="Bm.To(opacity: 0, y: 10)"
+                                  Animate="Bm.To(opacity: 1, y: 0)"
+                                  Stagger="Bm.Stagger(0.012)"
+                                  Transition="Bm.Tween(0.4)" />
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="Replay">Replay</button>
+    </div>
+
+    <CodeSnippet Code="@_a11yCode" />
+</div>
+
+@code {
+    // Every sample keys off this counter so "Replay" remounts them and their enter animations run
+    // again - the same trick the presence pages use, rather than a bespoke reset path per demo.
+    private int _runId;
+
+    private void Replay() => _runId++;
+
+    private const string _stanza = """
+        Split on the newlines
+        you actually wrote,
+        not on the ones
+        the browser happened to pick.
+        """;
+
+    private sealed record StaggerMode(string Label, BmStagger Stagger);
+
+    private readonly StaggerMode[] _staggerModes =
+    [
+        new("from: First", Bm.Stagger(0.05)),
+        new("from: Center", Bm.Stagger(0.05, from: BmStaggerFrom.Center)),
+        new("from: Last", Bm.Stagger(0.05, from: BmStaggerFrom.Last)),
+        new("custom (i, total)", Bm.Stagger((i, total) => (i % 2 == 0 ? i : total - i) * 0.05)),
+    ];
+
+    @* Four quotes: the snippet itself contains a triple-quoted raw string literal. *@
+    private const string _basicsCode = """"
+        @using Bit.Bmotion
+
+        <style>
+            .split-headline { font-size: 1.6rem; font-weight: 700; }
+            .split-lines { font-size: 1rem; line-height: 1.6; }
+        </style>
+
+        @* Characters: the headline treatment. Each letter is its own animated element. *@
+        <BmotionSplitText Class="split-headline"
+                          Text="Every character"
+                          By="BmSplitBy.Chars"
+                          Initial="Bm.To(opacity: 0, y: 24, rotate: -12)"
+                          Animate="Bm.To(opacity: 1, y: 0, rotate: 0)"
+                          Stagger="Bm.Stagger(0.03)"
+                          Transition="Bm.Spring(bounce: 0.35, duration: 0.7)" />
+
+        @* Words: the same animation, a tenth of the elements. Use this for body copy. *@
+        <BmotionSplitText Class="split-headline"
+                          Text="One word at a time"
+                          By="BmSplitBy.Words"
+                          Initial="Bm.To(opacity: 0, y: 20)"
+                          Animate="Bm.To(opacity: 1, y: 0)"
+                          Stagger="Bm.Stagger(0.08)"
+                          Transition="Bm.Spring(bounce: 0.25, duration: 0.6)" />
+
+        @* Lines: splits on the newlines in the string, so the units survive any re-flow. *@
+        <BmotionSplitText Class="split-lines"
+                          Text="@_stanza"
+                          By="BmSplitBy.Lines"
+                          Initial='Bm.To(opacity: 0, x: -30, filter: "blur(6px)")'
+                          Animate='Bm.To(opacity: 1, x: 0, filter: "blur(0px)")'
+                          Stagger="Bm.Stagger(0.12)"
+                          Transition="Bm.Tween(0.6, BmEase.Out)" />
+
+        @code {
+            private const string _stanza = """
+                Split on the newlines
+                you actually wrote,
+                not on the ones
+                the browser happened to pick.
+                """;
+        }
+        """";
+
+    private const string _staggerCode = """
+        @using Bit.Bmotion
+
+        @* The stagger is an ordinary Bm.Stagger, so From picks where the cascade begins… *@
+        <BmotionSplitText Text="Cascade"
+                          Initial="Bm.To(opacity: 0, scale: 0.4, y: 18)"
+                          Animate="Bm.To(opacity: 1, scale: 1, y: 0)"
+                          Stagger="Bm.Stagger(0.05, from: BmStaggerFrom.Center)"
+                          Transition="Bm.Spring(bounce: 0.4, duration: 0.6)" />
+
+        @* …and a custom (index, total) function covers anything the presets do not. *@
+        <BmotionSplitText Text="Cascade"
+                          Initial="Bm.To(opacity: 0, scale: 0.4, y: 18)"
+                          Animate="Bm.To(opacity: 1, scale: 1, y: 0)"
+                          Stagger="Bm.Stagger((i, total) => (i % 2 == 0 ? i : total - i) * 0.05)"
+                          Transition="Bm.Spring(bounce: 0.4, duration: 0.6)" />
+        """;
+
+    private const string _gestureCode = """
+        @using Bit.Bmotion
+
+        @* Gesture parameters are forwarded to every unit, so the hover lands on the one
+           character the pointer is actually over - no per-letter wiring. *@
+        <BmotionSplitText Text="Hover me"
+                          WhileHover='Bm.To(y: -14, scale: 1.25, color: "#FD7F36")'
+                          Transition="Bm.Spring(stiffness: 400, damping: 18)" />
+
+        @* The reveal-on-scroll headline: no Animate at all, just an in-view overlay that
+           plays once. Note Initial is what the text is painted in before it scrolls in. *@
+        <BmotionSplitText Text="Reveal on scroll"
+                          By="BmSplitBy.Words"
+                          Initial="Bm.To(opacity: 0, y: 28)"
+                          WhileInView="Bm.To(opacity: 1, y: 0)"
+                          Once="true"
+                          Stagger="Bm.Stagger(0.08)"
+                          Transition="Bm.Spring(bounce: 0.3, duration: 0.7)" />
+        """;
+
+    private const string _a11yCode = """
+        @using Bit.Bmotion
+
+        @* Renders as:
+             <span aria-label="Long copy still wraps…" role="text" style="white-space:pre-wrap">
+               <span aria-hidden="true" style="display:inline-block;white-space:nowrap">
+                 <span style="display:inline-block">L</span>… one per character
+               </span>
+               <span> </span>          ← real whitespace, not a unit, so the text wraps here
+               …
+             </span>
+
+           So: the sentence is announced once, the line breaks fall between words, and a
+           selection copies the original string. Set Accessible="false" to opt out when an
+           ancestor already labels the text. *@
+        <BmotionSplitText Text="Long copy still wraps between words, never inside one."
+                          Initial="Bm.To(opacity: 0, y: 10)"
+                          Animate="Bm.To(opacity: 1, y: 0)"
+                          Stagger="Bm.Stagger(0.012)"
+                          Transition="Bm.Tween(0.4)" />
+        """;
+}

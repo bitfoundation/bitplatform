@@ -4,6 +4,7 @@ using BlazorApplicationInsights;
 using BlazorApplicationInsights.Interfaces;
 //#endif
 using Boilerplate.Client.Core;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 //#if (signalR == true)
@@ -25,6 +26,7 @@ public static partial class IClientCoreServiceCollectionExtensions
 
             services.AddScoped<ThemeService>();
             services.AddScoped<CultureService>();
+            services.AddScoped<AppAccentColorService>();
             services.AddScoped<LazyAssemblyLoader>();
             services.AddScoped<SignInModalService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
@@ -63,12 +65,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             });
             services.AddSessioned(sp => (AuthManager)sp.GetRequiredService<AuthenticationStateProvider>());
 
-            services.AddSingleton(sp =>
-            {
-                ClientCoreSettings settings = new();
-                configuration.Bind(settings);
-                return settings;
-            });
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientCoreSettings>>().Value);
 
             services.AddOptions<ClientCoreSettings>()
                 .Bind(configuration)
@@ -132,7 +129,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             , dbContextInitializer: async (_, dbContext) =>
             {
                 if (AppEnvironment.IsDevelopment() is false && dbContext.Model.GetType() == typeof(EntityFrameworkCore.Metadata.RuntimeModel))
-                    throw new InvalidOperationException("DbContext has not been optimized"); // Checkout Boilerplate.Client.Core/Data/README.md for more info about Optimize-DbContext command.
+                    throw new InvalidOperationException("AppOfflineDbContext has not been optimized. Run 'dotnet ef dbcontext optimize --context AppOfflineDbContext' before publishing, and re-run it after every model or migration change. See Boilerplate.Client.Core/Infrastructure/Data/README.md.");
 
                 await Task.Run(async () => await dbContext.Database.MigrateAsync());
             }

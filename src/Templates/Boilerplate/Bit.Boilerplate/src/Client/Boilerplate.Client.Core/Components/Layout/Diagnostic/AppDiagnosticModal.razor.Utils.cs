@@ -6,6 +6,9 @@ public partial class AppDiagnosticModal
 {
     [AutoInject] private Cookie cookie = default!;
     [AutoInject] private AuthManager authManager = default!;
+    [AutoInject] private LocalStorage localStorage = default!;
+    [AutoInject] private CacheStorage cacheStorage = default!;
+    [AutoInject] private SessionStorage sessionStorage = default!;
     [AutoInject] private IStorageService storageService = default!;
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private IAppUpdateService appUpdateService = default!;
@@ -116,7 +119,14 @@ public partial class AppDiagnosticModal
         //#if (offlineDb == true)
         try
         {
-            await syncService.Push(); // Try to push any pending changes before clearing the DB.
+            // Try to push any pending changes before clearing the DB. This deliberately takes the overload that
+            // accepts a DbContext rather than SyncService.Push(), which returns without doing anything when the app
+            // believes it is offline - the state in which unpushed changes are most likely to exist.
+            using var pushCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentCancellationToken);
+            pushCts.CancelAfter(TimeSpan.FromSeconds(5));
+
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(pushCts.Token);
+            await syncService.Sync(dbContext, pullRecentChanges: false, pushCts.Token);
         }
         catch (Exception exp)
         {
@@ -133,9 +143,16 @@ public partial class AppDiagnosticModal
             logger.LogWarning(exp, "Failed to sign out during ClearAppStorage.");
         }
 
-        await storageService.Clear(); // Blazor Hybrid stores key/value pairs outside webview's storage.
+        try
+        {
+            await storageService.Clear(); // Blazor Hybrid stores key/value pairs outside webview's storage.
+        }
+        catch (Exception exp)
+        {
+            logger.LogWarning(exp, "Failed to clear the storage service during ClearAppStorage.");
+        }
 
-        await JSRuntime.ClearWebStorages();
+        await ClearWebStorages();
 
         //#if (offlineDb == true)
         try
@@ -158,6 +175,46 @@ public partial class AppDiagnosticModal
         else
         {
             NavigationManager.Refresh(forceReload: true);
+        }
+    }
+
+    /// <summary>
+    /// Clears the browser / web view storages of this origin.
+    /// </summary>
+    private async Task ClearWebStorages()
+    {
+        await Attempt(nameof(CacheStorage), async () =>
+        {
+            if (await cacheStorage.IsSupported() is false) return;
+
+            foreach (var cacheName in await cacheStorage.Keys())
+            {
+                await cacheStorage.Delete(cacheName);
+            }
+        });
+
+        await Attempt(nameof(LocalStorage), localStorage.Clear);
+
+        await Attempt(nameof(SessionStorage), sessionStorage.Clear);
+
+        await Attempt(nameof(Cookie), async () =>
+        {
+            foreach (var item in await cookie.GetAll())
+            {
+                await cookie.Remove(new ButilCookie { Name = item.Name, Path = "/" });
+            }
+        });
+
+        async Task Attempt(string storageName, Func<Task> clear)
+        {
+            try
+            {
+                await clear();
+            }
+            catch (Exception exp)
+            {
+                logger.LogWarning(exp, "Failed to clear {Storage} during ClearAppStorage.", storageName);
+            }
         }
     }
 

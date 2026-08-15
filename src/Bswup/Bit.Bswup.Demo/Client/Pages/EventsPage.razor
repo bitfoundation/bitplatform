@@ -26,6 +26,7 @@
             <tr><td><code>downloadStarted</code></td><td><code>DOWNLOAD_STARTED</code></td><td>Asset download began. <code>data.version</code>, <code>data.firstInstall</code>.</td></tr>
             <tr><td><code>downloadProgress</code></td><td><code>DOWNLOAD_PROGRESS</code></td><td>An asset finished. <code>data.percent</code> (0-100), <code>data.index</code> (1-based count), <code>data.asset</code> (<code>url</code>, <code>reqUrl</code>, <code>hash</code>).</td></tr>
             <tr><td><code>downloadFinished</code></td><td><code>DOWNLOAD_FINISHED</code></td><td>All assets are staged. <code>data.firstInstall</code>, <code>data.reload()</code>, <code>data.cleanup()</code>.</td></tr>
+            <tr><td><code>firstInstallClaimed</code></td><td><code>FIRST_INSTALL_CLAIMED</code></td><td>The first-install claim handshake completed end to end, just before Blazor is started. Never raised by an update flow - see <a href="#first-install-claimed">below</a>.</td></tr>
             <tr><td><code>updateReady</code></td><td><code>UPDATE_READY</code></td><td>A fully staged update is waiting to be activated (<code>data.reload()</code>).</td></tr>
             <tr><td><code>activate</code></td><td><code>ACTIVATE</code></td><td>A new version activated (<code>data.version</code>).</td></tr>
             <tr><td><code>updateNotFound</code></td><td><code>UPDATE_NOT_FOUND</code></td><td>An update check completed and the app is already on the latest version.</td></tr>
@@ -53,6 +54,26 @@
         accepted update.
     </li>
 </ul>
+
+<h2 id="first-install-claimed"><code>firstInstallClaimed</code>: the app is booting</h2>
+<p>
+    <code>reload()</code> on a first install starts a handshake with the new worker, and that handshake can
+    stall - a claim reply can be lost. A pending <code>reload()</code> promise on its own therefore cannot
+    tell you whether the app is starting or hung, which is exactly the ambiguity that makes fail-safe
+    timeouts necessary.
+</p>
+<p>
+    <code>firstInstallClaimed</code> resolves it. It is raised only once the claim has completed end to end,
+    immediately before Blazor is started, and only ever on a first install. After it arrives, a still-pending
+    <code>reload()</code> means "the app is booting", not "the handshake stalled" - so a custom handler can
+    cancel its own fallback timer the same way the built-in progress UI does.
+</p>
+<Callout Type="note" Title="Deprecated: updateInstalled">
+    <code>BswupMessage.updateInstalled</code> (<code>UPDATE_INSTALLED</code>) is declared but has never been
+    raised by any version of Bswup. It is kept only so that existing <code>case</code> labels keep resolving
+    to their original value. Use <code>updateReady</code>, which fires when a new version has finished
+    installing and is waiting to activate.
+</Callout>
 
 <Callout Type="warning" Title="Breaking change: updates no longer auto-reload by default">
     Since v-10-6-0, the built-in <code>BswupProgress</code> component's <code>AutoReload</code> parameter

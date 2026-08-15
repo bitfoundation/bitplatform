@@ -1135,17 +1135,14 @@
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>无密码登录禁用成功</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>无法验证您的通行密钥，因此未将其移除。请重试。</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>该通行密钥在服务器上已不存在；已从此设备中移除。</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>清除</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>发送</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>应用 {0} 强调色</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>已取消</value>
@@ -1153,6 +1150,27 @@
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI 聊天面板</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>口述你的消息</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>停止口述</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>语音输入</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>麦克风访问已被阻止。请为本站点允许访问后再进行口述。</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>语音输入已停止：{0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>朗读</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>停止朗读</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>您好{0}！我是来让您的应用体验更棒的！有问题或需要帮助吗？</value>
@@ -1195,6 +1213,9 @@
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>账户升级失败。</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>当前没有可用的广告。请稍后再试。</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>观看广告有问题？</value>

@@ -198,7 +198,10 @@ public static class BitThemeSsr
             $"r.setAttribute('{theme}',cur);}})();";
     }
 
-    private static string HtmlEncodeAttribute(string value)
+    // Internal rather than private so BitAccentColorSsr (in Bit.BlazorUI.Extras, via
+    // InternalsVisibleTo) encodes its own inline script's nonce through this same routine - two
+    // copies would let a hardening applied to one silently miss the other.
+    internal static string HtmlEncodeAttribute(string value)
     {
         // Minimal attribute-context encoding; we don't want a full WebUtility dep just for this and
         // CSP nonces are constrained to base64url chars in practice. Encode the characters that can

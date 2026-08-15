@@ -42,7 +42,7 @@ public partial class ClientAppMessages
     /// </summary>
     public const string SHOW_DIAGNOSTIC_MODAL = nameof(SHOW_DIAGNOSTIC_MODAL);
 
-    //#if(module == "Sales")
+    //#if (module == "Sales" && signalR == true)
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with product search prompt.
     /// When a user taps on search bar, this message is published to open the AI chat panel with product search prompt.
@@ -50,7 +50,7 @@ public partial class ClientAppMessages
     public const string SEARCH_PRODUCTS = nameof(SEARCH_PRODUCTS);
     //#endif
 
-    //#if(ads == true)
+    //#if (ads == true && signalR == true)
     /// <summary>
     /// A publisher that sends this message announces that the subscriber should open the AI chat panel with ad help prompt.
     /// When a user has trouble with ads, this message is published to open the AI chat panel with ad help prompt.
@@ -69,6 +69,12 @@ public partial class ClientAppMessages
     /// A publisher that publishes this message notifies that the app theme has changed.
     /// </summary>
     public const string THEME_CHANGED = nameof(THEME_CHANGED);
+
+    /// <summary>
+    /// A publisher that publishes this message notifies that the app's accent (main theme) color has changed.
+    /// The payload is the new accent's hex value (See <see cref="AppAccentColorService"/>).
+    /// </summary>
+    public const string ACCENT_COLOR_CHANGED = nameof(ACCENT_COLOR_CHANGED);
 
     /// <summary>
     /// A publisher that publishes this message notifies that the app culture has changed.

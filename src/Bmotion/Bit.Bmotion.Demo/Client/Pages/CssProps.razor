@@ -5,10 +5,13 @@
 <h1>CSS properties</h1>
 
 <p class="page-intro">
-    Beyond transforms and colors, Bmotion's typed props reach across the whole style surface -
-    <strong>typography</strong>, <strong>spacing</strong>, <strong>positioning</strong>,
-    <strong>clipping &amp; backgrounds</strong> - and the generic <strong>Css</strong> bag animates
-    <em>any</em> property by name. Each group below toggles on its own.
+    Transforms and opacity are the properties that animate cheaply, and most of this library is
+    about them. This page is the other half: Bmotion's typed props reach across the whole style
+    surface - <strong>typography</strong>, <strong>spacing</strong>, <strong>positioning</strong>,
+    <strong>clipping and backgrounds</strong> - the <strong>cssVars</strong> bag animates CSS custom
+    properties, and the generic <strong>css</strong> bag animates <em>anything else</em> by name.
+    These are the ones that trigger layout or paint rather than compositing, so they are worth
+    spending deliberately. Each group below toggles on its own.
 </p>
 
 @* ── Typography ─────────────────────────────────────────────────────────── *@
@@ -16,29 +19,29 @@
     <h2>Typography</h2>
     <p><code>letterSpacing</code>, <code>fontSize</code> and <code>lineHeight</code> interpolate like any length.</p>
 
-    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _typo = !_typo)">
+    <button class="btn-bm section-toggle" @onclick="@(() => _typo = !_typo)">
         @(_typo ? "Reset" : "Animate")
     </button>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">letterSpacing</span>
+        <div class="demo-card stack">
+            <span class="demo-label">letterSpacing</span>
             <Bmotion Animate="@(_typo ? Bm.To(letterSpacing: "0.4em") : Bm.To(letterSpacing: "0em"))"
                      Transition="Bm.Tween(0.7)">
                 <div class="headline">BMOTION</div>
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">fontSize</span>
+        <div class="demo-card stack">
+            <span class="demo-label">fontSize</span>
             <Bmotion Animate="@(_typo ? Bm.To(fontSize: "2.2rem") : Bm.To(fontSize: "1rem"))"
                      Transition="Bm.Tween(0.6)">
                 <div class="headline" style="font-size:1rem">Scale me</div>
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">lineHeight</span>
+        <div class="demo-card stack">
+            <span class="demo-label">lineHeight</span>
             <Bmotion Animate="@(_typo ? Bm.To(lineHeight: "2.3") : Bm.To(lineHeight: "1.15"))"
                      Transition="Bm.Tween(0.7)">
                 <div class="prose">Motion that reads well breathes between its lines.</div>
@@ -54,13 +57,13 @@
     <h2>Spacing</h2>
     <p><code>gap</code> animates on a flex/grid container; <code>padding</code> grows a box from the inside; <code>margin</code> pushes it within its track.</p>
 
-    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _spacing = !_spacing)">
+    <button class="btn-bm section-toggle" @onclick="@(() => _spacing = !_spacing)">
         @(_spacing ? "Reset" : "Animate")
     </button>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">gap (flex container)</span>
+        <div class="demo-card stack">
+            <span class="demo-label">gap (flex container)</span>
             <Bmotion Animate="@(_spacing ? Bm.To(gap: "2.5rem") : Bm.To(gap: "0.4rem"))"
                      Transition="Bm.Spring()">
                 <div class="row">
@@ -69,16 +72,16 @@
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">padding</span>
+        <div class="demo-card stack">
+            <span class="demo-label">padding</span>
             <Bmotion Animate="@(_spacing ? Bm.To(padding: "1.8rem") : Bm.To(padding: "0.4rem"))"
                      Transition="Bm.Tween(0.6)">
                 <div class="pad-box">PAD</div>
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">margin</span>
+        <div class="demo-card stack">
+            <span class="demo-label">margin</span>
             <div class="track">
                 <Bmotion Animate="@(_spacing ? Bm.To(margin: "1.6rem") : Bm.To(margin: "0.1rem"))"
                          Transition="Bm.Tween(0.6)">
@@ -96,13 +99,13 @@
     <h2>Positioning</h2>
     <p>Animate <code>top</code>, <code>left</code>, <code>right</code> and <code>bottom</code> on a positioned element.</p>
 
-    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _pos = !_pos)">
+    <button class="btn-bm section-toggle" @onclick="@(() => _pos = !_pos)">
         @(_pos ? "Reset" : "Animate")
     </button>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">left</span>
+        <div class="demo-card stack">
+            <span class="demo-label">left</span>
             <div class="track track-wide">
                 <Bmotion Animate="@(_pos ? Bm.To(left: "150px") : Bm.To(left: "0px"))"
                          Transition="Bm.Tween(0.7)">
@@ -111,8 +114,8 @@
             </div>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">top + left</span>
+        <div class="demo-card stack">
+            <span class="demo-label">top + left</span>
             <div class="track track-wide" style="min-height:120px">
                 <Bmotion Animate="@(_pos ? Bm.To(top: "60px", left: "150px") : Bm.To(top: "0px", left: "0px"))"
                          Transition="Bm.Spring(stiffness: 200, damping: 18)">
@@ -130,29 +133,29 @@
     <h2>Clipping &amp; backgrounds</h2>
     <p><code>clipPath</code>, <code>backgroundPosition</code> and <code>backgroundSize</code> interpolate their numeric parts frame by frame.</p>
 
-    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _visual = !_visual)">
+    <button class="btn-bm section-toggle" @onclick="@(() => _visual = !_visual)">
         @(_visual ? "Reset" : "Animate")
     </button>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">clipPath</span>
+        <div class="demo-card stack">
+            <span class="demo-label">clipPath</span>
             <Bmotion Animate="@(_visual ? Bm.To(clipPath: "circle(30% at 50% 50%)") : Bm.To(clipPath: "circle(65% at 50% 50%)"))"
                      Transition="Bm.Tween(0.7)">
                 <div class="fill-box grad-a" />
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">backgroundPosition</span>
+        <div class="demo-card stack">
+            <span class="demo-label">backgroundPosition</span>
             <Bmotion Animate="@(_visual ? Bm.To(backgroundPosition: "100% 50%") : Bm.To(backgroundPosition: "0% 50%"))"
                      Transition="Bm.Tween(1.0)">
                 <div class="fill-box grad-pos" />
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">backgroundSize</span>
+        <div class="demo-card stack">
+            <span class="demo-label">backgroundSize</span>
             <Bmotion Animate="@(_visual ? Bm.To(backgroundSize: "250%") : Bm.To(backgroundSize: "120%"))"
                      Transition="Bm.Tween(0.8)">
                 <div class="fill-box grad-size" />
@@ -168,21 +171,21 @@
     <h2>Generic <code>Css</code> escape hatch</h2>
     <p>The <code>css</code> bag animates <em>any</em> CSS property by name (dash- or camelCase) - the equivalent of motion.dev's <code>animate()</code>.</p>
 
-    <button class="btn-bm" style="margin-bottom:1.5rem" @onclick="@(() => _escape = !_escape)">
+    <button class="btn-bm section-toggle" @onclick="@(() => _escape = !_escape)">
         @(_escape ? "Reset" : "Animate")
     </button>
 
     <div class="demo-row">
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">css: word-spacing</span>
+        <div class="demo-card stack">
+            <span class="demo-label">css: word-spacing</span>
             <Bmotion Animate="@(_escape ? Bm.To(css: new() { ["word-spacing"] = "1.5rem" }) : Bm.To(css: new() { ["word-spacing"] = "0rem" }))"
                      Transition="Bm.Tween(0.7)">
                 <div class="headline" style="font-size:1rem">the quick fox</div>
             </Bmotion>
         </div>
 
-        <div class="demo-card" style="flex-direction:column; gap:1rem;">
-            <span class="label">css: text-indent</span>
+        <div class="demo-card stack">
+            <span class="demo-label">css: text-indent</span>
             <Bmotion Animate="@(_escape ? Bm.To(css: new() { ["text-indent"] = "48px" }) : Bm.To(css: new() { ["text-indent"] = "0px" }))"
                      Transition="Bm.Tween(0.7)">
                 <div class="prose">Indented on demand.</div>
@@ -191,6 +194,38 @@
     </div>
 
     <CodeSnippet Code="@_escapeCode" />
+</div>
+
+@* ── CSS custom properties ──────────────────────────────────────────────── *@
+<div class="demo-section">
+    <h2>CSS custom properties</h2>
+    <p>
+        <code>cssVars</code> writes CSS custom properties (keys must start with <code>--</code>) on
+        the animated element, where they cascade to everything inside it. That is the lever for the
+        things inline styles cannot reach directly: a value used several times in one declaration, a
+        gradient stop, a pseudo-element. One animated variable below drives a glow, a border and an
+        inner ring at once, and none of those three is addressed by name.
+    </p>
+
+    <button class="btn-bm section-toggle" @onclick="@(() => _vars = !_vars)">
+        @(_vars ? "Reset" : "Animate")
+    </button>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">cssVars: --glow</span>
+            <Bmotion Initial='Bm.To(cssVars: new() { ["--glow"] = "0px" })'
+                     Animate='@(_vars ? Bm.To(cssVars: new() { ["--glow"] = "26px" })
+                                      : Bm.To(cssVars: new() { ["--glow"] = "0px" }))'
+                     Transition="Bm.Tween(0.8, BmEase.InOut)">
+                <div class="glow-card">
+                    <div class="glow-ring" />
+                </div>
+            </Bmotion>
+        </div>
+    </div>
+
+    <CodeSnippet Code="@_varsCode" />
 </div>
 
 @* ── Accessibility & safety ─────────────────────────────────────────────── *@
@@ -218,8 +253,10 @@
 </div>
 
 <style>
-    .page-intro { color: var(--bm-muted); margin-bottom: 2.5rem; line-height: 1.6; }
-    .label { font-size: .78rem; color: #888; }
+    /* Each group toggles on its own, so its control sits above the stages rather than under
+       them - the reader presses it once and then watches the whole row. */
+    .section-toggle { margin-bottom: 1.5rem; }
+
     .headline { font-weight: 800; font-size: 1.4rem; letter-spacing: 0; }
     .prose { max-width: 190px; color: var(--bm-text); font-size: .95rem; text-align: left; }
     .row { display: flex; }
@@ -235,15 +272,38 @@
     }
 
     .fill-box { width: 120px; height: 120px; border-radius: 12px; }
-    .grad-a { background: linear-gradient(135deg, #6c47ff, #ff4785); }
-    .grad-pos { background: linear-gradient(90deg, #6c47ff, #ff4785, #ffb347); background-size: 300% 100%; }
+    .grad-a { background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary)); }
+    .grad-pos { background: linear-gradient(90deg, var(--bm-primary), var(--bm-secondary), #ffb347); background-size: 300% 100%; }
     .grad-size {
-        background: radial-gradient(circle at 50% 50%, #ff4785 0%, #6c47ff 60%);
+        background: radial-gradient(circle at 50% 50%, var(--bm-secondary) 0%, var(--bm-primary) 60%);
         background-repeat: no-repeat; background-position: center;
     }
 
-    .feature-list { line-height: 1.9; color: #bbb; }
-    .feature-list code { background: #2a2a3a; padding: .1rem .35rem; border-radius: 4px; }
+    /* Three declarations, one animated variable. The variable is set on .glow-card by the
+       engine and inherited by .glow-ring, which is why the inner element needs no animation
+       of its own. */
+    .glow-card {
+        width: 7.5rem;
+        height: 7.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+        border: 2px solid color-mix(in srgb, var(--bm-secondary) 60%, transparent);
+        box-shadow: 0 0 var(--glow, 0px) color-mix(in srgb, var(--bm-primary) 70%, transparent);
+    }
+
+    .glow-ring {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .9);
+        box-shadow: 0 0 var(--glow, 0px) rgba(255, 255, 255, .9);
+    }
+
+    .feature-list { line-height: 1.9; color: var(--bm-muted); }
+    .feature-list code { background: var(--bm-track); padding: .1rem .35rem; border-radius: 4px; }
 </style>
 
 @code {
@@ -252,6 +312,34 @@
     private bool _pos;
     private bool _visual;
     private bool _escape;
+    private bool _vars;
+
+    private const string _varsCode = """
+        @using Bit.Bmotion
+
+        <style>
+            /* Three declarations, one variable. The engine sets it on .glow-card; .glow-ring
+               inherits it, which is why the inner element needs no animation of its own. */
+            .glow-card { box-shadow: 0 0 var(--glow, 0px) rgba(18,118,198,.7); }
+            .glow-ring { box-shadow: 0 0 var(--glow, 0px) rgba(255,255,255,.9); }
+        </style>
+
+        @* Keys must start with "--". The property is written on the animated element, so it
+           cascades to everything inside it - including pseudo-elements and gradient stops,
+           which an inline style cannot address directly. *@
+        <Bmotion Initial='Bm.To(cssVars: new() { ["--glow"] = "0px" })'
+                 Animate='@(_on ? Bm.To(cssVars: new() { ["--glow"] = "26px" })
+                                : Bm.To(cssVars: new() { ["--glow"] = "0px" }))'
+                 Transition="Bm.Tween(0.8, BmEase.InOut)">
+            <div class="glow-card">
+                <div class="glow-ring" />
+            </div>
+        </Bmotion>
+
+        @code {
+            private bool _on;
+        }
+        """;
 
     private const string _typoCode = """
         @* letterSpacing / fontSize / lineHeight all interpolate like any length *@

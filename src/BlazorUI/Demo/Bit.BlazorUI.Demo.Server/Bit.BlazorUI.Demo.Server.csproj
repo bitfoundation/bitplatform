@@ -25,12 +25,12 @@
 
     <ItemGroup>
 		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
-		<PackageReference Include="Bit.BlazorES2019" Version="10.6.0-pre-01" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-01">
+		<PackageReference Include="Bit.BlazorES2019" Version="10.6.0-pre-02" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-01">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.6.0-pre-02">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -45,9 +45,9 @@
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="10.8.3" />
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.0.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
     </ItemGroup>
 
     <ItemGroup>

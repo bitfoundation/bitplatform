@@ -165,6 +165,13 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "ReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "When true, the calendar becomes presentation-only: the add button and per-cell add affordances are hidden, drag-and-drop and resizing are disabled, and the edit/delete actions are removed from the event details dialog. Navigation, view/mode switching, filtering, and reading event details keep working.",
+        },
+        new()
+        {
             Name = "Resources",
             Type = "IReadOnlyList<BitFullCalendarResource>?",
             DefaultValue = "null",
@@ -205,6 +212,15 @@ public partial class BitFullCalendarDemo
             Type = "BitFullCalendarView",
             DefaultValue = "BitFullCalendarView.Month",
             Description = "The currently active view of the calendar (Day, Week, Month, Year, Agenda). In Timeline mode only Day, Week, and Month are supported (Year and Agenda fall back to the week layout). (two-way bound)",
+            LinkType = LinkType.Link,
+            Href = "#view-enum",
+        },
+        new()
+        {
+            Name = "Views",
+            Type = "IReadOnlyList<BitFullCalendarView>?",
+            DefaultValue = "null",
+            Description = "The views the calendar offers, in the order the view tabs render them. When null or empty, every view (Day, Week, Month, Year, Agenda) is offered in that order; unknown and repeated entries are ignored. Excluded views are unreachable - the tabs omit them and View, DefaultView, and the indirect navigation paths are clamped into the list. The tab strip is hidden when a single view is left, and Timeline mode is unavailable when none of Day, Week, or Month is listed.",
             LinkType = LinkType.Link,
             Href = "#view-enum",
         },
@@ -508,6 +524,19 @@ public partial class BitFullCalendarDemo
     private readonly List<BitFullCalendarEvent> changeEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> localizationEvents = CreateEvents();
     private readonly List<BitFullCalendarEvent> layoutEvents = CreateEvents();
+    private readonly List<BitFullCalendarEvent> viewsEvents = CreateEvents();
+    private readonly List<BitFullCalendarEvent> readOnlyEvents = CreateEvents();
+
+    private bool isReadOnly = true;
+
+    private string viewsPreset = "week-day";
+
+    private BitFullCalendarView[] SelectedViews => viewsPreset switch
+    {
+        "month-agenda" => [BitFullCalendarView.Month, BitFullCalendarView.Agenda],
+        "month" => [BitFullCalendarView.Month],
+        _ => [BitFullCalendarView.Week, BitFullCalendarView.Day]
+    };
 
     private BitFullCalendarEventLayout layoutMode = BitFullCalendarEventLayout.Stack;
     private BitFullCalendarSettings layoutSettings = new()
@@ -967,6 +996,39 @@ public partial class BitFullCalendarDemo
     private readonly string example9RazorCode = @"<BitFullCalendar Events=""events"" HideFilters HideSettings />
 
 @code {" + eventsCode + @"
+}";
+
+    private readonly string example10RazorCode = @"<BitChoiceGroup Horizontal
+                Label=""Available views""
+                TItem=""BitChoiceGroupOption<string>""
+                TValue=""string""
+                @bind-Value=""viewsPreset"">
+    <BitChoiceGroupOption Text=""Week and Day"" Value=""@(""week-day"")"" />
+    <BitChoiceGroupOption Text=""Month and Agenda"" Value=""@(""month-agenda"")"" />
+    <BitChoiceGroupOption Text=""Month only"" Value=""@(""month"")"" />
+</BitChoiceGroup>
+<br />
+<BitFullCalendar Events=""events"" Views=""SelectedViews"" />
+
+@code {
+    private string viewsPreset = ""week-day"";
+
+    private BitFullCalendarView[] SelectedViews => viewsPreset switch
+    {
+        ""month-agenda"" => [BitFullCalendarView.Month, BitFullCalendarView.Agenda],
+        ""month"" => [BitFullCalendarView.Month],
+        _ => [BitFullCalendarView.Week, BitFullCalendarView.Day]
+    };
+" + eventsCode + @"
+}";
+
+    private readonly string example11RazorCode = @"<BitToggle @bind-Value=""isReadOnly"" Text=""Read-only"" />
+<br />
+<BitFullCalendar Events=""events"" ReadOnly=""isReadOnly"" />
+
+@code {
+    private bool isReadOnly = true;
+" + eventsCode + @"
 }";
 
     private readonly string example7RazorCode = @"<BitChoiceGroup Horizontal Label=""View""

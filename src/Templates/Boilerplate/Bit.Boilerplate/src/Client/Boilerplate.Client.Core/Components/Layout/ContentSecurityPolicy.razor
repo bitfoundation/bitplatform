@@ -6,6 +6,9 @@
    For Blazor Server, Auto and WebAssembly, with or without pre-rendering, it renders early enough in App.razor
 
    Warning: It's highly recommended to remove unsafe-inline, but to avoid degrading the dev experience, it's currently included.
+
+   Note: no policy is emitted in Development at all, so BuildCspString's own Development branch is inert. It is kept
+   as the record of what a Development policy would have to allow.
 *@
 
 @if (AppEnvironment.IsDevelopment() is false)

@@ -1,0 +1,20 @@
+﻿@* Constrained catch-all: the constraint sees the WHOLE remainder ("img/logo", slashes and all).
+   An empty remainder counts as a missing value, which only nonfile accepts - so /assets matches
+   but /assets/{*path:int} would not. *@
+
+<h1>Assets</h1>
+
+<dl>
+    <dt>path</dt>
+    <dd>@(string.IsNullOrEmpty(Path) ? "(empty - the catch-all matched zero segments)" : Path)</dd>
+</dl>
+
+<div class="row">
+    <BrouterLink Href="/assets" class="btn">/assets</BrouterLink>
+    <BrouterLink Href="/assets/img/logo" class="btn">/assets/img/logo</BrouterLink>
+    <BrouterLink Href="/assets/app.js" class="btn">/assets/app.js → 404</BrouterLink>
+</div>
+
+@code {
+    [Parameter] public string? Path { get; set; }
+}

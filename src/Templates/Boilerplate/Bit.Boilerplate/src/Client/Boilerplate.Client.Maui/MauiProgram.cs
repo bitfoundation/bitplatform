@@ -1,5 +1,6 @@
 //+:cnd:noEmit
 using Microsoft.Maui.Platform;
+using Microsoft.Extensions.Options;
 using Microsoft.Maui.LifecycleEvents;
 using Boilerplate.Client.Core.Styles;
 using Boilerplate.Client.Maui.Infrastructure.Services;
@@ -96,6 +97,8 @@ public static partial class MauiProgram
         SetupBlazorWebView();
 
         var mauiApp = builder.Build();
+
+        mauiApp.Services.GetService<IStartupValidator>()?.Validate();
 
         mauiApp.Services.GetRequiredService<PubSubService>()
             .Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async (args) =>

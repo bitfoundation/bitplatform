@@ -37,17 +37,8 @@ public partial class AppOfflineDbContext(DbContextOptions<AppOfflineDbContext> o
 
     protected override void OnDatasyncInitialization(DatasyncOfflineOptionsBuilder optionsBuilder)
     {
-        var absoluteServerAddressProvider = this.GetService<AbsoluteServerAddressProvider>();
-        var httpMessageHandlersChainFactory = this.GetService<HttpMessageHandlersChainFactory>();
-
-        HttpClientOptions clientOptions = new()
-        {
-            Endpoint = absoluteServerAddressProvider.GetAddress(),
-            HttpPipeline = [httpMessageHandlersChainFactory.Invoke()]
-        };
-
         optionsBuilder
-            .UseHttpClientOptions(clientOptions)
+            .UseHttpClient(this.GetService<HttpClient>())
             .Entity<TodoItemDto>(options =>
             {
                 options.Endpoint = new Uri("/api/v1/TodoItemTable", UriKind.Relative);

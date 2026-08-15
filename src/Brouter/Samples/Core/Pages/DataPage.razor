@@ -1,0 +1,60 @@
+﻿@* Route Loader + cascaded BrouterRouteData/BrouterRouteMeta, StaleTime (stale-while-revalidate
+   cache), RevalidateAsync, ClearLoaderCache, and functional query updates. The route's loader is
+   deliberately slow, so the first visit shows the router's <Navigating> UI and a re-visit within
+   30s is instant. *@
+
+@inject IBrouter brouter
+
+<h1>Data loading &amp; caching</h1>
+
+<p class="muted">Route meta: <em>@(Meta?.GetOrDefault<string>())</em></p>
+
+@if (Info is null)
+{
+    <p>No loader data.</p>
+}
+else
+{
+    <dl>
+        <dt>loaded at</dt>
+        <dd>@Info.LoadedAt.ToString("HH:mm:ss.fff")</dd>
+        <dt>was revalidation</dt>
+        <dd>@Info.WasRevalidation</dd>
+        <dt>page (from query)</dt>
+        <dd>@Info.Page</dd>
+    </dl>
+
+    <div class="row">
+        <button @onclick="Revalidate">RevalidateAsync()</button>
+        <button @onclick="HardRefresh">ClearLoaderCache() + revalidate</button>
+        <button @onclick="@(() => SetPage(CurrentPage - 1))">&#8592; page</button>
+        <button @onclick="@(() => SetPage(CurrentPage + 1))">page &#8594;</button>
+    </div>
+
+    <p class="muted">
+        Navigate away and back within 30s: <em>loaded at</em> does not change - the loader was
+        skipped on a fresh cache hit. <code>RevalidateAsync</code> re-runs the loader in place
+        without moving the URL or re-running guards. Each page value is its own cache entry.
+    </p>
+}
+
+@code {
+    [CascadingParameter] public BrouterRouteData? Data { get; set; }
+    [CascadingParameter] public BrouterRouteMeta? Meta { get; set; }
+
+    private LoadedInfo? Info => Data?.GetOrDefault<LoadedInfo>();
+
+    // The page value round-trips through the URL, so a hand-edited "?page=abc" must not crash.
+    private int CurrentPage => int.TryParse(Info?.Page, out var page) ? page : 1;
+
+    private Task Revalidate() => brouter.RevalidateAsync().AsTask();
+
+    private Task HardRefresh()
+    {
+        brouter.ClearLoaderCache();
+        return brouter.RevalidateAsync().AsTask();
+    }
+
+    // Updates one query parameter, preserves the rest, replaces the history entry by default.
+    private void SetPage(int page) => brouter.NavigateWithQuery(q => q.Set("page", Math.Max(1, page)));
+}

@@ -21,7 +21,7 @@ public class AppTelemetryContext : ITelemetryContext
 
     public string? TimeZone { get; set; }
 
-    public string? Culture { get; set; } = CultureInfo.CurrentCulture.Name;
+    public string? Culture { get; set; }
 
     public string? Environment { get; set; } = AppEnvironment.Current;
 

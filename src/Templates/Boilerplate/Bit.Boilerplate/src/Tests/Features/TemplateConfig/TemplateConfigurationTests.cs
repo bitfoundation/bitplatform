@@ -452,6 +452,238 @@ public class TemplateConfigurationTests
     private static readonly string[] toolingOnlyDirectories = [".vs", ".vscode", ".idea", ".playwright-mcp", "App_Data", "node_modules"];
 
     /// <summary>
+    /// A <c>replaces</c> is a plain, unanchored substring substitution over every processed file - the engine has no
+    /// idea that <c>2030</c> was meant to be a port. So a port generator quietly rewrites any other occurrence of the
+    /// same four digits, and nothing anywhere reports it: the template's own tree is untouched (no substitution
+    /// happens there), the generated project still builds, and the damage is a number that is merely wrong.
+    /// <para>
+    /// Both shapes below have already shipped: one port generator rewrote a calendar year in a security advisory
+    /// (a "recommended by NIST until at least ..." sentence came out of one generation naming a year in the past), and
+    /// another rewrote a four-digit fragment of an SVG path coordinate in an icon component. Neither number is spelled
+    /// out here - a literal in this doc comment would be rewritten by the very generator it describes, and would then
+    /// be flagged by the test below.
+    /// </para>
+    /// <para>
+    /// This checks the two contexts a port literal can never legitimately be in, rather than trying to define where it
+    /// can - which is what makes it enforceable. It does NOT catch a bare port-shaped number sitting in prose in a
+    /// non-markdown file; if that ever bites, tighten it then.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void NoNumericReplacesToken_Should_LandInsideALongerNumberOrInMarkdownProse()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+
+        using (template)
+        {
+            var tokens = template.RootElement.GetProperty("symbols")
+                .EnumerateObject()
+                .Select(symbol => symbol.Value.TryGetProperty("replaces", out var replaces) ? replaces.GetString() : null)
+                .Where(replaces => replaces is not null && replaces.All(char.IsAsciiDigit))
+                .Select(replaces => replaces!)
+                .ToArray();
+
+            // Non-vacuity: the six port generators. A drop to zero means the shape of template.json changed and every
+            // assertion below would pass for free.
+            Assert.IsGreaterThanOrEqualTo(4, tokens.Length,
+                "Expected the port generators' numeric `replaces` tokens; found almost none, so this test checked nothing.");
+
+            List<string> offenders = [];
+
+            foreach (var file in EnumerateTemplateFiles(templateRoot).Where(IsProcessedByTheEngine))
+            {
+                var isMarkdown = Path.GetExtension(file) is ".md";
+                var lineNumber = 0;
+
+                foreach (var line in File.ReadLines(file))
+                {
+                    lineNumber++;
+
+                    foreach (var token in tokens)
+                    {
+                        for (var index = line.IndexOf(token, StringComparison.Ordinal); index >= 0;
+                             index = line.IndexOf(token, index + 1, StringComparison.Ordinal))
+                        {
+                            var before = index > 0 ? line[index - 1] : '\0';
+                            var after = index + token.Length < line.Length ? line[index + token.Length] : '\0';
+
+                            var where = $"{Path.GetRelativePath(templateRoot, file)}:{lineNumber}: {line.Trim()}";
+
+                            // Part of a longer number: the rewrite lands in the middle of a coordinate, a version or an id.
+                            if (char.IsAsciiDigit(before) || before is '.' || char.IsAsciiDigit(after) || after is '.')
+                            {
+                                offenders.Add($"[{token} inside a number] {where}");
+                            }
+                            // Prose: in markdown a port is always written after a `:` (localhost:5030, *:5030). Anything
+                            // else is a sentence that happens to contain the digits.
+                            else if (isMarkdown && before is not ':')
+                            {
+                                offenders.Add($"[{token} in markdown prose] {where}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            Assert.IsEmpty(offenders,
+                $"""
+                 These occurrences of a port generator's `replaces` token are not ports, and every generated project
+                 gets them rewritten to a random port. Reword the text, split the number, or narrow the rule:
+                 {string.Join(Environment.NewLine, offenders)}
+                 """);
+        }
+    }
+
+    /// <summary>
+    /// <c>aspire.config.json</c> is what the <c>aspire</c> CLI reads to find the app host, and it names the app host's
+    /// csproj by path. The <c>(aspire == false)</c> rule deletes that project, so unless the same rule deletes this
+    /// file too, <c>--aspire false</c> generates a project where <c>aspire run</c> exits non-zero complaining about a
+    /// csproj the user never had. Nothing else in the tree references this file, so nothing else would notice.
+    /// </summary>
+    [TestMethod]
+    public void AspireConfigJson_Should_BeExcludedByEveryRuleThatExcludesTheAppHostItPointsAt()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+
+        using (template)
+        {
+            const string aspireConfig = "aspire.config.json";
+
+            var appHostPath = JsonDocument.Parse(File.ReadAllText(Path.Combine(templateRoot, aspireConfig)))
+                .RootElement.GetProperty("appHost").GetProperty("path").GetString()!;
+
+            var appHostDirectory = appHostPath[..appHostPath.LastIndexOf('/')];
+
+            // The whole project, not a file inside it: `(database != PostgreSQL)` drops one extension file from this
+            // same folder and must not be judged, because the app host it points at is still there.
+            var rulesRemovingTheAppHost = template.RootElement.GetProperty("sources")[0].GetProperty("modifiers")
+                .EnumerateArray()
+                .Where(modifier => modifier.TryGetProperty("exclude", out var exclude)
+                                   && exclude.EnumerateArray().Any(entry =>
+                                       entry.GetString() == $"{appHostDirectory}/**" || entry.GetString() == appHostPath))
+                .ToArray();
+
+            // Non-vacuity: `(aspire == false)` is that rule. Zero means the lookup broke, not that the tree is clean.
+            Assert.IsNotEmpty(rulesRemovingTheAppHost,
+                $"No exclusion rule removes '{appHostDirectory}' as a whole, so this test checked nothing.");
+
+            foreach (var rule in rulesRemovingTheAppHost)
+            {
+                var excluded = rule.GetProperty("exclude").EnumerateArray().Select(entry => entry.GetString()).ToArray();
+
+                Assert.Contains(aspireConfig, excluded,
+                    $"The rule `{rule.GetProperty("condition").GetString()}` removes {appHostDirectory} but leaves "
+                    + $"{aspireConfig} behind, pointing at {appHostPath}.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// True when the engine substitutes inside the file. <c>copyOnly</c> files are byte-copied, so no <c>replaces</c>
+    /// token in them is ever rewritten and they must not be judged.
+    /// </summary>
+    private static bool IsProcessedByTheEngine(string file)
+    {
+        return Path.GetExtension(file) is not (".svg" or ".png" or ".sh");
+    }
+
+    /// <summary>
+    /// The template engine scans every line for the text <c>#if</c> with no idea that it might be inside a C# string
+    /// literal, an XML doc comment or a markdown fence. When it finds one with no parenthesized condition after it,
+    /// the expression parser indexes past the end of its token list and <b>aborts the entire generation</b> - so one
+    /// such line anywhere in the tree means <c>dotnet new bit-bp</c> produces no project at all, and the local build
+    /// and the local test run both stay green because inside the template every directive is just a comment.
+    /// <para>
+    /// This has now happened twice: once in a doc comment that quoted a directive (the file shipped truncated at that
+    /// line), and once in <c>Assert.DoesNotContain("#if", ...)</c>, which took the whole generation down. Measured
+    /// with one-file throwaway templates: <c>"#if"</c> is fatal, <c>"//#if"</c> is fatal, a bare <c>"#endif"</c> is
+    /// harmless, and both <c>"#" + "if"</c> and a <c>-:cnd:noEmit</c> region are safe.
+    /// </para>
+    /// <para>
+    /// The escape hatch is the marker pair - <c>-:cnd:noEmit</c> turns conditional processing off and
+    /// <c>+:cnd:noEmit</c> turns it back on - which is what <c>ServerSharedSettings.cs</c> already uses around its
+    /// real C# <c>#if Development</c> block, and what the top of this very file uses for the whole file.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void NoFileMayCarryALiteralHashIfOutsideAConditionalProcessingOffRegion()
+    {
+        var (templateRoot, template) = LoadTemplateJson();
+        template?.Dispose();
+
+        List<string> offenders = [];
+
+        foreach (var file in EnumerateTemplateFiles(templateRoot))
+        {
+            var lines = File.ReadAllLines(file);
+            var processingOn = true;
+
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+
+                // A marker occupies its own line, after the host's comment opener and nothing else - which is what
+                // keeps prose that merely NAMES a marker (like the doc comment above) from flipping the state.
+                var marker = processingMarker.Match(line);
+                if (marker.Success)
+                {
+                    processingOn = marker.Groups["onOff"].Value is "+";
+                    continue;
+                }
+
+                if (processingOn is false)
+                    continue;
+
+                var firstOccurrence = line.IndexOf(OpenDirectiveText, StringComparison.Ordinal);
+                if (firstOccurrence < 0)
+                    continue;
+
+                // The engine stops at the FIRST occurrence, so it is that one which has to be a real directive: a line
+                // that opens with the literal inside a string and only then carries a valid conditional is still fatal,
+                // and the valid one must not excuse it. A real template conditional also carries a non-blank
+                // parenthesized condition - an empty one is as fatal as no parentheses at all - while a real C#
+                // preprocessor directive is the bare keyword plus a symbol at the start of a line.
+                var conditional = conditionalDirective.Match(line, firstOccurrence);
+                if (conditional.Success && conditional.Index == firstOccurrence
+                    && string.IsNullOrWhiteSpace(conditional.Groups["condition"].Value) is false)
+                    continue;
+
+                var preprocessor = csharpPreprocessorDirective.Match(line);
+                if (preprocessor.Success && preprocessor.Index + preprocessor.Value.IndexOf(OpenDirectiveText, StringComparison.Ordinal) == firstOccurrence)
+                    continue;
+
+                offenders.Add($"{Path.GetRelativePath(templateRoot, file)}:{i + 1}: {line.Trim()}");
+            }
+        }
+
+        Assert.IsEmpty(offenders,
+            $"""
+             These lines carry the literal directive-opening text outside a `-:cnd:noEmit` region. Each one either
+             aborts `dotnet new` or silently truncates its file from that point on. Wrap the line in a
+             `-:cnd:noEmit` / `+:cnd:noEmit` pair, or split the literal so the two characters are never adjacent:
+             {string.Join(Environment.NewLine, offenders)}
+             """);
+    }
+
+    /// <summary>
+    /// Assembled at runtime so that this file - which is the one place that must talk about the directive - does not
+    /// itself contain the literal text and trip the very rule it enforces. The whole file is already covered by the
+    /// <c>-:cnd:noEmit</c> on line 1, but this keeps the guard true even if that marker is ever removed.
+    /// </summary>
+    private static readonly string OpenDirectiveText = "#" + "if";
+
+    /// <summary>
+    /// Matches C#'s own preprocessor directives, which are never parenthesized, unlike template conditionals.
+    /// </summary>
+    private static readonly Regex csharpPreprocessorDirective = new(@"^\s*#(?:if|elif)\s+[A-Za-z_!(]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// A conditional-processing marker on a line of its own: an optional host comment opener, then <c>-</c> or
+    /// <c>+</c>, then the marker text. Anchored so that prose mentioning a marker is not mistaken for one.
+    /// </summary>
+    private static readonly Regex processingMarker = new(@"^\s*(?://|/\*|@\*|<!--|#)?\s*(?<onOff>[-+]):cnd:noEmit\s*(?:\*/|\*@|-->)?\s*$", RegexOptions.Compiled);
+
+    /// <summary>
     /// True when the entry is a wildcard glob this test deliberately does not judge, or when it names something that
     /// is really there.
     /// </summary>

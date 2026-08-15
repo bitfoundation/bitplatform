@@ -203,6 +203,113 @@ public class PubSubServiceTests
         Assert.AreEqual(0, counter.Value);
     }
 
+    /// <summary>
+    /// The handlers of one message live in a plain <c>List&lt;WeakHandler&gt;</c> inside a ConcurrentDictionary - the
+    /// dictionary is concurrent, the list is not. Publishers genuinely run off the renderer's thread (SignalR
+    /// callbacks and the faulted-task continuation), while unsubscribes run on it during component disposal, so
+    /// <c>ToArray</c> could observe the torn state <c>RemoveAll</c> leaves behind between its <c>Array.Clear</c> and
+    /// its <c>_size</c> assignment - a null entry, dereferenced one line later.
+    /// </summary>
+    [TestMethod]
+    public async Task Subscribe_Should_NotLoseHandlers_WhenItRunsConcurrentlyWithUnsubscribe()
+    {
+        const int handlerCount = 2_000;
+
+        var pubSub = CreatePubSubService();
+
+        // Subscribed up front and unsubscribed on the racing thread. RemoveAll compacts the list in place, so it is
+        // the mutation that can overwrite what Add is writing at the same moment.
+        var doomedTargets = Enumerable.Range(0, handlerCount).Select(_ => new SubscriberTarget(new StrongBox<int>(0))).ToArray();
+        var unsubscribes = doomedTargets.Select(target => pubSub.Subscribe(Message, target.HandleAsync)).ToArray();
+
+        var survivingTargets = Enumerable.Range(0, handlerCount).Select(_ => new SubscriberTarget(new StrongBox<int>(0))).ToArray();
+
+        using var start = new Barrier(2);
+
+        var subscriber = Task.Run(() =>
+        {
+            start.SignalAndWait();
+            foreach (var target in survivingTargets)
+            {
+                pubSub.Subscribe(Message, target.HandleAsync);
+            }
+        });
+
+        var unsubscriber = Task.Run(() =>
+        {
+            start.SignalAndWait();
+            foreach (var unsubscribe in unsubscribes)
+            {
+                unsubscribe();
+            }
+        });
+
+        await Task.WhenAll(subscriber, unsubscriber);
+
+        pubSub.Publish(Message);
+
+        // Every surviving subscription must have been invoked exactly once. Fewer means the handler list lost an
+        // entry: Add and RemoveAll were interleaving on a plain List<T> that only Add was holding a lock for.
+        Assert.AreEqual(handlerCount, survivingTargets.Count(target => target.Counter.Value == 1),
+            "Subscriptions were lost to a concurrent unsubscribe, so a component that subscribed successfully never receives its messages.");
+        Assert.AreEqual(0, doomedTargets.Count(target => target.Counter.Value != 0),
+            "An unsubscribed handler was still invoked.");
+    }
+
+    /// <summary>
+    /// A faulted handler task is routed to <c>ClientExceptionHandlerBase</c> through a <c>ContinueWith</c> that nobody
+    /// awaits, so the continuation is the terminal observer of that exception. If resolving the handler throws - the
+    /// service provider here is a bare fake, which is exactly what a torn-down Blazor Server circuit scope behaves
+    /// like - the continuation must not fault in turn and take the original exception down with it.
+    /// </summary>
+    [TestMethod]
+    public async Task AFaultedHandler_Should_NotProduceAnUnobservedTaskException_WhenTheExceptionHandlerCannotBeResolved()
+    {
+        var pubSub = CreatePubSubService();
+        var unobserved = new List<Exception>();
+
+        void OnUnobserved(object? sender, UnobservedTaskExceptionEventArgs e) => unobserved.Add(e.Exception);
+
+        TaskScheduler.UnobservedTaskException += OnUnobserved;
+        try
+        {
+            RunFaultingPublish(pubSub);
+
+            // The continuation runs on the thread pool; give it a turn, then force the finalizers that raise
+            // UnobservedTaskException for any task that faulted without being observed.
+            await Task.Delay(200);
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            await Task.Delay(200);
+        }
+        finally
+        {
+            TaskScheduler.UnobservedTaskException -= OnUnobserved;
+        }
+
+        Assert.IsEmpty(unobserved,
+            "The faulted-handler continuation threw while resolving the exception handler, which destroys the exception it exists to report.");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void RunFaultingPublish(PubSubService pubSub)
+    {
+        var target = new FaultingSubscriberTarget();
+        _ = pubSub.Subscribe(Message, target.HandleAsync);
+        pubSub.Publish(Message);
+        GC.KeepAlive(target);
+    }
+
+    private sealed class FaultingSubscriberTarget
+    {
+        public async Task HandleAsync(object? payload)
+        {
+            await Task.Yield();
+            throw new InvalidOperationException("handler blew up");
+        }
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference SubscribeAndForget(PubSubService pubSub, StrongBox<int> counter)
     {
@@ -223,6 +330,8 @@ public class PubSubServiceTests
 
     private sealed class SubscriberTarget(StrongBox<int> counter)
     {
+        public StrongBox<int> Counter { get; } = counter;
+
         public Task HandleAsync(object? payload)
         {
             counter.Value++;

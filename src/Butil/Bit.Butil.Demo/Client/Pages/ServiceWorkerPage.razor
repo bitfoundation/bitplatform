@@ -134,6 +134,12 @@ var removed = await serviceWorker.Unregister();
     <ApiMember Name="ServiceWorkerRegistrationInfo.InstallingState" Signature="string? InstallingState { get; set; }" Description="The installing worker's state, when one is being installed." />
     <ApiMember Name="ServiceWorkerRegistrationInfo.WaitingState" Signature="string? WaitingState { get; set; }" Description="The waiting worker's state, when an update is queued." />
     <ApiMember Name="ServiceWorkerRegistrationInfo.UpdateViaCache" Signature="string? UpdateViaCache { get; set; }" Description="Update via cache strategy: imports, all, or none." />
+    <ApiMember Name="GetRegistrations"
+               Signature="ValueTask<ServiceWorkerRegistrationInfo[]> GetRegistrations()"
+               Description="Every registration this origin has, not just the one matching a scope. Useful for cleaning up workers left by an earlier version of an app." />
+    <ApiMember Name="Ready"
+               Signature="ValueTask<ServiceWorkerRegistrationInfo> Ready(int timeoutMs = 10000)"
+               Description="Waits until a worker is active and returns its registration - the point at which PostMessage will actually reach it. Register returns while the worker is still installing. Times out rather than hanging when nothing is registered." />
 </ApiTable>
 
 

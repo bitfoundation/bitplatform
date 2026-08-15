@@ -1,0 +1,16 @@
+/* The shell's geometry lives in app.css (.page / .bb-site-content / main), because the docs
+   shell, the rail and the mobile drawer all size themselves against the same values. The
+   sticky footer is already handled there - .page is a 100vh column and .bb-site-content is
+   its flex:1 child - so this file must not add a min-height of its own, or the band would
+   double-count the header and push the footer below the fold on every page. What is left is
+   the one thing only this component can say: the band is itself a column, so <main> stretches
+   to fill it when a page is shorter than the viewport. */
+
+.bb-site-content {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}

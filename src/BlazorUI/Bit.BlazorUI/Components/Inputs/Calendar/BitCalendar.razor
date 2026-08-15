@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<DateTimeOffset?>
 
 @{
@@ -15,7 +15,7 @@
     var nextYearNavIconCss = BitIconInfo.From(NextYearNavIcon, NextYearNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
     var prevYearRangeNavIconCss = BitIconInfo.From(PrevYearRangeNavIcon, PrevYearRangeNavIconName ?? "Up")?.GetCssClasses();
     var nextYearRangeNavIconCss = BitIconInfo.From(NextYearRangeNavIcon, NextYearRangeNavIconName ?? "Up bit-ico-r180")?.GetCssClasses();
-    var goToNowIconCss = BitIconInfo.From(GoToNowIcon, GoToNowIconName ?? "Clock")?.GetCssClasses();
+    var nowButtonIconCss = BitIconInfo.From(NowButtonIcon, NowButtonIconName ?? "Clock")?.GetCssClasses();
     var hideTimePickerIconCss = BitIconInfo.From(HideTimePickerIcon, HideTimePickerIconName ?? "CalendarMirrored")?.GetCssClasses();
     var increaseHourIconCss = BitIconInfo.From(TimePickerIncreaseHourIcon, TimePickerIncreaseHourIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
     var decreaseHourIconCss = BitIconInfo.From(TimePickerDecreaseHourIcon, TimePickerDecreaseHourIconName ?? "ChevronDownSmall")?.GetCssClasses();
@@ -456,19 +456,19 @@
             <div style="@Styles?.TimePickerWrapper" class="bit-cal-twp @Classes?.TimePickerWrapper">
                 <div style="@Styles?.TimePickerHeader" class="bit-cal-pkh bit-cal-tph @Classes?.TimePickerHeader">
                     <div style="@Styles?.TimePickerNavWrapper" class="bit-cal-nbc @Classes?.TimePickerNavWrapper">
-                        @if (ShowGoToNow)
+                        @if (ShowNowButton)
                         {
-                            <button @onclick="HandleGoToNow"
+                            <button @onclick="HandleNowButtonClick"
                                     type="button"
-                                    title="@GoToNowTitle"
-                                    aria-label="@GoToNowTitle"
-                                    style="@Styles?.GoToNowButton"
+                                    title="@NowButtonTitle"
+                                    aria-label="@NowButtonTitle"
+                                    style="@Styles?.NowButton"
                                     disabled="@(IsEnabled is false)"
                                     aria-disabled="@(IsEnabled is false)"
-                                    class="bit-cal-gtn @Classes?.GoToNowButton">
+                                    class="bit-cal-gtn @Classes?.NowButton">
                                 <i aria-hidden="true"
-                                   style="@Styles?.GoToNowIcon"
-                                   class="bit-cal-ico @goToNowIconCss @Classes?.GoToNowIcon" />
+                                   style="@Styles?.NowButtonIcon"
+                                   class="bit-cal-ico @nowButtonIconCss @Classes?.NowButtonIcon" />
                             </button>
                         }
                         @if (ShowTimePickerAsOverlay)
@@ -510,6 +510,8 @@
                                type="number"
                                inputmode="numeric"
                                readonly="@ReadOnly"
+                               title="@TimePickerHourTitle"
+                               aria-label="@TimePickerHourTitle"
                                disabled="@(IsEnabled is false)"
                                aria-disabled="@(IsEnabled is false)"
                                style="@Styles?.TimePickerHourInput"
@@ -551,6 +553,8 @@
                                type="number"
                                inputmode="numeric"
                                readonly="@ReadOnly"
+                               title="@TimePickerMinuteTitle"
+                               aria-label="@TimePickerMinuteTitle"
                                disabled="@(IsEnabled is false)"
                                aria-disabled="@(IsEnabled is false)"
                                style="@Styles?.TimePickerMinuteInput"

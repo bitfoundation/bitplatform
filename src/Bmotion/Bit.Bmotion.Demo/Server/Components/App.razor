@@ -11,8 +11,23 @@
     <meta name="description" content="Bit.Bmotion demos - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations." />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/motion-samples.css" />
+    @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
+       the stylesheets key off the data-theme attribute, and setting it after the first paint would
+       show the reader a flash of the other theme. This is the same decision js/demo.js makes for
+       the app's lifetime - see window.bmTheme there - kept short enough to inline. *@
+    <script>
+        (function () {
+            var stored = null;
+            try { stored = localStorage.getItem('bm-theme'); } catch (e) { /* no stored preference */ }
+            var theme = (stored === 'light' || stored === 'dark')
+                ? stored
+                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
@@ -31,7 +46,7 @@
         <span class="dismiss">🗙</span>
     </div>
 
-    @* Loaded before the Blazor script so window.bmCopyToClipboard exists by the time the app boots. *@
+    @* Loaded before the Blazor script so the window.bm* helpers exist by the time the app boots. *@
     <script src="js/demo.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>

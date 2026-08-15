@@ -558,8 +558,14 @@
         "options": { "sourceMap": false }
     },
     {
-        "outputFile": "Pages/ThemingPage.razor.css",
-        "inputFile": "Pages/ThemingPage.razor.scss",
+        "outputFile": "Pages/Theming/AccentColorSwitcher/BitAccentColorSwitcherDemo.razor.css",
+        "inputFile": "Pages/Theming/AccentColorSwitcher/BitAccentColorSwitcherDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Pages/Theming/ThemingPage.razor.css",
+        "inputFile": "Pages/Theming/ThemingPage.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

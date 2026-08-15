@@ -17,7 +17,10 @@ private DateTimeOffset? customToday = new DateTimeOffset(2021, 3, 15, 0, 0, 0, D
     private readonly string example2RazorCode = @"
 <BitCalendar MinDate=""DateTimeOffset.Now.AddDays(-5)"" MaxDate=""DateTimeOffset.Now.AddDays(5)"" />
 <BitCalendar MinDate=""DateTimeOffset.Now.AddMonths(-2)"" MaxDate=""DateTimeOffset.Now.AddMonths(1)"" />
-<BitCalendar MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />";
+<BitCalendar MinDate=""DateTimeOffset.Now.AddYears(-5)"" MaxDate=""DateTimeOffset.Now.AddYears(1)"" />
+
+<BitCalendar DisablePast />
+<BitCalendar DisableFuture />";
 
     private readonly string example3RazorCode = @"
 <BitCalendar ShowTimePicker=""true"" HourStep=""2"" />
@@ -88,7 +91,7 @@ private bool showMonthPickerAsOverlay;";
 
 <BitCalendar ShowTimePicker ShowTimePickerAsOverlay />
 
-<BitCalendar ShowTimePicker ShowGoToNow=""false"" />";
+<BitCalendar ShowTimePicker ShowNowButton=""false"" />";
     private readonly string example9CsharpCode = @"
 private DateTimeOffset? selectedDateTime = DateTimeOffset.Now;";
 
@@ -329,7 +332,7 @@ private void HandleOnMonthChange(DateTimeOffset month)
 
 <BitCalendar ShowTimePicker=""true""
              GoToTodayIcon=""@BitIconInfo.Bi(""calendar-check"")""
-             GoToNowIcon=""@BitIconInfo.Bi(""clock"")""
+             NowButtonIcon=""@BitIconInfo.Bi(""clock"")""
              PrevMonthNavIcon=""@BitIconInfo.Bi(""chevron-left"")""
              NextMonthNavIcon=""@BitIconInfo.Bi(""chevron-right"")""
              TimePickerIncreaseHourIcon=""@BitIconInfo.Bi(""chevron-up"")""

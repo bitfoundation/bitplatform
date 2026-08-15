@@ -16,52 +16,10 @@
      @onmouseenter="HandleMouseEnter"
      @onmouseleave="HandleMouseLeave">
 
-    <div @ref="_carouselContainer"
-         @onwheel="HandleWheel"
-         @onwheel:preventDefault="@(Wheel && IsEnabled)"
-         @onpointerup="HandlePointerUp"
-         @onpointerleave="HandlePointerUp"
-         @onpointermove="HandlePointerMove"
-         @onpointerdown="HandlePointerDown"
-         aria-atomic="false"
-         aria-live="@(IsPlaying ? "off" : "polite")"
-         class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
-         style="@_directionStyle @Styles?.Container">
-
-        @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
-           the controls before the content they control), and the stylesheet places them over the slides. *@
-        @if (HideNextPrev is false)
-        {
-            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
-            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
-            <button @onclick="HandleGoLeft"
-                    type="button"
-                    aria-label="@GetGoLeftAriaLabel()"
-                    disabled="@(IsEnabled is false)"
-                    class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                    style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
-                <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
-                   class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
-            </button>
-
-            <button @onclick="HandleGoRight"
-                    type="button"
-                    aria-label="@GetGoRightAriaLabel()"
-                    disabled="@(IsEnabled is false)"
-                    class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                    style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
-                <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
-                   class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
-            </button>
-        }
-
-        <CascadingValue Value="this" IsFixed="true">
-            @ChildContent
-        </CascadingValue>
-    </div>
-
+    @* The controls are rendered before the slides so the play/pause button is the first thing the keyboard
+       reaches, which is what the carousel pattern of the ARIA authoring practices asks of a carousel that
+       moves on its own: the motion can be stopped before anything else is dealt with. The stylesheet puts
+       the row back below the slides, so nothing about the way the carousel looks changes with it. *@
     @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
         <div class="bit-csl-dcn @Classes?.DotsContainer"
@@ -73,6 +31,7 @@
                                     : BitIconInfo.From(PauseIcon, PauseIconName ?? "Pause");
                 <button @onclick="TogglePlay"
                         type="button"
+                        aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
                         disabled="@(IsEnabled is false)"
                         class="bit-csl-ppb @Classes?.PlayPauseButton"
@@ -92,14 +51,64 @@
                         int index = i;
                         <button @onclick="(() => HandleGotoPage(index))"
                                 type="button"
+                                aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
                                 disabled="@(IsEnabled is false)"
                                 style="@Styles?.Dots @(_currentPage == index ? Styles?.GetCurrentDot() : null)"
-                                class="bit-csl-dot @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots"></button>
+                                class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.GetCurrentDot()}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
             }
         </div>
     }
+
+    <div @ref="_carouselContainer"
+         id="@_ContainerId"
+         @onwheel="HandleWheel"
+         @onwheel:preventDefault="@(Wheel && IsEnabled)"
+         @onpointerup="HandlePointerUp"
+         @onpointerleave="HandlePointerUp"
+         @onpointermove="HandlePointerMove"
+         @onpointerdown="HandlePointerDown"
+         aria-atomic="false"
+         aria-live="@(IsPlaying ? "off" : "polite")"
+         class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
+         style="@_directionStyle @Styles?.Container">
+
+        @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
+           the controls before the content they control), and the stylesheet places them over the slides. *@
+        @if (HideNextPrev is false)
+        {
+            var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
+            var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
+            <button @onclick="HandleGoLeft"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@GetGoLeftAriaLabel()"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
+                    style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
+                   class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
+            </button>
+
+            <button @onclick="HandleGoRight"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@GetGoRightAriaLabel()"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
+                    style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
+                   class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
+            </button>
+        }
+
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </div>
 </div>

@@ -44,6 +44,9 @@
         <div>
             Limit the selectable dates using <b>MinDate</b> and <b>MaxDate</b>.
             Days outside the range are disabled, and the month, year, and year-range navigation stops at the boundaries.
+            <b>DisablePast</b> and <b>DisableFuture</b> bound the range by today exactly as a <b>MinDate</b> or a
+            <b>MaxDate</b> of today would, without having to keep one up to date; where both apply, the narrower
+            of the two wins.
         </div>
         <br /><br />
         <div class="example-content">
@@ -58,6 +61,12 @@
             <div>Min: Now.AddYears(-5)</div>
             <div>Max: Now.AddYears(+1)</div>
             <BitCalendar MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
+            <br /><br />
+            <div>DisablePast:</div>
+            <BitCalendar DisablePast />
+            <br /><br />
+            <div>DisableFuture:</div>
+            <BitCalendar DisableFuture />
         </div>
     </DemoExample>
 
@@ -201,7 +210,7 @@
             the date.
             Switch between the 24-hour and 12-hour clocks using <b>TimeFormat</b>,
             render the time picker as an overlay using <b>ShowTimePickerAsOverlay</b>,
-            and hide the GoToNow button using <b>ShowGoToNow</b>.
+            and hide the now button using <b>ShowNowButton</b>.
         </div>
         <br />
         <div class="example-content">
@@ -215,8 +224,8 @@
             <div>ShowTimePickerAsOverlay (toggle it using the clock button):</div>
             <BitCalendar ShowTimePicker ShowTimePickerAsOverlay />
             <br /><br />
-            <div>Without the GoToNow button:</div>
-            <BitCalendar ShowTimePicker ShowGoToNow="false" />
+            <div>Without the now button:</div>
+            <BitCalendar ShowTimePicker ShowNowButton="false" />
         </div>
     </DemoExample>
 
@@ -481,7 +490,7 @@
     <DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>GoToTodayIcon</b>,
-            <b>GoToNowIcon</b>, <b>PrevMonthNavIcon</b>, <b>NextMonthNavIcon</b>, and other icon parameters.
+            <b>NowButtonIcon</b>, <b>PrevMonthNavIcon</b>, <b>NextMonthNavIcon</b>, and other icon parameters.
             <br /><br />
             For built-in icons use the <b>IconName</b> variant of each parameter (e.g. <b>GoToTodayIconName</b>).
             <br /><br />
@@ -507,7 +516,7 @@
         <div>Bootstrap icons (with ShowTimePicker):</div>
         <br />
         <BitCalendar ShowTimePicker="true" GoToTodayIcon="@BitIconInfo.Bi("calendar-check")"
-                     GoToNowIcon="@BitIconInfo.Bi("clock")" PrevMonthNavIcon="@BitIconInfo.Bi("chevron-left")"
+                     NowButtonIcon="@BitIconInfo.Bi("clock")" PrevMonthNavIcon="@BitIconInfo.Bi("chevron-left")"
                      NextMonthNavIcon="@BitIconInfo.Bi("chevron-right")"
                      TimePickerIncreaseHourIcon="@BitIconInfo.Bi("chevron-up")"
                      TimePickerDecreaseHourIcon="@BitIconInfo.Bi("chevron-down")"

@@ -1,333 +1,344 @@
-/* Bit.Bmotion Demo - demo styles */
-:root {
-    --bm-primary: #6c47ff;
-    --bm-secondary: #ff4785;
-    --bm-dark: #0a0a0f;
-    --bm-surface: #141420;
-    --bm-card: #1e1e2e;
-    --bm-text: #e8e8f0;
-    --bm-muted: #888;
-    --bm-radius: 12px;
+/* Bit.Bmotion Demo - page chrome and sample styles.
+
+   Everything a demo page draws inside the content column: its title and lead, the section cards,
+   the stage a sample is played on, the code boxes and the shared sample primitives. The rhythm and
+   the surfaces follow the Bit.BlazorUI docs site; the tokens they are written against live in
+   theme.css, and the shell around them in app.css.
+
+   Individual pages add their own <style> blocks for sample-specific pieces. Those blocks reach for
+   the --bm-* custom properties defined in theme.css, so they follow the theme without knowing
+   anything about it. */
+
+/* ── Page title and lead ───────────────────────────────────────────────────── */
+
+/* Every page opens the same way: a title, then a sentence of prose - not another frame. */
+.page-container > h1,
+.demo-page-title {
+    font-weight: 400;
+    line-height: 1.412;
+    font-size: 2.125rem;
+    letter-spacing: 0.00735em;
+    margin-bottom: 1.25rem;
+    overflow-wrap: anywhere;
+    color: var(--bit-clr-fg-pri);
 }
 
-body {
-    background: var(--bm-dark);
-    color: var(--bm-text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
+.page-intro {
+    line-height: 1.5;
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+    color: var(--bit-clr-fg-sec);
 }
 
-/* ── Layout ────────────────────────────────────────────────────────────────── */
-
-.bm-nav {
-    background: var(--bm-surface);
-    border-bottom: 1px solid rgba(255,255,255,.08);
-    padding: .75rem 1.5rem;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .5rem 1.25rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-/* The bit platform mark + wordmark, pinned to the left of the header. The auto margin lives on
-   the brand (not the wordmark) so the two stay together and push the links to the right. */
-.bm-nav-brand {
-    display: flex;
-    align-items: center;
-    gap: .55rem;
-    margin-right: auto;
-}
-.bm-nav-brand img {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    flex: none;
-}
-.bm-nav .logo {
-    font-weight: 800;
-    font-size: 1.2rem;
-    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-.bm-nav-links {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: .5rem 1.25rem;
-    min-width: 0;
-}
-.bm-nav a {
-    color: var(--bm-muted);
-    text-decoration: none;
-    font-size: .9rem;
-    white-space: nowrap;
-    transition: color .2s;
-}
-.bm-nav a:hover, .bm-nav a.active { color: var(--bm-text); }
-.bm-nav a:focus-visible {
-    color: var(--bm-text);
-    outline: 2px solid var(--bm-primary);
-    outline-offset: 2px;
-    border-radius: 4px;
+.page-intro strong {
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
 }
 
-/* Hydration hint - rendered by MainLayout only while RendererInfo.IsInteractive is false, i.e.
-   on the prerendered HTML the server sends before the WebAssembly runtime boots. */
-.bm-hydrating {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    margin-right: 1rem;
-    color: var(--bm-muted);
-    font-size: .8rem;
-    white-space: nowrap;
-}
-.bm-hydrating i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--bm-primary);
-    animation: bm-hydrating-pulse 1s ease-in-out infinite;
-}
-@keyframes bm-hydrating-pulse {
-    0%, 100% { opacity: .25; }
-    50% { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .bm-hydrating i { animation: none; }
-}
+/* ── Section cards ─────────────────────────────────────────────────────────── */
 
-/* Hamburger toggle - hidden until the nav collapses on narrow screens */
-.bm-nav-burger {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,.15);
-    border-radius: 8px;
-    cursor: pointer;
-}
-.bm-nav-burger span {
-    display: block;
-    width: 18px;
-    height: 2px;
-    margin: 0 auto;
-    background: var(--bm-text);
-    border-radius: 2px;
-    transition: transform .2s, opacity .2s;
-}
-.bm-nav-burger:focus-visible {
-    outline: 2px solid var(--bm-primary);
-    outline-offset: 2px;
-}
-
-@media (max-width: 860px) {
-    .bm-nav-burger { display: flex; }
-    .bm-nav-links {
-        display: none;
-        flex-direction: column;
-        align-items: stretch;
-        flex-basis: 100%;
-        gap: .25rem;
-        padding-top: .5rem;
-    }
-    .bm-nav.open .bm-nav-links { display: flex; }
-    .bm-nav-links a {
-        padding: .6rem .25rem;
-        font-size: 1rem;
-        border-radius: 6px;
-    }
-    .bm-nav.open .bm-nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .bm-nav.open .bm-nav-burger span:nth-child(2) { opacity: 0; }
-    .bm-nav.open .bm-nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-}
-
-.bm-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-}
-
-/* ── Demo cards ────────────────────────────────────────────────────────────── */
-
+/* A hairline-bordered surface rather than a shadowed one: on a documentation page the same card
+   repeats a dozen times, and stacked shadows read as noise long before they read as depth. Square,
+   because rounding every one of those repeats is exactly the decoration the borders avoid. */
 .demo-section {
-    margin-bottom: 3rem;
-}
-.demo-section h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: .5rem;
-}
-.demo-section p {
-    color: var(--bm-muted);
+    padding: 2rem;
     margin-bottom: 1.5rem;
-    font-size: .95rem;
-    line-height: 1.6;
+    scroll-margin: 5.625rem;
+    color: var(--bit-clr-fg-sec);
+    background-color: var(--bit-clr-bg-pri);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
 }
+
+.demo-section .align-start {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.demo-section:last-child {
+    margin-bottom: 0;
+}
+
+/* The heading sits over a hairline, so the eye can find the boundary between sections while
+   scrolling a long page instead of relying on whitespace alone. The scroll margin keeps an
+   anchored section clear of the sticky header when the "on this page" rail jumps to it. */
+.demo-section h2 {
+    font-weight: 400;
+    line-height: 1.333;
+    font-size: 1.5rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    scroll-margin: 6rem;
+    overflow-wrap: anywhere;
+    color: var(--bit-clr-fg-pri);
+    border-bottom: 0.0625rem solid var(--bit-clr-brd-ter);
+}
+
+.demo-section h3 {
+    font-weight: 500;
+    line-height: 1.4;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.0075em;
+    color: var(--bit-clr-fg-pri);
+}
+
+.demo-section p {
+    line-height: 1.714;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.01071em;
+    color: var(--bit-clr-fg-sec);
+}
+
+.demo-section strong {
+    font-weight: 600;
+    color: var(--bit-clr-fg-pri);
+}
+
+/* <c> is the demo's shorthand for an inline code span - it is not an HTML element, so it needs
+   both the display and the type treatment spelled out here. The pages themselves author <code>;
+   the <c> selector stays so any older markup that still uses it keeps the same treatment. */
+.page-intro code,
+.page-intro c,
+.demo-section code,
+.demo-section c {
+    display: inline;
+    font-size: 0.8125rem;
+    padding: 0.0625rem 0.25rem;
+    font-family: var(--demo-font-mono);
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+@media (max-width: 47.9375rem) {
+    .demo-section {
+        padding: 1.25rem;
+    }
+}
+
+/* ── Sample stage ──────────────────────────────────────────────────────────── */
+
 .demo-row {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
     align-items: center;
 }
+
+/* The stage a sample is played on. Kept one surface step off the card around it so a demo is
+   never confused with the page describing it. */
 .demo-card {
-    background: var(--bm-card);
-    border: 1px solid rgba(255,255,255,.07);
-    border-radius: var(--bm-radius);
-    padding: 2rem;
-    min-height: 160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     flex: 1;
-    min-width: 220px;
-}
-
-/* ── Motion boxes ──────────────────────────────────────────────────────────── */
-
-.box {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-    cursor: pointer;
     display: flex;
+    padding: 2rem;
+    min-width: 13.75rem;
+    min-height: 10rem;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-weight: 700;
-    user-select: none;
+    background-color: var(--bm-card);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
 }
-.box-sm { width: 50px; height: 50px; border-radius: 8px; }
+
+/* A stage that stacks a caption above the moving part instead of centring one thing in the middle.
+   Nearly every page needs it, so it is a modifier here rather than the same three inline
+   declarations repeated down each page. */
+.demo-card.stack {
+    gap: 0.75rem;
+    flex-direction: column;
+}
+
+/* The caption naming what a stage is showing - a spring's constants, an easing's name, the CSS
+   property being animated. Deliberately quiet: it labels the sample, it is not part of it. */
+.demo-label {
+    font-size: 0.78rem;
+    text-align: center;
+    color: var(--bit-clr-fg-sec);
+}
+
+/* The controls that drive a sample, always directly under its stage. */
+.demo-actions {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    align-items: center;
+}
+
+/* ── Sample primitives ─────────────────────────────────────────────────────── */
+
+/* The moving parts keep their own rounding and their gradient fill: they are the subject of the
+   page, not chrome, and the docs' square hairlines would flatten exactly the thing being shown.
+   Their colors come from the theme's accents, so the samples follow the theme too. */
+.box {
+    width: 5rem;
+    height: 5rem;
+    color: #fff;
+    display: flex;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 0.625rem;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+}
+
+.box-sm {
+    width: 3.125rem;
+    height: 3.125rem;
+    border-radius: 0.5rem;
+}
 
 /* ── Buttons ───────────────────────────────────────────────────────────────── */
 
 .btn-bm {
-    background: var(--bm-primary);
-    color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: .6rem 1.4rem;
-    font-size: .9rem;
-    font-weight: 600;
     cursor: pointer;
-    transition: opacity .2s;
+    font-weight: 600;
+    line-height: 1.714;
+    font-size: 0.875rem;
+    font-family: inherit;
+    padding: 0.375rem 1rem;
+    color: var(--bit-clr-pri-text);
+    background-color: var(--bit-clr-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
 }
-.btn-bm:hover { opacity: .85; }
+
+.btn-bm:hover {
+    background-color: var(--bit-clr-pri-hover);
+}
+
+.btn-bm:active {
+    background-color: var(--bit-clr-pri-active);
+}
+
 .btn-bm:focus-visible {
-    opacity: .85;
-    outline: 2px solid #fff;
-    outline-offset: 2px;
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
 }
 
-/* ── Code snippets ─────────────────────────────────────────────────────────── */
-
-.code-block {
-    background: #0d0d1a;
-    border: 1px solid rgba(255,255,255,.1);
-    border-radius: 8px;
-    padding: 1rem 1.25rem;
-    font-family: 'Cascadia Code', 'Fira Code', monospace;
-    font-size: .82rem;
-    color: #c8c8e0;
-    overflow-x: auto;
-    margin-top: 1rem;
-    white-space: pre;
-}
-
-/* ── Code snippet toggle ───────────────────────────────────────────────────── */
+/* ── Code boxes ────────────────────────────────────────────────────────────── */
 
 .code-snippet {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
+
 .code-snippet-bar {
+    gap: 0.5rem;
     display: flex;
     align-items: center;
-    gap: .5rem;
 }
-.code-toggle {
+
+.code-toggle,
+.code-copy {
+    gap: 0.375rem;
     display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,.15);
-    border-radius: 6px;
-    color: var(--bm-muted);
-    font-size: .8rem;
-    font-weight: 600;
-    padding: .4rem .8rem;
     cursor: pointer;
-    transition: color .2s, border-color .2s, background .2s;
+    font-weight: 600;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    padding: 0.3125rem 0.75rem;
+    background: transparent;
+    color: var(--bit-clr-fg-sec);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                border-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                background-color var(--bit-mot-duration-short) var(--bit-mot-easing);
 }
-.code-toggle:hover {
-    color: #fff;
-    border-color: var(--bm-primary);
-    background: rgba(108,71,255,.12);
+
+.code-toggle:hover,
+.code-copy:hover {
+    color: var(--bit-clr-pri);
+    border-color: var(--bit-clr-pri);
+    background-color: var(--bit-clr-bg-sec);
 }
-.code-toggle:focus-visible {
-    color: #fff;
-    border-color: var(--bm-primary);
-    background: rgba(108,71,255,.12);
-    outline: 2px solid var(--bm-primary);
-    outline-offset: 2px;
+
+.code-toggle[aria-expanded="true"] {
+    color: var(--bit-clr-pri);
 }
+
+.code-toggle:focus-visible,
+.code-copy:focus-visible {
+    outline: 0.125rem solid var(--bit-clr-pri);
+    outline-offset: 0.125rem;
+}
+
 .code-toggle-icon {
-    font-size: .7rem;
+    font-size: 0.7rem;
     line-height: 1;
 }
-.code-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,.15);
-    border-radius: 6px;
-    color: var(--bm-muted);
-    font-size: .8rem;
-    font-weight: 600;
-    padding: .4rem .8rem;
-    cursor: pointer;
-    transition: color .2s, border-color .2s, background .2s;
-}
-.code-copy:hover {
-    color: #fff;
-    border-color: var(--bm-primary);
-    background: rgba(108,71,255,.12);
-}
-.code-copy:focus-visible {
-    color: #fff;
-    border-color: var(--bm-primary);
-    background: rgba(108,71,255,.12);
-    outline: 2px solid var(--bm-primary);
-    outline-offset: 2px;
-}
-.code-snippet .code-block {
-    margin-top: .75rem;
-}
-.code-snippet .code-block code {
+
+.code-block {
+    margin: 0.75rem 0 0;
+    width: 100%;
     display: block;
+    overflow: auto;
+    direction: ltr;
+    white-space: pre;
+    line-height: 1.6;
+    font-size: 0.8125rem;
+    max-height: 29rem;
+    font-family: var(--demo-font-mono);
+    padding: 1rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-sec);
+    border: 0.0625rem solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.code-block code {
+    display: block;
+    padding: 0;
+    border: none;
     color: inherit;
     background: none;
-    font-family: inherit;
     font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+}
+
+.code-block::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar:horizontal {
+    height: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    border-radius: 0.5rem;
+    background-color: var(--bit-clr-brd-sec);
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bit-clr-fg-ter);
+}
+
+.code-block::-webkit-scrollbar-button {
+    display: none;
 }
 
 /* ── Syntax highlighting tokens ────────────────────────────────────────────── */
 
-.code-block .tok-com  { color: #6a9955; font-style: italic; }
-.code-block .tok-tag  { color: #569cd6; }
-.code-block .tok-attr { color: #9cdcfe; }
-.code-block .tok-str  { color: #ce9178; }
-.code-block .tok-key  { color: #569cd6; }
-.code-block .tok-type { color: #4ec9b0; }
-.code-block .tok-num  { color: #b5cea8; }
-.code-block .tok-raz  { color: #c586c0; }
+.code-block .tok-com  { color: var(--bm-tok-com); font-style: italic; }
+.code-block .tok-tag  { color: var(--bm-tok-tag); }
+.code-block .tok-attr { color: var(--bm-tok-attr); }
+.code-block .tok-str  { color: var(--bm-tok-str); }
+.code-block .tok-key  { color: var(--bm-tok-key); }
+.code-block .tok-type { color: var(--bm-tok-type); }
+.code-block .tok-num  { color: var(--bm-tok-num); }
+.code-block .tok-raz  { color: var(--bm-tok-raz); }
 
 /* Each source line is its own block so highlighted and plain lines share uniform spacing. */
 .code-block .code-line {
@@ -337,46 +348,95 @@ body {
 /* Lines where a Bmotion component is used, so they stand out from the markup. */
 .code-block .hl-line {
     display: block;
-    background: rgba(108,71,255,.16);
-    box-shadow: inset 3px 0 0 var(--bm-primary);
-    margin: 0 -1.25rem;
-    padding: 0 1.25rem;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    background-color: var(--bm-accent-soft);
+    box-shadow: inset 0.1875rem 0 0 var(--bm-primary);
 }
 
-/* ── Page hero ─────────────────────────────────────────────────────────────── */
+/* ── Home hero ─────────────────────────────────────────────────────────────── */
 
 .page-hero {
     text-align: center;
     padding: 4rem 0 3rem;
 }
+
 .page-hero h1 {
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 900;
-    line-height: 1.1;
+    font-weight: 300;
+    line-height: 1.167;
     margin-bottom: 1rem;
-    background: linear-gradient(135deg, #fff 30%, var(--bm-primary));
+    letter-spacing: -0.01562em;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    background: linear-gradient(135deg, var(--bit-clr-fg-pri) 25%, var(--bit-clr-pri));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-.page-hero p {
-    color: var(--bm-muted);
-    font-size: 1.15rem;
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    line-height: 1.6;
+
+/* A forced-colors palette drops the gradient but keeps the transparent fill, which would leave the
+   headline invisible. Hand the text back to the system colour instead. */
+@media (forced-colors: active) {
+    .page-hero h1 {
+        background: none;
+        color: CanvasText;
+        -webkit-text-fill-color: currentColor;
+    }
 }
+
+.page-hero p {
+    margin: 0 auto 2rem;
+    line-height: 1.5;
+    font-size: 1.125rem;
+    max-width: 40rem;
+    color: var(--bit-clr-fg-sec);
+}
+
 .badge-list {
     display: flex;
     flex-wrap: wrap;
-    gap: .5rem;
+    gap: 0.5rem;
     justify-content: center;
 }
+
+/* The tag treatment from the docs: outlined, quiet, sized to sit under a paragraph without
+   competing with it. */
 .badge {
-    background: rgba(108,71,255,.2);
-    border: 1px solid rgba(108,71,255,.4);
-    color: #a88cff;
-    padding: .3rem .8rem;
-    border-radius: 999px;
-    font-size: .8rem;
     font-weight: 600;
+    line-height: 1.5;
+    font-size: 0.75rem;
+    padding: 0.1875rem 0.625rem;
+    color: var(--bit-clr-pri);
+    background-color: transparent;
+    border: 0.0625rem solid var(--bit-clr-pri);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+/* ── Split text ────────────────────────────────────────────────────────────── */
+
+/* The split-text stages animate type, not boxes, so they need a type scale of their own - the
+   samples are only legible as a headline treatment if they are actually headline-sized. */
+.split-headline {
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--bit-clr-fg-pri);
+}
+
+.split-lines {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--bit-clr-fg-pri);
+}
+
+.split-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--bit-clr-fg-pri);
+}
+
+/* Deliberately narrow: the point of the sample is to force the text to wrap, so the reader can
+   see that the break lands between words rather than inside one. */
+.split-narrow {
+    max-width: 15rem;
 }

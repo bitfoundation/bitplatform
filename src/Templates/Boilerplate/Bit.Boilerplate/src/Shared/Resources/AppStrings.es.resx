@@ -1135,17 +1135,14 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Inicio de sesión sin contraseña deshabilitado exitosamente</value>
   </data>
-  <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>No se pudo verificar tu clave de acceso, por lo que no se eliminó. Inténtalo de nuevo.</value>
-  </data>
-  <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>Esta clave de acceso ya no existe en el servidor; se ha eliminado de este dispositivo.</value>
-  </data>
   <data name="Clear" xml:space="preserve">
     <value>Limpiar</value>
   </data>
   <data name="Send" xml:space="preserve">
     <value>Enviar</value>
+  </data>
+  <data name="AccentColorApply" xml:space="preserve">
+    <value>Aplicar el color de acento {0}</value>
   </data>
   <data name="Canceled" xml:space="preserve">
     <value>Cancelado</value>
@@ -1153,6 +1150,27 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <!--#if (signalR == true) -->
   <data name="AiChatPanelTitle" xml:space="preserve">
     <value>Panel de chat con IA</value>
+  </data>
+  <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Dicta tu mensaje</value>
+  </data>
+  <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Detener el dictado</value>
+  </data>
+  <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dictado</value>
+  </data>
+  <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>El acceso al micrófono está bloqueado. Permítelo para este sitio para poder dictar.</value>
+  </data>
+  <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dictado detenido: {0}</value>
+  </data>
+  <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Leer en voz alta</value>
+  </data>
+  <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Detener la lectura</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>¡Saludos{0}! Estoy aquí para hacer que tu experiencia en la app sea genial. ¿Tienes una pregunta o necesitas ayuda?</value>
@@ -1195,6 +1213,9 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Falla al mejorar la cuenta.</value>
+  </data>
+  <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>No hay anuncios disponibles en este momento. Inténtelo de nuevo más tarde.</value>
   </data>
   <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>¿Tienes problemas para ver el anuncio?</value>

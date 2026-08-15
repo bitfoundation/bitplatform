@@ -38,12 +38,14 @@
         @*#endif*@
 
         @*#if (module == "Sales")*@
+        @*#if (signalR == true)*@
         <BitSearchBox ReadOnly
                       Underlined
                       ShowSearchButton
                       Style="width:80%"
                       Color="BitColor.Secondary"
                       @onclick="HandleOnSearchBoxClick" />
+        @*#endif*@
 
         <ProductsCarousel />
         <br />
@@ -143,7 +145,7 @@
                     </BitStack>
                 </BitLink>
                 <BitLink Href="https://www.nuget.org/profiles/bit-foundation" Target="_blank" NoUnderline>
-                    <BitImage Src="https://img.shields.io/badge/packages_download-9M-blue.svg?logo=nuget" Alt="nuget downloads" />
+                    <BitImage Src="https://img.shields.io/badge/packages_download-10M-blue.svg?logo=nuget" Alt="nuget downloads" />
                 </BitLink>
             </BitStack>
         </BitCard>

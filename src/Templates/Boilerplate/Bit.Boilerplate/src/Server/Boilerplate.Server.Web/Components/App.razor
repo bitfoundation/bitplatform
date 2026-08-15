@@ -21,7 +21,7 @@
 }
 
 <!DOCTYPE html>
-<html bit-theme-system bit-theme-persist bit-theme-view-transition>
+<html bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition>
 
 <head>
     <ContentSecurityPolicy />
@@ -55,6 +55,8 @@
     @*#endif*@
     <Link rel="apple-touch-icon" sizes="512x512" Href="images/icons/bit-icon-512.png" />
     <Link rel="manifest" Href="manifest.json" />
+
+    <AccentColorPrerenderStyle />
 </head>
 
 <body class="@BitCss.Class.Color.Background.Primary.Main @BitCss.Class.Color.Foreground.Primary.Main bit-blazor-web">

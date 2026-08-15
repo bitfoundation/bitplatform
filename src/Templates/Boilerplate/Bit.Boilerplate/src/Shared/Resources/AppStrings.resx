@@ -1135,17 +1135,14 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="DisablePasswordlessSucsessMessage" xml:space="preserve">
     <value>Passwordless sign-in disabled successfully</value>
   </data>
-    <data name="DisablePasswordlessFailedMessage" xml:space="preserve">
-    <value>Could not verify your passkey, so it was not removed. Please try again.</value>
-  </data>
-    <data name="PasswordlessAlreadyRemovedMessage" xml:space="preserve">
-    <value>This passkey no longer exists on the server; it has been removed from this device.</value>
-  </data>
     <data name="Clear" xml:space="preserve">
     <value>Clear</value>
   </data>
     <data name="Send" xml:space="preserve">
     <value>Send</value>
+  </data>
+    <data name="AccentColorApply" xml:space="preserve">
+    <value>Apply the {0} accent color</value>
   </data>
     <data name="Canceled" xml:space="preserve">
     <value>Canceled</value>
@@ -1153,6 +1150,27 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <!--#if (signalR == true) -->
     <data name="AiChatPanelTitle" xml:space="preserve">
     <value>AI chat panel</value>
+  </data>
+    <data name="AiChatPanelDictate" xml:space="preserve">
+    <value>Dictate your message</value>
+  </data>
+    <data name="AiChatPanelStopDictation" xml:space="preserve">
+    <value>Stop dictation</value>
+  </data>
+    <data name="AiChatPanelDictation" xml:space="preserve">
+    <value>Dictation</value>
+  </data>
+    <data name="AiChatPanelMicrophoneBlocked" xml:space="preserve">
+    <value>Microphone access is blocked. Allow it for this site to dictate.</value>
+  </data>
+    <data name="AiChatPanelDictationStopped" xml:space="preserve">
+    <value>Dictation stopped: {0}</value>
+  </data>
+    <data name="AiChatPanelReadAloud" xml:space="preserve">
+    <value>Read aloud</value>
+  </data>
+    <data name="AiChatPanelStopReading" xml:space="preserve">
+    <value>Stop reading</value>
   </data>
     <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Greetings{0}! I'm here to make your app experience awesome! Got a question or need a hand?</value>
@@ -1195,6 +1213,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
   </data>
     <data name="UpgradeFailMessage" xml:space="preserve">
     <value>Upgrade account failed.</value>
+  </data>
+    <data name="UpgradeAdNotAvailableMessage" xml:space="preserve">
+    <value>No ads are available right now. Please try again later.</value>
   </data>
     <data name="UpgradeAdHaveTrouble" xml:space="preserve">
     <value>Having trouble watching ad?</value>
