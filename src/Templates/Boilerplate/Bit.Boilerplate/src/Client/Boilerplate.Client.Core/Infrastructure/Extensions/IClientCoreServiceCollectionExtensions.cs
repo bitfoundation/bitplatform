@@ -75,7 +75,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             //#if (brouter == true)
             services.AddBitBrouterServices();
             //#endif
-            
+
             services.AddBitBlazorUIExtrasServices(trySingleton: AppPlatform.IsBlazorHybrid, accentColor: options =>
             {
                 options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
