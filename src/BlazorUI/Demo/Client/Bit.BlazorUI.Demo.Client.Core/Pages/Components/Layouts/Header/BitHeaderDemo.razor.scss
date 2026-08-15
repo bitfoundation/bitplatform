@@ -1,5 +1,80 @@
-﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../../Styles/abstracts/_functions.scss';
 
 .container {
-    border: 1px solid $bit-color-border-disabled;
+    border: 1px solid gray;
+}
+
+// The Position, Reveal and ElevateOnScroll examples all need a box that scrolls on its own, so the
+// header has something to stick to (and to slide over) without taking over the whole demo page.
+.scroll-demo {
+    height: rem2(160px);
+    overflow: auto;
+    border: 1px solid gray;
+}
+
+.scroll-demo-row {
+    padding: rem2(8px) rem2(16px);
+}
+
+// A fixed or absolute header overlaps the content it covers, so the first row of these examples
+// keeps its own distance instead of hiding underneath the bar.
+.scroll-demo-row--offset {
+    margin-block-start: rem2(48px);
+}
+
+// A transform makes this box the containing block of any fixed descendant, which scopes the fixed
+// header of the example to the box instead of the top of the page.
+.fixed-demo {
+    height: rem2(160px);
+    overflow: hidden;
+    position: relative;
+    transform: translateZ(0);
+    border: 1px solid gray;
+}
+
+// An absolute header only asks for an ancestor that is positioned, which any plain relative box is.
+.absolute-demo {
+    height: rem2(160px);
+    position: relative;
+    border: 1px solid gray;
+}
+
+// Same containing block trick, but the content scrolls behind the still header, which is what makes
+// the frosted glass of the Translucent example visible.
+.translucent-demo {
+    overflow: auto;
+}
+
+// The Wrap example needs a header narrow enough to actually run out of room for its content.
+.wrap-demo {
+    max-width: rem2(384px);
+}
+
+// Where the skip link of the Accessibility example lands. The outline is what makes the jump visible,
+// since the target itself is only focusable programmatically.
+.skip-target {
+    margin-block-start: rem2(8px);
+    padding: rem2(8px) rem2(16px);
+
+    &:focus {
+        outline: 2px dashed dodgerblue;
+    }
+}
+
+// The header and its container are rendered by BitHeader itself, so they carry its own scope and
+// only ::deep rules can reach the classes handed to it through Class and Classes.
+::deep {
+    .custom-class {
+        color: white;
+        background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+
+    .custom-root {
+        border-block-end: 2px solid blueviolet;
+    }
+
+    .custom-container {
+        color: blueviolet;
+        justify-content: flex-end;
+    }
 }
