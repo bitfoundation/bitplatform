@@ -35,6 +35,11 @@
     position: relative;
     box-sizing: border-box;
     padding: var(--bit-hdr-padding);
+
+    // MaxWidth caps the content alone and centers it, so the background, the border and the shadow of the
+    // header still run edge to edge while its content lines up with a page body centered in the same column.
+    margin-inline: auto;
+    max-width: var(--bit-hdr-max-width, none);
     gap: var(--bit-hdr-gap, 0);
     flex-wrap: var(--bit-hdr-wrap, nowrap);
     align-items: var(--bit-hdr-align, center);
@@ -178,12 +183,17 @@
 // A header pinned to the top of the viewport sits under the status bar / notch of a mobile device, so
 // the safe area is added to its own padding. env() resolves to the 0px fallback everywhere else, which
 // leaves the header untouched on a device with no inset.
+// A fixed header spans the whole viewport, so it also runs into the side insets of a notched device held
+// in landscape. Those two are physical rather than logical - the notch does not move to the other side in
+// an RTL page - so they are spelled left and right instead of inline-start and inline-end.
 .bit-hdr-fix {
     top: 0;
     left: 0;
     right: 0;
     position: fixed;
     padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 .bit-hdr-stk {
@@ -281,6 +291,13 @@
 @media (forced-colors: active) {
     .bit-hdr-elv {
         border-block-end: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // Forced colors repaints the header with the system palette, so there is no longer a tinted surface to
+    // soften - and blurring what passes behind it only muddies the content the mode is there to keep crisp.
+    .bit-hdr-trs.bit-hdr-fil {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     }
 }
 

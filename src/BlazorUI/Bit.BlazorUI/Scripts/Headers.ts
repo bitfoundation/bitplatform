@@ -9,6 +9,9 @@ namespace BitBlazorUI {
             // and dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
+            // Puts the scroll padding of the scroller back the way it was found, whichever box is
+            // carrying it at that moment.
+            clearPadding: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
@@ -22,16 +25,31 @@ namespace BitBlazorUI {
         // scrolled down and bringing it back while it is scrolled up (the classic "reveal" of an app bar),
         // and lifting it off the content once the page has left its top (the "elevate on scroll" shadow).
         // Both states live here and only cross the interop boundary when they actually flip, so a scroll
-        // never costs more than a comparison.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean) {
+        // never costs more than a comparison. It also keeps the scroll padding of the scroller in step
+        // with the height of the header, so nothing scrolled to lands underneath a pinned one.
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
             Headers.dispose(id);
 
             const element = document.getElementById(id);
             if (!element) return;
 
+            // An explicitly named scroller wins over the walk up the tree, which is what a header that
+            // does not sit inside the box it reacts to (an app shell whose header and content are
+            // siblings) needs. A selector that matches nothing falls back to the walk rather than
+            // leaving the header without a scroller at all.
+            const resolveTarget = (): HTMLElement | Window => {
+                if (scrollTarget) {
+                    const found = document.querySelector(scrollTarget);
+
+                    if (found) return found as HTMLElement;
+                }
+
+                return Headers.scrollParent(element);
+            };
+
             // The scroller is not always the window: an app shell (and any pane with its own overflow)
             // scrolls its own box, and a scroll event on an element does not bubble to the window.
-            const target = { current: Headers.scrollParent(element) };
+            const target = { current: resolveTarget() };
 
             // A negative offset would keep the header hidden at the very top of the scroller, where the
             // rule below is what has to win.
@@ -44,6 +62,42 @@ namespace BitBlazorUI {
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
+
+            // The box carrying the scroll padding, with the inline value it had before the header touched
+            // it, so the page is handed back exactly what it started with.
+            let padded: { element: HTMLElement, previous: string } | undefined;
+
+            const clearPadding = () => {
+                if (!padded) return;
+
+                padded.element.style.scrollPaddingBlockStart = padded.previous;
+
+                padded = undefined;
+            };
+
+            // A pinned header covers the top of the scroller, so anything scrolled to by an anchor, by
+            // the browser bringing a focused control into the view, or by scrollIntoView, lands
+            // underneath it (WCAG 2.4.11). Reserving the height of the header as the scroll padding of
+            // the scroller is what stops the scroll short of it. The value is on the element that
+            // scrolls - the documentElement when that is the page - and it is re-read whenever the
+            // header or the layout changes size, so a header that shrinks on scroll stays in step.
+            const applyPadding = () => {
+                if (!scrollPadding) return;
+
+                const box = target.current === window
+                    ? document.documentElement
+                    : target.current as HTMLElement;
+
+                if (padded && padded.element !== box) {
+                    clearPadding();
+                }
+
+                if (!padded) {
+                    padded = { element: box, previous: box.style.scrollPaddingBlockStart };
+                }
+
+                box.style.scrollPaddingBlockStart = `${element.offsetHeight}px`;
+            };
 
             const applyHidden = (next: boolean) => {
                 if (!reveal || next === hidden) return;
@@ -111,7 +165,8 @@ namespace BitBlazorUI {
             let observer: ResizeObserver | undefined;
 
             // The scroller is watched as well as the page, since a pane only becomes the scroller of the
-            // header once its own content overflows it.
+            // header once its own content overflows it. The header itself is watched only when its height
+            // is being mirrored into the scroll padding of that scroller.
             const observe = () => {
                 if (!observer) return;
 
@@ -121,6 +176,10 @@ namespace BitBlazorUI {
                 if (target.current !== window) {
                     observer.observe(target.current as HTMLElement);
                 }
+
+                if (scrollPadding) {
+                    observer.observe(element);
+                }
             };
 
             // Which box scrolls the header is not settled once and for all: a pane that had nothing to
@@ -128,7 +187,7 @@ namespace BitBlazorUI {
             // content outgrows it, and the other way round. The scroller is re-resolved whenever the
             // layout or the content moves, and the scroll listener follows it.
             const layoutHandler = () => {
-                const next = Headers.scrollParent(element);
+                const next = resolveTarget();
 
                 if (next !== target.current) {
                     target.current.removeEventListener('scroll', scrollHandler);
@@ -141,6 +200,8 @@ namespace BitBlazorUI {
 
                     observe();
                 }
+
+                applyPadding();
 
                 scrollHandler();
             };
@@ -159,7 +220,9 @@ namespace BitBlazorUI {
                 observe();
             }
 
-            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, frame });
+            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
+
+            applyPadding();
 
             // The scroller can already be scrolled when the header arrives (a restored scroll position, a
             // deep link to an anchor, a header rendered into a pane the user has been reading), so the
@@ -176,6 +239,8 @@ namespace BitBlazorUI {
             entry.element.removeEventListener('focusin', entry.focusHandler);
 
             entry.observer?.disconnect();
+
+            entry.clearPadding();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.

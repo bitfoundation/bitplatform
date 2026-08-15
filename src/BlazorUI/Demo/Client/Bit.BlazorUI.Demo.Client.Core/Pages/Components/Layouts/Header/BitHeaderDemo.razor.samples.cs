@@ -126,6 +126,17 @@ public partial class BitHeaderDemo
 </BitHeader>";
 
     private readonly string example8RazorCode = @"
+<BitHeader Bordered Color=""BitColor.SecondaryBackground"" Alignment=""BitAlignment.SpaceBetween"">
+    <BitTag Text=""Full width content"" />
+    <BitTag Text=""Edge to edge"" />
+</BitHeader>
+
+<BitHeader Bordered MaxWidth=""24rem"" Color=""BitColor.SecondaryBackground"" Alignment=""BitAlignment.SpaceBetween"">
+    <BitTag Text=""Capped at 24rem"" />
+    <BitTag Text=""And centered"" />
+</BitHeader>";
+
+    private readonly string example9RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -180,7 +191,7 @@ public partial class BitHeaderDemo
     <div class=""scroll-demo-row scroll-demo-row--offset"">The absolute header covers the top of its container.</div>
 </div>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -222,10 +233,10 @@ public partial class BitHeaderDemo
         <div class=""scroll-demo-row"">Row @i</div>
     }
 </div>";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private bool isHeaderRevealed = true;";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <style>
     .scroll-demo {
         height: 10rem;
@@ -263,10 +274,42 @@ private bool isHeaderRevealed = true;";
         <div class=""scroll-demo-row"">Row @i</div>
     }
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private bool isHeaderScrolled;";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
+<style>
+    .split-demo {
+        border: 1px solid gray;
+    }
+
+    /* The pane, not the outer box, is what carries the overflow - and what the header is pointed at. */
+    .split-demo-pane {
+        height: 10rem;
+        overflow: auto;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+
+<div class=""split-demo"">
+    <BitHeader Sticky ElevateOnScroll Bordered
+               ScrollTarget=""#header-scroll-pane""
+               Color=""BitColor.PrimaryBackground"">
+        I react to the pane below me
+    </BitHeader>
+    <div id=""header-scroll-pane"" class=""split-demo-pane"">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class=""scroll-demo-row"">Row @i</div>
+        }
+    </div>
+</div>";
+
+    private readonly string example13RazorCode = @"
 <style>
     /* A transform makes this box the containing block of any fixed descendant, which scopes the
        fixed header of the example to the box instead of the top of the page. */
@@ -303,17 +346,15 @@ private bool isHeaderScrolled;";
         <BitToggleButton @bind-IsChecked=""isImmersiveMode"" OnText=""Leave immersive mode"" OffText=""Enter immersive mode"" />
     </div>
 </div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private bool isImmersiveMode;";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example14RazorCode = @"
 <style>
-    /* The content scrolls behind the still header, which is what makes the frosted glass visible. */
+    /* The content scrolls behind the pinned header, which is what makes the frosted glass visible. */
     .translucent-demo {
         height: 10rem;
         overflow: auto;
-        position: relative;
-        transform: translateZ(0);
         border: 1px solid gray;
     }
 
@@ -324,14 +365,33 @@ private bool isImmersiveMode;";
 
 
 <div class=""translucent-demo"">
-    <BitHeader Fixed Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Header</BitHeader>
-    @for (var i = 1; i <= 6; i++)
+    <BitHeader Sticky Translucent Bordered Color=""BitColor.PrimaryBackground"">I'm a translucent Header</BitHeader>
+    @for (var i = 1; i <= 10; i++)
     {
         <div class=""scroll-demo-row"">Content behind the header - row @i</div>
     }
 </div>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example15RazorCode = @"
+<style>
+    .scroll-demo {
+        height: 10rem;
+        overflow: auto;
+        border: 1px solid gray;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+
+    /* The outline is what makes the jump of the skip link visible, since the target itself is only
+       focusable programmatically. */
+    .skip-target:focus {
+        outline: 2px dashed dodgerblue;
+    }
+</style>
+
+
 <BitHeader AriaLabel=""Editor actions"" Alignment=""BitAlignment.End"" Gap=""0.5rem"" Bordered>
     <BitButton Variant=""BitVariant.Text"">Discard</BitButton>
     <BitButton>Save</BitButton>
@@ -343,16 +403,37 @@ private bool isImmersiveMode;";
     <BitText Typography=""BitTypography.Subtitle2"">My Awesome App</BitText>
 </BitHeader>
 
-<div id=""header-skip-target"" tabindex=""-1"">The skip link lands here.</div>";
+<div id=""header-skip-target"" tabindex=""-1"" class=""skip-target"">The skip link lands here.</div>
 
-    private readonly string example14RazorCode = @"
-<BitHeader Gap=""1rem"" Color=""BitColor.Primary"">
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky Elevated Color=""BitColor.Error"" AriaLabel=""Without scroll padding"">
+        Without ScrollPadding - the focus lands under me
+    </BitHeader>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row""><BitButton Variant=""BitVariant.Text"">Button @i</BitButton></div>
+    }
+</div>
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky Elevated ScrollPadding Color=""BitColor.Success"" AriaLabel=""With scroll padding"">
+        With ScrollPadding - the focus stops below me
+    </BitHeader>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row""><BitButton Variant=""BitVariant.Text"">Button @i</BitButton></div>
+    }
+</div>";
+
+    private readonly string example16RazorCode = @"
+<BitHeader Gap=""1rem"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation"" />
     <BitText Typography=""BitTypography.Caption1"">My Awesome App</BitText>
     <BitSpacer />
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.Contact"" Title=""Sign in"" />
     <BitMenuButton TItem=""BitMenuButtonOption""
-                   ChevronDownIcon=""@BitIconName.More""
+                   ChevronDownIconName=""@BitIconName.More""
                    Variant=""BitVariant.Text""
                    title=""See more""
                    Styles=""@(new() { OperatorButton = ""padding: 0.5rem;"" })"">
@@ -362,7 +443,7 @@ private bool isImmersiveMode;";
     </BitMenuButton>
 </BitHeader>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitHeader Color=""BitColor.Primary"">Primary</BitHeader>
 
 <BitHeader Color=""BitColor.Secondary"">Secondary</BitHeader>
@@ -400,14 +481,14 @@ private bool isImmersiveMode;";
 
 <BitHeader Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitHeader>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitHeader Size=""BitSize.Small"" Bordered>Small</BitHeader>
 
 <BitHeader Size=""BitSize.Medium"" Bordered>Medium</BitHeader>
 
 <BitHeader Size=""BitSize.Large"" Bordered>Large</BitHeader>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         color: white;
@@ -439,7 +520,7 @@ private bool isImmersiveMode;";
     Classes
 </BitHeader>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitHeader Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />

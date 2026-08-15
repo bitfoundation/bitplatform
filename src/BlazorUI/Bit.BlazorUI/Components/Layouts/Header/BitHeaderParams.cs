@@ -82,6 +82,11 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
     public bool? Hidden { get; set; }
 
     /// <summary>
+    /// The maximum width of the content of the header, which is then centered in the header.
+    /// </summary>
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
     /// Removes the default paddings around the content of the header.
     /// </summary>
     public bool? NoGutter { get; set; }
@@ -95,6 +100,16 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
     /// How far (in pixels) the scroll has to travel from the top before a Reveal header starts hiding itself.
     /// </summary>
     public int? RevealOffset { get; set; }
+
+    /// <summary>
+    /// Reserves the height of the header at the top of the scrolling area, so nothing scrolled to ever lands underneath a pinned header.
+    /// </summary>
+    public bool? ScrollPadding { get; set; }
+
+    /// <summary>
+    /// The CSS selector of the element whose scrolling drives the header.
+    /// </summary>
+    public string? ScrollTarget { get; set; }
 
     /// <summary>
     /// The size of the header, which determines the paddings around its content.
@@ -242,6 +257,13 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.ClassBuilder.Reset();
         }
 
+        if (MaxWidth is not null && bitHeader.HasNotBeenSet(nameof(MaxWidth)))
+        {
+            bitHeader.MaxWidth = MaxWidth;
+
+            bitHeader.StyleBuilder.Reset();
+        }
+
         if (NoGutter.HasValue && bitHeader.HasNotBeenSet(nameof(NoGutter)))
         {
             bitHeader.NoGutter = NoGutter.Value;
@@ -259,6 +281,16 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
         if (RevealOffset.HasValue && bitHeader.HasNotBeenSet(nameof(RevealOffset)))
         {
             bitHeader.RevealOffset = RevealOffset.Value;
+        }
+
+        if (ScrollPadding.HasValue && bitHeader.HasNotBeenSet(nameof(ScrollPadding)))
+        {
+            bitHeader.ScrollPadding = ScrollPadding.Value;
+        }
+
+        if (ScrollTarget is not null && bitHeader.HasNotBeenSet(nameof(ScrollTarget)))
+        {
+            bitHeader.ScrollTarget = ScrollTarget;
         }
 
         if (Size.HasValue && bitHeader.HasNotBeenSet(nameof(Size)))

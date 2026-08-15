@@ -7,10 +7,14 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// It renders a semantic <c>header</c> element and lays its content out in a horizontal line whose color, variant,
-/// size, alignment, wrapping and gutters are all parameters. It can stay in the flow of the page or be pinned to the
-/// top of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page is scrolled
-/// up (<see cref="Reveal"/>), lifting itself off the content once the page is scrolled at all
+/// size, alignment, wrapping, gutters and maximum width are all parameters. It can stay in the flow of the page or be
+/// pinned to the top of the viewport - <see cref="Fixed"/>, <see cref="Sticky"/>, revealing itself only while the page
+/// is scrolled up (<see cref="Reveal"/>), lifting itself off the content once the page is scrolled at all
 /// (<see cref="ElevateOnScroll"/>), or slid out of the way on demand (<see cref="Hidden"/>).
+/// <br />
+/// A pinned header also carries what it owes the users it covers: the shortcut past it (<see cref="SkipLinkHref"/>)
+/// and the room it reserves at the top of the scrolling area so nothing scrolled to lands underneath it
+/// (<see cref="ScrollPadding"/>).
 /// </remarks>
 public partial class BitHeader : BitComponentBase
 {
@@ -160,9 +164,10 @@ public partial class BitHeader : BitComponentBase
     /// <remarks>
     /// The height includes the paddings and the border of the header (the root element is a border-box).
     /// <br />
-    /// A <see cref="Fixed"/> or <see cref="Sticky"/> header adds the top safe area inset of the device on
-    /// top of it, so the content of the header keeps the height that was asked for instead of losing part of
-    /// it to the status bar or the notch.
+    /// A header that really sits at the top of the screen - <see cref="Fixed"/>, or <see cref="Sticky"/>
+    /// without an <see cref="Absolute"/> outranking it - adds the top safe area inset of the device on top of
+    /// it, so the content of the header keeps the height that was asked for instead of losing part of it to
+    /// the status bar or the notch.
     /// <br />
     /// When not set, the header is as tall as its content plus the paddings of the current <see cref="Size"/>.
     /// </remarks>
@@ -186,6 +191,19 @@ public partial class BitHeader : BitComponentBase
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Hidden { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum width of the content of the BitHeader, which is then centered in the header.
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length (for example <c>1200px</c> or <c>75rem</c>). The header itself keeps spanning the
+    /// full width - its background, its border and its shadow still run edge to edge - while its content lines
+    /// up with the rest of a page whose body is centered in a column of the same width.
+    /// <br />
+    /// When not set, the content spans the whole width of the header.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? MaxWidth { get; set; }
 
     /// <summary>
     /// Removes the default paddings around the content of the BitHeader, so it can span the full width of the header.
@@ -236,6 +254,36 @@ public partial class BitHeader : BitComponentBase
     /// When not set (or set to 0), the header starts hiding as soon as the scroll goes down.
     /// </remarks>
     [Parameter] public int? RevealOffset { get; set; }
+
+    /// <summary>
+    /// Reserves the height of the BitHeader at the top of the scrolling area, so nothing scrolled to ever
+    /// lands underneath a pinned header.
+    /// </summary>
+    /// <remarks>
+    /// A header pinned over the content covers the top of it, and a browser that scrolls something into the
+    /// view - following an anchor, bringing a focused control back on screen, honouring a call to
+    /// scrollIntoView - stops with that thing hidden behind the header (WCAG 2.4.11, Focus Not Obscured).
+    /// This sets the scroll padding of the scrolling area to the height of the header, which is what makes
+    /// those scrolls stop short of it, and keeps it in step while the header changes size.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> header, since a header in the
+    /// normal flow covers nothing. The scrolling area is the one the header reacts to, so
+    /// <see cref="ScrollTarget"/> applies here as well.
+    /// </remarks>
+    [Parameter] public bool ScrollPadding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS selector of the element whose scrolling drives the BitHeader.
+    /// </summary>
+    /// <remarks>
+    /// By default the header finds its own scrolling area by walking up from itself, which covers the page
+    /// and any pane the header sits inside. A header that does not sit inside the box it has to react to -
+    /// an app shell whose bar and scrolling content are siblings - names that box here instead.
+    /// <br />
+    /// A selector that matches nothing falls back to the walk, so a target rendered later never leaves the
+    /// header without a scrolling area at all.
+    /// </remarks>
+    [Parameter] public string? ScrollTarget { get; set; }
 
     /// <summary>
     /// The size of the BitHeader, which determines the paddings around its content.
@@ -397,6 +445,13 @@ public partial class BitHeader : BitComponentBase
 
 
 
+    // The header really sits at the top of the screen only when it is fixed, or sticky without an Absolute
+    // that outranks it - which is what the safe area inset, the scroll listener and the scroll padding all
+    // key off, since an absolute header is pinned to its container and scrolls away with it.
+    private bool IsPinned => Fixed || (Sticky && Absolute is false);
+
+
+
     protected override string RootElementClass => "bit-hdr";
 
     protected override void RegisterCssClasses()
@@ -503,12 +558,14 @@ public partial class BitHeader : BitComponentBase
         // height is the header, the inset is the room the device asks for above it. env() resolves to
         // the 0px fallback wherever there is no inset, which leaves the plain height untouched.
         StyleBuilder.Register(() => Height.HasValue
-                                    ? ((Fixed || Sticky)
+                                    ? (IsPinned
                                         ? $"height:calc({Height}px + env(safe-area-inset-top, 0px))"
                                         : $"height:{Height}px")
                                     : string.Empty);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-hdr-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => MaxWidth.HasValue() ? $"--bit-hdr-max-width:{MaxWidth}" : string.Empty);
     }
 
 
@@ -538,18 +595,17 @@ public partial class BitHeader : BitComponentBase
 
         if (IsDisposed) return;
 
-        // Only a positioned header has anything to slide over or to lift itself above, so the scroll listener
-        // is attached for those alone. Toggling any of these parameters at runtime attaches or detaches it
-        // accordingly. Absolute is skipped: it scrolls away with its container, and the position classes give
-        // it precedence over Sticky, so a header rendered as bit-hdr-abs has nothing to react to.
-        var shouldAttach = (Reveal || ElevateOnScroll) && (Fixed || (Sticky && Absolute is false));
+        // Only a pinned header has anything to slide over, to lift itself above, or to cover at the top of the
+        // scrolling area, so the scroll listener is attached for those alone. Toggling any of these parameters
+        // at runtime attaches or detaches it accordingly.
+        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding) && IsPinned;
 
         // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
         // the listener up again - including the id, which is what the script keys its registration by, and which
         // would otherwise leave the listeners behind on the element that id no longer names.
         var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
         var elevateOffset = Math.Max(0, ElevateOffset.GetValueOrDefault());
-        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{ElevateOnScroll}" : null;
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}" : null;
 
         if (signature == _attachedSignature) return;
 
@@ -565,7 +621,7 @@ public partial class BitHeader : BitComponentBase
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll);
+            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding);
 
             // The flags are only moved once the interop call has gone through, so a call that failed
             // leaves them as they were and the next render tries to set the listener up again.

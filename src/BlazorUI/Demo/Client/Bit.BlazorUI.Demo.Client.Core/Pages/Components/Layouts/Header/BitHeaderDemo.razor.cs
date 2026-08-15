@@ -92,7 +92,7 @@ public partial class BitHeaderDemo
             Name = "Height",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header, and a Fixed or Sticky header adds the top safe area inset of the device on top of it.",
+            Description = "Gets or sets the height of the BitHeader (in pixels). The height includes the paddings and the border of the header, and a header that really sits at the top of the screen (Fixed, or Sticky without an Absolute outranking it) adds the top safe area inset of the device on top of it.",
         },
         new()
         {
@@ -100,6 +100,13 @@ public partial class BitHeaderDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Slides the BitHeader out of the view, and brings it back when it is turned off again. A hidden header is also marked inert, so nothing inside it can be clicked or reached with the keyboard while it is out of the view.",
+        },
+        new()
+        {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the maximum width of the content of the BitHeader, which is then centered in the header. The header itself keeps spanning the full width, so its background, its border and its shadow still run edge to edge.",
         },
         new()
         {
@@ -135,6 +142,20 @@ public partial class BitHeaderDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Gets or sets how far (in pixels) the scroll has to travel from the top before a Reveal header starts hiding itself. The header stays revealed while the scroll is still within this offset.",
+        },
+        new()
+        {
+            Name = "ScrollPadding",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Reserves the height of the BitHeader at the top of the scrolling area, so nothing scrolled to - the target of an anchor, a control that has just taken the focus, a call to scrollIntoView - lands underneath a pinned header (WCAG 2.4.11). It only has an effect on a Fixed or Sticky header.",
+        },
+        new()
+        {
+            Name = "ScrollTarget",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the CSS selector of the element whose scrolling drives the BitHeader. By default the header finds its own scrolling area by walking up from itself, and a selector that matches nothing falls back to that walk.",
         },
         new()
         {

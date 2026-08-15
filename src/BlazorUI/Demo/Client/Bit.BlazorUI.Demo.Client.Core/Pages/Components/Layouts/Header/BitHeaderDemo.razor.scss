@@ -39,9 +39,22 @@
     border: 1px solid gray;
 }
 
-// Same containing block trick, but the content scrolls behind the still header, which is what makes
-// the frosted glass of the Translucent example visible.
+// The content scrolls behind the pinned header, which is what makes the frosted glass of the
+// Translucent example visible.
 .translucent-demo {
+    height: rem2(160px);
+    overflow: auto;
+    border: 1px solid gray;
+}
+
+// The ScrollTarget example splits the bar from the box it reacts to: the header sits in the outer box,
+// which has no overflow of its own, while the pane below it is the one that scrolls.
+.split-demo {
+    border: 1px solid gray;
+}
+
+.split-demo-pane {
+    height: rem2(160px);
     overflow: auto;
 }
 

@@ -2,10 +2,10 @@
 
 <PageOutlet Url="components/header"
             Title="Header"
-            Description="The BitHeader component renders the bar at the top of a site or an application, with theme colors, variants, sizes, alignment, wrapping, spacing and pinned positioning." />
+            Description="The BitHeader component renders the bar at the top of a site or an application, with theme colors, variants, sizes, alignment, wrapping, spacing, pinned positioning and scroll driven reveal and elevation." />
 
 <DemoPage Name="Header"
-          Description="The BitHeader component renders a bar at the top of a site or an application, holding whatever belongs there: a brand, a navigation toggle, a search box or a row of account actions. It renders a semantic header element - the banner landmark of the page - and lays its content out in a horizontal line whose color, variant, size, alignment, wrapping, gutters and spacing are all parameters. It can stay in the flow or be pinned to the top of the viewport, hiding itself while the page is scrolled down, lifting itself off the content once the page has left its top, or sliding out of the way on demand."
+          Description="The BitHeader component renders a bar at the top of a site or an application, holding whatever belongs there: a brand, a navigation toggle, a search box or a row of account actions. It renders a semantic header element - the banner landmark of the page - and lays its content out in a horizontal line whose color, variant, size, alignment, wrapping, gutters, spacing and maximum width are all parameters. It can stay in the flow or be pinned to the top of the viewport, hiding itself while the page is scrolled down, lifting itself off the content once the page has left its top, or sliding out of the way on demand - and it carries the accessibility a pinned bar owes its users, from the skip link past it to the room it reserves so nothing scrolled to lands underneath it."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -188,7 +188,7 @@
         <br />
         <div>With the default gutter:</div>
         <div class="container">
-            <BitHeader Bordered></BitHeader>
+            <BitHeader Bordered>With the default gutter</BitHeader>
         </div>
         <br />
         <div>NoGutter:</div>
@@ -231,7 +231,30 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Position" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Max width" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>MaxWidth</b> caps the content of the header and centers it, while the header itself keeps spanning
+            the full width - its background, its border and its shadow still run edge to edge. It is what lines a
+            bar up with a page body that is centered in a column of the same width, which is the layout of nearly
+            every documentation and marketing site. It takes any CSS length.
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered Color="BitColor.SecondaryBackground" Alignment="BitAlignment.SpaceBetween">
+                <BitTag Text="Full width content" />
+                <BitTag Text="Edge to edge" />
+            </BitHeader>
+        </div>
+        <br />
+        <div class="container">
+            <BitHeader Bordered MaxWidth="24rem" Color="BitColor.SecondaryBackground" Alignment="BitAlignment.SpaceBetween">
+                <BitTag Text="Capped at 24rem" />
+                <BitTag Text="And centered" />
+            </BitHeader>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Position" RazorCode="@example9RazorCode" Id="example9">
         <div>
             <b>Sticky</b> keeps the header in the flow but pins it to the top of the scrolling area once its own place in
             the content has been passed, so it never covers anything. <b>Fixed</b> takes it out of the flow and anchors it
@@ -274,7 +297,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Reveal" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+    <DemoExample Title="Reveal" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Reveal</b> hides a pinned header while the scroll goes down and slides it back in as soon as the scroll goes
             up, so it gives the content the whole viewport while the user is reading and returns the moment they look for
@@ -319,7 +342,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Elevate on scroll" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <DemoExample Title="Elevate on scroll" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
         <div>
             A pinned header that is shadowed from the start looks detached from a page that has not moved yet.
             <b>ElevateOnScroll</b> keeps it flat while the scrolling area sits at its top and fades the shadow in the
@@ -360,7 +383,33 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Hidden" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <DemoExample Title="Scroll target" RazorCode="@example12RazorCode" Id="example12">
+        <div>
+            Both scroll behaviors need to know which box is doing the scrolling, and the header finds it on its own
+            by walking up from itself - which covers the page and any pane it sits inside. <b>ScrollTarget</b> names
+            that box with a CSS selector instead, for the app shell layout where the bar and the scrolling content
+            are siblings rather than one inside the other. A selector that matches nothing falls back to the walk,
+            so a target rendered later never leaves the header without a scrolling area at all.
+        </div>
+        <br />
+        <div>The header below sits outside the scrolling pane, and reacts to it by name:</div>
+        <br />
+        <div class="split-demo">
+            <BitHeader Sticky ElevateOnScroll Bordered
+                       ScrollTarget="#header-scroll-pane"
+                       Color="BitColor.PrimaryBackground">
+                I react to the pane below me
+            </BitHeader>
+            <div id="header-scroll-pane" class="split-demo-pane">
+                @for (var i = 1; i <= 12; i++)
+                {
+                    <div class="scroll-demo-row">Row @i</div>
+                }
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Hidden" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>Hidden</b> is the programmatic counterpart of Reveal: the header slides away because the application says
             so rather than because the page is being scrolled, which is what a distraction free reading mode or a full
@@ -385,14 +434,14 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Translucent" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="Translucent" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Translucent</b> softens the background of the header and blurs what passes behind it, so a pinned header
             hints at the content it covers instead of cutting it off - the frosted glass of a native mobile bar. Only the
             Fill variant has a background to soften.
         </div>
         <br />
-        <div class="fixed-demo translucent-demo">
+        <div class="translucent-demo">
             <BitHeader Sticky Translucent Bordered Color="BitColor.PrimaryBackground">I'm a translucent Header</BitHeader>
             @for (var i = 1; i <= 10; i++)
             {
@@ -401,7 +450,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Accessibility" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The header renders a semantic <b>header</b> element, which the browser exposes as the <b>banner</b> landmark
             of the page - the region screen reader users jump to for the brand, the global navigation and the account
@@ -439,9 +488,39 @@
             </BitHeader>
         </div>
         <div id="header-skip-target" tabindex="-1" class="skip-target">The skip link lands here.</div>
+        <br /><br />
+        <div>
+            A pinned header also covers the top of the content, so anything the browser scrolls into view - a
+            control that has just taken the focus, the target of an anchor, a call to scrollIntoView - stops with
+            that thing hidden behind the bar (WCAG 2.4.11, Focus Not Obscured). <b>ScrollPadding</b> reserves the
+            height of the header at the top of the scrolling area, which is what makes those scrolls stop short of
+            it, and it keeps that reservation in step while the header changes size.
+        </div>
+        <br />
+        <div>Click the first button of each box and hold Tab to walk down it:</div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Elevated Color="BitColor.Error" AriaLabel="Without scroll padding">
+                Without ScrollPadding - the focus lands under me
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row"><BitButton Variant="BitVariant.Text">Button @i</BitButton></div>
+            }
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Elevated ScrollPadding Color="BitColor.Success" AriaLabel="With scroll padding">
+                With ScrollPadding - the focus stops below me
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row"><BitButton Variant="BitVariant.Text">Button @i</BitButton></div>
+            }
+        </div>
     </DemoExample>
 
-    <DemoExample Title="Usage" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Usage" RazorCode="@example16RazorCode" Id="example16">
         <div>A complete application header: a navigation toggle and a brand on one side, the account actions on the other, with a BitSpacer pushing the two groups apart.</div>
         <br />
         <div class="container">
@@ -463,7 +542,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
         <div>
             The general colors of the theme are all available, and each of them works with every variant. Without a color
             the header keeps the primary background and foreground of the theme, which is what a page level header usually wants.
@@ -538,7 +617,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>The size sets the paddings around the content, which is what makes a header compact or roomy when its height is left to the content.</div>
         <br />
         <div class="container">
@@ -554,7 +633,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> reach the root element of the header, while <b>Styles</b> and <b>Classes</b> reach
             each of its parts by name - the root, the container that holds the content, and the skip link.
@@ -586,7 +665,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>Use the <b>Dir</b> parameter to change the direction of the header, which flips the alignment of its content and the side its paddings sit on.</div>
         <br />
         <div class="container">

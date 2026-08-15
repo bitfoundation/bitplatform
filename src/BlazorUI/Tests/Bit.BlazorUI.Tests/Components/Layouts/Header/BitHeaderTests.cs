@@ -1389,5 +1389,243 @@ public class BitHeaderTests : BunitTestContext
 
         CollectionAssert.AreEqual(new object[] { 80, 80 }, setups.Select(i => i.Arguments[2]).ToArray());
         CollectionAssert.AreEqual(new object[] { 30, 30 }, setups.Select(i => i.Arguments[3]).ToArray());
+        CollectionAssert.AreEqual(new object[] { "#pane", "#pane" }, setups.Select(i => i.Arguments[6]).ToArray());
+        CollectionAssert.AreEqual(new object[] { true, true }, setups.Select(i => i.Arguments[7]).ToArray());
+
+        // The cascaded max width reaches both headers as the variable the container reads.
+        StringAssert.Contains(headers[0].GetAttribute("style")!, "--bit-hdr-max-width:60rem");
+        StringAssert.Contains(headers[1].GetAttribute("style")!, "--bit-hdr-max-width:60rem");
+    }
+
+    [TestMethod]
+    [DataRow("40rem")]
+    [DataRow("1200px")]
+    public void BitHeaderShouldRespectMaxWidth(string maxWidth)
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.MaxWidth, maxWidth);
+        });
+
+        component.MarkupMatches($@"
+<header style=""--bit-hdr-max-width:{maxWidth}"" class=""bit-hdr bit-hdr-fil"" id:ignore>
+    <div class=""bit-hdr-gut"">
+    </div>
+</header>");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotRenderTheMaxWidthVariableByDefault()
+    {
+        var component = RenderComponent<BitHeader>();
+
+        var style = component.Find(".bit-hdr").GetAttribute("style") ?? string.Empty;
+
+        Assert.IsFalse(style.Contains("--bit-hdr-max-width"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectMaxWidthChangedDynamically()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.MaxWidth, "40rem");
+        });
+
+        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-max-width:40rem");
+
+        component.Render(parameters => parameters.Add(p => p.MaxWidth, "60rem"));
+
+        StringAssert.Contains(component.Find(".bit-hdr").GetAttribute("style")!, "--bit-hdr-max-width:60rem");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRespectMaxWidthAndGapAndHeightTogether()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Height, 64);
+            parameters.Add(p => p.Gap, "1rem");
+            parameters.Add(p => p.MaxWidth, "75rem");
+        });
+
+        var style = component.Find(".bit-hdr").GetAttribute("style")!;
+
+        StringAssert.Contains(style, "height:64px");
+        StringAssert.Contains(style, "--bit-hdr-gap:1rem");
+        StringAssert.Contains(style, "--bit-hdr-max-width:75rem");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotAddTheSafeAreaInsetToTheHeightOfAnAbsoluteHeaderThatIsAlsoSticky()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Height, 56);
+            parameters.Add(p => p.Absolute, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        // Absolute outranks Sticky, so the header is rendered pinned to its container - where there is no
+        // device inset above it - and the height must follow the position that actually won.
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-abs"));
+        Assert.AreEqual("height:56px", component.Find(".bit-hdr").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldPassTheScrollTargetToTheScrollScript()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.ScrollTarget, "#pane");
+        });
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
+
+        Assert.AreEqual("#pane", invocation.Arguments[6]);
+        Assert.AreEqual(false, invocation.Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldPassANullScrollTargetWhenNoneIsSet()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
+
+        // No selector means the script walks up from the header to find its own scroller.
+        Assert.IsNull(invocation.Arguments[6]);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldSetTheScrollScriptUpAgainWhenTheScrollTargetChanges()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.ScrollTarget, "#first");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.ScrollTarget, "#second");
+        });
+
+        // The scroller is resolved once at setup time, so a new one has to reach the script as a fresh setup.
+        var targets = Context.JSInterop.Invocations
+                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
+                             .Select(i => i.Arguments[6])
+                             .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { "#first", "#second" }, targets);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitHeaderShouldOnlySetTheScrollScriptUpForAPositionedScrollPaddingHeader(bool positioned)
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Sticky, positioned);
+        });
+
+        // The scroll padding is the room a pinned header takes at the top of the scroller, so a header in
+        // the normal flow - which covers nothing - has none to reserve and needs no script at all.
+        var setups = Context.JSInterop.Invocations
+                            .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
+                            .ToArray();
+
+        Assert.AreEqual(positioned ? 1 : 0, setups.Length);
+
+        if (positioned)
+        {
+            // The two scroll behaviors stay off: the script is only there for the padding.
+            Assert.AreEqual(false, setups[0].Arguments[4]);
+            Assert.AreEqual(false, setups[0].Arguments[5]);
+            Assert.AreEqual(true, setups[0].Arguments[7]);
+        }
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotSetUpTheScrollScriptForAnAbsoluteScrollPaddingHeader()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Absolute, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        // An absolute header scrolls away with its container, so it never covers the top of the scroller.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldDisposeTheScrollScriptWhenScrollPaddingIsTurnedOff()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, false);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // The script is what put the padding on the scroller, so it has to be taken down to give it back.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldSetTheScrollScriptUpOnceForAllThreeScrollFeatures()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
+
+        Assert.AreEqual(true, invocation.Arguments[4]);
+        Assert.AreEqual(true, invocation.Arguments[5]);
+        Assert.AreEqual(true, invocation.Arguments[7]);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotRenderAnyExtraMarkupForTheScrollParameters()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.ScrollTarget, "#pane");
+        });
+
+        // Both of them are handed to the script alone, so neither leaks into the markup of the header.
+        component.MarkupMatches(@"
+<header class=""bit-hdr bit-hdr-fil"" id:ignore>
+    <div class=""bit-hdr-gut"">
+    </div>
+</header>");
     }
 }
