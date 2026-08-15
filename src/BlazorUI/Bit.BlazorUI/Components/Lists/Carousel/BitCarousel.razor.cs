@@ -36,6 +36,7 @@ public partial class BitCarousel : BitComponentBase
     private DateTime _lastWheel = DateTime.MinValue;
     private int _internalScrollItemsCount = 1;
     private int _internalVisibleItemsCount = 1;
+    private double _containerWidth;
     private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
     private string _goLeftButtonStyle = string.Empty;
@@ -403,7 +404,44 @@ public partial class BitCarousel : BitComponentBase
     /// <summary>
     /// Number of items that is visible in the carousel.
     /// </summary>
+    /// <remarks>
+    /// The XS to XXL variants of the parameter override it responsively, based on the width the
+    /// carousel itself is laid out at (not the width of the viewport). They apply from their
+    /// breakpoint upwards, so a carousel that only sets a couple of them keeps the value of the
+    /// largest one below its width, and falls back to this parameter below the smallest one.
+    /// The breakpoints are the shared ones of bit BlazorUI: 600, 960, 1280, 1920 and 2560 pixels.
+    /// </remarks>
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
+
+    /// <summary>
+    /// Number of visible items in the extra small breakpoint (from 0 up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXs { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the small breakpoint (from 600px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the medium breakpoint (from 960px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountMd { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the large breakpoint (from 1280px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountLg { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the extra large breakpoint (from 1920px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXl { get; set; }
+
+    /// <summary>
+    /// Number of visible items in the extra extra large breakpoint (from 2560px up, see <see cref="VisibleItemsCount"/>).
+    /// </summary>
+    [Parameter] public int? VisibleItemsCountXxl { get; set; }
 
     /// <summary>
     /// Navigates the carousel with the wheel of the mouse (or with a two finger scroll on a trackpad).
@@ -715,13 +753,32 @@ public partial class BitCarousel : BitComponentBase
         await _js.BitUtilsRegisterPreventPointerDown(_carouselContainer, NoDrag is false && IsEnabled);
     }
 
+    // The responsive variants of VisibleItemsCount apply from their breakpoint (of the width of the
+    // carousel itself) upwards, like the columns of BitGrid, so the one that wins is the largest
+    // breakpoint the carousel has grown past that was actually set. Before the first measurement
+    // (and on prerendering, where there is nothing to measure) the base value is used.
+    private int ResolveVisibleItemsCount()
+    {
+        if (_containerWidth <= 0) return VisibleItemsCount;
+
+        int? resolved = VisibleItemsCountXs;
+
+        if (_containerWidth >= 600) resolved = VisibleItemsCountSm ?? resolved;
+        if (_containerWidth >= 960) resolved = VisibleItemsCountMd ?? resolved;
+        if (_containerWidth >= 1280) resolved = VisibleItemsCountLg ?? resolved;
+        if (_containerWidth >= 1920) resolved = VisibleItemsCountXl ?? resolved;
+        if (_containerWidth >= 2560) resolved = VisibleItemsCountXxl ?? resolved;
+
+        return resolved ?? VisibleItemsCount;
+    }
+
     // Both counts have to make sense on their own (a carousel showing zero items would divide by zero) and
     // against each other (a carousel cannot scroll past what it shows, or show more slides than it holds).
     private void ClampCounts()
     {
         var itemsCount = _allItems.Count;
 
-        var visible = Fade ? 1 : Math.Max(1, VisibleItemsCount);
+        var visible = Fade ? 1 : Math.Max(1, ResolveVisibleItemsCount());
 
         if (itemsCount > 0 && visible > itemsCount)
         {
@@ -750,6 +807,14 @@ public partial class BitCarousel : BitComponentBase
     private async Task ResetDimensionsAsync()
     {
         if (IsDisposed) return;
+
+        // The width of the carousel decides which of the responsive visible-count parameters
+        // applies, so it is measured before anything is computed from the counts.
+        var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
+
+        if (IsDisposed) return;
+
+        _containerWidth = rect?.Width ?? 0;
 
         ClampCounts();
 
@@ -787,16 +852,12 @@ public partial class BitCarousel : BitComponentBase
         UpdateAutoPlayTimer();
 
         // The transform of a slide and the opacity of the fade effect belong to a layout, so they
-        // are cleared up front rather than left behind stale when the measurement below fails.
+        // are cleared up front rather than left behind stale when the measurement above failed.
         foreach (var item in _allItems)
         {
             item.InternalFadeStyle = string.Empty;
             item.InternalTransformStyle = string.Empty;
         }
-
-        var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
-
-        if (IsDisposed) return;
 
         if (rect is not null)
         {
@@ -1202,7 +1263,8 @@ public partial class BitCarousel : BitComponentBase
         if (Wheel is false) return;
         if (IsEnabled is false) return;
 
-        var delta = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX) ? e.DeltaY : e.DeltaX;
+        var mainAxis = Math.Abs(e.DeltaY) >= Math.Abs(e.DeltaX);
+        var delta = mainAxis ? e.DeltaY : e.DeltaX;
 
         if (delta == 0) return;
 
@@ -1214,7 +1276,20 @@ public partial class BitCarousel : BitComponentBase
 
         _lastWheel = now;
 
-        await (delta > 0 ? HandleGoLeft() : HandleGoRight());
+        HandleInteraction();
+
+        if (mainAxis)
+        {
+            // Rolling the wheel forward means moving forward through the content no matter how the
+            // carousel is laid out, so the main axis of the wheel maps to next/prev logically.
+            await (delta > 0 ? Next() : Prev());
+        }
+        else
+        {
+            // A horizontal scroll is a physical motion along the slides, so it maps to the visual
+            // direction of the carousel (which is what flips it for right-to-left).
+            await (delta > 0 ? GoLeft() : GoRight());
+        }
     }
 
     private async Task HandlePointerMove(PointerEventArgs e)

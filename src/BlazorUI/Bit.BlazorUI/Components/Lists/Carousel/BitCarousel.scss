@@ -68,7 +68,10 @@
     position: relative;
     touch-action: pan-y;
 
-    > :first-child {
+    // The slides are hidden until the carousel lays them out, except the first one, so a
+    // prerendered carousel is not a blank box. The next/prev buttons sit before the slides
+    // in the markup, so the first slide is picked by its class rather than by :first-child.
+    > .bit-crsi:first-of-type {
         display: unset;
     }
 }

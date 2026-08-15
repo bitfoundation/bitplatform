@@ -18,19 +18,18 @@
 
     <div @ref="_carouselContainer"
          @onwheel="HandleWheel"
-         @onwheel:preventDefault="Wheel"
+         @onwheel:preventDefault="@(Wheel && IsEnabled)"
          @onpointerup="HandlePointerUp"
          @onpointerleave="HandlePointerUp"
          @onpointermove="HandlePointerMove"
          @onpointerdown="HandlePointerDown"
+         aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
          class="bit-csl-cnt @(NoDrag ? "bit-csl-ndr" : null) @Classes?.Container"
          style="@_directionStyle @Styles?.Container">
 
-        <CascadingValue Value="this" IsFixed="true">
-            @ChildContent
-        </CascadingValue>
-
+        @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
+           the controls before the content they control), and the stylesheet places them over the slides. *@
         @if (HideNextPrev is false)
         {
             var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
@@ -57,6 +56,10 @@
                    class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
             </button>
         }
+
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
     </div>
 
     @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))

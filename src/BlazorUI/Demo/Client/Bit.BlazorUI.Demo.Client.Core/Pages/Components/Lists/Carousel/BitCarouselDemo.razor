@@ -2,11 +2,11 @@
 
 <PageOutlet Url="components/carousel"
             Title="Carousel"
-            Description="Carousel (slideshow) displays items across sliding pages with navigation buttons, dots, drag, keyboard, and autoplay." />
+            Description="Carousel (slideshow) displays items across sliding pages with navigation buttons, dots, drag, keyboard, autoplay, and responsive layouts." />
 
 <DemoPage Name="Carousel"
           SecondaryNames="@(["SlideShow"])"
-          Description="Carousel (slideshow) displays a set of items across sliding pages. It can be navigated with its built-in buttons and dots, by dragging, with the keyboard or the mouse wheel, programmatically, or automatically with autoplay, and supports multiple visible items, vertical and RTL layouts, and a cross-fade effect."
+          Description="Carousel (slideshow) displays a set of items across sliding pages. It can be navigated with its built-in buttons and dots, by dragging, with the keyboard or the mouse wheel, programmatically, or automatically with autoplay, and supports multiple visible items with responsive breakpoints, vertical and RTL layouts, and a cross-fade effect."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -261,7 +261,30 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Gap" RazorCode="@example7RazorCode" Id="example7">
+    <DemoExample Title="Responsive" RazorCode="@example7RazorCode" Id="example7">
+        <div>
+            The responsive variants of VisibleItemsCount (Xs, Sm, Md, Lg, Xl and Xxl) change how many slides are visible
+            based on the width the carousel itself is laid out at: each one applies from its breakpoint (600, 960, 1280,
+            1920 and 2560 pixels) upwards, and the base VisibleItemsCount covers everything below the smallest one that
+            is set. Resize the window to watch the carousel below change from one visible slide up to four.
+        </div>
+        <br />
+        <div>
+            <BitCarousel Style="height: 100px" InfiniteScrolling
+                         VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="4">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>5</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>6</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>7</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>8</div></BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Gap" RazorCode="@example8RazorCode" Id="example8">
         <div>
             The Gap parameter puts space (any CSS length) between the slides of a multi-item carousel. The space is carved
             out of the room each slide occupies, so the pages keep lining up no matter how many slides are visible.
@@ -279,7 +302,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Vertical" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Vertical" RazorCode="@example9RazorCode" Id="example9">
         <div>
             The Vertical parameter stacks the slides over the height of the carousel, so it scrolls up and down instead of
             left and right: the navigation buttons move to the top and bottom edges and the up/down arrow keys take over
@@ -308,7 +331,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Fade" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Fade" RazorCode="@example10RazorCode" Id="example10">
         <div>
             The Fade parameter cross-fades the slides in place instead of sliding them, for the classic slideshow look.
             A fading carousel shows exactly one slide at a time.
@@ -336,7 +359,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Interaction" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Interaction" RazorCode="@example11RazorCode" Id="example11">
         <div>
             The way the carousel is operated by hand is configurable: NoDrag turns off dragging it with the pointer,
             NoKeyboard takes it out of the tab sequence and turns off the arrow key navigation, Wheel navigates it with
@@ -357,7 +380,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Animation" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Animation" RazorCode="@example12RazorCode" Id="example12">
         <div>
             The AnimationDuration parameter sets how long the slide transition takes, in seconds (0.5 by default).
             A value of 0 moves the slides at once, with no animation at all, and the same duration also drives the
@@ -387,7 +410,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="DefaultPage" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="DefaultPage" RazorCode="@example13RazorCode" Id="example13">
         <div>
             The DefaultPage parameter sets the page (1 based, like GoTo) the carousel shows when it first renders.
             It is only read during the first layout, so changing it afterwards does not move the carousel (use GoTo
@@ -405,7 +428,44 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Thumbnails" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            A strip of thumbnails can drive the carousel through its public API: clicking a thumbnail navigates with
+            GoTo, and the OnChange event keeps the highlighted thumbnail in sync no matter how the carousel was moved
+            (buttons, dragging, the keyboard or autoplay).
+        </div>
+        <br />
+        <div>
+            <BitCarousel @ref="thumbsCarousel" HideDots InfiniteScrolling OnChange="v => thumbsCurrentPage = v">
+                <BitCarouselItem>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+            <div class="thumbs-container">
+                @for (int i = 0; i < 4; i++)
+                {
+                    var index = i;
+                    <button type="button"
+                            aria-label="@($"Slide {index + 1}")"
+                            class="thumb @(thumbsCurrentPage == index ? "thumb-current" : null)"
+                            @onclick="() => thumbsCarousel.GoTo(index + 1)">
+                        <img alt="" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img@(index + 1).jpg" />
+                    </button>
+                }
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             The Color parameter offers the general colors of the theme for the chrome of the carousel: it colors the dot
             of the current page and the navigation buttons. The Accent parameter is its lighter-weight sibling that only
@@ -448,7 +508,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>GoLeftIcon</b> and <b>GoRightIcon</b> parameters.</div>
 
         <br />
@@ -515,7 +575,7 @@
         </BitCarousel>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>The Size parameter offers three sizes for the chrome of the carousel: the dots and the navigation buttons.</div>
         <br />
         <div class="colors-container">
@@ -546,7 +606,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Besides the Style and Class parameters of the root element, the Styles and Classes parameters customize every
             part of the carousel: its container, its items, the navigation buttons and their icons, the dots and the
@@ -567,7 +627,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             In right-to-left mode the carousel lays its slides out and navigates from right to left, and the roles of the
             two navigation buttons flip accordingly.

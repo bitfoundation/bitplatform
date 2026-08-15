@@ -21,11 +21,16 @@
               GoRightAriaLabel="@GoRightAriaLabel"
               StopOnLastSlide="StopOnLastSlide"
               AutoPlayReverse="AutoPlayReverse"
+              PauseOnHover="PauseOnHover"
+              PauseOnFocus="PauseOnFocus"
               ScrollItemsCount="ScrollItemsCount"
               AutoPlayInterval="AutoPlayInterval"
               VisibleItemsCount="VisibleItemsCount"
               InfiniteScrolling="InfiniteScrolling"
-              StopOnInteraction="StopOnInteraction">
+              StopOnInteraction="StopOnInteraction"
+              AnimationDuration="AnimationDuration"
+              VisibleItemsCountSm="VisibleItemsCountSm"
+              VisibleItemsCountMd="VisibleItemsCountMd">
     @for (int i = 1; i <= ItemsCount; i++)
     {
         var index = i;
@@ -57,6 +62,11 @@
     [Parameter] public int ScrollItemsCount { get; set; } = 1;
     [Parameter] public double AutoPlayInterval { get; set; } = 2000;
     [Parameter] public int VisibleItemsCount { get; set; } = 1;
+    [Parameter] public int? VisibleItemsCountSm { get; set; }
+    [Parameter] public int? VisibleItemsCountMd { get; set; }
+    [Parameter] public bool PauseOnHover { get; set; } = true;
+    [Parameter] public bool PauseOnFocus { get; set; } = true;
+    [Parameter] public double AnimationDuration { get; set; } = 0.5;
     [Parameter] public BitColorKind? Accent { get; set; }
     [Parameter] public string DotAriaLabel { get; set; } = "Slide";
     [Parameter] public string? GoLeftAriaLabel { get; set; }

@@ -160,7 +160,7 @@
 
                 element.addEventListener('pointerdown', (e: PointerEvent) => {
                     if (!(element as any).__bitPreventPointerDown) return;
-                    if (e.target instanceof Element && e.target.closest('button')) return;
+                    if (e.target instanceof Element && e.target.closest('button,a,input,textarea,select,[contenteditable]')) return;
                     e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventPointerDown:", e); }
@@ -171,6 +171,9 @@
         // them as value changes). Calling it again updates the key list in place, and an empty list
         // effectively disables the suppression, so no separate unregister call is needed - the
         // listener is garbage-collected with the element itself.
+        // A key typed into an editable element inside the container (an input in a carousel slide,
+        // for example) belongs to that element (the arrow keys move its caret), so it is neither
+        // suppressed nor allowed to bubble on to the container's own key handling.
         public static registerPreventKeys(element: HTMLElement, keys: string[]) {
             if (!element) return;
 
@@ -183,9 +186,16 @@
 
                 element.addEventListener('keydown', (e: KeyboardEvent) => {
                     const currentKeys = (element as any).__bitPreventKeys as string[];
-                    if (currentKeys && currentKeys.indexOf(e.key) >= 0 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-                        e.preventDefault();
+                    if (!currentKeys || currentKeys.indexOf(e.key) < 0 || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+
+                    const target = e.target;
+                    if (target !== element && target instanceof Element &&
+                        ((target as HTMLElement).isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) {
+                        e.stopPropagation();
+                        return;
                     }
+
+                    e.preventDefault();
                 });
             } catch (e) { console.error("BitBlazorUI.Utils.registerPreventKeys:", e); }
         }
