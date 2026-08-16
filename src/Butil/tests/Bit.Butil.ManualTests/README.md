@@ -63,10 +63,10 @@ rather than read partially, since the contracts that went missing are exactly th
 
 From `trimmed-publish.marker`, which the csproj copies to the **publish** output only (never to the build
 output `dotnet run` executes) and only when `PublishTrimmed` is on. Inferring the mode from the assembly
-instead - "the services nothing references are gone, so this must be trimmed" - cannot tell a trimmed
-build from a service name in `MustBeTrimmed` that went stale after a rename, and getting that wrong turns
-the checks into no-ops. The name lists are themselves validated against the real service roster (the
-assembly's own when untrimmed, the manifest's when trimmed), so a stale name is reported as a stale name.
+instead - "some of the expected services are missing, so this must be trimmed" - cannot tell a trimmed
+build from a name in `MustSurvive` that went stale after a rename, and getting that wrong turns the
+checks into no-ops. `MustSurvive` is itself validated against the real service roster (the assembly's own
+when untrimmed, the manifest's when trimmed), so a stale name is reported as a stale name.
 
 Payload types are named explicitly in `ConsumerComponent.ExercisedPayloadTypes` (and expanded
 transitively through their own properties) rather than inferred from every public signature. Inferring
@@ -123,13 +123,15 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`X looks like a Butil service ... but carries no [ButilService]`** - a new service class was added
   without the attribute. Nothing registers it, and the only symptom otherwise is a consumer's runtime
   *Cannot provide a value for property*.
-- **`X is an expected Butil service name but ...`** - a name in `MustSurvive`/`MustBeTrimmed` no longer
-  matches a service (usually a rename). Fix the list, or the check it belongs to is asserting nothing.
+- **`X is an expected Butil service name but ...`** - a name in `MustSurvive` no longer matches a service
+  (usually a rename). Fix the list, or the checks built on it are asserting nothing.
 - **`the interop contract was not checked at all`** - the trimmed run found no `interop-manifest.txt`, or
   found one it could not read whole (a malformed line, or fewer contracts than its `@count` record claims).
   Run `dotnet run -c Release` from the project folder first, then re-run the published executable there.
-- **`unused services survived trimming`** - something re-introduced a static reference to the whole
-  service set (a hard-coded `AddScoped<T>()` list, a `Type[]` of all services, a `switch` over them).
+- **`services nothing in this project references survived trimming`** - a `[ButilService]` class outside
+  `MustSurvive` is still in the trimmed assembly. Usually something re-introduced a static reference to
+  the whole service set (a hard-coded `AddScoped<T>()` list, a `Type[]` of all services, a `switch` over
+  them); otherwise `ConsumerComponent` gained a reference without `MustSurvive` being updated to match.
   That is the regression this harness is guarding against.
 - **`X is used by ConsumerComponent but did not survive trimming`** - a used service is being dropped,
   which would break consumers outright.
