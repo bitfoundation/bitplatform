@@ -24,13 +24,19 @@ namespace ButilManualTests;
 internal static class Program
 {
     /// <summary>Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these.</summary>
-    private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "LocalStorage"];
+    private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
 
     /// <summary>
     /// Butil services nothing in this project references - trimming must remove these. They are also how
     /// the report tells a trimmed run from an untrimmed one, without hard-coding a total type count.
     /// </summary>
-    private static readonly string[] MustBeTrimmed = ["Fetch", "Geolocation", "IndexedDb", "MediaRecorder", "WebAuthn", "Window"];
+    private static readonly string[] MustBeTrimmed = ["Fetch", "IndexedDb", "MediaRecorder", "SpeechSynthesis", "WebAuthn"];
+
+    /// <summary>
+    /// Where the untrimmed run records the interop contract for the trimmed run to check against. Relative
+    /// to the working directory, so both runs see the same file when launched from the project folder.
+    /// </summary>
+    private const string ManifestFileName = "interop-manifest.txt";
 
     private static async Task<int> Main()
     {
@@ -92,6 +98,10 @@ internal static class Program
             failures.Add($"unused services survived trimming: {string.Join(", ", unexpected)}");
         }
 
+        Console.WriteLine("--- interop contract ---");
+        VerifyInteropContract(assembly, mode, failures);
+        Console.WriteLine();
+
         Console.WriteLine("--- activation ---");
         await using var provider = services.BuildServiceProvider();
         // CreateAsyncScope, not CreateScope: several Butil services implement only IAsyncDisposable, and
@@ -110,17 +120,10 @@ internal static class Program
             Console.WriteLine($"  injection FAILED: {exception.Message}");
         }
 
-        try
-        {
-            await component.Use();
-            Console.WriteLine("  calls through the stub JS runtime completed");
-        }
-        catch (Exception exception)
-        {
-            // Not a failure: the stub returns default for everything, so a service is free to reject it.
-            // Activation is what matters, and that already succeeded above.
-            Console.WriteLine($"  calls threw (expected with a stub runtime): {exception.GetType().Name}");
-        }
+        // Throwing is not a failure: the stub answers every call with default, so a service handed a null
+        // where it expects a DTO is entitled to blow up. Activation is what matters, and that is checked above.
+        var (succeeded, threw) = await component.Use();
+        Console.WriteLine($"  interop calls: {succeeded} completed, {threw} threw against the stub runtime");
         Console.WriteLine();
 
         Console.WriteLine(failures.Count == 0
@@ -132,6 +135,44 @@ internal static class Program
         }
 
         return failures.Count == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// Checks the members Bit.Butil reaches by name at runtime - [JSInvokable] callbacks and JSON payload
+    /// types - which no missing-service error would ever surface.
+    /// </summary>
+    /// <remarks>
+    /// The untrimmed run records the contract; the trimmed run checks the trimmed assembly against it.
+    /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
+    /// type that survived while losing members it is reflected over is a defect.
+    /// </remarks>
+    private static void VerifyInteropContract(Assembly assembly, string mode, List<string> failures)
+    {
+        var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
+
+        if (mode == "UNTRIMMED")
+        {
+            InteropContract.Write(ManifestFileName, contracts);
+            Console.WriteLine($"  captured {contracts.Length} types ({contracts.Count(contract => contract.IsCallbackTarget)} with [JSInvokable] callbacks, {contracts.Count(contract => contract.IsPayload)} JSON payloads)");
+            Console.WriteLine($"  written to {Path.GetFullPath(ManifestFileName)}");
+            return;
+        }
+
+        var expected = InteropContract.Read(ManifestFileName);
+        if (expected is null)
+        {
+            Console.WriteLine($"  SKIPPED - no {ManifestFileName} in {Directory.GetCurrentDirectory()}");
+            Console.WriteLine("  run `dotnet run -c Release` from the project folder first, then re-run this executable from there");
+            return;
+        }
+
+        var (callbackTargets, payloads, removedTypes, contractFailures) = InteropContract.Verify(assembly, expected);
+        Console.WriteLine($"  {callbackTargets.Length + payloads.Length} surviving types checked, {removedTypes} trimmed away entirely, {contractFailures.Length} problems");
+        Console.WriteLine($"  [JSInvokable] targets intact (methods): {Format(callbackTargets)}");
+        Console.WriteLine($"  JSON payloads intact (properties)     : {Format(payloads)}");
+        failures.AddRange(contractFailures);
+
+        static string Format(string[] names) => names.Length == 0 ? "none" : string.Join(", ", names);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026",
