@@ -1,0 +1,37 @@
+﻿@* Covers BitStackParams: the cascaded values fill in the parameters the stack did not set itself, and
+   never overwrite the ones it did. The two groups are kept apart because the fixed direction of the
+   first one would suppress the responsive direction of the second. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Gap = "3rem",
+                                 Horizontal = true,
+                                 Padding = "1rem",
+                                 Size = BitSize.Large,
+                                 Wrap = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+    <BitStack Gap="5rem" />
+</BitParams>
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Element = "section",
+                                 Grow = "2",
+                                 GrowContent = true,
+                                 HorizontalMd = true,
+                                 Inline = true,
+                                 NoShrink = true,
+                                 Order = -1,
+                                 Self = BitAlignment.End,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>

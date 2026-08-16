@@ -1,7 +1,74 @@
-﻿::deep {
+﻿// A BitStack root is a plain div rendered by the component, so it does not carry this file's scope
+// attribute and every class handed to one has to live in ::deep.
+::deep {
+    // The tint that makes the box of the stack itself visible against the page, so the reader can tell
+    // the room the children were given from the room they use.
+    .stack {
+        background: #71afe5;
+    }
+
+    // A child of a demo stack: enough of a block to be seen, and never wider than its text so the
+    // alignment examples have something to actually move around.
     .item {
         color: white;
         padding: 0.5rem;
+        white-space: nowrap;
         background-color: #0078d4;
+    }
+
+    // The outer stack of the examples that show a stack behaving as a child of another one. It is only
+    // an outline, so what is being demonstrated is the inner stacks and not the container.
+    .host {
+        padding: 0.5rem;
+        // What no longer fits is what several of these examples are about, so the box that is being run
+        // out of has to keep the overflow rather than push the page sideways.
+        overflow: hidden;
+        box-sizing: border-box;
+        border: 1px dashed gray;
+    }
+
+    // A flex child refuses to shrink below its own content until it is told it may, which is what makes
+    // the difference NoShrink makes visible in the first place.
+    .squeezable {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    // Square children for the wrapping example, where the point is how many fit on a row rather than
+    // what each of them says.
+    .box {
+        color: white;
+        display: flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        background-color: #0078d4;
+    }
+
+    // The NoShrink example only tells its story while the container is being squeezed, so the reader
+    // gets a native resize handle to squeeze it with.
+    .resizable {
+        resize: horizontal;
+        overflow: auto;
+        max-width: 100%;
+        min-width: 12rem;
+    }
+
+    .custom-stack {
+        padding: 1rem;
+        border: 2px solid #107c10;
+        background: linear-gradient(90deg, #dff6dd, transparent);
+    }
+
+    // The pair of stacks in the Style example: a nested stack that is free to shrink and one that is
+    // not, so the difference a min-width of zero makes to a truncated label is visible side by side.
+    .truncating {
+        overflow: hidden;
+    }
+
+    .ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }

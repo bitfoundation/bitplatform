@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System;
 using Bunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.BlazorUI.Tests.Components.Utilities.Stack;
+namespace Bit.BlazorUI.Tests.Components.Layouts.Stack;
 
 [TestClass]
 public class BitStackTests : BunitTestContext
@@ -23,12 +23,35 @@ public class BitStackTests : BunitTestContext
         { BitAlignment.Stretch, "stretch" },
     };
 
+    // The members that share room out between the children say nothing about the axis across them, and
+    // Baseline says nothing about the axis they are laid out along, so each axis only accepts its own.
+    private static readonly BitAlignment[] _Distributions =
+    [
+        BitAlignment.SpaceBetween,
+        BitAlignment.SpaceAround,
+        BitAlignment.SpaceEvenly
+    ];
+
+    private static bool IsCrossAlignment(BitAlignment alignment) => Array.IndexOf(_Distributions, alignment) < 0;
+
+    private static bool IsMainAlignment(BitAlignment alignment) => alignment != BitAlignment.Baseline;
+
+
+
     [TestMethod]
     public void BitStackShouldRenderExpectedElement()
     {
         var component = RenderComponent<BitStack>();
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRenderADivByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.AreEqual("DIV", component.Find(".bit-stc").TagName);
     }
 
     [TestMethod,
@@ -91,6 +114,18 @@ public class BitStackTests : BunitTestContext
         });
 
         component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldAppendTheCustomStyleAfterTheGeneratedOne()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Style, "gap:5rem");
+        });
+
+        // The custom style is appended after the generated one so it wins over it.
+        Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;gap:5rem", component.Find(".bit-stc").GetAttribute("style"));
     }
 
     [TestMethod,
@@ -218,6 +253,23 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div style=""{STYLE}display: none;"" class=""bit-stc"" id:ignore></div>");
     }
 
+    [TestMethod]
+    public void BitStackShouldLetVisibilityWinOverInline()
+    {
+        // The collapsed display is registered after everything the stack generates, so an inline stack
+        // that is collapsed is still removed from the layout rather than left as an inline-flex box.
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style");
+
+        StringAssert.Contains(style, "display:inline-flex");
+        StringAssert.EndsWith(style, "display:none");
+    }
+
     [TestMethod,
         DataRow("Bit Blazor UI"),
         DataRow("<span>Bit Blazor UI</span>"),
@@ -244,9 +296,50 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div data-val-test=""bit"" style=""{STYLE}"" class=""bit-stc"" id:ignore>I'm a stack</div>");
     }
 
+    [TestMethod]
+    public void BitStackShouldRespectAriaLabel()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "main navigation");
+        });
+
+        // A stack rendered as a landmark element has to be nameable, so the label reaches the root.
+        Assert.AreEqual("main navigation", component.Find(".bit-stc").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotRenderAriaLabelByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.IsFalse(component.Find(".bit-stc").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectTabIndex()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "0");
+        });
+
+        // A scrollable stack has to be reachable by the keyboard, which is what the tab index is for.
+        Assert.AreEqual("0", component.Find(".bit-stc").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotRenderTabIndexByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.IsFalse(component.Find(".bit-stc").HasAttribute("tabindex"));
+    }
+
     [TestMethod,
         DataRow("p"),
         DataRow("span"),
+        DataRow("nav"),
         DataRow(null)
     ]
     public void BitStackShouldRespectElement(string element)
@@ -275,7 +368,7 @@ public class BitStackTests : BunitTestContext
         });
 
         var fd = horizontal ? "row" : "column";
-        var cssClass = fillContent ? (horizontal ? " bit-stc-fch": " bit-stc-fcv") : null;
+        var cssClass = fillContent ? (horizontal ? " bit-stc-fch" : " bit-stc-fcv") : null;
 
         component.MarkupMatches(@$"<div class=""bit-stc{cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
@@ -301,9 +394,74 @@ public class BitStackTests : BunitTestContext
         component.MarkupMatches(@$"<div class=""bit-stc {cssClass}"" style=""display:flex;flex-direction:{fd};gap:1rem"" id:ignore></div>");
     }
 
+    [TestMethod]
+    public void BitStackShouldRespectFillContentWithAResponsiveDirection()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FillContent, true);
+            parameters.Add(p => p.HorizontalMd, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // Which of the two axes is the cross one is only known to the stylesheet once the direction
+        // answers to the width of the window, so the responsive fill class replaces the fixed pair.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-fcr"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-fch"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-fcv"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectGrowContent(bool growContent)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.GrowContent, growContent);
+        });
+
+        Assert.AreEqual(growContent, component.Find(".bit-stc").ClassList.Contains("bit-stc-grc"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectGrowContentChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.IsFalse(component.Find(".bit-stc").ClassList.Contains("bit-stc-grc"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.GrowContent, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-stc").ClassList.Contains("bit-stc-grc"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldCombineFillContentAndGrowContent()
+    {
+        // The two act on different axes, so asking for both is asking for both.
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Horizontal, true);
+            parameters.Add(p => p.FillContent, true);
+            parameters.Add(p => p.GrowContent, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-fch"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-grc"));
+    }
+
     [TestMethod,
         DataRow("10px"),
         DataRow("1rem"),
+        DataRow("1rem 2rem"),
         DataRow(null)
     ]
     public void BitStackShouldRespectGap(string gap)
@@ -325,13 +483,155 @@ public class BitStackTests : BunitTestContext
 
         component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
 
-        var gap = "1rem";
+        var gap = "2rem";
         component.Render(parameters =>
         {
             parameters.Add(p => p.Gap, gap);
         });
 
         component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:{gap};"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-stc-sm"),
+        DataRow(BitSize.Medium, "bit-stc-md"),
+        DataRow(BitSize.Large, "bit-stc-lg")
+    ]
+    public void BitStackShouldRespectSize(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // The length itself belongs to the theme, so the component only points the gap at the token
+        // the class of the step declares.
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+        StringAssert.Contains(root.GetAttribute("style")!, "gap:var(--bit-stc-size)");
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotRenderASizeClassByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetGapWinOverSize()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+            parameters.Add(p => p.Gap, "3rem");
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // The class of the step is still handed out - it only declares a token - but the explicit
+        // length is the more specific of the two and is what the gap reads.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-lg"));
+        StringAssert.Contains(root.GetAttribute("style")!, "gap:3rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectSizeChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.IsFalse(component.Find(".bit-stc").ClassList.Contains("bit-stc-sm"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Small);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-sm"));
+        StringAssert.Contains(root.GetAttribute("style")!, "gap:var(--bit-stc-size)");
+    }
+
+    [TestMethod,
+        DataRow("2rem"),
+        DataRow("0"),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectHorizontalGap(string horizontalGap)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGap, horizontalGap);
+        });
+
+        var style = horizontalGap.HasValue() ? $"column-gap:{horizontalGap}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow("2rem"),
+        DataRow("0"),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectVerticalGap(string verticalGap)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.VerticalGap, verticalGap);
+        });
+
+        var style = verticalGap.HasValue() ? $"row-gap:{verticalGap}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldWriteThePerAxisGapsAfterTheShorthand()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Gap, "1rem");
+            parameters.Add(p => p.HorizontalGap, "2rem");
+            parameters.Add(p => p.VerticalGap, "0.5rem");
+        });
+
+        // A longhand only replaces the shorthand while it comes after it.
+        Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;column-gap:2rem;row-gap:0.5rem",
+                        component.Find(".bit-stc").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectHorizontalGapChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGap, "2rem");
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}column-gap:2rem;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectVerticalGapChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.VerticalGap, "0.5rem");
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}row-gap:0.5rem;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -403,6 +703,152 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
+    public void BitStackShouldRespectNoShrink(bool noShrink)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.NoShrink, noShrink);
+        });
+
+        var style = noShrink ? "flex-shrink:0" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectNoShrinkChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.NoShrink, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}flex-shrink:0;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(0),
+        DataRow(2),
+        DataRow(-1),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectOrder(int? order)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Order, order);
+        });
+
+        var style = order.HasValue ? $"order:{order.Value}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectOrderChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Order, -1);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}order:-1;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow("1rem"),
+        DataRow("2rem 0.5rem"),
+        DataRow("1px 2px 3px 4px"),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectPadding(string padding)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Padding, padding);
+        });
+
+        var style = padding.HasValue() ? $"padding:{padding}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectPaddingChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Padding, "1rem");
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}padding:1rem;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectInline(bool inline)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Inline, inline);
+        });
+
+        var display = inline ? "inline-flex" : "flex";
+        var cssClass = inline ? " bit-stc-inl" : null;
+
+        component.MarkupMatches(@$"<div style=""display:{display};flex-direction:column;gap:1rem"" class=""bit-stc{cssClass}"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectInlineChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""display:inline-flex;flex-direction:column;gap:1rem"" class=""bit-stc bit-stc-inl"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldSizeAnInlineStackByItsContent()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.FitWidth, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // The sizing of an inline stack is handed back through a class, so an explicit size - here a
+        // fitted width, which is written onto the element - still outranks it.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-inl"));
+        StringAssert.Contains(root.GetAttribute("style")!, "width:fit-content");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
     public void BitStackShouldRespectHorizontal(bool horizontal)
     {
         var component = RenderComponent<BitStack>(parameters =>
@@ -448,17 +894,17 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Alignment, alignment);
         });
 
+        var style = new StringBuilder();
+
         if (alignment.HasValue)
         {
-            var jc = _AlignmentMap[alignment.Value];
-            var ai = _AlignmentMap[alignment.Value];
+            // The shorthand only reaches the axis its value means something on, so a distribution ends
+            // up on one axis alone and Baseline on the other, rather than on both as invalid CSS.
+            if (IsCrossAlignment(alignment.Value)) style.Append($"align-items:{_AlignmentMap[alignment.Value]};");
+            if (IsMainAlignment(alignment.Value)) style.Append($"justify-content:{_AlignmentMap[alignment.Value]};");
+        }
 
-            component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:{ai};justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
-        }
-        else
-        {
-            component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
-        }
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -473,7 +919,7 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.Alignment, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between;justify-content:space-between"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{STYLE}justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -493,9 +939,11 @@ public class BitStackTests : BunitTestContext
             parameters.Add(p => p.HorizontalAlign, horizontalAlign);
         });
 
-        var ai = _AlignmentMap[horizontalAlign];
+        // A vertical stack lays its children out down the page, so the horizontal axis is the one
+        // across them and only the members that mean something there are written out.
+        var style = IsCrossAlignment(horizontalAlign) ? $"align-items:{_AlignmentMap[horizontalAlign]}" : null;
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:{ai}"" class=""bit-stc"" id:ignore></div>");
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -507,10 +955,170 @@ public class BitStackTests : BunitTestContext
 
         component.Render(parameters =>
         {
+            parameters.Add(p => p.HorizontalAlign, BitAlignment.Center);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}align-items:center"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch)
+    ]
+    public void BitStackShouldRespectVerticalAlign(BitAlignment verticalAlign)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.VerticalAlign, verticalAlign);
+        });
+
+        // A vertical stack lays its children out down the page, so the vertical axis is the one they
+        // are laid out along and Baseline is the member that means nothing there.
+        var style = IsMainAlignment(verticalAlign) ? $"justify-content:{_AlignmentMap[verticalAlign]}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectVerticalAlignChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetAnAlignmentThatMeansNothingOnItsAxisFallThroughToTheShorthand()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
             parameters.Add(p => p.HorizontalAlign, BitAlignment.SpaceBetween);
         });
 
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;align-items:space-between"" class=""bit-stc"" id:ignore></div>");
+        // The horizontal axis of a vertical stack cannot distribute, so the specific value steps aside
+        // for the shorthand rather than silencing it, and the vertical axis is untouched by either.
+        component.MarkupMatches(@$"<div style=""{STYLE}align-items:center;justify-content:center"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetTheSpecificAlignmentWinOverTheShorthand()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
+            parameters.Add(p => p.HorizontalAlign, BitAlignment.End);
+            parameters.Add(p => p.VerticalAlign, BitAlignment.Start);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}align-items:flex-end;justify-content:flex-start"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectAlignContent(BitAlignment? alignContent)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.AlignContent, alignContent);
+        });
+
+        // Every member but Baseline places the rows of a wrapping stack; a flex container has no
+        // baseline behavior for align-content, so that one is dropped.
+        var style = (alignContent.HasValue && alignContent != BitAlignment.Baseline)
+                        ? $"align-content:{_AlignmentMap[alignContent.Value]}"
+                        : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectAlignContentChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.AlignContent, BitAlignment.SpaceEvenly);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}align-content:space-evenly;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Start),
+        DataRow(BitAlignment.End),
+        DataRow(BitAlignment.Center),
+        DataRow(BitAlignment.SpaceBetween),
+        DataRow(BitAlignment.SpaceAround),
+        DataRow(BitAlignment.SpaceEvenly),
+        DataRow(BitAlignment.Baseline),
+        DataRow(BitAlignment.Stretch),
+        DataRow(null)
+    ]
+    public void BitStackShouldRespectSelf(BitAlignment? self)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Self, self);
+        });
+
+        // A single child has no room to share out, so the three distributions mean nothing here.
+        var style = (self.HasValue && IsCrossAlignment(self.Value)) ? $"align-self:{_AlignmentMap[self.Value]}" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectSelfChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Self, BitAlignment.End);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}align-self:flex-end;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotLetSelfBeAffectedByTheAlignmentShorthand()
+    {
+        // Self is about the stack within its own container, which the alignments of its children say
+        // nothing about, so the two must not bleed into each other.
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, BitAlignment.Center);
+        });
+
+        Assert.IsFalse(component.Find(".bit-stc").GetAttribute("style")!.Contains("align-self"));
     }
 
     [TestMethod,
@@ -545,43 +1153,6 @@ public class BitStackTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(BitAlignment.Start),
-        DataRow(BitAlignment.End),
-        DataRow(BitAlignment.Center),
-        DataRow(BitAlignment.SpaceBetween),
-        DataRow(BitAlignment.SpaceAround),
-        DataRow(BitAlignment.SpaceEvenly),
-        DataRow(BitAlignment.Baseline),
-        DataRow(BitAlignment.Stretch)
-    ]
-    public void BitStackShouldRespectVerticalAlign(BitAlignment verticalAlign)
-    {
-        var component = RenderComponent<BitStack>(parameters =>
-        {
-            parameters.Add(p => p.VerticalAlign, verticalAlign);
-        });
-
-        var jc = _AlignmentMap[verticalAlign];
-
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:{jc}"" class=""bit-stc"" id:ignore></div>");
-    }
-
-    [TestMethod]
-    public void BitStackShouldRespectVerticalAlignChangingAfterRender()
-    {
-        var component = RenderComponent<BitStack>();
-
-        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
-
-        component.Render(parameters =>
-        {
-            parameters.Add(p => p.VerticalAlign, BitAlignment.SpaceBetween);
-        });
-
-        component.MarkupMatches(@$"<div style=""display:flex;flex-direction:column;gap:1rem;justify-content:space-between;"" class=""bit-stc"" id:ignore></div>");
-    }
-
-    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]
@@ -610,6 +1181,50 @@ public class BitStackTests : BunitTestContext
         });
 
         component.MarkupMatches(@$"<div style=""{STYLE}flex-wrap:wrap"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitStackShouldRespectWrapReverse(bool wrapReverse)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.WrapReverse, wrapReverse);
+        });
+
+        var style = wrapReverse ? "flex-wrap:wrap-reverse" : null;
+
+        component.MarkupMatches(@$"<div style=""{STYLE}{style}"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldLetWrapReverseWinOverWrap()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Wrap, true);
+            parameters.Add(p => p.WrapReverse, true);
+        });
+
+        // Both are a request to wrap, so the one that also says which way wins.
+        component.MarkupMatches(@$"<div style=""{STYLE}flex-wrap:wrap-reverse"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectWrapReverseChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.WrapReverse, true);
+        });
+
+        component.MarkupMatches(@$"<div style=""{STYLE}flex-wrap:wrap-reverse"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod,
@@ -669,11 +1284,17 @@ public class BitStackTests : BunitTestContext
                     parameters.Add(p => p.HorizontalAlign, horizontalAlign);
                 });
 
+                // Which of the two named alignments reaches which of the two CSS properties follows the
+                // direction of the stack, and each property only accepts the members it can express.
                 var fd = horizontal ? "row" : "column";
-                var ai = _AlignmentMap[horizontal ? verticalAlign : horizontalAlign];
-                var jc = _AlignmentMap[horizontal ? horizontalAlign : verticalAlign];
+                var cross = horizontal ? verticalAlign : horizontalAlign;
+                var main = horizontal ? horizontalAlign : verticalAlign;
 
-                component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem;align-items:{ai};justify-content:{jc};"" class=""bit-stc"" id:ignore></div>");
+                var style = new StringBuilder();
+                if (IsCrossAlignment(cross)) style.Append($"align-items:{_AlignmentMap[cross]};");
+                if (IsMainAlignment(main)) style.Append($"justify-content:{_AlignmentMap[main]};");
+
+                component.MarkupMatches(@$"<div style=""display:flex;flex-direction:{fd};gap:1rem;{style}"" class=""bit-stc"" id:ignore></div>");
             }
         }
     }
@@ -896,5 +1517,153 @@ public class BitStackTests : BunitTestContext
         });
 
         component.MarkupMatches(@$"<div style=""{STYLE}width:fit-content;height:fit-content;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotBeResponsiveByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        var root = component.Find(".bit-stc");
+
+        // A stack that never changes direction keeps it inline, where nothing in a stylesheet reaches it.
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-dir"));
+    }
+
+    [TestMethod,
+        DataRow("xs"),
+        DataRow("sm"),
+        DataRow("md"),
+        DataRow("lg"),
+        DataRow("xl"),
+        DataRow("xxl")
+    ]
+    public void BitStackShouldRespectThePerBreakpointDirections(string breakpoint)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            switch (breakpoint)
+            {
+                case "xs": parameters.Add(p => p.HorizontalXs, true); break;
+                case "sm": parameters.Add(p => p.HorizontalSm, true); break;
+                case "md": parameters.Add(p => p.HorizontalMd, true); break;
+                case "lg": parameters.Add(p => p.HorizontalLg, true); break;
+                case "xl": parameters.Add(p => p.HorizontalXl, true); break;
+                default: parameters.Add(p => p.HorizontalXxl, true); break;
+            }
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The direction moves off the element and into a custom property the stylesheet reads, since an
+        // inline flex-direction would outrank every media query.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsp"));
+        Assert.IsFalse(style.Contains("flex-direction"));
+        StringAssert.Contains(style, "--bit-stc-dir:column");
+        StringAssert.Contains(style, $"--bit-stc-dir-{breakpoint}:row");
+    }
+
+    [TestMethod]
+    public void BitStackShouldOnlyDeclareTheBreakpointsItWasGiven()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Horizontal, true);
+            parameters.Add(p => p.HorizontalMd, false);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // The stylesheet chains every breakpoint that was not asked for to the one below it, which is
+        // what carries a value upwards, so declaring them all here would defeat that chain.
+        StringAssert.Contains(style, "--bit-stc-dir:row");
+        StringAssert.Contains(style, "--bit-stc-dir-md:column");
+        Assert.IsFalse(style.Contains("--bit-stc-dir-xs"));
+        Assert.IsFalse(style.Contains("--bit-stc-dir-sm"));
+        Assert.IsFalse(style.Contains("--bit-stc-dir-lg"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldReverseEveryBreakpointOfAResponsiveDirection()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Reversed, true);
+            parameters.Add(p => p.HorizontalMd, true);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // A reversed stack is reversed at every width, so the suffix belongs to every value of the chain.
+        StringAssert.Contains(style, "--bit-stc-dir:column-reverse");
+        StringAssert.Contains(style, "--bit-stc-dir-md:row-reverse");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectTheResponsiveDirectionChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        Assert.IsFalse(component.Find(".bit-stc").ClassList.Contains("bit-stc-rsp"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSm, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-dir-sm:row");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSm, (bool?)null);
+        });
+
+        root = component.Find(".bit-stc");
+
+        // Taking the last per breakpoint direction away hands the direction back to the element.
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectCascadingParams()
+    {
+        var component = RenderComponent<BitStackCascadingParamsTest>();
+
+        var stacks = component.FindAll(".bit-stc");
+
+        // The first stack takes everything from the cascading parameters, the cascaded Size included,
+        // even though the cascaded Gap is the more specific of the two and wins the gap itself.
+        Assert.IsTrue(stacks[0].ClassList.Contains("cascaded"));
+        Assert.IsTrue(stacks[0].ClassList.Contains("bit-stc-lg"));
+        StringAssert.Contains(stacks[0].GetAttribute("style")!, "flex-direction:row");
+        StringAssert.Contains(stacks[0].GetAttribute("style")!, "gap:3rem");
+        StringAssert.Contains(stacks[0].GetAttribute("style")!, "padding:1rem");
+        StringAssert.Contains(stacks[0].GetAttribute("style")!, "flex-wrap:wrap");
+
+        // The second one sets its own gap, which the cascading parameters must not overwrite.
+        Assert.IsTrue(stacks[1].ClassList.Contains("cascaded"));
+        StringAssert.Contains(stacks[1].GetAttribute("style")!, "gap:5rem");
+        Assert.IsFalse(stacks[1].GetAttribute("style")!.Contains("3rem"));
+
+        // The third one takes the parameters that describe a stack as a child of another one, and the
+        // cascaded per breakpoint direction moves its direction into the stylesheet.
+        Assert.IsTrue(stacks[2].ClassList.Contains("cascaded"));
+        Assert.IsTrue(stacks[2].ClassList.Contains("bit-stc-rsp"));
+        Assert.IsTrue(stacks[2].ClassList.Contains("bit-stc-grc"));
+        Assert.IsTrue(stacks[2].ClassList.Contains("bit-stc-inl"));
+        Assert.AreEqual("SECTION", stacks[2].TagName);
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "display:inline-flex");
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "flex-grow:2");
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "flex-shrink:0");
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "align-self:flex-end");
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "order:-1");
+        StringAssert.Contains(stacks[2].GetAttribute("style")!, "--bit-stc-dir-md:row");
     }
 }

@@ -1,5 +1,11 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
+$bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
+
+// Almost everything a stack does is an inline style, so the root class only carries what has to hold for every
+// stack: the box it takes and the two alignments a stack that was told nothing falls back to. The direction, the
+// gap and the alignments that were asked for are written onto the element, where they outrank these.
 .bit-stc {
     width: 100%;
     height: 100%;
@@ -8,6 +14,8 @@
     justify-content: flex-start;
 }
 
+// The two axes of FillContent. The child is given the whole of the axis it is not laid out along, forcibly, so a
+// menu or a toolbar of equally sized items does not have to state that size on each of them.
 .bit-stc-fch {
     > * {
         height: 100%;
@@ -18,4 +26,75 @@
     > * {
         width: 100%;
     }
+}
+
+// The same for a stack whose direction answers to the width of the window, where which of the two axes is the
+// cross one is not known here. Stretching a child fills the cross axis whichever way the stack currently faces,
+// and unlike a forced size it leaves a child that stated a size of its own across that axis alone.
+.bit-stc-fcr {
+    > * {
+        align-self: stretch;
+    }
+}
+
+// An inline stack is sized by its content: an inline-level box that still claimed the full width of its line
+// would be inline in name only. This is a class rather than an inline style, so an explicit size - from Style
+// or from the Fit and Auto parameters, both of which are written onto the element - still wins over it.
+.bit-stc-inl {
+    width: auto;
+    height: auto;
+}
+
+// GrowContent: the axis the children are laid out along, shared out between them once they have all been laid out
+// at their natural size. A stack with nothing left over is unchanged, which is what keeps this from squashing a
+// row that was already full.
+.bit-stc-grc {
+    > * {
+        flex-grow: 1;
+    }
+}
+
+/*
+ * The direction of a stack that changes it with the width of the window. Each per breakpoint property falls back to
+ * the breakpoint below it rather than to the base value, which is what makes them mobile first: a direction set for
+ * sm keeps applying to md, lg, xl and xxl until one of those replaces it. The BitStack component only declares the
+ * breakpoints that were actually asked for, and this chain fills in all the others.
+ *
+ * The direction being painted is handed on as a single property of its own, which the media queries below point at
+ * whichever breakpoint currently applies. Every one of these is redeclared here rather than inherited, so a stack
+ * nested inside a responsive one is laid out by its own direction and never by the direction of its parent.
+ */
+.bit-stc-rsp {
+    --bit-stc-dir-xs: var(--bit-stc-dir);
+    --bit-stc-dir-sm: var(--bit-stc-dir-xs);
+    --bit-stc-dir-md: var(--bit-stc-dir-sm);
+    --bit-stc-dir-lg: var(--bit-stc-dir-md);
+    --bit-stc-dir-xl: var(--bit-stc-dir-lg);
+    --bit-stc-dir-xxl: var(--bit-stc-dir-xl);
+
+    --bit-stc-dir-now: var(--bit-stc-dir-xs);
+
+    flex-direction: var(--bit-stc-dir-now);
+}
+
+@each $name, $breakpoint in $bit-stc-breakpoints {
+    @media (min-width: $breakpoint) {
+        .bit-stc-rsp {
+            --bit-stc-dir-now: var(--bit-stc-dir-#{$name});
+        }
+    }
+}
+
+// The three steps of the spacing scale of the theme, so a sized stack follows the spacing unit and the density of
+// the current theme rather than a hardcoded length. The component reads them back through var(--bit-stc-size).
+.bit-stc-sm {
+    --bit-stc-size: #{spacing(1)};
+}
+
+.bit-stc-md {
+    --bit-stc-size: #{spacing(2)};
+}
+
+.bit-stc-lg {
+    --bit-stc-size: #{spacing(4)};
 }
