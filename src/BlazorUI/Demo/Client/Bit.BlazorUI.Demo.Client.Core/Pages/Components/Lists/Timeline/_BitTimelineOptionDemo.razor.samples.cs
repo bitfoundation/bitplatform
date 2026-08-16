@@ -268,6 +268,8 @@ public partial class _BitTimelineOptionDemo
     </BitTimelineOption>
 </BitTimeline>
 
+@* the same timeline is also shown with the Horizontal parameter *@
+
 
 <BitTimeline TItem=""BitTimelineOption"" TruncateLine=""BitTimelineTruncateLine.Both"">
     <DotTemplate Context=""item"">

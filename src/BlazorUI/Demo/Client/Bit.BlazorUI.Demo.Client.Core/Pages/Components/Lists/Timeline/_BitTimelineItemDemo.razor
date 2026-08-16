@@ -182,9 +182,10 @@
 <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>
         The OnItemClick of the timeline is raised for every item, and each item can carry an OnClick of its
-        own; both of them run for the same click. Only the items that actually listen to a click become
-        focusable buttons, and a disabled item raises neither of them. A clickable item picks up a hover
-        plate and a focus ring, and answers to Enter and Space as well as to a click.
+        own; both of them run for the same click. An enabled item becomes a focusable button as soon as either
+        the timeline provides an OnItemClick or the item provides its own OnClick, and a disabled item raises
+        neither of them. A clickable item picks up a hover plate and a focus ring, and answers to Enter and
+        Space as well as to a click.
     </div>
     <br />
     <BitTimeline Items="clickItems" OnItemClick="@((BitTimelineItem item) => { clickedItem = $"{item.PrimaryText} (OnItemClick)"; })" />
