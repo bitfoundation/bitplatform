@@ -11,8 +11,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
     private bool _focusFirstItemOnOpen;
+    private bool _isOverflowExpanded;
     private bool _preventKeysRegistered;
+    private bool _lastWrap;
     private bool _lastAutoCollapse;
+    private bool _lastExpandOverflow;
     private bool _resizeObserverRegistered;
     private bool _measureRequested;
     private int _measurePasses;
@@ -46,6 +49,12 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
 
 
+    // The automatic collapsing is what keeps the trail on a single line, which is the very thing a wrapping
+    // breadcrumb is asked not to do: a trail that may flow onto another line has no items that do not fit.
+    private bool IsAutoCollapsing => AutoCollapse && Wrap is false;
+
+
+
     /// <summary>
     /// Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings
     /// them back as the room for them returns, so the trail always stays on a single line.
@@ -53,7 +62,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// It measures the rendered items through JS interop and follows the size of the component with a
     /// resize observer, and it is off by default. MaxDisplayedItems, when it is set, still caps how many
     /// items the automatic collapsing may leave in the trail, and OverflowIndex still decides where the
-    /// overflow button sits. It has no effect on a wrapping breadcrumb, which never overflows its line.
+    /// overflow button sits. It is turned off entirely by Wrap, since a trail that may flow onto another
+    /// line has no items that do not fit, and nothing is measured or observed while that is the case.
     /// </summary>
     [Parameter] public bool AutoCollapse { get; set; }
 
@@ -75,7 +85,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the breadcrumb.
     /// </summary>
-    [Parameter] public BitBreadcrumbClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder]
+    public BitBreadcrumbClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the breadcrumb items.
@@ -108,6 +119,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public string? DividerText { get; set; }
 
     /// <summary>
+    /// Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu.
+    /// <br />
+    /// The whole trail is revealed at once and the button is gone with the collapsing it undid, which is what a
+    /// breadcrumb whose steps are all worth reading at a glance wants, rather than a menu to walk through. The trail
+    /// may then be wider than the room it has, so pairing it with Wrap (or with a scrolling container) keeps it
+    /// readable. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed.
+    /// </summary>
+    [Parameter] public bool ExpandOverflow { get; set; }
+
+    /// <summary>
     /// Collection of the items to render in the breadcrumb.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
@@ -119,8 +140,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// The maximum width of the text of each item as a CSS length (for example "8rem").
-    /// The text of a longer item is truncated with an ellipsis, so setting the Title of the items is
-    /// recommended to keep the full text reachable.
+    /// <br />
+    /// The text of a longer item is truncated with an ellipsis, and the text of an item that carries no Title
+    /// of its own becomes its tooltip, so the full text of a truncated step always stays reachable.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? MaxItemWidth { get; set; }
@@ -155,6 +177,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// Optional index where overflow items will be collapsed.
+    /// <br />
+    /// It is the position the overflow button takes among the displayed items, and the items that collapse are the
+    /// ones that start there. The default of 0 therefore collapses the trail from its root; setting it to 1 keeps the
+    /// root visible and collapses the middle of the trail instead, which is what a hierarchy is usually read by.
     /// </summary>
     [Parameter] public uint OverflowIndex { get; set; }
 
@@ -184,6 +210,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
+    /// Renders the selected item as plain text instead of as a link or a button.
+    /// <br />
+    /// The current page is where the user already is, so the breadcrumb pattern asks for it to be a step to read
+    /// rather than one to follow. It keeps its aria-current either way, and the items around it stay actionable.
+    /// </summary>
+    [Parameter] public bool SelectedItemAsText { get; set; }
+
+    /// <summary>
     /// The size of the items of the breadcrumb.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -201,10 +235,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS styles for different parts of the breadcrumb.
     /// </summary>
-    [Parameter] public BitBreadcrumbClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder]
+    public BitBreadcrumbClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line.
+    /// <br />
+    /// It turns AutoCollapse off while it is on, since a trail that may flow onto another line has no items that
+    /// do not fit. A fixed MaxDisplayedItems still collapses what it is told to, wrapping or not.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Wrap { get; set; }
@@ -227,7 +265,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [JSInvokable("OnResize")]
     public void _OnResize(ContentRect _)
     {
-        if (IsDisposed || AutoCollapse is false) return;
+        if (IsDisposed || IsAutoCollapsing is false) return;
 
         _measurePasses = 0;
         _measureRequested = true;
@@ -346,11 +384,15 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         var isDirty = _internalItems.SequenceEqual(_items) is false ||
                       _lastOverflowIndex != OverflowIndex ||
                       _lastMaxDisplayedItems != MaxDisplayedItems ||
-                      _lastAutoCollapse != AutoCollapse;
+                      _lastAutoCollapse != AutoCollapse ||
+                      _lastWrap != Wrap ||
+                      _lastExpandOverflow != ExpandOverflow;
 
         _lastOverflowIndex = OverflowIndex;
         _lastMaxDisplayedItems = MaxDisplayedItems;
         _lastAutoCollapse = AutoCollapse;
+        _lastWrap = Wrap;
+        _lastExpandOverflow = ExpandOverflow;
 
         if (isDirty)
         {
@@ -376,8 +418,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         // An open menu whose button is gone would leave the callout and its click-catching overlay behind,
         // which happens as soon as everything fits the trail again (the items changed, the room grew, the
-        // cap was raised, ...) or the whole component gets disabled while the menu is open.
-        if (_isCalloutOpen && (_overflowItems.Count == 0 || IsEnabled is false))
+        // cap was raised, ...), the whole component gets disabled while the menu is open, or the button it
+        // belongs to is turned into one that reveals the items in place instead.
+        if (_isCalloutOpen && (_overflowItems.Count == 0 || IsEnabled is false || ExpandOverflow))
         {
             await CloseCallout();
 
@@ -404,7 +447,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             catch (JSException) { } // a JS-side failure here only costs the page-scroll prevention
         }
 
-        if (AutoCollapse)
+        if (IsAutoCollapsing)
         {
             if (_resizeObserverRegistered is false)
             {
@@ -485,10 +528,45 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         await FocusOverflowButton();
     }
 
+    // The overflow button either reveals the collapsed items in place or opens them in a menu, and in the
+    // latter case it toggles that menu: a mouse click on an open one is caught by the overlay, but a keyboard
+    // activation reaches the button itself and has to close what it opened.
+    private async Task HandleOnOverflowButtonClick()
+    {
+        if (IsEnabled is false) return;
+
+        if (ExpandOverflow)
+        {
+            _isOverflowExpanded = true;
+
+            ApplyDisplaySettings();
+
+            return;
+        }
+
+        if (_isCalloutOpen)
+        {
+            await CloseCallout();
+
+            return;
+        }
+
+        await OpenCallout();
+    }
+
+    // The current page is a step to read rather than one to follow, so it renders as plain text when the
+    // consumer asks for it, no matter what it carries to navigate to or to run.
+    private bool IsPlainText(TItem item)
+    {
+        return SelectedItemAsText && GetIsSelected(item);
+    }
+
     // An item is rendered as a button when it has no Href but something to run on click, either the
     // component level OnItemClick or a click handler of its own.
     private bool HasClickHandler(TItem item)
     {
+        if (IsPlainText(item)) return false;
+
         if (OnItemClick.HasDelegate) return true;
 
         if (item is BitBreadcrumbItem breadcrumbItem) return breadcrumbItem.OnClick is not null;
@@ -502,7 +580,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         _internalItems = [.. _items];
 
-        if (AutoCollapse)
+        // A trail the user expanded is a trail they expanded as it was: once its items (or the settings
+        // around them) change it is a different one, which starts collapsed the way it would have.
+        _isOverflowExpanded = false;
+
+        if (IsAutoCollapsing)
         {
             // The automatic collapsing works its way down from the whole trail, so anything that changes
             // the items (or the settings around them) starts the measurements over from a clean slate.
@@ -519,7 +601,13 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         var max = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
 
-        if (AutoCollapse)
+        if (_isOverflowExpanded)
+        {
+            // Undoing the collapsing means undoing all of it: what the button hid is the whole difference
+            // between the trail and its hierarchy, whichever of the two settings put it there.
+            max = (uint)_internalItems.Count;
+        }
+        else if (IsAutoCollapsing)
         {
             max = Math.Min(max, _autoMaxDisplayedItems);
         }
@@ -534,7 +622,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     // overflow menu, then asks for another measurement so it settles one item at a time.
     private async Task MeasureAndCollapse()
     {
-        if (IsDisposed || _internalItems.Count < 2) return;
+        // A trail the user expanded stays expanded: the measurements would collapse right back what the
+        // overflow button was pressed to reveal.
+        if (IsDisposed || _isOverflowExpanded || _internalItems.Count < 2) return;
 
         // Each pass changes the trail by a single item, so the passes of a settling round are bounded
         // by the number of items; the guard is there so a layout that never settles cannot loop on.
@@ -794,10 +884,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return string.Join(';', styles);
     }
 
-    // A disabled item is not a place to navigate to, so it keeps its address but renders none.
+    // A disabled item is not a place to navigate to, and neither is the page the user is already on, so
+    // either one keeps its address but renders none.
     private string? GetItemHref(TItem item)
     {
-        return GetIsEnabled(item) ? GetRawItemHref(item) : null;
+        return GetIsEnabled(item) && IsPlainText(item) is false ? GetRawItemHref(item) : null;
     }
 
     // Opening a link in another browsing context hands the opener over to it unless it is turned down,
@@ -895,7 +986,18 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
+    // An item whose text a max width may be cutting off is unreadable unless the full text is somewhere,
+    // so the text becomes the tooltip of an item that carries none of its own.
     private string? GetItemTitle(TItem item)
+    {
+        var title = GetRawItemTitle(item);
+
+        if (title.HasValue() || MaxItemWidth.HasValue() is false) return title;
+
+        return GetItemText(item);
+    }
+
+    private string? GetRawItemTitle(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
@@ -1133,6 +1235,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (_isCalloutOpen is false) return;
 
         _isCalloutOpen = false;
+        // The pending move onto the first item belongs to the opening it was marked for, not to the next one.
+        _focusFirstItemOnOpen = false;
+
         await ToggleCallout();
     }
 
@@ -1169,7 +1274,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task HandleOnOverflowButtonKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        // Nothing of the menu applies to a button that reveals the items in place: it is activated the way
+        // any other button is, and the trail it expands is walked with the Tab key like the rest of it.
+        if (IsEnabled is false || ExpandOverflow) return;
 
         if (e.Key is "Escape")
         {

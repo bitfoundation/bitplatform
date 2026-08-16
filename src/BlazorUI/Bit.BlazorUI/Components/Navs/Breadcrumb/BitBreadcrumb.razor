@@ -34,17 +34,20 @@
             <li @key="@GetItemKey(item, idx.ToString())" role="listitem" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                 @if (idx == _internalOverflowIndex && _overflowItems.Any())
                 {
+                    @* The button either owns a menu or reveals the collapsed items back into the trail. In the
+                       latter case it is a plain button that is gone with the collapsing it undid, so it carries
+                       none of the properties of a popup that never opens. *@
                     <button @ref="_overflowButtonRef"
-                            @onclick="OpenCallout"
+                            @onclick="HandleOnOverflowButtonClick"
                             @onkeydown="HandleOnOverflowButtonKeyDown"
                             id="@_overflowAnchorId"
                             type="button"
                             title="@(OverflowAriaLabel ?? "More items")"
                             style="@Styles?.OverflowButton"
                             class="bit-brc-obt @Classes?.OverflowButton"
-                            aria-haspopup="menu"
-                            aria-controls="@_calloutId"
-                            aria-expanded="@_isCalloutOpen.ToString().ToLower()"
+                            aria-haspopup="@(ExpandOverflow ? null : "menu")"
+                            aria-controls="@(ExpandOverflow ? null : _calloutId)"
+                            aria-expanded="@(ExpandOverflow ? null : _isCalloutOpen.ToString().ToLower())"
                             aria-label="@(OverflowAriaLabel ?? "More items")"
                             disabled="@(IsEnabled is false)">
                         @if (OverflowIconTemplate is not null)

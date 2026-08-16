@@ -5,7 +5,9 @@
         item whose IsSelected mapping is true becomes the current page of the trail, and the IsEnabled
         mapping keeps an item in the trail without making it actionable (aria-disabled). A Target mapping
         opens the link in another browsing context, in which case the link is rendered with a rel of
-        "noopener noreferrer".
+        "noopener noreferrer". SelectedItemAsText renders the current page as plain text instead of as a link,
+        which is what the breadcrumb pattern asks of the page the user is already on, without taking its
+        aria-current away.
     </div>
     <br /><br />
     <div class="example-box">
@@ -13,6 +15,12 @@
             <div>Basic</div>
             <BitBreadcrumb Items="CustomBreadcrumbItems"
                            NameSelectors="nameSelectors" />
+        </div>
+        <div>
+            <div>Selected item as text</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItems"
+                           NameSelectors="nameSelectors"
+                           SelectedItemAsText />
         </div>
         <div>
             <div>Disabled</div>
@@ -241,8 +249,9 @@
 <DemoExample Title="Truncation & Wrapping" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
         A trail of long titles is kept on a single line by default. MaxItemWidth truncates the text of each
-        item with an ellipsis at the given CSS length, in which case the mapped Title of the item keeps the
-        full text reachable as a tooltip, and Wrap lets the trail flow onto more than one line instead.
+        item with an ellipsis at the given CSS length, in which case the text of an item that carries no mapped
+        Title of its own becomes its tooltip so the full text stays reachable, and Wrap lets the trail flow onto
+        more than one line instead.
     </div>
     <br /><br />
     <div class="example-box">
@@ -255,7 +264,7 @@
         <div>
             <div>MaxItemWidth (with the Title of each item as its tooltip)</div>
             <div class="narrow-box">
-                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" MaxItemWidth="6rem" />
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" MaxItemWidth="5rem" />
             </div>
         </div>
         <div>
@@ -274,6 +283,8 @@
         width of its container is. MaxDisplayedItems, when it is set, still caps how many items may stay in
         the trail and OverflowIndex still decides where the overflow button sits, so setting it to 1 keeps
         the root of the hierarchy visible and collapses the middle of the trail instead.
+        Wrap turns the measuring off entirely, since a trail that may flow onto another line has no items
+        that do not fit.
     </div>
     <br /><br />
     <div class="example-box">
@@ -311,7 +322,38 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Expand Overflow" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+    <div>
+        ExpandOverflow turns the overflow button into a disclosure of the collapsed steps: pressing it puts them
+        back into the trail instead of opening them in a menu, and the button is gone along with the collapsing it
+        undid. The expanded trail may be wider than the room it has, so pairing it with Wrap keeps it readable.
+        It works the same way over an automatically collapsed trail, which stops measuring once it is expanded.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <div>
+            <div>Expand the collapsed items in place</div>
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithControlled"
+                           NameSelectors="nameSelectors"
+                           ExpandOverflow
+                           MaxDisplayedItems="3"
+                           OverflowIndex="1" />
+        </div>
+        <div>
+            <div>Wrapping the expanded trail of a narrow container</div>
+            <div class="narrow-box">
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText"
+                               NameSelectors="nameSelectors"
+                               ExpandOverflow
+                               Wrap
+                               MaxDisplayedItems="2"
+                               OverflowIndex="1" />
+            </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>Offering a range of specific colors for the items and the divider of the breadcrumb.</div>
     <br /><br />
     <div class="example-box">
@@ -350,7 +392,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     <br /><br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -389,7 +431,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>Three sizes of the breadcrumb, driving the text and the overflow menu of the trail.</div>
     <br /><br />
     <div class="example-box">
@@ -408,7 +450,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         The look of the breadcrumb is customizable at three levels: the Style and Class of the component,
         the mapped Style and Class of a single item, and the Styles and Classes of every part of it (the root,
@@ -449,7 +491,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+<DemoExample Title="RTL" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">

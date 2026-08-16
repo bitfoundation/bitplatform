@@ -81,6 +81,62 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBreadcrumbShouldRenderTheSelectedOptionAsPlainTextWhenAsked()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbOption>>(parameters =>
+        {
+            parameters.Add(p => p.SelectedItemAsText, true);
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 1").Add(o => o.Href, "/option-1"));
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 2").Add(o => o.Href, "/option-2").Add(o => o.IsSelected, true));
+        });
+
+        Assert.AreEqual(1, component.FindAll("a.bit-brc-itm").Count);
+
+        var current = component.Find(".bit-brc-nii");
+
+        Assert.AreEqual("Option 2", current.TextContent.Trim());
+        Assert.AreEqual("page", current.GetAttribute("aria-current"));
+        Assert.IsFalse(current.HasAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldDropTheOptionsThatAreUnregistered()
+    {
+        var component = RenderComponent<BitBreadcrumbOptionsOrderTest>(
+            parameters => parameters.Add(p => p.ShowMiddle, true));
+
+        Assert.AreEqual(3, component.FindAll(".bit-brc-itm").Count);
+
+        // An option that leaves the markup unregisters itself, and the trail is left without its step.
+        component.Render(parameters => parameters.Add(p => p.ShowMiddle, false));
+
+        CollectionAssert.AreEqual(new[] { "First", "Last" },
+            component.FindAll(".bit-brc-itm").Select(i => i.TextContent.Trim()).ToArray());
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldExpandTheCollapsedOptionsInPlaceWithExpandOverflow()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbOption>>(parameters =>
+        {
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+            parameters.Add(p => p.ExpandOverflow, true);
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 1").Add(o => o.Href, "/option-1"));
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 2").Add(o => o.Href, "/option-2"));
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 3").Add(o => o.Href, "/option-3"));
+            parameters.AddChildContent<BitBreadcrumbOption>(p => p.Add(o => o.Text, "Option 4").Add(o => o.IsSelected, true));
+        });
+
+        CollectionAssert.AreEqual(new[] { "Option 1", "Option 4" }, GetItemTexts(component));
+
+        component.Find(".bit-brc-obt").Click();
+
+        CollectionAssert.AreEqual(new[] { "Option 1", "Option 2", "Option 3", "Option 4" }, GetItemTexts(component));
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+    }
+
+    [TestMethod]
     public void BitBreadcrumbShouldSplitTheOptionsBetweenTheTrailAndTheOverflow()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbOption>>(parameters =>
@@ -100,5 +156,11 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
         var overflow = component.FindAll(".bit-brc-cal .bit-brc-ofi");
 
         CollectionAssert.AreEqual(new[] { "Option 2", "Option 3" }, overflow.Select(i => i.TextContent.Trim()).ToArray());
+    }
+
+    private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbOption>> component)
+    {
+        return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii")
+                        .Select(i => i.TextContent.Trim()).ToArray();
     }
 }

@@ -5,12 +5,24 @@
         becomes the current page of the trail (aria-current) and an option with IsEnabled set to false stays
         in the trail but is not actionable (aria-disabled). Setting Target on an option opens its link in
         another browsing context, in which case the link is rendered with a rel of "noopener noreferrer".
+        SelectedItemAsText renders the current page as plain text instead of as a link, which is what the
+        breadcrumb pattern asks of the page the user is already on, without taking its aria-current away.
     </div>
     <br /><br />
     <div class="example-box">
         <div>
             <div>Basic</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+
+        <div>
+            <div>Selected option as text</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" SelectedItemAsText>
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
                 <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
@@ -319,8 +331,9 @@
 <DemoExample Title="Truncation & Wrapping" RazorCode="@example8RazorCode" Id="example8">
     <div>
         A trail of long titles is kept on a single line by default. MaxItemWidth truncates the text of each
-        option with an ellipsis at the given CSS length, in which case the Title of the option keeps the full
-        text reachable as a tooltip, and Wrap lets the trail flow onto more than one line instead.
+        option with an ellipsis at the given CSS length, in which case the text of an option that carries no Title
+        of its own becomes its tooltip so the full text stays reachable, and Wrap lets the trail flow onto more
+        than one line instead.
     </div>
     <br /><br />
     <div class="example-box">
@@ -337,7 +350,7 @@
         <div>
             <div>MaxItemWidth (with the Title of each option as its tooltip)</div>
             <div class="narrow-box">
-                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxItemWidth="6rem">
+                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxItemWidth="5rem">
                     <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" Title="Very long option name 1" />
                     <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" Title="Very long option name 2" />
                     <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" Title="Very long option name 3" IsSelected />
@@ -364,6 +377,8 @@
         width of its container is. MaxDisplayedItems, when it is set, still caps how many options may stay in
         the trail and OverflowIndex still decides where the overflow button sits, so setting it to 1 keeps
         the root of the hierarchy visible and collapses the middle of the trail instead.
+        Wrap turns the measuring off entirely, since a trail that may flow onto another line has no items
+        that do not fit.
     </div>
     <br /><br />
     <div class="example-box">
@@ -412,7 +427,41 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example11RazorCode" Id="example11">
+<DemoExample Title="Expand Overflow" RazorCode="@example11RazorCode" Id="example11">
+    <div>
+        ExpandOverflow turns the overflow button into a disclosure of the collapsed steps: pressing it puts them
+        back into the trail instead of opening them in a menu, and the button is gone along with the collapsing it
+        undid. The expanded trail may be wider than the room it has, so pairing it with Wrap keeps it readable.
+        It works the same way over an automatically collapsed trail, which stops measuring once it is expanded.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <div>
+            <div>Expand the collapsed options in place</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" ExpandOverflow MaxDisplayedItems="3" OverflowIndex="1">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 5" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 6" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>Wrapping the expanded trail of a narrow container</div>
+            <div class="narrow-box">
+                <BitBreadcrumb TItem="BitBreadcrumbOption" ExpandOverflow Wrap MaxDisplayedItems="2" OverflowIndex="1">
+                    <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example12RazorCode" Id="example12">
     <div>Offering a range of specific colors for the options and the divider of the breadcrumb.</div>
     <br /><br />
     <div class="example-box">
@@ -431,7 +480,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example12RazorCode" Id="example12">
+<DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     <br /><br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -485,7 +534,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example13RazorCode" Id="example13">
+<DemoExample Title="Size" RazorCode="@example14RazorCode" Id="example14">
     <div>Three sizes of the breadcrumb, driving the text and the overflow menu of the trail.</div>
     <br /><br />
     <div class="example-box">
@@ -504,7 +553,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+<DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
     <div>
         The look of the breadcrumb is customizable at three levels: the Style and Class of the component,
         the Style and Class of a single option, and the Styles and Classes of every part of it (the root, the
@@ -565,7 +614,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+<DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">

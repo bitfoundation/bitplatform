@@ -124,6 +124,75 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         Assert.AreEqual(0, handler.Invocations.Count);
     }
 
+    [TestMethod]
+    public void BitBreadcrumbShouldNotCollapseAnythingAutomaticallyWhileItWraps()
+    {
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AutoCollapse, true);
+            parameters.Add(p => p.Wrap, true);
+        });
+
+        // A trail that may flow onto another line has no items that do not fit, so nothing is measured
+        // and nothing leaves it, whatever the room of a single line would have been.
+        Assert.AreEqual(4, GetRenderedItemCount(component));
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.AreEqual(0, handler.Invocations.Count);
+
+        // Turning the wrapping off hands the trail back to the measurements.
+        component.Render(parameters => parameters.Add(p => p.Wrap, false));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
+
+        // And turning it back on gives the whole trail back.
+        component.Render(parameters => parameters.Add(p => p.Wrap, true));
+
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldStillHonorMaxDisplayedItemsWhileItWraps()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AutoCollapse, true);
+            parameters.Add(p => p.Wrap, true);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+        });
+
+        // Only the automatic collapsing stands down; a cap the consumer set is still a cap.
+        Assert.AreEqual(2, GetRenderedItemCount(component));
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldStopCollapsingOnceTheMeasuredTrailIsExpanded()
+    {
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AutoCollapse, true);
+            parameters.Add(p => p.ExpandOverflow, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
+
+        component.Find(".bit-brc-obt").Click();
+
+        // The measurements would put back what the button was pressed to reveal, so they stand down
+        // while the trail is expanded even though it no longer fits the room it has.
+        component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+    }
+
     private static int GetRenderedItemCount(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)
     {
         return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii").Count;

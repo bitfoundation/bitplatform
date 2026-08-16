@@ -1190,6 +1190,276 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.IsFalse(elements[1].TryGetProperty("item", out _));
     }
 
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheSelectedItemAsPlainTextWhenAsked()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.SelectedItemAsText, true);
+        });
+
+        // Every step but the page the user is already on is still a link to follow.
+        Assert.AreEqual(3, component.FindAll("a.bit-brc-itm").Count);
+
+        var current = component.Find(".bit-brc-nii");
+
+        Assert.AreEqual("SPAN", current.TagName);
+        Assert.AreEqual("Folder 4", current.TextContent.Trim());
+        Assert.IsFalse(current.HasAttribute("href"));
+        // The current page is still the one the pattern points assistive technologies at.
+        Assert.AreEqual("page", current.GetAttribute("aria-current"));
+        Assert.IsTrue(current.ClassList.Contains("bit-brc-sel"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotMakeTheSelectedItemActionableWhenItIsRenderedAsText()
+    {
+        var clicked = 0;
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", OnClick = _ => clicked++ },
+            new() { Text = "Folder 2", IsSelected = true, OnClick = _ => clicked++ }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectedItemAsText, true);
+            parameters.Add(p => p.OnItemClick, (BitBreadcrumbItem _) => { clicked++; });
+        });
+
+        // Neither the handler of the item nor the one of the component turns the current page into a button.
+        Assert.AreEqual(1, component.FindAll("button.bit-brc-itm").Count);
+        Assert.AreEqual("Folder 2", component.Find(".bit-brc-nii").TextContent.Trim());
+
+        component.Find("button.bit-brc-itm").Click();
+
+        Assert.AreEqual(2, clicked);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheSelectedOverflowItemAsPlainTextToo()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { Text = "Folder 2", Href = "/folder-2", IsSelected = true },
+            new() { Text = "Folder 3", Href = "/folder-3" },
+            new() { Text = "Folder 4", Href = "/folder-4" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+            parameters.Add(p => p.SelectedItemAsText, true);
+        });
+
+        // The collapsed steps are Folder 2 and Folder 3, and the current page among them is a menu item
+        // to read rather than one to follow.
+        var current = component.Find(".bit-brc-scn .bit-brc-ofn");
+
+        Assert.AreEqual("Folder 2", current.TextContent.Trim());
+        Assert.AreEqual("page", current.GetAttribute("aria-current"));
+        Assert.AreEqual("menuitem", current.GetAttribute("role"));
+        Assert.AreEqual(1, component.FindAll(".bit-brc-scn a.bit-brc-ofi").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldExpandTheCollapsedItemsInPlaceWithExpandOverflow()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+            parameters.Add(p => p.ExpandOverflow, true);
+        });
+
+        var button = component.Find(".bit-brc-obt");
+
+        // The button reveals the collapsed steps rather than opening a menu, so it claims none of the
+        // properties of a popup that never opens.
+        Assert.IsFalse(button.HasAttribute("aria-haspopup"));
+        Assert.IsFalse(button.HasAttribute("aria-controls"));
+        Assert.IsFalse(button.HasAttribute("aria-expanded"));
+
+        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 4" }, GetItemTexts(component));
+
+        button.Click();
+
+        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
+        // The button is gone with the collapsing it undid, and no menu was opened on the way.
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCollapseTheExpandedTrailAgainWhenTheItemsOrTheSettingsChange()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.ExpandOverflow, true);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+
+        // A trail of other items is another trail, which starts collapsed the way this one did.
+        component.Render(parameters => parameters.Add(p => p.Items, GetBreadcrumbItems().Take(3).ToList()));
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+
+        // So is the same trail collapsed at another count.
+        component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)1));
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+
+        // And giving the button its menu back takes the expansion it no longer offers with it.
+        component.Render(parameters => parameters.Add(p => p.ExpandOverflow, false));
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+        Assert.AreEqual("menu", component.Find(".bit-brc-obt").GetAttribute("aria-haspopup"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotDriveAnyMenuFromTheKeyboardWithExpandOverflow()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.ExpandOverflow, true);
+        });
+
+        component.Find(".bit-brc-obt").KeyDown(Key.Down);
+
+        // There is no menu to open, to move around in or to close: the button is activated like any other.
+        Assert.AreEqual(0, handler.Invocations.Count);
+        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbOverflowButtonShouldToggleTheMenuItOwns()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+
+        // Activating the button again closes what it opened. A mouse click on an open menu is caught by
+        // the overlay, but a keyboard activation reaches the button itself and has to close it.
+        component.Find(".bit-brc-obt").KeyDown(Key.Enter);
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+
+        // The move onto the first item that the Enter marked went with the menu it was meant for, so the
+        // next opening leaves the focus where the user put it.
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+        Assert.AreEqual(0, handler.Invocations.Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCloseTheMenuWhenTheOverflowButtonStartsExpandingInPlace()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:block"));
+
+        // The button no longer owns a menu, so the one it opened may not stay behind with its overlay.
+        component.Render(parameters => parameters.Add(p => p.ExpandOverflow, true));
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none")));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldFollowTheClassesAndStylesThatChangeAtRuntime()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Classes, new BitBreadcrumbClassStyles { Root = "first-root" });
+            parameters.Add(p => p.Styles, new BitBreadcrumbClassStyles { Root = "color:red" });
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("first-root"));
+        Assert.IsTrue(component.Find(".bit-brc").GetAttribute("style")!.Contains("color:red"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitBreadcrumbClassStyles { Root = "second-root" });
+            parameters.Add(p => p.Styles, new BitBreadcrumbClassStyles { Root = "color:blue" });
+        });
+
+        var root = component.Find(".bit-brc");
+
+        Assert.IsTrue(root.ClassList.Contains("second-root"));
+        Assert.IsFalse(root.ClassList.Contains("first-root"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("color:blue"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("color:red"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldFallBackToTheTextAsTheTooltipOfATruncatedItem()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "A very long folder name", Href = "/folder-1" },
+            new() { Text = "Folder 2", Href = "/folder-2", Title = "The second folder" },
+            new() { Text = "Folder 3", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        // Nothing is cut off without a max width, so nothing invents a tooltip either.
+        Assert.IsFalse(component.FindAll(".bit-brc-icn .bit-brc-itm")[0].HasAttribute("title"));
+
+        component.Render(parameters => parameters.Add(p => p.MaxItemWidth, "6rem"));
+
+        var rendered = component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii");
+
+        Assert.AreEqual("A very long folder name", rendered[0].GetAttribute("title"));
+        // A title of its own is the one that stays.
+        Assert.AreEqual("The second folder", rendered[1].GetAttribute("title"));
+        Assert.AreEqual("Folder 3", rendered[2].GetAttribute("title"));
+    }
+
     private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)
     {
         return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii")

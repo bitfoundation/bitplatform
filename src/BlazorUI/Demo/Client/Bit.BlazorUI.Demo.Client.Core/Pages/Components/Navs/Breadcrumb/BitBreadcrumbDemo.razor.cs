@@ -11,7 +11,7 @@ public partial class BitBreadcrumbDemo
             Name = "AutoCollapse",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings them back as the room for them returns, so the trail always stays on a single line. MaxDisplayedItems, when it is set, still caps how many items the automatic collapsing may leave in the trail."
+            Description = "Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings them back as the room for them returns, so the trail always stays on a single line. MaxDisplayedItems, when it is set, still caps how many items the automatic collapsing may leave in the trail. It is turned off entirely by Wrap, since a trail that may flow onto another line has no items that do not fit."
         },
         new()
         {
@@ -77,6 +77,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "ExpandOverflow",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu. The whole trail is revealed at once and the button is gone with the collapsing it undid. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed."
+        },
+        new()
+        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
@@ -103,7 +110,7 @@ public partial class BitBreadcrumbDemo
             Name = "MaxItemWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The maximum width of the text of each item as a CSS length (for example \"8rem\"). The text of a longer item is truncated with an ellipsis, so setting the Title of the items is recommended to keep the full text reachable."
+            Description = "The maximum width of the text of each item as a CSS length (for example \"8rem\"). The text of a longer item is truncated with an ellipsis, and the text of an item that carries no Title of its own becomes its tooltip so that the full text stays reachable."
         },
         new()
         {
@@ -139,7 +146,7 @@ public partial class BitBreadcrumbDemo
             Name = "OverflowIndex",
             Type = "uint",
             DefaultValue = "0",
-            Description = "Optional index where overflow items will be collapsed."
+            Description = "Optional index where overflow items will be collapsed. It is the position the overflow button takes among the displayed items, and the items that collapse are the ones that start there, so the default of 0 collapses the trail from its root while 1 keeps the root visible and collapses the middle instead."
         },
         new()
         {
@@ -180,6 +187,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "SelectedItemAsText",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the selected item as plain text instead of as a link or a button, which is what the breadcrumb pattern asks of the page the user is already on. It keeps its aria-current either way, and the items around it stay actionable."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -208,7 +222,7 @@ public partial class BitBreadcrumbDemo
             Name = "Wrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line."
+            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
         }
     ];
 

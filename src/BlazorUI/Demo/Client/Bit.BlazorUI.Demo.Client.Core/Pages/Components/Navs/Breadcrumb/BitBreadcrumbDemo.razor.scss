@@ -14,7 +14,8 @@
 
     .narrow-box {
         padding: 4px;
-        max-width: 320px;
+        overflow: hidden;
+        max-width: 480px;
         border: 1px dashed gray;
     }
 
