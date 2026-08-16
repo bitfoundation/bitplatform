@@ -71,18 +71,9 @@
             var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? GetDefaultNextIconName());
             var prevIcon = BitIconInfo.From(PrevIcon, PrevIconName ?? GetDefaultPrevIconName());
 
-            <button @onclick="HandleGoNext"
-                    type="button"
-                    aria-controls="@_ContainerId"
-                    aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
-                    disabled="@(IsEnabled is false)"
-                    class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
-                    style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
-                <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.NextButtonIcon"
-                   class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
-            </button>
-
+            @* The previous button is rendered first, so the keyboard reaches the two of them in the order
+               they move the swiper in. They are placed by the stylesheet, so their order costs nothing
+               visually. *@
             <button @onclick="HandleGoPrev"
                     type="button"
                     aria-controls="@_ContainerId"
@@ -93,6 +84,18 @@
                 <i aria-hidden="true"
                    style="@Styles?.ButtonIcons @Styles?.PrevButtonIcon"
                    class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
+            </button>
+
+            <button @onclick="HandleGoNext"
+                    type="button"
+                    aria-controls="@_ContainerId"
+                    aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
+                    disabled="@(IsEnabled is false)"
+                    class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
+                    style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
+                <i aria-hidden="true"
+                   style="@Styles?.ButtonIcons @Styles?.NextButtonIcon"
+                   class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
             </button>
         }
 

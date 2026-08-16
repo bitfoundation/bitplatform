@@ -106,6 +106,7 @@ namespace BitBlazorUI {
         private animation = -1;
         private notification = -1;
         private lastKey = '';
+        private direction = 'ltr';
 
         private dragging = false;
         private moved = false;
@@ -154,6 +155,8 @@ namespace BitBlazorUI {
                 this.observe();
             } catch (e) { console.error("BitBlazorUI.Swiper.init:", e); }
 
+            this.readDirection();
+
             // The swiper is laid out on the item it was told to start on rather than scrolling over to it
             // after the fact, so nothing is ever seen sliding past on the way in.
             if (this.options.start > 0) {
@@ -174,6 +177,8 @@ namespace BitBlazorUI {
 
             this.options = options;
 
+            this.readDirection();
+
             this.scheduleNotify();
         }
 
@@ -183,6 +188,8 @@ namespace BitBlazorUI {
         // or taken out of the swiper.
         public refresh() {
             this.observe();
+
+            this.readDirection();
 
             this.scheduleNotify();
         }
@@ -223,10 +230,11 @@ namespace BitBlazorUI {
 
         public goToPage(page: number) {
             const g = this.geometry();
+            const pages = this.pages(g);
 
-            if (g.viewport <= 0) return;
+            if (pages.length === 0) return;
 
-            this.animateTo(this.clamp(page * g.viewport, 0, g.max));
+            this.animateTo(pages[Math.max(0, Math.min(pages.length - 1, page))]);
         }
 
         public goToEdge(end: boolean) {
@@ -261,7 +269,11 @@ namespace BitBlazorUI {
 
             for (let i = 0; i < children.length; i++) {
                 const child = children[i];
-                if (child instanceof HTMLElement) {
+
+                // Only the items are measured. Anything else the content of the swiper holds would shift
+                // every position a navigation is computed from away from the items the .NET side counted,
+                // so an index would no longer point at the item it was asked for.
+                if (child instanceof HTMLElement && child.classList.contains('bit-swpi')) {
                     result.push(child);
                 }
             }
@@ -293,15 +305,21 @@ namespace BitBlazorUI {
         }
 
         // The direction is read off the element rather than taken from the options, so the swiper follows
-        // whatever it actually inherited (a dir attribute on an ancestor, for one).
+        // whatever it actually inherited (a dir attribute on an ancestor, for one). Reading it costs a
+        // style resolution, and a drag (and every frame of an animation) asks for it over and over, so it
+        // is read where the swiper is measured anyway and kept until the next measurement.
+        private readDirection() {
+            try {
+                this.direction = window.getComputedStyle(this.container).direction === 'rtl' ? 'rtl' : 'ltr';
+            } catch (e) {
+                this.direction = 'ltr';
+            }
+        }
+
         private get rtl(): boolean {
             if (this.vertical) return false;
 
-            try {
-                return window.getComputedStyle(this.container).direction === 'rtl';
-            } catch (e) {
-                return false;
-            }
+            return this.direction === 'rtl';
         }
 
         // The scroll position as a distance from the start of the content, which is the right edge in a
@@ -319,6 +337,8 @@ namespace BitBlazorUI {
         }
 
         private geometry(): SwiperGeometry {
+            this.readDirection();
+
             const container = this.container;
             const vertical = this.vertical;
             const rtl = this.rtl;
@@ -368,6 +388,71 @@ namespace BitBlazorUI {
 
             for (let i = 0; i < g.positions.length; i++) {
                 const distance = Math.abs(this.clamp(this.alignedPos(g, i), 0, g.max) - scroll);
+
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = i;
+                }
+            }
+
+            return best;
+        }
+
+        // Where the swiper stands on each of its pages, a page being one screenful of items. They are laid
+        // over the items rather than cut out of the scroll extent in viewport sized slices: a page starts
+        // at the first item the page before it had no room for, so the last page is the one that ends the
+        // swiper and standing at the end of the swiper is standing on it. Slicing the extent instead
+        // leaves a sliver of a page at the end of every swiper whose items do not divide evenly into
+        // screenfuls (the gaps between the items alone are enough for that), one the swiper can never
+        // reach the start of, so its dot would never be the current one.
+        private pages(g: SwiperGeometry): number[] {
+            if (g.viewport <= 0) return [];
+
+            const count = g.positions.length;
+
+            if (count === 0) return [];
+            if (g.max <= 1) return [0];
+
+            const result: number[] = [];
+
+            let i = 0;
+
+            while (i < count) {
+                const start = this.clamp(this.alignedPos(g, i), 0, g.max);
+
+                // A page that comes to rest where the one before it did is the same page (the items at the
+                // end of a swiper all rest at its end), so it is not given a dot of its own.
+                if (result.length > 0 && start <= result[result.length - 1] + 1) break;
+
+                result.push(start);
+
+                if (start >= g.max) break;
+
+                // The next page starts at the first item that no longer fits next to the one this page
+                // starts with, and never before the item after it, so an item wider than the swiper still
+                // moves it on rather than paging in place.
+                const edge = g.positions[i] + g.viewport;
+
+                let next = i + 1;
+
+                while (next < count && g.positions[next] + g.sizes[next] <= edge + 1) {
+                    next++;
+                }
+
+                i = next;
+            }
+
+            return result.length > 0 ? result : [0];
+        }
+
+        // The page the swiper is standing on is the one whose resting place is nearest to where it
+        // actually is, which is how the item it stands on is read too.
+        private pageAt(pages: number[], scroll: number): number {
+            let best = 0;
+            let bestDistance = Number.MAX_VALUE;
+
+            for (let i = 0; i < pages.length; i++) {
+                const distance = Math.abs(pages[i] - scroll);
 
                 if (distance < bestDistance) {
                     bestDistance = distance;
@@ -479,6 +564,10 @@ namespace BitBlazorUI {
         }
 
         private onPointerDown = (e: PointerEvent) => {
+            // A hand landing on the swiper takes it over, whichever pointer it came with: an animation
+            // that kept running under a finger would fight the scrolling the browser does for it.
+            this.cancelAnimation();
+
             // Touch and pen are left to the browser, which scrolls the swiper natively (with the
             // momentum and the snapping of the platform); only the mouse, which has no such scrolling
             // of its own, is dragged by hand here.
@@ -486,7 +575,7 @@ namespace BitBlazorUI {
             if (this.options.noDrag || this.options.enabled === false) return;
             if (this.isControl(e.target)) return;
 
-            this.cancelAnimation();
+            this.readDirection();
 
             this.dragging = true;
             this.moved = false;
@@ -551,7 +640,16 @@ namespace BitBlazorUI {
             // The browser follows a drag with a click on whatever the pointer came to rest over, which would
             // open the link (or press the button) the swiper was just dragged by. The one click that belongs
             // to this drag is swallowed on the way down, before it reaches anything inside the swiper.
-            this.container.addEventListener('click', this.swallowClick, { capture: true, once: true, signal: this.ac.signal });
+            //
+            // A drag does not always end with a click (a cancelled one, or one whose pointer was let go
+            // outside of the swiper, is followed by nothing), so the listener is taken off on the next
+            // frame rather than left waiting for a click that would only come much later, from somewhere
+            // else entirely.
+            this.container.addEventListener('click', this.swallowClick, { capture: true, signal: this.ac.signal });
+
+            requestAnimationFrame(() => {
+                this.container.removeEventListener('click', this.swallowClick, { capture: true });
+            });
 
             const g = this.geometry();
             const sign = this.rtl ? 1 : -1;
@@ -646,7 +744,11 @@ namespace BitBlazorUI {
             this.lastKey = key;
 
             try {
-                this.dotnetObj.invokeMethodAsync('OnStateChange', state);
+                // The call is not awaited (the swiper has nothing to do with what comes back), so the
+                // rejection of a swiper that went away mid-flight is picked up here rather than being
+                // left unhandled.
+                this.dotnetObj.invokeMethodAsync('OnStateChange', state)
+                    .catch(e => console.error("BitBlazorUI.Swiper.notify:", e));
             } catch (e) { console.error("BitBlazorUI.Swiper.notify:", e); }
         }
 
@@ -656,18 +758,12 @@ namespace BitBlazorUI {
             const scrollable = g.max > 1;
             const itemsCount = g.positions.length;
 
-            const pagesCount = (g.viewport > 0 && itemsCount > 0)
-                ? Math.max(1, Math.ceil((g.max + g.viewport) / g.viewport))
-                : 0;
-
-            const page = (g.viewport > 0 && pagesCount > 0)
-                ? Math.max(0, Math.min(pagesCount - 1, Math.round(g.scroll / g.viewport)))
-                : 0;
+            const pages = this.pages(g);
 
             return {
                 index: itemsCount > 0 ? this.indexAt(g, g.scroll) : 0,
-                page,
-                pagesCount,
+                page: pages.length > 0 ? this.pageAt(pages, g.scroll) : 0,
+                pagesCount: pages.length,
                 atStart: g.scroll <= 1,
                 atEnd: g.scroll >= g.max - 1,
                 scrollable,

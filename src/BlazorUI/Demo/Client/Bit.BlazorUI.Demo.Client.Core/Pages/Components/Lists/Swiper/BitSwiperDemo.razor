@@ -114,6 +114,18 @@
                 }
             </BitSwiper>
         </div>
+        <br /><br />
+        <div>End: each item comes to rest against the trailing edge of the swiper.</div>
+        <br />
+        <div>
+            <BitSwiper Snap="BitSwiperSnap.End" Gap="0.5rem" VisibleItemsCount="3">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    var index = i;
+                    <BitSwiperItem><div class="box-item">@index</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Multiple items" RazorCode="@example5RazorCode" Id="example5">
@@ -473,6 +485,31 @@
             <div>
                 <BitLabel>Error</BitLabel>
                 <BitSwiper ShowDots Color="BitColor.Error" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+        </div>
+        <br /><br />
+        <div>Accent, which only colors the dot of the current page:</div>
+        <br />
+        <div class="colors-container">
+            <div>
+                <BitLabel>Secondary</BitLabel>
+                <BitSwiper ShowDots Accent="BitColorKind.Secondary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            <div>
+                <BitLabel>Tertiary</BitLabel>
+                <BitSwiper ShowDots Accent="BitColorKind.Tertiary" Gap="0.5rem" VisibleItemsCount="2" Snap="BitSwiperSnap.Start">
                     @for (int i = 1; i <= 6; i++)
                     {
                         var index = i;

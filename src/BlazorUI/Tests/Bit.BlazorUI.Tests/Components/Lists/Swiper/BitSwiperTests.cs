@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -486,6 +487,10 @@ public class BitSwiperTests : BunitTestContext
         await PushState(component, viewport: 500);
         Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("--bit-swp-isz:100%"));
 
+        // between the small and the medium breakpoint the small variant applies
+        await PushState(component, viewport: 700);
+        Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("/ 2)"));
+
         // past the medium breakpoint the largest variant that was set wins
         await PushState(component, viewport: 1000);
         Assert.IsTrue((component.Find(".bit-swp").GetAttribute("style") ?? string.Empty).Contains("/ 3)"));
@@ -852,7 +857,7 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(true, LastInvocation("BitBlazorUI.Swiper.goToEdge").Arguments[1]);
 
         await component.InvokeAsync(swiper.Refresh);
-        Assert.IsNotNull(LastInvocation("BitBlazorUI.Swiper.refresh"));
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Swiper.refresh");
     }
 
     [TestMethod]
@@ -880,8 +885,10 @@ public class BitSwiperTests : BunitTestContext
         await PushState(component, pagesCount: 3);
 
         await component.InvokeAsync(() => component.Instance.Swiper.GoToPage(99));
-
         Assert.AreEqual(2, LastInvocation("BitBlazorUI.Swiper.goToPage").Arguments[1]);
+
+        await component.InvokeAsync(() => component.Instance.Swiper.GoToPage(-5));
+        Assert.AreEqual(0, LastInvocation("BitBlazorUI.Swiper.goToPage").Arguments[1]);
     }
 
     [TestMethod]
@@ -967,12 +974,23 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual(0, LastInvocation("BitBlazorUI.Swiper.goToPage").Arguments[1]);
     }
 
-    [TestMethod]
-    public void BitSwiperShouldIgnoreModifiedKeys()
+    [TestMethod,
+        DataRow("Ctrl"),
+        DataRow("Alt"),
+        DataRow("Shift"),
+        DataRow("Meta")]
+    public void BitSwiperShouldIgnoreModifiedKeys(string modifier)
     {
         var component = RenderComponent<BitSwiperTest>();
 
-        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs
+        {
+            Key = "ArrowRight",
+            CtrlKey = modifier == "Ctrl",
+            AltKey = modifier == "Alt",
+            ShiftKey = modifier == "Shift",
+            MetaKey = modifier == "Meta"
+        });
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.go"));
     }
@@ -1240,6 +1258,11 @@ public class BitSwiperTests : BunitTestContext
     // The options the swiper hands to the browser are an internal type, so they are read back by name.
     private static object? ReadOption(object options, string name)
     {
-        return options.GetType().GetProperty(name)?.GetValue(options);
+        // A member that was renamed away would otherwise read as null and quietly pass the assertions
+        // that compare it against a default of the same shape.
+        var property = options.GetType().GetProperty(name)
+            ?? throw new InvalidOperationException($"The '{name}' option is missing from {options.GetType().Name}.");
+
+        return property.GetValue(options);
     }
 }

@@ -41,12 +41,6 @@
     }
 }
 
-.thumbs-container {
-    display: flex;
-    gap: rem2(8px);
-    margin-top: rem2(8px);
-}
-
 ::deep {
     .item {
         width: 250px;

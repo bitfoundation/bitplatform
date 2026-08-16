@@ -19,6 +19,8 @@
            DotTemplate="DotTemplate"
            DefaultItem="DefaultItem"
            HideNextPrev="HideNextPrev"
+           NextIcon="NextIcon"
+           PrevIcon="PrevIcon"
            NextIconName="@NextIconName"
            PrevIconName="@PrevIconName"
            ShowPlayPause="ShowPlayPause"
@@ -81,6 +83,8 @@
     [Parameter] public int? VisibleItemsCountMd { get; set; }
     [Parameter] public BitColorKind? Accent { get; set; }
     [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public BitIconInfo? NextIcon { get; set; }
+    [Parameter] public BitIconInfo? PrevIcon { get; set; }
     [Parameter] public string? NextIconName { get; set; }
     [Parameter] public string? PrevIconName { get; set; }
     [Parameter] public string DotAriaLabel { get; set; } = "Slide";

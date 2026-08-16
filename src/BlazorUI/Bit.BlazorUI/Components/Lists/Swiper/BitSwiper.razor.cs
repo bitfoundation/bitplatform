@@ -42,8 +42,12 @@ public partial class BitSwiper : BitComponentBase
     private int _internalScrollItemsCount = 1;
     private System.Timers.Timer? _autoPlayTimer;
     private string _directionStyle = string.Empty;
-    private string _nextButtonStyle = string.Empty;
-    private string _prevButtonStyle = string.Empty;
+
+    // Nothing is known about how far the swiper reaches until the browser has measured it, and a button
+    // that flashed into view only to hide itself on the first measurement would move the items under it.
+    // The initial state below (nothing to scroll, standing at both ends at once) says the same thing.
+    private string _nextButtonStyle = "display:none";
+    private string _prevButtonStyle = "display:none";
     private readonly List<BitSwiperItem> _allItems = [];
     private ElementReference _swiperContainer = default!;
     private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
@@ -586,7 +590,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToStart()
     {
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, false);
     }
@@ -596,7 +600,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToEnd()
     {
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, true);
     }

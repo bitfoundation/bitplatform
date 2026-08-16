@@ -755,6 +755,14 @@ public partial class BitSwiperDemo
         var index = i;
         <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
     }
+</BitSwiper>
+
+<BitSwiper Snap=""BitSwiperSnap.End"" Gap=""0.5rem"" VisibleItemsCount=""3"">
+    @for (int i = 1; i <= 12; i++)
+    {
+        var index = i;
+        <BitSwiperItem><div class=""box-item"">@index</div></BitSwiperItem>
+    }
 </BitSwiper>";
 
     private readonly string example5RazorCode = cardStyle + @"
@@ -927,7 +935,9 @@ private async Task GoToStart() => await swiper.GoToStart();
 
 private async Task GoToEnd() => await swiper.GoToEnd();";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example14RazorCode = itemStyle + @"
+
+
 <BitSwiper AutoPlay
            ShowDots
            ShowPlayPause
@@ -980,6 +990,22 @@ private async Task GoToEnd() => await swiper.GoToEnd();";
 </BitSwiper>
 
 <BitSwiper ShowDots Color=""BitColor.Error"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+    @for (int i = 1; i <= 6; i++)
+    {
+        var index = i;
+        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
+    }
+</BitSwiper>
+
+<BitSwiper ShowDots Accent=""BitColorKind.Secondary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
+    @for (int i = 1; i <= 6; i++)
+    {
+        var index = i;
+        <BitSwiperItem><div class=""card-item"">@index</div></BitSwiperItem>
+    }
+</BitSwiper>
+
+<BitSwiper ShowDots Accent=""BitColorKind.Tertiary"" Gap=""0.5rem"" VisibleItemsCount=""2"" Snap=""BitSwiperSnap.Start"">
     @for (int i = 1; i <= 6; i++)
     {
         var index = i;

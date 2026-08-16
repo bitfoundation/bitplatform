@@ -39,7 +39,6 @@ public partial class BitSwiperItem : BitComponentBase
             if (index == value) return;
 
             index = value;
-            ClassBuilder.Reset();
         }
     }
     private int index;
@@ -113,7 +112,16 @@ public partial class BitSwiperItem : BitComponentBase
 
         var format = Swiper?.ItemAriaLabelFormat;
 
-        return string.Format(CultureInfo.CurrentCulture, format.HasValue() ? format! : "{0} of {1}", Index + 1, count);
+        if (format.HasValue())
+        {
+            try
+            {
+                return string.Format(CultureInfo.CurrentCulture, format!, Index + 1, count);
+            }
+            catch (FormatException) { } // a format that cannot be filled in falls back to the default one
+        }
+
+        return string.Format(CultureInfo.CurrentCulture, "{0} of {1}", Index + 1, count);
     }
 
 
