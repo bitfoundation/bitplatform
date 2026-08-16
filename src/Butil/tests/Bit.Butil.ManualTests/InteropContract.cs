@@ -57,9 +57,24 @@ internal sealed record TypeContract(string TypeName, bool IsCallbackTarget, bool
         => value.Length == 0 ? [] : value.Split(',');
 }
 
+/// <summary>
+/// What an untrimmed run records for a trimmed run to check itself against: the interop contract, plus the
+/// roster of <c>[ButilService]</c> names so the trimmed run can tell a genuinely trimmed-away service from a
+/// name that no longer refers to anything.
+/// </summary>
+internal sealed record InteropManifest(string[] ServiceNames, TypeContract[] Types);
+
 internal static class InteropContract
 {
-    private const BindingFlags PublicMembers = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+    /// <summary>
+    /// Deliberately without <see cref="BindingFlags.DeclaredOnly"/>: interop sees a type whole. JS dispatches
+    /// an inherited <c>[JSInvokable]</c> method by name just the same, and System.Text.Json serializes a
+    /// payload's inherited properties along with its own - so both have to be captured and verified.
+    /// </summary>
+    private const BindingFlags PublicMembers = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+
+    /// <summary>Marks the service-roster line in the manifest file.</summary>
+    private const string ServicesPrefix = "@services|";
 
     /// <summary>
     /// Builds the contract for an assembly: every type carrying <c>[JSInvokable]</c> methods, plus the
@@ -78,10 +93,13 @@ internal static class InteropContract
         {
             if (type.IsGenericTypeDefinition) continue;
 
+            // inherit: true so an override of a [JSInvokable] base method counts - JS dispatches it by name
+            // either way, and only the most derived declaration comes back from GetMethods.
             var jsInvokable = type
                 .GetMethods(PublicMembers)
-                .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false))
+                .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: true))
                 .Select(method => method.Name)
+                .Distinct(StringComparer.Ordinal)
                 .OrderBy(name => name, StringComparer.Ordinal)
                 .ToArray();
 
@@ -89,7 +107,7 @@ internal static class InteropContract
             if (jsInvokable.Length == 0 && isPayload is false) continue;
 
             var properties = isPayload
-                ? type.GetProperties(PublicMembers).Select(property => property.Name).OrderBy(name => name, StringComparer.Ordinal).ToArray()
+                ? type.GetProperties(PublicMembers).Select(property => property.Name).Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToArray()
                 : [];
 
             contracts.Add(new TypeContract(type.FullName!, jsInvokable.Length > 0, isPayload, type.GetConstructors().Length, jsInvokable, properties));
@@ -150,11 +168,12 @@ internal static class InteropContract
         return ([.. callbackTargets], [.. payloads], removedCount, [.. failures]);
     }
 
-    public static void Write(string path, TypeContract[] contracts)
+    public static void Write(string path, InteropManifest manifest)
     {
         var builder = new StringBuilder();
         builder.AppendLine("# Bit.Butil interop contract captured from an untrimmed build. Regenerate with: dotnet run -c Release");
-        foreach (var contract in contracts)
+        builder.AppendLine(ServicesPrefix + string.Join(',', manifest.ServiceNames.OrderBy(name => name, StringComparer.Ordinal)));
+        foreach (var contract in manifest.Types)
         {
             builder.AppendLine(contract.Serialize());
         }
@@ -162,15 +181,24 @@ internal static class InteropContract
         File.WriteAllText(path, builder.ToString());
     }
 
-    public static TypeContract[]? Read(string path)
+    public static InteropManifest? Read(string path)
     {
         if (File.Exists(path) is false) return null;
 
-        return [.. File.ReadAllLines(path)
-            .Where(line => line.Length > 0 && line.StartsWith('#') is false)
+        var lines = File.ReadAllLines(path).Where(line => line.Length > 0 && line.StartsWith('#') is false).ToArray();
+
+        var services = lines.FirstOrDefault(line => line.StartsWith(ServicesPrefix, StringComparison.Ordinal)) is { } line1
+            ? line1[ServicesPrefix.Length..].Split(',', StringSplitOptions.RemoveEmptyEntries)
+            : [];
+
+        var types = lines
+            .Where(line => line.StartsWith(ServicesPrefix, StringComparison.Ordinal) is false)
             .Select(TypeContract.Deserialize)
             .Where(contract => contract is not null)
-            .Select(contract => contract!)];
+            .Select(contract => contract!)
+            .ToArray();
+
+        return new InteropManifest(services, types);
     }
 
     /// <summary>

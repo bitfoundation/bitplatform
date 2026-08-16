@@ -26,22 +26,34 @@ internal static class Program
     /// <summary>Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these.</summary>
     private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
 
-    /// <summary>
-    /// Butil services nothing in this project references - trimming must remove these. They are also how
-    /// the report tells a trimmed run from an untrimmed one, without hard-coding a total type count.
-    /// </summary>
+    /// <summary>Butil services nothing in this project references - trimming must remove these.</summary>
     private static readonly string[] MustBeTrimmed = ["Fetch", "IndexedDb", "MediaRecorder", "SpeechSynthesis", "WebAuthn"];
 
     /// <summary>
-    /// Where the untrimmed run records the interop contract for the trimmed run to check against. Relative
-    /// to the working directory, so both runs see the same file when launched from the project folder.
+    /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
+    /// check against. Relative to the working directory, so both runs see the same file when launched from
+    /// the project folder.
     /// </summary>
     private const string ManifestFileName = "interop-manifest.txt";
+
+    /// <summary>
+    /// Publish-only file the csproj drops next to a trimmed executable, and the whole of how this program
+    /// knows which kind of build it is running as.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately not inferred from the assembly's contents: "some expected service names are missing, so
+    /// this must be trimmed" cannot tell a trimmed build from a stale name left behind by a rename, and
+    /// guessing wrong there quietly turns the checks below into no-ops.
+    /// </remarks>
+    private const string TrimmedMarkerFileName = "trimmed-publish.marker";
 
     private static async Task<int> Main()
     {
         var failures = new List<string>();
         var assembly = typeof(BitButil).Assembly;
+        var trimmed = File.Exists(Path.Combine(AppContext.BaseDirectory, TrimmedMarkerFileName));
+        var mode = trimmed ? "TRIMMED" : "UNTRIMMED";
+        var manifest = InteropContract.Read(ManifestFileName);
 
         var services = new ServiceCollection();
         services.AddSingleton<IJSRuntime>(new StubJSRuntime());
@@ -55,11 +67,7 @@ internal static class Program
         var discovered = DiscoverButilServices(assembly);
         var discoveredNames = discovered.Select(entry => entry.Type.Name).ToHashSet(StringComparer.Ordinal);
         var registeredNames = registered.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
-
-        var absent = MustBeTrimmed.Where(name => discoveredNames.Contains(name) is false).ToArray();
-        var mode = absent.Length == MustBeTrimmed.Length ? "TRIMMED"
-                 : absent.Length == 0 ? "UNTRIMMED"
-                 : "PARTIAL";
+        var unattributed = UnattributedServiceCandidates(assembly, discovered);
 
         Console.WriteLine("=== Bit.Butil trimming report ===");
         Console.WriteLine($"assembly       : {assembly.Location}");
@@ -87,19 +95,44 @@ internal static class Program
         }
         Console.WriteLine();
 
-        foreach (var name in MustSurvive.Where(name => discoveredNames.Contains(name) is false))
+        Console.WriteLine("--- service classes without [ButilService] ---");
+        Console.WriteLine($"  {(unattributed.Length == 0 ? "none" : string.Join(", ", unattributed.Select(type => type.Name)))}");
+        foreach (var type in unattributed)
         {
-            failures.Add($"{name} is used by ConsumerComponent but did not survive trimming.");
+            failures.Add($"{type.Name} looks like a Butil service (public class taking an IJSRuntime) but carries no [ButilService], so nothing registers it - injecting it fails at runtime with \"Cannot provide a value for property\".");
+        }
+        Console.WriteLine();
+
+        // The two lists above are names, and a renamed service leaves behind a name that matches nothing.
+        // Checking them against the roster of services that genuinely exist turns that into a plain "unknown
+        // name" failure rather than a check that silently stops asserting anything.
+        var roster = trimmed ? manifest?.ServiceNames.ToHashSet(StringComparer.Ordinal) : discoveredNames;
+        if (roster is not null)
+        {
+            foreach (var name in MustSurvive.Concat(MustBeTrimmed).Where(name => roster.Contains(name) is false))
+            {
+                failures.Add(trimmed
+                    ? $"{name} is an expected Butil service name but the untrimmed capture in {ManifestFileName} has no such service - the name here is stale (renamed or removed), or the manifest is."
+                    : $"{name} is an expected Butil service name but this untrimmed build has no [ButilService] class called that - the name here is stale (renamed or removed), or this is really a trimmed run whose {TrimmedMarkerFileName} went missing.");
+            }
         }
 
-        if (mode == "PARTIAL")
+        if (trimmed)
         {
+            foreach (var name in MustSurvive.Where(name => discoveredNames.Contains(name) is false))
+            {
+                failures.Add($"{name} is used by ConsumerComponent but did not survive trimming.");
+            }
+
             var unexpected = MustBeTrimmed.Where(name => discoveredNames.Contains(name)).ToArray();
-            failures.Add($"unused services survived trimming: {string.Join(", ", unexpected)}");
+            if (unexpected.Length > 0)
+            {
+                failures.Add($"unused services survived trimming: {string.Join(", ", unexpected)}");
+            }
         }
 
         Console.WriteLine("--- interop contract ---");
-        VerifyInteropContract(assembly, mode, failures);
+        VerifyInteropContract(assembly, trimmed, manifest, [.. discoveredNames], failures);
         Console.WriteLine();
 
         Console.WriteLine("--- activation ---");
@@ -146,27 +179,29 @@ internal static class Program
     /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
     /// type that survived while losing members it is reflected over is a defect.
     /// </remarks>
-    private static void VerifyInteropContract(Assembly assembly, string mode, List<string> failures)
+    private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string[] serviceNames, List<string> failures)
     {
         var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
 
-        if (mode == "UNTRIMMED")
+        if (trimmed is false)
         {
-            InteropContract.Write(ManifestFileName, contracts);
-            Console.WriteLine($"  captured {contracts.Length} types ({contracts.Count(contract => contract.IsCallbackTarget)} with [JSInvokable] callbacks, {contracts.Count(contract => contract.IsPayload)} JSON payloads)");
+            InteropContract.Write(ManifestFileName, new InteropManifest(serviceNames, contracts));
+            Console.WriteLine($"  captured {contracts.Length} types ({contracts.Count(contract => contract.IsCallbackTarget)} with [JSInvokable] callbacks, {contracts.Count(contract => contract.IsPayload)} JSON payloads) and {serviceNames.Length} service names");
             Console.WriteLine($"  written to {Path.GetFullPath(ManifestFileName)}");
             return;
         }
 
-        var expected = InteropContract.Read(ManifestFileName);
-        if (expected is null)
+        // A missing manifest is a failure rather than a skip: without it this half of the harness verifies
+        // nothing, and a run that verifies nothing must not be able to report PASS.
+        if (manifest is null)
         {
-            Console.WriteLine($"  SKIPPED - no {ManifestFileName} in {Directory.GetCurrentDirectory()}");
+            Console.WriteLine($"  NOT VERIFIED - no {ManifestFileName} in {Directory.GetCurrentDirectory()}");
             Console.WriteLine("  run `dotnet run -c Release` from the project folder first, then re-run this executable from there");
+            failures.Add($"the interop contract was not checked at all: no {ManifestFileName} in {Directory.GetCurrentDirectory()} to compare the trimmed assembly against.");
             return;
         }
 
-        var (callbackTargets, payloads, removedTypes, contractFailures) = InteropContract.Verify(assembly, expected);
+        var (callbackTargets, payloads, removedTypes, contractFailures) = InteropContract.Verify(assembly, manifest.Types);
         Console.WriteLine($"  {callbackTargets.Length + payloads.Length} surviving types checked, {removedTypes} trimmed away entirely, {contractFailures.Length} problems");
         Console.WriteLine($"  [JSInvokable] targets intact (methods): {Format(callbackTargets)}");
         Console.WriteLine($"  JSON payloads intact (properties)     : {Format(payloads)}");
@@ -182,6 +217,35 @@ internal static class Program
                 .Select(type => (Type: type, Attribute: type.GetCustomAttribute<ButilServiceAttribute>(inherit: false)))
                 .Where(entry => entry.Attribute is not null)
                 .Select(entry => (entry.Type, entry.Attribute!.ServiceType))];
+
+    /// <summary>
+    /// Butil service classes found by <b>shape</b> - public, constructible, taking an <see cref="IJSRuntime"/> -
+    /// that carry no <see cref="ButilServiceAttribute"/>.
+    /// </summary>
+    /// <remarks>
+    /// Every other check here starts from the attribute, so a class that simply never got one is invisible
+    /// to all of them: the report still says "57 of 57 registered, PASS" while consumers hit "Cannot provide
+    /// a value for property" at runtime. That is the failure mode reflection-based registration introduces -
+    /// there is no central <c>AddScoped&lt;T&gt;()</c> list whose absence a reviewer would notice - so it is
+    /// the one thing this harness has to find without being told the answer.
+    /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Enumerating the surviving types is what this harness measures; a type the trimmer removed cannot be an unregistered service in the consumer's app either.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Reading the constructors the trimmer left behind is the measurement; a class stripped to zero constructors simply does not match the shape.")]
+    private static Type[] UnattributedServiceCandidates(Assembly assembly, (Type Type, Type ServiceType)[] discovered)
+    {
+        var attributed = discovered.Select(entry => entry.Type).ToHashSet();
+
+        return [.. assembly.GetTypes()
+            .Where(type => type.IsClass && type.IsPublic && type.IsAbstract is false && type.IsGenericTypeDefinition is false)
+            .Where(type => attributed.Contains(type) is false)
+            .Where(type => type.GetConstructors().Any(constructor => constructor.GetParameters().Any(parameter => parameter.ParameterType == typeof(IJSRuntime))))
+            // ButilStorage takes an IJSRuntime and is public, but it is the shared base of LocalStorage and
+            // SessionStorage rather than a service of its own - it reaches DI through them.
+            .Where(type => attributed.Any(service => service.IsSubclassOf(type)) is false)
+            .OrderBy(type => type.Name, StringComparer.Ordinal)];
+    }
 
     [UnconditionalSuppressMessage("Trimming", "IL2070",
         Justification = "Reporting the constructors the trimmer actually left behind; a zero count is a result, not an error to avoid.")]

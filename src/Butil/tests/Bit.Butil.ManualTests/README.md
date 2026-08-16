@@ -28,6 +28,13 @@ callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish shoul
 **Registration.** Every `[ButilService]` class that survives must be registered and must still have a
 public constructor; the services nothing references must be gone.
 
+That check starts from the attribute, so on its own it is blind to a service class that never got one -
+the report would happily say "57 of 57 registered" while consumers hit *Cannot provide a value for
+property* at runtime. So the harness also looks for service classes by **shape**: a public, constructible
+class taking an `IJSRuntime`. Any such class without `[ButilService]` is a failure. (`ButilStorage` is
+excluded: it takes an `IJSRuntime` too, but it is the shared base of `LocalStorage` and `SessionStorage`
+rather than a service in its own right.)
+
 **Interop contract** ([`InteropContract.cs`](InteropContract.cs)). Registration only settles who gets
 *registered*. Two other things are resolved by name at runtime and would fail silently in the browser:
 
@@ -36,9 +43,23 @@ public constructor; the services nothing references must be gone.
 - **JSON payload types**, whose constructors and properties `System.Text.Json` reflects over, so a
   trimmed-away property becomes a silently null field rather than an error.
 
-The untrimmed run captures both into `interop-manifest.txt`; the trimmed run checks the trimmed
-assembly against it. Types the trimmer removed entirely are skipped - that is the feature working. Only
-a type that **survived while losing members it is reflected over** counts as a defect.
+The untrimmed run captures both into `interop-manifest.txt` - along with the roster of `[ButilService]`
+names - and the trimmed run checks the trimmed assembly against it. Types the trimmer removed entirely
+are skipped - that is the feature working. Only a type that **survived while losing members it is
+reflected over** counts as a defect.
+
+Members are captured and verified *including inherited ones*, because interop sees a type whole: JS
+dispatches an inherited `[JSInvokable]` method by name just the same, and `System.Text.Json` serializes a
+payload's inherited properties along with its own.
+
+## How it knows which run it is
+
+From `trimmed-publish.marker`, which the csproj copies to the **publish** output only (never to the build
+output `dotnet run` executes) and only when `PublishTrimmed` is on. Inferring the mode from the assembly
+instead - "the services nothing references are gone, so this must be trimmed" - cannot tell a trimmed
+build from a service name in `MustBeTrimmed` that went stale after a rename, and getting that wrong turns
+the checks into no-ops. The name lists are themselves validated against the real service roster (the
+assembly's own when untrimmed, the manifest's when trimmed), so a stale name is reported as a stale name.
 
 Payload types are named explicitly in `ConsumerComponent.ExercisedPayloadTypes` (and expanded
 transitively through their own properties) rather than inferred from every public signature. Inferring
@@ -59,8 +80,8 @@ dotnet publish -c Release
 ./bin/Release/net10.0/<rid>/publish/Bit.Butil.ManualTests
 ```
 
-Without a manifest the interop check reports `SKIPPED` instead of failing, so a bare publish-and-run
-still gives you the registration half.
+The untrimmed run has to come first: a trimmed run with no manifest to compare against **fails**, because
+it would otherwise report `PASS` having verified none of the interop contract.
 
 ## Reference results
 
@@ -69,7 +90,7 @@ still gives you the registration half.
 | `Bit.Butil.dll` | 612,352 bytes | 109,056 bytes |
 | types in assembly | 784 | 140 |
 | `[ButilService]` discovered / registered | 57 / 57 | 5 / 5 |
-| interop contract | 41 types captured | 9 checked, 32 trimmed away, 0 problems |
+| interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
@@ -91,11 +112,15 @@ assembly comes out at 30,720 bytes and 36 types.
   attribute have drifted apart.
 - **`X is marked [ButilService(typeof(Y))]`** - copy-paste slip; the argument has to be the decorated
   type itself or the wrong service gets registered.
+- **`X looks like a Butil service ... but carries no [ButilService]`** - a new service class was added
+  without the attribute. Nothing registers it, and the only symptom otherwise is a consumer's runtime
+  *Cannot provide a value for property*.
+- **`X is an expected Butil service name but ...`** - a name in `MustSurvive`/`MustBeTrimmed` no longer
+  matches a service (usually a rename). Fix the list, or the check it belongs to is asserting nothing.
+- **`the interop contract was not checked at all`** - the trimmed run found no `interop-manifest.txt`.
+  Run `dotnet run -c Release` from the project folder first, then re-run the published executable there.
 - **`unused services survived trimming`** - something re-introduced a static reference to the whole
   service set (a hard-coded `AddScoped<T>()` list, a `Type[]` of all services, a `switch` over them).
   That is the regression this harness is guarding against.
 - **`X is used by ConsumerComponent but did not survive trimming`** - a used service is being dropped,
   which would break consumers outright.
-
-`RESULT: PARTIAL` means only some of the unused services were trimmed - read the list, it is a real
-finding rather than a harness glitch.

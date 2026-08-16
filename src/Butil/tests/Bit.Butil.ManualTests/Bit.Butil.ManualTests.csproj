@@ -30,6 +30,18 @@
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
+  <!-- How the program knows which of the two runs it is. CopyToPublishDirectory puts the marker next to
+       the published executable only - the build output `dotnet run` executes never gets it - and the
+       condition keeps an untrimmed `dotnet publish -p:PublishTrimmed=false` honest. Reading the mode off
+       the build beats inferring it from which service names happen to be missing from the assembly, which
+       cannot distinguish a trimmed build from a name left stale by a rename. -->
+  <ItemGroup>
+    <None Update="trimmed-publish.marker"
+          CopyToOutputDirectory="Never"
+          CopyToPublishDirectory="PreserveNewest"
+          Condition=" '$(PublishTrimmed)' == 'true' " />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../Bit.Butil/Bit.Butil.csproj" />
   </ItemGroup>
