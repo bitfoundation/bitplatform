@@ -2,93 +2,367 @@
 
 .bit-swp {
     margin: auto;
+    display: flex;
     overflow: hidden;
     position: relative;
-    touch-action: pan-y;
+    flex-direction: column;
+
+    // The dot of the current page takes the accent (or the Color) of the swiper, and the buttons take the
+    // neutral foreground so they stay legible over whatever the items hold. The uncolored swiper resolves
+    // to the primary accent.
+    --bit-swp-clr: #{$clr-pri};
+    --bit-swp-clr-hover: #{$clr-pri-hover};
+    --bit-swp-btn: #{$clr-fg-pri};
+    --bit-swp-btn-hover: #{$clr-fg-pri-hover};
+    --bit-swp-dot: #{$clr-bg-ter};
+    --bit-swp-dot-hover: #{$clr-bg-ter-hover};
+    --bit-swp-gap: 0px;
+    --bit-swp-dot-size: #{spacing(1.25)};
+    --bit-swp-btn-size: #{spacing(3)};
+
+    // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
+    // covers both orientations.
+    --bit-swp-axis: x;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
-.bit-swpi {
-    flex-shrink: 0;
+// The box the items scroll in, holding the next/prev buttons alongside it so they stay in place while the
+// items travel under them.
+.bit-swp-vwp {
+    order: 1;
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
 }
 
 .bit-swp-cnt {
-    width: 100%;
-    height: 100%;
-    cursor: grab;
+    flex: 1 1 auto;
     display: flex;
+    cursor: grab;
+    min-width: 0;
+    min-height: 0;
+    gap: var(--bit-swp-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: var(--bit-swp-snap, none);
+
+    // The swiper is scrolled by hand far more often than by its scrollbar, and the bar would sit across
+    // the items it is drawn under. ShowScrollbar brings it back.
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// The browser snaps back to the nearest snap point after every scroll it is handed, which would cut short
+// an animation (or a drag) that moves the swiper a frame at a time, so the snapping steps aside while the
+// swiper is being moved by hand and is handed back the moment it comes to rest.
+.bit-swp-cnt.bit-swp-anm,
+.bit-swp-cnt.bit-swp-drg {
+    --bit-swp-snap: none;
+}
+
+.bit-swp-cnt.bit-swp-drg {
+    cursor: grabbing;
     user-select: none;
-    transform: translateX(0);
-    transition-duration: $mot-duration-long;
-    transition-timing-function: ease-out;
-    transition-property: transform, -webkit-transform;
+}
+
+// A swiper that cannot be dragged does not offer to be, so the text inside it keeps the cursor that says
+// it can be selected instead.
+.bit-swp-ndr .bit-swp-cnt {
+    cursor: default;
+}
+
+.bit-swp-scb .bit-swp-cnt {
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar {
+        display: block;
+    }
+}
+
+.bit-swpi {
+    // The items keep whatever size they were given, unless the swiper was told how many of them to show at
+    // a time, which arrives as this variable.
+    flex: 0 0 var(--bit-swp-isz, auto);
+    box-sizing: border-box;
+
+    // The automatic minimum size of a flex item is the size of its content, which would push an item wider
+    // than the fraction of the swiper it was given the moment it holds anything that does not fit. Nothing
+    // shrinks the items either way (their flex-shrink is 0), so taking it away only ever keeps them at the
+    // size they were asked to be.
+    min-width: 0;
+    min-height: 0;
+}
+
+.bit-swp-snp {
+    --bit-swp-snap: var(--bit-swp-axis) mandatory;
+}
+
+.bit-swp-sns .bit-swpi {
+    scroll-snap-align: start;
+}
+
+.bit-swp-snc .bit-swpi {
+    scroll-snap-align: center;
+}
+
+.bit-swp-sne .bit-swpi {
+    scroll-snap-align: end;
+}
+
+// A vertical swiper is laid out over its own height, so it needs one; this is the default, which any
+// height set through the Style parameter or a class replaces.
+.bit-swp-vrt {
+    height: spacing(25);
+    --bit-swp-axis: y;
+
+    .bit-swp-cnt {
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-x: auto;
+        overscroll-behavior-y: contain;
+    }
 }
 
 .bit-swp-rbt,
-.bit-swp-lbt {
-    top: 0;
-    bottom: 0;
+.bit-swp-lbt,
+.bit-swp-ppb {
     border: 0;
-    width: 10%;
     padding: 0;
     z-index: 1;
     opacity: .5;
     display: flex;
     cursor: pointer;
     background: 0 0;
-    position: absolute;
     text-align: center;
     align-items: center;
-    font-size: spacing(3);
     justify-content: center;
+    color: var(--bit-swp-btn);
+    font-size: var(--bit-swp-btn-size);
     transition: opacity $mot-duration ease;
-    color: $clr-fg-pri;
 
     @media (hover: hover) {
         &:hover {
             outline: 0;
             opacity: .9;
             text-decoration: none;
-            color: $clr-fg-pri-hover;
+            color: var(--bit-swp-btn-hover);
+        }
+    }
+
+    &:focus-visible {
+        opacity: 1;
+
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+    }
+}
+
+// The buttons are placed with logical properties, so the next button sits at the right of a left-to-right
+// swiper and at the left of a right-to-left one without either of them being rendered twice.
+.bit-swp-rbt,
+.bit-swp-lbt {
+    top: 0;
+    bottom: 0;
+    width: 10%;
+    z-index: 2;
+    position: absolute;
+}
+
+.bit-swp-rbt {
+    inset-inline-end: 0;
+}
+
+.bit-swp-lbt {
+    inset-inline-start: 0;
+}
+
+// A vertical swiper scrolls along its height, so the buttons move to the edges it actually scrolls
+// towards: the next button to the bottom and the previous one to the top.
+.bit-swp-vrt {
+    .bit-swp-rbt,
+    .bit-swp-lbt {
+        top: unset;
+        bottom: unset;
+        inset-inline: 0;
+        width: 100%;
+        height: 10%;
+    }
+
+    .bit-swp-rbt {
+        bottom: 0;
+    }
+
+    .bit-swp-lbt {
+        top: 0;
+    }
+}
+
+// The row of controls is rendered before the items so the play/pause button is the first thing the
+// keyboard reaches (see the comment in the markup), and ordered back below them here, so the change of the
+// reading order costs nothing visually.
+.bit-swp-dcn {
+    order: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: spacing(0.5);
+    margin-top: spacing(1.25);
+}
+
+.bit-swp-ppb {
+    position: relative;
+    font-size: calc(var(--bit-swp-dot-size) + #{spacing(0.5)});
+}
+
+// The dots group scopes the accessible label to the dots alone (the play/pause button lives outside of
+// it). It lays the dots out exactly like its container does, so the row looks the same with or without the
+// button next to it.
+.bit-swp-dts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: spacing(0.5);
+}
+
+.bit-swp-dot {
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+    display: inline-block;
+    width: var(--bit-swp-dot-size);
+    height: var(--bit-swp-dot-size);
+    background-color: var(--bit-swp-dot);
+    transition: background-color $mot-duration-long ease;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-swp-dot-hover);
+        }
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        background-color: $clr-bg-dis;
+    }
+}
+
+// A dot that carries its own content (DotTemplate) is laid out around it instead of being drawn as the
+// fixed size circle, so a page number or a thumbnail is not squeezed into it.
+.bit-swp-dtt {
+    width: auto;
+    height: auto;
+    line-height: 1;
+    border-radius: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bit-swp-btn);
+    background-color: transparent;
+    transition: color $mot-duration-long ease;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: transparent;
+            color: var(--bit-swp-btn-hover);
+        }
+    }
+
+    &:disabled {
+        color: $clr-fg-dis;
+        background-color: transparent;
+    }
+}
+
+.bit-swp-cud {
+    background-color: var(--bit-swp-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--bit-swp-clr-hover);
         }
     }
 }
 
-.bit-swp-rbt {
-    right: 0;
+.bit-swp-dtt.bit-swp-cud {
+    background-color: transparent;
+    color: var(--bit-swp-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: transparent;
+            color: var(--bit-swp-clr-hover);
+        }
+    }
 }
 
-.bit-swp-lbt {
-    left: 0;
+
+.bit-swp-sm {
+    --bit-swp-dot-size: #{spacing(1)};
+    --bit-swp-btn-size: #{spacing(2)};
 }
 
-.bit-swp-dot {
-    text-align: center;
-    margin-top: spacing(1.25);
+.bit-swp-md {
+    --bit-swp-dot-size: #{spacing(1.25)};
+    --bit-swp-btn-size: #{spacing(3)};
+}
 
-    > div {
-        cursor: pointer;
-        border-radius: 50%;
-        width: spacing(1.25);
-        height: spacing(1.25);
-        display: inline-block;
-        margin: 0 spacing(0.5);
-        transition: background-color $mot-duration-long ease;
-        background-color: $clr-bg-sec;
+.bit-swp-lg {
+    --bit-swp-dot-size: #{spacing(1.75)};
+    --bit-swp-btn-size: #{spacing(4)};
+}
 
-        @media (hover: hover) {
-            &:hover {
-                background-color: $clr-bg-sec-hover;
-            }
-        }
 
-        &.current {
-            background-color: $clr-pri;
+.bit-swp-apri {
+    --bit-swp-clr: #{$clr-pri};
+    --bit-swp-clr-hover: #{$clr-pri-hover};
+}
 
-            @media (hover: hover) {
-                &:hover {
-                    background-color: $clr-pri-hover;
-                }
-            }
-        }
+.bit-swp-asec {
+    --bit-swp-clr: #{$clr-sec};
+    --bit-swp-clr-hover: #{$clr-sec-hover};
+}
+
+.bit-swp-ater {
+    --bit-swp-clr: #{$clr-ter};
+    --bit-swp-clr-hover: #{$clr-ter-hover};
+}
+
+.bit-swp-atra {
+    --bit-swp-clr: transparent;
+    --bit-swp-clr-hover: transparent;
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit
+// after the accent classes, so a swiper that sets both Color and Accent renders with its Color. The
+// buttons take the role color as well, so the whole chrome of the swiper reads as that role.
+@each $role, $tokens in $bit-color-roles {
+    .bit-swp-#{$role} {
+        --bit-swp-clr: #{role($tokens, main)};
+        --bit-swp-clr-hover: #{role($tokens, hover)};
+        --bit-swp-btn: #{role($tokens, main)};
+        --bit-swp-btn-hover: #{role($tokens, hover)};
     }
 }
