@@ -32,6 +32,24 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId);
+    }
+
+
+    internal static ValueTask BitUtilsPreventDefaultKeys(this IJSRuntime jsRuntime, string elementId, string[] keys)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.preventDefaultKeys", elementId, keys);
+    }
+
+
+    internal static ValueTask BitUtilsDisposePreventDefaultKeys(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposePreventDefaultKeys", elementId);
+    }
+
+
     internal static ValueTask BitUtilsScrollElementIntoView(this IJSRuntime jsRuntime, string targetElementId)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollElementIntoView", targetElementId);

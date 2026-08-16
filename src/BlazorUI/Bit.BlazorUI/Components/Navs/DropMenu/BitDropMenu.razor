@@ -3,15 +3,24 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     type="button"
-     aria-label="@AriaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     tabindex="@(IsEnabled ? 0 : -1)">
-    <button @onclick="HandleOnClick"
+     dir="@Dir?.ToString().ToLower()">
+    <button @ref="_buttonRef"
+            @onclick="HandleOnClick"
+            @onkeydown="HandleOnButtonKeyDown"
             type="button"
+            id="@_buttonId"
+            title="@Title"
+            tabindex="@TabIndex"
+            aria-haspopup="true"
+            aria-label="@AriaLabel"
+            aria-controls="@_calloutId"
+            aria-hidden="@(AriaHidden ? "true" : null)"
             style="@Styles?.Button"
+            aria-describedby="@AriaDescription"
+            disabled="@(IsEnabled is false || IsLoading)"
+            aria-expanded="@(IsOpen ? "true" : "false")"
             class="bit-drm-btn @Classes?.Button">
         @if (Template is not null)
         {
@@ -19,24 +28,37 @@
         }
         else
         {
-            var icon = BitIconInfo.From(Icon, IconName);
-
-            if (icon is not null)
+            @if (IsLoading)
             {
-                <i style="@Styles?.Icon" class="bit-drm-icn @icon.GetCssClasses() @Classes?.Icon" />
+                <span style="@Styles?.Spinner" class="bit-drm-spn @Classes?.Spinner"></span>
+            }
+            else
+            {
+                var icon = BitIconInfo.From(Icon, IconName);
+
+                if (icon is not null)
+                {
+                    <i aria-hidden="true" style="@Styles?.Icon" class="bit-drm-icn @icon.GetCssClasses() @Classes?.Icon" />
+                }
             }
 
+            @* A button only takes phrasing content, so the text and the spinner are spans; the flex
+               container blockifies them anyway, so they lay out the same as the divs they replaced. *@
             @if (Text.HasValue())
             {
-                <div style="@Styles?.Text" class="bit-drm-txt @Classes?.Text">
+                <span style="@Styles?.Text" class="bit-drm-txt @Classes?.Text">
                     @Text
-                </div>
+                </span>
             }
 
-            var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
+            @if (NoChevron is false)
+            {
+                var chevronIcon = BitIconInfo.From(ChevronDownIcon, ChevronDownIconName ?? "ChevronRight bit-ico-r90");
 
-            <i style="@Styles?.ChevronDown"
-               class="@chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
+                <i aria-hidden="true"
+                   style="@Styles?.ChevronDown"
+                   class="bit-drm-chv @chevronIcon?.GetCssClasses() @Classes?.ChevronDown" />
+            }
         }
     </button>
 </div>
@@ -46,8 +68,12 @@
      id="@_overlayId"
      class="bit-drm-ovl @Classes?.Overlay"></div>
 
-<div id="@_calloutId"
-     style="@Styles?.Callout"
-     class="@GetCalloutCssClasses()">
+<div @onkeydown="HandleOnCalloutKeyDown"
+     id="@_calloutId"
+     tabindex="-1"
+     style="@GetCalloutStyles()"
+     class="@GetCalloutCssClasses()"
+     aria-labelledby="@_buttonId"
+     dir="@Dir?.ToString().ToLower()">
     @(Body ?? ChildContent)
 </div>

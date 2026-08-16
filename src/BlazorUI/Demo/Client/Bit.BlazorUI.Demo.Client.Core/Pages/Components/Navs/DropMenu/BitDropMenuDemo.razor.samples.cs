@@ -33,6 +33,14 @@ public partial class BitDropMenuDemo
         <BitButton>Click me</BitButton>
         <BitToggle>Toggle me</BitToggle>
     </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""FullWidth"" FullWidth>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        <BitButton>Click me</BitButton>
+        <BitToggle>Toggle me</BitToggle>
+    </BitStack>
 </BitDropMenu>";
 
     private readonly string example2RazorCode = @"
@@ -51,10 +59,9 @@ public partial class BitDropMenuDemo
         <BitButton>Click me</BitButton>
         <BitToggle>Toggle me</BitToggle>
     </BitStack>
-</BitDropMenu>
-@code {
-    private BitColorKind backgroundColorKind = BitColorKind.Primary;
-}";
+</BitDropMenu>";
+    private readonly string example2CsharpCode = @"
+private BitColorKind backgroundColorKind = BitColorKind.Primary;";
 
     private readonly string example3RazorCode = @"
 <BitChoiceGroup @bind-Value=""borderColorKind"" Horizontal
@@ -72,10 +79,9 @@ public partial class BitDropMenuDemo
         <BitButton>Click me</BitButton>
         <BitToggle>Toggle me</BitToggle>
     </BitStack>
-</BitDropMenu>
-@code {
-    private BitColorKind borderColorKind = BitColorKind.Primary;
-}";
+</BitDropMenu>";
+    private readonly string example3CsharpCode = @"
+private BitColorKind borderColorKind = BitColorKind.Primary;";
 
     private readonly string example4RazorCode = @"
 <BitDropMenu Text=""IconName"" IconName=""@BitIconName.Emoji2"">
@@ -87,6 +93,18 @@ public partial class BitDropMenuDemo
 <BitDropMenu Text=""ChevronDownIconName"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""NoChevron"" IconName=""@BitIconName.Emoji2"" NoChevron>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu IconName=""@BitIconName.More"" NoChevron AriaLabel=""More actions"" Title=""More actions"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">An icon-only drop menu</BitText>
     </BitStack>
 </BitDropMenu>";
 
@@ -116,7 +134,7 @@ public partial class BitDropMenuDemo
     private readonly string example6RazorCode = @"
 <BitDropMenu Text=""Add Icon"" IconName=""@BitIconName.Emoji2"">
     <Template>
-        <div style=""display:flex;gap:10px;"">
+        <div style=""display:flex;gap:10px;align-items:center;"">
             <BitIcon IconName=""@BitIconName.Airplane"" Color=""BitColor.Tertiary"" />
             <span>A template</span>
             <BitRippleLoading CustomSize=""20"" Color=""BitColor.Tertiary"" />
@@ -130,15 +148,138 @@ public partial class BitDropMenuDemo
 </BitDropMenu>";
 
     private readonly string example7RazorCode = @"
-<BitDropMenu Text=""@($""Click me ({clickCounter})"")"" OnClick=""() => clickCounter++"">
+<BitToggle @bind-Value=""isLoading"" Label=""IsLoading"" />
+
+<BitDropMenu Text=""Loading"" IconName=""@BitIconName.Cloud"" IsLoading=""isLoading"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>";
     private readonly string example7CsharpCode = @"
-private int clickCounter;";
+private bool isLoading;";
 
     private readonly string example8RazorCode = @"
+<BitDropMenu Text=""A rather wide drop menu button"" MatchWidth>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">MatchWidth</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""MaxHeight"" MaxHeight=""10rem"">
+    <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <BitText Typography=""BitTypography.Subtitle1"">Item @i</BitText>
+        }
+    </BitStack>
+</BitDropMenu>";
+
+    private readonly string example9RazorCode = @"
+<BitChoiceGroup @bind-Value=""dropDirection"" Horizontal
+                Label=""Drop direction""
+                TItem=""BitChoiceGroupOption<BitDropDirection>"" TValue=""BitDropDirection"">
+    <BitChoiceGroupOption Text=""TopAndBottom"" Value=""BitDropDirection.TopAndBottom"" />
+    <BitChoiceGroupOption Text=""All"" Value=""BitDropDirection.All"" />
+</BitChoiceGroup>
+
+<BitDropMenu Text=""DropDirection"" DropDirection=""dropDirection"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+    private readonly string example9CsharpCode = @"
+private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;";
+
+    private readonly string example10RazorCode = @"
+<BitStack Horizontal Wrap Gap=""0.5rem"" FitHeight>
+    <BitButton OnClick=""() => isOpen = !isOpen"">@(isOpen ? ""Close"" : ""Open"") the bound one</BitButton>
+    <BitButton OnClick=""() => dropMenuRef?.Toggle()"">Toggle through the reference</BitButton>
+</BitStack>
+
+<BitDropMenu @bind-IsOpen=""isOpen"" Text=""@($""IsOpen: {isOpen}"")"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu @ref=""dropMenuRef"" Text=""Controlled by the reference"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+@* A drop menu that only needs to start out open uses DefaultIsOpen instead of binding IsOpen. *@
+<BitCheckbox @bind-Value=""mountDefaultIsOpen"" Label=""Render a drop menu that starts out open"" />
+
+@if (mountDefaultIsOpen)
+{
+    <BitDropMenu Text=""DefaultIsOpen"" DefaultIsOpen>
+        <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+            <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+        </BitStack>
+    </BitDropMenu>
+}";
+    private readonly string example10CsharpCode = @"
+private bool isOpen;
+private bool mountDefaultIsOpen;
+private BitDropMenu? dropMenuRef;";
+
+    private readonly string example11RazorCode = @"
+<BitDropMenu Text=""AutoFocus"" AutoFocus>
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitTextField Label=""Name"" />
+        <BitButton>Submit</BitButton>
+    </BitStack>
+</BitDropMenu>";
+
+    private readonly string example12RazorCode = @"
+<BitDropMenu Text=""@($""Click me ({clickCounter})"")""
+             OnClick=""() => clickCounter++""
+             OnOpen=""() => openCounter++""
+             OnDismiss=""() => dismissCounter++"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<div>Clicked: @clickCounter, Opened: @openCounter, Dismissed: @dismissCounter</div>";
+    private readonly string example12CsharpCode = @"
+private int clickCounter;
+private int openCounter;
+private int dismissCounter;";
+
+    private readonly string example13RazorCode = @"
+<BitChoiceGroup @bind-Value=""color"" Horizontal
+                Label=""Color""
+                TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
+    <BitChoiceGroupOption Text=""Primary"" Value=""BitColor.Primary"" />
+    <BitChoiceGroupOption Text=""Secondary"" Value=""BitColor.Secondary"" />
+    <BitChoiceGroupOption Text=""Tertiary"" Value=""BitColor.Tertiary"" />
+    <BitChoiceGroupOption Text=""Info"" Value=""BitColor.Info"" />
+    <BitChoiceGroupOption Text=""Success"" Value=""BitColor.Success"" />
+    <BitChoiceGroupOption Text=""Warning"" Value=""BitColor.Warning"" />
+    <BitChoiceGroupOption Text=""SevereWarning"" Value=""BitColor.SevereWarning"" />
+    <BitChoiceGroupOption Text=""Error"" Value=""BitColor.Error"" />
+    <BitChoiceGroupOption Text=""PrimaryBackground"" Value=""BitColor.PrimaryBackground"" />
+    <BitChoiceGroupOption Text=""SecondaryBackground"" Value=""BitColor.SecondaryBackground"" />
+    <BitChoiceGroupOption Text=""TertiaryBackground"" Value=""BitColor.TertiaryBackground"" />
+    <BitChoiceGroupOption Text=""PrimaryForeground"" Value=""BitColor.PrimaryForeground"" />
+    <BitChoiceGroupOption Text=""SecondaryForeground"" Value=""BitColor.SecondaryForeground"" />
+    <BitChoiceGroupOption Text=""TertiaryForeground"" Value=""BitColor.TertiaryForeground"" />
+    <BitChoiceGroupOption Text=""PrimaryBorder"" Value=""BitColor.PrimaryBorder"" />
+    <BitChoiceGroupOption Text=""SecondaryBorder"" Value=""BitColor.SecondaryBorder"" />
+    <BitChoiceGroupOption Text=""TertiaryBorder"" Value=""BitColor.TertiaryBorder"" />
+</BitChoiceGroup>
+
+<BitDropMenu Text=""@color.ToString()"" Color=""color"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+    private readonly string example13CsharpCode = @"
+private BitColor color = BitColor.Primary;";
+
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDropMenu Text=""House"" Icon=""@(""fa-solid fa-house"")"">
@@ -174,7 +315,26 @@ private int clickCounter;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example15RazorCode = @"
+<BitDropMenu Text=""Small"" Size=""BitSize.Small"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Medium"" Size=""BitSize.Medium"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Large"" Size=""BitSize.Large"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -205,6 +365,10 @@ private int clickCounter;";
         text-shadow: tomato 0 0 0.5rem;
     }
 
+    .custom-chevron {
+        color: tomato;
+    }
+
     .custom-opened {
         color: green;
     }
@@ -225,6 +389,7 @@ private int clickCounter;";
 <BitDropMenu Text=""Styled Drop menu""
              Styles=""@(new() { Root = ""background-color: peachpuff; border-color: peachpuff; min-width: 6rem;"",
                                Text = ""color: tomato; font-weight: bold;"",
+                               Callout = ""border: 2px solid tomato;"",
                                Opened = ""border-color: tomato; background-color: goldenrod;"" })"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
@@ -234,13 +399,14 @@ private int clickCounter;";
 <BitDropMenu Text=""Classed Drop menu""
              Classes=""@(new() { Root = ""custom-root"",
                                 Text = ""custom-text"",
+                                ChevronDown = ""custom-chevron"",
                                 Opened = ""custom-opened"" })"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitDropMenu Text=""منو"" Dir=""BitDir.Rtl"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>

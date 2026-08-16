@@ -2,16 +2,24 @@
 
 <PageOutlet Url="components/dropmenu"
             Title="DropMenu"
-            Description="DropMenu component is a versatile dropdown menu used in Blazor applications." />
+            Description="DropMenu is a button that opens a callout hosting any content: an action list, a form, or a filter panel." />
 
 <DemoPage Name="DropMenu"
-          Description="DropMenu component is a versatile dropdown menu used in Blazor applications. It allows you to create a button that, when clicked, opens a callout or dropdown menu. This can be particularly useful for creating navigation menus, action lists, or any other interactive elements that require a dropdown."
+          Description="DropMenu is a button that opens a callout hosting any content you put in it: an action list, a form, a filter panel, or a navigation menu. The callout is anchored to the button, flips to the side with the most room, can match its width and cap its height, and closes on an outside click or the Escape key. On small screens it can turn into a swipeable side panel."
           Parameters="componentParameters"
+          PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
-              GitHubUrl="Navs/DropMenu/BitDropMenu.razor"
+          GitHubUrl="Navs/DropMenu/BitDropMenu.razor"
           GitHubDemoUrl="Navs/DropMenu/BitDropMenuDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+        <div>
+            The <b>Text</b> parameter labels the button and the content of the component becomes the body of the callout.
+            <b>IsEnabled</b> turns the whole drop menu off, <b>Transparent</b> drops the background of the button,
+            <b>NoShadow</b> drops the box-shadow of the callout, and <b>FullWidth</b> stretches the button to the
+            available width.
+        </div>
+        <br />
         <BitDropMenu Text="Basic">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
@@ -43,10 +51,21 @@
                 <BitToggle>Toggle me</BitToggle>
             </BitStack>
         </BitDropMenu>
+        <br />
+        <BitDropMenu Text="FullWidth" FullWidth>
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                <BitButton>Click me</BitButton>
+                <BitToggle>Toggle me</BitToggle>
+            </BitStack>
+        </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Background" RazorCode="@example2RazorCode" Id="example2">
-        <div>Use the <b>Background</b> parameter to set the background color kind of the callout body.</div>
+    <DemoExample Title="Background" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+        <div>
+            Use the <b>Background</b> parameter to set the background color kind of the callout body. <b>Transparent</b>
+            leaves the callout without a surface of its own, which is what you want when the content already paints one.
+        </div>
         <br />
         <BitChoiceGroup @bind-Value="backgroundColorKind" Horizontal
                         Label="Background color kind"
@@ -66,8 +85,11 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Border" RazorCode="@example3RazorCode" Id="example3">
-        <div>Use the <b>Border</b> parameter to set the border color kind of the callout body.</div>
+    <DemoExample Title="Border" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+        <div>
+            Use the <b>Border</b> parameter to draw a border around the callout in the given color kind. It pairs well
+            with <b>NoShadow</b> when a flat, outlined callout fits the design better than an elevated one.
+        </div>
         <br />
         <BitChoiceGroup @bind-Value="borderColorKind" Horizontal
                         Label="Border color kind"
@@ -88,23 +110,45 @@
     </DemoExample>
 
     <DemoExample Title="Icon" RazorCode="@example4RazorCode" Id="example4">
-        <div>Customizing the drop menu icons.</div><br />
+        <div>
+            <b>IconName</b> puts a leading icon in the button and <b>ChevronDownIconName</b> replaces the trailing
+            chevron, which flips over while the callout is open. Set <b>NoChevron</b> to drop the chevron entirely,
+            for example when the button is icon-only.
+        </div>
+        <br />
         <BitDropMenu Text="IconName" IconName="@BitIconName.Emoji2">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
             </BitStack>
         </BitDropMenu>
-        <br /><br />
-        <BitDropMenu Text="ChevronDownIcon" ChevronDownIconName="@BitIconName.DoubleChevronDown">
+        <br />
+        <BitDropMenu Text="ChevronDownIconName" ChevronDownIconName="@BitIconName.DoubleChevronDown">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="NoChevron" IconName="@BitIconName.Emoji2" NoChevron>
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu IconName="@BitIconName.More" NoChevron AriaLabel="More actions" Title="More actions">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">An icon-only drop menu</BitText>
             </BitStack>
         </BitDropMenu>
     </DemoExample>
 
     <DemoExample Title="Responsive" RazorCode="@example5RazorCode" Id="example5">
-        <div>Rendering the callout in responsive mode on small screens.</div><br />
-        
+        <div>
+            With <b>Responsive</b>, the callout becomes a full-height panel on small screens (under 600px) that slides in
+            from the edge given by <b>PanelPosition</b> and can be swiped away. Point <b>ScrollContainerId</b> at the
+            scrollable element inside the content so the swipe gesture does not fight its scrolling. Resize the window
+            to see it.
+        </div>
+        <br />
         <BitDropMenu Text="End PanelPosition" Responsive ScrollContainerId="sc-con1" PanelPosition="BitPanelPosition.End">
             <div style="max-width:200px;overflow:auto" id="sc-con1">
                 <BitStack FitWidth Gap="1rem" Style="padding:0.5rem">
@@ -129,10 +173,14 @@
     </DemoExample>
 
     <DemoExample Title="Template" RazorCode="@example6RazorCode" Id="example6">
-        <div>Here is an example of customizing the drop menu.</div><br />
+        <div>
+            <b>Template</b> replaces everything inside the button, including the icon, the text and the chevron, so the
+            trigger can be anything. The callout content then goes into <b>Body</b>, which is an alias of ChildContent.
+        </div>
+        <br />
         <BitDropMenu Text="Add Icon" IconName="@BitIconName.Emoji2">
             <Template>
-                <div style="display:flex;gap:10px;">
+                <div style="display:flex;gap:10px;align-items:center;">
                     <BitIcon IconName="@BitIconName.Airplane" Color="BitColor.Tertiary" />
                     <span>A template</span>
                     <BitRippleLoading CustomSize="20" Color="BitColor.Tertiary" />
@@ -146,29 +194,184 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>Utilizing the drop menu OnClick event:</div><br />
-        <BitDropMenu Text="@($"Click me ({clickCounter})")" OnClick="() => clickCounter++">
+    <DemoExample Title="Loading" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+        <div>
+            <b>IsLoading</b> swaps the icon of the button for a spinner and blocks the callout from opening, which is
+            what you want while the content of the menu is still being fetched.
+        </div>
+        <br />
+        <BitToggle @bind-Value="isLoading" Label="IsLoading" />
+        <br />
+        <BitDropMenu Text="Loading" IconName="@BitIconName.Cloud" IsLoading="isLoading">
             <BitStack Gap="1rem" Style="padding:0.5rem">
                 <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
             </BitStack>
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example8RazorCode" Id="example8">
+    <DemoExample Title="Sizing the callout" RazorCode="@example8RazorCode" Id="example8">
+        <div>
+            <b>MatchWidth</b> grows the callout to at least the width of the button, so a wide trigger never sits above a
+            narrow menu. <b>MaxHeight</b> caps the height of the callout with any CSS length and scrolls its content past
+            that point, which keeps a long list usable.
+        </div>
+        <br />
+        <BitDropMenu Text="A rather wide drop menu button" MatchWidth>
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">MatchWidth</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="MaxHeight" MaxHeight="10rem">
+            <BitStack Gap="0.5rem" Style="padding:0.5rem">
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <BitText Typography="BitTypography.Subtitle1">Item @i</BitText>
+                }
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="DropDirection" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+        <div>
+            The callout picks its side from the room left around the button. <b>TopAndBottom</b> (the default) only ever
+            drops it above or below, while <b>All</b> also allows the sides when neither fits vertically.
+        </div>
+        <br />
+        <BitChoiceGroup @bind-Value="dropDirection" Horizontal
+                        Label="Drop direction"
+                        TItem="BitChoiceGroupOption<BitDropDirection>" TValue="BitDropDirection">
+            <BitChoiceGroupOption Text="TopAndBottom" Value="BitDropDirection.TopAndBottom" />
+            <BitChoiceGroupOption Text="All" Value="BitDropDirection.All" />
+        </BitChoiceGroup>
+        <br />
+        <BitDropMenu Text="DropDirection" DropDirection="dropDirection">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="Binding" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+        <div>
+            <b>IsOpen</b> is two-way bindable, so the open state can be driven from outside the component and read back
+            from it. <b>DefaultIsOpen</b> covers the uncontrolled case, where the callout only needs to start out open.
+            The <b>Open</b>, <b>Close</b> and <b>Toggle</b> methods do the same through a component reference.
+        </div>
+        <br />
+        <BitStack Horizontal Wrap Gap="0.5rem" FitHeight>
+            <BitButton OnClick="() => isOpen = !isOpen">@(isOpen ? "Close" : "Open") the bound one</BitButton>
+            <BitButton OnClick="() => dropMenuRef?.Toggle()">Toggle through the reference</BitButton>
+        </BitStack>
+        <br />
+        <BitDropMenu @bind-IsOpen="isOpen" Text="@($"IsOpen: {isOpen}")">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu @ref="dropMenuRef" Text="Controlled by the reference">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitCheckbox @bind-Value="mountDefaultIsOpen" Label="Render a drop menu that starts out open" />
+        <br />
+        @if (mountDefaultIsOpen)
+        {
+            <BitDropMenu Text="DefaultIsOpen" DefaultIsOpen>
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+        }
+    </DemoExample>
+
+    <DemoExample Title="Keyboard &amp; focus" RazorCode="@example11RazorCode" Id="example11">
+        <div>
+            The button carries the full menu-button semantics (aria-haspopup, aria-controls and aria-expanded), opens on
+            <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> or <b>ArrowUp</b>, and closes on <b>Escape</b>, which also
+            returns the focus to it. <b>AutoFocus</b> additionally moves the focus into the callout as soon as it opens,
+            to its first focusable element, so the keyboard reaches the content without an extra Tab.
+        </div>
+        <br />
+        <BitDropMenu Text="AutoFocus" AutoFocus>
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitTextField Label="Name" />
+                <BitButton>Submit</BitButton>
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <div>
+            <b>OnClick</b> fires on every activation of the button, <b>OnOpen</b> when the callout opens and
+            <b>OnDismiss</b> when it closes, no matter how: an outside click, the Escape key, a swipe on a responsive
+            panel, or another callout taking over.
+        </div>
+        <br />
+        <BitDropMenu Text="@($"Click me ({clickCounter})")"
+                     OnClick="() => clickCounter++"
+                     OnOpen="() => openCounter++"
+                     OnDismiss="() => dismissCounter++">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <div>Clicked: @clickCounter, Opened: @openCounter, Dismissed: @dismissCounter</div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <div>
+            <b>Color</b> paints the button with one of the general colors of the library. The accent colors give a filled
+            button with a matching text color, and the background, foreground and border colors give the neutral surfaces.
+        </div>
+        <br />
+        <BitChoiceGroup @bind-Value="color" Horizontal
+                        Label="Color"
+                        TItem="BitChoiceGroupOption<BitColor>" TValue="BitColor">
+            <BitChoiceGroupOption Text="Primary" Value="BitColor.Primary" />
+            <BitChoiceGroupOption Text="Secondary" Value="BitColor.Secondary" />
+            <BitChoiceGroupOption Text="Tertiary" Value="BitColor.Tertiary" />
+            <BitChoiceGroupOption Text="Info" Value="BitColor.Info" />
+            <BitChoiceGroupOption Text="Success" Value="BitColor.Success" />
+            <BitChoiceGroupOption Text="Warning" Value="BitColor.Warning" />
+            <BitChoiceGroupOption Text="SevereWarning" Value="BitColor.SevereWarning" />
+            <BitChoiceGroupOption Text="Error" Value="BitColor.Error" />
+            <BitChoiceGroupOption Text="PrimaryBackground" Value="BitColor.PrimaryBackground" />
+            <BitChoiceGroupOption Text="SecondaryBackground" Value="BitColor.SecondaryBackground" />
+            <BitChoiceGroupOption Text="TertiaryBackground" Value="BitColor.TertiaryBackground" />
+            <BitChoiceGroupOption Text="PrimaryForeground" Value="BitColor.PrimaryForeground" />
+            <BitChoiceGroupOption Text="SecondaryForeground" Value="BitColor.SecondaryForeground" />
+            <BitChoiceGroupOption Text="TertiaryForeground" Value="BitColor.TertiaryForeground" />
+            <BitChoiceGroupOption Text="PrimaryBorder" Value="BitColor.PrimaryBorder" />
+            <BitChoiceGroupOption Text="SecondaryBorder" Value="BitColor.SecondaryBorder" />
+            <BitChoiceGroupOption Text="TertiaryBorder" Value="BitColor.TertiaryBorder" />
+        </BitChoiceGroup>
+        <br />
+        <BitDropMenu Text="@color.ToString()" Color="color">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> and <b>ChevronDownIcon</b> parameters.</div>
         <br />
         <div>
-            For details on <b>BitIconInfo</b> and its factory methods (<c>BitIconInfo.Css</c>, <c>BitIconInfo.Fa</c>, <c>BitIconInfo.Bi</c>), 
-            see the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table. Built-in Fluent UI icons are documented at 
+            For details on <b>BitIconInfo</b> and its factory methods (<c>BitIconInfo.Css</c>, <c>BitIconInfo.Fa</c>, <c>BitIconInfo.Bi</c>),
+            see the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table. Built-in Fluent UI icons are documented at
             <BitLink Href="https://blazorui.bitplatform.dev/iconography" Target="_blank">Iconography</BitLink>.
         </div>
-        
+
         <br />
         <br />
-        
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-        
+
         <div>FontAwesome:</div>
         <br />
         <BitDropMenu Text="House" Icon="@("fa-solid fa-house")">
@@ -190,9 +393,9 @@
         </BitDropMenu>
 
         <br /><br /><br /><br />
-        
+
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-        
+
         <div>Bootstrap Icons:</div>
         <br />
         <BitDropMenu Text="House" Icon="@("bi bi-house-fill")">
@@ -208,8 +411,37 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
-        <div>Further customization by overriding default styles and classes, allowing tailored design modifications to suit specific UI requirements.</div>
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Size</b> scales the font and the padding of the button together, from <b>Small</b> through <b>Medium</b>
+            (the default) to <b>Large</b>. The callout is not scaled, since its size comes from its content.
+        </div>
+        <br />
+        <BitDropMenu Text="Small" Size="BitSize.Small">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="Medium" Size="BitSize.Medium">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="Large" Size="BitSize.Large">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
+            part of the component on their own: the root, the button, the icon, the text, the chevron, the overlay, the
+            callout, and the <b>Opened</b> slot that only applies while the callout is open.
+        </div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
         <div>
@@ -230,8 +462,9 @@
         <div>
             <BitDropMenu Text="Styled Drop menu"
                          Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff; min-width: 6rem;",
-                                               Text = "color: tomato; font-weight: bold;",
-                                               Opened = "border-color: tomato; background-color: goldenrod;" })">
+                                           Text = "color: tomato; font-weight: bold;",
+                                           Callout = "border: 2px solid tomato;",
+                                           Opened = "border-color: tomato; background-color: goldenrod;" })">
                 <BitStack Gap="1rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
                 </BitStack>
@@ -239,8 +472,9 @@
             <br />
             <BitDropMenu Text="Classed Drop menu"
                          Classes="@(new() { Root = "custom-root",
-                                                Text = "custom-text",
-                                                Opened = "custom-opened" })">
+                                            Text = "custom-text",
+                                            ChevronDown = "custom-chevron",
+                                            Opened = "custom-opened" })">
                 <BitStack Gap="1rem" Style="padding:0.5rem">
                     <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
                 </BitStack>
@@ -248,8 +482,12 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
-        <div>Use BitDropMenu in right-to-left (RTL).</div>
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+        <div>
+            Use <b>Dir</b> to render the drop menu right-to-left. The button mirrors its icon and chevron, the callout is
+            anchored from the right edge of the button, and a responsive panel slides in from the mirrored side and is
+            swiped away in the mirrored direction.
+        </div>
         <br />
         <div class="example-content" dir="rtl">
             <BitDropMenu Text="منو" Dir="BitDir.Rtl">

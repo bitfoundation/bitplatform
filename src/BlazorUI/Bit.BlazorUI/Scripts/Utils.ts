@@ -64,6 +64,56 @@
             }
         }
 
+        // The elements a user can tab to, in DOM order. Used by the popup components that hand the
+        // keyboard over to their content as soon as it opens.
+        private static readonly FOCUSABLE_SELECTOR = 'a[href],button:not([disabled]),input:not([disabled])' +
+            ',select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"]),[contenteditable="true"]';
+
+        // Moves the focus to the first focusable element inside the given container, falling back to the
+        // container itself (which the caller makes programmatically focusable with tabindex="-1") when it
+        // holds nothing focusable, so the focus never stays behind on the element that opened the popup.
+        public static focusFirstElement(elementId: string) {
+            const container = document.getElementById(elementId);
+            if (!container) return;
+
+            try {
+                const candidates = Array.from(container.querySelectorAll(Utils.FOCUSABLE_SELECTOR)) as HTMLElement[];
+                // offsetParent is null for a display:none subtree, which is how a hidden part of the
+                // content (e.g. a collapsed section) is skipped without measuring every ancestor.
+                const target = candidates.find(el => el.offsetParent !== null || getComputedStyle(el).position === 'fixed');
+                (target ?? container).focus();
+            } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
+        }
+
+        private static _preventedKeys = new Map<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }>();
+
+        // Suppresses the default behavior (page scrolling) of the given keys on an element, for the
+        // components whose keyboard logic runs in Blazor keydown handlers, which cannot decide to
+        // preventDefault per key. Registering again on the same element replaces the previous keys.
+        public static preventDefaultKeys(elementId: string, keys: string[]) {
+            Utils.disposePreventDefaultKeys(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const handler = (e: KeyboardEvent) => {
+                if (keys.indexOf(e.key) !== -1) {
+                    e.preventDefault();
+                }
+            };
+
+            element.addEventListener('keydown', handler);
+            Utils._preventedKeys.set(elementId, { element, handler });
+        }
+
+        public static disposePreventDefaultKeys(elementId: string) {
+            const entry = Utils._preventedKeys.get(elementId);
+            if (!entry) return;
+
+            entry.element.removeEventListener('keydown', entry.handler);
+            Utils._preventedKeys.delete(elementId);
+        }
+
         public static setProperty(element: Record<string, any>, property: string, value: any): void {
             if (!element) return;
 

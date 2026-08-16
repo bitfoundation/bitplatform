@@ -6,6 +6,27 @@ public partial class BitDropMenuDemo
     [
         new()
         {
+            Name = "AriaDescription",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The description of the drop menu for the benefit of screen readers, rendered as the aria-describedby of the button."
+        },
+        new()
+        {
+            Name = "AriaHidden",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "If true, adds an aria-hidden attribute instructing screen readers to ignore the button of the drop menu."
+        },
+        new()
+        {
+            Name = "AutoFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Moves the focus into the callout as soon as it opens, to its first focusable element, or to the callout itself when it holds none."
+        },
+        new()
+        {
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
@@ -65,6 +86,38 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the button of the drop menu.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum"
+        },
+        new()
+        {
+            Name = "DefaultIsOpen",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "The initial opening state of the callout in the uncontrolled mode, which is when the IsOpen parameter is not set."
+        },
+        new()
+        {
+            Name = "DropDirection",
+            Type = "BitDropDirection",
+            DefaultValue = "BitDropDirection.TopAndBottom",
+            Description = "Determines the allowed drop directions of the callout of the drop menu.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum"
+        },
+        new()
+        {
+            Name = "FullWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the drop menu width to 100% of the available width."
+        },
+        new()
+        {
             Name = "Icon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -83,10 +136,45 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "IsLoading",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and prevents the callout from being opened."
+        },
+        new()
+        {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
             Description = "Determines the opening state of the callout of the drop menu."
+        },
+        new()
+        {
+            Name = "MatchWidth",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Expands the callout of the drop menu to at least the width of the button of the drop menu."
+        },
+        new()
+        {
+            Name = "MaxHeight",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The maximum height of the callout of the drop menu as a CSS value (e.g. \"20rem\"), beyond which its content scrolls."
+        },
+        new()
+        {
+            Name = "NoChevron",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the chevron-down icon from the button of the drop menu."
+        },
+        new()
+        {
+            Name = "NoShadow",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Removes the box-shadow from the callout of the drop menu."
         },
         new()
         {
@@ -104,17 +192,19 @@ public partial class BitDropMenuDemo
         },
         new()
         {
-            Name = "NoShadow",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Removes the box-shadow from the callout of the drop menu."
+            Name = "OnOpen",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback is called when the callout of the drop menu is opened."
         },
         new()
         {
-            Name = "ScrollContainerId",
-            Type = "string?",
-            DefaultValue = "",
-            Description = "The id of the element which needs to be scrollable in the content of the callout of the drop menu."
+            Name = "PanelPosition",
+            Type = "BitPanelPosition?",
+            DefaultValue = "null",
+            Description = "The position of the responsive panel to show on the screen.",
+            LinkType = LinkType.Link,
+            Href = "#panel-position-enum"
         },
         new()
         {
@@ -122,6 +212,22 @@ public partial class BitDropMenuDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Renders the drop menu in responsive mode on small screens."
+        },
+        new()
+        {
+            Name = "ScrollContainerId",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The id of the element which needs to be scrollable in the content of the callout of the drop menu."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the button of the drop menu.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum"
         },
         new()
         {
@@ -148,10 +254,39 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Title",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The tooltip to show when the mouse is placed on the button of the drop menu."
+        },
+        new()
+        {
             Name = "Transparent",
             Type = "bool",
             DefaultValue = "false",
             Description = "Makes the background of the header of the drop menu transparent."
+        },
+    ];
+
+    private readonly List<ComponentParameter> componentPublicMembers =
+    [
+        new()
+        {
+            Name = "Open",
+            Type = "() => Task",
+            Description = "Opens the callout of the drop menu programmatically."
+        },
+        new()
+        {
+            Name = "Close",
+            Type = "() => Task",
+            Description = "Closes the callout of the drop menu programmatically."
+        },
+        new()
+        {
+            Name = "Toggle",
+            Type = "() => Task",
+            Description = "Toggles the callout of the drop menu programmatically."
         },
     ];
 
@@ -183,6 +318,13 @@ public partial class BitDropMenuDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the button of the BitDropMenu."
+                },
+                new()
+                {
+                    Name = "Spinner",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the loading spinner of the BitDropMenu."
                 },
                 new()
                 {
@@ -256,6 +398,32 @@ public partial class BitDropMenuDemo
     [
         new()
         {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" },
+            ]
+        },
+        new()
+        {
             Id = "color-kind-enum",
             Name = "BitColorKind",
             Description = "Defines the color kinds available in the bit BlazorUI.",
@@ -286,10 +454,64 @@ public partial class BitDropMenuDemo
                     Value = "3",
                 },
             ]
+        },
+        new()
+        {
+            Id = "drop-direction-enum",
+            Name = "BitDropDirection",
+            Description = "Determines the allowed drop directions of the callout.",
+            Items =
+            [
+                new()
+                {
+                    Name = "All",
+                    Description = "The direction determined automatically based on the available spaces in all directions.",
+                    Value = "0",
+                },
+                new()
+                {
+                    Name = "TopAndBottom",
+                    Description = "The direction determined automatically based on the available spaces in only top and bottom directions.",
+                    Value = "1",
+                },
+            ]
+        },
+        new()
+        {
+            Id = "panel-position-enum",
+            Name = "BitPanelPosition",
+            Description = "Determines the edge the responsive panel slides in from.",
+            Items =
+            [
+                new() { Name = "Start", Description = "The panel is positioned at the start edge (left in LTR).", Value = "0" },
+                new() { Name = "End", Description = "The panel is positioned at the end edge (right in LTR).", Value = "1" },
+                new() { Name = "Top", Description = "The panel is positioned at the top edge.", Value = "2" },
+                new() { Name = "Bottom", Description = "The panel is positioned at the bottom edge.", Value = "3" },
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" },
+            ]
         }
     ];
 
+    private bool isOpen;
+    private bool isLoading;
     private int clickCounter;
+    private int openCounter;
+    private int dismissCounter;
+    private bool mountDefaultIsOpen;
+    private BitDropMenu? dropMenuRef;
+    private BitColor color = BitColor.Primary;
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
+    private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;
 }
