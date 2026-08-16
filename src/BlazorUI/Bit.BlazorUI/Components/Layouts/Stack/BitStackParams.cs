@@ -87,6 +87,36 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     public string? Gap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public string? GapXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public string? GapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public string? GapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public string? GapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public string? GapXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public string? GapXxl { get; set; }
+
+    /// <summary>
     /// Gets or sets how much of the leftover space of its own container this stack takes compared to its siblings.
     /// </summary>
     public string? Grow { get; set; }
@@ -185,6 +215,11 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets how much of what its own container is short of this stack gives up compared to its siblings.
     /// </summary>
     public string? Shrink { get; set; }
+
+    /// <summary>
+    /// Lets the stack shrink below the size of what it holds when its own container runs out of room.
+    /// </summary>
+    public bool? Shrinkable { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing between the children of the stack, picked from the spacing scale of the theme.
@@ -316,6 +351,54 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
         {
             bitStack.Gap = Gap;
 
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapXs.HasValue() && bitStack.HasNotBeenSet(nameof(GapXs)))
+        {
+            bitStack.GapXs = GapXs;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapSm.HasValue() && bitStack.HasNotBeenSet(nameof(GapSm)))
+        {
+            bitStack.GapSm = GapSm;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapMd.HasValue() && bitStack.HasNotBeenSet(nameof(GapMd)))
+        {
+            bitStack.GapMd = GapMd;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapLg.HasValue() && bitStack.HasNotBeenSet(nameof(GapLg)))
+        {
+            bitStack.GapLg = GapLg;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapXl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXl)))
+        {
+            bitStack.GapXl = GapXl;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (GapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXxl)))
+        {
+            bitStack.GapXxl = GapXxl;
+
+            bitStack.ClassBuilder.Reset();
             bitStack.StyleBuilder.Reset();
         }
 
@@ -467,6 +550,13 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
+        if (Shrinkable.HasValue && bitStack.HasNotBeenSet(nameof(Shrinkable)))
+        {
+            bitStack.Shrinkable = Shrinkable.Value;
+
+            bitStack.StyleBuilder.Reset();
+        }
+
         if (Size.HasValue && bitStack.HasNotBeenSet(nameof(Size)))
         {
             bitStack.Size = Size.Value;
@@ -493,6 +583,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
         {
             bitStack.Wrap = Wrap.Value;
 
+            bitStack.ClassBuilder.Reset();
             bitStack.StyleBuilder.Reset();
         }
 
@@ -500,6 +591,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
         {
             bitStack.WrapReverse = WrapReverse.Value;
 
+            bitStack.ClassBuilder.Reset();
             bitStack.StyleBuilder.Reset();
         }
     }

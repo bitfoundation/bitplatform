@@ -40,3 +40,56 @@
                          })">
     <BitStack />
 </BitParams>
+
+@* The rest of the parameters that describe the stack itself, on a stack whose direction never changes, so the
+   two alignments stay on the element where they can be read back one by one. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 AlignContent = BitAlignment.SpaceEvenly,
+                                 Alignment = BitAlignment.Center,
+                                 AutoHeight = true,
+                                 AutoSize = true,
+                                 AutoWidth = true,
+                                 FillContent = true,
+                                 FitHeight = true,
+                                 FitSize = true,
+                                 FitWidth = true,
+                                 Gap = "1rem",
+                                 GapMd = "3rem",
+                                 Grows = true,
+                                 HorizontalGap = "2rem",
+                                 Reversed = true,
+                                 Shrinkable = true,
+                                 VerticalAlign = BitAlignment.End,
+                                 VerticalGap = "0.5rem",
+                                 WrapReverse = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* And the breakpoints of the two chains that the groups above do not reach. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 GapXs = "0.25rem",
+                                 GapSm = "0.5rem",
+                                 GapLg = "1.5rem",
+                                 GapXl = "2rem",
+                                 GapXxl = "2.5rem",
+                                 HorizontalXs = false,
+                                 HorizontalSm = true,
+                                 HorizontalLg = false,
+                                 HorizontalXl = true,
+                                 HorizontalXxl = false,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>

@@ -17,10 +17,10 @@ namespace Bit.BlazorUI;
 /// on, and <see cref="GrowContent"/>, <see cref="EqualContent"/> and <see cref="NoShrinkContent"/> along it. It sizes itself:
 /// <see cref="AutoWidth"/>, <see cref="FitWidth"/> and the rest replace the full width and height it takes by default. It behaves as
 /// a child of another flex container - a stack inside a stack - through <see cref="Grows"/>, <see cref="Basis"/>,
-/// <see cref="NoShrink"/>, <see cref="Self"/> and <see cref="Order"/>, which is what makes a nested stack the item of its parent as
-/// well as the container of its own children. And it answers to the width of the window through <see cref="HorizontalXs"/> to
-/// <see cref="HorizontalXxl"/>, which is the column-on-a-phone, row-on-a-desktop layout - alignment included - written as a parameter
-/// instead of a media query.
+/// <see cref="NoShrink"/>, <see cref="Shrinkable"/>, <see cref="Self"/> and <see cref="Order"/>, which is what makes a nested stack
+/// the item of its parent as well as the container of its own children. And it answers to the width of the window through
+/// <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/> and <see cref="GapXs"/> to <see cref="GapXxl"/>, which is the
+/// column-on-a-phone, row-on-a-desktop layout - alignment and spacing included - written as a parameter instead of a media query.
 /// </remarks>
 public partial class BitStack : BitComponentBase
 {
@@ -163,8 +163,10 @@ public partial class BitStack : BitComponentBase
     /// This is the cross axis alone. Sharing the axis the children are laid out along between them is what
     /// <see cref="GrowContent"/> does, and the two combine.
     /// <br />
-    /// A stack whose direction changes with the width of the window (<see cref="HorizontalXs"/> and its siblings) fills the axis of
-    /// whichever direction currently applies, without forcing a size over a child that stated one.
+    /// A wrapping stack fills the row each child landed on rather than the whole of the stack across it, which is what keeps the
+    /// rows of a wrapping stack from each claiming its full height. A stack whose direction changes with the width of the window
+    /// (<see cref="HorizontalXs"/> and its siblings) fills the axis of whichever direction currently applies. Both of those are
+    /// a stretch rather than a forced size, so unlike the simple case they leave a child that stated a size of its own alone.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool FillContent { get; set; }
@@ -211,11 +213,77 @@ public partial class BitStack : BitComponentBase
     /// The spacing is created with the CSS gap rather than with margins on the children, so it never appears before the first child
     /// or after the last one, it survives a child being hidden, and it leaves the margins of the children to the children.
     /// <br />
-    /// <see cref="HorizontalGap"/> and <see cref="VerticalGap"/> each replace it on their own axis, and it takes precedence over the
+    /// <see cref="HorizontalGap"/> and <see cref="VerticalGap"/> each replace it on their own axis, <see cref="GapXs"/> to
+    /// <see cref="GapXxl"/> each replace it from their own breakpoint upwards, and it takes precedence over the
     /// <see cref="Size"/> picked from the spacing scale of the theme.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public string? Gap { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it - so a stack that is tight on a phone and
+    /// airy from a tablet up is written as this one plus one more, and nothing in between. <see cref="Gap"/> is the base of that
+    /// chain and is what applies at any breakpoint none of these reach, which is what makes them mobile first in the same way
+    /// <see cref="HorizontalXs"/> and its siblings are.
+    /// <br />
+    /// This is the pair of <see cref="HorizontalXs"/> for the spacing rather than the direction, and the two are most often set
+    /// together: a stack that folds from a row into a column usually wants a different amount of room between its children there.
+    /// A gap that follows the width of the viewport without a breakpoint at all is a fluid length such as
+    /// <c>clamp(4px, 1vw, 16px)</c> given to <see cref="Gap"/> instead.
+    /// <br />
+    /// <see cref="HorizontalGap"/> and <see cref="VerticalGap"/> are written onto the element, so each of them still replaces
+    /// whatever the chain resolves to on its own axis at every width.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the medium breakpoint (from 960px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack from the extra extra large breakpoint (from 2560px) upwards, using any CSS length value.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? GapXxl { get; set; }
 
     /// <summary>
     /// Gets or sets how much of the leftover space of its own container this stack takes compared to its siblings (the CSS flex-grow factor).
@@ -389,8 +457,7 @@ public partial class BitStack : BitComponentBase
     /// one applied to the children of the stack rather than to the stack itself.
     /// <br />
     /// The opposite problem - a nested stack that refuses to shrink far enough for the text inside it to be truncated with an
-    /// ellipsis - is the automatic minimum size of a flex child, which is undone with a <c>min-width:0</c> through
-    /// <see cref="BitComponentBase.Style"/>.
+    /// ellipsis - is the automatic minimum size of a flex child, which is what <see cref="Shrinkable"/> undoes.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public bool NoShrink { get; set; }
@@ -478,6 +545,22 @@ public partial class BitStack : BitComponentBase
     public string? Shrink { get; set; }
 
     /// <summary>
+    /// Lets the stack shrink below the size of what it holds when its own container runs out of room.
+    /// </summary>
+    /// <remarks>
+    /// A flex child is never squeezed below its own content unless it is told it may, which is the automatic minimum size of
+    /// the flexbox and the reason a nested stack refuses to shrink far enough for the text inside it to be truncated with an
+    /// ellipsis, or for the scrollbar of a pane to appear instead of the page growing. This undoes that on both axes, so what
+    /// is inside the stack is free to be clipped, ellipsised or scrolled once the room runs out.
+    /// <br />
+    /// It is the exact opposite of <see cref="NoShrink"/>, which stops the stack being squeezed at all: this one is about how
+    /// far it may be squeezed, not about whether it is. The children of the stack still need whatever makes them give way -
+    /// an <c>overflow</c> or a <c>text-overflow</c> of their own - since this only removes the floor the stack itself had.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public bool Shrinkable { get; set; }
+
+    /// <summary>
     /// Gets or sets the spacing between the children of the stack, picked from the spacing scale of the theme.
     /// </summary>
     /// <remarks>
@@ -531,7 +614,7 @@ public partial class BitStack : BitComponentBase
     /// The room between the rows a wrapping stack produces is the <see cref="VerticalGap"/> of a horizontal stack (and the
     /// <see cref="HorizontalGap"/> of a vertical one), and <see cref="AlignContent"/> is what places those rows within the stack.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool Wrap { get; set; }
 
     /// <summary>
@@ -541,7 +624,7 @@ public partial class BitStack : BitComponentBase
     /// The rows are laid out from the far edge of the stack back towards the near one, so the first row ends up last across the
     /// stack. This takes precedence over <see cref="Wrap"/> when both are set.
     /// </remarks>
-    [Parameter, ResetStyleBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool WrapReverse { get; set; }
 
 
@@ -550,10 +633,12 @@ public partial class BitStack : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        // A stack whose direction answers to the width of the window fills whichever axis currently applies, which is
-        // something only the stylesheet can know - so it is handed its own class rather than one of the fixed pair.
+        // The fixed pair gives the children the whole of the cross axis of the stack, which is only the same thing as
+        // the whole of the room they were given while the stack has one row and knows which of its two axes is the
+        // cross one. A wrapping stack fills its rows and a responsive one is not laid out here, so both of them are
+        // handed the class that stretches the children into the room they actually have instead.
         ClassBuilder.Register(() => FillContent
-                                        ? (IsResponsive ? "bit-stc-fcr" : (Horizontal ? "bit-stc-fch" : "bit-stc-fcv"))
+                                        ? (IsRowRelativeFill ? "bit-stc-fcr" : (Horizontal ? "bit-stc-fch" : "bit-stc-fcv"))
                                         : string.Empty);
 
         ClassBuilder.Register(() => GrowContent ? "bit-stc-grc" : string.Empty);
@@ -570,6 +655,10 @@ public partial class BitStack : BitComponentBase
         // The class is what hands the direction over to the stylesheet, which is the only place a media query can
         // reach it. A stack that never changes direction keeps its direction inline and never carries this.
         ClassBuilder.Register(() => IsResponsive ? "bit-stc-rsp" : string.Empty);
+
+        // The same for the spacing, which is a chain of its own: a stack may change its gap with the width of the
+        // window without changing its direction, and the other way round.
+        ClassBuilder.Register(() => IsResponsiveGap ? "bit-stc-rsg" : string.Empty);
 
         ClassBuilder.Register(() => Size switch
         {
@@ -599,8 +688,22 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => GetDirectionVar("xl", HorizontalXl));
         StyleBuilder.Register(() => GetDirectionVar("xxl", HorizontalXxl));
 
-        // The shorthand first and the two axes after it, so a per axis gap overrides the one that covers both.
-        StyleBuilder.Register(() => $"gap:{ResolvedGap}");
+        // The gap of a stack that keeps the same spacing at every width is written straight onto the element. One
+        // that changes it hands the same value over as the base of the chain below instead, since an inline gap
+        // would outrank every media query that is the whole point of the feature.
+        StyleBuilder.Register(() => IsResponsiveGap ? $"--bit-stc-gap:{ResolvedGap}" : $"gap:{ResolvedGap}");
+
+        // Only the breakpoints that were asked for are declared, exactly as the direction does it: the stylesheet
+        // chains every other one to the breakpoint below it, which is what carries a value upwards.
+        StyleBuilder.Register(() => GetGapVar("xs", GapXs));
+        StyleBuilder.Register(() => GetGapVar("sm", GapSm));
+        StyleBuilder.Register(() => GetGapVar("md", GapMd));
+        StyleBuilder.Register(() => GetGapVar("lg", GapLg));
+        StyleBuilder.Register(() => GetGapVar("xl", GapXl));
+        StyleBuilder.Register(() => GetGapVar("xxl", GapXxl));
+
+        // The two axes after the shorthand, so a per axis gap overrides the one that covers both - and, being
+        // written onto the element, it also overrides whatever the chain above resolves to at any width.
         StyleBuilder.Register(() => HorizontalGap.HasValue() ? $"column-gap:{HorizontalGap}" : string.Empty);
         StyleBuilder.Register(() => VerticalGap.HasValue() ? $"row-gap:{VerticalGap}" : string.Empty);
 
@@ -628,6 +731,9 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => (Shrink.HasValue() || NoShrink) ? $"flex-shrink:{(Shrink.HasValue() ? Shrink : "0")}" : string.Empty);
 
         StyleBuilder.Register(() => Basis.HasValue() ? $"flex-basis:{Basis}" : string.Empty);
+
+        // The automatic minimum size of a flex child is a floor under both axes at once, so undoing it is too.
+        StyleBuilder.Register(() => Shrinkable ? "min-width:0;min-height:0" : string.Empty);
 
         StyleBuilder.Register(() => _AlignSelf.HasValue ? $"align-self:{_AlignmentMap[_AlignSelf.Value]}" : string.Empty);
 
@@ -659,8 +765,17 @@ public partial class BitStack : BitComponentBase
         builder.OpenElement(0, Element ?? "div");
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
-        builder.AddAttribute(3, "aria-label", AriaLabel);
-        builder.AddAttribute(4, "tabindex", TabIndex);
+        // A null value here is not the same as nothing at all: the builder still records the name and drops the
+        // attribute of the same name that came out of HtmlAttributes, so an unset parameter is only added when the
+        // parameter itself carries a value and the splatted one is left alone otherwise.
+        if (AriaLabel is not null)
+        {
+            builder.AddAttribute(3, "aria-label", AriaLabel);
+        }
+        if (TabIndex is not null)
+        {
+            builder.AddAttribute(4, "tabindex", TabIndex);
+        }
         builder.AddAttribute(5, "style", StyleBuilder.Value);
         builder.AddAttribute(6, "class", ClassBuilder.Value);
         builder.AddAttribute(7, "dir", Dir?.ToString().ToLower());
@@ -676,6 +791,14 @@ public partial class BitStack : BitComponentBase
     // A stack only needs the stylesheet to own its direction when that direction is not the same at every width.
     private bool IsResponsive => HorizontalXs.HasValue || HorizontalSm.HasValue || HorizontalMd.HasValue
                               || HorizontalLg.HasValue || HorizontalXl.HasValue || HorizontalXxl.HasValue;
+
+    // FillContent is the whole of the cross axis of the stack in the simple case, and the whole of the row a child
+    // landed on as soon as there is more than one of them or the cross axis is not known here.
+    private bool IsRowRelativeFill => IsResponsive || Wrap || WrapReverse;
+
+    // And the stylesheet only needs to own the gap when the spacing is not the same at every width either.
+    private bool IsResponsiveGap => GapXs.HasValue() || GapSm.HasValue() || GapMd.HasValue()
+                                 || GapLg.HasValue() || GapXl.HasValue() || GapXxl.HasValue();
 
     // The spacing of the stack, from the most specific source to the least: the explicit CSS length of Gap, then the
     // spacing token of Size, then the length a stack that was told nothing falls back to. The two per axis gaps are
@@ -762,6 +885,11 @@ public partial class BitStack : BitComponentBase
     private string GetDirectionVar(string breakpoint, bool? horizontal)
     {
         return horizontal.HasValue ? $"--bit-stc-dir-{breakpoint}:{GetDirection(horizontal.Value)}" : string.Empty;
+    }
+
+    private static string GetGapVar(string breakpoint, string? gap)
+    {
+        return gap.HasValue() ? $"--bit-stc-gap-{breakpoint}:{gap}" : string.Empty;
     }
 
     private static readonly Dictionary<BitAlignment, string> _AlignmentMap = new()

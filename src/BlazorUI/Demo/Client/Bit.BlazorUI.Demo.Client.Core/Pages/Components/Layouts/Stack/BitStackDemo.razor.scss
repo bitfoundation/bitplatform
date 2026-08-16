@@ -63,8 +63,8 @@
         background: linear-gradient(90deg, #dff6dd, transparent);
     }
 
-    // The pair of stacks in the Style example: a nested stack that is free to shrink and one that is
-    // not, so the difference a min-width of zero makes to a truncated label is visible side by side.
+    // The pair of stacks in the flex item example: a nested stack that is free to shrink and one that
+    // is not, so the difference Shrinkable makes to a truncated label is visible one above the other.
     .truncating {
         overflow: hidden;
     }

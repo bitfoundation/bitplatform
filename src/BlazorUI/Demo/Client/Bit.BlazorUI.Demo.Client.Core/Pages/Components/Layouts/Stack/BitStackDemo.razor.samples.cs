@@ -55,6 +55,12 @@ public partial class BitStackDemo
     {
         <div class=""item"">Item @i</div>
     }
+</BitStack>
+
+<BitStack AutoHeight HorizontalAlign=""BitAlignment.Stretch"" Class=""stack"">
+    <div class=""item"">Item 1</div>
+    <BitSeparator />
+    <div class=""item"">Item 2</div>
 </BitStack>";
     private readonly string example2CsharpCode = @"
 private double gap = 1;
@@ -193,6 +199,12 @@ private BitAlignment alignContent;
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack HorizontalMd Gap=""0.25rem"" GapMd=""3rem"" Class=""stack"" AutoHeight>
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div>
 </BitStack>";
 
     private readonly string example6RazorCode = @"
@@ -321,6 +333,15 @@ private BitAlignment alignContent;
         min-width: 0;
         overflow: hidden;
     }
+
+    .truncating {
+        overflow: hidden;
+    }
+
+    .ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
 
@@ -355,6 +376,20 @@ private BitAlignment alignContent;
         <BitStack Class=""item squeezable"" AutoSize>Shrinks away</BitStack>
     </BitStack>
 </div>
+
+<BitStack Horizontal Class=""host"" AutoHeight>
+    <BitStack Class=""truncating"">
+        <div class=""item ellipsis"">A very long label that has nowhere near enough room to be shown in full</div>
+    </BitStack>
+    <div class=""item"">Fixed</div>
+</BitStack>
+
+<BitStack Horizontal Class=""host"" AutoHeight>
+    <BitStack Shrinkable Class=""truncating"">
+        <div class=""item ellipsis"">A very long label that has nowhere near enough room to be shown in full</div>
+    </BitStack>
+    <div class=""item"">Fixed</div>
+</BitStack>
 
 <BitStack Horizontal Gap=""0.5rem"" Class=""host"" VerticalAlign=""BitAlignment.Center"" Style=""height:8rem"">
     <BitStack Class=""item"" AutoSize Self=""BitAlignment.Start"">Self Start</BitStack>
@@ -415,15 +450,6 @@ private BitAlignment alignContent;
         border: 2px solid #107c10;
         background: linear-gradient(90deg, #dff6dd, transparent);
     }
-
-    .truncating {
-        overflow: hidden;
-    }
-
-    .ellipsis {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
 </style>
 
 
@@ -435,20 +461,6 @@ private BitAlignment alignContent;
 <BitStack Horizontal AutoHeight Class=""custom-stack"">
     <div class=""item"">Class</div>
     <div class=""item"">on the stack</div>
-</BitStack>
-
-<BitStack Horizontal Class=""host"" AutoHeight>
-    <BitStack Class=""truncating"">
-        <div class=""item ellipsis"">A very long label that has nowhere near enough room to be shown in full</div>
-    </BitStack>
-    <div class=""item"">Fixed</div>
-</BitStack>
-
-<BitStack Horizontal Class=""host"" AutoHeight>
-    <BitStack Class=""truncating"" Style=""min-width:0"">
-        <div class=""item ellipsis"">A very long label that has nowhere near enough room to be shown in full</div>
-    </BitStack>
-    <div class=""item"">Fixed</div>
 </BitStack>";
 
     private readonly string example14RazorCode = @"

@@ -76,7 +76,7 @@ public partial class BitStackDemo
             Name = "FillContent",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Expands the direct children of the stack across the axis they are not laid out along: the full width in a column and the full height in a row. The size is forced, so a child that states a size of its own across that axis is overridden. Sharing the other axis out between the children is what GrowContent does, and the two combine."
+            Description = "Expands the direct children of the stack across the axis they are not laid out along: the full width in a column and the full height in a row. The size is forced, so a child that states a size of its own across that axis is overridden. A wrapping stack, and one whose direction changes with the width of the window, fills the row each child landed on instead, as a stretch that leaves a child that stated a size alone. Sharing the other axis out between the children is what GrowContent does, and the two combine."
         },
         new()
         {
@@ -104,7 +104,49 @@ public partial class BitStackDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value, 1rem by default. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, and it takes precedence over the Size picked from the spacing scale of the theme."
+            Description = "Gets or sets the spacing between the children of the stack, using any CSS length value, 1rem by default. It takes one length for both axes, or two - the vertical one followed by the horizontal one - for a wrapping stack. HorizontalGap and VerticalGap each replace it on their own axis, GapXs to GapXxl each replace it from their own breakpoint upwards, and it takes precedence over the Size picked from the spacing scale of the theme."
+        },
+        new()
+        {
+            Name = "GapXs",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the extra small breakpoint (from 0px) upwards, using any CSS length value. The value keeps applying to every wider breakpoint until another one replaces it, and Gap is the base of that chain. This is the pair of HorizontalXs for the spacing rather than the direction, and the two are most often set together."
+        },
+        new()
+        {
+            Name = "GapSm",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "GapMd",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the medium breakpoint (from 960px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "GapLg",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "GapXl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it."
+        },
+        new()
+        {
+            Name = "GapXxl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the spacing between the children of the stack from the extra extra large breakpoint (from 2560px) upwards."
         },
         new()
         {
@@ -249,6 +291,13 @@ public partial class BitStackDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets how much of what its own container is short of this stack gives up compared to its siblings (the CSS flex-shrink factor). Every flex child answers for a factor of 1 by default, and NoShrink is this with the factor a layout reaches for most, zero."
+        },
+        new()
+        {
+            Name = "Shrinkable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets the stack shrink below the size of what it holds when its own container runs out of room, by lifting the automatic minimum size a flex child has on both axes. That floor is why a nested stack refuses to shrink far enough for the text inside it to be truncated with an ellipsis or for a pane to scroll instead of the page growing. It is about how far the stack may be squeezed, where NoShrink is about whether it is squeezed at all."
         },
         new()
         {
