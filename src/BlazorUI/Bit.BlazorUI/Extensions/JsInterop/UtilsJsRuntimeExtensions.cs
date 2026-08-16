@@ -38,6 +38,24 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    internal static ValueTask BitUtilsScrollToOffset(this IJSRuntime jsRuntime, ElementReference element, double offset, bool horizontal, bool smooth)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollTo", element, offset, horizontal, smooth);
+    }
+
+
+    internal static ValueTask BitUtilsScrollToEnd(this IJSRuntime jsRuntime, ElementReference element, bool horizontal, bool smooth)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollToEnd", element, horizontal, smooth);
+    }
+
+
+    internal static ValueTask BitUtilsScrollToChild(this IJSRuntime jsRuntime, ElementReference element, int index, double extraOffset, bool horizontal, bool smooth)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.scrollToChild", element, index, extraOffset, horizontal, smooth);
+    }
+
+
     internal static ValueTask BitUtilsRegisterPreventPointerDown(this IJSRuntime jsRuntime, ElementReference element, bool active)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventPointerDown", element, active);

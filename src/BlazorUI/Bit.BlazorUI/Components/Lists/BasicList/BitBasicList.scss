@@ -1,12 +1,81 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-bsl {
     overflow: auto;
     height: spacing(62.5);
 }
 
+// Virtualization measures a vertical scroll region, so the horizontal layout is only ever applied to
+// a list that is not virtualized (the component itself keeps the two apart). The height of the base
+// class is dropped here because a row of items is as tall as its items are, not as tall as a column
+// of them would have been.
+.bit-bsl-hrz {
+    height: unset;
+    display: flex;
+    overflow: auto;
+    flex-flow: row nowrap;
+    align-items: stretch;
+
+    // The parts that span the width of a column of items are as wide as their own content in a row of
+    // them, where a full width would leave the items with nothing to be laid out in.
+    > .bit-bsl-hdr, > .bit-bsl-ftr, > .bit-bsl-ldc, > .bit-bsl-lmb {
+        width: auto;
+    }
+}
+
+.bit-bsl-hdr, .bit-bsl-ftr {
+    flex-shrink: 0;
+}
+
+.bit-bsl-ldc {
+    width: 100%;
+    display: flex;
+    flex-shrink: 0;
+    padding: spacing(2);
+    align-items: center;
+    justify-content: center;
+}
+
+// A zero sized marker sitting after the last loaded item. The AutoLoad mode watches it for entering
+// the scroll region and loads the next page as it does, so it must never take part in the layout or
+// swallow a pointer of its own.
+.bit-bsl-snt {
+    width: 0;
+    height: 0;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
 .bit-bsl-lmb {
-    display: contents;
+    width: 100%;
+    border: none;
+    display: block;
+    color: inherit;
+    padding: unset;
+    flex-shrink: 0;
+    cursor: pointer;
+    font: inherit;
+    background: none;
+    text-align: inherit;
+
+    &:disabled, &[aria-disabled="true"] {
+        cursor: default;
+    }
+
+    // A plain outline drawn inside the element rather than the shared focus ring: the ring is a
+    // box-shadow sitting outside the box, and the scrolling region of the list clips everything that
+    // falls outside of it, which would leave the focused button with no visible indicator at all.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width} - 2px);
+    }
+}
+
+.bit-bsl.bit-dis {
+    .bit-bsl-lmb, .bit-bsl-lmt {
+        cursor: default;
+        pointer-events: none;
+    }
 }
 
 .bit-bsl-lmt {
