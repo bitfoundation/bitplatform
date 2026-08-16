@@ -4,8 +4,11 @@
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
+     role="list"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
+     aria-label="@AriaLabel"
+     aria-disabled="@(IsEnabled ? null : "true")"
      dir="@Dir?.ToString().ToLower()">
     @if (Options is not null || ChildContent is not null)
     {
