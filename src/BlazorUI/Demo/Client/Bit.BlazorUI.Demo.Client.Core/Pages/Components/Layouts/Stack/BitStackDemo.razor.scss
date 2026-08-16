@@ -1,19 +1,56 @@
-﻿// A BitStack root is a plain div rendered by the component, so it does not carry this file's scope
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// A BitStack root is a plain div rendered by the component, so it does not carry this file's scope
 // attribute and every class handed to one has to live in ::deep.
 ::deep {
+    // The caption that names what each stack below it is showing. It is a label rather than a heading,
+    // so it is small, quiet and marked with an accent bar instead of competing with the section title.
+    .caption {
+        gap: 0.5rem;
+        display: flex;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.5;
+        align-items: baseline;
+        margin-block-end: 0.5rem;
+        color: $bit-color-foreground-secondary;
+
+        &::before {
+            width: 0.1875rem;
+            height: 0.75rem;
+            content: '';
+            flex: 0 0 auto;
+            border-radius: 1rem;
+            transform: translateY(0.0625rem);
+            background: $bit-color-primary;
+        }
+
+        code {
+            font-weight: 500;
+        }
+    }
+
     // The tint that makes the box of the stack itself visible against the page, so the reader can tell
-    // the room the children were given from the room they use.
+    // the room the children were given from the room they use. It is a wash of the primary color over
+    // the page surface rather than a flat swatch, so it stays readable in either theme.
     .stack {
-        background: #71afe5;
+        border-radius: 0.5rem;
+        background: color-mix(in srgb, #{$bit-color-primary} 12%, #{$bit-color-background-secondary});
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, #{$bit-color-primary} 20%, transparent);
     }
 
     // A child of a demo stack: enough of a block to be seen, and never wider than its text so the
     // alignment examples have something to actually move around.
     .item {
-        color: white;
-        padding: 0.5rem;
+        color: $bit-color-primary-text;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
         white-space: nowrap;
-        background-color: #0078d4;
+        border-radius: 0.375rem;
+        letter-spacing: 0.01em;
+        background: linear-gradient(135deg, #{$bit-color-primary}, #{$bit-color-primary-dark});
+        box-shadow: 0 1px 2px rgb(0 0 0 / 24%), inset 0 1px 0 rgb(255 255 255 / 18%);
     }
 
     // The outer stack of the examples that show a stack behaving as a child of another one. It is only
@@ -24,8 +61,10 @@
         // What no longer fits is what several of these examples are about, so the box that is being run
         // out of has to keep the overflow rather than push the page sideways.
         overflow: hidden;
+        border-radius: 0.5rem;
         box-sizing: border-box;
-        border: 1px dashed gray;
+        border: 1px dashed $bit-color-border-secondary;
+        background: color-mix(in srgb, #{$bit-color-background-secondary} 55%, transparent);
     }
 
     // A flex child refuses to shrink below its own content until it is told it may, which is what makes
@@ -39,13 +78,18 @@
     // what each of them says. Named away from `box`, which is what DemoExample calls the section each
     // example is rendered in - a ::deep rule here reaches those too and would restyle every example.
     .square {
-        color: white;
+        color: $bit-color-primary-text;
         display: flex;
         width: 3.5rem;
         height: 3.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
         align-items: center;
+        border-radius: 0.5rem;
         justify-content: center;
-        background-color: #0078d4;
+        font-variant-numeric: tabular-nums;
+        background: linear-gradient(135deg, #{$bit-color-primary}, #{$bit-color-primary-dark});
+        box-shadow: 0 1px 3px rgb(0 0 0 / 26%), inset 0 1px 0 rgb(255 255 255 / 18%);
     }
 
     // The NoShrink example only tells its story while the container is being squeezed, so the reader
@@ -55,6 +99,7 @@
         overflow: auto;
         max-width: 100%;
         min-width: 12rem;
+        border-radius: 0.5rem;
     }
 
     // The stack rendered as a "ul": the bullets and the indent a list carries by default say nothing about the
@@ -67,8 +112,9 @@
 
     .custom-stack {
         padding: 1rem;
-        border: 2px solid #107c10;
-        background: linear-gradient(90deg, #dff6dd, transparent);
+        border-radius: 0.5rem;
+        border: 2px solid color-mix(in srgb, #{$bit-color-success} 55%, transparent);
+        background: linear-gradient(90deg, color-mix(in srgb, #{$bit-color-success} 22%, transparent), transparent);
     }
 
     // The pair of stacks in the flex item example: a nested stack that is free to shrink and one that

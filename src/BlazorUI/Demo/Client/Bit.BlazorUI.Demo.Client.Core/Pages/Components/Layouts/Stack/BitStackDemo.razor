@@ -19,28 +19,28 @@
                 content is read in by a screen reader and reached in by the keyboard stays the order it is written in.
             </div>
             <div class="example-content">
-                <div>Default (vertical)</div>
+                <div class="caption">Default (vertical)</div>
                 <BitStack Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Horizontal</div>
+                <div class="caption">Horizontal</div>
                 <BitStack Horizontal Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Reversed vertical</div>
+                <div class="caption">Reversed vertical</div>
                 <BitStack Reversed Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Reversed horizontal</div>
+                <div class="caption">Reversed horizontal</div>
                 <BitStack Horizontal Reversed Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
@@ -71,7 +71,7 @@
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Per axis (<code>HorizontalGap</code> 2rem, <code>VerticalGap</code> 0.25rem)</div>
+                <div class="caption">Per axis (<code>HorizontalGap</code> 2rem, <code>VerticalGap</code> 0.25rem)</div>
                 <BitStack Horizontal Wrap HorizontalGap="2rem" VerticalGap="0.25rem" Class="stack">
                     @for (int i = 1; i <= 12; i++)
                     {
@@ -79,7 +79,7 @@
                     }
                 </BitStack>
                 <br />
-                <div>A <code>BitSeparator</code> drawn in the room the gap leaves</div>
+                <div class="caption">A <code>BitSeparator</code> drawn in the room the gap leaves</div>
                 <BitStack AutoHeight HorizontalAlign="BitAlignment.Stretch" Class="stack">
                     <div class="item">Item 1</div>
                     <BitSeparator />
@@ -154,7 +154,7 @@
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div><code>Alignment</code>: both axes at once, which is the whole of centering something</div>
+                <div class="caption"><code>Alignment</code>: both axes at once, which is the whole of centering something</div>
                 <BitStack Alignment="BitAlignment.Center" Class="stack" Style="height:8rem">
                     <div class="item">Centered</div>
                 </BitStack>
@@ -200,7 +200,7 @@
                     }
                 </BitStack>
                 <br />
-                <div>
+                <div class="caption">
                     Per breakpoint: this row wraps below <code>md</code> (960px) and holds its single line from it upwards,
                     where what no longer fits is squeezed instead
                 </div>
@@ -234,21 +234,21 @@
                 window to below <code>960px</code> to watch the stacks fold into columns.
             </div>
             <div class="example-content">
-                <div>Column below <code>md</code> (960px), row from it upwards</div>
+                <div class="caption">Column below <code>md</code> (960px), row from it upwards</div>
                 <BitStack HorizontalMd Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Row below <code>lg</code> (1280px), column from it upwards</div>
+                <div class="caption">Row below <code>lg</code> (1280px), column from it upwards</div>
                 <BitStack Horizontal HorizontalLg="false" Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>
+                <div class="caption">
                     One pair of alignments (<code>HorizontalAlign</code> SpaceBetween, <code>VerticalAlign</code> Center) at both
                     directions: as a column the children are centered down the stack, since spreading them is meaningless across
                     it; as a row they are spread along it and centered across it
@@ -263,7 +263,7 @@
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>
+                <div class="caption">
                     Direction and spacing together: a column with a <code>0.25rem</code> gap below <code>md</code>, a row with
                     a <code>3rem</code> one from it upwards
                 </div>
@@ -273,7 +273,7 @@
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>
+                <div class="caption">
                     One axis at a time: the rows of this wrapping stack keep the <code>0.5rem</code> the <code>Gap</code> chain
                     gives them at every width, while its columns open from <code>0.5rem</code> to <code>3rem</code> at
                     <code>md</code> and to <code>5rem</code> at <code>lg</code>
@@ -326,35 +326,35 @@
                 <b>FillContent</b> is on the other axis from all three, so it combines with any of them.
             </div>
             <div class="example-content">
-                <div>FillContent (cross axis)</div>
+                <div class="caption">FillContent (cross axis)</div>
                 <BitStack FillContent Class="stack" Style="width:20rem">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>GrowContent (main axis): the leftover shared out, so the longer child stays longer</div>
+                <div class="caption">GrowContent (main axis): the leftover shared out, so the longer child stays longer</div>
                 <BitStack Horizontal GrowContent Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">A much longer item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>EqualContent (main axis): exact thirds instead</div>
+                <div class="caption">EqualContent (main axis): exact thirds instead</div>
                 <BitStack Horizontal EqualContent Class="stack">
                     <div class="item">Item 1</div>
                     <div class="item">A much longer item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>FillContent and GrowContent together</div>
+                <div class="caption">FillContent and GrowContent together</div>
                 <BitStack Horizontal FillContent GrowContent Class="stack" Style="height:6rem">
                     <div class="item">Item 1</div>
                     <div class="item">Item 2</div>
                     <div class="item">Item 3</div>
                 </BitStack>
                 <br />
-                <div>Eight squares in a row too narrow for them: squeezed to fit</div>
+                <div class="caption">Eight squares in a row too narrow for them: squeezed to fit</div>
                 <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
@@ -362,7 +362,7 @@
                     }
                 </BitStack>
                 <br />
-                <div>NoShrinkContent: kept at their own size, and what no longer fits overflows</div>
+                <div class="caption">NoShrinkContent: kept at their own size, and what no longer fits overflows</div>
                 <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" AutoHeight Style="width:20rem">
                     @for (int i = 1; i <= 8; i++)
                     {
@@ -381,7 +381,7 @@
                 is a child of another flex container that stretches its children - which is what the dotted row below does.
             </div>
             <div class="example-content">
-                <div>In a plain block: the default fills the width, AutoWidth hands it back</div>
+                <div class="caption">In a plain block: the default fills the width, AutoWidth hands it back</div>
                 <BitStack Class="stack" AutoHeight>
                     <div class="item">Default</div>
                 </BitStack>
@@ -390,7 +390,7 @@
                     <div class="item">AutoWidth</div>
                 </BitStack>
                 <br />
-                <div>Inside a row that stretches its children: only the fitted height holds</div>
+                <div class="caption">Inside a row that stretches its children: only the fitted height holds</div>
                 <BitStack Horizontal Class="host" VerticalAlign="BitAlignment.Stretch" Style="height:8rem">
                     <BitStack Class="stack" AutoWidth AutoHeight>
                         <div class="item">AutoHeight</div>
@@ -422,14 +422,14 @@
                 <b>Order</b> moves it among its siblings visually while leaving the reading and tab order untouched.
             </div>
             <div class="example-content">
-                <div>Grow &amp; Grows</div>
+                <div class="caption">Grow &amp; Grows</div>
                 <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight>
                     <BitStack Grow="3" Class="item" AutoSize Alignment="BitAlignment.Center">Grow 3</BitStack>
                     <BitStack Grow="2" Class="item" AutoSize Alignment="BitAlignment.Center">Grow 2</BitStack>
                     <BitStack Grows Class="item" AutoSize Alignment="BitAlignment.Center">Grows</BitStack>
                 </BitStack>
                 <br />
-                <div>Grows alone, then with a Basis of 0: the same three stacks, sized by what they hold and then equally</div>
+                <div class="caption">Grows alone, then with a Basis of 0: the same three stacks, sized by what they hold and then equally</div>
                 <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight>
                     <BitStack Grows Class="item" AutoSize Alignment="BitAlignment.Center">One</BitStack>
                     <BitStack Grows Class="item" AutoSize Alignment="BitAlignment.Center">The second one</BitStack>
@@ -442,14 +442,14 @@
                     <BitStack Grows Basis="0" Class="item" AutoSize Alignment="BitAlignment.Center">Three</BitStack>
                 </BitStack>
                 <br />
-                <div>Shrink: three stacks of 12rem in a row of 24rem, giving up what it is short of by their factor</div>
+                <div class="caption">Shrink: three stacks of 12rem in a row of 24rem, giving up what it is short of by their factor</div>
                 <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:24rem">
                     <BitStack Shrink="3" Class="item squeezable" AutoSize Style="width:12rem">Shrink 3</BitStack>
                     <BitStack Class="item squeezable" AutoSize Style="width:12rem">Default</BitStack>
                     <BitStack NoShrink Class="item squeezable" AutoSize Style="width:12rem">NoShrink</BitStack>
                 </BitStack>
                 <br />
-                <div>NoShrink: drag the handle at the corner to squeeze the row</div>
+                <div class="caption">NoShrink: drag the handle at the corner to squeeze the row</div>
                 <div class="resizable">
                     <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight>
                         <BitStack Class="item squeezable" AutoSize>Shrinks away</BitStack>
@@ -458,7 +458,7 @@
                     </BitStack>
                 </div>
                 <br />
-                <div>Shrinkable: the same nested stack without and with the floor its own content puts under it</div>
+                <div class="caption">Shrinkable: the same nested stack without and with the floor its own content puts under it</div>
                 <BitStack Horizontal Class="host" AutoHeight>
                     <BitStack Class="truncating">
                         <div class="item ellipsis">A very long label that has nowhere near enough room to be shown in full</div>
@@ -473,7 +473,7 @@
                     <div class="item">Fixed</div>
                 </BitStack>
                 <br />
-                <div>Self &amp; Order</div>
+                <div class="caption">Self &amp; Order</div>
                 <BitStack Horizontal Gap="0.5rem" Class="host" VerticalAlign="BitAlignment.Center" Style="height:8rem">
                     <BitStack Class="item" AutoSize Self="BitAlignment.Start">Self Start</BitStack>
                     <BitStack Class="item" AutoSize>Centered</BitStack>
@@ -502,7 +502,7 @@
                     </BitStack>
                 </BitStack>
                 <br />
-                <div>A fluid padding: narrow the window to watch it close up</div>
+                <div class="caption">A fluid padding: narrow the window to watch it close up</div>
                 <BitStack Padding="clamp(0.5rem, 2vw, 2rem)" Class="stack" AutoHeight>
                     <div class="item">Padding clamp(0.5rem, 2vw, 2rem)</div>
                 </BitStack>
@@ -529,7 +529,7 @@
                     <div class="item">About</div>
                 </BitStack>
                 <br />
-                <div>A list, whose children are the <code>li</code> elements that belong in one</div>
+                <div class="caption">A list, whose children are the <code>li</code> elements that belong in one</div>
                 <BitStack Element="ul" AriaLabel="Tags" Class="stack list" AutoHeight>
                     <li class="item">First</li>
                     <li class="item">Second</li>
@@ -586,7 +586,7 @@
                 those are resolved per breakpoint and per theme where a hardcoded declaration is not.
             </div>
             <div class="example-content">
-                <BitStack Horizontal AutoHeight Style="padding:1rem;border:2px dashed #d13438;background:#fdf2f2">
+                <BitStack Horizontal AutoHeight Style="padding:1rem;border-radius:0.5rem;border:2px dashed var(--bit-clr-err);background:color-mix(in srgb, var(--bit-clr-err) 14%, transparent)">
                     <div class="item">Style</div>
                     <div class="item">on the stack</div>
                 </BitStack>
@@ -606,21 +606,21 @@
                 vertical stack lays its children out top to bottom either way, so only the alignment across it moves.
             </div>
             <div class="example-content">
-                <div>Horizontal, right-to-left</div>
+                <div class="caption">Horizontal, right-to-left</div>
                 <BitStack Horizontal Dir="BitDir.Rtl" Class="stack">
                     <div class="item">یک</div>
                     <div class="item">دو</div>
                     <div class="item">سه</div>
                 </BitStack>
                 <br />
-                <div>Horizontal, right-to-left and reversed</div>
+                <div class="caption">Horizontal, right-to-left and reversed</div>
                 <BitStack Horizontal Reversed Dir="BitDir.Rtl" Class="stack">
                     <div class="item">یک</div>
                     <div class="item">دو</div>
                     <div class="item">سه</div>
                 </BitStack>
                 <br />
-                <div>Vertical, right-to-left, aligned to the end of the horizontal axis</div>
+                <div class="caption">Vertical, right-to-left, aligned to the end of the horizontal axis</div>
                 <BitStack Dir="BitDir.Rtl" HorizontalAlign="BitAlignment.End" Class="stack">
                     <div class="item">یک</div>
                     <div class="item">دو</div>

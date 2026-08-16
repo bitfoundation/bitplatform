@@ -5,14 +5,21 @@ public partial class BitStackDemo
     private readonly string example1RazorCode = @"
 <style>
     .stack {
-        background: #71afe5;
+        border-radius: 0.5rem;
+        background: color-mix(in srgb, var(--bit-clr-pri) 12%, var(--bit-clr-bg-sec));
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bit-clr-pri) 20%, transparent);
     }
 
     .item {
-        color: white;
-        padding: 0.5rem;
+        color: var(--bit-clr-pri-text);
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
         white-space: nowrap;
-        background-color: #0078d4;
+        border-radius: 0.375rem;
+        letter-spacing: 0.01em;
+        background: linear-gradient(135deg, var(--bit-clr-pri), var(--bit-clr-pri-dark));
+        box-shadow: 0 1px 2px rgb(0 0 0 / 24%), inset 0 1px 0 rgb(255 255 255 / 18%);
     }
 </style>
 
@@ -135,13 +142,18 @@ private BitAlignment horizontalAlign;
     private readonly string example4RazorCode = @"
 <style>
     .square {
-        color: white;
+        color: var(--bit-clr-pri-text);
         display: flex;
         width: 3.5rem;
         height: 3.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
         align-items: center;
+        border-radius: 0.5rem;
         justify-content: center;
-        background-color: #0078d4;
+        font-variant-numeric: tabular-nums;
+        background: linear-gradient(135deg, var(--bit-clr-pri), var(--bit-clr-pri-dark));
+        box-shadow: 0 1px 3px rgb(0 0 0 / 26%), inset 0 1px 0 rgb(255 255 255 / 18%);
     }
 </style>
 
@@ -239,20 +251,27 @@ private BitAlignment alignContent;
     private readonly string example7RazorCode = @"
 <style>
     .square {
-        color: white;
+        color: var(--bit-clr-pri-text);
         display: flex;
         width: 3.5rem;
         height: 3.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
         align-items: center;
+        border-radius: 0.5rem;
         justify-content: center;
-        background-color: #0078d4;
+        font-variant-numeric: tabular-nums;
+        background: linear-gradient(135deg, var(--bit-clr-pri), var(--bit-clr-pri-dark));
+        box-shadow: 0 1px 3px rgb(0 0 0 / 26%), inset 0 1px 0 rgb(255 255 255 / 18%);
     }
 
     .host {
         padding: 0.5rem;
         overflow: hidden;
+        border-radius: 0.5rem;
         box-sizing: border-box;
-        border: 1px dashed gray;
+        border: 1px dashed var(--bit-clr-brd-sec);
+        background: color-mix(in srgb, var(--bit-clr-bg-sec) 55%, transparent);
     }
 </style>
 
@@ -300,8 +319,10 @@ private BitAlignment alignContent;
     .host {
         padding: 0.5rem;
         overflow: hidden;
+        border-radius: 0.5rem;
         box-sizing: border-box;
-        border: 1px dashed gray;
+        border: 1px dashed var(--bit-clr-brd-sec);
+        background: color-mix(in srgb, var(--bit-clr-bg-sec) 55%, transparent);
     }
 </style>
 
@@ -331,8 +352,10 @@ private BitAlignment alignContent;
     .host {
         padding: 0.5rem;
         overflow: hidden;
+        border-radius: 0.5rem;
         box-sizing: border-box;
-        border: 1px dashed gray;
+        border: 1px dashed var(--bit-clr-brd-sec);
+        background: color-mix(in srgb, var(--bit-clr-bg-sec) 55%, transparent);
     }
 
     .resizable {
@@ -340,6 +363,7 @@ private BitAlignment alignContent;
         overflow: auto;
         max-width: 100%;
         min-width: 12rem;
+        border-radius: 0.5rem;
     }
 
     /* A flex child refuses to shrink below its own content until it is told it may. */
@@ -480,13 +504,14 @@ private BitAlignment alignContent;
 <style>
     .custom-stack {
         padding: 1rem;
-        border: 2px solid #107c10;
-        background: linear-gradient(90deg, #dff6dd, transparent);
+        border-radius: 0.5rem;
+        border: 2px solid color-mix(in srgb, var(--bit-clr-suc) 55%, transparent);
+        background: linear-gradient(90deg, color-mix(in srgb, var(--bit-clr-suc) 22%, transparent), transparent);
     }
 </style>
 
 
-<BitStack Horizontal AutoHeight Style=""padding:1rem;border:2px dashed #d13438;background:#fdf2f2"">
+<BitStack Horizontal AutoHeight Style=""padding:1rem;border-radius:0.5rem;border:2px dashed var(--bit-clr-err);background:color-mix(in srgb, var(--bit-clr-err) 14%, transparent)"">
     <div class=""item"">Style</div>
     <div class=""item"">on the stack</div>
 </BitStack>
