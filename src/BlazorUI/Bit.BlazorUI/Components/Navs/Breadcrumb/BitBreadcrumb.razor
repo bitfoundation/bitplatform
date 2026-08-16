@@ -10,23 +10,38 @@
     <div style="display:none" hidden id="@_optionsContainerId">@(Options ?? ChildContent)</div>
 </CascadingValue>
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+@* The trail is a navigation landmark holding an ordered list, as the WAI-ARIA breadcrumb pattern
+   requires, so assistive technologies can announce it as navigation and enumerate its steps. The
+   explicit list role is there because the list items are rendered as flex boxes, which drops the
+   implicit list semantics in some screen reader / browser combinations. *@
+@* The aria-label sits before the attribute splatting so that an aria-label passed as a plain
+   attribute still wins over the default name of the landmark, while the id, the style, the class and
+   the dir stay after it and keep the ones the component renders. *@
+<nav @ref="RootElement"
+     aria-label="@(AriaLabel ?? "Breadcrumb")"
+     @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel">
-    <ul style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
+     dir="@Dir?.ToString().ToLower()">
+    <ol role="list" style="@Styles?.ItemContainer" class="bit-brc-icn @Classes?.ItemContainer">
         @foreach (var (item, idx) in _displayItems.Select((item, index) => (item, index)))
         {
-            <li @key="@GetItemKey(item, idx.ToString())" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
+            <li @key="@GetItemKey(item, idx.ToString())" role="listitem" style="@Styles?.ItemWrapper" class="@Classes?.ItemWrapper">
                 @if (idx == _internalOverflowIndex && _overflowItems.Any())
                 {
-                    <button id="@_overflowAnchorId"
+                    <button @ref="_overflowButtonRef"
+                            @onclick="OpenCallout"
+                            @onkeydown="HandleOnOverflowButtonKeyDown"
+                            id="@_overflowAnchorId"
                             type="button"
+                            title="@(OverflowAriaLabel ?? "More items")"
                             style="@Styles?.OverflowButton"
                             class="bit-brc-obt @Classes?.OverflowButton"
-                            aria-label="@OverflowAriaLabel" @onclick="OpenCallout"
+                            aria-haspopup="menu"
+                            aria-controls="@_calloutId"
+                            aria-expanded="@_isCalloutOpen.ToString().ToLower()"
+                            aria-label="@(OverflowAriaLabel ?? "More items")"
                             disabled="@(IsEnabled is false)">
                         @if (OverflowIconTemplate is not null)
                         {
@@ -35,7 +50,7 @@
                         else
                         {
                             var overflowIcon = BitIconInfo.From(OverflowIcon, OverflowIconName ?? "More");
-                            <i style="@Styles?.OverflowButtonIcon" class="@overflowIcon?.GetCssClasses() @Classes?.OverflowButtonIcon" />
+                            <i aria-hidden="true" style="@Styles?.OverflowButtonIcon" class="@overflowIcon?.GetCssClasses() @Classes?.OverflowButtonIcon" />
                         }
                     </button>
                 }
@@ -45,6 +60,10 @@
                     if (GetItemHref(item).HasValue())
                     {
                         <a href="@GetItemHref(item)"
+                           @onclick="() => HandleOnItemClick(item)"
+                           title="@GetItemTitle(item)"
+                           target="@GetItemTarget(item)"
+                           aria-label="@GetItemAriaLabel(item)"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetStyles(item, false)"
                            class="bit-brc-itm @GetClasses(item, false)">
@@ -61,15 +80,17 @@
                                 var icon = GetIcon(item);
                                 @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
-                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
                             }
                         </a>
                     }
-                    else if (OnItemClick.HasDelegate)
+                    else if (HasClickHandler(item))
                     {
                         <button type="button"
+                                title="@GetItemTitle(item)"
+                                aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 disabled="@(GetIsEnabled(item) is false)"
                                 style="@GetStyles(item, false)"
@@ -87,15 +108,17 @@
                                 var icon = GetIcon(item);
                                 @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
-                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
                             }
                         </button>
                     }
-                    else 
+                    else
                     {
-                        <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                        <span title="@GetItemTitle(item)"
+                              aria-label="@GetItemAriaLabel(item)"
+                              aria-current="@(GetIsSelected(item) ? "page" : null)"
                               style="@GetStyles(item, false)"
                               class="bit-brc-nii @GetClasses(item, false)">
                             @if (template is not null)
@@ -111,9 +134,9 @@
                                 var icon = GetIcon(item);
                                 @if (icon is not null)
                                 {
-                                    <i style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
+                                    <i aria-hidden="true" style="@Styles?.ItemIcon" class="@icon.GetCssClasses() @Classes?.ItemIcon" />
                                 }
-                                <span style="@Styles?.ItemText" class="@Classes?.ItemText">@GetItemText(item)</span>
+                                <span style="@Styles?.ItemText" class="bit-brc-itx @Classes?.ItemText">@GetItemText(item)</span>
                             }
                         </span>
                     }
@@ -122,10 +145,16 @@
 
             @if (idx != _displayItems.Count - 1)
             {
-                <li style="@Styles?.Divider" class="@Classes?.Divider">
+                @* The divider is decoration: it carries no information a screen reader user needs and
+                   would otherwise be announced as an extra step of the trail. *@
+                <li aria-hidden="true" style="@Styles?.Divider" class="@Classes?.Divider">
                     @if (DividerIconTemplate is not null)
                     {
                         @DividerIconTemplate
+                    }
+                    else if (DividerText.HasValue())
+                    {
+                        <span style="@Styles?.DividerIcon" class="bit-brc-dtx @Classes?.DividerIcon">@DividerText</span>
                     }
                     else
                     {
@@ -136,20 +165,27 @@
                 </li>
             }
         }
-    </ul>
+    </ol>
 
-</div>
+</nav>
 
 <div @onclick="CloseCallout" @onclick:stopPropagation
      style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
      class="bit-brc-ovl @Classes?.Overlay"></div>
 
-<div id="@_calloutId"
-     tabindex="0"
-     style="@Styles?.Callout"
-     class="bit-brc-cal @Classes?.Callout">
-    <ul style="@Styles?.CalloutContainer" id="@_scrollContainerId" class="bit-brc-scn @Classes?.CalloutContainer">
+@* The callout is moved to the body by the JS positioning, so it repeats the direction and the
+   look-and-feel classes of the root element instead of inheriting them. *@
+<div @ref="_calloutRef"
+     @onkeydown="HandleOnCalloutKeyDown"
+     id="@_calloutId"
+     dir="@Dir?.ToString().ToLower()"
+     style="@GetCalloutStyles()"
+     class="@GetCalloutClasses()">
+    <ul style="@Styles?.CalloutContainer"
+        id="@_scrollContainerId"
+        class="bit-brc-scn @Classes?.CalloutContainer"
+        aria-label="@(OverflowAriaLabel ?? "More items")">
         @foreach (var (item, idx) in _overflowItems.Select((item, idx) => (item, idx)))
         {
             var overflowTemplate = GetOverflowTemplate(item);
@@ -157,6 +193,10 @@
                 @if (GetItemHref(item).HasValue())
                 {
                     <a href="@GetItemHref(item)"
+                       @onclick="() => HandleOnOverflowItemClick(item)"
+                       title="@GetItemTitle(item)"
+                       target="@GetItemTarget(item)"
+                       aria-label="@GetItemAriaLabel(item)"
                        aria-current="@(GetIsSelected(item) ? "page" : null)"
                        style="@GetStyles(item, true)"
                        class="bit-brc-ofi @GetClasses(item, true)">
@@ -173,19 +213,21 @@
                             var icon = GetIcon(item);
                             @if (icon is not null)
                             {
-                                <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
+                                <i aria-hidden="true" style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                             }
-                            <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                            <span style="@Styles?.OverflowItemText" class="bit-brc-itx @Classes?.OverflowItemText">@GetItemText(item)</span>
                         }
                     </a>
                 }
-                else if (OnItemClick.HasDelegate)
+                else if (HasClickHandler(item))
                 {
                     <button type="button"
+                            title="@GetItemTitle(item)"
+                            aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"
                             disabled="@(GetIsEnabled(item) is false)"
                             style="@GetStyles(item, true)"
-                            class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnItemClick(item)">
+                            class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnOverflowItemClick(item)">
                         @if (overflowTemplate is not null)
                         {
                             @overflowTemplate(item)
@@ -199,15 +241,17 @@
                             var icon = GetIcon(item);
                             @if (icon is not null)
                             {
-                                <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
+                                <i aria-hidden="true" style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                             }
-                            <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                            <span style="@Styles?.OverflowItemText" class="bit-brc-itx @Classes?.OverflowItemText">@GetItemText(item)</span>
                         }
                     </button>
                 }
                 else
                 {
-                    <span aria-current="@(GetIsSelected(item) ? "page" : null)"
+                    <span title="@GetItemTitle(item)"
+                          aria-label="@GetItemAriaLabel(item)"
+                          aria-current="@(GetIsSelected(item) ? "page" : null)"
                           style="@GetStyles(item, true)"
                           class="bit-brc-ofn @GetClasses(item, true)">
                           @if (overflowTemplate is not null)
@@ -223,9 +267,9 @@
                               var icon = GetIcon(item);
                               @if (icon is not null)
                               {
-                                  <i style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
+                                  <i aria-hidden="true" style="@Styles?.OverflowItemIcon" class="@icon.GetCssClasses() @Classes?.OverflowItemIcon" />
                               }
-                              <span style="@Styles?.OverflowItemText" class="@Classes?.OverflowItemText">@GetItemText(item)</span>
+                              <span style="@Styles?.OverflowItemText" class="bit-brc-itx @Classes?.OverflowItemText">@GetItemText(item)</span>
                           }
                     </span>
                 }

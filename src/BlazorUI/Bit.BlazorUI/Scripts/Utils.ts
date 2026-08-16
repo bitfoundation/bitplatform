@@ -294,6 +294,67 @@
             }
         }
 
+        // Measures how much room a single-line list of children needs against the room it has, so a
+        // component can decide how many of them to keep. `content` is what the children take in total
+        // and `available` is the width of the container, both in pixels, and `widths` carries the
+        // children in DOM order so the caller can tell how much room dropping one of them frees.
+        public static getOverflowMetrics(containerId: string, childSelector: string) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+
+            try {
+                return {
+                    available: container.clientWidth,
+                    content: container.scrollWidth,
+                    widths: (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
+                        .map(el => el.getBoundingClientRect().width)
+                };
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.getOverflowMetrics:", e);
+                return null;
+            }
+        }
+
+        // Moves the focus between the items of a popup (a menu, an overflow list, ...) that a component
+        // drives from its keydown handlers. The items are the elements of `container` matching `selector`,
+        // in DOM order, minus the disabled ones. `mode` is one of first/last/next/prev/char, where next
+        // and prev wrap around and char jumps to the next item whose text starts with `char`.
+        public static focusItem(containerId: string, selector: string, mode: string, char: string | null) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const items = (Array.from(container.querySelectorAll(selector)) as HTMLElement[])
+                .filter(el => !(el as HTMLButtonElement).disabled && el.getAttribute('aria-disabled') !== 'true');
+            if (items.length === 0) return;
+
+            const current = items.indexOf(document.activeElement as HTMLElement);
+            let index = -1;
+
+            if (mode === 'first') {
+                index = 0;
+            } else if (mode === 'last') {
+                index = items.length - 1;
+            } else if (mode === 'next') {
+                index = current < 0 ? 0 : (current + 1) % items.length;
+            } else if (mode === 'prev') {
+                index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
+            } else if (mode === 'char' && char) {
+                const c = char.toLowerCase();
+                const start = current < 0 ? 0 : current + 1;
+                for (let i = 0; i < items.length; i++) {
+                    const candidate = (start + i) % items.length;
+                    if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {
+                        index = candidate;
+                        break;
+                    }
+                }
+            }
+
+            if (index > -1) {
+                items[index].focus();
+            }
+        }
+
         public static setStyle(element: HTMLElement, key: string, value: string) {
             if (!element || !element.style) return;
 

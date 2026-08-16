@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Breadcrumb;
 
 public partial class _BitBreadcrumbCustomDemo
 {
@@ -7,9 +7,13 @@ public partial class _BitBreadcrumbCustomDemo
                NameSelectors=""nameSelectors"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
-               NameSelectors=""nameSelectors"" />
+               NameSelectors=""nameSelectors""
+               IsEnabled=""false"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsDisabled""
+               NameSelectors=""nameSelectors"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithTarget""
                NameSelectors=""nameSelectors"" />";
     private readonly string example1CsharpCode = @"
 public class PageInfo
@@ -21,6 +25,10 @@ public class PageInfo
     public string HtmlClass { get; set; }
 
     public string HtmlStyle { get; set; }
+
+    public string Tooltip { get; set; }
+
+    public string OpenIn { get; set; }
 
     public bool IsCurrent { get; set; }
 
@@ -43,10 +51,20 @@ private readonly List<PageInfo> CustomBreadcrumbItemsDisabled =
     new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
+private readonly List<PageInfo> CustomBreadcrumbItemsWithTarget =
+[
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""bit BlazorUI"", Address = ""https://blazorui.bitplatform.dev"", OpenIn = ""_blank"", Tooltip = ""Opens the bit BlazorUI website in a new tab"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+];
+
 private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 {
     Text = { Selector = c => c.Name },
     Href = { Selector = c => c.Address },
+    Title = { Selector = c => c.Tooltip },
+    Target = { Selector = c => c.OpenIn },
     IsSelected = { Selector = c => c.IsCurrent },
     Class = { Selector = c => c.HtmlClass },
     Style = { Selector = c => c.HtmlStyle }
@@ -80,21 +98,6 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />";
     private readonly string example2CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
-
 private readonly List<PageInfo> CustomBreadcrumbItems =
 [
     new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
@@ -107,9 +110,7 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 {
     Text = { Selector = c => c.Name },
     Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle }
+    IsSelected = { Selector = c => c.IsCurrent }
 };";
 
     private readonly string example3RazorCode = @"
@@ -127,23 +128,6 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                OverflowIconName=""@BitIconName.CollapseMenu""
                ReversedIcon />";
     private readonly string example3CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public string Icon { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
-
 private readonly List<PageInfo> CustomBreadcrumbItemsWithIcon =
 [
     new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", Icon = BitIconName.AdminELogoInverse32 },
@@ -156,13 +140,30 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 {
     Text = { Selector = c => c.Name },
     Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle },
     IconName = { Selector = c => c.Icon },
+    IsSelected = { Selector = c => c.IsCurrent }
 };";
 
     private readonly string example4RazorCode = @"
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors""
+               DividerIconName=""@BitIconName.CaretRightSolid8"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" DividerText=""/"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" DividerText=""›""
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+    private readonly string example4CsharpCode = @"
+private readonly List<PageInfo> CustomBreadcrumbItems =
+[
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+];";
+
+    private readonly string example5RazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors"">
     <DividerIconTemplate>
@@ -190,34 +191,7 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""2"" />";
-    private readonly string example4CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-
-    public RenderFragment<PageInfo>? Fragment { get; set; }
-
-    public RenderFragment<PageInfo>? OverflowFragment { get; set; }
-}
-
-private readonly List<PageInfo> CustomBreadcrumbItems =
-[
-    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
-];
-
+    private readonly string example5CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItemTemplateItems =
 [
     new()
@@ -251,35 +225,18 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
     Text = { Selector = c => c.Name },
     Href = { Selector = c => c.Address },
     IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle },
     Template = { Name = nameof(PageInfo.Fragment) },
     OverflowTemplate = { Name = nameof(PageInfo.OverflowFragment) }
 };";
 
-    private readonly string example5RazorCode = @"
+    private readonly string example6RazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithControlled""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3""
                OverflowIndex=""2""
                OnItemClick=""(PageInfo model) => HandleOnCustomClick(model)""
                Styles=""@(new() { SelectedItem = ""color: dodgerblue;"", OverflowSelectedItem = ""color: red;"" })"" />";
-    private readonly string example5CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
-
+    private readonly string example6CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItemsWithControlled =
 [
     new() { Name = ""Custom 1"" },
@@ -290,22 +247,13 @@ private readonly List<PageInfo> CustomBreadcrumbItemsWithControlled =
     new() { Name = ""Custom 6"", IsCurrent = true }
 ];
 
-private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
-{
-    Text = { Selector = c => c.Name },
-    Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle }
-};
-
 private void HandleOnCustomClick(PageInfo model)
 {
     CustomBreadcrumbItemsWithControlled.First(i => i.IsCurrent).IsCurrent = false;
     model.IsCurrent = true;
 }";
 
-    private readonly string example6RazorCode = @"
+    private readonly string example7RazorCode = @"
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithCustomized""
                NameSelectors=""nameSelectors""
                MaxDisplayedItems=""@MaxDisplayedItems""
@@ -315,27 +263,12 @@ private void HandleOnCustomClick(PageInfo model)
 <BitButton OnClick=""AddCustomItem"">Add Item</BitButton>
 <BitButton OnClick=""RemoveCustomItem"">Remove Item</BitButton>
 
-<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed items"" ShowArrows=""true"" />
-<BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowArrows=""true"" />";
-    private readonly string example6CsharpCode = @"
+<BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed items"" ShowButtons=""true"" />
+<BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons=""true"" />";
+    private readonly string example7CsharpCode = @"
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
 
 private readonly List<PageInfo> CustomBreadcrumbItemsWithCustomized =
 [
@@ -344,15 +277,6 @@ private readonly List<PageInfo> CustomBreadcrumbItemsWithCustomized =
     new() { Name = ""Custom 3"" },
     new() { Name = ""Custom 4"", IsCurrent = true }
 ];
-
-private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
-{
-    Text = { Selector = c => c.Name },
-    Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle }
-};
 
 private void HandleOnCustomizedCustomClick(PageInfo model)
 {
@@ -363,61 +287,132 @@ private void HandleOnCustomizedCustomClick(PageInfo model)
 private void AddCustomItem()
 {
     ItemsCount++;
-    BreadcrumbItemsWithCustomized.Add(new BitBreadcrumbItem()
+    CustomBreadcrumbItemsWithCustomized.Add(new PageInfo()
     {
-        Text = $""Custom {ItemsCount}""
+        Name = $""Custom {ItemsCount}""
     });
 }
 
 private void RemoveCustomItem()
 {
-    if (BreadcrumbItemsWithCustomized.Count > 1)
+    if (CustomBreadcrumbItemsWithCustomized.Count > 1)
     {
         ItemsCount--;
 
-        var item = BreadcrumbItemsWithCustomized[^1];
-        BreadcrumbItemsWithCustomized.Remove(item);
+        var item = CustomBreadcrumbItemsWithCustomized[^1];
+        CustomBreadcrumbItemsWithCustomized.Remove(item);
 
-        if (item.IsSelected)
+        if (item.IsCurrent)
         {
-            BreadcrumbItemsWithCustomized[^1].IsSelected = true;
+            CustomBreadcrumbItemsWithCustomized[^1].IsCurrent = true;
         }
     }
 }";
 
+    private readonly string example8RazorCode = @"
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" MaxItemWidth=""6rem"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" Wrap />";
+    private readonly string example8CsharpCode = @"
+private readonly List<PageInfo> CustomBreadcrumbItemsWithLongText =
+[
+    new() { Name = ""Very long folder name 1"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 1"" },
+    new() { Name = ""Very long folder name 2"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 2"" },
+    new() { Name = ""Very long folder name 3"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 3"" },
+    new() { Name = ""Very long folder name 4"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 4"", IsCurrent = true }
+];
+
+private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    Title = { Selector = c => c.Tooltip },
+    IsSelected = { Selector = c => c.IsCurrent }
+};";
+
     private readonly string example9RazorCode = @"
+<style>
+    .resizable-box {
+        width: 320px;
+        padding: 4px;
+        overflow: auto;
+        max-width: 100%;
+        resize: horizontal;
+        border: 1px dashed gray;
+    }
+</style>
+
+<div class=""resizable-box"">
+    <BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" AutoCollapse />
+</div>";
+    private readonly string example9CsharpCode = @"
+private readonly List<PageInfo> CustomBreadcrumbItemsWithLongText =
+[
+    new() { Name = ""Very long folder name 1"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 1"" },
+    new() { Name = ""Very long folder name 2"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 2"" },
+    new() { Name = ""Very long folder name 3"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 3"" },
+    new() { Name = ""Very long folder name 4"", Address = ""/components/breadcrumb"", Tooltip = ""Very long folder name 4"", IsCurrent = true }
+];
+
+private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
+{
+    Text = { Selector = c => c.Name },
+    Href = { Selector = c => c.Address },
+    Title = { Selector = c => c.Tooltip },
+    IsSelected = { Selector = c => c.IsCurrent }
+};";
+
+    private readonly string example10RazorCode = @"
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Primary"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Secondary"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Tertiary"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Info"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Success"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Warning"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.SevereWarning"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Color=""BitColor.Error"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+    private readonly string example10CsharpCode = @"
+private readonly List<PageInfo> CustomBreadcrumbItems =
+[
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+];";
+
+    private readonly string example11RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon1""
-               NameSelectors=""externalIconNameSelectors""
+               NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3"" OverflowIndex=""2""
                Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon2""
-               NameSelectors=""externalIconNameSelectors""
+               NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3"" OverflowIndex=""2""
                Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon3""
-               NameSelectors=""externalIconNameSelectors""
+               NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3"" OverflowIndex=""2""
                Styles=""@(new() { ItemIcon = ""line-height:unset"" })"" />
 
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon4""
-               NameSelectors=""externalIconNameSelectors""
+               NameSelectors=""nameSelectors""
                MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
-    private readonly string example9CsharpCode = @"
-public class PageInfo
-{
-    public string? Name { get; set; }
-    public string? Address { get; set; }
-    public BitIconInfo? IconInfo { get; set; }
-    public bool IsCurrent { get; set; }
-    public bool IsEnabled { get; set; } = true;
-}
-
+    private readonly string example11CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon1 =
 [
     new() { Name = ""Home"", IconInfo = ""fa-solid fa-house"" },
@@ -450,15 +445,29 @@ private readonly List<PageInfo> CustomBreadcrumbItemsWithExternalIcon4 =
     new() { Name = ""Laptops"", IconInfo = BitIconInfo.Bi(""laptop-fill""), IsCurrent = true }
 ];
 
-private BitBreadcrumbNameSelectors<PageInfo> externalIconNameSelectors = new()
+private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 {
     Text = { Selector = c => c.Name },
-    Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
     Icon = { Selector = c => c.IconInfo },
+    IsSelected = { Selector = c => c.IsCurrent }
 };";
 
-    private readonly string example7RazorCode = @"
+    private readonly string example12RazorCode = @"
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+    private readonly string example12CsharpCode = @"
+private readonly List<PageInfo> CustomBreadcrumbItems =
+[
+    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
+    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+];";
+
+    private readonly string example13RazorCode = @"
 <style>
     .custom-class {
         font-style: italic;
@@ -504,12 +513,13 @@ private BitBreadcrumbNameSelectors<PageInfo> externalIconNameSelectors = new()
     }
 </style>
 
+
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
-               NameSelectors=""nameSelectors"" 
+               NameSelectors=""nameSelectors""
                Class=""custom-class"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
-               NameSelectors=""nameSelectors"" 
+               NameSelectors=""nameSelectors""
                Style=""font-style: italic;text-shadow: aqua 0 0 0.5rem;border-bottom: 1px solid aqua;"" />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithClass""
@@ -525,30 +535,7 @@ private BitBreadcrumbNameSelectors<PageInfo> externalIconNameSelectors = new()
 <BitBreadcrumb Items=""CustomBreadcrumbItems""
                NameSelectors=""nameSelectors""
                Styles=""@(new() { Item = ""color: green;"", SelectedItem = ""color: lightseagreen; text-shadow: lightseagreen 0 0 1rem;"" })"" />";
-    private readonly string example7CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
-
-private readonly List<PageInfo> CustomBreadcrumbItems =
-[
-    new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
-];
-
+    private readonly string example13CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItemsWithClass =
 [
     new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"", HtmlClass = ""custom-item-1"" },
@@ -569,33 +556,18 @@ private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 {
     Text = { Selector = c => c.Name },
     Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
     Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle }
+    Style = { Selector = c => c.HtmlStyle },
+    IsSelected = { Selector = c => c.IsCurrent }
 };";
 
-    private readonly string example8RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitBreadcrumb Dir=""BitDir.Rtl""
                OverflowIndex=""2""
                MaxDisplayedItems=""3""
                Items=""RtlCustomBreadcrumbItems""
                NameSelectors=""nameSelectors"" />";
-    private readonly string example8CsharpCode = @"
-public class PageInfo
-{
-    public string Name { get; set; }
-
-    public string Address { get; set; }
-
-    public string HtmlClass { get; set; }
-
-    public string HtmlStyle { get; set; }
-
-    public bool IsCurrent { get; set; }
-
-    public bool IsEnabled { get; set; } = true;
-}
-
+    private readonly string example14CsharpCode = @"
 private readonly List<PageInfo> RtlCustomBreadcrumbItems =
 [
     new() { Name = ""پوشه اول"" },
@@ -604,14 +576,5 @@ private readonly List<PageInfo> RtlCustomBreadcrumbItems =
     new() { Name = ""پوشه چهارم"" },
     new() { Name = ""پوشه پنجم"" },
     new() { Name = ""پوشه ششم"" },
-];
-
-private BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
-{
-    Text = { Selector = c => c.Name },
-    Href = { Selector = c => c.Address },
-    IsSelected = { Selector = c => c.IsCurrent },
-    Class = { Selector = c => c.HtmlClass },
-    Style = { Selector = c => c.HtmlStyle }
-};";
+];";
 }

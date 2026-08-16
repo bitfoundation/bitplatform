@@ -1,4 +1,11 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+    <div>
+        The options are written as markup instead of a collection, and the breadcrumb renders them in the
+        order of that markup. An option with an Href becomes a link, the option marked with IsSelected
+        becomes the current page of the trail (aria-current) and an option with IsEnabled set to false stays
+        in the trail but is not actionable. Setting Target on an option opens its link in another browsing context.
+    </div>
+    <br /><br />
     <div class="example-box">
         <div>
             <div>Basic</div>
@@ -29,13 +36,27 @@
                 <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
             </BitBreadcrumb>
         </div>
+
+        <div>
+            <div>Option Target (opens in a new tab)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="bit BlazorUI" Href="https://blazorui.bitplatform.dev" Target="_blank"
+                                     Title="Opens the bit BlazorUI website in a new tab" />
+                <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
     </div>
 </DemoExample>
 
 <DemoExample Title="MaxDisplayedItems & OverflowIndex" RazorCode="@example2RazorCode" Id="example2">
     <div>
-        You can specify how many options are displayed among the options you have and the rest of the options are displayed as overflow.
-        You can also choose which index the overflow icon should be placed in.
+        MaxDisplayedItems caps how many options stay in the trail, the rest are collapsed behind an overflow
+        button that opens them in a menu. OverflowIndex chooses where that button sits among the displayed
+        options, so the first and the last steps of the hierarchy can be kept visible while the middle collapses.
+        The menu is reachable by keyboard: Enter, Space or the arrow keys open it, the arrow keys and
+        Home/End move inside it and Escape closes it back onto the button.
     </div>
     <br /><br />
     <div class="example-box">
@@ -97,11 +118,15 @@
 </DemoExample>
 
 <DemoExample Title="Icons" RazorCode="@example3RazorCode" Id="example3">
-    <div>Customize the overflow icon, divider icon and item icons in BitBreadcrumb using different icon name values.</div>
+    <div>
+        Each option can carry an icon next to its text through IconName, and ReversedIcon swaps the icon and
+        the text around (per option, or for the whole breadcrumb). The icon of the overflow button is
+        configurable through OverflowIconName as well.
+    </div>
     <br /><br />
     <div class="example-box">
         <div>
-            <div>BitIconName (OverflowIcon: ChevronDown - DividerIcon: CaretRightSolid8)</div>
+            <div>Option icons (OverflowIcon: ChevronDown - DividerIcon: CaretRightSolid8)</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" DividerIconName="@BitIconName.CaretRightSolid8" OverflowIconName="@BitIconName.ChevronDown">
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IconName="@BitIconName.AdminELogoInverse32" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IconName="@BitIconName.AppsContent" />
@@ -111,7 +136,7 @@
         </div>
         <br />
         <div>
-            <div>BitIconName (OverflowIcon: CollapseMenu) with active ReversedIcon</div>
+            <div>Option icons (OverflowIcon: CollapseMenu) with active ReversedIcon</div>
             <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" OverflowIconName="@BitIconName.CollapseMenu" ReversedIcon>
                 <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" IconName="@BitIconName.AdminELogoInverse32" />
                 <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" IconName="@BitIconName.AppsContent" />
@@ -122,8 +147,56 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example4RazorCode" Id="example4">
-    <div>Here are some examples of customizing the breadcrumb content.</div>
+<DemoExample Title="Divider" RazorCode="@example4RazorCode" Id="example4">
+    <div>
+        The chevron between the options can be replaced by any other icon with DividerIconName, or by a plain
+        text separator with DividerText (the classic "/" of a file path, for example). Dividers are
+        decorative, so they are always hidden from screen readers.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <div>
+            <div>Default divider</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>DividerIconName</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" DividerIconName="@BitIconName.CaretRightSolid8">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>DividerText (/)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" DividerText="/">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+        <div>
+            <div>DividerText (›)</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption" DividerText="›" MaxDisplayedItems="3" OverflowIndex="2">
+                <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+            </BitBreadcrumb>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Templates" RazorCode="@example5RazorCode" Id="example5">
+    <div>
+        Every part of the content is templatable: DividerIconTemplate for the separator, ItemTemplate and
+        OverflowTemplate for all of the options at once, and the Template and OverflowTemplate of a single
+        option for a one-off. A template of an option wins over the template of the component.
+    </div>
     <br /><br />
     <div class="example-box">
         <div>
@@ -164,8 +237,8 @@
         </div>
         <br />
         <div>
-            <div>Item's template & Item's overflow tTemplate</div>
-            <BitBreadcrumb TItem="BitBreadcrumbOption" SelectedItemClass="custom-selected-item">
+            <div>Option's Template & Option's OverflowTemplate</div>
+            <BitBreadcrumb TItem="BitBreadcrumbOption">
                 <Options>
                     <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb">
                         <Template Context="item"><div style="color:green">@item.Text</div></Template>
@@ -189,8 +262,12 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-    <div>By clicking on the options, the Selected option will change and match the SelectedItemStyle.</div>
+<DemoExample Title="Events" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+    <div>
+        Each option carries its own OnClick handler, which makes it actionable even without an Href and
+        without the OnItemClick of the component. Here the handler moves the selection, which the
+        SelectedItem and OverflowSelectedItem styles pick up.
+    </div>
     <br /><br />
     <div class="example-box">
         <BitBreadcrumb TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2" Styles="@(new() { SelectedItem = "color: dodgerblue;", OverflowSelectedItem = "color: red;" })">
@@ -204,8 +281,12 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Customizations" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-    <div>Explore advanced customization of BitBreadcrumb by adding or removing options dynamically and adjusting display settings.</div>
+<DemoExample Title="Customizations" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        The breadcrumb keeps up with the options that are added, removed or reordered at runtime, and with
+        the collapsing settings changing along with them. Add or remove options and move the two sliders to
+        see how the trail and the overflow menu are recomputed.
+    </div>
     <br />
     <div class="example-box">
         <div>
@@ -233,7 +314,90 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="Truncation & Wrapping" RazorCode="@example8RazorCode" Id="example8">
+    <div>
+        A trail of long titles is kept on a single line by default. MaxItemWidth truncates the text of each
+        option with an ellipsis at the given CSS length, in which case the Title of the option keeps the full
+        text reachable as a tooltip, and Wrap lets the trail flow onto more than one line instead.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <div>
+            <div>Default (single line)</div>
+            <div class="narrow-box">
+                <BitBreadcrumb TItem="BitBreadcrumbOption">
+                    <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" Title="Very long option name 1" />
+                    <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" Title="Very long option name 2" />
+                    <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" Title="Very long option name 3" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+        <div>
+            <div>MaxItemWidth (with the Title of each option as its tooltip)</div>
+            <div class="narrow-box">
+                <BitBreadcrumb TItem="BitBreadcrumbOption" MaxItemWidth="6rem">
+                    <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" Title="Very long option name 1" />
+                    <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" Title="Very long option name 2" />
+                    <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" Title="Very long option name 3" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+        <div>
+            <div>Wrap</div>
+            <div class="narrow-box">
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Wrap>
+                    <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" Title="Very long option name 1" />
+                    <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" Title="Very long option name 2" />
+                    <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" Title="Very long option name 3" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Auto Collapse" RazorCode="@example9RazorCode" Id="example9">
+    <div>
+        AutoCollapse measures the trail and moves the options that do not fit into the overflow menu, bringing
+        them back as the room for them returns, so the breadcrumb always stays on a single line whatever the
+        width of its container is. MaxDisplayedItems, when it is set, still caps how many options may stay in
+        the trail and OverflowIndex still decides where the overflow button sits.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <div>
+            <div>Drag the bottom-right corner of the box to resize it</div>
+            <div class="resizable-box">
+                <BitBreadcrumb TItem="BitBreadcrumbOption" AutoCollapse>
+                    <BitBreadcrumbOption Text="Very long option name 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Very long option name 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        </div>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
+    <div>Offering a range of specific colors for the options and the divider of the breadcrumb.</div>
+    <br /><br />
+    <div class="example-box">
+        @foreach (var color in colors)
+        {
+            <div>
+                <div>@color</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Color="color" MaxDisplayedItems="3" OverflowIndex="2">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        }
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example11RazorCode" Id="example11">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
     <br /><br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -287,8 +451,31 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Class & Style" RazorCode="@example7RazorCode" Id="example7">
-    <div>Customize the appearance of BitBreadcrumb using styles and CSS classes.</div>
+<DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
+    <div>Three sizes of the breadcrumb, driving the text and the overflow menu of the trail.</div>
+    <br /><br />
+    <div class="example-box">
+        @foreach (var size in sizes)
+        {
+            <div>
+                <div>@size</div>
+                <BitBreadcrumb TItem="BitBreadcrumbOption" Size="size" MaxDisplayedItems="3" OverflowIndex="2">
+                    <BitBreadcrumbOption Text="Option 1" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 2" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 3" Href="/components/breadcrumb" />
+                    <BitBreadcrumbOption Text="Option 4" Href="/components/breadcrumb" IsSelected />
+                </BitBreadcrumb>
+            </div>
+        }
+    </div>
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" Id="example13">
+    <div>
+        The look of the breadcrumb is customizable at three levels: the Style and Class of the component,
+        the Style and Class of a single option, and the Styles and Classes of every part of it (the root, the
+        items, the selected item, the dividers, the overflow button and menu, ...).
+    </div>
     <br /><br />
     <div class="example-box">
         <div>
@@ -344,8 +531,8 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
-    <div>Use BitBreadcrumb in right-to-left (RTL).</div>
+<DemoExample Title="RTL" RazorCode="@example14RazorCode" Id="example14">
+    <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">
         <BitBreadcrumb Dir="BitDir.Rtl" TItem="BitBreadcrumbOption" MaxDisplayedItems="3" OverflowIndex="2">

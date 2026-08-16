@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -18,7 +20,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.DividerIconName, icon);
         });
 
-        var breadcrumbDividerIcon = component.Find(".bit-brc ul i");
+        var breadcrumbDividerIcon = component.Find(".bit-brc ol i");
 
         Assert.IsTrue(breadcrumbDividerIcon.ClassList.Contains($"bit-icon--{icon}"));
     }
@@ -37,7 +39,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc ul.bit-brc-icn li a");
+        var breadcrumbElements = component.FindAll(".bit-brc ol.bit-brc-icn li a");
 
         if (maxDisplayedItems > 0)
         {
@@ -63,14 +65,48 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbOverflowIcon = component.Find(".bit-brc ul.bit-brc-icn li button i");
+        var breadcrumbOverflowIcon = component.Find(".bit-brc ol.bit-brc-icn li button i");
 
         Assert.IsTrue(breadcrumbOverflowIcon.ClassList.Contains($"bit-icon--{icon}"));
 
-        var breadcrumbElements = component.FindAll(".bit-brc ul.bit-brc-icn li a");
-        var overflowItem = breadcrumbElements[(int)overflowIndex];
+        var breadcrumbElements = component.FindAll(".bit-brc ol.bit-brc-icn li a");
 
         Assert.AreEqual((uint)breadcrumbElements.Count, maxDisplayedItems);
+
+        // The items that did not fit are the ones rendered in the overflow callout.
+        var overflowElements = component.FindAll(".bit-brc-cal .bit-brc-ofi");
+
+        Assert.AreEqual(GetBreadcrumbItems().Count - (int)maxDisplayedItems, overflowElements.Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldClampOverflowIndexOutOfTheDisplayedRange()
+    {
+        // An overflow index that is not inside the displayed items has no place to render the
+        // overflow button, so it falls back to the first position.
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)5);
+        });
+
+        var firstItem = component.Find(".bit-brc-icn > li:first-child > *");
+
+        Assert.IsTrue(firstItem.ClassList.Contains("bit-brc-obt"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotRenderTheOverflowButtonWhenEverythingFits()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)10);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
     }
 
     [TestMethod]
@@ -83,11 +119,99 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, breadcrumbItems);
         });
 
-        var breadcrumbElements = component.FindAll(".bit-brc ul li a");
+        var breadcrumbElements = component.FindAll(".bit-brc ol li a");
 
         var lastIndex = breadcrumbItems.Count - 1;
 
-        Assert.IsTrue(breadcrumbElements?[lastIndex]?.GetAttribute("aria-current")?.Contains("page"));
+        Assert.AreEqual("page", breadcrumbElements[lastIndex].GetAttribute("aria-current"));
+
+        // Only the selected item carries aria-current.
+        Assert.AreEqual(1, breadcrumbElements.Count(e => e.HasAttribute("aria-current")));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheNavigationLandmarkOfTheBreadcrumbPattern()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        var root = component.Find(".bit-brc");
+
+        Assert.AreEqual("NAV", root.TagName);
+        Assert.AreEqual("Breadcrumb", root.GetAttribute("aria-label"));
+
+        var list = component.Find(".bit-brc-icn");
+
+        Assert.AreEqual("OL", list.TagName);
+        Assert.AreEqual("list", list.GetAttribute("role"));
+    }
+
+    [TestMethod,
+      DataRow("Site navigation")
+    ]
+    public void BitBreadcrumbShouldTakeCustomAriaLabel(string ariaLabel)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AriaLabel, ariaLabel);
+        });
+
+        Assert.AreEqual(ariaLabel, component.Find(".bit-brc").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldHideTheDividersFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        var dividers = component.FindAll(".bit-brc-icn > li").Where(li => li.QuerySelector(".bit-brc-div") is not null).ToList();
+
+        Assert.AreEqual(GetBreadcrumbItems().Count - 1, dividers.Count);
+        Assert.IsTrue(dividers.All(d => d.GetAttribute("aria-hidden") == "true"));
+    }
+
+    [TestMethod,
+      DataRow("/"),
+      DataRow("›")
+    ]
+    public void BitBreadcrumbShouldRenderTheTextDividerInPlaceOfTheIcon(string dividerText)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.DividerText, dividerText);
+        });
+
+        var dividers = component.FindAll(".bit-brc-dtx");
+
+        Assert.AreEqual(GetBreadcrumbItems().Count - 1, dividers.Count);
+        Assert.AreEqual(dividerText, dividers[0].TextContent);
+        Assert.AreEqual(0, component.FindAll(".bit-brc-div").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbDividerIconTemplateShouldWinOverTheTextDivider()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.DividerText, "/");
+            parameters.Add(p => p.DividerIconTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-divider");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(GetBreadcrumbItems().Count - 1, component.FindAll(".custom-divider").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-brc-dtx").Count);
     }
 
     [TestMethod,
@@ -104,9 +228,73 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.MaxDisplayedItems, maxDisplayedItems);
         });
 
-        var breadcrumbButton = component.Find(".bit-brc ul li button");
+        var breadcrumbButton = component.Find(".bit-brc ol li button");
 
-        Assert.IsTrue(breadcrumbButton?.GetAttribute("aria-label")?.Contains(overflowAriaLabel));
+        Assert.AreEqual(overflowAriaLabel, breadcrumbButton.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbOverflowButtonShouldExposeTheMenuItHas()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        var button = component.Find(".bit-brc-obt");
+
+        Assert.AreEqual("More items", button.GetAttribute("aria-label"));
+        Assert.AreEqual("menu", button.GetAttribute("aria-haspopup"));
+        Assert.AreEqual("false", button.GetAttribute("aria-expanded"));
+        Assert.AreEqual(component.Find(".bit-brc-cal").Id, button.GetAttribute("aria-controls"));
+
+        button.Click();
+
+        Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+
+        // The overlay dismisses the menu.
+        component.Find(".bit-brc-ovl").Click();
+
+        Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbOverflowButtonShouldCloseTheMenuOnEscape()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+
+        component.Find(".bit-brc-cal").KeyDown(Key.Escape);
+
+        Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCloseTheMenuWhenAnOverflowItemIsClicked()
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems(withHref: false));
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.OnItemClick, (BitBreadcrumbItem _) => { clicked++; });
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        component.Find(".bit-brc-cal .bit-brc-ofi").Click();
+
+        Assert.AreEqual(1, clicked);
+        Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
     }
 
     [TestMethod,
@@ -170,31 +358,547 @@ public class BitBreadcrumbTests : BunitTestContext
         }
     }
 
-    private static List<BitBreadcrumbItem> GetBreadcrumbItems()
+    [TestMethod,
+      DataRow(BitColor.Primary, "bit-brc-pri"),
+      DataRow(BitColor.Error, "bit-brc-err"),
+      DataRow(BitColor.TertiaryBorder, "bit-brc-tbr")
+    ]
+    public void BitBreadcrumbShouldTakeColor(BitColor color, string cssClass)
     {
-        return new List<BitBreadcrumbItem>()
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
         {
-            new()
-            {
-                Text = "Folder 1",
-                Href = "/components/breadcrumb",
-            },
-            new()
-            {
-                Text = "Folder 2 ",
-                Href = "/components/breadcrumb",
-            },
-            new()
-            {
-                Text = "Folder 3",
-                Href = "/components/breadcrumb",
-            },
-            new()
-            {
-                Text = "Folder 4",
-                Href = "/components/breadcrumb",
-                IsSelected = true,
-            }
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains(cssClass));
+        // The callout is moved out of the root element, so it repeats the look-and-feel classes.
+        Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod,
+      DataRow(BitSize.Small, "bit-brc-sm"),
+      DataRow(BitSize.Medium, "bit-brc-md"),
+      DataRow(BitSize.Large, "bit-brc-lg")
+    ]
+    public void BitBreadcrumbShouldTakeSize(BitSize size, string cssClass)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains(cssClass));
+        Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotAddAnyColorOrSizeClassByDefault()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        string[] classes = ["bit-brc-pri", "bit-brc-err", "bit-brc-sm", "bit-brc-md", "bit-brc-lg"];
+
+        Assert.IsFalse(classes.Any(component.Find(".bit-brc").ClassList.Contains));
+        Assert.IsFalse(classes.Any(component.Find(".bit-brc-cal").ClassList.Contains));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitBreadcrumbShouldTakeWrap(bool wrap)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Wrap, wrap);
+        });
+
+        Assert.AreEqual(wrap, component.Find(".bit-brc").ClassList.Contains("bit-brc-wrp"));
+    }
+
+    [TestMethod,
+      DataRow("10rem")
+    ]
+    public void BitBreadcrumbShouldTakeMaxItemWidth(string maxItemWidth)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.MaxItemWidth, maxItemWidth);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").GetAttribute("style")!.Contains($"--bit-brc-itm-max-width:{maxItemWidth}"));
+        Assert.IsTrue(component.Find(".bit-brc-cal").GetAttribute("style")!.Contains($"--bit-brc-itm-max-width:{maxItemWidth}"));
+        Assert.IsTrue(component.Find(".bit-brc-itm > span").ClassList.Contains("bit-brc-itx"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldTakeItemTitleAndTargetAndAriaLabel()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Title = "The first folder", Target = "_blank", AriaLabel = "Go to the first folder" },
+            new() { Text = "Folder 2", IsSelected = true }
         };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var link = component.Find(".bit-brc-itm");
+
+        Assert.AreEqual("The first folder", link.GetAttribute("title"));
+        Assert.AreEqual("_blank", link.GetAttribute("target"));
+        Assert.AreEqual("Go to the first folder", link.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderIconsAndRespectReversedIcon()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", IconName = "Home" },
+            new() { Text = "Folder 2", IconName = "Folder", ReversedIcon = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var renderedItems = component.FindAll(".bit-brc-nii");
+
+        Assert.IsTrue(renderedItems[0].QuerySelector("i")!.ClassList.Contains("bit-icon--Home"));
+        Assert.IsFalse(renderedItems[0].ClassList.Contains("bit-brc-rvi"));
+        Assert.IsTrue(renderedItems[1].ClassList.Contains("bit-brc-rvi"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderAnItemWithOnlyAnItemLevelClickHandlerAsAButton()
+    {
+        var clicked = 0;
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", OnClick = _ => clicked++ },
+            new() { Text = "Folder 2" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var button = component.Find("button.bit-brc-itm");
+
+        button.Click();
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldInvokeOnItemClickForALinkItemToo()
+    {
+        BitBreadcrumbItem? clickedItem = null;
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.OnItemClick, (BitBreadcrumbItem item) => { clickedItem = item; });
+        });
+
+        component.FindAll("a.bit-brc-itm")[1].Click();
+
+        Assert.IsNotNull(clickedItem);
+        Assert.AreEqual("Folder 2", clickedItem.Text);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotInvokeTheClickHandlersOfADisabledItem()
+    {
+        var clicked = 0;
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", IsEnabled = false, OnClick = _ => clicked++ },
+            new() { Text = "Folder 2" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.OnItemClick, (BitBreadcrumbItem _) => { clicked++; });
+        });
+
+        var button = component.Find("button.bit-brc-itm");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-brc-dis"));
+        Assert.IsTrue(button.HasAttribute("disabled"));
+
+        button.Click();
+
+        Assert.AreEqual(0, clicked);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotRenderTheHrefOfADisabledItem()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", IsEnabled = false },
+            new() { Text = "Folder 2", Href = "/folder-2" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual(1, component.FindAll("a.bit-brc-itm").Count);
+        Assert.IsTrue(component.Find(".bit-brc-nii").ClassList.Contains("bit-brc-dis"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldDisableEverythingWhenTheComponentIsDisabled()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.IsEnabled, false);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-dis"));
+        Assert.IsTrue(component.Find(".bit-brc-obt").HasAttribute("disabled"));
+        // A disabled breadcrumb has no navigable links.
+        Assert.AreEqual(0, component.FindAll("a.bit-brc-itm").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldClearTheRenderedItemsWhenTheItemsAreCleared()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        Assert.AreEqual(4, component.FindAll(".bit-brc-icn > li a").Count);
+
+        component.Render(parameters => parameters.Add(p => p.Items, new List<BitBreadcrumbItem>()));
+
+        Assert.AreEqual(0, component.FindAll(".bit-brc-icn > li").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldFollowTheOrderOfTheItemsCollection()
+    {
+        var items = GetBreadcrumbItems();
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        CollectionAssert.AreEqual(new[] { "Folder 1", "Folder 2", "Folder 3", "Folder 4" }, GetItemTexts(component));
+
+        component.Render(parameters => parameters.Add(p => p.Items, items.AsEnumerable().Reverse().ToList()));
+
+        CollectionAssert.AreEqual(new[] { "Folder 4", "Folder 3", "Folder 2", "Folder 1" }, GetItemTexts(component));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRespectTheItemTemplates()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1" },
+            new() { Text = "Folder 2", Template = item => (RenderFragment)(builder => builder.AddMarkupContent(0, $"<span class='item-template'>{item.Text}</span>")) },
+            new() { Text = "Folder 3" },
+            new() { Text = "Folder 4" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.OverflowIndex, (uint)2);
+            parameters.Add(p => p.ItemTemplate, item => (RenderFragment)(builder =>
+                builder.AddMarkupContent(0, $"<span class='default-template'>{item.Text}</span>")));
+            parameters.Add(p => p.OverflowTemplate, item => (RenderFragment)(builder =>
+                builder.AddMarkupContent(0, $"<span class='overflow-template'>{item.Text}</span>")));
+        });
+
+        // The template of an item wins over the ItemTemplate of the component.
+        Assert.AreEqual(1, component.FindAll(".bit-brc-icn .item-template").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-brc-icn .default-template").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-brc-cal .overflow-template").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotSelectAnyCustomItemWithoutNameSelectors()
+    {
+        // Without NameSelectors there is no way to tell which custom item is the current one, so
+        // none of them may claim the aria-current of the pattern.
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetCustomItems());
+        });
+
+        Assert.AreEqual(0, component.FindAll("[aria-current]").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-brc-sel").Count);
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitBreadcrumbShouldRespectReversedIconForCustomItemsWithoutNameSelectors(bool reversedIcon)
+    {
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetCustomItems());
+            parameters.Add(p => p.ReversedIcon, reversedIcon);
+        });
+
+        Assert.AreEqual(reversedIcon, component.FindAll(".bit-brc-nii")[0].ClassList.Contains("bit-brc-rvi"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldReadTheCustomItemsThroughTheNameSelectors()
+    {
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetCustomItems());
+            parameters.Add(p => p.NameSelectors, new BitBreadcrumbNameSelectors<CustomItem>()
+            {
+                Text = { Selector = i => i.Name },
+                Href = { Selector = i => i.Address },
+                Title = { Selector = i => i.Tooltip },
+                Target = { Selector = i => i.Window },
+                IsSelected = { Selector = i => i.IsCurrent },
+                IsEnabled = { Selector = i => i.Active },
+            });
+        });
+
+        var links = component.FindAll("a.bit-brc-itm");
+
+        Assert.AreEqual(2, links.Count);
+        Assert.AreEqual("Custom 1", links[0].TextContent.Trim());
+        Assert.AreEqual("/custom-1", links[0].GetAttribute("href"));
+        Assert.AreEqual("The first one", links[0].GetAttribute("title"));
+        Assert.AreEqual("_blank", links[0].GetAttribute("target"));
+        Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
+        // The third item is disabled through the IsEnabled selector, so it is not a link.
+        Assert.AreEqual(1, component.FindAll(".bit-brc-nii.bit-brc-dis").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldReadTheCustomItemsThroughTheNameSelectorPropertyNames()
+    {
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetCustomItems());
+            parameters.Add(p => p.NameSelectors, new BitBreadcrumbNameSelectors<CustomItem>()
+            {
+                Text = { Name = nameof(CustomItem.Name) },
+                Href = { Name = nameof(CustomItem.Address) },
+                IsSelected = { Name = nameof(CustomItem.IsCurrent) },
+            });
+        });
+
+        var links = component.FindAll("a.bit-brc-itm");
+
+        Assert.AreEqual(3, links.Count);
+        Assert.AreEqual("Custom 1", links[0].TextContent.Trim());
+        Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldInvokeTheNameSelectorsOnClickOfACustomItem()
+    {
+        CustomItem? clicked = null;
+
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetCustomItems());
+            parameters.Add(p => p.NameSelectors, new BitBreadcrumbNameSelectors<CustomItem>()
+            {
+                Text = { Selector = i => i.Name },
+                OnClick = item => clicked = item,
+            });
+        });
+
+        component.FindAll("button.bit-brc-itm")[0].Click();
+
+        Assert.IsNotNull(clicked);
+        Assert.AreEqual("Custom 1", clicked.Name);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldTakeCustomClassesAndStyles()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.OverflowIndex, (uint)2);
+            parameters.Add(p => p.Classes, new BitBreadcrumbClassStyles
+            {
+                Root = "custom-root",
+                ItemContainer = "custom-container",
+                ItemWrapper = "custom-wrapper",
+                Item = "custom-item",
+                SelectedItem = "custom-selected",
+                Divider = "custom-divider",
+                OverflowButton = "custom-overflow-button",
+                OverflowItem = "custom-overflow-item",
+                Callout = "custom-callout",
+            });
+            parameters.Add(p => p.Styles, new BitBreadcrumbClassStyles
+            {
+                Item = "color:red",
+                SelectedItem = "font-style:italic",
+            });
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("custom-root"));
+        Assert.IsTrue(component.Find(".bit-brc-icn").ClassList.Contains("custom-container"));
+        Assert.IsTrue(component.Find(".bit-brc-icn > li").ClassList.Contains("custom-wrapper"));
+        Assert.IsTrue(component.Find(".bit-brc-itm").ClassList.Contains("custom-item"));
+        Assert.IsTrue(component.Find(".bit-brc-obt").ClassList.Contains("custom-overflow-button"));
+        Assert.IsTrue(component.Find(".bit-brc-cal").ClassList.Contains("custom-callout"));
+        Assert.IsTrue(component.Find(".bit-brc-ofi").ClassList.Contains("custom-overflow-item"));
+
+        var selected = component.Find(".bit-brc-sel");
+
+        Assert.IsTrue(selected.ClassList.Contains("custom-selected"));
+        Assert.IsTrue(selected.GetAttribute("style")!.Contains("color:red"));
+        Assert.IsTrue(selected.GetAttribute("style")!.Contains("font-style:italic"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldTakeTheDirOfTheComponentOnTheCalloutToo()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        Assert.AreEqual("rtl", component.Find(".bit-brc").GetAttribute("dir"));
+        Assert.AreEqual("rtl", component.Find(".bit-brc-cal").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotOverrideAnAriaLabelOfTheHtmlAttributes()
+    {
+        var component = RenderComponent<BitBreadcrumbHtmlAttributesTest>(
+            parameters => parameters.Add(p => p.Items, GetBreadcrumbItems()));
+
+        Assert.AreEqual("Where you are", component.Find(".bit-brc").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheExternalIconsOfTheItems()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Home", Icon = BitIconInfo.Css("fa-solid fa-house") },
+            new() { Text = "Laptops", Icon = "fa-solid fa-laptop", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var icons = component.FindAll(".bit-brc-nii i");
+
+        Assert.AreEqual(2, icons.Count);
+        Assert.IsTrue(icons[0].ClassList.Contains("fa-house"));
+        Assert.IsTrue(icons[1].ClassList.Contains("fa-laptop"));
+        // The icons carry no information of their own next to the text of their item.
+        Assert.IsTrue(icons.All(i => i.GetAttribute("aria-hidden") == "true"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldTakeTheDividerIconOfTheIconInfo()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.DividerIcon, BitIconInfo.Css("fa-solid fa-angle-right"));
+            parameters.Add(p => p.OverflowIcon, BitIconInfo.Css("fa-solid fa-ellipsis"));
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        Assert.IsTrue(component.Find(".bit-brc-div").ClassList.Contains("fa-angle-right"));
+        Assert.IsTrue(component.Find(".bit-brc-obt i").ClassList.Contains("fa-ellipsis"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheOverflowIconTemplate()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.OverflowIconTemplate, (RenderFragment)(builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", "custom-overflow-icon");
+                builder.CloseElement();
+            }));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt .custom-overflow-icon").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-brc-obt i").Count);
+    }
+
+    private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)
+    {
+        return component.FindAll(".bit-brc-icn .bit-brc-itm, .bit-brc-icn .bit-brc-nii")
+                        .Select(e => e.TextContent.Trim()).ToArray();
+    }
+
+    private static List<BitBreadcrumbItem> GetBreadcrumbItems(bool withHref = true)
+    {
+        return
+        [
+            new() { Text = "Folder 1", Href = withHref ? "/components/breadcrumb" : null },
+            new() { Text = "Folder 2", Href = withHref ? "/components/breadcrumb" : null },
+            new() { Text = "Folder 3", Href = withHref ? "/components/breadcrumb" : null },
+            new() { Text = "Folder 4", Href = withHref ? "/components/breadcrumb" : null, IsSelected = true }
+        ];
+    }
+
+    private static List<CustomItem> GetCustomItems()
+    {
+        return
+        [
+            new() { Name = "Custom 1", Address = "/custom-1", Tooltip = "The first one", Window = "_blank" },
+            new() { Name = "Custom 2", Address = "/custom-2", IsCurrent = true },
+            new() { Name = "Custom 3", Address = "/custom-3", Active = false }
+        ];
+    }
+
+    private class CustomItem
+    {
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+        public string? Tooltip { get; set; }
+        public string? Window { get; set; }
+        public bool IsCurrent { get; set; }
+        public bool Active { get; set; } = true;
     }
 }

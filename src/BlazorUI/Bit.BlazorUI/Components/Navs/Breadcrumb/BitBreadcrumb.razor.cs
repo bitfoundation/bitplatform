@@ -7,12 +7,26 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
+    private bool _focusFirstItemOnOpen;
+    private bool _preventKeysRegistered;
+    private bool _lastAutoCollapse;
+    private bool _resizeObserverRegistered;
+    private bool _measureRequested;
+    private int _measurePasses;
+    private uint _autoMaxDisplayedItems;
     private uint _internalOverflowIndex;
     private uint _internalMaxDisplayedItems;
+    private uint _lastOverflowIndex;
+    private uint _lastMaxDisplayedItems;
+    // The width each collapsed item took while it was still in the trail, newest first, so an item is
+    // only brought back when the room that freed up is at least the room it needs again.
+    private readonly Stack<double> _collapsedWidths = new();
     private List<TItem> _items = [];
     private List<TItem> _internalItems = [];
-    private List<TItem> _displayItems = [];
-    private List<TItem> _overflowItems = [];
+    private readonly List<TItem> _displayItems = [];
+    private readonly List<TItem> _overflowItems = [];
+    private ElementReference _calloutRef;
+    private ElementReference _overflowButtonRef;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
 
     private string _calloutId = default!;
@@ -28,6 +42,17 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
+    /// Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings
+    /// them back as the room for them returns, so the trail always stays on a single line.
+    /// <br />
+    /// It measures the rendered items through JS interop and follows the size of the component with a
+    /// resize observer, and it is off by default. MaxDisplayedItems, when it is set, still caps how many
+    /// items the automatic collapsing may leave in the trail, and OverflowIndex still decides where the
+    /// overflow button sits. It has no effect on a wrapping breadcrumb, which never overflows its line.
+    /// </summary>
+    [Parameter] public bool AutoCollapse { get; set; }
+
+    /// <summary>
     /// Keeps the rendered order of the items in sync with the markup order of the options even when
     /// existing options are only reordered (not added or removed) - for example when the options are
     /// produced by a keyed loop whose source collection gets re-sorted. This is achieved by reading the
@@ -38,7 +63,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool AutoReorderOptions { get; set; }
 
     /// <summary>
-    /// The content of the BitBreadcrumb, that are BitBreadOption components.
+    /// The content of the BitBreadcrumb, that are BitBreadcrumbOption components.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -48,12 +73,20 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitBreadcrumbClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// Render a custom divider icon in place of the default chevron >
+    /// The general color of the breadcrumb items.
+    /// <br />
+    /// The default value is <strong>null</strong>, which keeps the default foreground color of the theme.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Render a custom divider icon in place of the default chevron.
     /// </summary>
     [Parameter] public BitIconInfo? DividerIcon { get; set; }
 
     /// <summary>
-    /// Render a custom divider in place of the default chevron >
+    /// Name of the icon to render as the divider in place of the default chevron.
     /// </summary>
     [Parameter] public string? DividerIconName { get; set; }
 
@@ -63,7 +96,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? DividerIconTemplate { get; set; }
 
     /// <summary>
-    /// Collection of BreadLists to render.
+    /// A plain text divider (for example "/" or "›") to render in place of the default chevron icon.
+    /// <br />
+    /// It is ignored when the DividerIconTemplate is provided.
+    /// </summary>
+    [Parameter] public string? DividerText { get; set; }
+
+    /// <summary>
+    /// Collection of the items to render in the breadcrumb.
     /// </summary>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
@@ -73,8 +113,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
-    /// The maximum number of BreadLists to display before coalescing.
-    /// If not specified, all BreadLists will be rendered.
+    /// The maximum width of the text of each item as a CSS length (for example "8rem").
+    /// The text of a longer item is truncated with an ellipsis, so setting the Title of the items is
+    /// recommended to keep the full text reachable.
+    /// </summary>
+    [Parameter, ResetStyleBuilder]
+    public string? MaxItemWidth { get; set; }
+
+    /// <summary>
+    /// The maximum number of items to display before coalescing.
+    /// If not specified, all of the items will be rendered.
     /// </summary>
     [Parameter] public uint MaxDisplayedItems { get; set; }
 
@@ -84,7 +132,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitBreadcrumbNameSelectors<TItem>? NameSelectors { get; set; }
 
     /// <summary>
-    /// Callback for when the BreadList item clicked.
+    /// Callback for when a breadcrumb item is clicked.
     /// </summary>
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
@@ -95,6 +143,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     /// <summary>
     /// Aria label for the overflow button.
+    /// <br />
+    /// The default value is <strong>"More items"</strong>.
     /// </summary>
     [Parameter] public string? OverflowAriaLabel { get; set; }
 
@@ -109,7 +159,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitIconInfo? OverflowIcon { get; set; }
 
     /// <summary>
-    /// Render a custom overflow icon in place of the default icon.
+    /// Name of the icon to render in the overflow button in place of the default icon.
     /// </summary>
     [Parameter] public string? OverflowIconName { get; set; }
 
@@ -129,9 +179,21 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
+    /// The size of the items of the breadcrumb.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the breadcrumb.
     /// </summary>
     [Parameter] public BitBreadcrumbClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Wrap { get; set; }
 
 
 
@@ -142,16 +204,30 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Called by the resize observer of the automatic collapsing, which starts a new round of
+    /// measurements since the room the trail has just changed.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnResize")]
+    public void _OnResize(ContentRect _)
+    {
+        if (IsDisposed || AutoCollapse is false) return;
+
+        _measurePasses = 0;
+        _measureRequested = true;
+
+        StateHasChanged();
+    }
+
 
 
     internal void RegisterOptions(BitBreadcrumbOption option)
     {
         _items.Add((option as TItem)!);
-        _internalItems = [.. _items];
-        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_items.Count : MaxDisplayedItems;
-        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
         _optionsOrderDirty = true;
-        SetItemsToShow();
+        RefreshItems();
         StateHasChanged();
     }
 
@@ -170,9 +246,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (IsDisposed) return;
 
         _items.Remove((option as TItem)!);
-        _internalItems = [.. _items];
         _optionsOrderDirty = true;
-        SetItemsToShow();
+        RefreshItems();
         StateHasChanged();
     }
 
@@ -200,8 +275,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (ordered.SequenceEqual(_items)) return;
 
         _items = ordered;
-        _internalItems = [.. _items];
-        SetItemsToShow();
+        RefreshItems();
         StateHasChanged();
     }
 
@@ -212,11 +286,19 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(GetColorClass);
+
+        ClassBuilder.Register(GetSizeClass);
+
+        ClassBuilder.Register(() => Wrap ? "bit-brc-wrp" : null);
     }
 
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(GetMaxItemWidthStyle);
     }
 
     protected override Task OnInitializedAsync()
@@ -244,20 +326,22 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             _optionsOrderDirty = true;
         }
 
-        if (_items.Any() is false) return;
+        // The comparison is order sensitive so that re-sorting the Items collection re-splits the
+        // display and the overflow items, and it runs against the raw parameter values so that a
+        // clamped MaxDisplayedItems/OverflowIndex does not look like a change on every render.
+        var isDirty = _internalItems.SequenceEqual(_items) is false ||
+                      _lastOverflowIndex != OverflowIndex ||
+                      _lastMaxDisplayedItems != MaxDisplayedItems ||
+                      _lastAutoCollapse != AutoCollapse;
 
-        bool shouldCallSetItemsToShow = _internalItems.Count != _items.Count || _internalItems.Any(item => _items.Contains(item) is false);
-        _internalItems = [.. _items];
+        _lastOverflowIndex = OverflowIndex;
+        _lastMaxDisplayedItems = MaxDisplayedItems;
+        _lastAutoCollapse = AutoCollapse;
 
-        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalMaxDisplayedItems != MaxDisplayedItems;
-        _internalMaxDisplayedItems = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
-
-        shouldCallSetItemsToShow = shouldCallSetItemsToShow || _internalOverflowIndex != OverflowIndex;
-        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
-
-        if (shouldCallSetItemsToShow is false) return;
-
-        SetItemsToShow();
+        if (isDirty)
+        {
+            RefreshItems();
+        }
 
         base.OnParametersSet();
     }
@@ -275,6 +359,49 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // The navigation keys of the overflow menu scroll the page by default, which has to be stopped
+        // on the DOM side since a Blazor keydown handler cannot preventDefault per key. The overflow
+        // button only exists while there are overflow items, so the registration follows its lifetime.
+        if (_overflowItems.Count == 0)
+        {
+            _preventKeysRegistered = false;
+        }
+        else if (_preventKeysRegistered is false)
+        {
+            _preventKeysRegistered = true;
+
+            try
+            {
+                await _js.BitUtilsRegisterPreventKeys(_calloutRef, ["ArrowUp", "ArrowDown", "Home", "End", "Tab"]);
+                await _js.BitUtilsRegisterPreventKeys(_overflowButtonRef, ["ArrowUp", "ArrowDown"]);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, nothing to register
+            catch (JSException) { } // a JS-side failure here only costs the page-scroll prevention
+        }
+
+        if (AutoCollapse)
+        {
+            if (_resizeObserverRegistered is false)
+            {
+                _resizeObserverRegistered = true;
+                _measureRequested = true;
+
+                try
+                {
+                    await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+                }
+                catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
+                catch (JSException) { } // without the observer the trail is measured on renders only
+            }
+
+            if (_measureRequested)
+            {
+                _measureRequested = false;
+
+                await MeasureAndCollapse();
+            }
+        }
 
         if (_optionsOrderDirty)
         {
@@ -300,9 +427,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         if (IsEnabled is false) return;
         if (GetIsEnabled(item) is false) return;
-        if (OnItemClick.HasDelegate is false) return;
 
-        await OnItemClick.InvokeAsync(item);
+        if (OnItemClick.HasDelegate)
+        {
+            await OnItemClick.InvokeAsync(item);
+        }
 
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
@@ -318,6 +447,134 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         }
     }
 
+    // Clicking an overflow item both runs its click handler and dismisses the menu, the same way
+    // clicking a link in it navigates away from the open menu.
+    private async Task HandleOnOverflowItemClick(TItem item)
+    {
+        await HandleOnItemClick(item);
+
+        if (_isCalloutOpen is false) return;
+
+        await CloseCallout();
+    }
+
+    // An item is rendered as a button when it has no Href but something to run on click, either the
+    // component level OnItemClick or a click handler of its own.
+    private bool HasClickHandler(TItem item)
+    {
+        if (OnItemClick.HasDelegate) return true;
+
+        if (item is BitBreadcrumbItem breadcrumbItem) return breadcrumbItem.OnClick is not null;
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption) return bitBreadcrumbOption.OnClick.HasDelegate;
+
+        return NameSelectors?.OnClick is not null;
+    }
+
+    private void RefreshItems()
+    {
+        _internalItems = [.. _items];
+
+        if (AutoCollapse)
+        {
+            // The automatic collapsing works its way down from the whole trail, so anything that changes
+            // the items (or the settings around them) starts the measurements over from a clean slate.
+            _autoMaxDisplayedItems = (uint)_internalItems.Count;
+            _collapsedWidths.Clear();
+            _measurePasses = 0;
+            _measureRequested = true;
+        }
+
+        ApplyDisplaySettings();
+    }
+
+    private void ApplyDisplaySettings()
+    {
+        var max = MaxDisplayedItems == 0 ? (uint)_internalItems.Count : MaxDisplayedItems;
+
+        if (AutoCollapse)
+        {
+            max = Math.Min(max, _autoMaxDisplayedItems);
+        }
+
+        _internalMaxDisplayedItems = max;
+        _internalOverflowIndex = OverflowIndex >= _internalMaxDisplayedItems ? 0 : OverflowIndex;
+
+        SetItemsToShow();
+    }
+
+    // Compares what the trail needs against the room it has and moves one item into (or out of) the
+    // overflow menu, then asks for another measurement so it settles one item at a time.
+    private async Task MeasureAndCollapse()
+    {
+        if (IsDisposed || _internalItems.Count < 2) return;
+
+        // Each pass changes the trail by a single item, so the passes of a settling round are bounded
+        // by the number of items; the guard is there so a layout that never settles cannot loop on.
+        if (_measurePasses > _internalItems.Count + 2) return;
+
+        BitOverflowMetrics? metrics;
+
+        try
+        {
+            metrics = await _js.BitUtilsGetOverflowMetrics(_Id, ".bit-brc-icn > li");
+        }
+        catch (JSDisconnectedException) { return; } // the circuit is gone, nothing to measure
+        catch (JSException) { return; } // a JS-side failure only costs the automatic collapsing
+
+        if (IsDisposed || metrics is null || metrics.Available <= 0) return;
+
+        var slack = metrics.Available - metrics.Content;
+
+        if (slack < 0)
+        {
+            // The trail does not fit: the last item of it that may leave goes into the overflow menu.
+            if (_autoMaxDisplayedItems <= 1)
+            {
+                _measurePasses = 0;
+                return;
+            }
+
+            _collapsedWidths.Push(GetNextCollapsibleWidth(metrics));
+            _autoMaxDisplayedItems--;
+        }
+        else
+        {
+            // The trail fits: the item that left last comes back once the room it took is free again.
+            if (_autoMaxDisplayedItems >= _internalItems.Count ||
+                _collapsedWidths.Count == 0 ||
+                slack < _collapsedWidths.Peek())
+            {
+                _measurePasses = 0;
+                return;
+            }
+
+            _collapsedWidths.Pop();
+            _autoMaxDisplayedItems++;
+        }
+
+        _measurePasses++;
+        _measureRequested = true;
+
+        ApplyDisplaySettings();
+        StateHasChanged();
+    }
+
+    // The room the next collapse frees: the item that is about to leave the trail plus the divider
+    // that goes with it. The list items alternate between an item and a divider, and the item that
+    // leaves next is the one at the overflow position (right after the overflow button once it is there).
+    private double GetNextCollapsibleWidth(BitOverflowMetrics metrics)
+    {
+        var position = (int)_internalOverflowIndex + (_overflowItems.Count > 0 ? 1 : 0);
+
+        var itemIndex = position * 2;
+        if (itemIndex >= metrics.Widths.Length) return 0;
+
+        var dividerIndex = itemIndex + 1;
+
+        return metrics.Widths[itemIndex] + (dividerIndex < metrics.Widths.Length ? metrics.Widths[dividerIndex] : 0);
+    }
+
     private void SetItemsToShow()
     {
         _displayItems.Clear();
@@ -325,7 +582,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         if (_internalMaxDisplayedItems >= _internalItems.Count)
         {
-            _displayItems = [.. _internalItems];
+            _displayItems.AddRange(_internalItems);
             return;
         }
 
@@ -347,6 +604,56 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 _displayItems.Add(item);
             }
         }
+    }
+
+    private string? GetColorClass() => Color switch
+    {
+        BitColor.Primary => "bit-brc-pri",
+        BitColor.Secondary => "bit-brc-sec",
+        BitColor.Tertiary => "bit-brc-ter",
+        BitColor.Info => "bit-brc-inf",
+        BitColor.Success => "bit-brc-suc",
+        BitColor.Warning => "bit-brc-wrn",
+        BitColor.SevereWarning => "bit-brc-swr",
+        BitColor.Error => "bit-brc-err",
+        BitColor.PrimaryBackground => "bit-brc-pbg",
+        BitColor.SecondaryBackground => "bit-brc-sbg",
+        BitColor.TertiaryBackground => "bit-brc-tbg",
+        BitColor.PrimaryForeground => "bit-brc-pfg",
+        BitColor.SecondaryForeground => "bit-brc-sfg",
+        BitColor.TertiaryForeground => "bit-brc-tfg",
+        BitColor.PrimaryBorder => "bit-brc-pbr",
+        BitColor.SecondaryBorder => "bit-brc-sbr",
+        BitColor.TertiaryBorder => "bit-brc-tbr",
+        _ => null
+    };
+
+    private string? GetSizeClass() => Size switch
+    {
+        BitSize.Small => "bit-brc-sm",
+        BitSize.Medium => "bit-brc-md",
+        BitSize.Large => "bit-brc-lg",
+        _ => null
+    };
+
+    private string? GetMaxItemWidthStyle()
+    {
+        return MaxItemWidth.HasValue() ? $"--bit-brc-itm-max-width:{MaxItemWidth}" : null;
+    }
+
+    // The callout is moved to the body by the JS positioning, so it is not a descendant of the root
+    // element and cannot inherit anything from it: the class and style hooks that drive the look of
+    // the items have to be repeated on it.
+    private string GetCalloutClasses()
+    {
+        return string.Join(' ', new[] { "bit-brc-cal", GetColorClass(), GetSizeClass(), Classes?.Callout }
+                                    .Where(c => c.HasValue()));
+    }
+
+    private string GetCalloutStyles()
+    {
+        return string.Join(';', new[] { GetMaxItemWidthStyle(), Styles?.Callout }
+                                    .Where(s => s.HasValue()).Select(s => s!.Trim(';')));
     }
 
     private string? GetKey(TItem item)
@@ -550,6 +857,72 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty<string?>(NameSelectors.Text.Name);
     }
 
+    private string? GetItemTitle(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Title;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
+    }
+
+    private string? GetItemTarget(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.Target;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.Target;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Target.Selector is not null)
+        {
+            return NameSelectors.Target.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Target.Name);
+    }
+
+    private string? GetItemAriaLabel(TItem item)
+    {
+        if (item is BitBreadcrumbItem breadcrumbItem)
+        {
+            return breadcrumbItem.AriaLabel;
+        }
+
+        if (item is BitBreadcrumbOption bitBreadcrumbOption)
+        {
+            return bitBreadcrumbOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
+    }
+
     private BitIconInfo? GetIcon(TItem item)
     {
         if (item is BitBreadcrumbItem breadcrumbItem)
@@ -599,7 +972,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return bitBreadcrumbOption.ReversedIcon ?? ReversedIcon;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return ReversedIcon;
 
         if (NameSelectors.ReversedIcon.Selector is not null)
         {
@@ -621,7 +994,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return bitBreadcrumbOption.IsSelected;
         }
 
-        if (NameSelectors is null) return true;
+        if (NameSelectors is null) return false;
 
         if (NameSelectors.IsSelected.Selector is not null)
         {
@@ -705,12 +1078,22 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task OpenCallout()
     {
+        if (_isCalloutOpen || IsEnabled is false) return;
+
         _isCalloutOpen = true;
         await ToggleCallout();
+
+        if (_focusFirstItemOnOpen)
+        {
+            _focusFirstItemOnOpen = false;
+            await FocusOverflowItem("first");
+        }
     }
 
     private async Task CloseCallout()
     {
+        if (_isCalloutOpen is false) return;
+
         _isCalloutOpen = false;
         await ToggleCallout();
     }
@@ -739,6 +1122,75 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             maxWindowWidth: 0);
     }
 
+    private async Task HandleOnOverflowButtonKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false) return;
+
+        if (e.Key is "Escape")
+        {
+            if (_isCalloutOpen is false) return;
+
+            await CloseCallout();
+            return;
+        }
+
+        if (e.Key is "ArrowDown" or "ArrowUp")
+        {
+            await OpenCallout();
+            await FocusOverflowItem(e.Key is "ArrowDown" ? "first" : "last");
+        }
+        else if (e.Key is "Enter" or " ")
+        {
+            // The native click that follows this keydown opens the menu, so mark it to move the
+            // focus onto the first overflow item as the APG disclosure pattern requires.
+            _focusFirstItemOnOpen = true;
+        }
+    }
+
+    private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
+    {
+        if (IsEnabled is false || _isCalloutOpen is false) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                await FocusOverflowItem("next");
+                break;
+            case "ArrowUp":
+                await FocusOverflowItem("prev");
+                break;
+            case "Home":
+                await FocusOverflowItem("first");
+                break;
+            case "End":
+                await FocusOverflowItem("last");
+                break;
+            case "Escape":
+            case "Tab":
+                await CloseCallout();
+                await FocusOverflowButton();
+                break;
+        }
+    }
+
+    private async Task FocusOverflowItem(string mode)
+    {
+        try
+        {
+            await _js.BitUtilsFocusItem(_calloutId, ".bit-brc-ofi", mode, null);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
+    }
+
+    private async Task FocusOverflowButton()
+    {
+        try
+        {
+            await _overflowButtonRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
+    }
+
     private string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
@@ -754,13 +1206,19 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         if (_dotnetObj is not null)
         {
-            _dotnetObj.Dispose();
-
             try
             {
+                if (_resizeObserverRegistered)
+                {
+                    await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                }
+
                 await _js.BitCalloutClearCallout(_calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the element of the observer may already be gone with its parent
+
+            _dotnetObj.Dispose();
         }
     }
 }
