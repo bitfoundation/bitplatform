@@ -43,6 +43,8 @@ public class BitBreadcrumbOptionsTests : BunitTestContext
         Assert.AreEqual("The first option", link.GetAttribute("title"));
         Assert.AreEqual("_blank", link.GetAttribute("target"));
         Assert.AreEqual("Go to the first option", link.GetAttribute("aria-label"));
+        // A link opening a new browsing context does not hand it a reference back to this one.
+        Assert.AreEqual("noopener noreferrer", link.GetAttribute("rel"));
     }
 
     [TestMethod]

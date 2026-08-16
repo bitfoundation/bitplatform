@@ -1164,7 +1164,7 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldLeaveTheAddresslessItemsOutOfTheStructuredData()
+    public void BitBreadcrumbShouldLeaveTheNamelessItemsOutOfTheStructuredData()
     {
         var items = new List<BitBreadcrumbItem>
         {

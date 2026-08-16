@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,7 +47,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldBringTheCollapsedItemsBackWhenTheRoomReturns()
+    public async Task BitBreadcrumbShouldBringTheCollapsedItemsBackWhenTheRoomReturns()
     {
         var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
         handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
@@ -63,14 +64,14 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         // took while it was in the trail is free again.
         handler.SetResult(new BitOverflowMetrics { Available = 800, Content = 200, Widths = Widths });
 
-        component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
+        await component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
 
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
         Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldNotBringTheCollapsedItemsBackWithoutEnoughRoom()
+    public async Task BitBreadcrumbShouldNotBringTheCollapsedItemsBackWithoutEnoughRoom()
     {
         var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
         handler.SetResult(new BitOverflowMetrics { Available = 150, Content = 460, Widths = Widths });
@@ -86,7 +87,7 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
         // A slack of 50px is less than the 120px the last collapsed item took, so nothing comes back.
         handler.SetResult(new BitOverflowMetrics { Available = 250, Content = 200, Widths = Widths });
 
-        component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
+        await component.InvokeAsync(() => component.Instance._OnResize(new ContentRect()));
 
         component.WaitForAssertion(() => Assert.AreEqual(1, GetRenderedItemCount(component)));
     }

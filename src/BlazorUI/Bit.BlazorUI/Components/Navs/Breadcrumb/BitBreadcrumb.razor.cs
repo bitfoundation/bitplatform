@@ -1164,6 +1164,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 maxWindowWidth: 0);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
+        catch (JSException) { } // a JS-side failure must not escape into the render lifecycle
     }
 
     private async Task HandleOnOverflowButtonKeyDown(KeyboardEventArgs e)

@@ -298,16 +298,21 @@
         // component can decide how many of them to keep. `content` is what the children take in total
         // and `available` is the width of the container, both in pixels, and `widths` carries the
         // children in DOM order so the caller can tell how much room dropping one of them frees.
+        // The content is the sum of the children rather than the scrollWidth of the container, since
+        // that one never drops below the clientWidth: a trail that fits would report no room to spare
+        // and the caller could never tell that a child it dropped has room to come back to.
         public static getOverflowMetrics(containerId: string, childSelector: string) {
             const container = document.getElementById(containerId);
             if (!container) return null;
 
             try {
+                const widths = (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
+                    .map(el => el.getBoundingClientRect().width);
+
                 return {
                     available: container.clientWidth,
-                    content: container.scrollWidth,
-                    widths: (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
-                        .map(el => el.getBoundingClientRect().width)
+                    content: widths.reduce((sum, width) => sum + width, 0),
+                    widths: widths
                 };
             } catch (e) {
                 console.error("BitBlazorUI.Utils.getOverflowMetrics:", e);
