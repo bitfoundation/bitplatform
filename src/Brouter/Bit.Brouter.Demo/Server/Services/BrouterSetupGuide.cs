@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.Brouter.Demo.Server.Services;
 
@@ -12,7 +13,7 @@ namespace Bit.Brouter.Demo.Server.Services;
 /// error. Handing over a known-good, compiling project instead of prose removes the guesswork.
 /// </para>
 /// </summary>
-public static class BrouterSetupGuide
+public static partial class BrouterSetupGuide
 {
     public static readonly string[] RenderModes = ["server", "wasm", "auto", "standalone-wasm"];
 
@@ -88,10 +89,13 @@ public static class BrouterSetupGuide
             var content = BrouterSourceCatalog.GetSourceFile(file.Path);
             if (content is null) continue;
 
+            content = content.TrimEnd();
+            var fence = Fence(content);
+
             builder.AppendLine($"### `{file.Path}`").AppendLine()
-                   .AppendLine($"```{Language(file.Path)}")
-                   .AppendLine(content.TrimEnd())
-                   .AppendLine("```")
+                   .AppendLine($"{fence}{Language(file.Path)}")
+                   .AppendLine(content)
+                   .AppendLine(fence)
                    .AppendLine();
         }
 
@@ -184,6 +188,18 @@ public static class BrouterSetupGuide
         6. Do not also render Blazor's built-in `<Router>`; Brouter replaces it.
         """;
 
+    /// <summary>
+    /// The fence for a file's code block. It has to outrun the longest run of backticks in the file
+    /// itself - a page that shows Markdown would otherwise end the block in the middle of its own
+    /// content, and the rest of the file would render as prose.
+    /// </summary>
+    private static string Fence(string content)
+    {
+        var longest = BacktickRunRegex().Matches(content).Select(match => match.Length).DefaultIfEmpty(0).Max();
+
+        return new string('`', Math.Max(3, longest + 1));
+    }
+
     private static string Language(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".razor" => "razor",
@@ -193,4 +209,7 @@ public static class BrouterSetupGuide
         ".js" => "javascript",
         _ => string.Empty
     };
+
+    [GeneratedRegex("`+")]
+    private static partial Regex BacktickRunRegex();
 }

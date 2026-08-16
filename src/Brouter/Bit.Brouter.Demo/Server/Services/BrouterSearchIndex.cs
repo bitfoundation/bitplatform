@@ -25,6 +25,8 @@ public static class BrouterSearchIndex
         public string[] TitleWords { get; } = SplitWords(Title);
     }
 
+    private const int MaxTerms = 16;
+
     private static readonly Lazy<Entry[]> _entries = new(Build);
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
@@ -168,7 +170,10 @@ public static class BrouterSearchIndex
             // the words a question is phrased with do worse than nothing: "how do I redirect FROM a
             // guard" would otherwise score a section whose heading merely contains "from".
             .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
-            .Distinct(StringComparer.OrdinalIgnoreCase)];
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            // Every term is counted in every entry's body, so the work is terms x corpus. No question
+            // is phrased in more words than this, while a pasted file as a query would scan for hours.
+            .Take(MaxTerms)];
     }
 
     private static Entry[] Build()

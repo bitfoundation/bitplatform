@@ -18,6 +18,7 @@ public static partial class BrouterXmlDocs
     private const char CodeMarker = (char)1;
 
     private static readonly Lazy<FrozenDictionary<string, XElement>> _members = new(Load);
+    private static readonly Lazy<FrozenDictionary<string, XElement>> _overloads = new(BuildOverloads);
 
     /// <summary>The flattened &lt;summary&gt; of a documented member, or null.</summary>
     public static string? GetSummary(string documentationId) => GetSection(documentationId, "summary");
@@ -27,24 +28,28 @@ public static partial class BrouterXmlDocs
 
     private static string? GetSection(string documentationId, string section)
     {
-        if (_members.Value.TryGetValue(documentationId, out var member) is false)
-        {
-            // Overloads are told apart by their parameter list; when building it did not produce an
-            // exact hit (generics, modifiers), one overload's documentation still beats none. Which
-            // one is decided by ordering the candidates - a FrozenDictionary enumerates in whatever
-            // order it hashed into, so picking off it directly would answer differently per build.
-            var prefix = $"{documentationId}(";
-            member = _members.Value.Where(m => m.Key.StartsWith(prefix, StringComparison.Ordinal))
-                                   .OrderBy(m => m.Key, StringComparer.Ordinal)
-                                   .Select(m => m.Value)
-                                   .FirstOrDefault();
-
-            if (member is null) return null;
-        }
+        // Overloads are told apart by their parameter list; when building it did not produce an exact
+        // hit (generics, modifiers), one overload's documentation still beats none.
+        if (_members.Value.TryGetValue(documentationId, out var member) is false &&
+            _overloads.Value.TryGetValue(documentationId, out member) is false) return null;
 
         var element = member.Element(section);
 
         return element is null ? null : Flatten(element);
+    }
+
+    /// <summary>
+    /// Every documented method by its id without the parameter list, so an inexact id still finds an
+    /// overload without walking the whole table. Which overload is decided by ordering the candidates
+    /// - a FrozenDictionary enumerates in whatever order it hashed into, so taking one off it
+    /// directly would answer differently per build.
+    /// </summary>
+    private static FrozenDictionary<string, XElement> BuildOverloads()
+    {
+        return _members.Value.Where(m => m.Key.Contains('(', StringComparison.Ordinal))
+                             .OrderBy(m => m.Key, StringComparer.Ordinal)
+                             .GroupBy(m => m.Key[..m.Key.IndexOf('(', StringComparison.Ordinal)], StringComparer.Ordinal)
+                             .ToFrozenDictionary(g => g.Key, g => g.First().Value, StringComparer.Ordinal);
     }
 
     private static FrozenDictionary<string, XElement> Load()

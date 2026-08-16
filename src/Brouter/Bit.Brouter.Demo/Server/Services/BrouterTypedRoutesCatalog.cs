@@ -44,7 +44,18 @@ public static class BrouterTypedRoutesCatalog
     {
         var assembly = typeof(DocsCatalog).Assembly;
 
-        var type = assembly.GetTypes().FirstOrDefault(t => t.Name == "BrouterRoutes" && t.IsAbstract && t.IsSealed);
+        Type? type;
+        try
+        {
+            type = assembly.GetTypes().FirstOrDefault(t => t.Name == "BrouterRoutes" && t.IsAbstract && t.IsSealed);
+        }
+        catch (ReflectionTypeLoadException)
+        {
+            // A type that fails to load says nothing about the generator's output, and a Lazy caches
+            // whatever it is given - an exception here would fail every later call, not just this one.
+            return null;
+        }
+
         if (type is null) return null;
 
         var builders = type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
