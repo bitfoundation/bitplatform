@@ -264,27 +264,30 @@ public partial class AppJsonContext : JsonSerializerContext { }";
 
     private readonly string example8RazorCode = @"
 <BitBasicList Virtualize
-              ItemSize=""83""
+              ItemSize=""32""
               TItem=""CategoryOrProductDto""
               ItemsProvider=""categoriesAndProductsProvider""
               Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
+    @* Every row and the placeholder are 32px tall on purpose: the virtualization sizes its scroll
+       region by a single item size, so rows of differing heights keep it correcting that size on
+       every render and never let the list settle. *@
     <RowTemplate Context=""catOrProd"">
         @if (catOrProd.IsProduct)
         {
-            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 10px; display:flex; flex-flow:row;"">
-                <div style=""width:184px;"">Name: <strong>@catOrProd.Name</strong></div>
+            <div @key=""@($""{catOrProd.CategoryId}-{catOrProd.ProductId}"")"" style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 10px; display: flex; flex-flow: row; align-items: center; white-space: nowrap; overflow: hidden;"">
+                <div style=""width: 240px; overflow: hidden; text-overflow: ellipsis;"">Name: <strong>@catOrProd.Name</strong></div>
                 <div>Price: <strong>@catOrProd.Price</strong></div>
             </div>
         }
         else
         {
-            <div @key=""catOrProd.CategoryId"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; background-color: #75737329;"">
+            <div @key=""catOrProd.CategoryId"" style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; background-color: #75737329;"">
                 <div>@catOrProd.Name</div>
             </div>
         }
     </RowTemplate>
     <VirtualizePlaceholder>
-        <div style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px;"">
+        <div style=""height: 32px; box-sizing: border-box; border-bottom: 1px #8a8886 solid; padding: 5px 20px; display: flex; align-items: center;"">
             Loading...
         </div>
     </VirtualizePlaceholder>
@@ -568,9 +571,9 @@ public class Person
 
     private readonly string example12RazorCode = @"
 <BitStack Horizontal Wrap>
-    <BitButton OnClick=""() => listRef!.ScrollToStartAsync(true)"">Scroll to start</BitButton>
-    <BitButton OnClick=""() => listRef!.ScrollToEndAsync(true)"">Scroll to end</BitButton>
-    <BitButton OnClick=""() => listRef!.ScrollToIndexAsync(50, true)"">Scroll to #51</BitButton>
+    <BitButton OnClick=""() => listRef?.ScrollToStartAsync(true) ?? Task.CompletedTask"">Scroll to start</BitButton>
+    <BitButton OnClick=""() => listRef?.ScrollToEndAsync(true) ?? Task.CompletedTask"">Scroll to end</BitButton>
+    <BitButton OnClick=""() => listRef?.ScrollToIndexAsync(50, true) ?? Task.CompletedTask"">Scroll to #51</BitButton>
     <BitButton OnClick=""AddPerson"">Add a person</BitButton>
 </BitStack>
 
@@ -583,6 +586,7 @@ public class Person
     </RowTemplate>
 </BitBasicList>";
     private readonly string example12CsharpCode = @"
+private bool scrollToEndPending;
 private BitBasicList<Person>? listRef;
 
 private readonly List<Person> mutablePeople = [.. Enumerable.Range(0, 100).Select(i => new Person
@@ -609,8 +613,22 @@ private async Task AddPerson()
     if (listRef is not null)
     {
         await listRef.RefreshDataAsync();
+
+        // The new row is only scrollable to once it has been rendered, so the scrolling waits for that render.
+        scrollToEndPending = true;
+    }
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (scrollToEndPending && listRef is not null)
+    {
+        scrollToEndPending = false;
+
         await listRef.ScrollToEndAsync(true);
     }
+
+    await base.OnAfterRenderAsync(firstRender);
 }
 
 public class Person

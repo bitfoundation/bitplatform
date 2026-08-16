@@ -6,6 +6,7 @@ namespace Bit.BlazorUI;
 public partial class BitBasicList<TItem> : BitComponentBase
 {
     private int _loadMoreSkip = 0;
+    private long _lastFetchTime;
     private bool _isLoadingMore;
     private bool _loadMoreFinished;
     private bool _autoLoadRegistered;
@@ -13,6 +14,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _internalVirtualize;
     private int _internalLoadMoreSize = 20;
     private ICollection<TItem> _viewItems = [];
+    private string? _autoLoadMargin = null;
     private CancellationTokenSource? _globalCts;
     private ICollection<TItem>? _internalItems = null;
     private ElementReference _sentinelElement = default!;
@@ -31,8 +33,17 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// Renders each item as its own text when no <see cref="RowTemplate"/> is provided, so a list of
     /// plain values shows up without a template of its own.
     /// </summary>
+    /// <remarks>
+    /// The text is wrapped in an element of its own so that each item stays a single element child of the
+    /// list, which is what <see cref="ScrollToIndexAsync"/> counts the items of the list by.
+    /// </remarks>
     private RenderFragment<TItem> _EffectiveRowTemplate => RowTemplate
-        ?? (_defaultRowTemplate ??= item => builder => builder.AddContent(0, item?.ToString()));
+        ?? (_defaultRowTemplate ??= item => builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.AddContent(1, item?.ToString());
+            builder.CloseElement();
+        });
 
     private bool _ShowLoading => Loading || (_isLoadingMore && _viewItems.Count == 0);
 
@@ -163,7 +174,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <remarks>
     /// Scrolling asks for a new region far more often than the regions actually differ, so the requests are
     /// debounced by this delay: a request that is superseded before the delay elapses is dropped instead of
-    /// being sent. A value of zero turns the debouncing off, which suits an in-memory provider that answers
+    /// being sent. Scrolling that never settles would drop every one of them, so the delay is skipped once
+    /// the provider has been left unasked for longer than twice this value, which keeps items arriving even
+    /// then. A value of zero turns the debouncing off, which suits an in-memory provider that answers
     /// instantly. This delay never applies to the pages of the <see cref="LoadMore"/> mode, since those are
     /// asked for one deliberate click at a time.
     /// </remarks>
@@ -273,7 +286,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <see cref="Items"/> simply picks up the current contents of that collection, which is what a list bound
     /// to a collection that is mutated in place (rather than replaced) needs in order to notice.
     /// </remarks>
-    public async Task RefreshDataAsync()
+    // The rendering the reload ends in belongs to the renderer, so the whole of it is dispatched there:
+    // the method is public, so the call can just as well come from a thread of the caller's own.
+    public Task RefreshDataAsync() => InvokeAsync(async () =>
     {
         if (IsDisposed) return;
 
@@ -302,7 +317,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         _viewItems = Items ?? [];
         StateHasChanged();
-    }
+    });
 
     /// <summary>
     /// Loads the next page of the LoadMore mode, the same way clicking the LoadMore button does.
@@ -311,7 +326,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// The call is a no-op where the list is not in LoadMore mode, where every page has already been loaded,
     /// or where a page is being loaded at that moment.
     /// </remarks>
-    public Task LoadMoreAsync() => LoadMoreItems(false);
+    public Task LoadMoreAsync() => InvokeAsync(() => LoadMoreItems(false));
 
     /// <summary>
     /// Scrolls the list to its start.
@@ -455,18 +470,23 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         if (_ShowSentinel)
         {
-            if (_autoLoadRegistered is false)
+            var margin = $"{Math.Max(0, AutoLoadThreshold)}px";
+
+            // A margin of its own is baked into the observer, so a changed threshold only takes effect by
+            // registering again, which replaces the observer registered under the same id.
+            if (_autoLoadRegistered is false || _autoLoadMargin != margin)
             {
                 _autoLoadRegistered = true;
+                _autoLoadMargin = margin;
                 _dotnetObj ??= DotNetObjectReference.Create(this);
 
-                await _js.BitObserversRegisterIntersection(
-                    _Id, _sentinelElement, _dotnetObj, $"{Math.Max(0, AutoLoadThreshold)}px");
+                await _js.BitObserversRegisterIntersection(_Id, _sentinelElement, _dotnetObj, margin);
             }
         }
         else if (_autoLoadRegistered)
         {
             _autoLoadRegistered = false;
+            _autoLoadMargin = null;
 
             await _js.BitObserversUnregisterIntersection(_Id);
         }
@@ -558,18 +578,25 @@ public partial class BitBasicList<TItem> : BitComponentBase
                     }
                 }
             }
-            catch (OperationCanceledException oce) when (oce.CancellationToken == localCts.Token) { }
+            catch (OperationCanceledException) when (localCts.IsCancellationRequested) { }
         }
         finally
         {
-            if (_globalCts == localCts)
+            // A load that was superseded no longer owns the loading state, so it leaves the flag (and the
+            // cancellation source) to the load that replaced it rather than clearing what that one set.
+            var owned = _globalCts == localCts;
+
+            if (owned)
             {
                 _globalCts = null;
             }
 
             localCts.Dispose();
 
-            await SetLoading(false);
+            if (owned)
+            {
+                await SetLoading(false);
+            }
         }
 
         StateHasChanged();
@@ -604,18 +631,23 @@ public partial class BitBasicList<TItem> : BitComponentBase
                     _viewItems = result.Items ?? [];
                 }
             }
-            catch (OperationCanceledException oce) when (oce.CancellationToken == localCts.Token) { }
+            catch (OperationCanceledException) when (localCts.IsCancellationRequested) { }
         }
         finally
         {
-            if (_globalCts == localCts)
+            var owned = _globalCts == localCts;
+
+            if (owned)
             {
                 _globalCts = null;
             }
 
             localCts.Dispose();
 
-            await SetLoading(false);
+            if (owned)
+            {
+                await SetLoading(false);
+            }
         }
 
         StateHasChanged();
@@ -639,7 +671,14 @@ public partial class BitBasicList<TItem> : BitComponentBase
     {
         if (ItemsProvider is null) return new([], 0);
 
-        if (debounce && ItemsProviderDelay > 0)
+        // Scrolling that keeps asking for a new region faster than the delay elapses would have every
+        // request cancelled before it was ever sent, which leaves the list on its placeholders for as
+        // long as it goes on. So the delay is skipped once the provider has been left unasked for longer
+        // than twice the window: the debouncing turns into a throttling there, and items keep arriving
+        // no matter how the scrolling goes.
+        var starved = Environment.TickCount64 - _lastFetchTime > ItemsProviderDelay * 2L;
+
+        if (debounce && ItemsProviderDelay > 0 && starved is false)
         {
             // Debounces the requests. This eliminates a lot of redundant queries at the cost of slight lag
             // after interactions: a request superseded within the delay is dropped before it is ever sent.
@@ -654,6 +693,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
         }
 
         if (cancellationToken.IsCancellationRequested) return new([], 0);
+
+        _lastFetchTime = Environment.TickCount64;
 
         return await ItemsProvider(new BitBasicListItemsProviderRequest<TItem>(startIndex, count, cancellationToken));
     }

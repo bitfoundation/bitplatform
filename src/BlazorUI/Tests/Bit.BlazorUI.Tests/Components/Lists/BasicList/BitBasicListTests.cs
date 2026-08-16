@@ -803,15 +803,15 @@ public class BitBasicListTests : BunitTestContext
 
         Assert.AreEqual(5, component.FindAll(".row").Count);
 
-        await component.Instance._OnIntersect();
+        await component.InvokeAsync(() => component.Instance._OnIntersect());
         Assert.AreEqual(10, component.FindAll(".row").Count);
 
-        await component.Instance._OnIntersect();
+        await component.InvokeAsync(() => component.Instance._OnIntersect());
         Assert.AreEqual(12, component.FindAll(".row").Count);
 
         // Everything is loaded, so the sentinel is gone and a further callback is turned down.
         Assert.AreEqual(0, component.FindAll(".bit-bsl-snt").Count);
-        await component.Instance._OnIntersect();
+        await component.InvokeAsync(() => component.Instance._OnIntersect());
         Assert.AreEqual(12, component.FindAll(".row").Count);
     }
 
@@ -826,7 +826,7 @@ public class BitBasicListTests : BunitTestContext
             p.Add(x => x.RowTemplate, RowTemplate);
         });
 
-        await component.Instance._OnIntersect();
+        await component.InvokeAsync(() => component.Instance._OnIntersect());
 
         Assert.AreEqual(12, component.FindAll(".row").Count);
     }
@@ -929,9 +929,9 @@ public class BitBasicListTests : BunitTestContext
             people.Add(new Person
             {
                 Id = i + 1,
-                FirstName = $"Person {i + 1.ToString()}",
-                LastName = $"Person Family {i + 1.ToString()}",
-                Job = $"Programmer {i + 1.ToString()}"
+                FirstName = $"Person {i + 1}",
+                LastName = $"Person Family {i + 1}",
+                Job = $"Programmer {i + 1}"
             });
         }
         return people;

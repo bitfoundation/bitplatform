@@ -33,7 +33,7 @@
                                 observer.observe(element);
                             }
                         })
-                        .catch(() => { });
+                        .catch(err => { console.error(err); });
                 }, { rootMargin: rootMargin || '0px' });
 
                 observer.observe(element);

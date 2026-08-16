@@ -360,6 +360,7 @@ public partial class BitBasicListDemo
 
     private bool isLoading;
     private int loadedCount;
+    private bool scrollToEndPending;
     private BitBasicList<Person>? listRef;
 
     [Inject] private HttpClient HttpClient { get; set; } = default!;
@@ -460,7 +461,21 @@ public partial class BitBasicListDemo
         if (listRef is not null)
         {
             await listRef.RefreshDataAsync();
+
+            // The new row is only scrollable to once it has been rendered, so the scrolling waits for that render.
+            scrollToEndPending = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (scrollToEndPending && listRef is not null)
+        {
+            scrollToEndPending = false;
+
             await listRef.ScrollToEndAsync(true);
         }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 }

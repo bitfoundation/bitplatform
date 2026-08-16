@@ -122,11 +122,17 @@
 
         // Scrolls a scroll container to its far end. scrollHeight/scrollWidth overshoot the maximum
         // scroll offset, which the browser clamps, so no measuring of the viewport is needed here.
+        // The far end of an RTL container sits at a negative scrollLeft, so the offset is negated there.
         public static scrollToEnd(element: HTMLElement, horizontal: boolean, smooth: boolean) {
             if (!element) return;
 
             try {
-                Utils.scrollTo(element, horizontal ? element.scrollWidth : element.scrollHeight, horizontal, smooth);
+                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
+                const offset = horizontal
+                    ? (rtl ? -element.scrollWidth : element.scrollWidth)
+                    : element.scrollHeight;
+
+                Utils.scrollTo(element, offset, horizontal, smooth);
             } catch (e) { console.error("BitBlazorUI.Utils.scrollToEnd:", e); }
         }
 

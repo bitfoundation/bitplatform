@@ -47,7 +47,7 @@ public static class BitBasicListItemsProviderResult
     /// whole set rather than of the page.
     /// </remarks>
     public static BitBasicListItemsProviderResult<TItem> From<TItem>(ICollection<TItem> items)
-        => new BitBasicListItemsProviderResult<TItem>(items, items?.Count ?? 0);
+        => new BitBasicListItemsProviderResult<TItem>(items ?? [], items?.Count ?? 0);
 
     /// <summary>
     /// Creates an empty result.
