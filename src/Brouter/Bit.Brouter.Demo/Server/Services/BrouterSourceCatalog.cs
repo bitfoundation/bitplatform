@@ -180,10 +180,23 @@ public static partial class BrouterSourceCatalog
                 Path = file.Key,
                 Kind = file.Key.StartsWith("Demo/", StringComparison.OrdinalIgnoreCase) ? "Demo" : "Sample",
                 Description = DescribeSource(file.Value),
-                Lines = file.Value.Count(c => c == '\n') + 1
+                Lines = CountLines(file.Value)
             })
             .OrderBy(file => file.Kind, StringComparer.Ordinal)
             .ThenBy(file => file.Path, StringComparer.OrdinalIgnoreCase)];
+    }
+
+    /// <summary>
+    /// The number of lines in a file. A trailing newline ends the last line rather than starting
+    /// another one, so a file that has one is not reported a line longer than it is.
+    /// </summary>
+    private static int CountLines(string content)
+    {
+        if (content.Length == 0) return 0;
+
+        var newlines = content.Count(c => c == '\n');
+
+        return content[^1] == '\n' ? newlines : newlines + 1;
     }
 
     /// <summary>

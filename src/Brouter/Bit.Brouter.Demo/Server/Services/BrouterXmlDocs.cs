@@ -30,9 +30,14 @@ public static partial class BrouterXmlDocs
         if (_members.Value.TryGetValue(documentationId, out var member) is false)
         {
             // Overloads are told apart by their parameter list; when building it did not produce an
-            // exact hit (generics, modifiers), the first overload's documentation still beats none.
+            // exact hit (generics, modifiers), one overload's documentation still beats none. Which
+            // one is decided by ordering the candidates - a FrozenDictionary enumerates in whatever
+            // order it hashed into, so picking off it directly would answer differently per build.
             var prefix = $"{documentationId}(";
-            member = _members.Value.FirstOrDefault(m => m.Key.StartsWith(prefix, StringComparison.Ordinal)).Value;
+            member = _members.Value.Where(m => m.Key.StartsWith(prefix, StringComparison.Ordinal))
+                                   .OrderBy(m => m.Key, StringComparer.Ordinal)
+                                   .Select(m => m.Value)
+                                   .FirstOrDefault();
 
             if (member is null) return null;
         }
@@ -148,6 +153,12 @@ public static partial class BrouterXmlDocs
 
         var kind = target.Length > 2 && target[1] == ':' ? target[0] : '\0';
         if (kind != '\0') target = target[2..];
+
+        // A method cref carries its parameter list ("M:Bit.Brouter.IBrouter.BackAsync(System.Int32)").
+        // Fully qualified argument types read as noise in prose, and the '.'s inside them would
+        // otherwise be split on below - which would keep the arguments and drop the owning type.
+        var arguments = target.IndexOf('(', StringComparison.Ordinal);
+        if (arguments > 0) target = target[..arguments];
 
         // Drop the arity marker of a generic type ("BrouterTypeRouteConstraint`1").
         var arity = target.IndexOf('`', StringComparison.Ordinal);

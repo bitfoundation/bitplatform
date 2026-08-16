@@ -180,7 +180,18 @@ brouter.NavigateToName(<span class="k">BrouterRoutes.Names</span>.Counter, <span
             ("BrouterRoutes.Posts(\"2026/07/hello world\")", BrouterRoutes.Posts("2026/07/hello world")),
         ];
 
-        _resolvedUrl = brouter.ResolveUrl(BrouterRoutes.Names.Counter, new Dictionary<string, object?> { ["init"] = 7 });
+        try
+        {
+            _resolvedUrl = brouter.ResolveUrl(BrouterRoutes.Names.Counter, new Dictionary<string, object?> { ["init"] = 7 });
+        }
+        catch (InvalidOperationException)
+        {
+            // Name resolution needs a mounted <Brouter> to hold the route table, and this page is
+            // also rendered on its own by the MCP server (GetBrouterDocsPage) to serve its text.
+            // The generated builder needs nothing and produces the identical URL, so the card still
+            // shows the real value rather than taking the whole page down.
+            _resolvedUrl = BrouterRoutes.Counter(7);
+        }
     }
 
     private void NavigateByName()

@@ -169,8 +169,13 @@ public static partial class HtmlToMarkdownService
         var code = WebUtility.HtmlDecode(node.InnerText).Trim('\n', '\r');
         if (code.Trim().Length == 0) return;
 
+        // The fence has to outrun the longest run of backticks in the sample itself - the docs do
+        // show Markdown - or the block would end in the middle of its own content.
+        var longest = BacktickRunRegex().Matches(code).Select(match => match.Length).DefaultIfEmpty(0).Max();
+        var fence = new string('`', Math.Max(3, longest + 1));
+
         AppendBlockBreak(builder);
-        builder.Append("```\n").Append(code).Append("\n```");
+        builder.Append(fence).Append('\n').Append(code).Append('\n').Append(fence);
         AppendBlockBreak(builder);
     }
 
@@ -318,7 +323,9 @@ public static partial class HtmlToMarkdownService
     private static string Normalize(string markdown)
     {
         markdown = markdown.Replace("\r\n", "\n", StringComparison.Ordinal);
-        markdown = TrailingSpacesRegex().Replace(markdown, string.Empty);
+        // Only the spaces go - the newline that ended the line has to stay, or every table row
+        // (each of which ends in the "| " a cell separator leaves behind) folds into its neighbour.
+        markdown = TrailingSpacesRegex().Replace(markdown, "\n");
         markdown = BlankLinesRegex().Replace(markdown, "\n\n");
 
         return markdown.Trim();
@@ -332,4 +339,7 @@ public static partial class HtmlToMarkdownService
 
     [GeneratedRegex(@"\n{3,}")]
     private static partial Regex BlankLinesRegex();
+
+    [GeneratedRegex("`+")]
+    private static partial Regex BacktickRunRegex();
 }

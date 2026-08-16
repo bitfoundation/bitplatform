@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Bit.Brouter.Demo.Server.Dtos;
 
 /// <summary>One page of the documentation site (mirrors an entry of the client's DocsCatalog).</summary>
@@ -197,7 +199,10 @@ public record BrouterRouteTableEntryDto
     /// <summary>1 = the route the router prefers when several of them match the same URL.</summary>
     public int MatchOrder { get; init; }
 
-    /// <summary>The template with parameter names dropped - two routes sharing a shape match exactly the same URLs.</summary>
+    /// <summary>
+    /// The template reduced to what the router actually tells apart - parameter names dropped, but
+    /// constraints and declared defaults kept. Two routes sharing a shape are indistinguishable.
+    /// </summary>
     public string? Shape { get; init; }
 }
 
@@ -256,6 +261,14 @@ public record BrouterTemplateInspectionDto
     public string[]? ParameterNames { get; init; }
 
     public BrouterTemplateSegmentDto[]? Segments { get; init; }
+
+    /// <summary>
+    /// The canonical identity of what the template matches, mirroring the key the router itself uses
+    /// to reject ambiguous registrations. Serialized only as part of a route-table analysis, where
+    /// comparing one template against another is the point.
+    /// </summary>
+    [JsonIgnore]
+    public string? Shape { get; init; }
 
     /// <summary>Notes about the template's behavior that are easy to get wrong (middle optionals, catch-alls, ...).</summary>
     public string[]? Notes { get; init; }

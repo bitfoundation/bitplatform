@@ -1,3 +1,4 @@
+using System.Text;
 using System.Collections;
 using System.Reflection;
 using Bit.Brouter.Demo.Server.Dtos;
@@ -81,6 +82,7 @@ public static class BrouterTemplateInspector
                 Specificity = dtos.Sum(s => s.Specificity),
                 ParameterNames = [.. dtos.SelectMany(s => s.ParameterNames ?? [])],
                 Segments = dtos,
+                Shape = string.Join('/', segments.Select(segment => SegmentShape(parser, segment))),
                 Notes = [.. Notes(dtos)]
             };
         }
@@ -115,7 +117,7 @@ public static class BrouterTemplateInspector
             IsValid = inspection.IsValid,
             Error = inspection.Error,
             Specificity = inspection.Specificity,
-            Shape = inspection.IsValid ? Shape(inspection) : null
+            Shape = inspection.Shape
         }).ToArray();
 
         // Specificity is the router's tie-break between routes that all match a URL.
@@ -151,43 +153,93 @@ public static class BrouterTemplateInspector
     }
 
     /// <summary>
-    /// The template stripped of everything matching ignores - parameter names above all, since
+    /// One segment stripped of everything matching ignores - parameter names above all, since
     /// "/users/{id}" and "/users/{userId}" accept exactly the same URLs.
+    /// <para>
+    /// This mirrors the router's own BuildTemplateCollisionKey segment for segment, because that is
+    /// the function deciding which registrations it refuses as ambiguous. What it keeps is kept here
+    /// too: a declared default (so "{page}" and "{page=1}" stay distinct - they bind different
+    /// values for the same URL), the constraints of a catch-all, and the literal text between the
+    /// parameters of a complex segment.
+    /// </para>
     /// </summary>
-    private static string Shape(BrouterTemplateInspectionDto inspection)
+    private static string SegmentShape(Reflected parser, object segment)
     {
-        return string.Join('/', (inspection.Segments ?? []).Select(segment => segment.Kind switch
-        {
-            "Literal" => segment.Value.ToLowerInvariant(),
-            "Wildcard" => "*",
-            "CatchAll" => $"{{**{string.Concat((segment.Constraints ?? []).Select(c => $":{c.ToLowerInvariant()}"))}}}",
-            "Complex" => ComplexShape(segment),
-            _ => $"{{{string.Concat((segment.Constraints ?? []).Select(c => $":{c.ToLowerInvariant()}"))}{(segment.IsOptional ? "?" : null)}}}"
-        }));
-    }
+        var builder = new StringBuilder();
 
-    private static string ComplexShape(BrouterTemplateSegmentDto segment)
-    {
-        // The literal text between the parameters is what distinguishes two complex segments, and it
-        // survives in the segment's own text once the parameter names are blanked out.
-        var shape = segment.Value;
-
-        foreach (var name in segment.ParameterNames ?? [])
+        if ((bool)parser.IsCatchAll.GetValue(segment)!)
         {
-            shape = shape.Replace($"{{{name}", "{", StringComparison.OrdinalIgnoreCase);
+            // The literal "**" and a "{**rest}" parameter unify: a catch-all's name and optional
+            // flag change nothing, it already matches zero or more segments. Constraints do not.
+            builder.Append("**");
+
+            foreach (var constraint in ConstraintNames(parser, parser.Constraints.GetValue(segment)))
+            {
+                builder.Append(':').Append(constraint.ToLowerInvariant());
+            }
+        }
+        else if (parser.Parts.GetValue(segment) is IEnumerable parts)
+        {
+            foreach (var part in parts.Cast<object>())
+            {
+                if ((bool)parser.PartIsParameter.GetValue(part)! is false)
+                {
+                    AppendShapeLiteral(builder, (string)parser.PartValue.GetValue(part)!);
+                    continue;
+                }
+
+                builder.Append('{')
+                       .Append(string.Join(':', ConstraintNames(parser, parser.PartConstraints.GetValue(part)).Select(c => c.ToLowerInvariant())));
+                if ((bool)parser.PartIsOptional.GetValue(part)!) builder.Append('?');
+                builder.Append('}');
+            }
+        }
+        else if ((bool)parser.IsParameter.GetValue(segment)!)
+        {
+            builder.Append('{')
+                   .Append(string.Join(':', ConstraintNames(parser, parser.Constraints.GetValue(segment)).Select(c => c.ToLowerInvariant())));
+            if ((bool)parser.IsOptional.GetValue(segment)!) builder.Append('?');
+
+            // A default changes the value bound when the URL omits the segment, so "{page?}" and
+            // "{page=1}" match the same URLs without being interchangeable.
+            if (parser.DefaultValue.GetValue(segment) is string defaultValue) builder.Append('=').Append(defaultValue);
+
+            builder.Append('}');
+        }
+        else
+        {
+            // Plain literals, and the single-segment wildcard "*" - the parser never produces a
+            // literal "*", so it cannot collide with one.
+            AppendShapeLiteral(builder, (string)parser.Value.GetValue(segment)!);
         }
 
-        return shape.ToLowerInvariant();
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Literal text goes into the shape with its braces doubled, exactly as the router does, so a
+    /// literal written with escaped braces ("{{x}}" -> "{x}") can never read as a parameter.
+    /// </summary>
+    private static void AppendShapeLiteral(StringBuilder builder, string literal)
+    {
+        // Case folds because the router matches literals case-insensitively unless BrouterOptions
+        // .CaseSensitive is turned on, which this demo - like the default - leaves off.
+        var text = literal.ToLowerInvariant();
+
+        builder.Append(text.Contains('{') || text.Contains('}')
+            ? text.Replace("{", "{{", StringComparison.Ordinal).Replace("}", "}}", StringComparison.Ordinal)
+            : text);
     }
 
     private static BrouterTemplateSegmentDto Describe(Reflected parser, object segment)
     {
         var parts = parser.Parts.GetValue(segment);
+        var isParameter = (bool)parser.IsParameter.GetValue(segment)!;
 
         var kind = (bool)parser.IsCatchAll.GetValue(segment)! ? "CatchAll"
                  : (bool)parser.IsSingleWildcard.GetValue(segment)! ? "Wildcard"
                  : parts is not null ? "Complex"
-                 : (bool)parser.IsParameter.GetValue(segment)! ? "Parameter"
+                 : isParameter ? "Parameter"
                  : "Literal";
 
         var names = ((IEnumerable)parser.ParameterNames.GetValue(segment)!).Cast<string>().ToArray();
@@ -207,8 +259,9 @@ public static class BrouterTemplateInspector
         return new BrouterTemplateSegmentDto
         {
             // A parameter segment stores the bare parameter name; spelled back out the way it was
-            // written, it stays recognizable in the notes below.
-            Value = kind is "Parameter" or "CatchAll"
+            // written, it stays recognizable in the notes below. A literal segment - including the
+            // nameless catch-all "**" and the wildcard "*" - already IS its own text.
+            Value = isParameter
                 ? $"{{{(kind == "CatchAll" ? "*" : null)}{value}{string.Concat(constraints.Select(c => $":{c}"))}{(isOptional ? "?" : null)}{(defaultValue is null ? null : $"={defaultValue}")}}}"
                 : value,
             Kind = kind,
@@ -242,8 +295,8 @@ public static class BrouterTemplateInspector
 
             if (segment.Kind == "CatchAll")
             {
-                yield return $"'{segment.Value}' is a catch-all: it binds the whole remainder of the URL (slashes included) and must be the last segment. " +
-                             "{*name} and {**name} match identically.";
+                yield return $"'{segment.Value}' is a catch-all: it matches the whole remainder of the URL (slashes included) and must be the last segment. " +
+                             "'{*name}', '{**name}' and the nameless '**' all match the same URLs; only the named forms bind the remainder to a parameter.";
             }
 
             if (segment.Kind == "Complex")
@@ -281,7 +334,12 @@ public static class BrouterTemplateInspector
 
             const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-            var parse = parserType.GetMethod("ParseTemplate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            // The signature is checked, not just the name: Inspect invokes this with exactly
+            // (template, constraints), so a method that grew a parameter - or an overload set this
+            // no longer picks the right member out of - has to read as unavailable here rather than
+            // throw on every single call.
+            var parse = parserType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
+                                  .FirstOrDefault(method => method.Name == "ParseTemplate" && Accepts(method));
             if (parse is null) return null;
 
             // Every property is read unconditionally later on, so a single one that moved has to fail
@@ -298,12 +356,16 @@ public static class BrouterTemplateInspector
             var parts = segmentType.GetProperty("Parts", flags);
             var parameterNames = segmentType.GetProperty("ParameterNames", flags);
             var specificity = segmentType.GetProperty("Specificity", flags);
+            var partValue = partType.GetProperty("Value", flags);
+            var partIsParameter = partType.GetProperty("IsParameter", flags);
+            var partIsOptional = partType.GetProperty("IsOptional", flags);
             var partConstraints = partType.GetProperty("Constraints", flags);
             var constraintName = bindingType.GetProperty("Name", flags);
 
             if (template is null || segments is null || value is null || isParameter is null || isCatchAll is null ||
                 isSingleWildcard is null || isOptional is null || defaultValue is null || constraints is null ||
-                parts is null || parameterNames is null || specificity is null || partConstraints is null ||
+                parts is null || parameterNames is null || specificity is null || partValue is null ||
+                partIsParameter is null || partIsOptional is null || partConstraints is null ||
                 constraintName is null) return null;
 
             return new Reflected
@@ -321,6 +383,9 @@ public static class BrouterTemplateInspector
                 Parts = parts,
                 ParameterNames = parameterNames,
                 Specificity = specificity,
+                PartValue = partValue,
+                PartIsParameter = partIsParameter,
+                PartIsOptional = partIsOptional,
                 PartConstraints = partConstraints,
                 ConstraintName = constraintName
             };
@@ -329,6 +394,16 @@ public static class BrouterTemplateInspector
         {
             return null;
         }
+    }
+
+    /// <summary>Whether a method takes the two arguments <see cref="Inspect"/> passes it.</summary>
+    private static bool Accepts(MethodInfo method)
+    {
+        var parameters = method.GetParameters();
+
+        return parameters.Length == 2 &&
+               parameters[0].ParameterType == typeof(string) &&
+               parameters[1].ParameterType.IsAssignableFrom(typeof(BrouterConstraintRegistry));
     }
 
     private sealed record Reflected
@@ -346,6 +421,9 @@ public static class BrouterTemplateInspector
         public required PropertyInfo Parts { get; init; }
         public required PropertyInfo ParameterNames { get; init; }
         public required PropertyInfo Specificity { get; init; }
+        public required PropertyInfo PartValue { get; init; }
+        public required PropertyInfo PartIsParameter { get; init; }
+        public required PropertyInfo PartIsOptional { get; init; }
         public required PropertyInfo PartConstraints { get; init; }
         public required PropertyInfo ConstraintName { get; init; }
     }

@@ -80,13 +80,8 @@ public class McpResources(HtmlRenderer htmlRenderer)
         var page = DocsCatalog.FindBySlug(slug is "overview" or "index" ? string.Empty : slug);
         if (page is null) return $"No documentation page has the slug '{slug}'.";
 
-        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var component = await htmlRenderer.RenderComponentAsync(page.PageType);
+        var (markdown, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page);
 
-            return component.ToHtmlString();
-        });
-
-        return html.ToMarkdown();
+        return markdown ?? DocsPageRenderer.Unavailable(page, error);
     }
 }

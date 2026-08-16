@@ -37,8 +37,12 @@
             <LogicalName>BrouterSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <EmbeddedResource Include="Program.cs;Components\**\*.razor">
-            <LogicalName>BrouterSource/Demo/Server/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        <EmbeddedResource Include="Program.cs" LogicalName="BrouterSource/Demo/Server/Program.cs" />
+
+        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**'
+             matched, so it starts at Pages\ and would drop the folder the components live in. -->
+        <EmbeddedResource Include="Components\**\*.razor">
+            <LogicalName>BrouterSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <!-- The minimal hosting samples - one per Blazor render mode. The rest of Samples\Core is

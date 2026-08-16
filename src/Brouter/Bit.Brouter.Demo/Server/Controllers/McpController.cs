@@ -165,15 +165,13 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
         // The page is rendered by the same component the site serves, so the documentation an agent
         // reads is the documentation a human reads - there is no second copy that could go stale.
-        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            var component = await htmlRenderer.RenderComponentAsync(page.PageType);
+        var (rendered, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page);
 
-            return component.ToHtmlString();
-        });
+        // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
+        if (rendered is null) return DocsPageRenderer.Unavailable(page, error);
 
         // The page renders its own <h1>, so only its source is prepended here.
-        var markdown = Truncate($"Bit.Brouter documentation page: {page.Url}\n\n{html.ToMarkdown()}");
+        var markdown = Truncate($"Bit.Brouter documentation page: {page.Url}\n\n{rendered}");
 
         _renderedPages[page.Slug] = markdown;
 
