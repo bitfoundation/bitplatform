@@ -570,6 +570,14 @@ public class BitTimelineTests : BunitTestContext
 
         Assert.AreEqual(3, component.FindAll(".bit-tln-itm").Count);
         Assert.AreEqual(2, component.FindAll(".bit-tln-dot").Count);
+
+        // The item without a dot still reserves its space, so its connector keeps the axis of the
+        // rest of the timeline, and the placeholder stays out of the accessibility tree.
+        var placeholders = component.FindAll(".bit-tln-hdd");
+
+        Assert.AreEqual(1, placeholders.Count);
+        Assert.AreEqual("true", placeholders[0].GetAttribute("aria-hidden"));
+        Assert.IsTrue(component.FindAll(".bit-tln-itm")[2].QuerySelector(".bit-tln-hdd") is not null);
     }
 
     [TestMethod]

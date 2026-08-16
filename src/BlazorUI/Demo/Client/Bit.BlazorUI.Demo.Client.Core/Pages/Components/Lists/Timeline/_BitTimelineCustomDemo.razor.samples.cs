@@ -13,6 +13,7 @@ public class Event
     public RenderFragment<Event>? FirstContent { get; set; }
     public string? FirstText { get; set; }
     public BitIconInfo? ExternalIcon { get; set; }
+    public BitTimelineLineVariant? LineStyle { get; set; }
     public bool NoDot { get; set; }
     public string? Icon { get; set; }
     public bool Disabled { get; set; }
@@ -39,6 +40,7 @@ private BitTimelineNameSelectors<Event> nameSelectors = new()
     Color = { Selector = i => i.DotColor },
     Size = { Selector = i => i.DotSize },
     Variant = { Selector = i => i.DotVariant },
+    LineVariant = { Selector = i => i.LineStyle },
     HideDot = { Selector = i => i.NoDot },
     Template = { Selector = i => i.Content },
     OnClick = { Selector = i => i.OnSelect },

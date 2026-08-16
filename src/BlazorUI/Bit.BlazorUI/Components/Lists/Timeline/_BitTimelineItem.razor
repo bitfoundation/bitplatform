@@ -34,21 +34,25 @@
                 }
             </div>
             <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd @Timeline.Classes?.Divider">
-                @if (hideDot is false)
+                @if (hideDot)
                 {
-                    @if (dotTemplate is not null)
-                    {
-                        @dotTemplate(Item)
-                    }
-                    else
-                    {
-                        <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
-                            @if (icon is not null)
-                            {
-                                <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
-                            }
-                        </div>
-                    }
+                    @* The dot is what gives the divider its size, so an item without one reserves the space of
+                       a dot instead of leaving the divider empty: the connecting line then keeps the axis it
+                       has on every other item, rather than drifting toward the contents. *@
+                    <div aria-hidden="true" class="bit-tln-hdd"></div>
+                }
+                else if (dotTemplate is not null)
+                {
+                    @dotTemplate(Item)
+                }
+                else
+                {
+                    <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
+                        @if (icon is not null)
+                        {
+                            <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
+                        }
+                    </div>
                 }
             </div>
             <div style="@Timeline.Styles?.SecondaryContent" class="bit-tln-scn @Timeline.Classes?.SecondaryContent">

@@ -53,23 +53,30 @@
 
 /*
  * The broken lines are painted as a repeating gradient rather than a border, so the same declaration
- * serves both orientations: the direction of the repetition follows --bit-tln-dvd-dir, which the root
- * flips while the timeline runs horizontally. Resolved per item, for the same reason the dot colors are.
+ * serves both orientations and both halves of the connector: the direction of the repetition follows
+ * --bit-tln-dvd-dir-s / --bit-tln-dvd-dir-e, which the root points from the dot outwards and flips
+ * while the timeline runs horizontally. Resolved per item, for the same reason the dot colors are.
  */
+@mixin timeline-line-broken($dash, $period) {
+    --bit-tln-dvd-bg-s: repeating-linear-gradient(var(--bit-tln-dvd-dir-s),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
+            transparent #{$dash} #{$period});
+    --bit-tln-dvd-bg-e: repeating-linear-gradient(var(--bit-tln-dvd-dir-e),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{$dash},
+            transparent #{$dash} #{$period});
+}
+
 @mixin timeline-line-solid {
-    --bit-tln-dvd-bg: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+    --bit-tln-dvd-bg-s: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+    --bit-tln-dvd-bg-e: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
 }
 
 @mixin timeline-line-dashed {
-    --bit-tln-dvd-bg: repeating-linear-gradient(var(--bit-tln-dvd-dir),
-            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{spacing(1)},
-            transparent #{spacing(1)} #{spacing(1.75)});
+    @include timeline-line-broken(spacing(1), spacing(1.75));
 }
 
 @mixin timeline-line-dotted {
-    --bit-tln-dvd-bg: repeating-linear-gradient(var(--bit-tln-dvd-dir),
-            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{spacing(0.25)},
-            transparent #{spacing(0.25)} #{spacing(0.75)});
+    @include timeline-line-broken(spacing(0.25), spacing(0.75));
 }
 
 @mixin timeline-item-reversed {
@@ -97,11 +104,16 @@
     --bit-tln-scn-flexdir: row;
     --bit-tln-cn-overflow: hidden;
     --bit-tln-cn-justcon: unset;
-    --bit-tln-dvd-top: 0;
-    --bit-tln-dvd-inset: auto;
-    --bit-tln-dvd-height: 100%;
+    --bit-tln-dvd-dsp-s: block;
+    --bit-tln-dvd-dsp-e: block;
+    --bit-tln-dvd-top-s: 0;
+    --bit-tln-dvd-top-e: 50%;
+    --bit-tln-dvd-ins-s: auto;
+    --bit-tln-dvd-ins-e: auto;
+    --bit-tln-dvd-height: 50%;
     --bit-tln-dvd-width: #{spacing(0.25)};
-    --bit-tln-dvd-dir: to bottom;
+    --bit-tln-dvd-dir-s: to top;
+    --bit-tln-dvd-dir-e: to bottom;
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
 
     &.bit-dis {
@@ -203,20 +215,39 @@
     justify-content: center;
     padding: calc(var(--bit-tln-dot-size) / 2);
 
-    &::before {
+    /*
+     * The connector of an item is painted as two halves, one on each side of the dot, rather than as a
+     * single run across the item. A repeating gradient always starts its pattern at the start edge of
+     * the box it paints, so a single run would begin its dashes at the top of the item, which is the
+     * middle of the stretch between two dots: the dashes would then land at an arbitrary offset from
+     * every dot and never line up with those of the neighbouring item. Two halves that each run from
+     * the dot outwards keep the pattern anchored to the dots, so it stays flush against them and
+     * symmetric around them whatever the height of the item and the variant of its neighbours.
+     */
+    &::before,
+    &::after {
         content: "";
         position: absolute;
-
-        // Routed through variables so the color of the line can be themed from the Styles of the
-        // divider, which cannot reach this pseudo-element on its own, and so the line variants can
-        // replace the whole paint with a repeating gradient.
-        background: var(--bit-tln-dvd-bg, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
-        top: var(--bit-tln-dvd-top);
         width: var(--bit-tln-dvd-width);
         height: var(--bit-tln-dvd-height);
+    }
 
-        // Left at auto by default, so the line keeps the centered static position of the divider.
-        inset-inline-start: var(--bit-tln-dvd-inset);
+    // Routed through variables so the color of the line can be themed from the Styles of the divider,
+    // which cannot reach these pseudo-elements on its own, and so the line variants can replace the
+    // whole paint with a repeating gradient. The offsets of the axis the timeline does not run along
+    // are left at auto, so the line keeps the centered static position of the divider on that axis.
+    &::before {
+        display: var(--bit-tln-dvd-dsp-s);
+        background: var(--bit-tln-dvd-bg-s, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
+        top: var(--bit-tln-dvd-top-s);
+        inset-inline-start: var(--bit-tln-dvd-ins-s);
+    }
+
+    &::after {
+        display: var(--bit-tln-dvd-dsp-e);
+        background: var(--bit-tln-dvd-bg-e, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
+        top: var(--bit-tln-dvd-top-e);
+        inset-inline-start: var(--bit-tln-dvd-ins-e);
     }
 }
 
@@ -233,6 +264,17 @@
     border-style: $shp-border-style;
     border-color: var(--bit-tln-dot-clr-brd);
     background-color: var(--bit-tln-dot-clr-bg);
+}
+
+// The placeholder of a hidden dot paints nothing and only reserves the box of a dot. It repeats the
+// size declarations of the dot instead of reserving that space on the divider itself, so it measures
+// the same as a dot whichever box-sizing the host page applies to both of them.
+.bit-tln-hdd {
+    visibility: hidden;
+    width: var(--bit-tln-dot-size);
+    height: var(--bit-tln-dot-size);
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
 }
 
 .bit-tln-ico {
@@ -270,10 +312,21 @@
     --bit-tln-itm-flexdir: column;
     --bit-tln-cn-overflow: unset;
     --bit-tln-cn-justcon: center;
-    --bit-tln-dvd-top: unset;
+    --bit-tln-dvd-top-s: unset;
+    --bit-tln-dvd-top-e: unset;
+    --bit-tln-dvd-ins-s: 0;
+    --bit-tln-dvd-ins-e: 50%;
     --bit-tln-dvd-height: #{spacing(0.25)};
-    --bit-tln-dvd-width: 100%;
-    --bit-tln-dvd-dir: to right;
+    --bit-tln-dvd-width: 50%;
+    --bit-tln-dvd-dir-s: to left;
+    --bit-tln-dvd-dir-e: to right;
+
+    // Both halves still run from the dot outwards once the inline axis is mirrored, so the directions
+    // of the repetition swap with it. Kept in its own rule so a browser without :dir() drops only this.
+    &:dir(rtl) {
+        --bit-tln-dvd-dir-s: to right;
+        --bit-tln-dvd-dir-e: to left;
+    }
 
     .bit-tln-itm {
         --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
@@ -301,71 +354,43 @@
 }
 
 /*
- * Truncating the line means the first (or the last) item only paints the half of its connector that
- * faces the rest of the timeline, so the line begins and ends at a dot instead of running past it.
+ * Truncating the line drops the half of the connector of the first (or the last) item that faces away
+ * from the rest of the timeline, so the line begins and ends at a dot instead of running past it. Since
+ * each half is a pseudo-element of its own, this holds for both orientations without repeating the
+ * geometry of the horizontal one: the half is picked by its position along the timeline, not by an axis.
  */
 .bit-tln-tls > .bit-tln-itm:first-child,
 .bit-tln-tlb > .bit-tln-itm:first-child {
-    --bit-tln-dvd-top: 50%;
-    --bit-tln-dvd-height: 50%;
+    --bit-tln-dvd-dsp-s: none;
 }
 
 .bit-tln-tle > .bit-tln-itm:last-child,
 .bit-tln-tlb > .bit-tln-itm:last-child {
-    --bit-tln-dvd-top: 0;
-    --bit-tln-dvd-height: 50%;
-}
-
-.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
-    --bit-tln-dvd-height: 0;
+    --bit-tln-dvd-dsp-e: none;
 }
 
 /*
- * A reversed order paints the first item of the list at the bottom of the timeline and the last one at
- * the top, so the half of the connector that faces the rest of the timeline is the opposite one. Only
- * the offset flips; the height of a truncated connector stays the same half of the item. Declared
- * before the horizontal rules, which carry the same specificity and must keep winning while the
- * timeline runs horizontally.
+ * A reversed order paints the first item of the list at the end of the timeline and the last one at its
+ * start, so the half that faces away from the rest of the timeline is the opposite one. The half the
+ * base rule above dropped is restored explicitly, because that rule still matches here.
  */
 .bit-tln-rvo.bit-tln-tls > .bit-tln-itm:first-child,
 .bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:first-child {
-    --bit-tln-dvd-top: 0;
+    --bit-tln-dvd-dsp-s: block;
+    --bit-tln-dvd-dsp-e: none;
 }
 
 .bit-tln-rvo.bit-tln-tle > .bit-tln-itm:last-child,
 .bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:last-child {
-    --bit-tln-dvd-top: 50%;
+    --bit-tln-dvd-dsp-s: none;
+    --bit-tln-dvd-dsp-e: block;
 }
 
-.bit-tln-hrz.bit-tln-tls > .bit-tln-itm:first-child,
-.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child {
-    --bit-tln-dvd-top: unset;
-    --bit-tln-dvd-height: #{spacing(0.25)};
-    --bit-tln-dvd-inset: 50%;
-    --bit-tln-dvd-width: 50%;
-}
-
-.bit-tln-hrz.bit-tln-tle > .bit-tln-itm:last-child,
-.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:last-child {
-    --bit-tln-dvd-top: unset;
-    --bit-tln-dvd-height: #{spacing(0.25)};
-    --bit-tln-dvd-inset: 0;
-    --bit-tln-dvd-width: 50%;
-}
-
-.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
-    --bit-tln-dvd-width: 0;
-}
-
-// The same flip as the vertical one, on the inline axis of a reversed horizontal timeline.
-.bit-tln-hrz.bit-tln-rvo.bit-tln-tls > .bit-tln-itm:first-child,
-.bit-tln-hrz.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:first-child {
-    --bit-tln-dvd-inset: 0;
-}
-
-.bit-tln-hrz.bit-tln-rvo.bit-tln-tle > .bit-tln-itm:last-child,
-.bit-tln-hrz.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:last-child {
-    --bit-tln-dvd-inset: 50%;
+// A lone item of a timeline truncated on both ends connects to nothing and carries no line at all. It
+// is spelled out because the reversed rules above, which it also matches, would restore one of its halves.
+.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
+    --bit-tln-dvd-dsp-s: none;
+    --bit-tln-dvd-dsp-e: none;
 }
 
 .bit-tln-fil .bit-tln-itm {

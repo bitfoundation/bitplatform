@@ -4,10 +4,19 @@
         display: flex;
     }
 
+    // A dot template stands in for the dot of the timeline, so it takes the size of one from the
+    // timeline itself instead of shrinking to whatever it wraps: an icon then reads as a dot rather
+    // than as a blob around a glyph, and a loading indicator keeps the size it had as a dot.
     .dot-template {
         z-index: 1;
+        color: white;
+        display: flex;
         border-radius: 50%;
+        align-items: center;
+        justify-content: center;
         background-color: tomato;
+        width: var(--bit-tln-dot-size);
+        height: var(--bit-tln-dot-size);
 
         div {
             display: block;
@@ -20,7 +29,10 @@
         align-items: center;
     }
 
+    // A whole-item template owns the row of its item, dot and line included, so it centers itself on
+    // the axis of the timeline rather than sitting flush against the start of the row.
     .full-template {
+        margin: auto;
         padding: 0.5rem 1rem;
         border-radius: 0.25rem;
         background-color: tomato;
