@@ -14,6 +14,18 @@
         }
     }
 
+    .template-content {
+        gap: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .full-template {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        background-color: tomato;
+    }
+
     .custom-class {
         color: dodgerblue;
         font-weight: bold;

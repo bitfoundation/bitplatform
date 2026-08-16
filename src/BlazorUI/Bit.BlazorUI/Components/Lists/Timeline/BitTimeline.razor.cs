@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Microsoft.AspNetCore.Components.Forms;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -14,11 +13,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
 
     /// <summary>
-    /// The EditContext, which is set if the timeline is inside an <see cref="EditForm"/>
+    /// Alternates the side of the items, so each item sits on the opposite side of the line of the item before it.
     /// </summary>
-    [CascadingParameter] private EditContext? _editContext { get; set; }
-
-
+    [Parameter, ResetClassBuilder]
+    public bool Alternate { get; set; }
 
     /// <summary>
     /// The content of the BitTimeline, that are BitTimelineOption components.
@@ -37,6 +35,11 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// The default custom template for the dot of the items, used by the items that provide no dot template of their own.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? DotTemplate { get; set; }
+
+    /// <summary>
     /// Defines whether to render timeline children horizontally.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -46,6 +49,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     ///  List of Item, each can be with different contents in the timeline.
     /// </summary>
     [Parameter] public IEnumerable<TItem> Items { get; set; } = [];
+
+    /// <summary>
+    /// The default custom template that replaces the whole content of the items,
+    /// used by the items that provide no template of their own.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -63,7 +72,13 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Options { get; set; }
 
     /// <summary>
-    /// Reverses all of the timeline items direction.
+    /// Renders the items in the reverse order, so the last item of the list is rendered first.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool ReverseOrder { get; set; }
+
+    /// <summary>
+    /// Reverses all of the timeline items direction, so their contents swap sides of the line.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Reversed { get; set; }
@@ -78,6 +93,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// Custom CSS styles for different parts of the BitTimeline.
     /// </summary>
     [Parameter] public BitTimelineClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// Truncates the connecting line of the timeline at the first dot, the last dot, or both of them.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitTimelineTruncateLine? TruncateLine { get; set; }
 
     /// <summary>
     /// The visual variant of the timeline.
@@ -98,6 +119,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitTimelineOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the timeline
+        // itself goes away, so a re-render is only requested while the timeline is still alive.
+        if (IsDisposed) return;
+
         _items.Remove((option as TItem)!);
 
         StateHasChanged();
@@ -128,6 +153,20 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => Reversed ? "bit-tln-rvs" : string.Empty);
 
+        ClassBuilder.Register(() => Alternate ? "bit-tln-alt" : string.Empty);
+
+        ClassBuilder.Register(() => ReverseOrder ? "bit-tln-rvo" : string.Empty);
+
+        // The truncation classes key off the first and the last item in the DOM, so reversing the
+        // rendered order swaps which end of the line the Start and the End values refer to.
+        ClassBuilder.Register(() => (TruncateLine, ReverseOrder) switch
+        {
+            (BitTimelineTruncateLine.Start, false) or (BitTimelineTruncateLine.End, true) => "bit-tln-tls",
+            (BitTimelineTruncateLine.End, false) or (BitTimelineTruncateLine.Start, true) => "bit-tln-tle",
+            (BitTimelineTruncateLine.Both, _) => "bit-tln-tlb",
+            _ => string.Empty
+        });
+
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-tln-sm",
@@ -154,13 +193,17 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         // Note: no Items.Any() guard here, so a transition from a populated collection to an empty one
         // still runs the comparison and clears _items instead of leaving the previous items rendered.
-        if (ChildContent is null && Options is null &&
-            (_oldItems is null || Items.SequenceEqual(_oldItems) is false))
+        if (ChildContent is null && Options is null)
         {
-            _items = Items.ToList();
-            // Store an independent snapshot so a later in-place mutation of the same Items instance is
-            // still detected (a reference copy would compare the collection against itself).
-            _oldItems = _items.ToList();
+            var items = Items ?? [];
+
+            if (_oldItems is null || items.SequenceEqual(_oldItems) is false)
+            {
+                _items = items.ToList();
+                // Store an independent snapshot so a later in-place mutation of the same Items instance is
+                // still detected (a reference copy would compare the collection against itself).
+                _oldItems = _items.ToList();
+            }
         }
 
         // Options render their items themselves and Blazor skips re-rendering them when only the
@@ -214,13 +257,14 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
 
 
-    internal string? GetItemClasses(TItem item)
+    internal string? GetItemClasses(TItem item, bool isInteractive)
     {
         StringBuilder className = new StringBuilder();
 
-        if (GetColor(item) is not null)
+        var color = GetColor(item);
+        if (color is not null)
         {
-            className.Append(GetColor(item) switch
+            className.Append(color switch
             {
                 BitColor.Primary => " bit-tln-ipr",
                 BitColor.Secondary => " bit-tln-ise",
@@ -234,9 +278,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        if (GetSize(item) is not null)
+        var size = GetSize(item);
+        if (size is not null)
         {
-            className.Append(GetSize(item) switch
+            className.Append(size switch
             {
                 BitSize.Small => " bit-tln-ism",
                 BitSize.Medium => " bit-tln-imd",
@@ -245,9 +290,22 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             });
         }
 
-        if (GetClass(item) is not null)
+        var variant = GetVariant(item);
+        if (variant is not null)
         {
-            className.Append(' ').Append(GetClass(item));
+            className.Append(variant switch
+            {
+                BitVariant.Fill => " bit-tln-ivf",
+                BitVariant.Outline => " bit-tln-ivo",
+                BitVariant.Text => " bit-tln-ivt",
+                _ => " bit-tln-ivf"
+            });
+        }
+
+        var @class = GetClass(item);
+        if (@class is not null)
+        {
+            className.Append(' ').Append(@class);
         }
 
         if (GetIsEnabled(item) is false)
@@ -260,7 +318,40 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             className.Append(" bit-tln-irv");
         }
 
+        if (isInteractive)
+        {
+            className.Append(" bit-tln-int");
+        }
+
         return className.ToString();
+    }
+
+    // An item only takes part in the keyboard and pointer interactions when something actually listens
+    // to its click, so that a purely presentational timeline is not exposed as a list of buttons.
+    internal bool IsItemInteractive(TItem? item)
+    {
+        if (item is null) return false;
+
+        if (OnItemClick.HasDelegate) return true;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.OnClick is not null;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.OnClick.HasDelegate;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.OnClick.Selector is not null)
+        {
+            return NameSelectors.OnClick.Selector!(item) is not null;
+        }
+
+        return item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name) is not null;
     }
 
     internal async Task HandleOnItemClick(TItem item)
@@ -292,6 +383,30 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 item.GetValueFromProperty<Action<TItem>?>(NameSelectors.OnClick.Name)?.Invoke(item);
             }
         }
+    }
+
+    internal string? GetAriaLabel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.AriaLabel;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.AriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.AriaLabel.Selector is not null)
+        {
+            return NameSelectors.AriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
 
     private string? GetClass(TItem? item)
@@ -524,7 +639,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             return timelineOption.HideDot;
         }
 
-        if (NameSelectors is null) return true;
+        // A custom item type with no name selectors exposes no HideDot value, so the dot is rendered
+        // (the same default as the BitTimelineItem and the BitTimelineOption APIs).
+        if (NameSelectors is null) return false;
 
         if (NameSelectors.HideDot.Selector is not null)
         {
@@ -548,7 +665,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             return timelineOption.Reversed;
         }
 
-        if (NameSelectors is null) return true;
+        // A custom item type with no name selectors exposes no Reversed value, so the item keeps the
+        // direction of the timeline itself.
+        if (NameSelectors is null) return false;
 
         if (NameSelectors.Reversed.Selector is not null)
         {
@@ -580,6 +699,54 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         }
 
         return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.DotTemplate.Name);
+    }
+
+    internal RenderFragment<TItem>? GetTemplate(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Template as RenderFragment<TItem>;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Template as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Template.Selector is not null)
+        {
+            return NameSelectors.Template.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.Template.Name);
+    }
+
+    internal string? GetTitle(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Title;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Title;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Title.Selector is not null)
+        {
+            return NameSelectors.Title.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Title.Name);
     }
 
     private BitSize? GetSize(TItem? item)
@@ -628,5 +795,29 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         }
 
         return item.GetValueFromProperty<BitColor?>(NameSelectors.Color.Name, null);
+    }
+
+    private BitVariant? GetVariant(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.Variant;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.Variant;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Variant.Selector is not null)
+        {
+            return NameSelectors.Variant.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
     }
 }

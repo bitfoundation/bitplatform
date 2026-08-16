@@ -1,4 +1,67 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
+
+/*
+ * The dot colors are resolved on the item, never on the root: a custom property whose value contains
+ * a var() is substituted on the element that declares it, so declaring the dot colors on the root
+ * would freeze them to the root color and an item-level color or variant class could never win.
+ */
+@mixin timeline-variant-fill {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-ico-clr-bg: transparent;
+    --bit-tln-dot-ico-width: auto;
+    --bit-tln-dot-ico-height: auto;
+}
+
+@mixin timeline-variant-fill-disabled {
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr-bg-dis);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+@mixin timeline-variant-outline {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr-bg: transparent;
+    --bit-tln-dot-ico-width: auto;
+    --bit-tln-dot-ico-height: auto;
+}
+
+@mixin timeline-variant-outline-disabled {
+    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+@mixin timeline-variant-text {
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr-bg: transparent;
+    --bit-tln-dot-clr-brd: transparent;
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
+    --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
+    --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
+}
+
+@mixin timeline-variant-text-disabled {
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
+}
+
+@mixin timeline-item-reversed {
+    --bit-tln-itm-flexdir: row-reverse;
+    --bit-tln-pcn-flexdir: row;
+    --bit-tln-scn-flexdir: row-reverse;
+}
+
+@mixin timeline-item-normal {
+    --bit-tln-itm-flexdir: row;
+    --bit-tln-pcn-flexdir: row-reverse;
+    --bit-tln-scn-flexdir: row;
+}
 
 .bit-tln {
     width: 100%;
@@ -13,27 +76,18 @@
     --bit-tln-scn-flexdir: row;
     --bit-tln-cn-overflow: hidden;
     --bit-tln-cn-justcon: unset;
-    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
     --bit-tln-dvd-top: 0;
+    --bit-tln-dvd-inset: auto;
     --bit-tln-dvd-height: 100%;
     --bit-tln-dvd-width: #{spacing(0.25)};
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
-    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
-    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
 
     &.bit-dis {
         cursor: default;
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
     }
-}
-
-.bit-tln-rvs, .bit-tln-irv {
-    --bit-tln-itm-flexdir: row-reverse;
-    --bit-tln-pcn-flexdir: row;
-    --bit-tln-scn-flexdir: row-reverse;
 }
 
 .bit-tln-itm {
@@ -43,14 +97,29 @@
     position: relative;
     align-items: center;
     flex-direction: var(--bit-tln-itm-flexdir);
+    // Resolved per item so that an item-level color or size class also drives the padding of the
+    // contents and the disabled palette of the dot.
+    --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
+    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+
+    &:focus-visible {
+        outline: none;
+        @include focus-ring(var(--bit-tln-clr-focus));
+    }
 
     &.bit-tln-ids {
         cursor: default;
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
-        --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
     }
+}
+
+// Only the items that answer to a click behave like a control under the pointer.
+.bit-tln-int {
+    cursor: pointer;
 }
 
 .bit-tln-pcn,
@@ -80,7 +149,6 @@
     font-size: inherit;
     align-items: center;
     overflow-wrap: anywhere;
-    text-overflow: ellipsis;
 }
 
 .bit-tln-dvd {
@@ -92,10 +160,14 @@
     &::before {
         content: "";
         position: absolute;
-        background: $clr-brd-sec;
+        // Routed through a variable so the color of the line can be themed from the Styles of the
+        // divider, which cannot reach this pseudo-element on its own.
+        background: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
         top: var(--bit-tln-dvd-top);
         width: var(--bit-tln-dvd-width);
         height: var(--bit-tln-dvd-height);
+        // Left at auto by default, so the line keeps the centered static position of the divider.
+        inset-inline-start: var(--bit-tln-dvd-inset);
     }
 }
 
@@ -118,63 +190,170 @@
     color: var(--bit-tln-dot-ico-clr);
 }
 
+.bit-tln-rvs {
+    @include timeline-item-reversed;
+}
+
+// Alternate flips every second item, so the items zig-zag around the line. It keys off the position
+// in the DOM (and not off an index passed from C#) so it also holds for conditionally rendered options.
+.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+    @include timeline-item-reversed;
+}
+
+// In a reversed timeline the zig-zag starts from the other side.
+.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+    @include timeline-item-normal;
+}
+
+// Declared after the alternate rules so an explicitly reversed item always wins.
+.bit-tln-itm.bit-tln-irv {
+    @include timeline-item-reversed;
+}
+
+.bit-tln-rvo {
+    --bit-tln-flexdir: column-reverse;
+}
+
 .bit-tln-hrz {
     width: unset;
     --bit-tln-flexdir: row;
     --bit-tln-itm-flexdir: column;
     --bit-tln-cn-overflow: unset;
     --bit-tln-cn-justcon: center;
-    --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
     --bit-tln-dvd-top: unset;
     --bit-tln-dvd-height: #{spacing(0.25)};
     --bit-tln-dvd-width: 100%;
 
-    &.bit-tln-rvs, .bit-tln-irv {
+    .bit-tln-itm {
+        --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
+    }
+
+    &.bit-tln-rvo {
+        --bit-tln-flexdir: row-reverse;
+    }
+
+    &.bit-tln-rvs {
         --bit-tln-itm-flexdir: column-reverse;
     }
-}
 
-.bit-tln-fil {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+    .bit-tln-itm.bit-tln-irv {
+        --bit-tln-itm-flexdir: column-reverse;
+    }
 
-    &.bit-dis, .bit-tln-ids {
-        --bit-tln-dot-clr-bg: var(--bit-tln-clr-bg-dis);
-        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
+    &.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+        --bit-tln-itm-flexdir: column-reverse;
+    }
+
+    &.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+        --bit-tln-itm-flexdir: column;
     }
 }
 
-.bit-tln-otl {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: #{$clr-bg-pri};
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
-
-    &.bit-dis, .bit-tln-ids {
-        --bit-tln-dot-clr-bg: #{$clr-bg-pri};
-        --bit-tln-dot-clr-brd: var(--bit-tln-clr-brd-dis);
-    }
+/*
+ * Truncating the line means the first (or the last) item only paints the half of its connector that
+ * faces the rest of the timeline, so the line begins and ends at a dot instead of running past it.
+ */
+.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-top: 50%;
+    --bit-tln-dvd-height: 50%;
 }
 
-.bit-tln-txt {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: transparent;
-    --bit-tln-dot-clr-brd: transparent;
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr-bg: #{$clr-bg-pri};
-    --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
-    --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
+.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-top: 0;
+    --bit-tln-dvd-height: 50%;
+}
 
-    .bit-tln-ico {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: var(--bit-tln-dot-ico-width);
-        height: var(--bit-tln-dot-ico-height);
-        background-color: var(--bit-tln-dot-ico-clr-bg);
-    }
+.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
+    --bit-tln-dvd-height: 0;
+}
+
+.bit-tln-hrz.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-top: unset;
+    --bit-tln-dvd-height: #{spacing(0.25)};
+    --bit-tln-dvd-inset: 50%;
+    --bit-tln-dvd-width: 50%;
+}
+
+.bit-tln-hrz.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-top: unset;
+    --bit-tln-dvd-height: #{spacing(0.25)};
+    --bit-tln-dvd-inset: 0;
+    --bit-tln-dvd-width: 50%;
+}
+
+.bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
+    --bit-tln-dvd-width: 0;
+}
+
+.bit-tln-fil .bit-tln-itm {
+    @include timeline-variant-fill;
+}
+
+.bit-tln-otl .bit-tln-itm {
+    @include timeline-variant-outline;
+}
+
+.bit-tln-txt .bit-tln-itm {
+    @include timeline-variant-text;
+}
+
+// The item-level variant is declared after the timeline-level one, with the same specificity, so an
+// item can render a different dot style than the rest of the timeline.
+.bit-tln-itm.bit-tln-ivf {
+    @include timeline-variant-fill;
+}
+
+.bit-tln-itm.bit-tln-ivo {
+    @include timeline-variant-outline;
+}
+
+.bit-tln-itm.bit-tln-ivt {
+    @include timeline-variant-text;
+}
+
+.bit-tln-fil.bit-dis .bit-tln-itm,
+.bit-tln-fil .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-fill-disabled;
+}
+
+.bit-tln-otl.bit-dis .bit-tln-itm,
+.bit-tln-otl .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-outline-disabled;
+}
+
+.bit-tln-txt.bit-dis .bit-tln-itm,
+.bit-tln-txt .bit-tln-itm.bit-tln-ids {
+    @include timeline-variant-text-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivf,
+.bit-tln-itm.bit-tln-ivf.bit-tln-ids {
+    @include timeline-variant-fill-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivo,
+.bit-tln-itm.bit-tln-ivo.bit-tln-ids {
+    @include timeline-variant-outline-disabled;
+}
+
+.bit-dis .bit-tln-itm.bit-tln-ivt,
+.bit-tln-itm.bit-tln-ivt.bit-tln-ids {
+    @include timeline-variant-text-disabled;
+}
+
+// The text variant paints an opaque plate behind the icon so the connecting line does not run through it.
+.bit-tln-txt .bit-tln-ico,
+.bit-tln-itm.bit-tln-ivt .bit-tln-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--bit-tln-dot-ico-width);
+    height: var(--bit-tln-dot-ico-height);
+    background-color: var(--bit-tln-dot-ico-clr-bg);
 }
 
 // Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
@@ -183,7 +362,7 @@
     .bit-tln-#{$role}, .bit-tln-i#{role-abbr($role)} {
         --bit-tln-clr: #{role($tokens, main)};
         --bit-tln-clr-fg: #{role($tokens, on)};
-        --bit-tln-clr-ico: #{role($tokens, on)};
+        --bit-tln-clr-focus: #{role($tokens, focus)};
         --bit-tln-clr-dis-bg: #{role($tokens, dis)};
         --bit-tln-clr-dis-text: #{role($tokens, dis-text)};
     }

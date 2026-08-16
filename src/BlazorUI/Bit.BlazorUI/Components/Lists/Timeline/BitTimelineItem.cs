@@ -3,12 +3,17 @@ namespace Bit.BlazorUI;
 public class BitTimelineItem
 {
     /// <summary>
+    /// The accessible label of the timeline item, announced by assistive technologies.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// The custom CSS classes of the timeline item.
     /// </summary>
     public string? Class { get; set; }
 
     /// <summary>
-    /// The general color of the timeline item.
+    /// The general color of the timeline item, overriding the color of the timeline.
     /// </summary>
     public BitColor? Color { get; set; }
 
@@ -83,7 +88,7 @@ public class BitTimelineItem
     public string? SecondaryText { get; set; }
 
     /// <summary>
-    /// The size of the timeline item.
+    /// The size of the timeline item, overriding the size of the timeline.
     /// </summary>
     public BitSize? Size { get; set; }
 
@@ -93,7 +98,17 @@ public class BitTimelineItem
     public string? Style { get; set; }
 
     /// <summary>
-    /// The custom template for the timeline item.
+    /// The custom template that replaces the whole content of the timeline item.
     /// </summary>
     public RenderFragment<BitTimelineItem>? Template { get; set; }
+
+    /// <summary>
+    /// The value of the title attribute of the timeline item, shown as the native tooltip.
+    /// </summary>
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// The visual variant of the timeline item's dot, overriding the variant of the timeline.
+    /// </summary>
+    public BitVariant? Variant { get; set; }
 }

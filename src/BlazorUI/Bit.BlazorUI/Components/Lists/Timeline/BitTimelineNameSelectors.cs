@@ -1,7 +1,12 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitTimelineNameSelectors<TItem>
 {
+    /// <summary>
+    /// The AriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitTimelineItem.AriaLabel));
+
     /// <summary>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
@@ -86,4 +91,14 @@ public class BitTimelineNameSelectors<TItem>
     /// Template field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitTimelineItem.Template));
+
+    /// <summary>
+    /// The Title field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Title { get; set; } = new(nameof(BitTimelineItem.Title));
+
+    /// <summary>
+    /// The Variant field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitVariant?> Variant { get; set; } = new(nameof(BitTimelineItem.Variant));
 }

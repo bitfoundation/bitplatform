@@ -4,6 +4,8 @@ public class Event
 {
     public string? Class { get; set; }
 
+    public BitColor? DotColor { get; set; }
+
     public RenderFragment<Event>? DotContent { get; set; }
 
     public RenderFragment<Event>? FirstContent { get; set; }
@@ -12,9 +14,13 @@ public class Event
 
     public BitIconInfo? ExternalIcon { get; set; }
 
+    public bool NoDot { get; set; }
+
     public string? Icon { get; set; }
 
     public bool Disabled { get; set; }
+
+    public Action<Event>? OnSelect { get; set; }
 
     public bool Reversed { get; set; }
 
@@ -22,5 +28,11 @@ public class Event
 
     public string? SecondText { get; set; }
 
+    public BitSize? DotSize { get; set; }
+
     public string? Style { get; set; }
+
+    public RenderFragment<Event>? Content { get; set; }
+
+    public BitVariant? DotVariant { get; set; }
 }
