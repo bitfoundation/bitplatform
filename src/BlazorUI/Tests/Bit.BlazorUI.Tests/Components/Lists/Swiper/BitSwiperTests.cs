@@ -792,6 +792,47 @@ public class BitSwiperTests : BunitTestContext
         Assert.IsTrue(component.Instance.Swiper.IsPaused);
     }
 
+    [TestMethod]
+    public async Task BitSwiperShouldAutoPlayBackwardsWhenReversed()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayReverse, true);
+            parameters.Add(p => p.AutoPlayInterval, 50);
+        });
+
+        // the swiper stands away from its start, so the reversed auto scrolling has somewhere to go back to
+        await PushState(component, index: 1, page: 1, atStart: false);
+
+        var go = await WaitForInvocation("BitBlazorUI.Swiper.go");
+
+        Assert.AreEqual(false, go.Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldStopOnLastSlideWhenRequested()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.StopOnLastSlide, true);
+            parameters.Add(p => p.AutoPlayInterval, 50);
+        });
+
+        // the swiper stands at its end, which is what it would otherwise rewind from
+        await PushState(component, index: 2, page: 1, atStart: false, atEnd: true);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Instance.Swiper.IsPlaying);
+            Assert.IsTrue(component.Instance.Swiper.IsPaused);
+        });
+
+        // it stopped where it stood instead of being sent back to the start
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Swiper.goToEdge"));
+    }
+
     #endregion
 
 
@@ -1123,6 +1164,66 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSwiperShouldUseItsOwnDefaultsWithoutTheTestHost()
+    {
+        // the test host forwards a value for every parameter it has, so the defaults of the swiper itself
+        // are covered here, on a swiper rendered with nothing but its items
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.ShowDots, true);
+            parameters.AddChildContent<BitSwiperItem>();
+            parameters.AddChildContent<BitSwiperItem>();
+            parameters.AddChildContent<BitSwiperItem>();
+        });
+
+        var options = LastInvocation("BitBlazorUI.Swiper.setup").Arguments[4]!;
+
+        Assert.AreEqual(true, ReadOption(options, "Enabled"));
+        Assert.AreEqual(5, ReadOption(options, "Threshold"));
+        Assert.AreEqual(1, ReadOption(options, "ScrollCount"));
+        Assert.AreEqual(0.5, ReadOption(options, "Duration"));
+
+        // DefaultItem is 1 based and defaults to the first item
+        Assert.AreEqual(0, ReadOption(options, "Start"));
+
+        await PushState(component);
+
+        Assert.AreEqual("Choose slide to display", component.Find(".bit-swp-dts").GetAttribute("aria-label"));
+        Assert.AreEqual("Slide 1", component.FindAll(".bit-swp-dot")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public async Task BitSwiperShouldPauseOnHoverAndFocusByDefaultWithoutTheTestHost()
+    {
+        var component = RenderComponent<BitSwiper>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 60000);
+            parameters.AddChildContent<BitSwiperItem>();
+            parameters.AddChildContent<BitSwiperItem>();
+            parameters.AddChildContent<BitSwiperItem>();
+        });
+
+        await PushState(component);
+
+        var root = component.Find(".bit-swp");
+
+        Assert.IsTrue(component.Instance.IsPlaying);
+
+        root.MouseEnter();
+        Assert.IsFalse(component.Instance.IsPlaying);
+
+        root.MouseLeave();
+        Assert.IsTrue(component.Instance.IsPlaying);
+
+        root.FocusIn();
+        Assert.IsFalse(component.Instance.IsPlaying);
+
+        root.FocusOut();
+        Assert.IsTrue(component.Instance.IsPlaying);
+    }
+
+    [TestMethod]
     public void BitSwiperShouldUpdateItsOptionsWhenTheyChange()
     {
         var component = RenderComponent<BitSwiperTest>();
@@ -1238,7 +1339,36 @@ public class BitSwiperTests : BunitTestContext
                                   bool scrollable = true,
                                   double viewport = 600)
     {
-        return component.InvokeAsync(() => component.Instance.Swiper._OnStateChange(new BitSwiperState
+        var state = MakeState(index, page, pagesCount, atStart, atEnd, scrollable, viewport);
+
+        return component.InvokeAsync(() => component.Instance.Swiper._OnStateChange(state));
+    }
+
+    // The swiper rendered on its own (rather than through the test host, which forwards a value for every
+    // parameter it has) is handed its state the same way.
+    private static Task PushState(IRenderedComponent<BitSwiper> component,
+                                  int index = 0,
+                                  int page = 0,
+                                  int pagesCount = 2,
+                                  bool atStart = true,
+                                  bool atEnd = false,
+                                  bool scrollable = true,
+                                  double viewport = 600)
+    {
+        var state = MakeState(index, page, pagesCount, atStart, atEnd, scrollable, viewport);
+
+        return component.InvokeAsync(() => component.Instance._OnStateChange(state));
+    }
+
+    private static BitSwiperState MakeState(int index,
+                                            int page,
+                                            int pagesCount,
+                                            bool atStart,
+                                            bool atEnd,
+                                            bool scrollable,
+                                            double viewport)
+    {
+        return new BitSwiperState
         {
             Index = index,
             Page = page,
@@ -1247,12 +1377,34 @@ public class BitSwiperTests : BunitTestContext
             AtEnd = atEnd,
             Scrollable = scrollable,
             Viewport = viewport
-        }));
+        };
     }
 
     private JSRuntimeInvocation LastInvocation(string identifier)
     {
         return Context.JSInterop.Invocations.Last(i => i.Identifier == identifier);
+    }
+
+    // The auto scrolling ticks on a timer of its own and moving the swiper renders nothing, so a call it
+    // makes into the browser cannot be waited for through the renderer the way WaitForAssertion does.
+    private async Task<JSRuntimeInvocation> WaitForInvocation(string identifier)
+    {
+        for (var i = 0; i < 200; i++)
+        {
+            try
+            {
+                var invocations = Context.JSInterop.Invocations.Where(inv => inv.Identifier == identifier).ToArray();
+
+                if (invocations.Length > 0) return invocations[^1];
+            }
+            catch (InvalidOperationException) { } // a tick came in while the invocations were being read
+
+            await Task.Delay(10);
+        }
+
+        Assert.Fail($"The '{identifier}' call was never made.");
+
+        return default;
     }
 
     // The options the swiper hands to the browser are an internal type, so they are read back by name.

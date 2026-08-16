@@ -46,8 +46,10 @@ public partial class BitSwiper : BitComponentBase
     // Nothing is known about how far the swiper reaches until the browser has measured it, and a button
     // that flashed into view only to hide itself on the first measurement would move the items under it.
     // The initial state below (nothing to scroll, standing at both ends at once) says the same thing.
-    private string _nextButtonStyle = "display:none";
-    private string _prevButtonStyle = "display:none";
+    // These are written into the same style attribute as the Styles of the consumer, so they carry their
+    // own semicolon: without it the two run together into a single declaration the browser throws away.
+    private string _nextButtonStyle = "display:none;";
+    private string _prevButtonStyle = "display:none;";
     private readonly List<BitSwiperItem> _allItems = [];
     private ElementReference _swiperContainer = default!;
     private DotNetObjectReference<BitSwiper> _dotnetObj = default!;
@@ -401,11 +403,14 @@ public partial class BitSwiper : BitComponentBase
     public BitSwiperSnap? Snap { get; set; }
 
     /// <summary>
-    /// Stops the auto scrolling as soon as the swiper is navigated by hand.
+    /// Stops the auto scrolling as soon as the swiper is navigated through one of its own controls.
     /// </summary>
     /// <remarks>
-    /// Once stopped this way the scrolling only comes back through <see cref="Resume"/> or the play/pause
-    /// button, which is what someone who took over the swiper expects.
+    /// This covers the next/prev buttons, the dots, and the keyboard navigation (the arrow, page, home and
+    /// end keys); dragging the items and scrolling the wheel over them are handled by the browser side of
+    /// the swiper and do not stop the auto scrolling. Once stopped this way the scrolling only comes back
+    /// through <see cref="Resume"/> or the play/pause button, which is what someone who took over the
+    /// swiper expects.
     /// </remarks>
     [Parameter] public bool StopOnInteraction { get; set; }
 
@@ -818,7 +823,7 @@ public partial class BitSwiper : BitComponentBase
 
     protected override void OnParametersSet()
     {
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
+        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl;" : string.Empty;
 
         _internalScrollItemsCount = Math.Max(1, ScrollItemsCount);
 
@@ -976,8 +981,8 @@ public partial class BitSwiper : BitComponentBase
     private void SetNavigationButtonsVisibility()
     {
         // A swiper everything already fits in has nowhere to go, so neither button is of any use on it.
-        _nextButtonStyle = (_scrollable is false || _atEnd) ? "display:none" : string.Empty;
-        _prevButtonStyle = (_scrollable is false || _atStart) ? "display:none" : string.Empty;
+        _nextButtonStyle = (_scrollable is false || _atEnd) ? "display:none;" : string.Empty;
+        _prevButtonStyle = (_scrollable is false || _atStart) ? "display:none;" : string.Empty;
     }
 
     private void UpdateItemsCurrentState()

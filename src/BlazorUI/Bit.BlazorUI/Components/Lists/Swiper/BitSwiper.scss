@@ -53,6 +53,11 @@
     overscroll-behavior-x: contain;
     scroll-snap-type: var(--bit-swp-snap, none);
 
+    // The swiper animates itself by writing the scroll position a frame at a time, which a smooth
+    // scrolling rule of the hosting application would animate a second time, so the box is kept on the
+    // immediate scrolling its own animation is written against.
+    scroll-behavior: auto;
+
     // The swiper is scrolled by hand far more often than by its scrollbar, and the bar would sit across
     // the items it is drawn under. ShowScrollbar brings it back.
     scrollbar-width: none;
