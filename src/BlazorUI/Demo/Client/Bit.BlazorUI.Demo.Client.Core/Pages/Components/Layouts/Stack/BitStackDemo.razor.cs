@@ -45,6 +45,13 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "Basis",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets the size this stack starts from before the leftover space of its own container is shared out (the CSS flex-basis), measured along the axis of that container. A basis of 0 takes the content of the stack out of the sum, so several stacks that also grow end up the same size as each other however much each of them holds."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -56,6 +63,13 @@ public partial class BitStackDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "Gets or sets the custom html element used for the root node, \"div\" by default. Only the tag name changes, and with it the semantics reported to assistive technologies, so a landmark element given here is worth pairing with an AriaLabel that names it."
+        },
+        new()
+        {
+            Name = "EqualContent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Gives every direct child of the stack an equal share of the axis they are laid out along, whatever each of them holds, so a row of three ends up in exact thirds. That is the difference from GrowContent, which lays the children out at their natural size first and only shares out what is left over."
         },
         new()
         {
@@ -104,7 +118,7 @@ public partial class BitStackDemo
             Name = "GrowContent",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets every direct child of the stack grow into the room the stack has left over along the axis they are laid out on, so what is left after they have all been laid out at their natural size is shared out between them equally. Expanding them across the other axis is what FillContent does, and the two combine."
+            Description = "Lets every direct child of the stack grow into the room the stack has left over along the axis they are laid out on, so what is left after they have all been laid out at their natural size is shared out between them equally. A child that holds more therefore stays larger than one that holds less, which is where EqualContent differs. Expanding them across the other axis is what FillContent does, and the two combine."
         },
         new()
         {
@@ -125,7 +139,7 @@ public partial class BitStackDemo
             Name = "HorizontalAlign",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Gets or sets how the children of the stack are placed on the horizontal axis. In a horizontal stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a vertical one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment.",
+            Description = "Gets or sets how the children of the stack are placed on the horizontal axis. In a horizontal stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a vertical one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },
@@ -141,7 +155,7 @@ public partial class BitStackDemo
             Name = "HorizontalXs",
             Type = "bool?",
             DefaultValue = "null",
-            Description = "Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards: true lays the children out in a row and false in a column. The value keeps applying to every wider breakpoint until another one replaces it, and Horizontal is the base of that chain."
+            Description = "Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards: true lays the children out in a row and false in a column. The value keeps applying to every wider breakpoint until another one replaces it, and Horizontal is the base of that chain. HorizontalAlign and VerticalAlign follow the direction each breakpoint gives, so the stack is realigned along with it."
         },
         new()
         {
@@ -190,7 +204,14 @@ public partial class BitStackDemo
             Name = "NoShrink",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the stack at its natural size when its own container runs out of room, instead of letting it be squeezed, so the space has to come from its siblings instead."
+            Description = "Keeps the stack at its natural size when its own container runs out of room, instead of letting it be squeezed, so the space has to come from its siblings instead. Shrink is the same thing with a factor of its own and takes precedence over it."
+        },
+        new()
+        {
+            Name = "NoShrinkContent",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps every direct child of the stack at its natural size when the stack runs out of room, so what no longer fits overflows the stack - or moves onto another row, if Wrap was asked for - rather than being crushed into it. This is NoShrink applied to the children rather than to the stack itself."
         },
         new()
         {
@@ -224,6 +245,13 @@ public partial class BitStackDemo
         },
         new()
         {
+            Name = "Shrink",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Gets or sets how much of what its own container is short of this stack gives up compared to its siblings (the CSS flex-shrink factor). Every flex child answers for a factor of 1 by default, and NoShrink is this with the factor a layout reaches for most, zero."
+        },
+        new()
+        {
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
@@ -236,7 +264,7 @@ public partial class BitStackDemo
             Name = "VerticalAlign",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Gets or sets how the children of the stack are placed on the vertical axis. In a vertical stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a horizontal one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment.",
+            Description = "Gets or sets how the children of the stack are placed on the vertical axis. In a vertical stack that is the axis they are laid out along, so the space distributions apply and Baseline does not; in a horizontal one it is the axis across them, so Baseline and Stretch apply and the space distributions do not. A value that means nothing on the axis it lands on steps aside for Alignment. Which of the two axes this is follows the direction each breakpoint gives, so a stack that changes direction with the width of the window is realigned along with it.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },

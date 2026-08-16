@@ -54,15 +54,37 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     }
 }
 
+// EqualContent: the same axis, but with the content of the children taken out of the sum, so what they hold no
+// longer decides how much of it each of them gets. Declared after GrowContent, which it is the stricter form of.
+.bit-stc-eqc {
+    > * {
+        flex: 1 1 0;
+    }
+}
+
+// NoShrinkContent: the children are taken out of being squeezed below their content when the stack runs out of
+// room, so what no longer fits overflows the stack - or wraps, if it was told it may - instead of being crushed.
+.bit-stc-nsc {
+    > * {
+        flex-shrink: 0;
+    }
+}
+
 /*
- * The direction of a stack that changes it with the width of the window. Each per breakpoint property falls back to
- * the breakpoint below it rather than to the base value, which is what makes them mobile first: a direction set for
- * sm keeps applying to md, lg, xl and xxl until one of those replaces it. The BitStack component only declares the
- * breakpoints that were actually asked for, and this chain fills in all the others.
+ * The direction of a stack that changes it with the width of the window, and the two alignments that follow it. Each
+ * per breakpoint property falls back to the breakpoint below it rather than to the base value, which is what makes
+ * them mobile first: a direction set for sm keeps applying to md, lg, xl and xxl until one of those replaces it. The
+ * BitStack component only declares the breakpoints that were actually asked for, and this chain fills in all the others.
  *
- * The direction being painted is handed on as a single property of its own, which the media queries below point at
- * whichever breakpoint currently applies. Every one of these is redeclared here rather than inherited, so a stack
- * nested inside a responsive one is laid out by its own direction and never by the direction of its parent.
+ * The three being painted are handed on as properties of their own, which the media queries below point at whichever
+ * breakpoint currently applies. Every one of these is redeclared here rather than inherited, so a stack nested inside
+ * a responsive one is laid out by its own direction and never by the direction of its parent.
+ *
+ * Which of the two named alignments of the component reaches align-items and which reaches justify-content is decided
+ * per breakpoint, since the axis each of them names is the cross axis at one direction and the main axis at the other.
+ * A breakpoint whose alignment means nothing on the axis it lands on is handed the initial value of the property, which
+ * is the guaranteed-invalid one, so the two fallbacks below are what such a breakpoint - and a stack that was told no
+ * alignment at all - ends up being laid out by.
  */
 .bit-stc-rsp {
     --bit-stc-dir-xs: var(--bit-stc-dir);
@@ -72,15 +94,35 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     --bit-stc-dir-xl: var(--bit-stc-dir-lg);
     --bit-stc-dir-xxl: var(--bit-stc-dir-xl);
 
+    --bit-stc-ai-xs: var(--bit-stc-ai);
+    --bit-stc-ai-sm: var(--bit-stc-ai-xs);
+    --bit-stc-ai-md: var(--bit-stc-ai-sm);
+    --bit-stc-ai-lg: var(--bit-stc-ai-md);
+    --bit-stc-ai-xl: var(--bit-stc-ai-lg);
+    --bit-stc-ai-xxl: var(--bit-stc-ai-xl);
+
+    --bit-stc-jc-xs: var(--bit-stc-jc);
+    --bit-stc-jc-sm: var(--bit-stc-jc-xs);
+    --bit-stc-jc-md: var(--bit-stc-jc-sm);
+    --bit-stc-jc-lg: var(--bit-stc-jc-md);
+    --bit-stc-jc-xl: var(--bit-stc-jc-lg);
+    --bit-stc-jc-xxl: var(--bit-stc-jc-xl);
+
     --bit-stc-dir-now: var(--bit-stc-dir-xs);
+    --bit-stc-ai-now: var(--bit-stc-ai-xs);
+    --bit-stc-jc-now: var(--bit-stc-jc-xs);
 
     flex-direction: var(--bit-stc-dir-now);
+    align-items: var(--bit-stc-ai-now, flex-start);
+    justify-content: var(--bit-stc-jc-now, flex-start);
 }
 
 @each $name, $breakpoint in $bit-stc-breakpoints {
     @media (min-width: $breakpoint) {
         .bit-stc-rsp {
             --bit-stc-dir-now: var(--bit-stc-dir-#{$name});
+            --bit-stc-ai-now: var(--bit-stc-ai-#{$name});
+            --bit-stc-jc-now: var(--bit-stc-jc-#{$name});
         }
     }
 }

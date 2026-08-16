@@ -47,9 +47,19 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     public bool? AutoWidth { get; set; }
 
     /// <summary>
+    /// Gets or sets the size this stack starts from before the leftover space of its own container is shared out.
+    /// </summary>
+    public string? Basis { get; set; }
+
+    /// <summary>
     /// Gets or sets the custom html element used for the root node. The default is "div".
     /// </summary>
     public string? Element { get; set; }
+
+    /// <summary>
+    /// Gives every direct child of the stack an equal share of the axis they are laid out along, whatever each of them holds.
+    /// </summary>
+    public bool? EqualContent { get; set; }
 
     /// <summary>
     /// Expands the direct children of the stack across the axis they are not laid out along.
@@ -147,6 +157,11 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     public bool? NoShrink { get; set; }
 
     /// <summary>
+    /// Keeps every direct child of the stack at its natural size when the stack runs out of room, instead of letting them be squeezed.
+    /// </summary>
+    public bool? NoShrinkContent { get; set; }
+
+    /// <summary>
     /// Gets or sets the position of the stack among the children of its own container.
     /// </summary>
     public int? Order { get; set; }
@@ -165,6 +180,11 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     /// Gets or sets how the stack itself is placed across the axis of its own container.
     /// </summary>
     public BitAlignment? Self { get; set; }
+
+    /// <summary>
+    /// Gets or sets how much of what its own container is short of this stack gives up compared to its siblings.
+    /// </summary>
+    public string? Shrink { get; set; }
 
     /// <summary>
     /// Gets or sets the spacing between the children of the stack, picked from the spacing scale of the theme.
@@ -245,9 +265,23 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
+        if (Basis.HasValue() && bitStack.HasNotBeenSet(nameof(Basis)))
+        {
+            bitStack.Basis = Basis;
+
+            bitStack.StyleBuilder.Reset();
+        }
+
         if (Element.HasValue() && bitStack.HasNotBeenSet(nameof(Element)))
         {
             bitStack.Element = Element;
+        }
+
+        if (EqualContent.HasValue && bitStack.HasNotBeenSet(nameof(EqualContent)))
+        {
+            bitStack.EqualContent = EqualContent.Value;
+
+            bitStack.ClassBuilder.Reset();
         }
 
         if (FillContent.HasValue && bitStack.HasNotBeenSet(nameof(FillContent)))
@@ -391,6 +425,13 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
+        if (NoShrinkContent.HasValue && bitStack.HasNotBeenSet(nameof(NoShrinkContent)))
+        {
+            bitStack.NoShrinkContent = NoShrinkContent.Value;
+
+            bitStack.ClassBuilder.Reset();
+        }
+
         if (Order.HasValue && bitStack.HasNotBeenSet(nameof(Order)))
         {
             bitStack.Order = Order.Value;
@@ -415,6 +456,13 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
         if (Self.HasValue && bitStack.HasNotBeenSet(nameof(Self)))
         {
             bitStack.Self = Self.Value;
+
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (Shrink.HasValue() && bitStack.HasNotBeenSet(nameof(Shrink)))
+        {
+            bitStack.Shrink = Shrink;
 
             bitStack.StyleBuilder.Reset();
         }

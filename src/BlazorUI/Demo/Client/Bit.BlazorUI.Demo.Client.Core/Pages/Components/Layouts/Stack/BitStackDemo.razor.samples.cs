@@ -44,7 +44,7 @@ public partial class BitStackDemo
     private readonly string example2RazorCode = @"
 <BitSlider Label=""Gap between items"" Max=""5"" ValueFormat=""0.0 rem"" Step=""0.1"" @bind-Value=""@gap"" />
 
-<BitStack Gap=""@($""{gap}rem"")"" Class=""stack"">
+<BitStack Gap=""@($""{gap.ToString(CultureInfo.InvariantCulture)}rem"")"" Class=""stack"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
@@ -113,6 +113,10 @@ private double gap = 1;
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack Alignment=""BitAlignment.Center"" Class=""stack"" Style=""height:8rem"">
+    <div class=""item"">Centered</div>
 </BitStack>";
     private readonly string example3CsharpCode = @"
 private bool isReversed;
@@ -124,7 +128,7 @@ private BitAlignment horizontalAlign;
 
     private readonly string example4RazorCode = @"
 <style>
-    .box {
+    .square {
         color: white;
         display: flex;
         width: 3.5rem;
@@ -152,14 +156,14 @@ private BitAlignment horizontalAlign;
 
 <BitToggle @bind-Value=""isWrapReversed"" Text=""Wrap reverse"" />
 
-<BitStack Wrap=""@(isWrapReversed is false)""
+<BitStack Wrap
           WrapReverse=""isWrapReversed""
           AlignContent=""alignContent""
           Class=""stack""
-          Style=""@($""height:{stackHeight}rem"")"">
+          Style=""@($""height:{stackHeight.ToString(CultureInfo.InvariantCulture)}rem"")"">
     @for (int i = 1; i <= 20; i++)
     {
-        <div class=""box"">@i</div>
+        <div class=""square"">@i</div>
     }
 </BitStack>";
     private readonly string example4CsharpCode = @"
@@ -176,6 +180,16 @@ private BitAlignment alignContent;
 </BitStack>
 
 <BitStack Horizontal HorizontalLg=""false"" Class=""stack"">
+    <div class=""item"">Item 1</div>
+    <div class=""item"">Item 2</div>
+    <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack HorizontalMd
+          Class=""stack""
+          VerticalAlign=""BitAlignment.Center""
+          HorizontalAlign=""BitAlignment.SpaceBetween""
+          Style=""height:12rem"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
@@ -197,6 +211,26 @@ private BitAlignment alignContent;
 </BitStack>";
 
     private readonly string example7RazorCode = @"
+<style>
+    .square {
+        color: white;
+        display: flex;
+        width: 3.5rem;
+        height: 3.5rem;
+        align-items: center;
+        justify-content: center;
+        background-color: #0078d4;
+    }
+
+    .host {
+        padding: 0.5rem;
+        overflow: hidden;
+        box-sizing: border-box;
+        border: 1px dashed gray;
+    }
+</style>
+
+
 <BitStack FillContent Class=""stack"" Style=""width:20rem"">
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
@@ -205,7 +239,13 @@ private BitAlignment alignContent;
 
 <BitStack Horizontal GrowContent Class=""stack"">
     <div class=""item"">Item 1</div>
-    <div class=""item"">A longer item 2</div>
+    <div class=""item"">A much longer item 2</div>
+    <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack Horizontal EqualContent Class=""stack"">
+    <div class=""item"">Item 1</div>
+    <div class=""item"">A much longer item 2</div>
     <div class=""item"">Item 3</div>
 </BitStack>
 
@@ -213,6 +253,20 @@ private BitAlignment alignContent;
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack Horizontal Gap=""0.5rem"" Class=""host"" AutoHeight Style=""width:20rem"">
+    @for (int i = 1; i <= 8; i++)
+    {
+        <div class=""square"">@i</div>
+    }
+</BitStack>
+
+<BitStack Horizontal NoShrinkContent Gap=""0.5rem"" Class=""host"" AutoHeight Style=""width:20rem"">
+    @for (int i = 1; i <= 8; i++)
+    {
+        <div class=""square"">@i</div>
+    }
 </BitStack>";
 
     private readonly string example8RazorCode = @"
@@ -248,6 +302,13 @@ private BitAlignment alignContent;
 
     private readonly string example9RazorCode = @"
 <style>
+    .host {
+        padding: 0.5rem;
+        overflow: hidden;
+        box-sizing: border-box;
+        border: 1px dashed gray;
+    }
+
     .resizable {
         resize: horizontal;
         overflow: auto;
@@ -267,6 +328,24 @@ private BitAlignment alignContent;
     <BitStack Grow=""3"" Class=""item"" AutoSize Alignment=""BitAlignment.Center"">Grow 3</BitStack>
     <BitStack Grow=""2"" Class=""item"" AutoSize Alignment=""BitAlignment.Center"">Grow 2</BitStack>
     <BitStack Grows Class=""item"" AutoSize Alignment=""BitAlignment.Center"">Grows</BitStack>
+</BitStack>
+
+<BitStack Horizontal Gap=""0.5rem"" Class=""host"" AutoHeight>
+    <BitStack Grows Class=""item"" AutoSize Alignment=""BitAlignment.Center"">One</BitStack>
+    <BitStack Grows Class=""item"" AutoSize Alignment=""BitAlignment.Center"">The second one</BitStack>
+    <BitStack Grows Class=""item"" AutoSize Alignment=""BitAlignment.Center"">Three</BitStack>
+</BitStack>
+
+<BitStack Horizontal Gap=""0.5rem"" Class=""host"" AutoHeight>
+    <BitStack Grows Basis=""0"" Class=""item"" AutoSize Alignment=""BitAlignment.Center"">One</BitStack>
+    <BitStack Grows Basis=""0"" Class=""item"" AutoSize Alignment=""BitAlignment.Center"">The second one</BitStack>
+    <BitStack Grows Basis=""0"" Class=""item"" AutoSize Alignment=""BitAlignment.Center"">Three</BitStack>
+</BitStack>
+
+<BitStack Horizontal Gap=""0.5rem"" Class=""host"" AutoHeight Style=""width:24rem"">
+    <BitStack Shrink=""3"" Class=""item squeezable"" AutoSize Style=""width:12rem"">Shrink 3</BitStack>
+    <BitStack Class=""item squeezable"" AutoSize Style=""width:12rem"">Default</BitStack>
+    <BitStack NoShrink Class=""item squeezable"" AutoSize Style=""width:12rem"">NoShrink</BitStack>
 </BitStack>
 
 <div class=""resizable"">

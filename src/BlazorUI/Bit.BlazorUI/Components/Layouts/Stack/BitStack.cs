@@ -13,12 +13,14 @@ namespace Bit.BlazorUI;
 /// <see cref="VerticalAlign"/> place those children on each of the two axes by name rather than by the flexbox property that happens
 /// to reach that axis, so the same parameter means the same thing whichever way the stack faces.
 /// <br />
-/// Everything else it does is one of three things. It sizes itself: <see cref="AutoWidth"/>, <see cref="FitWidth"/> and the rest
-/// replace the full width and height it takes by default. It behaves as a child of another flex container - a stack inside a stack -
-/// through <see cref="Grows"/>, <see cref="NoShrink"/>, <see cref="Self"/> and <see cref="Order"/>, which is what makes a nested
-/// stack the item of its parent as well as the container of its own children. And it answers to the width of the window through
-/// <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/>, which is the column-on-a-phone, row-on-a-desktop layout written as one
-/// parameter instead of a media query.
+/// Everything else it does is one of four things. It sizes its children: <see cref="FillContent"/> across the axis they are laid out
+/// on, and <see cref="GrowContent"/>, <see cref="EqualContent"/> and <see cref="NoShrinkContent"/> along it. It sizes itself:
+/// <see cref="AutoWidth"/>, <see cref="FitWidth"/> and the rest replace the full width and height it takes by default. It behaves as
+/// a child of another flex container - a stack inside a stack - through <see cref="Grows"/>, <see cref="Basis"/>,
+/// <see cref="NoShrink"/>, <see cref="Self"/> and <see cref="Order"/>, which is what makes a nested stack the item of its parent as
+/// well as the container of its own children. And it answers to the width of the window through <see cref="HorizontalXs"/> to
+/// <see cref="HorizontalXxl"/>, which is the column-on-a-phone, row-on-a-desktop layout - alignment included - written as a parameter
+/// instead of a media query.
 /// </remarks>
 public partial class BitStack : BitComponentBase
 {
@@ -106,6 +108,21 @@ public partial class BitStack : BitComponentBase
     public bool AutoWidth { get; set; }
 
     /// <summary>
+    /// Gets or sets the size this stack starts from before the leftover space of its own container is shared out (the CSS flex-basis).
+    /// </summary>
+    /// <remarks>
+    /// This describes the stack as a child of another flex container, and it is the size the parent begins with rather than the one
+    /// it ends up at: what <see cref="Grow"/> adds and what shrinking takes away are both counted from here. It is a length along the
+    /// axis of the parent, so it is a width inside a row and a height inside a column.
+    /// <br />
+    /// A basis of <c>0</c> is the one every layout reaches for: it takes the content of the stack out of the sum, so several stacks
+    /// that also grow end up the same size as each other however much each of them holds, which is how a row of equal columns is
+    /// built. The default is <c>auto</c>, which starts from the content.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Basis { get; set; }
+
+    /// <summary>
     /// The content of the stack.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -120,6 +137,20 @@ public partial class BitStack : BitComponentBase
     /// technologies - so a landmark element given here is worth pairing with an <see cref="BitComponentBase.AriaLabel"/> that names it.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
+
+    /// <summary>
+    /// Gives every direct child of the stack an equal share of the axis they are laid out along, whatever each of them holds.
+    /// </summary>
+    /// <remarks>
+    /// The content of the children is taken out of the sum, so a row of three ends up in exact thirds however much longer the label
+    /// of one of them is. That is the difference from <see cref="GrowContent"/>, which lays the children out at their natural size
+    /// first and only shares out what is left over, leaving a child that holds more larger than one that holds less.
+    /// <br />
+    /// This is the axis the children are laid out along, and it combines with <see cref="FillContent"/> on the axis across them.
+    /// A child that has to keep its own size - an icon or a fixed column - is what <see cref="NoShrinkContent"/> is for instead.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool EqualContent { get; set; }
 
     /// <summary>
     /// Expands the direct children of the stack across the axis they are not laid out along.
@@ -207,6 +238,9 @@ public partial class BitStack : BitComponentBase
     /// out between them equally. A stack that has nothing left over is unchanged, which is why this is the shortest way to a row of
     /// buttons or of tabs that fills its line however many of them there are.
     /// <br />
+    /// The children keep the size their content gives them and only the leftover is shared, so a child that holds more stays larger
+    /// than one that holds less. <see cref="EqualContent"/> is the version that ends in equal shares instead.
+    /// <br />
     /// This is the axis the children are laid out along. Expanding them across the other one is what <see cref="FillContent"/> does,
     /// and the two combine.
     /// </remarks>
@@ -244,6 +278,11 @@ public partial class BitStack : BitComponentBase
     /// Baseline and Stretch apply and the space distributions are meaningless. A value that means nothing on the axis it lands on
     /// steps aside for <see cref="Alignment"/>.
     /// <br />
+    /// Whether this is the axis the children are laid out along follows the direction the stack currently has, so a stack that
+    /// changes direction with the width of the window through <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/> is realigned
+    /// at each of those breakpoints: the same parameter keeps placing the children on the horizontal axis at every width, and which
+    /// of its values are meaningful there is decided per breakpoint.
+    /// <br />
     /// When neither this nor <see cref="Alignment"/> is set, the children are packed against the start edge of the stack.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
@@ -271,6 +310,10 @@ public partial class BitStack : BitComponentBase
     /// <br />
     /// <see cref="Horizontal"/> is the base of that chain and is what applies at any breakpoint none of these reach.
     /// <see cref="Reversed"/> is not part of it: a reversed stack is reversed at every width.
+    /// <br />
+    /// <see cref="HorizontalAlign"/> and <see cref="VerticalAlign"/> follow the direction each breakpoint gives, so they keep naming
+    /// the same axis of the screen at every width and the stack is realigned along with it - a column centered across the page that
+    /// becomes a row spread along it is those two parameters and this one, and nothing else.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool? HorizontalXs { get; set; }
@@ -342,7 +385,8 @@ public partial class BitStack : BitComponentBase
     /// <remarks>
     /// A flex child is shrunk below its content before the container is allowed to overflow, which is what silently squashes the
     /// label of a button or the icon at the end of a toolbar. This takes the stack out of that, and the room has to come from its
-    /// siblings instead.
+    /// siblings instead. <see cref="Shrink"/> is the same thing with a factor of its own, and <see cref="NoShrinkContent"/> is this
+    /// one applied to the children of the stack rather than to the stack itself.
     /// <br />
     /// The opposite problem - a nested stack that refuses to shrink far enough for the text inside it to be truncated with an
     /// ellipsis - is the automatic minimum size of a flex child, which is undone with a <c>min-width:0</c> through
@@ -350,6 +394,21 @@ public partial class BitStack : BitComponentBase
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public bool NoShrink { get; set; }
+
+    /// <summary>
+    /// Keeps every direct child of the stack at its natural size when the stack runs out of room, instead of letting them be squeezed.
+    /// </summary>
+    /// <remarks>
+    /// The children of a flex container are shrunk below their content before the container is allowed to overflow, which is what
+    /// silently squashes the labels of a toolbar and the icons at the end of it. This takes all of them out of that at once, so what
+    /// no longer fits overflows the stack - or moves onto another row, if <see cref="Wrap"/> was asked for - rather than being
+    /// crushed into it.
+    /// <br />
+    /// <see cref="NoShrink"/> is the same thing for the stack itself within its own container, and a single child that has to keep
+    /// its size while the rest give way is a nested stack with that parameter rather than this one.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool NoShrinkContent { get; set; }
 
     /// <summary>
     /// Gets or sets the position of the stack among the children of its own container (the CSS order).
@@ -406,6 +465,19 @@ public partial class BitStack : BitComponentBase
     public BitAlignment? Self { get; set; }
 
     /// <summary>
+    /// Gets or sets how much of what its own container is short of this stack gives up compared to its siblings (the CSS flex-shrink factor).
+    /// </summary>
+    /// <remarks>
+    /// This describes the stack as a child of another flex container, and it is the other half of <see cref="Grow"/>: one says how
+    /// leftover room is shared out and this one says how a shortage is. Every flex child answers for a factor of 1 by default, so two
+    /// nested stacks with the factors "1" and "3" give up a quarter and three quarters of whatever their row is short.
+    /// <br />
+    /// <see cref="NoShrink"/> is this with the factor a layout reaches for most, zero, and this takes precedence over it.
+    /// </remarks>
+    [Parameter, ResetStyleBuilder]
+    public string? Shrink { get; set; }
+
+    /// <summary>
     /// Gets or sets the spacing between the children of the stack, picked from the spacing scale of the theme.
     /// </summary>
     /// <remarks>
@@ -426,6 +498,11 @@ public partial class BitStack : BitComponentBase
     /// distributions apply and Baseline is meaningless. In a horizontal stack it is the axis across them, so Start, Center, End,
     /// Baseline and Stretch apply and the space distributions are meaningless. A value that means nothing on the axis it lands on
     /// steps aside for <see cref="Alignment"/>.
+    /// <br />
+    /// Whether this is the axis the children are laid out along follows the direction the stack currently has, so a stack that
+    /// changes direction with the width of the window through <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/> is realigned
+    /// at each of those breakpoints: the same parameter keeps placing the children on the vertical axis at every width, and which of
+    /// its values are meaningful there is decided per breakpoint.
     /// <br />
     /// When neither this nor <see cref="Alignment"/> is set, the children are packed against the start edge of the stack.
     /// </remarks>
@@ -481,6 +558,10 @@ public partial class BitStack : BitComponentBase
 
         ClassBuilder.Register(() => GrowContent ? "bit-stc-grc" : string.Empty);
 
+        ClassBuilder.Register(() => EqualContent ? "bit-stc-eqc" : string.Empty);
+
+        ClassBuilder.Register(() => NoShrinkContent ? "bit-stc-nsc" : string.Empty);
+
         // The full width and height a stack takes by default would leave an inline one inline in name only, so the
         // sizing is handed back to the content. It is a class rather than an inline style so that an explicit size,
         // whether it comes from Style or from the Fit and Auto parameters, still outranks it.
@@ -523,15 +604,30 @@ public partial class BitStack : BitComponentBase
         StyleBuilder.Register(() => HorizontalGap.HasValue() ? $"column-gap:{HorizontalGap}" : string.Empty);
         StyleBuilder.Register(() => VerticalGap.HasValue() ? $"row-gap:{VerticalGap}" : string.Empty);
 
-        StyleBuilder.Register(() => _AlignItems.HasValue ? $"align-items:{_AlignmentMap[_AlignItems.Value]}" : string.Empty);
+        // The two alignments of a stack that never changes direction are written straight onto the element. A
+        // responsive one hands over what each breakpoint resolves to instead, since an inline align-items would
+        // outrank the media queries - and since which of the two axes each of them reaches, and which of their
+        // values mean anything on it, is a different answer at every breakpoint the direction changes at.
+        StyleBuilder.Register(() => IsResponsive ? string.Empty : GetAlignment("align-items", _AlignItems));
+        StyleBuilder.Register(() => IsResponsive ? string.Empty : GetAlignment("justify-content", _JustifyContent));
 
-        StyleBuilder.Register(() => _JustifyContent.HasValue ? $"justify-content:{_AlignmentMap[_JustifyContent.Value]}" : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars(string.Empty, Horizontal) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("xs", HorizontalXs) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("sm", HorizontalSm) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("md", HorizontalMd) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("lg", HorizontalLg) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("xl", HorizontalXl) : string.Empty);
+        StyleBuilder.Register(() => IsResponsive ? GetAlignmentVars("xxl", HorizontalXxl) : string.Empty);
 
+        // align-content places the rows of a wrapping stack across it, which is the same axis whichever way the
+        // stack faces, so unlike the two above it is never resolved per breakpoint.
         StyleBuilder.Register(() => _AlignContent.HasValue ? $"align-content:{_AlignmentMap[_AlignContent.Value]}" : string.Empty);
 
         StyleBuilder.Register(() => (Grow.HasValue() || Grows) ? $"flex-grow:{(Grow.HasValue() ? Grow : "1")}" : string.Empty);
 
-        StyleBuilder.Register(() => NoShrink ? "flex-shrink:0" : string.Empty);
+        StyleBuilder.Register(() => (Shrink.HasValue() || NoShrink) ? $"flex-shrink:{(Shrink.HasValue() ? Shrink : "0")}" : string.Empty);
+
+        StyleBuilder.Register(() => Basis.HasValue() ? $"flex-basis:{Basis}" : string.Empty);
 
         StyleBuilder.Register(() => _AlignSelf.HasValue ? $"align-self:{_AlignmentMap[_AlignSelf.Value]}" : string.Empty);
 
@@ -591,11 +687,15 @@ public partial class BitStack : BitComponentBase
     // The axis the children are laid out along is reached by justify-content and the one across them by align-items,
     // and which of the two named alignments reaches which of them depends on the way the stack faces. Reversing the
     // stack does not enter into it: the two properties follow the direction, so their start edge moves with it.
-    private BitAlignment? _AlignItems => GetCrossAlignment(Horizontal ? VerticalAlign : HorizontalAlign)
-                                      ?? GetCrossAlignment(Alignment);
+    private BitAlignment? _AlignItems => GetAlignItems(Horizontal);
 
-    private BitAlignment? _JustifyContent => GetMainAlignment(Horizontal ? HorizontalAlign : VerticalAlign)
-                                          ?? GetMainAlignment(Alignment);
+    private BitAlignment? _JustifyContent => GetJustifyContent(Horizontal);
+
+    private BitAlignment? GetAlignItems(bool horizontal) => GetCrossAlignment(horizontal ? VerticalAlign : HorizontalAlign)
+                                                         ?? GetCrossAlignment(Alignment);
+
+    private BitAlignment? GetJustifyContent(bool horizontal) => GetMainAlignment(horizontal ? HorizontalAlign : VerticalAlign)
+                                                             ?? GetMainAlignment(Alignment);
 
     // align-content places the rows of a wrapping stack, so every member but Baseline - which a flex container has no
     // baseline behavior for - means something to it.
@@ -617,6 +717,41 @@ public partial class BitStack : BitComponentBase
     private static BitAlignment? GetMainAlignment(BitAlignment? alignment)
     {
         return alignment is BitAlignment.Baseline ? null : alignment;
+    }
+
+    private static string GetAlignment(string property, BitAlignment? alignment)
+    {
+        return alignment.HasValue ? $"{property}:{_AlignmentMap[alignment.Value]}" : string.Empty;
+    }
+
+    // The pair of alignments a single direction of a responsive stack resolves to, as the two custom properties the
+    // stylesheet points the element at while that direction applies. A breakpoint that was not asked for declares
+    // nothing at all and is chained to the one below it there, exactly as the direction itself is.
+    //
+    // A breakpoint that was asked for always declares both, because the two are resolved from the direction and a
+    // direction that changes can turn an alignment that meant something into one that means nothing - which has to
+    // undo whatever the breakpoint below handed up rather than let it through. The initial value of a custom property
+    // is the guaranteed-invalid one, so declaring that is what empties the rest of the chain and leaves the stack at
+    // the start edge it falls back to.
+    private string GetAlignmentVars(string breakpoint, bool? horizontal)
+    {
+        if (horizontal.HasValue is false) return string.Empty;
+
+        // A stack that was told no alignment at all declares none of this: the chain is then empty from end to
+        // end and the stylesheet lays the stack out by the start edge of both axes, which is what it falls back to.
+        if (HorizontalAlign.HasValue is false && VerticalAlign.HasValue is false && Alignment.HasValue is false) return string.Empty;
+
+        var suffix = breakpoint.HasValue() ? $"-{breakpoint}" : string.Empty;
+
+        var alignItems = GetAlignmentVar($"--bit-stc-ai{suffix}", GetAlignItems(horizontal.Value));
+        var justifyContent = GetAlignmentVar($"--bit-stc-jc{suffix}", GetJustifyContent(horizontal.Value));
+
+        return $"{alignItems};{justifyContent}";
+    }
+
+    private static string GetAlignmentVar(string variable, BitAlignment? alignment)
+    {
+        return $"{variable}:{(alignment.HasValue ? _AlignmentMap[alignment.Value] : "initial")}";
     }
 
     private string GetDirection(bool horizontal)

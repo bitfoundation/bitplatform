@@ -20,6 +20,7 @@
     // an outline, so what is being demonstrated is the inner stacks and not the container.
     .host {
         padding: 0.5rem;
+
         // What no longer fits is what several of these examples are about, so the box that is being run
         // out of has to keep the overflow rather than push the page sideways.
         overflow: hidden;
@@ -35,8 +36,9 @@
     }
 
     // Square children for the wrapping example, where the point is how many fit on a row rather than
-    // what each of them says.
-    .box {
+    // what each of them says. Named away from `box`, which is what DemoExample calls the section each
+    // example is rendered in - a ::deep rule here reaches those too and would restyle every example.
+    .square {
         color: white;
         display: flex;
         width: 3.5rem;
