@@ -23,11 +23,12 @@ namespace ButilManualTests;
 /// </remarks>
 internal static class Program
 {
-    /// <summary>Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these.</summary>
+    /// <summary>
+    /// Butil services <see cref="ConsumerComponent"/> injects - trimming must keep these, and must remove
+    /// every other <see cref="ButilServiceAttribute"/> class, since this list is the whole of what the
+    /// project references.
+    /// </summary>
     private static readonly string[] MustSurvive = ["Clipboard", "Cookie", "Geolocation", "LocalStorage", "Window"];
-
-    /// <summary>Butil services nothing in this project references - trimming must remove these.</summary>
-    private static readonly string[] MustBeTrimmed = ["Fetch", "IndexedDb", "MediaRecorder", "SpeechSynthesis", "WebAuthn"];
 
     /// <summary>
     /// Where the untrimmed run records the service roster and the interop contract for the trimmed run to
@@ -103,13 +104,13 @@ internal static class Program
         }
         Console.WriteLine();
 
-        // The two lists above are names, and a renamed service leaves behind a name that matches nothing.
+        // The list above is names, and a renamed service leaves behind a name that matches nothing.
         // Checking them against the roster of services that genuinely exist turns that into a plain "unknown
         // name" failure rather than a check that silently stops asserting anything.
         var roster = trimmed ? manifest?.ServiceNames.ToHashSet(StringComparer.Ordinal) : discoveredNames;
         if (roster is not null)
         {
-            foreach (var name in MustSurvive.Concat(MustBeTrimmed).Where(name => roster.Contains(name) is false))
+            foreach (var name in MustSurvive.Where(name => roster.Contains(name) is false))
             {
                 failures.Add(trimmed
                     ? $"{name} is an expected Butil service name but the untrimmed capture in {ManifestFileName} has no such service - the name here is stale (renamed or removed), or the manifest is."
@@ -124,10 +125,15 @@ internal static class Program
                 failures.Add($"{name} is used by ConsumerComponent but did not survive trimming.");
             }
 
-            var unexpected = MustBeTrimmed.Where(name => discoveredNames.Contains(name)).ToArray();
+            // Every survivor, not a hand-picked sample of the ones expected to go: a sampled list only ever
+            // fails for the names someone thought to put in it, so a service that starts surviving for a
+            // reason nobody anticipated - a new unconditional reference, a DynamicDependency added in
+            // passing - goes unreported. ConsumerComponent references exactly MustSurvive, so anything else
+            // still here is either a trimming regression or a reference added without updating that list.
+            var unexpected = discoveredNames.Except(MustSurvive, StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToArray();
             if (unexpected.Length > 0)
             {
-                failures.Add($"unused services survived trimming: {string.Join(", ", unexpected)}");
+                failures.Add($"services nothing in this project references survived trimming: {string.Join(", ", unexpected)}");
             }
         }
 
