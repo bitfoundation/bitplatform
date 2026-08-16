@@ -28,7 +28,7 @@ namespace ButilManualTests;
 /// <c>LinkerFlags.JsonSerialized</c>. This class is what verifies that claim on real output rather than
 /// taking it on trust.
 /// </remarks>
-internal sealed record TypeContract(string TypeName, bool IsCallbackTarget, bool IsPayload, int PublicConstructors, string[] JSInvokableMethods, string[] PublicProperties)
+internal sealed record TypeContract(string TypeName, bool IsCallbackTarget, bool IsPayload, int PublicConstructors, string[] JSInvokableIdentifiers, string[] PublicProperties)
 {
     public string Serialize()
         => string.Join('|',
@@ -36,7 +36,7 @@ internal sealed record TypeContract(string TypeName, bool IsCallbackTarget, bool
             IsCallbackTarget ? "J" : "-",
             IsPayload ? "P" : "-",
             PublicConstructors.ToString(),
-            string.Join(',', JSInvokableMethods),
+            string.Join(',', JSInvokableIdentifiers),
             string.Join(',', PublicProperties));
 
     public static TypeContract? Deserialize(string line)
@@ -77,6 +77,17 @@ internal static class InteropContract
     private const string ServicesPrefix = "@services|";
 
     /// <summary>
+    /// Marks the completion record the manifest ends with, carrying the number of type contracts written.
+    /// </summary>
+    /// <remarks>
+    /// A truncated or hand-edited manifest is the one corruption a reader cannot otherwise notice: the
+    /// contracts that failed to parse are precisely the ones that would have been checked, so dropping
+    /// them leaves the trimmed run reporting PASS having verified less than it claims - the same
+    /// verified-nothing outcome a missing manifest is already treated as a failure to avoid.
+    /// </remarks>
+    private const string CountPrefix = "@count|";
+
+    /// <summary>
     /// Builds the contract for an assembly: every type carrying <c>[JSInvokable]</c> methods, plus the
     /// payload types the harness genuinely round-trips and everything nested inside them.
     /// </summary>
@@ -93,15 +104,7 @@ internal static class InteropContract
         {
             if (type.IsGenericTypeDefinition) continue;
 
-            // inherit: true so an override of a [JSInvokable] base method counts - JS dispatches it by name
-            // either way, and only the most derived declaration comes back from GetMethods.
-            var jsInvokable = type
-                .GetMethods(PublicMembers)
-                .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: true))
-                .Select(method => method.Name)
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(name => name, StringComparer.Ordinal)
-                .ToArray();
+            var jsInvokable = DispatchIdentifiers(type);
 
             var isPayload = payloads.Contains(type);
             if (jsInvokable.Length == 0 && isPayload is false) continue;
@@ -141,13 +144,15 @@ internal static class InteropContract
                 continue;
             }
 
-            if (contract.IsCallbackTarget) callbackTargets.Add($"{type.Name}({contract.JSInvokableMethods.Length})");
+            if (contract.IsCallbackTarget) callbackTargets.Add($"{type.Name}({contract.JSInvokableIdentifiers.Length})");
             if (contract.IsPayload) payloads.Add($"{type.Name}({contract.PublicProperties.Length})");
 
-            var methods = type.GetMethods(PublicMembers).Select(method => method.Name).ToHashSet(StringComparer.Ordinal);
-            foreach (var missing in contract.JSInvokableMethods.Where(name => methods.Contains(name) is false))
+            // Compared against the identifiers that still resolve, not against surviving method names: a
+            // method whose [JSInvokable] was stripped is just as unreachable from JS as one that is gone.
+            var identifiers = DispatchIdentifiers(type).ToHashSet(StringComparer.Ordinal);
+            foreach (var missing in contract.JSInvokableIdentifiers.Where(identifier => identifiers.Contains(identifier) is false))
             {
-                failures.Add($"{contract.TypeName}.{missing} is [JSInvokable] but was trimmed away while its type survived - JS would dispatch to a method that no longer exists.");
+                failures.Add($"{contract.TypeName}.{missing} is [JSInvokable] but no longer resolves while its type survived - the method or its attribute was trimmed away, so JS would dispatch to nothing.");
             }
 
             if (contract.IsPayload)
@@ -178,28 +183,113 @@ internal static class InteropContract
             builder.AppendLine(contract.Serialize());
         }
 
+        builder.AppendLine(CountPrefix + manifest.Types.Length);
+
         File.WriteAllText(path, builder.ToString());
     }
 
-    public static InteropManifest? Read(string path)
+    /// <summary>
+    /// Reads a manifest, or explains through <paramref name="error"/> why it cannot be trusted. Anything
+    /// short of a whole, well-formed file is rejected rather than salvaged: a partly-read manifest checks
+    /// a subset of the contract while still reporting PASS, which is worse than having no manifest at all.
+    /// </summary>
+    public static InteropManifest? Read(string path, out string? error)
     {
-        if (File.Exists(path) is false) return null;
+        error = null;
 
-        var lines = File.ReadAllLines(path).Where(line => line.Length > 0 && line.StartsWith('#') is false).ToArray();
+        if (File.Exists(path) is false)
+        {
+            error = $"no {path} in {Directory.GetCurrentDirectory()}";
+            return null;
+        }
 
-        var services = lines.FirstOrDefault(line => line.StartsWith(ServicesPrefix, StringComparison.Ordinal)) is { } line1
-            ? line1[ServicesPrefix.Length..].Split(',', StringSplitOptions.RemoveEmptyEntries)
-            : [];
+        var lines = File.ReadAllLines(path).Where(line => line.Length > 0 && line.StartsWith('#') is false);
 
-        var types = lines
-            .Where(line => line.StartsWith(ServicesPrefix, StringComparison.Ordinal) is false)
-            .Select(TypeContract.Deserialize)
-            .Where(contract => contract is not null)
-            .Select(contract => contract!)
-            .ToArray();
+        string[]? services = null;
+        int? declaredCount = null;
+        var types = new List<TypeContract>();
 
-        return new InteropManifest(services, types);
+        foreach (var line in lines)
+        {
+            if (line.StartsWith(ServicesPrefix, StringComparison.Ordinal))
+            {
+                services = line[ServicesPrefix.Length..].Split(',', StringSplitOptions.RemoveEmptyEntries);
+                continue;
+            }
+
+            if (line.StartsWith(CountPrefix, StringComparison.Ordinal))
+            {
+                if (int.TryParse(line[CountPrefix.Length..], out var parsed) is false)
+                {
+                    error = $"{path} ends with a malformed completion record: '{line}'";
+                    return null;
+                }
+
+                declaredCount = parsed;
+                continue;
+            }
+
+            if (TypeContract.Deserialize(line) is not { } contract)
+            {
+                error = $"{path} has a malformed type contract: '{line}'";
+                return null;
+            }
+
+            types.Add(contract);
+        }
+
+        if (services is null)
+        {
+            error = $"{path} carries no {ServicesPrefix} service roster";
+            return null;
+        }
+
+        if (declaredCount is null)
+        {
+            error = $"{path} carries no {CountPrefix} completion record, so it was truncated mid-write";
+            return null;
+        }
+
+        if (declaredCount != types.Count)
+        {
+            error = $"{path} declares {declaredCount} type contracts but {types.Count} were read, so it is incomplete";
+            return null;
+        }
+
+        // A roster on its own is not a contract: it would verify none of the [JSInvokable] callbacks or
+        // JSON payloads while every other check carried on reporting normally.
+        if (types.Count == 0)
+        {
+            error = $"{path} records no type contracts at all";
+            return null;
+        }
+
+        return new InteropManifest(services, [.. types]);
     }
+
+    /// <summary>
+    /// The names JS actually dispatches by: <see cref="JSInvokableAttribute.Identifier"/> where the
+    /// attribute sets one - which most of Bit.Butil's callbacks do, as
+    /// <c>[JSInvokable(InvokeMethodName)]</c> - and the method name otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Reading the attribute rather than the method name matters twice over. The identifier is what the
+    /// JS side names, so capturing <c>method.Name</c> would record something JS never asks for; and the
+    /// attribute is what <c>JSInterop</c> resolves through, so a method that survives trimming while its
+    /// attribute does not is no longer callable even though its name is still there.
+    /// <para>
+    /// <c>inherit: true</c> so an override of a <c>[JSInvokable]</c> base method counts - JS dispatches it
+    /// just the same, and only the most derived declaration comes back from <c>GetMethods</c>.
+    /// </para>
+    /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Measuring what the trimmer left behind is this harness's job.")]
+    private static string[] DispatchIdentifiers(Type type)
+        => [.. type.GetMethods(PublicMembers)
+            .Select(method => (method.Name, Attribute: method.GetCustomAttribute<JSInvokableAttribute>(inherit: true)))
+            .Where(entry => entry.Attribute is not null)
+            .Select(entry => entry.Attribute!.Identifier ?? entry.Name)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(identifier => identifier, StringComparer.Ordinal)];
 
     /// <summary>
     /// Expands the exercised payload roots to everything nested inside them, so a DTO that only appears as

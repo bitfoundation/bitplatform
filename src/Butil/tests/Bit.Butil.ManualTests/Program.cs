@@ -53,7 +53,7 @@ internal static class Program
         var assembly = typeof(BitButil).Assembly;
         var trimmed = File.Exists(Path.Combine(AppContext.BaseDirectory, TrimmedMarkerFileName));
         var mode = trimmed ? "TRIMMED" : "UNTRIMMED";
-        var manifest = InteropContract.Read(ManifestFileName);
+        var manifest = InteropContract.Read(ManifestFileName, out var manifestError);
 
         var services = new ServiceCollection();
         services.AddSingleton<IJSRuntime>(new StubJSRuntime());
@@ -132,7 +132,7 @@ internal static class Program
         }
 
         Console.WriteLine("--- interop contract ---");
-        VerifyInteropContract(assembly, trimmed, manifest, [.. discoveredNames], failures);
+        VerifyInteropContract(assembly, trimmed, manifest, manifestError, [.. discoveredNames], failures);
         Console.WriteLine();
 
         Console.WriteLine("--- activation ---");
@@ -179,7 +179,7 @@ internal static class Program
     /// Types the trimmer removed entirely are skipped, because that is the point of the exercise - only a
     /// type that survived while losing members it is reflected over is a defect.
     /// </remarks>
-    private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string[] serviceNames, List<string> failures)
+    private static void VerifyInteropContract(Assembly assembly, bool trimmed, InteropManifest? manifest, string? manifestError, string[] serviceNames, List<string> failures)
     {
         var contracts = InteropContract.Capture(assembly, ConsumerComponent.ExercisedPayloadTypes);
 
@@ -191,20 +191,22 @@ internal static class Program
             return;
         }
 
-        // A missing manifest is a failure rather than a skip: without it this half of the harness verifies
-        // nothing, and a run that verifies nothing must not be able to report PASS.
+        // A manifest that is missing - or present but unreadable - is a failure rather than a skip: without
+        // a whole one this half of the harness verifies nothing, and a run that verifies nothing must not
+        // be able to report PASS.
         if (manifest is null)
         {
-            Console.WriteLine($"  NOT VERIFIED - no {ManifestFileName} in {Directory.GetCurrentDirectory()}");
+            var reason = manifestError ?? $"no {ManifestFileName} in {Directory.GetCurrentDirectory()}";
+            Console.WriteLine($"  NOT VERIFIED - {reason}");
             Console.WriteLine("  run `dotnet run -c Release` from the project folder first, then re-run this executable from there");
-            failures.Add($"the interop contract was not checked at all: no {ManifestFileName} in {Directory.GetCurrentDirectory()} to compare the trimmed assembly against.");
+            failures.Add($"the interop contract was not checked at all: {reason} - nothing to compare the trimmed assembly against.");
             return;
         }
 
         var (callbackTargets, payloads, removedTypes, contractFailures) = InteropContract.Verify(assembly, manifest.Types);
         Console.WriteLine($"  {callbackTargets.Length + payloads.Length} surviving types checked, {removedTypes} trimmed away entirely, {contractFailures.Length} problems");
-        Console.WriteLine($"  [JSInvokable] targets intact (methods): {Format(callbackTargets)}");
-        Console.WriteLine($"  JSON payloads intact (properties)     : {Format(payloads)}");
+        Console.WriteLine($"  [JSInvokable] targets intact (identifiers): {Format(callbackTargets)}");
+        Console.WriteLine($"  JSON payloads intact (properties)        : {Format(payloads)}");
         failures.AddRange(contractFailures);
 
         static string Format(string[] names) => names.Length == 0 ? "none" : string.Join(", ", names);

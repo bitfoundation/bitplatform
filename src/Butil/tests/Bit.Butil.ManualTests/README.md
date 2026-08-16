@@ -38,8 +38,9 @@ rather than a service in its own right.)
 **Interop contract** ([`InteropContract.cs`](InteropContract.cs)). Registration only settles who gets
 *registered*. Two other things are resolved by name at runtime and would fail silently in the browser:
 
-- **`[JSInvokable]` callbacks**, which JS dispatches by method name through a `DotNetObjectReference` -
-  including ones on internal types a consumer never names.
+- **`[JSInvokable]` callbacks**, which JS dispatches through a `DotNetObjectReference` by the *identifier*
+  on the attribute - `[JSInvokable(InvokeMethodName)]`, as most of Bit.Butil writes it - falling back to
+  the method name where the attribute sets none. Including ones on internal types a consumer never names.
 - **JSON payload types**, whose constructors and properties `System.Text.Json` reflects over, so a
   trimmed-away property becomes a silently null field rather than an error.
 
@@ -49,8 +50,14 @@ are skipped - that is the feature working. Only a type that **survived while los
 reflected over** counts as a defect.
 
 Members are captured and verified *including inherited ones*, because interop sees a type whole: JS
-dispatches an inherited `[JSInvokable]` method by name just the same, and `System.Text.Json` serializes a
+dispatches an inherited `[JSInvokable]` method just the same, and `System.Text.Json` serializes a
 payload's inherited properties along with its own.
+
+Callbacks are verified through the attribute rather than the method name, so a method that survives while
+its `[JSInvokable]` does not counts as a defect - `JSInterop` resolves the attribute, and a name alone is
+not callable from JS. The manifest ends with an `@count|N` record giving the number of type contracts
+written; a file that fails to parse, or that reads back short of what it declares, is rejected outright
+rather than read partially, since the contracts that went missing are exactly the ones worth checking.
 
 ## How it knows which run it is
 
@@ -80,8 +87,9 @@ dotnet publish -c Release
 ./bin/Release/net10.0/<rid>/publish/Bit.Butil.ManualTests
 ```
 
-The untrimmed run has to come first: a trimmed run with no manifest to compare against **fails**, because
-it would otherwise report `PASS` having verified none of the interop contract.
+The untrimmed run has to come first: a trimmed run with no usable manifest to compare against **fails**,
+because it would otherwise report `PASS` having verified none of the interop contract - and a manifest
+read only partly would report `PASS` having verified less of it than the output claims.
 
 ## Reference results
 
@@ -103,9 +111,9 @@ assembly comes out at 30,720 bytes and 36 types.
 - **`X survived with no public constructor`** - `ButilServiceAttribute` lost the
   `[DynamicallyAccessedMembers(PublicConstructors)]` annotation on its type argument. The class stays
   in the app but DI can no longer activate it, which shows up in consumer apps only after publishing.
-- **`X.Y is [JSInvokable] but was trimmed away while its type survived`** - a JS callback would dispatch
-  to a method that no longer exists. Usually means a `DotNetObjectReference` was created through a path
-  that does not carry the `PublicMethods` annotation.
+- **`X.Y is [JSInvokable] but no longer resolves while its type survived`** - a JS callback would dispatch
+  to nothing, because either the method or its attribute is gone. Usually means a `DotNetObjectReference`
+  was created through a path that does not carry the `PublicMethods` annotation.
 - **`X.Y is part of a JSON interop payload but was trimmed away`** - an `Invoke<T>` overload lost its
   `LinkerFlags.JsonSerialized` annotation on `T`; the property would deserialize as null/default.
 - **`X is marked [ButilService] but was not registered`** - discovery in `AddBitButilServices` and the
@@ -117,7 +125,8 @@ assembly comes out at 30,720 bytes and 36 types.
   *Cannot provide a value for property*.
 - **`X is an expected Butil service name but ...`** - a name in `MustSurvive`/`MustBeTrimmed` no longer
   matches a service (usually a rename). Fix the list, or the check it belongs to is asserting nothing.
-- **`the interop contract was not checked at all`** - the trimmed run found no `interop-manifest.txt`.
+- **`the interop contract was not checked at all`** - the trimmed run found no `interop-manifest.txt`, or
+  found one it could not read whole (a malformed line, or fewer contracts than its `@count` record claims).
   Run `dotnet run -c Release` from the project folder first, then re-run the published executable there.
 - **`unused services survived trimming`** - something re-introduced a static reference to the whole
   service set (a hard-coded `AddScoped<T>()` list, a `Type[]` of all services, a `switch` over them).
