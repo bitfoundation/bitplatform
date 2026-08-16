@@ -189,6 +189,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "StructuredData",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the trail as a schema.org BreadcrumbList in a JSON-LD script next to it, which is what search engines read to show the hierarchy of the page in their results. The whole hierarchy is written, including the items the overflow menu holds, and the Href of each item is resolved against the base address of the app."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitBreadcrumbClassStyles?",
             DefaultValue = "null",

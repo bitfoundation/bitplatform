@@ -2,8 +2,9 @@
     <div>
         The breadcrumb renders a navigation landmark holding an ordered list of the Items. An item with an
         Href becomes a link, the item marked with IsSelected becomes the current page of the trail
-        (aria-current) and an item with IsEnabled set to false stays in the trail but is not actionable.
-        Setting Target on an item opens its link in another browsing context.
+        (aria-current) and an item with IsEnabled set to false stays in the trail but is not actionable
+        (aria-disabled). Setting Target on an item opens its link in another browsing context, in which case
+        the link is rendered with a rel of "noopener noreferrer".
     </div>
     <br /><br />
     <div class="example-box">
@@ -31,8 +32,9 @@
         MaxDisplayedItems caps how many items stay in the trail, the rest are collapsed behind an overflow
         button that opens them in a menu. OverflowIndex chooses where that button sits among the displayed
         items, so the first and the last steps of the hierarchy can be kept visible while the middle collapses.
-        The menu is reachable by keyboard: Enter, Space or the arrow keys open it, the arrow keys and
-        Home/End move inside it and Escape closes it back onto the button.
+        The collapsed steps open in a menu the keyboard drives: Enter, Space or the arrow keys open it, the
+        arrow keys and Home/End move inside it, typing a character jumps to the item that starts with it,
+        and Escape or Tab closes it back onto the button.
     </div>
     <br /><br />
     <div class="example-box">
@@ -240,7 +242,8 @@
         AutoCollapse measures the trail and moves the items that do not fit into the overflow menu, bringing
         them back as the room for them returns, so the breadcrumb always stays on a single line whatever the
         width of its container is. MaxDisplayedItems, when it is set, still caps how many items may stay in
-        the trail and OverflowIndex still decides where the overflow button sits.
+        the trail and OverflowIndex still decides where the overflow button sits, so setting it to 1 keeps
+        the root of the hierarchy visible and collapses the middle of the trail instead.
     </div>
     <br /><br />
     <div class="example-box">
@@ -250,10 +253,31 @@
                 <BitBreadcrumb Items="BreadcrumbItemsWithLongText" AutoCollapse />
             </div>
         </div>
+        <br />
+        <div>
+            <div>Overflow index (1): the first item stays, the middle collapses</div>
+            <div class="resizable-box">
+                <BitBreadcrumb Items="BreadcrumbItemsWithLongText" AutoCollapse OverflowIndex="1" />
+            </div>
+        </div>
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Structured Data" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>
+        StructuredData writes the trail next to the breadcrumb as a schema.org BreadcrumbList in a JSON-LD
+        script, which is what search engines read to show the hierarchy of a page in their results. The whole
+        hierarchy is written, the steps the overflow menu holds included, so what the crawlers are told does
+        not depend on how much of the trail fits the screen, and the Href of each item is resolved into an
+        absolute address. Inspect the elements of the page to see the script the breadcrumb below renders.
+    </div>
+    <br /><br />
+    <div class="example-box">
+        <BitBreadcrumb Items="BreadcrumbItems" StructuredData MaxDisplayedItems="3" OverflowIndex="2" />
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>Offering a range of specific colors for the items and the divider of the breadcrumb.</div>
     <br /><br />
     <div class="example-box">
@@ -292,7 +316,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>External icon libraries like FontAwesome can be used with the Icon parameter.</div>
 
     <br />
@@ -338,7 +362,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Size" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>Three sizes of the breadcrumb, driving the text and the overflow menu of the trail.</div>
     <br /><br />
     <div class="example-box">
@@ -357,7 +381,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+<DemoExample Title="Style & Class" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>
         The look of the breadcrumb is customizable at three levels: the Style and Class of the component,
         the Style and Class of a single item, and the Styles and Classes of every part of it (the root, the
@@ -390,7 +414,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="RTL" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>Use BitBreadcrumb in right-to-left (RTL) layouts, where the dividers and the overflow menu flip along with the text.</div>
     <br />
     <div class="example-box">

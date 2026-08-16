@@ -37,7 +37,11 @@
     }
 }
 
+// The trail is an ordered list for the semantics of the pattern, not for the look of one: the margins
+// and the markers a list comes with are dropped.
 .bit-brc-icn {
+    margin: 0;
+    list-style: none;
     padding-inline-start: 0;
 
     li {
@@ -56,8 +60,11 @@
     }
 }
 
+// A divider icon points the way the trail runs, so it is mirrored along with it in a RTL layout.
+// A text divider is not: a mirrored "/" is a different character.
 .bit-brc-div {
     color: var(--bit-brc-clr-div, #{$clr-fg-sec});
+    transform: var(--bit-brc-div-transform);
 }
 
 .bit-brc-dtx {
@@ -66,10 +73,6 @@
     color: var(--bit-brc-clr-div, #{$clr-fg-sec});
     font-size: var(--bit-brc-font-size, #{spacing(2.5)});
     line-height: var(--bit-brc-line-height, #{spacing(4.5)});
-}
-
-.bit-brc-trd {
-    transform: var(--bit-brc-div-transform);
 }
 
 .bit-brc-obt {
@@ -153,6 +156,7 @@
 
     ul {
         margin: 0;
+        list-style: none;
         padding-inline-start: 0;
     }
 }

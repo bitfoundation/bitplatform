@@ -1,3 +1,6 @@
+using System.Text;
+using System.Text.Json;
+
 namespace Bit.BlazorUI;
 
 /// <summary>
@@ -38,6 +41,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
 
 
@@ -183,6 +188,15 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// </summary>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
+
+    /// <summary>
+    /// Renders the trail as a schema.org BreadcrumbList in a JSON-LD script next to it, which is what
+    /// search engines read to show the hierarchy of the page in their results.
+    /// <br />
+    /// The whole hierarchy is written, including the items the overflow menu holds, and the Href of each
+    /// item is resolved against the base address of the app. It is off by default.
+    /// </summary>
+    [Parameter] public bool StructuredData { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the breadcrumb.
@@ -360,6 +374,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        // An open menu whose button is gone would leave the callout and its click-catching overlay behind,
+        // which happens as soon as everything fits the trail again (the items changed, the room grew, the
+        // cap was raised, ...) or the whole component gets disabled while the menu is open.
+        if (_isCalloutOpen && (_overflowItems.Count == 0 || IsEnabled is false))
+        {
+            await CloseCallout();
+
+            StateHasChanged();
+        }
+
         // The navigation keys of the overflow menu scroll the page by default, which has to be stopped
         // on the DOM side since a Blazor keydown handler cannot preventDefault per key. The overflow
         // button only exists while there are overflow items, so the registration follows its lifetime.
@@ -448,7 +472,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     }
 
     // Clicking an overflow item both runs its click handler and dismisses the menu, the same way
-    // clicking a link in it navigates away from the open menu.
+    // clicking a link in it navigates away from the open menu. The focus goes back onto the button the
+    // menu belongs to, since the element it was on is gone with the menu.
     private async Task HandleOnOverflowItemClick(TItem item)
     {
         await HandleOnItemClick(item);
@@ -456,6 +481,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         if (_isCalloutOpen is false) return;
 
         await CloseCallout();
+
+        await FocusOverflowButton();
     }
 
     // An item is rendered as a button when it has no Href but something to run on click, either the
@@ -767,10 +794,21 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return string.Join(';', styles);
     }
 
+    // A disabled item is not a place to navigate to, so it keeps its address but renders none.
     private string? GetItemHref(TItem item)
     {
-        if (GetIsEnabled(item) is false) return null;
+        return GetIsEnabled(item) ? GetRawItemHref(item) : null;
+    }
 
+    // Opening a link in another browsing context hands the opener over to it unless it is turned down,
+    // which the rel of the link does, the same way the other components of the library do it.
+    private string? GetItemRel(TItem item)
+    {
+        return GetItemTarget(item) is "_blank" ? "noopener noreferrer" : null;
+    }
+
+    private string? GetRawItemHref(TItem item)
+    {
         if (item is BitBreadcrumbItem breadcrumbItem)
         {
             return breadcrumbItem.Href;
@@ -1098,28 +1136,34 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         await ToggleCallout();
     }
 
+    // Closing has to work even on a breadcrumb that got disabled while its menu was open, so only a
+    // disposed component (whose JS side is gone) turns the toggle away; opening is guarded on its own.
     private async Task ToggleCallout()
     {
-        if (IsEnabled is false || IsDisposed) return;
+        if (IsDisposed) return;
 
-        await _js.BitCalloutToggleCallout(
-            dotnetObj: _dotnetObj,
-            componentId: _overflowAnchorId,
-            component: null,
-            calloutId: _calloutId,
-            callout: null,
-            overlayId: _overlayId,
-            isCalloutOpen: _isCalloutOpen,
-            responsiveMode: BitResponsiveMode.None,
-            dropDirection: BitDropDirection.TopAndBottom,
-            isRtl: Dir is BitDir.Rtl,
-            scrollContainerId: _scrollContainerId,
-            scrollOffset: 0,
-            headerId: "",
-            footerId: "",
-            setCalloutWidth: false,
-            fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+        try
+        {
+            await _js.BitCalloutToggleCallout(
+                dotnetObj: _dotnetObj,
+                componentId: _overflowAnchorId,
+                component: null,
+                calloutId: _calloutId,
+                callout: null,
+                overlayId: _overlayId,
+                isCalloutOpen: _isCalloutOpen,
+                responsiveMode: BitResponsiveMode.None,
+                dropDirection: BitDropDirection.TopAndBottom,
+                isRtl: Dir is BitDir.Rtl,
+                scrollContainerId: _scrollContainerId,
+                scrollOffset: 0,
+                headerId: "",
+                footerId: "",
+                setCalloutWidth: false,
+                fixedCalloutWidth: false,
+                maxWindowWidth: 0);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
     }
 
     private async Task HandleOnOverflowButtonKeyDown(KeyboardEventArgs e)
@@ -1170,16 +1214,27 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 await CloseCallout();
                 await FocusOverflowButton();
                 break;
+            default:
+                // The typeahead of the menu pattern: a printable character jumps to the next item whose
+                // text starts with it. A space is left alone since it activates the focused item.
+                if (e.Key.Length == 1 && char.IsControl(e.Key[0]) is false && char.IsWhiteSpace(e.Key[0]) is false)
+                {
+                    await FocusOverflowItem("char", e.Key);
+                }
+                break;
         }
     }
 
-    private async Task FocusOverflowItem(string mode)
+    // The items that are not actionable are part of the rotation too, they are steps of the trail the
+    // arrow keys have to reach; the script leaves the disabled ones out on its own.
+    private async Task FocusOverflowItem(string mode, string? character = null)
     {
         try
         {
-            await _js.BitUtilsFocusItem(_calloutId, ".bit-brc-ofi", mode, null);
+            await _js.BitUtilsFocusItem(_calloutId, ".bit-brc-ofi, .bit-brc-ofn", mode, character);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
+        catch (JSException) { } // the callout may already be gone with the items it held
     }
 
     private async Task FocusOverflowButton()
@@ -1189,11 +1244,76 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             await _overflowButtonRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
+        catch (JSException) { } // the button may already be gone with the items it collapsed
     }
 
     private string GetItemKey(TItem item, string defaultKey)
     {
         return GetKey(item) ?? $"{UniqueId}-{defaultKey}";
+    }
+
+    // The whole hierarchy as a schema.org BreadcrumbList, the items the overflow menu holds included,
+    // since what the search engines are told about the page must not depend on how much of the trail
+    // happens to fit the screen. The JSON is written rather than serialized so the output stays free of
+    // reflection (the library is trimmable) and so every value goes through the escaping of the writer.
+    private string? GetStructuredData()
+    {
+        var items = _internalItems.Where(i => GetStructuredDataName(i).HasValue()).ToArray();
+
+        if (items.Length == 0) return null;
+
+        using var buffer = new MemoryStream();
+
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteString("@context", "https://schema.org");
+            writer.WriteString("@type", "BreadcrumbList");
+            writer.WriteStartArray("itemListElement");
+
+            for (var i = 0; i < items.Length; i++)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("@type", "ListItem");
+                writer.WriteNumber("position", i + 1);
+                writer.WriteString("name", GetStructuredDataName(items[i]));
+
+                var url = GetStructuredDataUrl(items[i]);
+                if (url.HasValue())
+                {
+                    writer.WriteString("item", url);
+                }
+
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndArray();
+            writer.WriteEndObject();
+        }
+
+        return Encoding.UTF8.GetString(buffer.ToArray());
+    }
+
+    private string? GetStructuredDataName(TItem item)
+    {
+        var text = GetItemText(item);
+
+        return text.HasValue() ? text : GetItemAriaLabel(item);
+    }
+
+    // The address of a step of the hierarchy is an absolute one for a search engine, which the base
+    // address of the app is what turns the relative addresses of the items into.
+    private string? GetStructuredDataUrl(TItem item)
+    {
+        var href = GetRawItemHref(item);
+
+        if (href.HasValue() is false) return null;
+
+        try
+        {
+            return _navigationManager.ToAbsoluteUri(href).ToString();
+        }
+        catch (Exception) { return href; } // an address that is none to build upon is written as it is
     }
 
 

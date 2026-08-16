@@ -2,13 +2,17 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<CascadingValue Value="this" IsFixed="true">
-    @* The options render a marker element each, whose DOM order is used to keep the order of the
-       registered items in sync with the markup order of the options (even when an option is added or
-       removed conditionally later on), since the breadcrumb has to render its items out of an ordered
-       list to be able to split them between the display items and the overflow callout. *@
-    <div style="display:none" hidden id="@_optionsContainerId">@(Options ?? ChildContent)</div>
-</CascadingValue>
+@* The options render a marker element each, whose DOM order is used to keep the order of the
+   registered items in sync with the markup order of the options (even when an option is added or
+   removed conditionally later on), since the breadcrumb has to render its items out of an ordered
+   list to be able to split them between the display items and the overflow callout.
+   A breadcrumb fed by its Items has no options to hold, so it renders no container for them either. *@
+@if (Options is not null || ChildContent is not null)
+{
+    <CascadingValue Value="this" IsFixed="true">
+        <div style="display:none" hidden id="@_optionsContainerId">@(Options ?? ChildContent)</div>
+    </CascadingValue>
+}
 
 @* The trail is a navigation landmark holding an ordered list, as the WAI-ARIA breadcrumb pattern
    requires, so assistive technologies can announce it as navigation and enumerate its steps. The
@@ -63,6 +67,7 @@
                            @onclick="() => HandleOnItemClick(item)"
                            title="@GetItemTitle(item)"
                            target="@GetItemTarget(item)"
+                           rel="@GetItemRel(item)"
                            aria-label="@GetItemAriaLabel(item)"
                            aria-current="@(GetIsSelected(item) ? "page" : null)"
                            style="@GetStyles(item, false)"
@@ -92,6 +97,7 @@
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
+                                aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                                 disabled="@(GetIsEnabled(item) is false)"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
@@ -119,6 +125,7 @@
                         <span title="@GetItemTitle(item)"
                               aria-label="@GetItemAriaLabel(item)"
                               aria-current="@(GetIsSelected(item) ? "page" : null)"
+                              aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                               style="@GetStyles(item, false)"
                               class="bit-brc-nii @GetClasses(item, false)">
                             @if (template is not null)
@@ -158,7 +165,7 @@
                     }
                     else
                     {
-                        var dividerIcon = BitIconInfo.From(DividerIcon, DividerIconName ?? "ChevronRight bit-brc-trd");
+                        var dividerIcon = BitIconInfo.From(DividerIcon, DividerIconName ?? "ChevronRight");
                         <i style="@Styles?.DividerIcon"
                            class="bit-brc-div @dividerIcon?.GetCssClasses() @Classes?.DividerIcon" />
                     }
@@ -168,6 +175,20 @@
     </ol>
 
 </nav>
+
+@if (StructuredData)
+{
+    @* The trail of the whole hierarchy, including the steps the overflow menu holds, as the
+       schema.org BreadcrumbList search engines read. The JSON goes in as markup so that the HTML
+       encoding of a server-rendered page leaves it alone (a quote turned into an entity is not
+       decoded inside a script element and would break the JSON), which is safe here since the JSON
+       writer escapes every angle bracket of every value: no "</script" can come out of it. *@
+    var structuredData = GetStructuredData();
+    if (structuredData is not null)
+    {
+        <script type="application/ld+json">@((MarkupString)structuredData)</script>
+    }
+}
 
 <div @onclick="CloseCallout" @onclick:stopPropagation
      style="display:@(_isCalloutOpen ? "block" : "none");@Styles?.Overlay"
@@ -182,20 +203,27 @@
      dir="@Dir?.ToString().ToLower()"
      style="@GetCalloutStyles()"
      class="@GetCalloutClasses()">
-    <ul style="@Styles?.CalloutContainer"
+    @* The overflow button announces a menu, so the popup carries the roles of one: the list is the menu,
+       its items are the menu items and the wrappers around them are presentational. The label of the
+       menu is the one of the button that owns it. *@
+    <ul role="menu"
+        style="@Styles?.CalloutContainer"
         id="@_scrollContainerId"
         class="bit-brc-scn @Classes?.CalloutContainer"
-        aria-label="@(OverflowAriaLabel ?? "More items")">
+        aria-labelledby="@_overflowAnchorId">
         @foreach (var (item, idx) in _overflowItems.Select((item, idx) => (item, idx)))
         {
             var overflowTemplate = GetOverflowTemplate(item);
-            <li @key="@GetItemKey(item, $"overflow-{idx}")" style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper">
+            <li @key="@GetItemKey(item, $"overflow-{idx}")" role="presentation" style="@Styles?.OverflowItemWrapper" class="@Classes?.OverflowItemWrapper">
                 @if (GetItemHref(item).HasValue())
                 {
                     <a href="@GetItemHref(item)"
                        @onclick="() => HandleOnOverflowItemClick(item)"
+                       role="menuitem"
+                       tabindex="0"
                        title="@GetItemTitle(item)"
                        target="@GetItemTarget(item)"
+                       rel="@GetItemRel(item)"
                        aria-label="@GetItemAriaLabel(item)"
                        aria-current="@(GetIsSelected(item) ? "page" : null)"
                        style="@GetStyles(item, true)"
@@ -222,9 +250,12 @@
                 else if (HasClickHandler(item))
                 {
                     <button type="button"
+                            role="menuitem"
+                            tabindex="@(GetIsEnabled(item) ? 0 : -1)"
                             title="@GetItemTitle(item)"
                             aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"
+                            aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                             disabled="@(GetIsEnabled(item) is false)"
                             style="@GetStyles(item, true)"
                             class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnOverflowItemClick(item)">
@@ -249,9 +280,14 @@
                 }
                 else
                 {
-                    <span title="@GetItemTitle(item)"
+                    @* The item is not actionable, but it is still a step of the trail the arrow keys have
+                       to reach, so it stays a menu item the script can move the focus onto. *@
+                    <span role="menuitem"
+                          tabindex="-1"
+                          title="@GetItemTitle(item)"
                           aria-label="@GetItemAriaLabel(item)"
                           aria-current="@(GetIsSelected(item) ? "page" : null)"
+                          aria-disabled="@(GetIsEnabled(item) ? null : "true")"
                           style="@GetStyles(item, true)"
                           class="bit-brc-ofn @GetClasses(item, true)">
                           @if (overflowTemplate is not null)

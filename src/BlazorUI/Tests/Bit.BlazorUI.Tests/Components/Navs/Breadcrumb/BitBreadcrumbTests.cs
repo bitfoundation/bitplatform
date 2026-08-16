@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -107,6 +108,34 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.AreEqual(0, component.FindAll(".bit-brc-obt").Count);
         Assert.AreEqual(0, component.FindAll(".bit-brc-cal .bit-brc-ofi").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldAlternateItemAndDividerListItemsWhileOverflowing()
+    {
+        // The automatic collapsing reads the widths of the list items in DOM order and assumes they
+        // alternate between an item wrapper and the divider that goes with it, the overflow button
+        // taking the place of an item wrapper, so the order has to hold in the overflow state too.
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+        });
+
+        var listItems = component.FindAll(".bit-brc-icn > li");
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-obt").Count);
+
+        for (var i = 0; i < listItems.Count; i++)
+        {
+            var isDivider = listItems[i].GetAttribute("aria-hidden") == "true";
+
+            Assert.AreEqual(i % 2 == 1, isDivider);
+        }
+
+        // The button sits at the overflow index, which is an item position of that alternation.
+        Assert.IsNotNull(listItems[2].QuerySelector(".bit-brc-obt"));
     }
 
     [TestMethod]
@@ -863,6 +892,302 @@ public class BitBreadcrumbTests : BunitTestContext
 
         Assert.AreEqual(1, component.FindAll(".bit-brc-obt .custom-overflow-icon").Count);
         Assert.AreEqual(0, component.FindAll(".bit-brc-obt i").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderEveryDividerIconWithTheClassThatMirrorsItInRtl()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        var divider = component.Find(".bit-brc-icn i");
+
+        // The mirroring hangs on the class of the divider, so a custom icon is turned around in a RTL
+        // layout the same way the default chevron is.
+        Assert.IsTrue(divider.ClassList.Contains("bit-brc-div"));
+        Assert.IsTrue(divider.ClassList.Contains("bit-icon--ChevronRight"));
+
+        component.Render(parameters => parameters.Add(p => p.DividerIconName, "CaretRightSolid8"));
+
+        divider = component.Find(".bit-brc-icn i");
+
+        Assert.IsTrue(divider.ClassList.Contains("bit-brc-div"));
+        Assert.IsTrue(divider.ClassList.Contains("bit-icon--CaretRightSolid8"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotRenderAnOptionsContainerWithoutOptions()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        Assert.AreEqual(0, component.FindAll("div[hidden]").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbOverflowCalloutShouldCarryTheRolesOfAMenu()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { Text = "Folder 2" },
+            new() { Text = "Folder 3", Href = "/folder-3", IsEnabled = false },
+            new() { Text = "Folder 4", Href = "/folder-4", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)1);
+        });
+
+        var menu = component.Find(".bit-brc-scn");
+
+        Assert.AreEqual("UL", menu.TagName);
+        Assert.AreEqual("menu", menu.GetAttribute("role"));
+        // The menu is labelled by the button that owns it rather than by a label of its own.
+        Assert.AreEqual(component.Find(".bit-brc-obt").Id, menu.GetAttribute("aria-labelledby"));
+        Assert.IsFalse(menu.HasAttribute("aria-label"));
+
+        var wrappers = component.FindAll(".bit-brc-scn > li");
+
+        Assert.AreEqual(3, wrappers.Count);
+        Assert.IsTrue(wrappers.All(w => w.GetAttribute("role") == "presentation"));
+
+        // Every step of the collapsed trail is a menu item, whether it is actionable or not.
+        var menuItems = component.FindAll(".bit-brc-scn .bit-brc-ofi, .bit-brc-scn .bit-brc-ofn");
+
+        Assert.AreEqual(3, menuItems.Count);
+        Assert.IsTrue(menuItems.All(i => i.GetAttribute("role") == "menuitem"));
+        Assert.AreEqual("-1", menuItems.First(i => i.ClassList.Contains("bit-brc-ofn")).GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldMarkTheDisabledItemsWithAriaDisabled()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", IsEnabled = false },
+            new() { Text = "Folder 2", Href = "/folder-2" },
+            new() { Text = "Folder 3", Href = "/folder-3", IsEnabled = false },
+            new() { Text = "Folder 4", Href = "/folder-4", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+        });
+
+        Assert.AreEqual("true", component.Find(".bit-brc-icn .bit-brc-nii").GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", component.Find(".bit-brc-scn .bit-brc-ofn").GetAttribute("aria-disabled"));
+        // The items that are enabled say nothing about it.
+        Assert.AreEqual(0, component.FindAll(".bit-brc-itm[aria-disabled], .bit-brc-ofi[aria-disabled]").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldTurnDownTheOpenerOfALinkOpenedInAnotherContext()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1", Target = "_blank" },
+            new() { Text = "Folder 2", Href = "/folder-2", Target = "_self" },
+            new() { Text = "Folder 3", Href = "/folder-3", Target = "_blank" },
+            new() { Text = "Folder 4", Href = "/folder-4", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+        });
+
+        var links = component.FindAll(".bit-brc-icn a.bit-brc-itm");
+
+        Assert.AreEqual("noopener noreferrer", links[0].GetAttribute("rel"));
+        Assert.IsFalse(links[1].HasAttribute("rel"));
+        // Folder 2 and Folder 3 are the collapsed ones, only the second of them opens in a new context.
+        var overflowLinks = component.FindAll(".bit-brc-scn a.bit-brc-ofi");
+
+        Assert.IsFalse(overflowLinks[0].HasAttribute("rel"));
+        Assert.AreEqual("noopener noreferrer", overflowLinks[1].GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCloseTheMenuWhenTheOverflowItemsAreGone()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:block"));
+
+        // Everything fits again: the button the menu belongs to is gone, so the menu and the overlay that
+        // catches the clicks outside of it may not stay behind.
+        component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)0));
+
+        component.WaitForAssertion(() =>
+            Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none")));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldCloseTheMenuWhenTheComponentGetsDisabled()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").Click();
+
+        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+
+        component.WaitForAssertion(() =>
+            Assert.AreEqual("false", component.Find(".bit-brc-obt").GetAttribute("aria-expanded")));
+
+        Assert.IsTrue(component.Find(".bit-brc-ovl").GetAttribute("style")!.Contains("display:none"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldMoveTheFocusInsideTheOverflowMenuWithTheKeyboard()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)3);
+        });
+
+        component.Find(".bit-brc-obt").KeyDown(Key.Down);
+
+        var callout = component.Find(".bit-brc-cal");
+
+        callout.KeyDown(Key.Down);
+        callout.KeyDown(Key.Up);
+        callout.KeyDown(Key.Home);
+        callout.KeyDown(Key.End);
+        // A printable character is the typeahead of the menu pattern.
+        callout.KeyDown("f");
+        // A space activates the focused item instead of jumping anywhere.
+        callout.KeyDown(Key.Space);
+
+        var modes = handler.Invocations.Select(i => (string)i.Arguments[2]!).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "first", "next", "prev", "first", "last", "char" }, modes);
+        Assert.AreEqual("f", handler.Invocations.Last().Arguments[3]);
+        // The items that are not actionable are part of the rotation too.
+        Assert.AreEqual(".bit-brc-ofi, .bit-brc-ofn", handler.Invocations.Last().Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldRenderTheStructuredDataOfTheWholeHierarchy()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            // The collapsed items are part of the hierarchy the search engines are told about.
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.StructuredData, true);
+        });
+
+        var script = component.Find("script[type='application/ld+json']");
+
+        using var json = JsonDocument.Parse(script.TextContent);
+
+        var root = json.RootElement;
+
+        Assert.AreEqual("https://schema.org", root.GetProperty("@context").GetString());
+        Assert.AreEqual("BreadcrumbList", root.GetProperty("@type").GetString());
+
+        var elements = root.GetProperty("itemListElement").EnumerateArray().ToList();
+
+        Assert.AreEqual(4, elements.Count);
+        Assert.AreEqual("ListItem", elements[0].GetProperty("@type").GetString());
+        Assert.AreEqual(1, elements[0].GetProperty("position").GetInt32());
+        Assert.AreEqual("Folder 1", elements[0].GetProperty("name").GetString());
+        Assert.AreEqual(4, elements[3].GetProperty("position").GetInt32());
+        Assert.AreEqual("Folder 4", elements[3].GetProperty("name").GetString());
+        // The relative addresses of the items become absolute ones.
+        Assert.IsTrue(elements[0].GetProperty("item").GetString()!.StartsWith("http"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotRenderAnyStructuredDataByDefault()
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+        });
+
+        Assert.AreEqual(0, component.FindAll("script[type='application/ld+json']").Count);
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldEscapeTheStructuredDataOfTheItems()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Tom & \"Jerry\" </script><script>alert(1)</script>", Href = "/a?x=1&y=2" },
+            new() { Text = "Folder 2", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.StructuredData, true);
+        });
+
+        var script = component.Find("script[type='application/ld+json']");
+
+        // Nothing in the values may close the script element or be read back as markup.
+        Assert.IsFalse(script.InnerHtml.Contains('<'));
+        Assert.IsFalse(script.InnerHtml.Contains('&'));
+
+        using var json = JsonDocument.Parse(script.TextContent);
+
+        var elements = json.RootElement.GetProperty("itemListElement").EnumerateArray().ToList();
+
+        Assert.AreEqual(items[0].Text, elements[0].GetProperty("name").GetString());
+        Assert.IsTrue(elements[0].GetProperty("item").GetString()!.EndsWith("/a?x=1&y=2"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldLeaveTheAddresslessItemsOutOfTheStructuredData()
+    {
+        var items = new List<BitBreadcrumbItem>
+        {
+            new() { Text = "Folder 1", Href = "/folder-1" },
+            new() { Text = null, Href = "/nameless" },
+            new() { Text = "Folder 3", IsSelected = true }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.StructuredData, true);
+        });
+
+        using var json = JsonDocument.Parse(component.Find("script[type='application/ld+json']").TextContent);
+
+        var elements = json.RootElement.GetProperty("itemListElement").EnumerateArray().ToList();
+
+        // An item without a name is nothing to write, and the current page carries no address of its own.
+        Assert.AreEqual(2, elements.Count);
+        Assert.AreEqual("Folder 3", elements[1].GetProperty("name").GetString());
+        Assert.AreEqual(2, elements[1].GetProperty("position").GetInt32());
+        Assert.IsFalse(elements[1].TryGetProperty("item", out _));
     }
 
     private static string[] GetItemTexts(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)

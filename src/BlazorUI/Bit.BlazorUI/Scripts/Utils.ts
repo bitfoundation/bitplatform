@@ -323,35 +323,39 @@
             const container = document.getElementById(containerId);
             if (!container) return;
 
-            const items = (Array.from(container.querySelectorAll(selector)) as HTMLElement[])
-                .filter(el => !(el as HTMLButtonElement).disabled && el.getAttribute('aria-disabled') !== 'true');
-            if (items.length === 0) return;
+            try {
+                const items = (Array.from(container.querySelectorAll(selector)) as HTMLElement[])
+                    .filter(el => !(el as HTMLButtonElement).disabled && el.getAttribute('aria-disabled') !== 'true');
+                if (items.length === 0) return;
 
-            const current = items.indexOf(document.activeElement as HTMLElement);
-            let index = -1;
+                const current = items.indexOf(document.activeElement as HTMLElement);
+                let index = -1;
 
-            if (mode === 'first') {
-                index = 0;
-            } else if (mode === 'last') {
-                index = items.length - 1;
-            } else if (mode === 'next') {
-                index = current < 0 ? 0 : (current + 1) % items.length;
-            } else if (mode === 'prev') {
-                index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
-            } else if (mode === 'char' && char) {
-                const c = char.toLowerCase();
-                const start = current < 0 ? 0 : current + 1;
-                for (let i = 0; i < items.length; i++) {
-                    const candidate = (start + i) % items.length;
-                    if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {
-                        index = candidate;
-                        break;
+                if (mode === 'first') {
+                    index = 0;
+                } else if (mode === 'last') {
+                    index = items.length - 1;
+                } else if (mode === 'next') {
+                    index = current < 0 ? 0 : (current + 1) % items.length;
+                } else if (mode === 'prev') {
+                    index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
+                } else if (mode === 'char' && char) {
+                    const c = char.toLowerCase();
+                    const start = current < 0 ? 0 : current + 1;
+                    for (let i = 0; i < items.length; i++) {
+                        const candidate = (start + i) % items.length;
+                        if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {
+                            index = candidate;
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (index > -1) {
-                items[index].focus();
+                if (index > -1) {
+                    items[index].focus();
+                }
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.focusItem:", e);
             }
         }
 
