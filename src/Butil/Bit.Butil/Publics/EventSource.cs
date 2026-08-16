@@ -19,6 +19,7 @@ namespace Bit.Butil;
 /// an endpoint that speaks <c>text/event-stream</c>, and anywhere you want the browser's own
 /// reconnect behaviour rather than your own.
 /// </remarks>
+[ButilService(typeof(EventSource))]
 public class EventSource(IJSRuntime js) : IAsyncDisposable
 {
     internal const string OpenMethodName = nameof(InvokeEventSourceOpen);

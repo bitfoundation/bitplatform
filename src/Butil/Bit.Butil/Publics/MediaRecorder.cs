@@ -20,6 +20,7 @@ namespace Bit.Butil;
 /// Which containers and codecs are available differs per engine, so pick one with
 /// <see cref="GetSupportedTypes"/> rather than hard-coding a MIME type.
 /// </remarks>
+[ButilService(typeof(MediaRecorder))]
 public class MediaRecorder(IJSRuntime js) : IAsyncDisposable
 {
     internal const string DataMethodName = nameof(InvokeRecorderData);

@@ -7,4 +7,5 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage">https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage</see>
 /// </summary>
+[ButilService(typeof(SessionStorage))]
 public class SessionStorage(IJSRuntime js) : ButilStorage(js, "sessionStorage") { }

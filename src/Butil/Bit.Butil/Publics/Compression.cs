@@ -14,6 +14,7 @@ namespace Bit.Butil;
 /// while the browser's implementation is native - and where not pulling the managed compression
 /// code into the published bundle is itself worth something.
 /// </remarks>
+[ButilService(typeof(Compression))]
 public class Compression(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>CompressionStream</c>.</summary>

@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+[ButilService(typeof(Console))]
 public class Console(IJSRuntime js)
 {
     /// <summary>

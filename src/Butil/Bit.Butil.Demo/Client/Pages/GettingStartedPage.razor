@@ -22,7 +22,7 @@
              Language="html" />
 
 <DemoSection Title="3. Register the services"
-             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places."
+             Description="AddBitButilServices registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. If your app prerenders, register them in the host's container as well: every component is instantiated once on the server for the prerender pass and again in the browser, so anything a page injects has to resolve in both places. Registration is trimming-aware - it discovers the services by reflection, so a published, trimmed app only registers the Butil classes your code actually injects and the rest are removed from your bundle."
              Code=@("""
 using Bit.Butil;
 

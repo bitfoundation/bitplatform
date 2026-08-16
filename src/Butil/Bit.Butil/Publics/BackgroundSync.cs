@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// Both APIs require an active service worker registration. The actual work runs inside the
 /// service worker; from C# you can register/unregister tags and inspect the registered ones.
 /// </remarks>
+[ButilService(typeof(BackgroundSync))]
 public class BackgroundSync(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>ServiceWorkerRegistration.sync</c>.</summary>

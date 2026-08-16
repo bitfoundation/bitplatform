@@ -150,7 +150,7 @@ await builder.Build().RunAsync();
 </Callout>
 
 <ApiTable Title="Reference">
-    <ApiMember Name="AddBitButilServices" Signature="IServiceCollection AddBitButilServices(this IServiceCollection services)" Description="Registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. Call it in every container that renders your components - including the prerendering host." />
+    <ApiMember Name="AddBitButilServices" Signature="IServiceCollection AddBitButilServices(this IServiceCollection services)" Description="Registers every Butil class as a scoped service, matching Blazor's one-circuit / one-app-instance-per-user model. Call it in every container that renders your components - including the prerendering host. Services are discovered by reflection rather than a hard-coded list, so a trimmed publish registers only the classes your code injects and drops the rest from the bundle." />
     <ApiMember Name="BitButil.UseFastInvoke" Signature="void UseFastInvoke()" Description="Enables the synchronous in-process invoke path for the APIs backed by synchronous JavaScript. WebAssembly only; a no-op elsewhere. Process-wide." />
     <ApiMember Name="BitButil.UseNormalInvoke" Signature="void UseNormalInvoke()" Description="Disables the fast path again; every call runs asynchronously." />
     <ApiMember Name="ButilSubscription" Signature="sealed class ButilSubscription : IAsyncDisposable" Description="The token returned by every Butil event and observer subscription. Disposing detaches the listener; disposal is idempotent and safe during teardown." />

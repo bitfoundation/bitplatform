@@ -21,6 +21,7 @@ namespace Bit.Butil;
 /// Every picker must be called from a user-gesture handler, and each returns null when the user
 /// cancels rather than throwing - dismissing a dialog is not an error.
 /// </remarks>
+[ButilService(typeof(FileSystem))]
 public class FileSystem(IJSRuntime js) : IAsyncDisposable
 {
     /// <summary>True when the runtime exposes <c>window.showOpenFilePicker</c>.</summary>

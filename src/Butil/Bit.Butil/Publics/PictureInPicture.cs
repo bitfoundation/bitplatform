@@ -20,6 +20,7 @@ namespace Bit.Butil;
 /// <see cref="Subscribe"/> as the source of truth rather than assuming a successful
 /// <see cref="Request"/> stays true.
 /// </remarks>
+[ButilService(typeof(PictureInPicture))]
 public class PictureInPicture(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokePictureInPictureChange);

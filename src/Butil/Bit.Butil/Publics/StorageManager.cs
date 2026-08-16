@@ -7,6 +7,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps <see href="https://developer.mozilla.org/en-US/docs/Web/API/StorageManager">navigator.storage</see>.
 /// </summary>
+[ButilService(typeof(StorageManager))]
 public class StorageManager(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.storage</c>.</summary>

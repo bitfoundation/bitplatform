@@ -16,6 +16,7 @@ namespace Bit.Butil;
 /// Only relevant inside a cross-site iframe. In a top-level page there is nothing to ask for:
 /// <see cref="HasAccess"/> answers true and <see cref="Request"/> is unnecessary.
 /// </remarks>
+[ButilService(typeof(StorageAccess))]
 public class StorageAccess(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>document.requestStorageAccess</c>.</summary>

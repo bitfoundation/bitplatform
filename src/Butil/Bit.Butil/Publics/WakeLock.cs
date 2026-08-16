@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// The browser will automatically release the wake lock when the page is hidden.
 /// Re-acquire it on <c>visibilitychange</c> when the page becomes visible again.
 /// </remarks>
+[ButilService(typeof(WakeLock))]
 public class WakeLock(IJSRuntime js) : IAsyncDisposable
 {
     private bool _heldByUs;

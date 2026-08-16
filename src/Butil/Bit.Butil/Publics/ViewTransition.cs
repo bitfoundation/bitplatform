@@ -22,6 +22,7 @@ namespace Bit.Butil;
 /// same. Await the render before returning; the demo page shows the
 /// <see cref="TaskCompletionSource"/>-in-<c>OnAfterRenderAsync</c> pattern that does this reliably.
 /// </remarks>
+[ButilService(typeof(ViewTransition))]
 public class ViewTransition(IJSRuntime js) : IAsyncDisposable
 {
     internal const string UpdateMethodName = nameof(InvokeViewTransitionUpdate);

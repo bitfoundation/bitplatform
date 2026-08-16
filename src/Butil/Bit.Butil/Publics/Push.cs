@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// Push requires an active service worker registration. Register one via <see cref="ServiceWorker"/>
 /// before subscribing.
 /// </remarks>
+[ButilService(typeof(Push))]
 public class Push(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>ServiceWorkerRegistration.pushManager</c>.</summary>

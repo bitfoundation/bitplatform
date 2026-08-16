@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Performance">Performance</see>
 /// timing and marker API.
 /// </summary>
+[ButilService(typeof(Performance))]
 public class Performance(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokePerformanceObserver);

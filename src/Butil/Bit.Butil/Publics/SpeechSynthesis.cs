@@ -8,6 +8,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis">SpeechSynthesis</see>
 /// API for text-to-speech.
 /// </summary>
+[ButilService(typeof(SpeechSynthesis))]
 public class SpeechSynthesis(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>window.speechSynthesis</c>.</summary>

@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Window">https://developer.mozilla.org/en-US/docs/Web/API/Window</see>
 /// </summary>
+[ButilService(typeof(Window))]
 public class Window(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "window";

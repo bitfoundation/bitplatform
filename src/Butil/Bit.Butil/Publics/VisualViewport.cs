@@ -16,6 +16,7 @@ namespace Bit.Butil;
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport">https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport</see>
 /// </summary>
 /// <param name="js"></param>
+[ButilService(typeof(VisualViewport))]
 public class VisualViewport(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeVisualViewport);

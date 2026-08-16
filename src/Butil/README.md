@@ -1,4 +1,4 @@
-# bit Butil
+﻿# bit Butil
 
 **The browser platform, in C#.** Butil wraps the Web APIs a Blazor app actually needs - the DOM,
 storage, media, sensors, crypto, workers - as injectable, strongly-typed, XML-documented services,
@@ -59,6 +59,15 @@ Then inject whatever you need:
 
 Every wrapper below is an injectable service in the `Bit.Butil` namespace. They are registered as
 **scoped**, which matches Blazor's one-circuit-or-one-WASM-app-per-user model.
+
+`AddBitButilServices` is trimming-aware: it discovers the services by reflecting over the `Bit.Butil`
+assembly for classes marked `[ButilService]` rather than naming them in `AddScoped<T>()` calls. A
+hard-coded call is a static reference that roots the class, so listing all of them would force every
+published app to carry all of them; reflecting instead lets the trimmer remove the classes your code
+never injects, and what it removed is simply not there to register. Injecting a Butil class from code
+the trimmer removed - or resolving one purely by reflection - therefore fails at runtime rather than
+at build time. Untrimmed apps (Blazor Server, and the prerendering host of a WebAssembly app) keep
+registering everything.
 
 ### Window & browsing
 

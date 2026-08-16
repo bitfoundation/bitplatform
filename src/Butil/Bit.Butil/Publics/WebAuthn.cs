@@ -6,6 +6,7 @@ using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
+[ButilService(typeof(WebAuthn))]
 public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {
     private const string STORAGE_KEY = "Butil.WebAuthn.Verify";

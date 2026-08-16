@@ -11,6 +11,7 @@ namespace Bit.Butil;
 /// <br />
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Location">https://developer.mozilla.org/en-US/docs/Web/API/Location</see>
 /// </summary>
+[ButilService(typeof(Location))]
 public class Location(IJSRuntime js)
 {
     /// <summary>
