@@ -1538,7 +1538,7 @@ public class BitStackTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStackShouldRespectHorizontalAndReversedAndHorizontalAlignAndVerticalAlign(bool horizontal)
+    public void BitStackShouldRespectHorizontalAndHorizontalAlignAndVerticalAlign(bool horizontal)
     {
         var aligns = Enum.GetValues(typeof(BitAlignment));
 
