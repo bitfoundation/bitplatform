@@ -11,10 +11,42 @@
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+        <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Client\Bit.Brouter.Demo.Client.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+        <Using Include="Microsoft.Extensions.Options" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BrouterDocs/README.md" />
+
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css;..\Client\**\*.js"
+                          Exclude="..\Client\bin\**;..\Client\obj\**">
+            <LogicalName>BrouterSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Program.cs;Components\**\*.razor">
+            <LogicalName>BrouterSource/Demo/Server/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The minimal hosting samples - one per Blazor render mode. Samples\Core is left out on
+             purpose: it is a smaller copy of this demo's pages, and the demo itself is embedded above. -->
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj"
+                          Exclude="..\..\Samples\Core\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**">
+            <LogicalName>BrouterSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>

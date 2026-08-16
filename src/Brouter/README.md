@@ -33,6 +33,14 @@ troubleshooting guide), and a `/playground` index of live, clickable demo routes
 self-contained Blazor WebAssembly app with prerendering - and it is routed by Brouter itself, so
 every page you read is also a working proof of the feature it documents.
 
+That same server hosts an **MCP server** at `/mcp`, so an AI agent can work against Brouter's real
+API instead of guessing at it: the tools serve the reference guide below, the docs pages, the exact
+public API (every parameter with its type and default, read out of the shipped assembly), every
+route constraint, the demo's own source files, and a route-template checker that parses a template
+with Brouter's own parser. Point an MCP client at `http://localhost:5185/mcp` and start with the
+`GetBrouterOverview` tool; each tool is also a plain HTTP GET under `/api/mcp/...` if you just want
+to look. See [McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs).
+
 [`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
 [Core](Samples/Core/) project of demo routes, hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same routing
