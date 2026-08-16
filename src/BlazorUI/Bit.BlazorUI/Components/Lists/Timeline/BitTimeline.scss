@@ -51,6 +51,27 @@
     --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
 }
 
+/*
+ * The broken lines are painted as a repeating gradient rather than a border, so the same declaration
+ * serves both orientations: the direction of the repetition follows --bit-tln-dvd-dir, which the root
+ * flips while the timeline runs horizontally. Resolved per item, for the same reason the dot colors are.
+ */
+@mixin timeline-line-solid {
+    --bit-tln-dvd-bg: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+}
+
+@mixin timeline-line-dashed {
+    --bit-tln-dvd-bg: repeating-linear-gradient(var(--bit-tln-dvd-dir),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{spacing(1)},
+            transparent #{spacing(1)} #{spacing(1.75)});
+}
+
+@mixin timeline-line-dotted {
+    --bit-tln-dvd-bg: repeating-linear-gradient(var(--bit-tln-dvd-dir),
+            var(--bit-tln-dvd-clr, #{$clr-brd-sec}) 0 #{spacing(0.25)},
+            transparent #{spacing(0.25)} #{spacing(0.75)});
+}
+
 @mixin timeline-item-reversed {
     --bit-tln-itm-flexdir: row-reverse;
     --bit-tln-pcn-flexdir: row;
@@ -80,6 +101,7 @@
     --bit-tln-dvd-inset: auto;
     --bit-tln-dvd-height: 100%;
     --bit-tln-dvd-width: #{spacing(0.25)};
+    --bit-tln-dvd-dir: to bottom;
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
 
     &.bit-dis {
@@ -97,6 +119,7 @@
     position: relative;
     align-items: center;
     flex-direction: var(--bit-tln-itm-flexdir);
+
     // Resolved per item so that an item-level color or size class also drives the padding of the
     // contents and the disabled palette of the dot.
     --bit-tln-cn-padding: calc(var(--bit-tln-dot-size) / 2) 0;
@@ -104,16 +127,35 @@
     --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
     --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
 
-    &:focus-visible {
-        outline: none;
-        @include focus-ring(var(--bit-tln-clr-focus));
-    }
-
     &.bit-tln-ids {
         cursor: default;
         user-select: none;
         pointer-events: none;
         color: var(--bit-tln-clr-dis);
+    }
+}
+
+// The interactive item keeps the listitem role on its own element, so the nested button takes over
+// the layout of the contents of the item and carries its focus ring.
+.bit-tln-btn {
+    width: 100%;
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 100%;
+    align-items: center;
+    flex-direction: var(--bit-tln-itm-flexdir);
+    border-radius: $shp-border-radius;
+
+    // A disabled item takes no pointer events at all, so the hover plate never shows up on one.
+    @media (hover: hover) {
+        &:hover {
+            background-color: $clr-bg-pri-hover;
+        }
+    }
+
+    &:focus-visible {
+        outline: none;
+        @include focus-ring(var(--bit-tln-clr-focus));
     }
 }
 
@@ -149,6 +191,10 @@
     font-size: inherit;
     align-items: center;
     overflow-wrap: anywhere;
+
+    // width: max-content keeps a short text from stretching across its half of the item, and this cap
+    // keeps a long one inside that half, where it wraps instead of being clipped by the content's overflow.
+    max-width: 100%;
 }
 
 .bit-tln-dvd {
@@ -160,12 +206,15 @@
     &::before {
         content: "";
         position: absolute;
-        // Routed through a variable so the color of the line can be themed from the Styles of the
-        // divider, which cannot reach this pseudo-element on its own.
-        background: var(--bit-tln-dvd-clr, #{$clr-brd-sec});
+
+        // Routed through variables so the color of the line can be themed from the Styles of the
+        // divider, which cannot reach this pseudo-element on its own, and so the line variants can
+        // replace the whole paint with a repeating gradient.
+        background: var(--bit-tln-dvd-bg, var(--bit-tln-dvd-clr, #{$clr-brd-sec}));
         top: var(--bit-tln-dvd-top);
         width: var(--bit-tln-dvd-width);
         height: var(--bit-tln-dvd-height);
+
         // Left at auto by default, so the line keeps the centered static position of the divider.
         inset-inline-start: var(--bit-tln-dvd-inset);
     }
@@ -196,16 +245,17 @@
 
 // Alternate flips every second item, so the items zig-zag around the line. It keys off the position
 // in the DOM (and not off an index passed from C#) so it also holds for conditionally rendered options.
-.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+// An explicitly reversed item is excluded rather than merely overridden afterwards, because the
+// nth-child selector outweighs the item-level rule below and would otherwise win on specificity.
+.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
     @include timeline-item-reversed;
 }
 
 // In a reversed timeline the zig-zag starts from the other side.
-.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
     @include timeline-item-normal;
 }
 
-// Declared after the alternate rules so an explicitly reversed item always wins.
 .bit-tln-itm.bit-tln-irv {
     @include timeline-item-reversed;
 }
@@ -223,6 +273,7 @@
     --bit-tln-dvd-top: unset;
     --bit-tln-dvd-height: #{spacing(0.25)};
     --bit-tln-dvd-width: 100%;
+    --bit-tln-dvd-dir: to right;
 
     .bit-tln-itm {
         --bit-tln-cn-padding: 0 calc(var(--bit-tln-dot-size) / 2);
@@ -240,11 +291,11 @@
         --bit-tln-itm-flexdir: column-reverse;
     }
 
-    &.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+    &.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
         --bit-tln-itm-flexdir: column-reverse;
     }
 
-    &.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even) {
+    &.bit-tln-rvs.bit-tln-alt > .bit-tln-itm:nth-child(even):not(.bit-tln-irv) {
         --bit-tln-itm-flexdir: column;
     }
 }
@@ -269,6 +320,23 @@
     --bit-tln-dvd-height: 0;
 }
 
+/*
+ * A reversed order paints the first item of the list at the bottom of the timeline and the last one at
+ * the top, so the half of the connector that faces the rest of the timeline is the opposite one. Only
+ * the offset flips; the height of a truncated connector stays the same half of the item. Declared
+ * before the horizontal rules, which carry the same specificity and must keep winning while the
+ * timeline runs horizontally.
+ */
+.bit-tln-rvo.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-top: 0;
+}
+
+.bit-tln-rvo.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-top: 50%;
+}
+
 .bit-tln-hrz.bit-tln-tls > .bit-tln-itm:first-child,
 .bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child {
     --bit-tln-dvd-top: unset;
@@ -287,6 +355,17 @@
 
 .bit-tln-hrz.bit-tln-tlb > .bit-tln-itm:first-child:last-child {
     --bit-tln-dvd-width: 0;
+}
+
+// The same flip as the vertical one, on the inline axis of a reversed horizontal timeline.
+.bit-tln-hrz.bit-tln-rvo.bit-tln-tls > .bit-tln-itm:first-child,
+.bit-tln-hrz.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:first-child {
+    --bit-tln-dvd-inset: 0;
+}
+
+.bit-tln-hrz.bit-tln-rvo.bit-tln-tle > .bit-tln-itm:last-child,
+.bit-tln-hrz.bit-tln-rvo.bit-tln-tlb > .bit-tln-itm:last-child {
+    --bit-tln-dvd-inset: 50%;
 }
 
 .bit-tln-fil .bit-tln-itm {
@@ -343,6 +422,28 @@
 .bit-dis .bit-tln-itm.bit-tln-ivt,
 .bit-tln-itm.bit-tln-ivt.bit-tln-ids {
     @include timeline-variant-text-disabled;
+}
+
+.bit-tln-ldd .bit-tln-itm {
+    @include timeline-line-dashed;
+}
+
+.bit-tln-ldt .bit-tln-itm {
+    @include timeline-line-dotted;
+}
+
+// The item-level line variant is declared after the timeline-level one, with the same specificity, so a
+// single item can break (or restore) its own stretch of the line.
+.bit-tln-itm.bit-tln-ils {
+    @include timeline-line-solid;
+}
+
+.bit-tln-itm.bit-tln-ild {
+    @include timeline-line-dashed;
+}
+
+.bit-tln-itm.bit-tln-ilt {
+    @include timeline-line-dotted;
 }
 
 // The text variant paints an opaque plate behind the icon so the connecting line does not run through it.

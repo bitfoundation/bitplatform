@@ -58,6 +58,11 @@ public class BitTimelineItem
     public string? Key { get; set; }
 
     /// <summary>
+    /// The way the connecting line of the timeline item is painted, overriding the line variant of the timeline.
+    /// </summary>
+    public BitTimelineLineVariant? LineVariant { get; set; }
+
+    /// <summary>
     /// Click event handler of the timeline item.
     /// </summary>
     public Action<BitTimelineItem>? OnClick { get; set; }

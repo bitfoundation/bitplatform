@@ -226,7 +226,43 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Item customization" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
+<DemoExample Title="Line variant" RazorCode="@example10RazorCode" Id="example10" PreventRenderForMcpClient>
+    <div>
+        LineVariant paints the connecting line solid (default), dashed or dotted, and an option can override
+        it for its own stretch of the line. That is the usual way to separate the part of a timeline that has
+        already happened from the part that is still expected.
+    </div>
+    <br /><br /><br />
+    <div>Dashed</div><br />
+    <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dashed">
+        <BitTimelineOption PrimaryText="Option 1" />
+        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>Dotted</div><br />
+    <BitTimeline TItem="BitTimelineOption" LineVariant="BitTimelineLineVariant.Dotted">
+        <BitTimelineOption PrimaryText="Option 1" />
+        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>Option's LineVariant</div><br />
+    <BitTimeline TItem="BitTimelineOption" TruncateLine="BitTimelineTruncateLine.Both">
+        <BitTimelineOption PrimaryText="Ordered" IconName="@BitIconName.Accept" Color="BitColor.Success" />
+        <BitTimelineOption PrimaryText="Shipped" IconName="@BitIconName.Accept" Color="BitColor.Success" LineVariant="BitTimelineLineVariant.Dashed" />
+        <BitTimelineOption PrimaryText="Delivered" Variant="BitVariant.Outline" LineVariant="BitTimelineLineVariant.Dashed" />
+    </BitTimeline>
+    <br /><br /><br />
+    <div>Horizontal (Dashed)</div><br />
+    <BitTimeline TItem="BitTimelineOption" Horizontal LineVariant="BitTimelineLineVariant.Dashed">
+        <BitTimelineOption PrimaryText="Option 1" />
+        <BitTimelineOption PrimaryText="Option 2" SecondaryText="Option 2 Secondary" />
+        <BitTimelineOption PrimaryText="Option 3" />
+    </BitTimeline>
+</DemoExample>
+
+<DemoExample Title="Item customization" RazorCode="@example11RazorCode" Id="example11" PreventRenderForMcpClient>
     <div>
         Color, Size and Variant are also available on the option itself, where they override the values of
         the timeline for that option alone, and HideDot drops the dot of an option while keeping its
@@ -241,7 +277,7 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example11RazorCode" Id="example11" PreventRenderForMcpClient>
+<DemoExample Title="Templates" RazorCode="@example12RazorCode" Id="example12" PreventRenderForMcpClient>
     <div>
         PrimaryContent, SecondaryContent and DotTemplate replace the corresponding part of an option, while
         Template replaces the whole option, dot and line included. The timeline also accepts an ItemTemplate
@@ -385,11 +421,12 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12" PreventRenderForMcpClient>
+<DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
     <div>
         The OnItemClick of the timeline is raised for every option, and each option can carry an OnClick of
         its own; both of them run for the same click. Only the options that actually listen to a click become
-        focusable buttons, and a disabled option raises neither of them.
+        focusable buttons, and a disabled option raises neither of them. A clickable option picks up a
+        hover plate and a focus ring, and answers to Enter and Space as well as to a click.
     </div>
     <br />
     <BitTimeline TItem="BitTimelineOption" OnItemClick="@(item => { clickedOption = $"{item.PrimaryText} (OnItemClick)"; })">
@@ -402,7 +439,7 @@
     <div>Clicked item: <b>@clickedOption</b></div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br /><br />
     <div>Primary</div><br />
@@ -598,7 +635,7 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15" PreventRenderForMcpClient>
     <div>
         Besides the built-in icons of IconName, the Icon parameter of an option accepts the CSS classes of
         any external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over IconName.
@@ -654,7 +691,7 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
     <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
     <br /><br /><br />
     <div>Small</div><br />
@@ -715,11 +752,12 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
     <div>
         Style and Class reach the root element, the Style and Class of an option reach that option, and the
         Styles and Classes objects reach every part of the timeline separately: the item, the two contents,
-        the two texts, the divider, the dot and the icon.
+        the two texts, the divider, the dot and the icon. The connecting line is painted by a pseudo-element
+        of the divider, so its color is set through the --bit-tln-dvd-clr variable on the divider's style.
     </div>
     <br /><br /><br />
     <div>Component's style & class:</div><br />
@@ -765,7 +803,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
     <div>Use the BitTimeline component in right-to-left (RTL).</div>
     <br /><br /><br />
     <div>Vertical</div><br />

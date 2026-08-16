@@ -14,6 +14,8 @@ public class Event
 
     public BitIconInfo? ExternalIcon { get; set; }
 
+    public BitTimelineLineVariant? LineStyle { get; set; }
+
     public bool NoDot { get; set; }
 
     public string? Icon { get; set; }

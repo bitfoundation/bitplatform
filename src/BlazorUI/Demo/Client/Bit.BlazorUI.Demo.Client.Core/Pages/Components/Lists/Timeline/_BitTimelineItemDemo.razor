@@ -129,7 +129,27 @@
     <BitTimeline Horizontal TruncateLine="BitTimelineTruncateLine.Both" Items="basicItems" />
 </DemoExample>
 
-<DemoExample Title="Item customization" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+<DemoExample Title="Line variant" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>
+        LineVariant paints the connecting line solid (default), dashed or dotted, and an item can override it
+        for its own stretch of the line. That is the usual way to separate the part of a timeline that has
+        already happened from the part that is still expected.
+    </div>
+    <br /><br /><br />
+    <div>Dashed</div><br />
+    <BitTimeline LineVariant="BitTimelineLineVariant.Dashed" Items="basicItems" />
+    <br /><br /><br />
+    <div>Dotted</div><br />
+    <BitTimeline LineVariant="BitTimelineLineVariant.Dotted" Items="basicItems" />
+    <br /><br /><br />
+    <div>Item's LineVariant</div><br />
+    <BitTimeline Items="lineVariantItems" TruncateLine="BitTimelineTruncateLine.Both" />
+    <br /><br /><br />
+    <div>Horizontal (Dashed)</div><br />
+    <BitTimeline Horizontal LineVariant="BitTimelineLineVariant.Dashed" Items="basicItems" />
+</DemoExample>
+
+<DemoExample Title="Item customization" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
     <div>
         Color, Size and Variant are also available on the item itself, where they override the values of the
         timeline for that item alone, and HideDot drops the dot of an item while keeping its contents in place.
@@ -138,7 +158,7 @@
     <BitTimeline Items="customizedItems" />
 </DemoExample>
 
-<DemoExample Title="Templates" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="Templates" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
     <div>
         PrimaryContent, SecondaryContent and DotTemplate replace the corresponding part of an item, while
         Template replaces the whole item, dot and line included. The timeline also accepts an ItemTemplate
@@ -159,11 +179,12 @@
     </BitTimeline>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+<DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
     <div>
         The OnItemClick of the timeline is raised for every item, and each item can carry an OnClick of its
         own; both of them run for the same click. Only the items that actually listen to a click become
-        focusable buttons, and a disabled item raises neither of them.
+        focusable buttons, and a disabled item raises neither of them. A clickable item picks up a hover
+        plate and a focus ring, and answers to Enter and Space as well as to a click.
     </div>
     <br />
     <BitTimeline Items="clickItems" OnItemClick="@((BitTimelineItem item) => { clickedItem = $"{item.PrimaryText} (OnItemClick)"; })" />
@@ -171,7 +192,7 @@
     <div>Clicked item: <b>@clickedItem</b></div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>Offering a range of specialized colors, providing visual cues for specific states within your application.</div>
     <br /><br /><br />
     <div>Primary</div><br />
@@ -289,7 +310,7 @@
     <BitTimeline IsEnabled="false" Horizontal Color="BitColor.Error" Variant="BitVariant.Text" Items="iconItems" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
     <div>
         Besides the built-in icons of IconName, the Icon parameter of an item accepts the CSS classes of any
         external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over IconName.
@@ -321,7 +342,7 @@
     <BitTimeline Horizontal Items="bootstrapIconItems3" Variant="BitVariant.Text" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>Different sizes for Timelines to meet design needs, ensuring flexibility within your application.</div>
     <br /><br /><br />
     <div>Small</div><br />
@@ -346,11 +367,12 @@
     <BitTimeline Horizontal Size="BitSize.Large" Variant="BitVariant.Text" Items="iconItems" />
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
     <div>
         Style and Class reach the root element, the Style and Class of an item reach that item, and the
         Styles and Classes objects reach every part of the timeline separately: the item, the two contents,
-        the two texts, the divider, the dot and the icon.
+        the two texts, the divider, the dot and the icon. The connecting line is painted by a pseudo-element
+        of the divider, so its color is set through the --bit-tln-dvd-clr variable on the divider's style.
     </div>
     <br /><br /><br />
     <div>Component's Style & Class:</div><br />
@@ -376,7 +398,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
     <div>Use the BitTimeline component in right-to-left (RTL).</div>
     <br /><br /><br />
     <div>Vertical</div><br />

@@ -15,63 +15,79 @@
     var dotTemplate = Timeline.GetDotTemplate(Item) ?? Timeline.DotTemplate;
 
     icon = BitIconInfo.From(icon, iconName);
+
+    RenderFragment content =@<text>
+        @if (template is not null)
+        {
+            @template(Item)
+        }
+        else
+        {
+            <div style="@Timeline.Styles?.PrimaryContent" class="bit-tln-pcn @Timeline.Classes?.PrimaryContent">
+                @if (primaryContent is not null)
+                {
+                    @primaryContent(Item)
+                }
+                else if (primaryText.HasValue())
+                {
+                    <span style="@Timeline.Styles?.PrimaryText" class="bit-tln-ttx @Timeline.Classes?.PrimaryText">@primaryText</span>
+                }
+            </div>
+            <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd @Timeline.Classes?.Divider">
+                @if (hideDot is false)
+                {
+                    @if (dotTemplate is not null)
+                    {
+                        @dotTemplate(Item)
+                    }
+                    else
+                    {
+                        <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
+                            @if (icon is not null)
+                            {
+                                <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
+                            }
+                        </div>
+                    }
+                }
+            </div>
+            <div style="@Timeline.Styles?.SecondaryContent" class="bit-tln-scn @Timeline.Classes?.SecondaryContent">
+                @if (secondaryContent is not null)
+                {
+                    @secondaryContent(Item)
+                }
+                else if (secondaryText.HasValue())
+                {
+                    <span style="@Timeline.Styles?.SecondaryText" class="bit-tln-ttx @Timeline.Classes?.SecondaryText">@secondaryText</span>
+                }
+            </div>
+        }
+    </text>;
 }
 
-@* An item is only exposed and focusable as a button while something listens to its click, so a
-   presentational timeline stays a plain list for assistive technologies and for the keyboard. *@
-<div @onclick="() => Timeline.HandleOnItemClick(Item)"
-     @onkeydown="HandleOnItemKeyDown"
-     @onkeydown:preventDefault="_preventKeyDownDefault"
-     role="@(isInteractive ? "button" : "listitem")"
-     tabindex="@(isInteractive && isEnabled ? "0" : null)"
+@* The item itself always stays a listitem, so the timeline remains a valid list for assistive
+   technologies. A nested button is only rendered while something listens to the item's click, so a
+   presentational timeline exposes no controls and stays out of the keyboard tab order. *@
+<div role="listitem"
      aria-disabled="@(isEnabled ? null : "true")"
-     aria-label="@Timeline.GetAriaLabel(Item)"
+     aria-label="@(isInteractive ? null : Timeline.GetAriaLabel(Item))"
      title="@Timeline.GetTitle(Item)"
-     style="@Timeline.GetStyle(Item);@Timeline.Styles?.Item"
+     style="@Timeline.GetItemStyles(Item)"
      class="bit-tln-itm@(Timeline.GetItemClasses(Item, isInteractive)) @Timeline.Classes?.Item">
-    @if (template is not null)
+    @if (isInteractive)
     {
-        @template(Item)
+        <div @onclick="() => Timeline.HandleOnItemClick(Item)"
+             @onkeydown="HandleOnItemKeyDown"
+             role="button"
+             tabindex="@(isEnabled ? "0" : null)"
+             aria-disabled="@(isEnabled ? null : "true")"
+             aria-label="@Timeline.GetAriaLabel(Item)"
+             class="bit-tln-btn">
+            @content
+        </div>
     }
     else
     {
-        <div style="@Timeline.Styles?.PrimaryContent" class="bit-tln-pcn @Timeline.Classes?.PrimaryContent">
-            @if (primaryContent is not null)
-            {
-                @primaryContent(Item)
-            }
-            else if (primaryText.HasValue())
-            {
-                <span style="@Timeline.Styles?.PrimaryText" class="bit-tln-ttx @Timeline.Classes?.PrimaryText">@primaryText</span>
-            }
-        </div>
-        <div style="@Timeline.Styles?.Divider" class="bit-tln-dvd @Timeline.Classes?.Divider">
-            @if (hideDot is false)
-            {
-                @if (dotTemplate is not null)
-                {
-                    @dotTemplate(Item)
-                }
-                else
-                {
-                    <div style="@Timeline.Styles?.Dot" class="bit-tln-dot @Timeline.Classes?.Dot">
-                        @if (icon is not null)
-                        {
-                            <i style="@Timeline.Styles?.Icon" class="bit-tln-ico @icon.GetCssClasses() @Timeline.Classes?.Icon" />
-                        }
-                    </div>
-                }
-            }
-        </div>
-        <div style="@Timeline.Styles?.SecondaryContent" class="bit-tln-scn @Timeline.Classes?.SecondaryContent">
-            @if (secondaryContent is not null)
-            {
-                @secondaryContent(Item)
-            }
-            else if (secondaryText.HasValue())
-            {
-                <span style="@Timeline.Styles?.SecondaryText" class="bit-tln-ttx @Timeline.Classes?.SecondaryText">@secondaryText</span>
-            }
-        </div>
+        @content
     }
 </div>

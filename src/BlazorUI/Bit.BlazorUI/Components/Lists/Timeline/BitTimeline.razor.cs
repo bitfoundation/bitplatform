@@ -57,6 +57,12 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
 
     /// <summary>
+    /// The way the connecting line of the timeline is painted, which the items can override one by one.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitTimelineLineVariant? LineVariant { get; set; }
+
+    /// <summary>
     /// Names and selectors of the custom input type properties.
     /// </summary>
     [Parameter] public BitTimelineNameSelectors<TItem>? NameSelectors { get; set; }
@@ -157,13 +163,22 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => ReverseOrder ? "bit-tln-rvo" : string.Empty);
 
-        // The truncation classes key off the first and the last item in the DOM, so reversing the
-        // rendered order swaps which end of the line the Start and the End values refer to.
-        ClassBuilder.Register(() => (TruncateLine, ReverseOrder) switch
+        // Start and End always refer to the first and the last item of the list, and the truncation
+        // classes key off the same items in the DOM. A reversed order only flips where those items are
+        // painted, which the stylesheet handles on its own (see the bit-tln-rvo truncation rules).
+        ClassBuilder.Register(() => TruncateLine switch
         {
-            (BitTimelineTruncateLine.Start, false) or (BitTimelineTruncateLine.End, true) => "bit-tln-tls",
-            (BitTimelineTruncateLine.End, false) or (BitTimelineTruncateLine.Start, true) => "bit-tln-tle",
-            (BitTimelineTruncateLine.Both, _) => "bit-tln-tlb",
+            BitTimelineTruncateLine.Start => "bit-tln-tls",
+            BitTimelineTruncateLine.End => "bit-tln-tle",
+            BitTimelineTruncateLine.Both => "bit-tln-tlb",
+            _ => string.Empty
+        });
+
+        // A solid line is what the stylesheet paints on its own, so only the broken ones carry a class.
+        ClassBuilder.Register(() => LineVariant switch
+        {
+            BitTimelineLineVariant.Dashed => "bit-tln-ldd",
+            BitTimelineLineVariant.Dotted => "bit-tln-ldt",
             _ => string.Empty
         });
 
@@ -195,14 +210,16 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         // still runs the comparison and clears _items instead of leaving the previous items rendered.
         if (ChildContent is null && Options is null)
         {
-            var items = Items ?? [];
+            // Materialized once, so a lazily evaluated Items (a LINQ query, an iterator, ...) is walked a
+            // single time per parameter set instead of once for the comparison and once for the copy.
+            var items = (Items ?? []).ToList();
 
             if (_oldItems is null || items.SequenceEqual(_oldItems) is false)
             {
-                _items = items.ToList();
+                _items = items;
                 // Store an independent snapshot so a later in-place mutation of the same Items instance is
                 // still detected (a reference copy would compare the collection against itself).
-                _oldItems = _items.ToList();
+                _oldItems = items.ToList();
             }
         }
 
@@ -299,6 +316,19 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
                 BitVariant.Outline => " bit-tln-ivo",
                 BitVariant.Text => " bit-tln-ivt",
                 _ => " bit-tln-ivf"
+            });
+        }
+
+        var lineVariant = GetLineVariant(item);
+        if (lineVariant is not null)
+        {
+            className.Append(lineVariant switch
+            {
+                BitTimelineLineVariant.Dashed => " bit-tln-ild",
+                BitTimelineLineVariant.Dotted => " bit-tln-ilt",
+                // Unlike the timeline-level solid line, an explicitly solid item needs a class of its own
+                // to win over a dashed or a dotted timeline.
+                _ => " bit-tln-ils"
             });
         }
 
@@ -505,7 +535,20 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         return item.GetValueFromProperty(NameSelectors.IsEnabled.Name, true);
     }
 
-    internal string? GetStyle(TItem? item)
+    // Joins the style of the item with the one of the Styles object, so an item that carries neither of
+    // them renders no style attribute at all instead of a lone separator.
+    internal string? GetItemStyles(TItem? item)
+    {
+        var itemStyle = GetStyle(item);
+        var stylesItem = Styles?.Item;
+
+        if (itemStyle.HasNoValue()) return stylesItem;
+        if (stylesItem.HasNoValue()) return itemStyle;
+
+        return $"{itemStyle};{stylesItem}";
+    }
+
+    private string? GetStyle(TItem? item)
     {
         if (item is null) return null;
 
@@ -819,5 +862,29 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
         }
 
         return item.GetValueFromProperty<BitVariant?>(NameSelectors.Variant.Name, null);
+    }
+
+    private BitTimelineLineVariant? GetLineVariant(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitTimelineItem timelineItem)
+        {
+            return timelineItem.LineVariant;
+        }
+
+        if (item is BitTimelineOption timelineOption)
+        {
+            return timelineOption.LineVariant;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.LineVariant.Selector is not null)
+        {
+            return NameSelectors.LineVariant.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitTimelineLineVariant?>(NameSelectors.LineVariant.Name, null);
     }
 }

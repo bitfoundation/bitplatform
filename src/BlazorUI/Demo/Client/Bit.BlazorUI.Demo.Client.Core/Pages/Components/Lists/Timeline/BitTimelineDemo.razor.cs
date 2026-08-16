@@ -70,6 +70,15 @@ public partial class BitTimelineDemo
         },
         new()
         {
+            Name = "LineVariant",
+            Type = "BitTimelineLineVariant?",
+            DefaultValue = "null",
+            Description = "The way the connecting line of the timeline is painted, which the items can override one by one.",
+            LinkType = LinkType.Link,
+            Href = "#line-variant-enum",
+        },
+        new()
+        {
             Name = "NameSelectors",
             Type = "BitTimelineNameSelectors<TItem>?",
             DefaultValue = "null",
@@ -216,6 +225,15 @@ public partial class BitTimelineDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a Key of the item.",
+               },
+               new()
+               {
+                   Name = "LineVariant",
+                   Type = "BitTimelineLineVariant?",
+                   DefaultValue = "null",
+                   Description = "The way the connecting line of the item is painted, overriding the line variant of the timeline.",
+                   LinkType = LinkType.Link,
+                   Href = "#line-variant-enum",
                },
                new()
                {
@@ -372,6 +390,15 @@ public partial class BitTimelineDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a Key of the option.",
+               },
+               new()
+               {
+                   Name = "LineVariant",
+                   Type = "BitTimelineLineVariant?",
+                   DefaultValue = "null",
+                   Description = "The way the connecting line of the option is painted, overriding the line variant of the timeline.",
+                   LinkType = LinkType.Link,
+                   Href = "#line-variant-enum",
                },
                new()
                {
@@ -540,6 +567,15 @@ public partial class BitTimelineDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Key))",
                     Description = "Key field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "LineVariant",
+                    Type = "BitNameSelectorPair<TItem, BitTimelineLineVariant?>",
+                    DefaultValue = "new(nameof(BitTimelineItem.LineVariant))",
+                    Description = "LineVariant field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -875,6 +911,33 @@ public partial class BitTimelineDemo
                 {
                     Name= "Large",
                     Description="The large size timeline.",
+                    Value="2",
+                }
+            ]
+        },
+        new()
+        {
+            Id = "line-variant-enum",
+            Name = "BitTimelineLineVariant",
+            Description = "Determines how the connecting line of the timeline is painted.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Solid",
+                    Description="An uninterrupted line.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Dashed",
+                    Description="A line drawn as a series of dashes, which usually marks a stretch of the timeline as pending or estimated.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Dotted",
+                    Description="A line drawn as a series of dots, a lighter version of the dashed line.",
                     Value="2",
                 }
             ]
