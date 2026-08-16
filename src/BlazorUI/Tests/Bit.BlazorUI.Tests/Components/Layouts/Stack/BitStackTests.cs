@@ -354,6 +354,54 @@ public class BitStackTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("ul"),
+        DataRow("ol"),
+        DataRow("menu"),
+        DataRow("UL")
+    ]
+    public void BitStackShouldGiveALisElementAnExplicitListRole(string element)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        // Some browsers stop reporting a list as one as soon as it is laid out as a flex container, which every
+        // stack is, so the role the element already had is stated outright.
+        Assert.AreEqual("list", component.Find(".bit-stc").GetAttribute("role"));
+    }
+
+    [TestMethod,
+        DataRow("div"),
+        DataRow("nav"),
+        DataRow("li"),
+        DataRow(null)
+    ]
+    public void BitStackShouldNotRenderAListRoleForAnyOtherElement(string element)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        Assert.IsFalse(component.Find(".bit-stc").HasAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectTheSplattedAttributesItAlsoWritesItself()
+    {
+        var component = RenderComponent<BitStackSplattedAttributesTest>();
+
+        // An unset parameter written out as a null attribute would still drop the splatted attribute of the same
+        // name, so the direction is only added to the element when the parameter itself carries one.
+        Assert.AreEqual("rtl", component.Find(".splatted-dir").GetAttribute("dir"));
+
+        // A stack rendered as a "ul" of tabs is a tablist and not a list, so the role is written before the
+        // splatted attributes and whatever they say replaces it.
+        Assert.AreEqual("tablist", component.Find(".splatted-role").GetAttribute("role"));
+    }
+
+    [TestMethod,
         DataRow(true, true),
         DataRow(false, true),
         DataRow(true, false),
@@ -1036,6 +1084,7 @@ public class BitStackTests : BunitTestContext
         DataRow("1rem"),
         DataRow("2rem 0.5rem"),
         DataRow("1px 2px 3px 4px"),
+        DataRow("clamp(0.5rem, 2vw, 2rem)"),
         DataRow(null)
     ]
     public void BitStackShouldRespectPadding(string padding)
@@ -1375,6 +1424,21 @@ public class BitStackTests : BunitTestContext
         });
 
         component.MarkupMatches(@$"<div style=""{STYLE}align-self:flex-end;"" class=""bit-stc"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitStackShouldDropAnAlignmentThatIsNotAMemberOfTheEnum()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Self, (BitAlignment)99);
+            parameters.Add(p => p.Alignment, (BitAlignment)99);
+            parameters.Add(p => p.AlignContent, (BitAlignment)99);
+        });
+
+        // An out of range integer cast to the enum stands for no CSS at all, so nothing is written out rather
+        // than an invalid declaration - or an exception raised while the style is being built.
+        component.MarkupMatches(@$"<div style=""{STYLE}"" class=""bit-stc"" id:ignore></div>");
     }
 
     [TestMethod]
@@ -2192,6 +2256,270 @@ public class BitStackTests : BunitTestContext
         StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
     }
 
+    [TestMethod,
+        DataRow("xs"),
+        DataRow("sm"),
+        DataRow("md"),
+        DataRow("lg"),
+        DataRow("xl"),
+        DataRow("xxl")
+    ]
+    public void BitStackShouldRespectThePerBreakpointHorizontalGaps(string breakpoint)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            switch (breakpoint)
+            {
+                case "xs": parameters.Add(p => p.HorizontalGapXs, "2rem"); break;
+                case "sm": parameters.Add(p => p.HorizontalGapSm, "2rem"); break;
+                case "md": parameters.Add(p => p.HorizontalGapMd, "2rem"); break;
+                case "lg": parameters.Add(p => p.HorizontalGapLg, "2rem"); break;
+                case "xl": parameters.Add(p => p.HorizontalGapXl, "2rem"); break;
+                default: parameters.Add(p => p.HorizontalGapXxl, "2rem"); break;
+            }
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The axis moves off the element and into a chain of its own, whose base is whatever the chain of the
+        // shorthand resolves to at the width being painted - and the shorthand is dragged off the element with
+        // it, since an inline gap is an inline style no rule of the stylesheet could override.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsvg"));
+        Assert.IsFalse(style.Contains(";gap:"));
+        Assert.IsFalse(style.Contains("column-gap:"));
+        StringAssert.Contains(style, "--bit-stc-gap:1rem");
+        StringAssert.Contains(style, "--bit-stc-hgap:1rem");
+        StringAssert.Contains(style, $"--bit-stc-hgap-{breakpoint}:2rem");
+    }
+
+    [TestMethod,
+        DataRow("xs"),
+        DataRow("sm"),
+        DataRow("md"),
+        DataRow("lg"),
+        DataRow("xl"),
+        DataRow("xxl")
+    ]
+    public void BitStackShouldRespectThePerBreakpointVerticalGaps(string breakpoint)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            switch (breakpoint)
+            {
+                case "xs": parameters.Add(p => p.VerticalGapXs, "2rem"); break;
+                case "sm": parameters.Add(p => p.VerticalGapSm, "2rem"); break;
+                case "md": parameters.Add(p => p.VerticalGapMd, "2rem"); break;
+                case "lg": parameters.Add(p => p.VerticalGapLg, "2rem"); break;
+                case "xl": parameters.Add(p => p.VerticalGapXl, "2rem"); break;
+                default: parameters.Add(p => p.VerticalGapXxl, "2rem"); break;
+            }
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsFalse(style.Contains(";gap:"));
+        Assert.IsFalse(style.Contains("row-gap:"));
+        StringAssert.Contains(style, "--bit-stc-vgap:1rem");
+        StringAssert.Contains(style, $"--bit-stc-vgap-{breakpoint}:2rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldHandThePerAxisGapOverAsTheBaseOfItsOwnChain()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGap, "1rem");
+            parameters.Add(p => p.HorizontalGapMd, "3rem");
+            parameters.Add(p => p.VerticalGap, "0.5rem");
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The axis that changes hands its base over to the chain, and the axis that does not is still written
+        // straight onto the element, where it keeps replacing the shorthand at every width.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsvg"));
+        StringAssert.Contains(style, "--bit-stc-hgap:1rem");
+        StringAssert.Contains(style, "--bit-stc-hgap-md:3rem");
+        StringAssert.Contains(style, "row-gap:0.5rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldOnlyDeclareThePerAxisGapsOfTheBreakpointsItWasGiven()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGapMd, "3rem");
+            parameters.Add(p => p.VerticalGapLg, "0.5rem");
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // The stylesheet chains every breakpoint that was not asked for to the one below it, exactly as the two
+        // chains above it do, so declaring them all here would defeat that chain.
+        StringAssert.Contains(style, "--bit-stc-hgap-md:3rem");
+        StringAssert.Contains(style, "--bit-stc-vgap-lg:0.5rem");
+        Assert.IsFalse(style.Contains("--bit-stc-hgap-xs"));
+        Assert.IsFalse(style.Contains("--bit-stc-hgap-lg"));
+        Assert.IsFalse(style.Contains("--bit-stc-vgap-md"));
+        Assert.IsFalse(style.Contains("--bit-stc-vgap-xxl"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotDeclareTheChainOfAnAxisThatWasNeverAskedToChange()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.GapMd, "3rem");
+            parameters.Add(p => p.VerticalGapLg, "0.5rem");
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The shorthand of a breakpoint is restated for the axis that has a chain of its own, so that the chain
+        // does not carry its own older value past the width the shorthand changed at - and for the other axis,
+        // which reads none of it back, nothing is written at all.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
+        StringAssert.Contains(style, "--bit-stc-vgap-md:3rem");
+        StringAssert.Contains(style, "--bit-stc-vgap-lg:0.5rem");
+        Assert.IsFalse(style.Contains("--bit-stc-hgap"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldCombineThePerAxisGapChainsWithTheShorthandChain()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Gap, "0.5rem");
+            parameters.Add(p => p.GapMd, "1rem");
+            parameters.Add(p => p.HorizontalGapLg, "3rem");
+            parameters.Add(p => p.VerticalGapXs, "0.25rem");
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The three chains are declared side by side, and an axis follows the shorthand at every width it says
+        // nothing about itself - which means restating the shorthand of a breakpoint it does not name, since a
+        // chain that skipped that breakpoint would carry its own older value straight past it.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
+        StringAssert.Contains(style, "--bit-stc-gap:0.5rem");
+        StringAssert.Contains(style, "--bit-stc-gap-md:1rem");
+        StringAssert.Contains(style, "--bit-stc-hgap:0.5rem");
+        StringAssert.Contains(style, "--bit-stc-hgap-md:1rem");
+        StringAssert.Contains(style, "--bit-stc-hgap-lg:3rem");
+        StringAssert.Contains(style, "--bit-stc-vgap:0.5rem");
+        StringAssert.Contains(style, "--bit-stc-vgap-xs:0.25rem");
+        StringAssert.Contains(style, "--bit-stc-vgap-md:1rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldTellTheTwoLengthsOfTheGapShorthandApartForThePerAxisChains()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Gap, "1rem 2rem");
+            parameters.Add(p => p.GapMd, "clamp(4px, 1vw, 16px) calc(1rem + 2px)");
+            parameters.Add(p => p.HorizontalGapLg, "3rem");
+            parameters.Add(p => p.VerticalGapXl, "5rem");
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // The shorthand takes the row length first and the column one second, and an axis chain drives a longhand
+        // that only accepts one of them, so each of them is handed the half that belongs to it. The whitespace
+        // inside a function belongs to the length it is part of and never separates the two.
+        StringAssert.Contains(style, "--bit-stc-gap:1rem 2rem");
+        StringAssert.Contains(style, "--bit-stc-hgap:2rem");
+        StringAssert.Contains(style, "--bit-stc-hgap-md:calc(1rem + 2px)");
+        StringAssert.Contains(style, "--bit-stc-hgap-lg:3rem");
+        StringAssert.Contains(style, "--bit-stc-vgap:1rem");
+        StringAssert.Contains(style, "--bit-stc-vgap-md:clamp(4px, 1vw, 16px)");
+    }
+
+    [TestMethod]
+    public void BitStackShouldHandTheSpacingTokenOverAsTheBaseOfAPerAxisGapChain()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Large);
+            parameters.Add(p => p.HorizontalGapMd, "3rem");
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The base of the axis chain is resolved from the same place the base of the shorthand chain is, so a
+        // sized stack stays on the spacing scale of the theme on both axes at every width it did not name.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-lg"));
+        StringAssert.Contains(style, "--bit-stc-gap:var(--bit-stc-size)");
+        StringAssert.Contains(style, "--bit-stc-hgap:var(--bit-stc-size)");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectThePerAxisResponsiveGapChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>();
+
+        var root = component.Find(".bit-stc");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGapSm, "2rem");
+        });
+
+        root = component.Find(".bit-stc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsg"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains(";gap:"));
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-hgap-sm:2rem");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalGapSm, (string?)null);
+        });
+
+        root = component.Find(".bit-stc");
+
+        // Taking the last per breakpoint gap of the axis away hands both the axis and the shorthand back to the
+        // element, since neither of them has anything left to answer to the width of the window with.
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rshg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldKeepThePerAxisGapChainsApartFromTheDirectionChain()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.VerticalGapMd, "3rem");
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // A stack may change the spacing of one axis without changing its direction.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rsvg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+    }
+
     [TestMethod]
     public void BitStackShouldKeepTheTwoResponsiveChainsApart()
     {
@@ -2221,6 +2549,180 @@ public class BitStackTests : BunitTestContext
         // A fitted size is the more specific of the two, so it is written after the automatic one.
         Assert.AreEqual("display:flex;flex-direction:column;gap:1rem;width:auto;height:auto;width:fit-content",
                         component.Find(".bit-stc").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldNotHaveAResponsiveWrapByDefault()
+    {
+        var component = RenderComponent<BitStack>();
+
+        var root = component.Find(".bit-stc");
+
+        // A stack that answers the same way at every width keeps its wrapping off the stylesheet entirely.
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-stc-wrap"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("flex-wrap"));
+    }
+
+    [TestMethod,
+        DataRow("xs"),
+        DataRow("sm"),
+        DataRow("md"),
+        DataRow("lg"),
+        DataRow("xl"),
+        DataRow("xxl")
+    ]
+    public void BitStackShouldRespectThePerBreakpointWraps(string breakpoint)
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            switch (breakpoint)
+            {
+                case "xs": parameters.Add(p => p.WrapXs, true); break;
+                case "sm": parameters.Add(p => p.WrapSm, true); break;
+                case "md": parameters.Add(p => p.WrapMd, true); break;
+                case "lg": parameters.Add(p => p.WrapLg, true); break;
+                case "xl": parameters.Add(p => p.WrapXl, true); break;
+                default: parameters.Add(p => p.WrapXxl, true); break;
+            }
+        });
+
+        var root = component.Find(".bit-stc");
+        var style = root.GetAttribute("style")!;
+
+        // The wrapping moves off the element and into a custom property the stylesheet reads, since an inline
+        // flex-wrap would outrank every media query, and the base of the chain is what a stack falls back to.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
+        Assert.IsFalse(style.Contains("flex-wrap:"));
+        StringAssert.Contains(style, "--bit-stc-wrap:nowrap");
+        StringAssert.Contains(style, $"--bit-stc-wrap-{breakpoint}:wrap");
+    }
+
+    [TestMethod]
+    public void BitStackShouldHandTheBaseWrapOverAsTheBaseOfTheWrapChain()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Wrap, true);
+            parameters.Add(p => p.WrapMd, false);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // Wrap is the base of the chain, exactly as Horizontal is the base of the direction one, so a row that
+        // wraps until md and holds its single line from there is those two and nothing in between.
+        StringAssert.Contains(style, "--bit-stc-wrap:wrap");
+        StringAssert.Contains(style, "--bit-stc-wrap-md:nowrap");
+    }
+
+    [TestMethod]
+    public void BitStackShouldOnlyDeclareTheWrapsOfTheBreakpointsItWasGiven()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.WrapMd, true);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // The stylesheet chains every breakpoint that was not asked for to the one below it, which is what
+        // carries a value upwards, so declaring them all here would defeat that chain.
+        StringAssert.Contains(style, "--bit-stc-wrap-md:wrap");
+        Assert.IsFalse(style.Contains("--bit-stc-wrap-xs"));
+        Assert.IsFalse(style.Contains("--bit-stc-wrap-sm"));
+        Assert.IsFalse(style.Contains("--bit-stc-wrap-lg"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldReverseEveryBreakpointOfAResponsiveWrap()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.WrapReverse, true);
+            parameters.Add(p => p.WrapMd, true);
+            parameters.Add(p => p.WrapLg, false);
+        });
+
+        var style = component.Find(".bit-stc").GetAttribute("style")!;
+
+        // Which way round a stack wraps is the same answer at every width it wraps at, exactly as a reversed
+        // stack is reversed at every width, and a breakpoint that does not wrap has no way round to state.
+        StringAssert.Contains(style, "--bit-stc-wrap:wrap-reverse");
+        StringAssert.Contains(style, "--bit-stc-wrap-md:wrap-reverse");
+        StringAssert.Contains(style, "--bit-stc-wrap-lg:nowrap");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectFillContentWithAResponsiveWrap()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.FillContent, true);
+            parameters.Add(p => p.WrapMd, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // A stack that wraps at some widths may have more than one row, and the room a child was given is then
+        // the row it landed on rather than the whole of the stack across it.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-fcr"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-fcv"));
+    }
+
+    [TestMethod]
+    public void BitStackShouldKeepTheWrapChainApartFromTheOtherResponsiveChains()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.WrapMd, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        // Whether a stack wraps, which way it faces and how much room it leaves between its children are three
+        // separate questions, so answering one of them per breakpoint must not drag the other two along.
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsp"));
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rsg"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-direction:column");
+        StringAssert.Contains(root.GetAttribute("style")!, ";gap:1rem");
+    }
+
+    [TestMethod]
+    public void BitStackShouldRespectTheResponsiveWrapChangingAfterRender()
+    {
+        var component = RenderComponent<BitStack>(parameters =>
+        {
+            parameters.Add(p => p.Wrap, true);
+        });
+
+        var root = component.Find(".bit-stc");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-wrap:wrap");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.WrapSm, false);
+        });
+
+        root = component.Find(".bit-stc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stc-rswrp"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("flex-wrap:"));
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-wrap:wrap");
+        StringAssert.Contains(root.GetAttribute("style")!, "--bit-stc-wrap-sm:nowrap");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.WrapSm, (bool?)null);
+        });
+
+        root = component.Find(".bit-stc");
+
+        // Taking the last per breakpoint wrap away hands the wrapping back to the element.
+        Assert.IsFalse(root.ClassList.Contains("bit-stc-rswrp"));
+        StringAssert.Contains(root.GetAttribute("style")!, "flex-wrap:wrap");
     }
 
     [TestMethod]
@@ -2306,5 +2808,41 @@ public class BitStackTests : BunitTestContext
         StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-xl:2rem");
         StringAssert.Contains(stacks[4].GetAttribute("style")!, "--bit-stc-gap-xxl:2.5rem");
         Assert.IsFalse(stacks[4].GetAttribute("style")!.Contains("--bit-stc-gap-md"));
+
+        // The sixth one takes the breakpoints of the two per axis chains. Each of them is handed out on its own,
+        // both of them drag the shorthand into the stylesheet along with them, and the base of each is the
+        // fallback to that shorthand rather than a length of its own, since neither axis was given one.
+        Assert.IsTrue(stacks[5].ClassList.Contains("cascaded"));
+        Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsg"));
+        Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rshg"));
+        Assert.IsTrue(stacks[5].ClassList.Contains("bit-stc-rsvg"));
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-gap:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xs:0.25rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-sm:0.5rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-lg:1.5rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xl:2rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-hgap-xxl:2.5rem");
+        Assert.IsFalse(stacks[5].GetAttribute("style")!.Contains("--bit-stc-hgap-md"));
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xs:0.125rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-md:0.75rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-lg:1rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xl:1.25rem");
+        StringAssert.Contains(stacks[5].GetAttribute("style")!, "--bit-stc-vgap-xxl:1.5rem");
+        Assert.IsFalse(stacks[5].GetAttribute("style")!.Contains("--bit-stc-vgap-sm"));
+
+        // The seventh one takes the breakpoints of the wrap chain, which only declares what it was given exactly as
+        // the chains above it do, and the cascaded way round belongs to the base and to every breakpoint that wraps.
+        Assert.IsTrue(stacks[6].ClassList.Contains("cascaded"));
+        Assert.IsTrue(stacks[6].ClassList.Contains("bit-stc-rswrp"));
+        Assert.IsFalse(stacks[6].GetAttribute("style")!.Contains("flex-wrap:"));
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap:wrap-reverse");
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xs:wrap-reverse");
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-sm:nowrap");
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-lg:wrap-reverse");
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xl:nowrap");
+        StringAssert.Contains(stacks[6].GetAttribute("style")!, "--bit-stc-wrap-xxl:wrap-reverse");
+        Assert.IsFalse(stacks[6].GetAttribute("style")!.Contains("--bit-stc-wrap-md"));
     }
 }

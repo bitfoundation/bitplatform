@@ -141,6 +141,65 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     gap: var(--bit-stc-gap-now);
 }
 
+/*
+ * And one chain per axis, for the stack that wants a different amount of room between its columns than between its
+ * rows at some width. They are the same chain as the one above once more, with one difference: the base of each of
+ * them falls back to whatever the chain above resolves to at the width being painted, so an axis only has to be
+ * written out at the breakpoints it actually differs at and follows the shorthand everywhere else.
+ *
+ * Both are declared after the shorthand, since a longhand only replaces it while it comes after it, and an axis
+ * that changes with the width of the window is what drags the shorthand out of the element and into the chain
+ * above: an inline gap is an inline style, which no rule here could override at any width.
+ */
+.bit-stc-rshg {
+    --bit-stc-hgap-xs: var(--bit-stc-hgap);
+    --bit-stc-hgap-sm: var(--bit-stc-hgap-xs);
+    --bit-stc-hgap-md: var(--bit-stc-hgap-sm);
+    --bit-stc-hgap-lg: var(--bit-stc-hgap-md);
+    --bit-stc-hgap-xl: var(--bit-stc-hgap-lg);
+    --bit-stc-hgap-xxl: var(--bit-stc-hgap-xl);
+
+    --bit-stc-hgap-now: var(--bit-stc-hgap-xs);
+
+    column-gap: var(--bit-stc-hgap-now);
+}
+
+.bit-stc-rsvg {
+    --bit-stc-vgap-xs: var(--bit-stc-vgap);
+    --bit-stc-vgap-sm: var(--bit-stc-vgap-xs);
+    --bit-stc-vgap-md: var(--bit-stc-vgap-sm);
+    --bit-stc-vgap-lg: var(--bit-stc-vgap-md);
+    --bit-stc-vgap-xl: var(--bit-stc-vgap-lg);
+    --bit-stc-vgap-xxl: var(--bit-stc-vgap-xl);
+
+    --bit-stc-vgap-now: var(--bit-stc-vgap-xs);
+
+    row-gap: var(--bit-stc-vgap-now);
+}
+
+/*
+ * And the chain of a stack that only breaks onto a second row at some widths. It is the same chain as the ones above once
+ * more - each breakpoint falls back to the one below it, so a stack told to stop wrapping at md keeps not wrapping at lg,
+ * xl and xxl, and only the breakpoints actually asked for are declared by the component - and it is a class of its own
+ * because whether a stack wraps, which way it faces and how much room it leaves between its children are three separate
+ * questions, any of which may answer to the width of the window without the others doing so.
+ *
+ * The base of this chain is always declared, so like the gap and unlike the alignments there is nothing here to fall back
+ * from: a stack that was told nothing about wrapping hands over the "nowrap" that a flex container starts from anyway.
+ */
+.bit-stc-rswrp {
+    --bit-stc-wrap-xs: var(--bit-stc-wrap);
+    --bit-stc-wrap-sm: var(--bit-stc-wrap-xs);
+    --bit-stc-wrap-md: var(--bit-stc-wrap-sm);
+    --bit-stc-wrap-lg: var(--bit-stc-wrap-md);
+    --bit-stc-wrap-xl: var(--bit-stc-wrap-lg);
+    --bit-stc-wrap-xxl: var(--bit-stc-wrap-xl);
+
+    --bit-stc-wrap-now: var(--bit-stc-wrap-xs);
+
+    flex-wrap: var(--bit-stc-wrap-now);
+}
+
 @each $name, $breakpoint in $bit-stc-breakpoints {
     @media (min-width: $breakpoint) {
         .bit-stc-rsp {
@@ -151,6 +210,18 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
 
         .bit-stc-rsg {
             --bit-stc-gap-now: var(--bit-stc-gap-#{$name});
+        }
+
+        .bit-stc-rshg {
+            --bit-stc-hgap-now: var(--bit-stc-hgap-#{$name});
+        }
+
+        .bit-stc-rsvg {
+            --bit-stc-vgap-now: var(--bit-stc-vgap-#{$name});
+        }
+
+        .bit-stc-rswrp {
+            --bit-stc-wrap-now: var(--bit-stc-wrap-#{$name});
         }
     }
 }

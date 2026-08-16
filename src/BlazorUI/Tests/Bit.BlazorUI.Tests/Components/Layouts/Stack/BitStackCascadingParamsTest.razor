@@ -93,3 +93,46 @@
                          })">
     <BitStack />
 </BitParams>
+
+@* And the breakpoints of the two per axis chains, which are kept apart from the group above so that the
+   shorthand chain there does not hide the fallback each of these resolves its own base from. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 HorizontalGapXs = "0.25rem",
+                                 HorizontalGapSm = "0.5rem",
+                                 HorizontalGapLg = "1.5rem",
+                                 HorizontalGapXl = "2rem",
+                                 HorizontalGapXxl = "2.5rem",
+                                 VerticalGapXs = "0.125rem",
+                                 VerticalGapMd = "0.75rem",
+                                 VerticalGapLg = "1rem",
+                                 VerticalGapXl = "1.25rem",
+                                 VerticalGapXxl = "1.5rem",
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* And the breakpoints of the wrap chain, on a stack that also wraps the other way round, so that the way round
+   can be read back on the base of the chain and on every breakpoint of it at once. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Wrap = true,
+                                 WrapReverse = true,
+                                 WrapXs = true,
+                                 WrapSm = false,
+                                 WrapLg = true,
+                                 WrapXl = false,
+                                 WrapXxl = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>

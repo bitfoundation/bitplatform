@@ -57,6 +57,14 @@
         min-width: 12rem;
     }
 
+    // The stack rendered as a "ul": the bullets and the indent a list carries by default say nothing about the
+    // layout being demonstrated, so the example is left with the items alone.
+    .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
     .custom-stack {
         padding: 1rem;
         border: 2px solid #107c10;

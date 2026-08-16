@@ -171,6 +171,13 @@ private BitAlignment horizontalAlign;
     {
         <div class=""square"">@i</div>
     }
+</BitStack>
+
+<BitStack Horizontal Wrap WrapMd=""false"" Gap=""0.5rem"" Class=""stack"" AutoHeight>
+    @for (int i = 1; i <= 16; i++)
+    {
+        <div class=""square"">@i</div>
+    }
 </BitStack>";
     private readonly string example4CsharpCode = @"
 private double stackHeight = 15;
@@ -205,6 +212,13 @@ private BitAlignment alignContent;
     <div class=""item"">Item 1</div>
     <div class=""item"">Item 2</div>
     <div class=""item"">Item 3</div>
+</BitStack>
+
+<BitStack Horizontal Wrap Gap=""0.5rem"" HorizontalGapMd=""3rem"" HorizontalGapLg=""5rem"" Class=""stack"" AutoHeight>
+    @for (int i = 1; i <= 8; i++)
+    {
+        <div class=""item"">Item @i</div>
+    }
 </BitStack>";
 
     private readonly string example6RazorCode = @"
@@ -406,13 +420,32 @@ private BitAlignment alignContent;
     <BitStack Padding=""2rem 0.5rem"" Class=""stack"" AutoHeight>
         <div class=""item"">Padding 2rem 0.5rem</div>
     </BitStack>
+</BitStack>
+
+<BitStack Padding=""clamp(0.5rem, 2vw, 2rem)"" Class=""stack"" AutoHeight>
+    <div class=""item"">Padding clamp(0.5rem, 2vw, 2rem)</div>
 </BitStack>";
 
     private readonly string example11RazorCode = @"
+<style>
+    .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+</style>
+
+
 <BitStack Horizontal Element=""nav"" AriaLabel=""Main"" Class=""stack"" AutoHeight>
     <div class=""item"">Home</div>
     <div class=""item"">Products</div>
     <div class=""item"">About</div>
+</BitStack>
+
+<BitStack Element=""ul"" AriaLabel=""Tags"" Class=""stack list"" AutoHeight>
+    <li class=""item"">First</li>
+    <li class=""item"">Second</li>
+    <li class=""item"">Third</li>
 </BitStack>
 
 <div>

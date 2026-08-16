@@ -147,6 +147,36 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     public string? HorizontalGap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public string? HorizontalGapXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public string? HorizontalGapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public string? HorizontalGapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public string? HorizontalGapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public string? HorizontalGapXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the horizontal axis from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public string? HorizontalGapXxl { get; set; }
+
+    /// <summary>
     /// Gets or sets the direction of the stack from the extra small breakpoint (from 0px) upwards.
     /// </summary>
     public bool? HorizontalXs { get; set; }
@@ -237,9 +267,69 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
     public string? VerticalGap { get; set; }
 
     /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public string? VerticalGapXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public string? VerticalGapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public string? VerticalGapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public string? VerticalGapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public string? VerticalGapXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the spacing between the children of the stack measured along the vertical axis from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public string? VerticalGapXxl { get; set; }
+
+    /// <summary>
     /// Lets the children of the stack move onto more rows when they no longer fit on one.
     /// </summary>
     public bool? Wrap { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public bool? WrapXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public bool? WrapSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public bool? WrapMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public bool? WrapLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public bool? WrapXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the children of the stack may move onto more rows, from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public bool? WrapXxl { get; set; }
 
     /// <summary>
     /// Lets the children of the stack move onto more rows when they no longer fit on one, with the rows stacked in the opposite direction.
@@ -445,6 +535,54 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
+        if (HorizontalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXs)))
+        {
+            bitStack.HorizontalGapXs = HorizontalGapXs;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (HorizontalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapSm)))
+        {
+            bitStack.HorizontalGapSm = HorizontalGapSm;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (HorizontalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapMd)))
+        {
+            bitStack.HorizontalGapMd = HorizontalGapMd;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (HorizontalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapLg)))
+        {
+            bitStack.HorizontalGapLg = HorizontalGapLg;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (HorizontalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXl)))
+        {
+            bitStack.HorizontalGapXl = HorizontalGapXl;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (HorizontalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXxl)))
+        {
+            bitStack.HorizontalGapXxl = HorizontalGapXxl;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
         if (HorizontalXs.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXs)))
         {
             bitStack.HorizontalXs = HorizontalXs.Value;
@@ -579,9 +717,105 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
+        if (VerticalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXs)))
+        {
+            bitStack.VerticalGapXs = VerticalGapXs;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (VerticalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapSm)))
+        {
+            bitStack.VerticalGapSm = VerticalGapSm;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (VerticalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapMd)))
+        {
+            bitStack.VerticalGapMd = VerticalGapMd;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (VerticalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapLg)))
+        {
+            bitStack.VerticalGapLg = VerticalGapLg;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (VerticalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXl)))
+        {
+            bitStack.VerticalGapXl = VerticalGapXl;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (VerticalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXxl)))
+        {
+            bitStack.VerticalGapXxl = VerticalGapXxl;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
         if (Wrap.HasValue && bitStack.HasNotBeenSet(nameof(Wrap)))
         {
             bitStack.Wrap = Wrap.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapXs.HasValue && bitStack.HasNotBeenSet(nameof(WrapXs)))
+        {
+            bitStack.WrapXs = WrapXs.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapSm.HasValue && bitStack.HasNotBeenSet(nameof(WrapSm)))
+        {
+            bitStack.WrapSm = WrapSm.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapMd.HasValue && bitStack.HasNotBeenSet(nameof(WrapMd)))
+        {
+            bitStack.WrapMd = WrapMd.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapLg.HasValue && bitStack.HasNotBeenSet(nameof(WrapLg)))
+        {
+            bitStack.WrapLg = WrapLg.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapXl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXl)))
+        {
+            bitStack.WrapXl = WrapXl.Value;
+
+            bitStack.ClassBuilder.Reset();
+            bitStack.StyleBuilder.Reset();
+        }
+
+        if (WrapXxl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXxl)))
+        {
+            bitStack.WrapXxl = WrapXxl.Value;
 
             bitStack.ClassBuilder.Reset();
             bitStack.StyleBuilder.Reset();
