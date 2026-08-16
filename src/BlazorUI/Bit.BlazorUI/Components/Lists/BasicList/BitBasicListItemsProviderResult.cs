@@ -36,7 +36,7 @@ public static class BitBasicListItemsProviderResult
     /// Creates a result of the given items and total count.
     /// </summary>
     public static BitBasicListItemsProviderResult<TItem> From<TItem>(ICollection<TItem> items, int totalItemCount)
-        => new BitBasicListItemsProviderResult<TItem>(items, totalItemCount);
+        => new BitBasicListItemsProviderResult<TItem>(items ?? [], totalItemCount);
 
     /// <summary>
     /// Creates a result of the given items, taking the total count to be the number of items supplied.

@@ -599,9 +599,11 @@ public partial class BitBasicList<TItem> : BitComponentBase
             }
         }
 
+        if (IsDisposed) return;
+
         StateHasChanged();
 
-        if (loaded && IsDisposed is false)
+        if (loaded)
         {
             await OnLoadMore.InvokeAsync(_viewItems.Count);
         }
@@ -650,6 +652,8 @@ public partial class BitBasicList<TItem> : BitComponentBase
             }
         }
 
+        if (IsDisposed) return;
+
         StateHasChanged();
     }
 
@@ -659,9 +663,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
         _isLoadingMore = value;
 
-        StateHasChanged();
-
         if (IsDisposed) return;
+
+        StateHasChanged();
 
         await OnLoadingChange.InvokeAsync(value);
     }
