@@ -10,6 +10,7 @@
     background-color: var(--bit-drm-clr);
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     --bit-drm-transform-factor: 1;
+
     // The default look, kept identical to a BitColor of PrimaryBackground, is declared here rather than
     // through a role class so that leaving Color unset renders no color class at all.
     --bit-drm-clr: #{$clr-bg-pri};
@@ -117,7 +118,7 @@
     border-radius: 50%;
     box-sizing: border-box;
     border-color: $clr-brd-sec;
-    border-top-color: currentColor;
+    border-top-color: currentcolor;
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
     animation: bit-drm-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
@@ -152,6 +153,13 @@
     background-color: transparent;
 }
 
+// A drop menu that opens on hover is closed by the pointer leaving it, and the overlay would be the one
+// element the pointer could never leave it for: it covers the whole page while the callout is open, so it
+// would swallow the very mouseover events the mode is driven by. The page behind it keeps its own clicks.
+.bit-drm-ovl-hov {
+    pointer-events: none;
+}
+
 .bit-drm-cal {
     // The entry offset is signed by where the callout was placed, so it always slides out of the button:
     // downward when it opens below it, upward when there was only room above it. The attribute is set by
@@ -159,11 +167,18 @@
     --bit-drm-cal-tra-ent: translateY(#{spacing(-0.5)});
     --bit-drm-cal-opa: 0;
     --bit-drm-cal-tra: var(--bit-drm-cal-tra-ent);
+
     display: none;
     outline: transparent;
     position: fixed;
     box-sizing: border-box;
     z-index: $zindex-callout;
+    // The sizing the consumer asked for, defaulted to what the callout does on its own: as wide as its
+    // content needs it to be. The positioning code clears the inline width of the callout on every layout
+    // pass and only writes it back for MatchWidth, which is why these are declared rather than inlined.
+    width: var(--bit-drm-cal-wid, auto);
+    min-width: var(--bit-drm-cal-mnw, auto);
+    max-width: var(--bit-drm-cal-mxw, none);
     opacity: var(--bit-drm-cal-opa);
     transform: var(--bit-drm-cal-tra);
     box-shadow: $box-shadow-callout;
@@ -199,6 +214,12 @@
     &.bit-drm-mxh {
         overflow: hidden auto;
         max-height: var(--bit-drm-cal-mxh);
+    }
+
+    // The positioning code caps the callout to the room the viewport leaves; scrolling is what turns that
+    // cap into content the user can still reach rather than content that is simply cut off.
+    &.bit-drm-fit {
+        overflow: hidden auto;
     }
 
     &.bit-drm-nsh {
@@ -252,6 +273,16 @@
         max-height: unset;
         box-shadow: $box-shadow-callout;
         transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+
+        // On these screens the drop menu is a panel sized against the screen, so the MaxHeight cap of the
+        // callout does not apply to it. That cap is declared with two classes (.bit-drm-cal.bit-drm-mxh),
+        // so the override needs two of its own rather than the single class the panel styling carries.
+        // Scoping the cap itself would have taken it away from the responsive drop menus on the wider
+        // screens too, where their callout is an ordinary one and the cap is exactly what it asked for.
+        &.bit-drm-mxh {
+            overflow: hidden;
+            max-height: unset;
+        }
 
         &.bit-drm-sta {
             inset-block: 0;

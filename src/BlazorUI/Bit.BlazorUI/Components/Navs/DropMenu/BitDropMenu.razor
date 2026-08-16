@@ -2,6 +2,8 @@
 @inherits BitComponentBase
 
 <div @ref="RootElement" @attributes="HtmlAttributes"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
@@ -13,12 +15,13 @@
             id="@_buttonId"
             title="@Title"
             tabindex="@TabIndex"
-            aria-haspopup="true"
             aria-label="@AriaLabel"
+            aria-haspopup="@(TrapFocus ? "dialog" : "true")"
             aria-controls="@_calloutId"
             aria-hidden="@(AriaHidden ? "true" : null)"
             style="@Styles?.Button"
             aria-describedby="@AriaDescription"
+            aria-busy="@(IsLoading ? "true" : null)"
             disabled="@(IsEnabled is false || IsLoading)"
             aria-expanded="@(IsOpen ? "true" : "false")"
             class="bit-drm-btn @Classes?.Button">
@@ -66,14 +69,18 @@
 <div @onclick="CloseCallout" @onclick:stopPropagation
      style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
      id="@_overlayId"
-     class="bit-drm-ovl @Classes?.Overlay"></div>
+     class="@($"bit-drm-ovl{(HoverDriven ? " bit-drm-ovl-hov" : null)} {Classes?.Overlay}")"></div>
 
 <div @onkeydown="HandleOnCalloutKeyDown"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_calloutId"
      tabindex="-1"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"
      aria-labelledby="@_buttonId"
+     role="@(TrapFocus ? "dialog" : null)"
+     aria-modal="@(TrapFocus ? "true" : null)"
      dir="@Dir?.ToString().ToLower()">
     @(Body ?? ChildContent)
 </div>

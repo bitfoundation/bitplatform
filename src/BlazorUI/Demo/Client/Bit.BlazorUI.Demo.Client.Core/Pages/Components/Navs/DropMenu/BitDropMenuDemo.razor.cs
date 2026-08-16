@@ -118,6 +118,20 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "HoverCloseDelay",
+            Type = "int",
+            DefaultValue = "150",
+            Description = "The delay in milliseconds before the callout closes once the pointer leaves the drop menu in the OpenOnHover mode. It bridges the gap between the button and the callout, so moving the pointer from one to the other does not close what the pointer is on its way to."
+        },
+        new()
+        {
+            Name = "HoverOpenDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the callout opens once the pointer enters the drop menu in the OpenOnHover mode, so that passing over the button on the way somewhere else does not open it."
+        },
+        new()
+        {
             Name = "Icon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -139,7 +153,7 @@ public partial class BitDropMenuDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and prevents the callout from being opened."
+            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and disables the button, so the callout can no longer be opened by the user or by the Open and Toggle methods."
         },
         new()
         {
@@ -153,7 +167,7 @@ public partial class BitDropMenuDemo
             Name = "MatchWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Expands the callout of the drop menu to at least the width of the button of the drop menu."
+            Description = "Expands the callout of the drop menu to at least the width of the button of the drop menu. It is applied after the callout is measured, so it takes precedence over Width."
         },
         new()
         {
@@ -161,6 +175,20 @@ public partial class BitDropMenuDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The maximum height of the callout of the drop menu as a CSS value (e.g. \"20rem\"), beyond which its content scrolls."
+        },
+        new()
+        {
+            Name = "MaxWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The maximum width of the callout of the drop menu as a CSS value (e.g. \"20rem\"), beyond which its content wraps."
+        },
+        new()
+        {
+            Name = "MinWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The minimum width of the callout of the drop menu as a CSS value (e.g. \"20rem\"), so that a narrow content does not end up in a cramped callout."
         },
         new()
         {
@@ -196,6 +224,13 @@ public partial class BitDropMenuDemo
             Type = "EventCallback",
             DefaultValue = "",
             Description = "The callback is called when the callout of the drop menu is opened."
+        },
+        new()
+        {
+            Name = "OpenOnHover",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it, which is what a navigation menu is usually expected to do. The button keeps toggling the callout on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it."
         },
         new()
         {
@@ -266,6 +301,20 @@ public partial class BitDropMenuDemo
             DefaultValue = "false",
             Description = "Makes the background of the header of the drop menu transparent."
         },
+        new()
+        {
+            Name = "TrapFocus",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the keyboard inside the callout while it is open: the focus moves into it as it opens, Tab and Shift+Tab cycle within it instead of running on into the page behind it, and the callout reports itself as a modal dialog to the screen readers. It implies AutoFocus."
+        },
+        new()
+        {
+            Name = "Width",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The width of the callout of the drop menu as a CSS value (e.g. \"20rem\"). By default the callout is only as wide as its content needs. MatchWidth takes precedence over it."
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -310,7 +359,7 @@ public partial class BitDropMenuDemo
                     Name = "Opened",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the opened callout state of the BitDropMenu."
+                    Description = "Custom CSS classes/styles for the root element of the BitDropMenu while its callout is open, applied on top of the Root ones."
                 },
                 new()
                 {

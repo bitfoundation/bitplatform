@@ -64,11 +64,6 @@
             }
         }
 
-        // The elements a user can tab to, in DOM order. Used by the popup components that hand the
-        // keyboard over to their content as soon as it opens.
-        private static readonly FOCUSABLE_SELECTOR = 'a[href],button:not([disabled]),input:not([disabled])' +
-            ',select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"]),[contenteditable="true"]';
-
         // Moves the focus to the first focusable element inside the given container, falling back to the
         // container itself (which the caller makes programmatically focusable with tabindex="-1") when it
         // holds nothing focusable, so the focus never stays behind on the element that opened the popup.
@@ -77,12 +72,83 @@
             if (!container) return;
 
             try {
-                const candidates = Array.from(container.querySelectorAll(Utils.FOCUSABLE_SELECTOR)) as HTMLElement[];
+                // The same set the focus trap cycles through, so the element the focus lands on when the
+                // popup opens is the same one Shift+Tab wraps back to from the end of it.
+                const candidates = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables));
                 // offsetParent is null for a display:none subtree, which is how a hidden part of the
-                // content (e.g. a collapsed section) is skipped without measuring every ancestor.
-                const target = candidates.find(el => el.offsetParent !== null || getComputedStyle(el).position === 'fixed');
+                // content (e.g. a collapsed section) is skipped without measuring every ancestor. It is
+                // also null for a fixed-positioned element that is perfectly visible, so those are
+                // checked by hand instead: a hidden one has no box at all, and visibility:hidden leaves
+                // a box the focus still cannot land in.
+                const target = candidates.find(el => {
+                    if (el.offsetParent !== null) return true;
+
+                    const style = getComputedStyle(el);
+                    return style.position === 'fixed'
+                        && style.visibility !== 'hidden'
+                        && el.getClientRects().length > 0;
+                });
                 (target ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
+        }
+
+        // True when the focus currently sits inside the given container. The popup components ask before
+        // they close, since handing the focus back to the element that opened them is only correct when
+        // the focus was theirs to hand back - moving it out of wherever the user put it otherwise.
+        public static containsActiveElement(elementId: string) {
+            try {
+                const container = document.getElementById(elementId);
+                if (!container) return false;
+
+                const active = document.activeElement;
+                return active != null && active !== document.body && container.contains(active);
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.containsActiveElement:", e);
+                return false;
+            }
+        }
+
+        // Whether the pointer of the device is one that can actually hover, which the interactions that
+        // are driven by hovering have to know: a touch screen reports a mouseover for a tap, so a popup
+        // opening on hover would fight the tap that is also meant to toggle it.
+        public static isHoverDevice() {
+            try {
+                return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.isHoverDevice:", e);
+                return false;
+            }
+        }
+
+        private static _focusTraps = new Map<string, AbortController>();
+
+        // Keeps Tab and Shift+Tab cycling inside the given container for as long as it is registered, which
+        // is what a popup that takes the keyboard over has to do: the tab order runs on into the page behind
+        // it otherwise, leaving the focus somewhere an overlay swallows every click that could bring it back.
+        // Registering again on the same element replaces the previous registration.
+        public static setupFocusTrap(elementId: string) {
+            Utils.disposeFocusTrap(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Tab') return;
+
+                Utils.wrapFocus(element, e);
+            }, { signal: controller.signal });
+
+            Utils._focusTraps.set(elementId, controller);
+        }
+
+        public static disposeFocusTrap(elementId: string) {
+            const controller = Utils._focusTraps.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._focusTraps.delete(elementId);
         }
 
         private static _preventedKeys = new Map<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }>();
@@ -96,8 +162,10 @@
             const element = document.getElementById(elementId);
             if (!element) return;
 
+            // A modified key is a shortcut of the browser or of the operating system rather than the key
+            // the component handles, so its default action is left alone.
             const handler = (e: KeyboardEvent) => {
-                if (keys.indexOf(e.key) !== -1) {
+                if (keys.indexOf(e.key) !== -1 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
                     e.preventDefault();
                 }
             };

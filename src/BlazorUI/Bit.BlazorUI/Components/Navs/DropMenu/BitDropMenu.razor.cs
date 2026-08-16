@@ -15,9 +15,13 @@ public partial class BitDropMenu : BitComponentBase
     private string _overlayId = default!;
     private bool _openOnFirstRender;
     private bool _selfDrivenIsOpen;
+    private bool _focusTrapped;
+    private bool _hoverInside;
+    private bool? _isHoverDevice;
     private string? _swipesKey;
+    private CancellationTokenSource? _hoverCts;
     private ElementReference _buttonRef;
-    private DotNetObjectReference<BitDropMenu> _dotnetObj = default!;
+    private DotNetObjectReference<BitDropMenu>? _dotnetObj;
     private DotNetObjectReference<BitDropMenu>? _swipesDotnetObj;
 
 
@@ -116,6 +120,20 @@ public partial class BitDropMenu : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the callout closes once the pointer leaves the drop menu in the
+    /// <see cref="OpenOnHover"/> mode. It bridges the gap between the button and the callout, so moving the
+    /// pointer from one to the other does not close what the pointer is on its way to. Defaults to 150.
+    /// </summary>
+    [Parameter] public int HoverCloseDelay { get; set; } = 150;
+
+    /// <summary>
+    /// The delay in milliseconds before the callout opens once the pointer enters the drop menu in the
+    /// <see cref="OpenOnHover"/> mode, so that passing over the button on the way somewhere else does not
+    /// open it. Defaults to 0, which opens it as soon as the pointer arrives.
+    /// </summary>
+    [Parameter] public int HoverOpenDelay { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display inside the header of the drop menu using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -142,8 +160,9 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public string? IconName { get; set; }
 
     /// <summary>
-    /// Determines whether the drop menu is in the loading state.
-    /// It replaces the icon of the button with a spinner and prevents the callout from being opened.
+    /// Determines whether the drop menu is in the loading state. It replaces the icon of the button with a
+    /// spinner and disables the button, so the callout can no longer be opened by the user or by the
+    /// <see cref="Open"/> and <see cref="Toggle"/> methods.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool IsLoading { get; set; }
@@ -157,6 +176,7 @@ public partial class BitDropMenu : BitComponentBase
 
     /// <summary>
     /// Expands the callout of the drop menu to at least the width of the button of the drop menu.
+    /// It is applied after the callout is measured, so it takes precedence over <see cref="Width"/>.
     /// </summary>
     [Parameter] public bool MatchWidth { get; set; }
 
@@ -164,6 +184,17 @@ public partial class BitDropMenu : BitComponentBase
     /// The maximum height of the callout of the drop menu as a CSS value (e.g. "20rem"), beyond which its content scrolls.
     /// </summary>
     [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// The maximum width of the callout of the drop menu as a CSS value (e.g. "20rem"), beyond which its content wraps.
+    /// </summary>
+    [Parameter] public string? MaxWidth { get; set; }
+
+    /// <summary>
+    /// The minimum width of the callout of the drop menu as a CSS value (e.g. "20rem"), so that a narrow
+    /// content does not end up in a cramped callout.
+    /// </summary>
+    [Parameter] public string? MinWidth { get; set; }
 
     /// <summary>
     /// Removes the chevron-down icon from the button of the drop menu.
@@ -189,6 +220,14 @@ public partial class BitDropMenu : BitComponentBase
     /// The callback is called when the callout of the drop menu is opened.
     /// </summary>
     [Parameter] public EventCallback OnOpen { get; set; }
+
+    /// <summary>
+    /// Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it,
+    /// which is what a navigation menu is usually expected to do. The button keeps toggling the callout on
+    /// a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns
+    /// itself off - are left with a way to reach it.
+    /// </summary>
+    [Parameter] public bool OpenOnHover { get; set; }
 
     /// <summary>
     /// The position of the responsive panel to show on the screen.
@@ -237,6 +276,20 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
 
+    /// <summary>
+    /// Keeps the keyboard inside the callout while it is open: the focus moves into it as it opens, Tab and
+    /// Shift+Tab cycle within it instead of running on into the page behind it, and the callout reports
+    /// itself as a modal dialog to the screen readers. It is what the callouts that host a form or a filter
+    /// panel need, and it implies <see cref="AutoFocus"/>.
+    /// </summary>
+    [Parameter] public bool TrapFocus { get; set; }
+
+    /// <summary>
+    /// The width of the callout of the drop menu as a CSS value (e.g. "20rem"). By default the callout is
+    /// only as wide as its content needs. <see cref="MatchWidth"/> takes precedence over it.
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
 
 
     /// <summary>
@@ -254,7 +307,12 @@ public partial class BitDropMenu : BitComponentBase
     /// </summary>
     public async Task Close()
     {
-        await CloseCallout();
+        // A drop menu that is already closed has nothing to close, and going through with it would reach
+        // the JS side to reposition a callout that is not shown.
+        if (IsOpen)
+        {
+            await CloseCallout();
+        }
 
         await InvokeAsync(StateHasChanged);
     }
@@ -281,6 +339,10 @@ public partial class BitDropMenu : BitComponentBase
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
+        // The callout has already been hidden by the JS side, which is why nothing is toggled here. The
+        // focus is deliberately left where it is: whatever took over from this callout is about to take it.
+        await DisposeFocusTrap();
+
         await DismissCallout();
 
         StateHasChanged();
@@ -388,11 +450,35 @@ public partial class BitDropMenu : BitComponentBase
             await DisposeSwipes();
             await SetupSwipes();
         }
+
+        // The focus trap is registered against the open callout, so turning it on or off while the callout
+        // is open has to reach the already registered one rather than wait for the next time it opens.
+        if (IsRendered && IsOpen)
+        {
+            if (TrapFocus)
+            {
+                await SetupFocusTrap();
+            }
+            else
+            {
+                await DisposeFocusTrap();
+            }
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+
+        // Whether the pointer of the device can hover at all decides both whether the hover mode applies
+        // and whether the overlay may stop taking the clicks, so it is resolved before the drop menu is
+        // interacted with rather than on the first hover, and only for the drop menus that ask for it.
+        if (OpenOnHover && _isHoverDevice is null)
+        {
+            _isHoverDevice = await GetIsHoverDevice();
+
+            StateHasChanged();
+        }
 
         if (firstRender is false) return;
 
@@ -416,6 +502,8 @@ public partial class BitDropMenu : BitComponentBase
 
             await ToggleCallout();
 
+            await SetupFocusTrap();
+
             await FocusCalloutIfNeeded();
         }
     }
@@ -428,14 +516,16 @@ public partial class BitDropMenu : BitComponentBase
 
         // A click on the trigger while the callout is open usually lands on the overlay above it, but a
         // keyboard activation always arrives here, as does a click when an ancestor stacking context
-        // lifts the trigger over the overlay, so activating an open drop menu closes it.
-        if (IsOpen)
-        {
-            await CloseCallout();
-        }
-        else
+        // lifts the trigger over the overlay, so activating an open drop menu closes it. The exception is
+        // the pointer that opened the callout by hovering and is still on the button: closing here would
+        // take away what the user has only just been shown, and moving the pointer off closes it anyway.
+        if (IsOpen is false)
         {
             await OpenCallout();
+        }
+        else if (HoverDriven is false || _hoverInside is false)
+        {
+            await CloseCallout();
         }
 
         await OnClick.InvokeAsync();
@@ -456,7 +546,9 @@ public partial class BitDropMenu : BitComponentBase
         {
             if (IsOpen) return;
 
-            await OpenCallout();
+            // The arrow keys are how the keyboard reaches the content of a menu button, so unlike a click
+            // they always hand the focus over to it, whether or not the drop menu was asked to do so.
+            await OpenCallout(focusCallout: true);
             StateHasChanged();
         }
     }
@@ -467,16 +559,54 @@ public partial class BitDropMenu : BitComponentBase
 
         if (e.Key is not "Escape") return;
 
+        // The focus is inside the callout, so closing it hands the focus back to the trigger on its own.
         await CloseCallout();
 
         // The close runs on the callout's own event, which does not re-render the button, so refresh
-        // the open-state classes and aria-expanded here before handing the focus back to the trigger.
+        // the open-state classes and aria-expanded here.
         StateHasChanged();
-
-        await FocusButton();
     }
 
-    private async Task OpenCallout()
+    private async Task HandleOnMouseEnter()
+    {
+        if (HoverDriven is false) return;
+
+        _hoverInside = true;
+
+        // Whichever of the two is pending: entering the callout cancels the close the pointer leaving the
+        // button scheduled, and coming back to the button cancels the close leaving the callout scheduled.
+        CancelHover();
+
+        if (IsEnabled is false || IsLoading || IsOpen) return;
+
+        if (await DelayHover(HoverOpenDelay) is false) return;
+
+        await OpenCallout();
+
+        StateHasChanged();
+    }
+
+    private async Task HandleOnMouseLeave()
+    {
+        if (HoverDriven is false) return;
+
+        _hoverInside = false;
+
+        CancelHover();
+
+        if (IsEnabled is false || IsOpen is false) return;
+
+        if (await DelayHover(HoverCloseDelay) is false) return;
+
+        // The pointer came back before the delay was up, onto the button or into the callout.
+        if (_hoverInside) return;
+
+        await CloseCallout();
+
+        StateHasChanged();
+    }
+
+    private async Task OpenCallout(bool focusCallout = false)
     {
         if (IsOpen || IsLoading) return;
 
@@ -495,13 +625,21 @@ public partial class BitDropMenu : BitComponentBase
 
         await ToggleCallout();
 
-        await FocusCalloutIfNeeded();
+        await SetupFocusTrap();
+
+        await FocusCalloutIfNeeded(focusCallout);
 
         await OnOpen.InvokeAsync();
     }
 
     private async Task CloseCallout()
     {
+        var wasOpen = IsOpen;
+
+        // Whether the focus is the callout's to hand back has to be known before the callout is hidden,
+        // since hiding the element the focus sits in is what drops the focus to the body.
+        var restoreFocus = wasOpen && await CalloutContainsFocus();
+
         _selfDrivenIsOpen = true;
         try
         {
@@ -512,7 +650,20 @@ public partial class BitDropMenu : BitComponentBase
             _selfDrivenIsOpen = false;
         }
 
+        // An IsOpen the parent holds at true without a change callback stays open: toggling the callout
+        // here would only replay the entry animation of a callout that is not going anywhere.
+        if (wasOpen && IsOpen) return;
+
+        await DisposeFocusTrap();
+
         await ToggleCallout();
+
+        // The element the focus was on is gone with the callout, which would leave the focus on the body
+        // and the keyboard back at the top of the page, so it goes back to the trigger it came from.
+        if (restoreFocus)
+        {
+            await FocusButton();
+        }
     }
 
     private async Task ToggleCallout()
@@ -522,24 +673,32 @@ public partial class BitDropMenu : BitComponentBase
         // The reference is created on the first render, so before it there is nothing to position either.
         if (_dotnetObj is null) return;
 
-        await _js.BitCalloutToggleCallout(
-            dotnetObj: _dotnetObj,
-            componentId: _Id,
-            component: null,
-            calloutId: _calloutId,
-            callout: null,
-            overlayId: _overlayId,
-            isCalloutOpen: IsOpen,
-            responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
-            dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
-            scrollContainerId: ScrollContainerId ?? "",
-            scrollOffset: 0,
-            headerId: "",
-            footerId: "",
-            setCalloutWidth: MatchWidth,
-            fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+        try
+        {
+            await _js.BitCalloutToggleCallout(
+                dotnetObj: _dotnetObj,
+                componentId: _Id,
+                component: null,
+                calloutId: _calloutId,
+                callout: null,
+                overlayId: _overlayId,
+                isCalloutOpen: IsOpen,
+                responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
+                dropDirection: DropDirection,
+                isRtl: Dir is BitDir.Rtl,
+                // Whatever is named as the scrollable part of the content is what the positioning code caps to
+                // the room the viewport leaves. With nothing named, the callout itself takes that role, so that
+                // content taller than the screen scrolls inside the callout instead of running off the bottom
+                // of it, where a fixed-positioned element leaves it out of reach of the page's own scrolling.
+                scrollContainerId: ScrollContainerId ?? (FitsToViewport ? _calloutId : ""),
+                scrollOffset: 0,
+                headerId: "",
+                footerId: "",
+                setCalloutWidth: MatchWidth,
+                fixedCalloutWidth: false,
+                maxWindowWidth: 0);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private void OnSetIsOpen()
@@ -554,7 +713,28 @@ public partial class BitDropMenu : BitComponentBase
             return;
         }
 
-        _ = ToggleCallout();
+        _ = ToggleCalloutFromOutside();
+    }
+
+    // The open state changing from the outside goes through the same steps the component's own open and
+    // close path does, so that a drop menu driven by its IsOpen parameter alone still hands the keyboard
+    // over to its content and still keeps it there.
+    private async Task ToggleCalloutFromOutside()
+    {
+        if (IsOpen)
+        {
+            await ToggleCallout();
+
+            await SetupFocusTrap();
+
+            await FocusCalloutIfNeeded();
+        }
+        else
+        {
+            await DisposeFocusTrap();
+
+            await ToggleCallout();
+        }
     }
 
     private async Task DismissCallout()
@@ -568,9 +748,13 @@ public partial class BitDropMenu : BitComponentBase
         await OnDismiss.InvokeAsync();
     }
 
-    private async Task FocusCalloutIfNeeded()
+    private async Task FocusCalloutIfNeeded(bool force = false)
     {
-        if (AutoFocus is false || IsOpen is false || IsDisposed) return;
+        // A trapped callout has to hold the focus to trap it: leaving it on the trigger would let the very
+        // first Tab out of the callout, since the trap only ever sees the keys pressed inside of it.
+        if ((force || AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
+
+        if (_dotnetObj is null) return;
 
         try
         {
@@ -586,6 +770,98 @@ public partial class BitDropMenu : BitComponentBase
         try
         {
             await _buttonRef.FocusAsync();
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task<bool> CalloutContainsFocus()
+    {
+        // Before the first render there is neither a callout nor a JS side to ask about it.
+        if (IsDisposed || _dotnetObj is null) return false;
+
+        try
+        {
+            return await _js.BitUtilsContainsActiveElement(_calloutId);
+        }
+        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
+    }
+
+    private async Task<bool> GetIsHoverDevice()
+    {
+        try
+        {
+            return await _js.BitUtilsIsHoverDevice();
+        }
+        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
+    }
+
+    // The hover mode only applies to the devices that have a pointer to hover with: a tap on a touch
+    // screen reports a mouseover of its own, which would fight the click that is meant to toggle the menu.
+    private bool HoverDriven => OpenOnHover && _isHoverDevice is true;
+
+    // Whether the callout is the one that has to be kept within the viewport. A named scroll container is
+    // the consumer taking that over, a max height is the consumer capping it by hand, and a responsive
+    // drop menu is a panel sized against the screen on exactly the screens where the callout would not fit.
+    private bool FitsToViewport => Responsive is false && MaxHeight.HasValue() is false && ScrollContainerId.HasValue() is false;
+
+    private void CancelHover()
+    {
+        var cts = _hoverCts;
+        if (cts is null) return;
+
+        _hoverCts = null;
+        cts.Cancel();
+        cts.Dispose();
+    }
+
+    // Waits out the hover delay and reports whether the wait is still the one that matters: the pointer
+    // moving again cancels it, and the drop menu may be gone by the time it is over.
+    private async Task<bool> DelayHover(int delay)
+    {
+        if (delay <= 0) return IsDisposed is false;
+
+        var cts = new CancellationTokenSource();
+        _hoverCts = cts;
+
+        try
+        {
+            await Task.Delay(delay, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(_hoverCts, cts) is false) return false;
+
+        _hoverCts = null;
+        cts.Dispose();
+
+        return IsDisposed is false;
+    }
+
+    private async Task SetupFocusTrap()
+    {
+        if (TrapFocus is false || _focusTrapped || IsDisposed || _dotnetObj is null) return;
+
+        _focusTrapped = true;
+
+        try
+        {
+            await _js.BitUtilsSetupFocusTrap(_calloutId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    private async Task DisposeFocusTrap()
+    {
+        if (_focusTrapped is false) return;
+
+        _focusTrapped = false;
+
+        try
+        {
+            await _js.BitUtilsDisposeFocusTrap(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -641,11 +917,14 @@ public partial class BitDropMenu : BitComponentBase
 
     private string? GetCalloutStyles()
     {
-        // The positioning code clears the callout's inline max-height on every layout pass, so the cap
-        // travels as a custom property the stylesheet reads instead of as a max-height of its own.
+        // The positioning code clears the callout's inline sizing on every layout pass, so the caps travel
+        // as custom properties the stylesheet reads instead of as declarations of their own.
         var maxHeight = MaxHeight.HasValue() ? $"--bit-drm-cal-mxh:{MaxHeight};" : null;
+        var width = Width.HasValue() ? $"--bit-drm-cal-wid:{Width};" : null;
+        var minWidth = MinWidth.HasValue() ? $"--bit-drm-cal-mnw:{MinWidth};" : null;
+        var maxWidth = MaxWidth.HasValue() ? $"--bit-drm-cal-mxw:{MaxWidth};" : null;
 
-        var result = $"{maxHeight}{Styles?.Callout}";
+        var result = $"{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Callout}";
 
         return result.HasValue() ? result : null;
     }
@@ -688,6 +967,11 @@ public partial class BitDropMenu : BitComponentBase
         if (MaxHeight.HasValue())
         {
             classes.Add("bit-drm-mxh");
+        }
+
+        if (FitsToViewport)
+        {
+            classes.Add("bit-drm-fit");
         }
 
         var backgroundClass = Background switch
@@ -739,10 +1023,13 @@ public partial class BitDropMenu : BitComponentBase
 
         await base.DisposeAsync(disposing);
 
+        CancelHover();
+
         try
         {
             await _js.BitCalloutClearCallout(_calloutId);
             await _js.BitUtilsDisposePreventDefaultKeys(_buttonId);
+            await _js.BitUtilsDisposeFocusTrap(_calloutId);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
