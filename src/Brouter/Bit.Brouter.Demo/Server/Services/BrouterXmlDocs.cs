@@ -15,6 +15,8 @@ namespace Bit.Brouter.Demo.Server.Services;
 /// </summary>
 public static partial class BrouterXmlDocs
 {
+    private const char CodeMarker = (char)1;
+
     private static readonly Lazy<FrozenDictionary<string, XElement>> _members = new(Load);
 
     /// <summary>The flattened &lt;summary&gt; of a documented member, or null.</summary>
@@ -65,8 +67,9 @@ public static partial class BrouterXmlDocs
     private static string Flatten(XElement element)
     {
         var builder = new StringBuilder();
+        var codeSamples = new List<string>();
 
-        Write(element, builder);
+        Write(element, builder, codeSamples);
 
         var text = builder.ToString().Replace("\r\n", "\n", StringComparison.Ordinal);
 
@@ -76,10 +79,23 @@ public static partial class BrouterXmlDocs
         text = ParagraphBreakRegex().Replace(text, "\n\n");
         text = RepeatedSpaceRegex().Replace(text, " ");
 
+        // A code sample only stood in as a placeholder while the prose was unwrapped: its own line
+        // breaks and indentation are the sample, not source wrapping, and go back in verbatim.
+        for (int i = 0; i < codeSamples.Count; i++)
+        {
+            text = text.Replace(CodePlaceholder(i), codeSamples[i], StringComparison.Ordinal);
+        }
+
         return text.Trim();
     }
 
-    private static void Write(XNode node, StringBuilder builder)
+    /// <summary>
+    /// Stands in for a code sample while the prose is unwrapped. U+0001 never occurs in
+    /// documentation text, and none of the whitespace passes above can touch it.
+    /// </summary>
+    private static string CodePlaceholder(int index) => $"{CodeMarker}{index}{CodeMarker}";
+
+    private static void Write(XNode node, StringBuilder builder, List<string> codeSamples)
     {
         switch (node)
         {
@@ -100,21 +116,24 @@ public static partial class BrouterXmlDocs
 
                     case "para":
                         builder.Append('\n');
-                        foreach (var child in element.Nodes()) Write(child, builder);
+                        foreach (var child in element.Nodes()) Write(child, builder, codeSamples);
                         builder.Append('\n');
                         return;
 
                     case "code":
-                        builder.Append('\n').Append(element.Value.Trim()).Append('\n');
+                        // Blank lines on both sides, so the sample is a block of its own rather than
+                        // a sentence that happens to continue in code.
+                        builder.Append("\n\n").Append(CodePlaceholder(codeSamples.Count)).Append("\n\n");
+                        codeSamples.Add(element.Value.Trim());
                         return;
 
                     case "param" or "typeparam":
                         builder.Append('\n').Append(element.Attribute("name")?.Value).Append(": ");
-                        foreach (var child in element.Nodes()) Write(child, builder);
+                        foreach (var child in element.Nodes()) Write(child, builder, codeSamples);
                         return;
 
                     default:
-                        foreach (var child in element.Nodes()) Write(child, builder);
+                        foreach (var child in element.Nodes()) Write(child, builder, codeSamples);
                         return;
                 }
         }

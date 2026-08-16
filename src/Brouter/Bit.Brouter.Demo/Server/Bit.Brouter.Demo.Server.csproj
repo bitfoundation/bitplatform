@@ -41,12 +41,19 @@
             <LogicalName>BrouterSource/Demo/Server/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <!-- The minimal hosting samples - one per Blazor render mode. Samples\Core is left out on
-             purpose: it is a smaller copy of this demo's pages, and the demo itself is embedded above. -->
+        <!-- The minimal hosting samples - one per Blazor render mode. The rest of Samples\Core is
+             left out on purpose: it is a smaller copy of this demo's pages, and the demo itself is
+             embedded above. Its service registration is the exception - it is the shared method the
+             two containers of a Web App both call, which is exactly what the setup guide has to show. -->
         <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj"
-                          Exclude="..\..\Samples\Core\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**">
+                          Exclude="..\..\Samples\Core\*.razor;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**">
             <LogicalName>BrouterSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
+
+        <!-- Named outright: %(RecursiveDir) only captures what a '**' matched, so a glob with a fixed
+             folder prefix would flatten this file to the Sample/ root. -->
+        <EmbeddedResource Include="..\..\Samples\Core\Extensions\IServiceCollectionExtensions.cs"
+                          LogicalName="BrouterSource/Sample/Core/Extensions/IServiceCollectionExtensions.cs" />
     </ItemGroup>
 
 </Project>

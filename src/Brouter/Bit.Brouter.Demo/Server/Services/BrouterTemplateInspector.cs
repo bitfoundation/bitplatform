@@ -60,27 +60,124 @@ public static class BrouterTemplateInspector
 
         if (parsed is null)
         {
-            return new BrouterTemplateInspectionDto { Template = template, IsValid = false, Error = "The template could not be parsed." };
+            return Unavailable(template);
         }
 
-        var segments = ((IEnumerable)parser.Segments.GetValue(parsed)!).Cast<object>().ToArray();
-        var dtos = new BrouterTemplateSegmentDto[segments.Length];
-
-        for (int i = 0; i < segments.Length; i++)
+        try
         {
-            dtos[i] = Describe(parser, segments[i]);
+            var segments = (parser.Segments.GetValue(parsed) as IEnumerable)?.Cast<object>().ToArray() ?? [];
+            var dtos = new BrouterTemplateSegmentDto[segments.Length];
+
+            for (int i = 0; i < segments.Length; i++)
+            {
+                dtos[i] = Describe(parser, segments[i]);
+            }
+
+            return new BrouterTemplateInspectionDto
+            {
+                Template = template,
+                IsValid = true,
+                NormalizedTemplate = parser.Template.GetValue(parsed) as string,
+                Specificity = dtos.Sum(s => s.Specificity),
+                ParameterNames = [.. dtos.SelectMany(s => s.ParameterNames ?? [])],
+                Segments = dtos,
+                Notes = [.. Notes(dtos)]
+            };
+        }
+        catch (Exception)
+        {
+            // The template parsed; only reading the result back failed - a property that moved or
+            // changed shape. Same answer as an unreachable parser: unavailable, never a wrong report.
+            return Unavailable(template);
+        }
+    }
+
+    private static BrouterTemplateInspectionDto Unavailable(string template) => new()
+    {
+        Template = template,
+        IsValid = false,
+        Error = "The template could not be parsed."
+    };
+
+    /// <summary>
+    /// Parses a whole set of templates and reports how they relate: which one the router prefers
+    /// when more than one matches, and which of them are indistinguishable.
+    /// </summary>
+    public static BrouterRouteTableAnalysisDto Analyze(IEnumerable<string> templates, BrouterConstraintRegistry? constraints)
+    {
+        var inspections = templates.Where(t => string.IsNullOrWhiteSpace(t) is false)
+                                   .Select(t => Inspect(t.Trim(), constraints))
+                                   .ToArray();
+
+        var entries = inspections.Select(inspection => new BrouterRouteTableEntryDto
+        {
+            Template = inspection.Template,
+            IsValid = inspection.IsValid,
+            Error = inspection.Error,
+            Specificity = inspection.Specificity,
+            Shape = inspection.IsValid ? Shape(inspection) : null
+        }).ToArray();
+
+        // Specificity is the router's tie-break between routes that all match a URL.
+        var ordered = entries.OrderByDescending(e => e.IsValid)
+                             .ThenByDescending(e => e.Specificity)
+                             .Select((entry, index) => entry with { MatchOrder = index + 1 })
+                             .ToArray();
+
+        var ambiguous = ordered.Where(e => e.Shape is not null)
+                               .GroupBy(e => e.Shape!, StringComparer.Ordinal)
+                               .Where(group => group.Count() > 1)
+                               .Select(group => group.Select(e => e.Template).ToArray())
+                               .ToArray();
+
+        var notes = new List<string>();
+
+        if (ambiguous.Length > 0)
+        {
+            notes.Add("Templates sharing a shape match exactly the same URLs, so the winner would come down to " +
+                      "registration order alone - Brouter refuses to register them and throws. Change or remove one of each group.");
         }
 
-        return new BrouterTemplateInspectionDto
+        if (ordered.Any(e => e.IsValid is false))
         {
-            Template = template,
-            IsValid = true,
-            NormalizedTemplate = (string?)parser.Template.GetValue(parsed),
-            Specificity = dtos.Sum(s => s.Specificity),
-            ParameterNames = [.. dtos.SelectMany(s => s.ParameterNames ?? [])],
-            Segments = dtos,
-            Notes = [.. Notes(dtos)]
-        };
+            notes.Add("An invalid template throws while its <Broute> initializes, so the route never registers.");
+        }
+
+        notes.Add("Specificity ranks routes that ALL match the same URL; it does not decide whether a route matches at all. " +
+                  "This analysis treats the templates as a flat set - nesting depth and index routes ('' under a parent) add " +
+                  "further tie-breaks that only exist once the routes sit in a tree.");
+
+        return new BrouterRouteTableAnalysisDto { Routes = ordered, Ambiguous = ambiguous, Notes = [.. notes] };
+    }
+
+    /// <summary>
+    /// The template stripped of everything matching ignores - parameter names above all, since
+    /// "/users/{id}" and "/users/{userId}" accept exactly the same URLs.
+    /// </summary>
+    private static string Shape(BrouterTemplateInspectionDto inspection)
+    {
+        return string.Join('/', (inspection.Segments ?? []).Select(segment => segment.Kind switch
+        {
+            "Literal" => segment.Value.ToLowerInvariant(),
+            "Wildcard" => "*",
+            "CatchAll" => $"{{**{string.Concat((segment.Constraints ?? []).Select(c => $":{c.ToLowerInvariant()}"))}}}",
+            "Complex" => ComplexShape(segment),
+            _ => $"{{{string.Concat((segment.Constraints ?? []).Select(c => $":{c.ToLowerInvariant()}"))}{(segment.IsOptional ? "?" : null)}}}"
+        }));
+    }
+
+    private static string ComplexShape(BrouterTemplateSegmentDto segment)
+    {
+        // The literal text between the parameters is what distinguishes two complex segments, and it
+        // survives in the segment's own text once the parameter names are blanked out.
+        var shape = segment.Value;
+
+        foreach (var name in segment.ParameterNames ?? [])
+        {
+            shape = shape.Replace($"{{{name}", "{", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return shape.ToLowerInvariant();
     }
 
     private static BrouterTemplateSegmentDto Describe(Reflected parser, object segment)
@@ -187,23 +284,45 @@ public static class BrouterTemplateInspector
             var parse = parserType.GetMethod("ParseTemplate", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             if (parse is null) return null;
 
+            // Every property is read unconditionally later on, so a single one that moved has to fail
+            // the whole reflection - the tool then says "unavailable" instead of throwing per call.
+            var template = templateType.GetProperty("Template", flags);
+            var segments = templateType.GetProperty("TemplateSegments", flags);
+            var value = segmentType.GetProperty("Value", flags);
+            var isParameter = segmentType.GetProperty("IsParameter", flags);
+            var isCatchAll = segmentType.GetProperty("IsCatchAll", flags);
+            var isSingleWildcard = segmentType.GetProperty("IsSingleWildcard", flags);
+            var isOptional = segmentType.GetProperty("IsOptional", flags);
+            var defaultValue = segmentType.GetProperty("DefaultValue", flags);
+            var constraints = segmentType.GetProperty("Constraints", flags);
+            var parts = segmentType.GetProperty("Parts", flags);
+            var parameterNames = segmentType.GetProperty("ParameterNames", flags);
+            var specificity = segmentType.GetProperty("Specificity", flags);
+            var partConstraints = partType.GetProperty("Constraints", flags);
+            var constraintName = bindingType.GetProperty("Name", flags);
+
+            if (template is null || segments is null || value is null || isParameter is null || isCatchAll is null ||
+                isSingleWildcard is null || isOptional is null || defaultValue is null || constraints is null ||
+                parts is null || parameterNames is null || specificity is null || partConstraints is null ||
+                constraintName is null) return null;
+
             return new Reflected
             {
                 ParseTemplate = parse,
-                Template = templateType.GetProperty("Template", flags)!,
-                Segments = templateType.GetProperty("TemplateSegments", flags)!,
-                Value = segmentType.GetProperty("Value", flags)!,
-                IsParameter = segmentType.GetProperty("IsParameter", flags)!,
-                IsCatchAll = segmentType.GetProperty("IsCatchAll", flags)!,
-                IsSingleWildcard = segmentType.GetProperty("IsSingleWildcard", flags)!,
-                IsOptional = segmentType.GetProperty("IsOptional", flags)!,
-                DefaultValue = segmentType.GetProperty("DefaultValue", flags)!,
-                Constraints = segmentType.GetProperty("Constraints", flags)!,
-                Parts = segmentType.GetProperty("Parts", flags)!,
-                ParameterNames = segmentType.GetProperty("ParameterNames", flags)!,
-                Specificity = segmentType.GetProperty("Specificity", flags)!,
-                PartConstraints = partType.GetProperty("Constraints", flags)!,
-                ConstraintName = bindingType.GetProperty("Name", flags)!
+                Template = template,
+                Segments = segments,
+                Value = value,
+                IsParameter = isParameter,
+                IsCatchAll = isCatchAll,
+                IsSingleWildcard = isSingleWildcard,
+                IsOptional = isOptional,
+                DefaultValue = defaultValue,
+                Constraints = constraints,
+                Parts = parts,
+                ParameterNames = parameterNames,
+                Specificity = specificity,
+                PartConstraints = partConstraints,
+                ConstraintName = constraintName
             };
         }
         catch (Exception)

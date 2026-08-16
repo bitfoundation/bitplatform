@@ -24,6 +24,7 @@ public static partial class BrouterSourceCatalog
     private static readonly Assembly _assembly = typeof(BrouterSourceCatalog).Assembly;
 
     private static readonly Lazy<string> _readme = new(() => ReadResource(ReadmeResource) ?? string.Empty);
+    private static readonly Lazy<string[]> _readmeLines = new(() => Readme.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n'));
     private static readonly Lazy<BrouterGuideSectionDto[]> _guideSections = new(BuildGuideSections);
     private static readonly Lazy<FrozenDictionary<string, string>> _sourceFiles = new(BuildSourceFiles);
     private static readonly Lazy<BrouterSourceFileDto[]> _sourceFileList = new(BuildSourceFileList);
@@ -46,12 +47,21 @@ public static partial class BrouterSourceCatalog
     {
         if (string.IsNullOrWhiteSpace(heading)) return null;
 
-        var lines = Readme.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+        var lines = _readmeLines.Value;
         var normalized = NormalizeHeading(heading);
 
         int start = -1, level = 0;
+        var fenced = false;
         for (int i = 0; i < lines.Length; i++)
         {
+            if (IsCodeFence(lines[i]))
+            {
+                fenced = fenced is false;
+                continue;
+            }
+
+            if (fenced) continue;
+
             if (TryReadHeading(lines[i], out var lineLevel, out var text) is false) continue;
 
             if (start < 0)
@@ -92,11 +102,20 @@ public static partial class BrouterSourceCatalog
 
     private static BrouterGuideSectionDto[] BuildGuideSections()
     {
-        var lines = Readme.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+        var lines = _readmeLines.Value;
         var headings = new List<(int Index, int Level, string Text)>();
 
+        var fenced = false;
         for (int i = 0; i < lines.Length; i++)
         {
+            if (IsCodeFence(lines[i]))
+            {
+                fenced = fenced is false;
+                continue;
+            }
+
+            if (fenced) continue;
+
             if (TryReadHeading(lines[i], out var level, out var text) && level is 2 or 3)
             {
                 headings.Add((i, level, text));
@@ -208,6 +227,17 @@ public static partial class BrouterSourceCatalog
         if (stop > 0) text = text[..(stop + 1)];
 
         return text.Length <= 220 ? text : $"{text[..217]}...";
+    }
+
+    /// <summary>
+    /// A Markdown code fence. A '#' line inside one is a shell comment or a C# preprocessor
+    /// directive, not a heading, and must not start or end a guide section.
+    /// </summary>
+    private static bool IsCodeFence(string line)
+    {
+        var text = line.TrimStart();
+
+        return text.StartsWith("```", StringComparison.Ordinal) || text.StartsWith("~~~", StringComparison.Ordinal);
     }
 
     private static bool TryReadHeading(string line, out int level, out string text)

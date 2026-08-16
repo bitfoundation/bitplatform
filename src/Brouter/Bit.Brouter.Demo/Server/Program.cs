@@ -14,7 +14,9 @@ builder.Services.AddDemoServices();
 builder.Services.AddControllers();
 builder.Services.AddMcpServer()
     .WithHttpTransport()
-    .WithToolsFromAssembly();
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly();
 
 // Renders a docs page outside of a request's component hierarchy, so its content can be handed to
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.

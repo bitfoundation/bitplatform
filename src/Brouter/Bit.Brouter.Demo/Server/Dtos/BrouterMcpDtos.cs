@@ -93,6 +93,16 @@ public record BrouterApiTypeDetailsDto
     public required BrouterApiMemberDto[] Members { get; init; }
 }
 
+/// <summary>What GetBrouterApiDetails answers: the type's reference, or why there is none.</summary>
+public record BrouterApiDetailsResultDto
+{
+    /// <summary>The full reference of the type, when a public type goes by the requested name.</summary>
+    public BrouterApiTypeDetailsDto? Details { get; init; }
+
+    /// <summary>Set instead of Details when nothing matched - it names the closest candidates.</summary>
+    public string? Message { get; init; }
+}
+
 /// <summary>A route constraint usable inside a route template, e.g. <c>{id:int}</c>.</summary>
 public record BrouterConstraintDto
 {
@@ -125,6 +135,82 @@ public record BrouterSourceFileDto
     public string? Description { get; init; }
 
     public required int Lines { get; init; }
+}
+
+/// <summary>One result of a search across everything this MCP server knows about Bit.Brouter.</summary>
+public record BrouterSearchHitDto
+{
+    /// <summary>What was found: "Guide section", "Docs page", "API component", "API parameter", "Route constraint", "Source file", ...</summary>
+    public required string Kind { get; init; }
+
+    public required string Title { get; init; }
+
+    /// <summary>Where the hit sits: the owning section, type or category.</summary>
+    public string? Context { get; init; }
+
+    /// <summary>The tool call that returns the full text of this hit - call it verbatim.</summary>
+    public required string Tool { get; init; }
+
+    /// <summary>The matching text, with a little of what surrounds it.</summary>
+    public required string Snippet { get; init; }
+}
+
+/// <summary>One URL builder emitted by the Bit.Brouter.Generators source generator.</summary>
+public record BrouterTypedRouteDto
+{
+    /// <summary>The generated method, e.g. "Counter".</summary>
+    public required string Method { get; init; }
+
+    /// <summary>Its parameter list, e.g. "(int init)".</summary>
+    public required string Signature { get; init; }
+
+    /// <summary>The URL it builds for a sample argument set - what the method is for, shown rather than described.</summary>
+    public string? ExampleUrl { get; init; }
+}
+
+/// <summary>The typed routes a project gets from the Bit.Brouter.Generators package.</summary>
+public record BrouterTypedRoutesDto
+{
+    /// <summary>The assembly whose route declarations produced these builders.</summary>
+    public required string GeneratedFor { get; init; }
+
+    /// <summary>How the generator produces this class, and how to enable it.</summary>
+    public required string HowItWorks { get; init; }
+
+    public required BrouterTypedRouteDto[] Builders { get; init; }
+
+    /// <summary>The constants under BrouterRoutes.Names - one per named route, for IBrouter.NavigateToName.</summary>
+    public required Dictionary<string, string> Names { get; init; }
+}
+
+/// <summary>One route of an analyzed route table.</summary>
+public record BrouterRouteTableEntryDto
+{
+    public required string Template { get; init; }
+
+    public required bool IsValid { get; init; }
+
+    public string? Error { get; init; }
+
+    public int Specificity { get; init; }
+
+    /// <summary>1 = the route the router prefers when several of them match the same URL.</summary>
+    public int MatchOrder { get; init; }
+
+    /// <summary>The template with parameter names dropped - two routes sharing a shape match exactly the same URLs.</summary>
+    public string? Shape { get; init; }
+}
+
+/// <summary>The result of analyzing a set of route templates together.</summary>
+public record BrouterRouteTableAnalysisDto
+{
+    /// <summary>The routes, most specific first - the order in which the router prefers them.</summary>
+    public required BrouterRouteTableEntryDto[] Routes { get; init; }
+
+    /// <summary>Groups of templates that match exactly the same URLs. Brouter throws at registration for these.</summary>
+    public required string[][] Ambiguous { get; init; }
+
+    public required string[] Notes { get; init; }
 }
 
 /// <summary>One '/'-separated segment of a parsed route template.</summary>

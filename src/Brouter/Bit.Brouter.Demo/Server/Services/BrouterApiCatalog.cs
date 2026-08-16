@@ -1,5 +1,6 @@
 using System.Text;
 using System.Reflection;
+using System.Collections.Concurrent;
 using Bit.Brouter.Demo.Server.Dtos;
 using Microsoft.AspNetCore.Components;
 
@@ -26,6 +27,8 @@ public static class BrouterApiCatalog
             .Where(t => t.IsNested is false && t.Name.Contains('<', StringComparison.Ordinal) is false)
             .OrderBy(t => t.Name, StringComparer.OrdinalIgnoreCase)]);
 
+    private static readonly ConcurrentDictionary<string, BrouterApiTypeDetailsDto> _typeDetails = new(StringComparer.Ordinal);
+
     private static readonly Lazy<BrouterApiTypeDto[]> _types = new(() =>
         [.. _publicTypes.Value.Select(t => new BrouterApiTypeDto
         {
@@ -46,6 +49,13 @@ public static class BrouterApiCatalog
         var type = Find(typeName);
         if (type is null) return null;
 
+        // Every hit costs a full reflection walk plus an XML lookup per member, and the search index
+        // asks for all of them at once; the answer only changes when the assembly does.
+        return _typeDetails.GetOrAdd(type.FullName ?? type.Name, _ => BuildTypeDetails(type));
+    }
+
+    private static BrouterApiTypeDetailsDto BuildTypeDetails(Type type)
+    {
         var instance = TryCreateInstance(type);
 
         var members = new List<BrouterApiMemberDto>();
@@ -58,8 +68,9 @@ public static class BrouterApiCatalog
                                      Name = field.Name,
                                      Kind = "EnumValue",
                                      Type = FriendlyName(type.GetEnumUnderlyingType()),
-                                     Default = Convert.ToInt64(field.GetRawConstantValue(), System.Globalization.CultureInfo.InvariantCulture)
-                                                      .ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                     // Formatted straight off the raw constant: a [Flags] enum backed by
+                                     // ulong has members that do not fit in an Int64.
+                                     Default = Format(field.GetRawConstantValue()),
                                      Summary = BrouterXmlDocs.GetSummary(DocumentationId(field)),
                                      Remarks = BrouterXmlDocs.GetRemarks(DocumentationId(field))
                                  }));
@@ -291,8 +302,9 @@ public static class BrouterApiCatalog
     private static string KindOf(Type type)
     {
         if (type.IsEnum) return "Enum";
-        if (typeof(IComponent).IsAssignableFrom(type)) return "Component";
+        // Before the IComponent test: an interface that extends IComponent is still an interface.
         if (type.IsInterface) return "Interface";
+        if (typeof(IComponent).IsAssignableFrom(type)) return "Component";
         if (typeof(Attribute).IsAssignableFrom(type)) return "Attribute";
         if (typeof(MulticastDelegate).IsAssignableFrom(type)) return "Delegate";
         if (type.IsAbstract && type.IsSealed) return "Static class";
@@ -314,7 +326,7 @@ public static class BrouterApiCatalog
     };
 
     /// <summary>The C# spelling of a type: "int?", "string[]", "Func&lt;BrouterNavigationContext, ValueTask&gt;".</summary>
-    private static string FriendlyName(Type type)
+    public static string FriendlyName(Type type)
     {
         if (type.IsByRef) return FriendlyName(type.GetElementType()!);
         if (type.IsArray) return $"{FriendlyName(type.GetElementType()!)}[]";

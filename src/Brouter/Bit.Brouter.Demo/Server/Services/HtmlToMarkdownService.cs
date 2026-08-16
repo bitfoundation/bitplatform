@@ -90,7 +90,7 @@ public static partial class HtmlToMarkdownService
                 AppendCodeBlock(node, builder);
                 return;
 
-            case "code" when node.ParentNode?.Name.Equals("pre", StringComparison.OrdinalIgnoreCase) is false:
+            case "code" when node.ParentNode is null || node.ParentNode.Name.Equals("pre", StringComparison.OrdinalIgnoreCase) is false:
                 AppendText(builder, $"`{Inline(node)}`", collapse: false);
                 return;
 
@@ -223,8 +223,10 @@ public static partial class HtmlToMarkdownService
 
     private static void AppendTable(HtmlNode node, StringBuilder builder)
     {
+        // Descendants() reaches into a nested table too, and its rows belong to that table - which
+        // renders itself when the cell holding it is written out.
         var rows = node.Descendants()
-                       .Where(n => n.Name.Equals("tr", StringComparison.OrdinalIgnoreCase))
+                       .Where(n => n.Name.Equals("tr", StringComparison.OrdinalIgnoreCase) && OwningTable(n) == node)
                        .Select(tr => tr.ChildNodes
                                        .Where(c => c.Name.Equals("th", StringComparison.OrdinalIgnoreCase) ||
                                                    c.Name.Equals("td", StringComparison.OrdinalIgnoreCase))
@@ -259,6 +261,17 @@ public static partial class HtmlToMarkdownService
         }
 
         AppendBlockBreak(builder);
+    }
+
+    /// <summary>The innermost table a row sits in.</summary>
+    private static HtmlNode? OwningTable(HtmlNode row)
+    {
+        for (var parent = row.ParentNode; parent is not null; parent = parent.ParentNode)
+        {
+            if (parent.Name.Equals("table", StringComparison.OrdinalIgnoreCase)) return parent;
+        }
+
+        return null;
     }
 
     /// <summary>Renders a node's content as a single line, for headings and table/list cells.</summary>
