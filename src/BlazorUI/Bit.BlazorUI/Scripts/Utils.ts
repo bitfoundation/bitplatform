@@ -106,6 +106,56 @@
             }
         }
 
+        // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in
+        // rather than guessed, since a container can be scrollable on both and only the component knows
+        // which one its items are laid out along.
+        public static scrollTo(element: HTMLElement, offset: number, horizontal: boolean, smooth: boolean) {
+            if (!element) return;
+
+            try {
+                element.scrollTo({
+                    [horizontal ? 'left' : 'top']: offset,
+                    behavior: smooth ? 'smooth' : 'auto'
+                });
+            } catch (e) { console.error("BitBlazorUI.Utils.scrollTo:", e); }
+        }
+
+        // Scrolls a scroll container to its far end. scrollHeight/scrollWidth overshoot the maximum
+        // scroll offset, which the browser clamps, so no measuring of the viewport is needed here.
+        // The far end of an RTL container sits at a negative scrollLeft, so the offset is negated there.
+        public static scrollToEnd(element: HTMLElement, horizontal: boolean, smooth: boolean) {
+            if (!element) return;
+
+            try {
+                const rtl = horizontal && getComputedStyle(element).direction === 'rtl';
+                const offset = horizontal
+                    ? (rtl ? -element.scrollWidth : element.scrollWidth)
+                    : element.scrollHeight;
+
+                Utils.scrollTo(element, offset, horizontal, smooth);
+            } catch (e) { console.error("BitBlazorUI.Utils.scrollToEnd:", e); }
+        }
+
+        // Scrolls a scroll container to a position measured off one of its children rather than off the
+        // container itself, which is what a list that renders anything before its items (a header) needs:
+        // the child is the one the items start at, and extraOffset is how far into them to go. A list of
+        // items of differing sizes points at the item itself and passes no extra offset; a virtualized one
+        // points at the spacer the items start after and passes the offset it calculated from its item size.
+        public static scrollToChild(element: HTMLElement, index: number, extraOffset: number, horizontal: boolean, smooth: boolean) {
+            if (!element) return;
+
+            try {
+                const child = element.children[index] as HTMLElement;
+                if (!child) return;
+
+                const offset = horizontal
+                    ? child.getBoundingClientRect().left - element.getBoundingClientRect().left + element.scrollLeft
+                    : child.getBoundingClientRect().top - element.getBoundingClientRect().top + element.scrollTop;
+
+                Utils.scrollTo(element, offset + extraOffset, horizontal, smooth);
+            } catch (e) { console.error("BitBlazorUI.Utils.scrollToChild:", e); }
+        }
+
         public static scrollElementIntoView(targetElementId: string) {
             const element = document.getElementById(targetElementId);
             if (!element) return;
