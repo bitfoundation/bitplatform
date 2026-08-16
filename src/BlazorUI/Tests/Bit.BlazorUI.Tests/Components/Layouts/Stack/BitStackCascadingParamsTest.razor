@@ -1,0 +1,138 @@
+﻿@* Covers BitStackParams: the cascaded values fill in the parameters the stack did not set itself, and
+   never overwrite the ones it did. The two groups are kept apart because the fixed direction of the
+   first one would suppress the responsive direction of the second. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Gap = "3rem",
+                                 Horizontal = true,
+                                 Padding = "1rem",
+                                 Shrink = "3",
+                                 Size = BitSize.Large,
+                                 Wrap = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+    <BitStack Gap="5rem" />
+</BitParams>
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Basis = "0",
+                                 Element = "section",
+                                 EqualContent = true,
+                                 Grow = "2",
+                                 GrowContent = true,
+                                 HorizontalAlign = BitAlignment.Center,
+                                 HorizontalMd = true,
+                                 Inline = true,
+                                 NoShrink = true,
+                                 NoShrinkContent = true,
+                                 Order = -1,
+                                 Self = BitAlignment.End,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* The rest of the parameters that describe the stack itself, on a stack whose direction never changes, so the
+   two alignments stay on the element where they can be read back one by one. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 AlignContent = BitAlignment.SpaceEvenly,
+                                 Alignment = BitAlignment.Center,
+                                 AutoHeight = true,
+                                 AutoSize = true,
+                                 AutoWidth = true,
+                                 FillContent = true,
+                                 FitHeight = true,
+                                 FitSize = true,
+                                 FitWidth = true,
+                                 Gap = "1rem",
+                                 GapMd = "3rem",
+                                 Grows = true,
+                                 HorizontalGap = "2rem",
+                                 Reversed = true,
+                                 Shrinkable = true,
+                                 VerticalAlign = BitAlignment.End,
+                                 VerticalGap = "0.5rem",
+                                 WrapReverse = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* And the breakpoints of the two chains that the groups above do not reach. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 GapXs = "0.25rem",
+                                 GapSm = "0.5rem",
+                                 GapLg = "1.5rem",
+                                 GapXl = "2rem",
+                                 GapXxl = "2.5rem",
+                                 HorizontalXs = false,
+                                 HorizontalSm = true,
+                                 HorizontalLg = false,
+                                 HorizontalXl = true,
+                                 HorizontalXxl = false,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* And the breakpoints of the two per axis chains, which are kept apart from the group above so that the
+   shorthand chain there does not hide the fallback each of these resolves its own base from. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 HorizontalGapXs = "0.25rem",
+                                 HorizontalGapSm = "0.5rem",
+                                 HorizontalGapLg = "1.5rem",
+                                 HorizontalGapXl = "2rem",
+                                 HorizontalGapXxl = "2.5rem",
+                                 VerticalGapXs = "0.125rem",
+                                 VerticalGapMd = "0.75rem",
+                                 VerticalGapLg = "1rem",
+                                 VerticalGapXl = "1.25rem",
+                                 VerticalGapXxl = "1.5rem",
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
+
+@* And the breakpoints of the wrap chain, on a stack that also wraps the other way round, so that the way round
+   can be read back on the base of the chain and on every breakpoint of it at once. *@
+
+<BitParams Parameters="@(new BitStackParams[]
+                         {
+                             new()
+                             {
+                                 Wrap = true,
+                                 WrapReverse = true,
+                                 WrapXs = true,
+                                 WrapSm = false,
+                                 WrapLg = true,
+                                 WrapXl = false,
+                                 WrapXxl = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitStack />
+</BitParams>
