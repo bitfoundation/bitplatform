@@ -200,7 +200,7 @@ private int SelectedOptionNumber = 6;";
 </BitBreadcrumb>
 
 <BitButton OnClick=""() => ItemsCount++"">Add Option</BitButton>
-<BitButton OnClick=""() => ItemsCount--"">Remove Option</BitButton>
+<BitButton OnClick=""RemoveOption"">Remove Option</BitButton>
 
 <BitNumberField @bind-Value=""MaxDisplayedItems"" Label=""Max displayed options"" ShowButtons />
 <BitNumberField @bind-Value=""OverflowIndex"" Label=""Overflow index"" ShowButtons />";
@@ -208,7 +208,19 @@ private int SelectedOptionNumber = 6;";
 private int ItemsCount = 4;
 private uint OverflowIndex = 2;
 private uint MaxDisplayedItems = 3;
-private int CustomizedSelectedOptionNumber = 4;";
+private int CustomizedSelectedOptionNumber = 4;
+
+private void RemoveOption()
+{
+    if (ItemsCount <= 1) return;
+
+    ItemsCount--;
+
+    if (CustomizedSelectedOptionNumber > ItemsCount)
+    {
+        CustomizedSelectedOptionNumber = ItemsCount;
+    }
+}";
 
     private readonly string example8RazorCode = @"
 <style>

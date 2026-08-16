@@ -469,6 +469,20 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 await MeasureAndCollapse();
             }
         }
+        else if (_resizeObserverRegistered)
+        {
+            // The automatic collapsing was turned off (or the trail was told to wrap) after the observer
+            // was put in place, so the observer goes away with what it was there for and the trail is
+            // handed back to it if the collapsing comes back.
+            _resizeObserverRegistered = false;
+
+            try
+            {
+                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, the observer went with it
+            catch (JSException) { } // the element of the observer may already be gone with its parent
+        }
 
         if (_optionsOrderDirty)
         {

@@ -925,7 +925,7 @@ public class BitBreadcrumbTests : BunitTestContext
             parameters.Add(p => p.Items, GetBreadcrumbItems());
         });
 
-        Assert.AreEqual(0, component.FindAll("div[hidden]").Count);
+        Assert.AreEqual(0, component.FindAll("div[id$='-options-container']").Count);
     }
 
     [TestMethod]

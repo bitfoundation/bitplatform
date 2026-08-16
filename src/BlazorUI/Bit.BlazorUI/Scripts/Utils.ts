@@ -298,21 +298,27 @@
         // component can decide how many of them to keep. `content` is what the children take in total
         // and `available` is the width of the container, both in pixels, and `widths` carries the
         // children in DOM order so the caller can tell how much room dropping one of them frees.
-        // The content is the sum of the children rather than the scrollWidth of the container, since
-        // that one never drops below the clientWidth: a trail that fits would report no room to spare
-        // and the caller could never tell that a child it dropped has room to come back to.
+        // The content is measured off the children rather than off the scrollWidth of the container,
+        // since that one never drops below the clientWidth: a trail that fits would report no room to
+        // spare and the caller could never tell that a child it dropped has room to come back to.
+        // It is the extent from the leftmost edge to the rightmost one rather than the sum of the
+        // widths, so that whatever sits between the children (a gap, a margin, a whitespace text node)
+        // is counted as the room it takes; the sum would report a trail that overflows as one that fits.
         public static getOverflowMetrics(containerId: string, childSelector: string) {
             const container = document.getElementById(containerId);
             if (!container) return null;
 
             try {
-                const widths = (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
-                    .map(el => el.getBoundingClientRect().width);
+                const rects = (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
+                    .map(el => el.getBoundingClientRect());
+
+                const left = Math.min(...rects.map(rect => rect.left));
+                const right = Math.max(...rects.map(rect => rect.right));
 
                 return {
                     available: container.clientWidth,
-                    content: widths.reduce((sum, width) => sum + width, 0),
-                    widths: widths
+                    content: rects.length === 0 ? 0 : right - left,
+                    widths: rects.map(rect => rect.width)
                 };
             } catch (e) {
                 console.error("BitBlazorUI.Utils.getOverflowMetrics:", e);

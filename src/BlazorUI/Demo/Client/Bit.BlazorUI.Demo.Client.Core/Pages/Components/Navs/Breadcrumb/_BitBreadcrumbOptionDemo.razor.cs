@@ -21,4 +21,18 @@ public partial class _BitBreadcrumbOptionDemo
     ];
 
     private readonly BitSize[] sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    // The trail always keeps at least one option, and the selection moves onto the new last one when
+    // the option that carried it is the one that leaves.
+    private void RemoveOption()
+    {
+        if (ItemsCount <= 1) return;
+
+        ItemsCount--;
+
+        if (CustomizedSelectedOptionNumber > ItemsCount)
+        {
+            CustomizedSelectedOptionNumber = ItemsCount;
+        }
+    }
 }
