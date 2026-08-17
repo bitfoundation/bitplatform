@@ -304,6 +304,57 @@ public partial class _BitNavCustomDemo
         new() { Text = "Cookie", ImageName = BitIconName.Cake },
     ];
 
+    // The matching members of Section carry names of their own, so they are mapped just like the rest.
+    private static readonly BitNavNameSelectors<Section> matchSelectors = new()
+    {
+        IconName = { Name = nameof(Section.ImageName) },
+        ChildItems = { Name = nameof(Section.Links) },
+        Match = { Name = nameof(Section.UrlMatch) },
+        AdditionalUrls = { Name = nameof(Section.OtherUrls) },
+    };
+
+    private static readonly List<Section> customMatchNavItems =
+    [
+        new() { Text = "Nav (this page)", ImageName = BitIconName.GlobalNavButton, Url = "/components/nav" },
+        new() { Text = "Pivot", ImageName = BitIconName.MiniExpand, Url = "/components/pivot" },
+    ];
+
+    private static readonly List<Section> customPrefixMatchNavItems =
+    [
+        new() { Text = "Components (/components)", ImageName = BitIconName.F12DevTools, Url = "/components" },
+        new() { Text = "Iconography (/iconography)", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
+    ];
+
+    private static readonly List<Section> customWildcardMatchNavItems =
+    [
+        new() { Text = "A component page (/components/*)", ImageName = BitIconName.F12DevTools, Url = "/components/*" },
+        new() { Text = "A pro page (/pro/**)", ImageName = BitIconName.Trophy2, Url = "/pro/**" },
+    ];
+
+    private static readonly List<Section> customRegexMatchNavItems =
+    [
+        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", ImageName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$" },
+        new() { Text = @"A page starting with P (^/components/p)", ImageName = BitIconName.Page, Url = "^/components/p" },
+    ];
+
+    private static readonly List<Section> customItemMatchNavItems =
+    [
+        new() { Text = "Components (its own Prefix)", ImageName = BitIconName.F12DevTools, Url = "/components", UrlMatch = BitNavMatch.Prefix },
+        new() { Text = "Pivot (the Exact of the nav)", ImageName = BitIconName.MiniExpand, Url = "/components/pivot" },
+    ];
+
+    private static readonly List<Section> customAdditionalUrlsNavItems =
+    [
+        new()
+        {
+            Text = "Navigation (also /components/nav)",
+            ImageName = BitIconName.GlobalNavButton,
+            Url = "/components/navbar",
+            OtherUrls = ["/components/nav", "/components/breadcrumb"]
+        },
+        new() { Text = "Inputs", ImageName = BitIconName.TextField, Url = "/components/textfield" },
+    ];
+
     private static readonly List<Section> customColorNavItems =
     [
         new() { Text = "Home", ImageName = BitIconName.Home },
@@ -520,8 +571,10 @@ public partial class _BitNavCustomDemo
     private void ExpandAllApiItems() => apiNavRef?.ExpandAll();
     private void CollapseAllApiItems() => apiNavRef?.CollapseAll();
     private async Task ToggleFruitsApiItem() { if (apiNavRef is not null) await apiNavRef.ToggleItem(customApiNavItems[1]); }
+    private async Task ExpandFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.ExpandItem(customApiNavItems[0]); }
+    private async Task CollapseFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.CollapseItem(customApiNavItems[0]); }
     private async Task SelectIceCreamApiItem() { if (apiNavRef is not null) await apiNavRef.SelectItem(customApiNavItems[2]); }
-    private async Task FocusCookieApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(customApiNavItems[3]); }
+    private async Task FocusVeggieBurgerApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(customApiNavItems[0].Links[0].Links[1]); }
 
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     [

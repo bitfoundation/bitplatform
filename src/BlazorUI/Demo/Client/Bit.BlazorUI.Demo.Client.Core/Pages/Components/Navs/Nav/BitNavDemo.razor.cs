@@ -20,7 +20,7 @@ public partial class BitNavDemo
             Name = "AllExpanded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Expands all items on first render."
+            Description = "Expands all items when they are first rendered. Items that arrive later are expanded as they arrive, while the items already on screen keep whatever the user has expanded or collapsed in the meantime."
         },
         new()
         {
@@ -172,7 +172,7 @@ public partial class BitNavDemo
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",
-            Description = "Gets or sets a value representing the global URL matching behavior of the nav.",
+            Description = "Gets or sets a value representing the global URL matching behavior of the nav. The Match of an item takes precedence over this value, and when neither is provided the URL of an item has to match the current one exactly.",
             Href = "#nav-match-enum",
             LinkType = LinkType.Link,
         },
@@ -296,15 +296,33 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "CollapseItem",
+            Type = "Func<TItem, Task>",
+            Description = "Collapses an item, and does nothing when it is already collapsed.",
+        },
+        new()
+        {
             Name = "ExpandAll",
             Type = "Action<TItem? item>",
             Description = "Expands all items and children in non-SingleExpand mode.",
         },
         new()
         {
+            Name = "ExpandItem",
+            Type = "Func<TItem, Task>",
+            Description = "Expands an item, and does nothing when it is already expanded.",
+        },
+        new()
+        {
             Name = "FocusItem",
             Type = "Func<TItem, ValueTask>",
-            Description = "Moves the focus to an item of the nav.",
+            Description = "Moves the focus to an item of the nav, opening the branches it is nested in when it is not rendered yet.",
+        },
+        new()
+        {
+            Name = "IsItemExpanded",
+            Type = "Func<TItem, bool>",
+            Description = "Whether an item is currently expanded.",
         },
         new()
         {

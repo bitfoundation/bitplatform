@@ -76,6 +76,27 @@ public class BitNavTests : BunitTestContext
         },
     ];
 
+    // A selected item carrying every part the nav renders (an icon, a description, a chevron and a child),
+    // next to a separator, so a single render covers all the class and style parts at once.
+    private static List<BitNavItem> PartsItems() =>
+    [
+        new()
+        {
+            Text = "Fruits",
+            IconName = "Home",
+            Description = "some fruits",
+            ChildItems = [new() { Text = "Apple" }]
+        },
+        new() { IsSeparator = true },
+    ];
+
+    private static void AddPartsParameters(ComponentParameterCollectionBuilder<BitNav<BitNavItem>> parameters, IList<BitNavItem> items)
+    {
+        parameters.Add(c => c.AllExpanded, true);
+        parameters.Add(c => c.Mode, BitNavMode.Manual);
+        parameters.Add(c => c.DefaultSelectedItem, items[0]);
+    }
+
     private IRenderedComponent<BitNav<BitNavItem>> RenderNav(IList<BitNavItem> items, Action<ComponentParameterCollectionBuilder<BitNav<BitNavItem>>>? extra = null)
     {
         return RenderComponent<BitNav<BitNavItem>>(parameters =>
@@ -184,6 +205,32 @@ public class BitNavTests : BunitTestContext
         var component = RenderNav(BasicItems(), p => p.Add(c => c.IsEnabled, false));
 
         Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldDisableEveryItemOfADisabledNav()
+    {
+        var component = RenderNav(BasicItems(), p => p.Add(c => c.IsEnabled, false));
+
+        foreach (var item in component.FindAll(".bit-nav-ict"))
+        {
+            // Greying the items out is not enough: a link that keeps its href and its tab stop could still
+            // be followed with the keyboard.
+            Assert.IsTrue(item.ClassList.Contains("bit-nav-dis"));
+            Assert.AreEqual("true", item.GetAttribute("aria-disabled"));
+            Assert.AreEqual("-1", item.GetAttribute("tabindex"));
+            Assert.IsNull(item.GetAttribute("href"));
+        }
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotToggleAnItemOfADisabledNav()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.IsEnabled, false));
+
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
     }
 
     [TestMethod,
@@ -356,15 +403,14 @@ public class BitNavTests : BunitTestContext
 
     [TestMethod,
         DataRow(null, "Home"),
-        DataRow("", "Home"),
+        DataRow("", ""),
         DataRow("a title", "a title")]
     public void BitNavShouldFallBackToTheTextForTheTitleOfAnItem(string? title, string expectedTitle)
     {
         var component = RenderNav([new() { Text = "Home", Title = title }]);
 
         // An empty Title is a value like any other, so only a null one falls back to the text.
-        var expected = title is null ? expectedTitle : title;
-        Assert.AreEqual(expected, component.Find(".bit-nav-ict").GetAttribute("title"));
+        Assert.AreEqual(expectedTitle, component.Find(".bit-nav-ict").GetAttribute("title"));
     }
 
     [TestMethod,
@@ -451,6 +497,8 @@ public class BitNavTests : BunitTestContext
     [TestMethod,
         DataRow("https://bitplatform.dev/", "_blank", "noopener noreferrer"),
         DataRow("//bitplatform.dev/", "_blank", "noopener noreferrer"),
+        DataRow("mailto:info@bitplatform.dev", "_blank", "noopener noreferrer"),
+        DataRow("tel:+123456789", "_blank", "noopener noreferrer"),
         DataRow("/home", "_blank", null),
         DataRow("https://bitplatform.dev/", null, null)]
     public void BitNavShouldOnlyAddRelToATargetedAbsoluteLink(string url, string? target, string? expectedRel)
@@ -529,6 +577,51 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual("Only", component.Find(".bit-nav-itx").TextContent);
     }
 
+    [TestMethod]
+    public void BitNavShouldRespectTheItemsCollectionBeingMutatedInPlace()
+    {
+        var items = BasicItems();
+        var component = RenderNav(items);
+
+        Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+
+        // The same collection instance is handed back, so only its content tells the nav that something
+        // has changed; a caller appending to its own list must not have to hand over a new one.
+        items.Add(new() { Text = "Blog" });
+        component.Render();
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+        Assert.AreEqual("Blog", component.FindAll(".bit-nav-itx")[3].TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldExpandTheItemsThatArriveAfterTheFirstRenderWithAllExpanded()
+    {
+        var component = RenderNav([], p => p.Add(c => c.AllExpanded, true));
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-ict").Count);
+
+        // Items loaded from a service after the first render still honor AllExpanded.
+        component.Render(p => p.Add(c => c.Items, TreeItems()));
+
+        Assert.AreEqual(6, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheExpansionOfTheItemsItAlreadyRenderedWithAllExpanded()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items, p => p.Add(c => c.AllExpanded, true));
+
+        component.FindAll(".bit-nav-cbt")[0].Click();
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+
+        // A re-render (or a new collection holding the same items) must not undo what the user collapsed.
+        component.Render(p => p.Add(c => c.Items, new List<BitNavItem>(items)));
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
     #endregion
 
     #region indentation
@@ -536,10 +629,14 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldIndentTheLevelsByTheIndentValue()
     {
+        const int indentValue = 20;
+        const int indentPadding = 30;
+
         var component = RenderNav(TreeItems(), p =>
         {
             p.Add(c => c.AllExpanded, true);
-            p.Add(c => c.IndentValue, 20);
+            p.Add(c => c.IndentValue, indentValue);
+            p.Add(c => c.IndentPadding, indentPadding);
         });
 
         var items = component.FindAll(".bit-nav-ict");
@@ -547,7 +644,7 @@ public class BitNavTests : BunitTestContext
         // A parent reserves no chevron space (it has one), so its padding is purely its depth; a child at
         // depth 1 adds one IndentValue on top of the chevron compensation.
         StringAssert.Contains(items[0].GetAttribute("style"), "padding-inline-start:0px");
-        StringAssert.Contains(items[1].GetAttribute("style"), "padding-inline-start:47px");
+        StringAssert.Contains(items[1].GetAttribute("style"), $"padding-inline-start:{indentValue + indentPadding}px");
     }
 
     [TestMethod]
@@ -745,6 +842,48 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavSingleExpandShouldCloseABranchThatWasNotOpenedByAToggle()
+    {
+        var items = TreeItems();
+        items[1].IsExpanded = true;
+
+        var component = RenderNav(items, p => p.Add(c => c.SingleExpand, true));
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+
+        component.FindAll(".bit-nav-cbt")[0].Click();
+
+        // The branch that was open from the start closes as well: the mode reads the state of the tree
+        // rather than remembering which item was toggled last.
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+        Assert.AreEqual("Apple", component.FindAll(".bit-nav-itx")[1].TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavSingleExpandShouldKeepThePathToTheExpandedItemOpen()
+    {
+        var items = new List<BitNavItem>
+        {
+            new()
+            {
+                Text = "Fruits",
+                IsExpanded = true,
+                ChildItems = [new() { Text = "Apple", ChildItems = [new() { Text = "Granny Smith" }] }]
+            },
+            new() { Text = "Drinks", ChildItems = [new() { Text = "Coffee" }] },
+        };
+
+        var component = RenderNav(items, p => p.Add(c => c.SingleExpand, true));
+
+        component.FindAll(".bit-nav-cbt")[1].Click();
+
+        // Opening a child keeps its parents open, otherwise the item that was just expanded would not
+        // even be on screen.
+        CollectionAssert.AreEqual(
+            new[] { "Fruits", "Apple", "Granny Smith", "Drinks" },
+            component.FindAll(".bit-nav-itx").Select(e => e.TextContent).ToArray());
+    }
+
+    [TestMethod]
     public void BitNavShouldRespectSingleExpand()
     {
         var component = RenderNav(TreeItems(), p => p.Add(c => c.SingleExpand, true));
@@ -803,6 +942,49 @@ public class BitNavTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.ToggleItem(items[0]));
 
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public async Task BitNavShouldExpandAndCollapseASingleItemFromThePublicApi()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items);
+
+        await component.InvokeAsync(() => component.Instance.ExpandItem(items[0]));
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+
+        await component.InvokeAsync(() => component.Instance.CollapseItem(items[0]));
+        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public async Task BitNavExpandAndCollapseItemShouldDoNothingForAnItemAlreadyInThatState()
+    {
+        var items = TreeItems();
+        var toggleCount = 0;
+
+        var component = RenderNav(items, p => p.Add(c => c.OnItemToggle, (BitNavItem _) => { toggleCount++; }));
+
+        // The item is already collapsed and stays collapsed, so nothing is toggled and nothing is reported.
+        await component.InvokeAsync(() => component.Instance.CollapseItem(items[0]));
+        Assert.AreEqual(0, toggleCount);
+
+        await component.InvokeAsync(() => component.Instance.ExpandItem(items[0]));
+        await component.InvokeAsync(() => component.Instance.ExpandItem(items[0]));
+        Assert.AreEqual(1, toggleCount);
+    }
+
+    [TestMethod]
+    public async Task BitNavShouldReportTheExpansionOfAnItemFromThePublicApi()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items);
+
+        Assert.IsFalse(component.Instance.IsItemExpanded(items[0]));
+
+        await component.InvokeAsync(() => component.Instance.ExpandItem(items[0]));
+
+        Assert.IsTrue(component.Instance.IsItemExpanded(items[0]));
     }
 
     [TestMethod]
@@ -944,6 +1126,53 @@ public class BitNavTests : BunitTestContext
         // A button with no accessible name is announced as "button" and nothing else, so the item's text is
         // the last resort rather than leaving it unnamed.
         Assert.AreEqual("Fruits", component.FindAll(".bit-nav-cbt")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldTakeTheToggleButtonOfADisabledItemOutOfTheTabOrder()
+    {
+        var items = TreeItems();
+        items[0].IsEnabled = false;
+
+        var component = RenderNav(items);
+
+        var chevron = component.FindAll(".bit-nav-cbt")[0];
+
+        // The chevron of a disabled item does nothing, so it must not be a tab stop that says otherwise.
+        Assert.AreEqual("-1", chevron.GetAttribute("tabindex"));
+        Assert.AreEqual("true", chevron.GetAttribute("aria-disabled"));
+        Assert.AreEqual("0", component.FindAll(".bit-nav-cbt")[1].GetAttribute("tabindex"));
+        Assert.IsNull(component.FindAll(".bit-nav-cbt")[1].GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNameAnItemThatRendersAChevronAfterItsText()
+    {
+        var component = RenderNav(TreeItems());
+
+        // The chevron lives inside the item and carries a name of its own, which the item would otherwise
+        // fold into its own name and announce twice.
+        Assert.AreEqual("Fruits", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetTheAriaLabelOfAnItemWinOverItsText()
+    {
+        var items = TreeItems();
+        items[0].AriaLabel = "All the fruits";
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual("All the fruits", component.FindAll(".bit-nav-ict")[0].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotNameAnItemWithoutAChevronAfterItsText()
+    {
+        var component = RenderNav([new() { Text = "Home" }]);
+
+        // A leaf is named by its own content, which is exactly its text, so nothing has to be spelled out.
+        Assert.IsNull(component.Find(".bit-nav-ict").GetAttribute("aria-label"));
     }
 
     #endregion
@@ -1125,12 +1354,24 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitNavFocusItemShouldNotThrow()
+    public async Task BitNavFocusItemShouldFocusTheElementOfTheItem()
     {
         var items = BasicItems();
         var component = RenderNav(items);
 
         await component.InvokeAsync(async () => await component.Instance.FocusItem(items[1]));
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(items[2]));
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(items[1]));
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]
+                             .Select(i => ((ElementReference)i.Arguments[0]!).Id)
+                             .ToList();
+
+        // Each call moves the focus to the element of the item it was given, so two items are never
+        // addressed by the same element and the same item is addressed by the same one every time.
+        Assert.AreEqual(3, focused.Count);
+        Assert.AreNotEqual(focused[0], focused[1]);
+        Assert.AreEqual(focused[0], focused[2]);
     }
 
     #endregion
@@ -1256,6 +1497,103 @@ public class BitNavTests : BunitTestContext
         var component = RenderNav(items);
 
         Assert.AreEqual("Products", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
+    }
+
+    [TestMethod,
+        DataRow("/products", "/product", false),
+        DataRow("/products", "/products", true),
+        DataRow("/products/1", "/products", true),
+        DataRow("/products-archive", "/products", false)]
+    public void BitNavPrefixShouldOnlyMatchOnAPathBoundary(string url, string itemUrl, bool expectedSelected)
+    {
+        Navigate(url);
+
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = itemUrl } };
+        var component = RenderNav(items, p => p.Add(c => c.Match, BitNavMatch.Prefix));
+
+        // A plain StartsWith would light "/products" up on "/products-archive", which is a different page.
+        Assert.AreEqual(expectedSelected, component.FindAll(".bit-nav-sel").Count == 1);
+    }
+
+    [TestMethod,
+        DataRow(BitNavMatch.Exact, "/Products", "/products"),
+        DataRow(BitNavMatch.Exact, "/products/", "/products"),
+        DataRow(BitNavMatch.Exact, "/products", "/products/"),
+        DataRow(BitNavMatch.Exact, "/products?page=2", "/products"),
+        DataRow(BitNavMatch.Exact, "/products#top", "/products"),
+        DataRow(BitNavMatch.Exact, "/products", "products"),
+        DataRow(BitNavMatch.Exact, "/products", "http://localhost/products"),
+        DataRow(BitNavMatch.Prefix, "/Products/1", "/products"),
+        DataRow(BitNavMatch.Prefix, "/products/1?page=2", "/products")]
+    public void BitNavShouldCompareTheUrlsTheWayTheBrowserTreatsThem(BitNavMatch match, string url, string itemUrl)
+    {
+        Navigate(url);
+
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = itemUrl } };
+        var component = RenderNav(items, p => p.Add(c => c.Match, match));
+
+        // The letter case, a trailing slash, a query string, a fragment and a missing leading slash all
+        // describe the same page, so none of them may cost the item its selection.
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldMatchTheUrlOfAnItemThatCarriesAQueryString()
+    {
+        Navigate("/products?page=2");
+
+        var items = new List<BitNavItem>
+        {
+            new() { Text = "Page 1", Url = "/products?page=1" },
+            new() { Text = "Page 2", Url = "/products?page=2" },
+        };
+
+        var component = RenderNav(items);
+
+        // An item that spells out a query string is matched against it, so the two pages stay apart.
+        Assert.AreEqual("Page 2", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldMatchAPatternAgainstThePathOfAUrlCarryingAQueryString()
+    {
+        Navigate("/products/12?page=2");
+
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = @"^/products/\d+$" } };
+        var component = RenderNav(items, p => p.Add(c => c.Match, BitNavMatch.Regex));
+
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldRematchWhenTheMatchOfTheNavChanges()
+    {
+        Navigate("/products/1");
+
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = "/products" } };
+        var component = RenderNav(items, p => p.Add(c => c.Match, BitNavMatch.Exact));
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sel").Count);
+
+        component.Render(p => p.Add(c => c.Match, BitNavMatch.Prefix));
+
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldFollowTheUrlAfterTheModeIsSwitchedToAutomatic()
+    {
+        Navigate("/products");
+
+        var component = RenderNav(BasicItems(), p => p.Add(c => c.Mode, BitNavMode.Manual));
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sel").Count);
+
+        component.Render(p => p.Add(c => c.Mode, BitNavMode.Automatic));
+        Assert.AreEqual("Products", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
+
+        // The nav that switched modes later on also has to keep following the URL from then on.
+        Navigate("/contact");
+        Assert.AreEqual("Contact", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
     }
 
     [TestMethod]
@@ -1423,6 +1761,57 @@ public class BitNavTests : BunitTestContext
         PressKey(component, "*");
 
         Assert.AreEqual(6, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotExpandTheSiblingsWithTheAsteriskWhileTheExpandersAreHidden()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.NoCollapse, true));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "*");
+
+        // A nav without expanders offers no way to close what the asterisk would open, so the key is inert.
+        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotExpandTheSiblingsWithTheAsteriskInTheSingleExpandMode()
+    {
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.SingleExpand, true));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "*");
+
+        // Opening a whole level would break the single-open rule, exactly like ExpandAll does.
+        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldSkipADisabledSiblingWithTheAsterisk()
+    {
+        var items = TreeItems();
+        items[1].IsEnabled = false;
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "*");
+
+        // Only the enabled branch opens: 2 roots plus the 2 children of the first one.
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public async Task BitNavFocusItemShouldOpenTheBranchesTheItemIsNestedIn()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items);
+
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(items[0].ChildItems[1]));
+
+        // The focus can only land on an element that is rendered, so the path down to the item is opened.
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
     [TestMethod]
@@ -1691,23 +2080,11 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldApplyTheClassesOfTheParts()
     {
-        var items = new List<BitNavItem>
-        {
-            new()
-            {
-                Text = "Fruits",
-                IconName = "Home",
-                Description = "some fruits",
-                ChildItems = [new() { Text = "Apple" }]
-            },
-            new() { IsSeparator = true },
-        };
+        var items = PartsItems();
 
         var component = RenderNav(items, p =>
         {
-            p.Add(c => c.AllExpanded, true);
-            p.Add(c => c.Mode, BitNavMode.Manual);
-            p.Add(c => c.DefaultSelectedItem, items[0]);
+            AddPartsParameters(p, items);
             p.Add(c => c.Classes, new BitNavClassStyles
             {
                 Root = "test-root",
@@ -1740,23 +2117,11 @@ public class BitNavTests : BunitTestContext
     [TestMethod]
     public void BitNavShouldApplyTheStylesOfTheParts()
     {
-        var items = new List<BitNavItem>
-        {
-            new()
-            {
-                Text = "Fruits",
-                IconName = "Home",
-                Description = "some fruits",
-                ChildItems = [new() { Text = "Apple" }]
-            },
-            new() { IsSeparator = true },
-        };
+        var items = PartsItems();
 
         var component = RenderNav(items, p =>
         {
-            p.Add(c => c.AllExpanded, true);
-            p.Add(c => c.Mode, BitNavMode.Manual);
-            p.Add(c => c.DefaultSelectedItem, items[0]);
+            AddPartsParameters(p, items);
             p.Add(c => c.Styles, new BitNavClassStyles
             {
                 Root = "color: red",
@@ -1775,10 +2140,10 @@ public class BitNavTests : BunitTestContext
 
         StringAssert.Contains(component.Find(".bit-nav").GetAttribute("style"), "color: red");
         StringAssert.Contains(component.Find(".bit-nav-des").GetAttribute("style"), "color: blue");
-        StringAssert.Contains(component.Find(".bit-nav-itm").GetAttribute("style"), "color: green");
-        StringAssert.Contains(component.Find(".bit-nav-itm").GetAttribute("style"), "color: gold");
-        StringAssert.Contains(component.Find(".bit-nav-ict").GetAttribute("style"), "color: purple");
-        StringAssert.Contains(component.Find(".bit-nav-ict").GetAttribute("style"), "color: teal");
+        // The style of an item and the one of the selected item are two declarations, so they are joined
+        // with a semicolon instead of being run together into a single malformed one.
+        StringAssert.Contains(component.Find(".bit-nav-itm").GetAttribute("style"), "color: green;color: gold");
+        StringAssert.Contains(component.Find(".bit-nav-ict").GetAttribute("style"), "color: purple;color: teal");
         StringAssert.Contains(component.Find(".bit-nav-iic").GetAttribute("style"), "color: orange");
         StringAssert.Contains(component.Find(".bit-nav-itx").GetAttribute("style"), "color: brown");
         StringAssert.Contains(component.Find(".bit-nav-cbt").GetAttribute("style"), "color: cyan");

@@ -9,9 +9,18 @@ public partial class _BitNavOptionDemo
     private BitNavOption SelectedOption = default!;
 
     private BitNav<BitNavOption>? apiNavRef;
+    private BitNavOption? fruitsOption;
+    private BitNavOption? iceCreamOption;
+    private BitNavOption? fastFoodsOption;
+    private BitNavOption? veggieBurgerOption;
 
     private void ExpandAllApiOptions() => apiNavRef?.ExpandAll();
     private void CollapseAllApiOptions() => apiNavRef?.CollapseAll();
+    private async Task ToggleFruitsApiOption() { if (apiNavRef is not null && fruitsOption is not null) await apiNavRef.ToggleItem(fruitsOption); }
+    private async Task ExpandFastFoodsApiOption() { if (apiNavRef is not null && fastFoodsOption is not null) await apiNavRef.ExpandItem(fastFoodsOption); }
+    private async Task CollapseFastFoodsApiOption() { if (apiNavRef is not null && fastFoodsOption is not null) await apiNavRef.CollapseItem(fastFoodsOption); }
+    private async Task SelectIceCreamApiOption() { if (apiNavRef is not null && iceCreamOption is not null) await apiNavRef.SelectItem(iceCreamOption); }
+    private async Task FocusVeggieBurgerApiOption() { if (apiNavRef is not null && veggieBurgerOption is not null) await apiNavRef.FocusItem(veggieBurgerOption); }
 
     private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css("fa-solid fa-house");
     private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa("solid code");

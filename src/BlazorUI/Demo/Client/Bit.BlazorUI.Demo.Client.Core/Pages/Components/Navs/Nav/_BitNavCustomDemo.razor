@@ -168,16 +168,20 @@
 <DemoExample Title="Public API" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
     <div>
         A reference to the nav exposes its state as methods: <b>ExpandAll</b> and <b>CollapseAll</b> open or
-        close the whole tree (or a single subtree, when given an item), <b>ToggleItem</b> flips one item,
-        <b>SelectItem</b> selects one without a click, and <b>FocusItem</b> moves the keyboard focus to it.
+        close the whole tree (or a single subtree, when given an item), <b>ExpandItem</b>, <b>CollapseItem</b>
+        and <b>ToggleItem</b> drive a single item, <b>IsItemExpanded</b> reports whether one is open,
+        <b>SelectItem</b> selects one without a click, and <b>FocusItem</b> moves the keyboard focus to it,
+        opening the branches it is nested in when it is not on screen yet.
     </div>
     <br />
     <BitStack Horizontal Wrap>
         <BitButton OnClick="ExpandAllApiItems">ExpandAll</BitButton>
         <BitButton OnClick="CollapseAllApiItems">CollapseAll</BitButton>
         <BitButton OnClick="ToggleFruitsApiItem">Toggle Fruits</BitButton>
+        <BitButton OnClick="ExpandFastFoodsApiItem">Expand Fast foods</BitButton>
+        <BitButton OnClick="CollapseFastFoodsApiItem">Collapse Fast foods</BitButton>
         <BitButton OnClick="SelectIceCreamApiItem">Select Ice Cream</BitButton>
-        <BitButton OnClick="FocusCookieApiItem">Focus Cookie</BitButton>
+        <BitButton OnClick="FocusVeggieBurgerApiItem">Focus Veggie Burger</BitButton>
     </BitStack>
     <br />
     <BitNav @ref="apiNavRef" Items="customApiNavItems" Mode="BitNavMode.Manual" FitWidth NameSelectors="sectionSelectors" />
@@ -205,7 +209,38 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+<DemoExample Title="URL Matching" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+    <div>
+        In the <b>Automatic</b> mode the nav selects the item whose URL points at the current page.
+        <b>Match</b> sets how those URLs are compared for the whole nav, and the <b>Match</b> of an item
+        overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
+        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character,
+        <b>*</b> for one path segment and <b>**</b> for any number of them, and <b>Regex</b> reads it as a
+        regular expression. The comparison ignores the letter case, a trailing slash and the query string, and
+        <b>AdditionalUrls</b> gives an item other URLs to light up on. Both of them are read from the custom
+        item through the <b>Match</b> and <b>AdditionalUrls</b> name selectors. The navs below are all matched
+        against the URL of this page.
+    </div>
+    <br /><br /><br />
+    <div>Exact (the default)</div><br />
+    <BitNav Items="customMatchNavItems" NameSelectors="matchSelectors" FitWidth />
+    <br /><br /><br />
+    <div>Prefix</div><br />
+    <BitNav Items="customPrefixMatchNavItems" NameSelectors="matchSelectors" Match="BitNavMatch.Prefix" FitWidth />
+    <br /><br /><br />
+    <div>Wildcard</div><br />
+    <BitNav Items="customWildcardMatchNavItems" NameSelectors="matchSelectors" Match="BitNavMatch.Wildcard" FitWidth />
+    <br /><br /><br />
+    <div>Regex</div><br />
+    <BitNav Items="customRegexMatchNavItems" NameSelectors="matchSelectors" Match="BitNavMatch.Regex" FitWidth />
+    <br /><br /><br />
+    <div>Match of an item &amp; AdditionalUrls</div><br />
+    <BitNav Items="customItemMatchNavItems" NameSelectors="matchSelectors" Match="BitNavMatch.Exact" FitWidth />
+    <br /><br />
+    <BitNav Items="customAdditionalUrlsNavItems" NameSelectors="matchSelectors" FitWidth />
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
         <b>Color</b> paints the parts that carry the nav's identity: the icons and the border of the selected
         item. <b>Accent</b> is a separate role that paints the hover and the selected background, so a nav can
@@ -252,7 +287,7 @@
     <BitNav FitWidth Accent="BitColor.Error" Items="customAccentNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customAccentNavItems[0]" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
     <div>
         Besides the built-in icons of the mapped <b>IconName</b>, the mapped <b>Icon</b> accepts the CSS
         classes of any external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over
@@ -270,7 +305,7 @@
     <BitNav Items="customBootstrapIconNavItems" ChevronDownIcon="bootstrapChevronIcon" FitWidth NameSelectors="sectionIconSelectors" />
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
         <b>Size</b> scales the metrics of every part of the nav at once: the height of the items, the size of
         their text and description, and the height and text of the group headers.
@@ -286,7 +321,7 @@
     <BitNav FitWidth Size="BitSize.Large" Items="customSizeNavItems" NameSelectors="sectionSelectors" />
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
     <div>
         <b>Style</b> and <b>Class</b> reach the root element, the mapped <b>Style</b> and <b>Class</b> of an
         item reach the list element of that item, and the <b>Styles</b> and <b>Classes</b> objects reach every
@@ -336,7 +371,7 @@
                                Description = "custom-description" })" />
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18" PreventRenderForMcpClient>
     <div>
         Setting <b>Dir</b> to <b>Rtl</b> flips the nav and everything it renders: the chevrons, the
         indentation of the levels and the direction of the arrow keys, so the Right arrow steps out of a branch

@@ -5,7 +5,9 @@
     @{
         var template = Nav.GetTemplate(Item);
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
-        var isEnabled = Nav.GetIsEnabled(Item);
+        // A disabled nav disables everything it renders: greying the items out is not enough, since a link
+        // that keeps its href and its tab stop can still be followed with the keyboard.
+        var isEnabled = Nav.IsEnabled && Nav.GetIsEnabled(Item);
         var isExpanded = Nav.GetItemExpanded(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
         var text = Nav.GetText(Item);
@@ -23,11 +25,16 @@
         var isSelected = Nav.IsSelected(Item);
         var href = isEnabled ? url : null;
         var isToggleable = childItems.Any() && Nav.NoCollapse is false;
+        var hasChevron = isToggleable && Nav.IconOnly is false;
         // A collapsed or expanded item reports its state through aria-expanded; an item that can never be
         // toggled must not report one at all, so it is not announced as an expandable node.
         var ariaExpanded = isToggleable ? (isExpanded ? "true" : "false") : null;
         var toggleAriaLabel = (isExpanded ? Nav.GetCollapseAriaLabel(Item) ?? Nav.CollapseAriaLabel
                                           : Nav.GetExpandAriaLabel(Item) ?? Nav.ExpandAriaLabel) ?? text;
+        // The chevron lives inside the item and carries a name of its own, which the item would otherwise
+        // fold into its own name and announce twice ("Fruits Fruits"), so an item that renders one is
+        // named explicitly after its text instead of after its content.
+        var ariaLabel = Nav.GetAriaLabel(Item) ?? (hasChevron ? text : null);
     }
 
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
@@ -57,7 +64,6 @@
                     @onclick="ToggleItem"
                     @onfocusin="HandleOnFocusIn"
                     @onkeydown="HandleOnKeyDown"
-                    @onkeydown:preventDefault="Nav.PreventKeyDownDefault"
                     type="button"
                     title="@(title is not null ? title : text)"
                     disabled="@(isEnabled is false)"
@@ -155,10 +161,9 @@
                                       RenderLink="renderLink"
                                       OnFocusIn="HandleOnFocusIn"
                                       OnKeyDown="HandleOnKeyDown"
-                                      PreventKeyDownDefault="Nav.PreventKeyDownDefault"
                                       Disabled="@(isEnabled is false)"
                                       AriaExpanded="@ariaExpanded"
-                                      AriaLabel="@Nav.GetAriaLabel(Item)"
+                                      AriaLabel="@ariaLabel"
                                       Title="@(title is not null ? title : text)"
                                       Class="@($"bit-nav-ict {GetItemContainerClasses()}")"
                                       Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
@@ -166,7 +171,7 @@
                                       TabIndex="@(isEnabled is false ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (childItems.Any() && Nav.IconOnly is false && Nav.NoCollapse is false)
+                        @if (hasChevron)
                         {
                             @* The chevron cannot be a button, since it lives inside the item's own anchor or
                                button, so it carries the button role and its keyboard activation explicitly. *@
@@ -174,11 +179,11 @@
                                  @onclick:preventDefault="true"
                                  @onclick:stopPropagation="true"
                                  @onkeydown="HandleToggleKeyDown"
-                                 @onkeydown:preventDefault="_preventToggleKeyDownDefault"
-                                 tabindex="0"
                                  role="button"
                                  style="@Nav.Styles?.ToggleButton"
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                 tabindex="@(isEnabled ? "0" : "-1")"
+                                 aria-disabled="@(isEnabled ? null : "true")"
                                  aria-expanded="@(isExpanded ? "true" : "false")"
                                  aria-label="@toggleAriaLabel">
                                 <i style="@Nav.Styles?.ToggleIcon"

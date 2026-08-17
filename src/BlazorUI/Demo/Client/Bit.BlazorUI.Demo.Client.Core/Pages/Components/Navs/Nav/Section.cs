@@ -10,6 +10,8 @@ public class Section
     public bool IsDivider { get; set; }
     public List<Section> Links { get; set; } = [];
     public string? Comment { get; set; }
+    public BitNavMatch? UrlMatch { get; set; }
+    public IEnumerable<string>? OtherUrls { get; set; }
     public string? Style { get; set; }
     public string? Class { get; set; }
     public RenderFragment<Section>? Template { get; set; }

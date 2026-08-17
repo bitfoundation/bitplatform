@@ -29,8 +29,6 @@ public partial class _BitNavItemContainer
 
     [Parameter] public EventCallback<KeyboardEventArgs> OnKeyDown { get; set; }
 
-    [Parameter] public bool PreventKeyDownDefault { get; set; }
-
     [Parameter] public string? Rel { get; set; }
 
     [Parameter] public bool RenderLink { get; set; }

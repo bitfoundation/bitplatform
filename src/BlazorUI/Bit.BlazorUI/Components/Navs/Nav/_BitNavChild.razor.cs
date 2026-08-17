@@ -5,9 +5,10 @@ namespace Bit.BlazorUI;
 public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
+    private TItem? _registeredItem;
     private ElementReference _headerElement;
+    private ElementReference _registeredElement;
     private _BitNavItemContainer? _container;
-    private bool _preventToggleKeyDownDefault;
 
 
 
@@ -33,14 +34,34 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
         // element it rendered: the item's own anchor/button, or the group header button in Grouped mode.
         if (_container is not null)
         {
-            Nav?.RegisterItemElement(Item, _container.Element);
+            RegisterItemElement(_container.Element);
         }
         else if (_headerElement.Id is not null)
         {
-            Nav?.RegisterItemElement(Item, _headerElement);
+            RegisterItemElement(_headerElement);
         }
 
         base.OnAfterRender(firstRender);
+    }
+
+    // The default key of an item carries its index, so a reordered collection re-keys the very same
+    // component instance onto another item: the registration of the item this instance used to render is
+    // dropped first, otherwise the nav would keep focusing an element that now belongs to another item.
+    // The drop only goes through while the registration still points at this instance's own element, so
+    // two items swapping places do not unregister each other's freshly registered element.
+    private void RegisterItemElement(ElementReference element)
+    {
+        if (Nav is null) return;
+
+        if (_registeredItem is not null && ReferenceEquals(_registeredItem, Item) is false)
+        {
+            Nav.UnregisterItemElement(_registeredItem, _registeredElement);
+        }
+
+        _registeredItem = Item;
+        _registeredElement = element;
+
+        Nav.RegisterItemElement(Item, element);
     }
 
 
@@ -52,6 +73,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     private async Task HandleOnClick()
     {
         if (Nav is null) return;
+        if (Nav.IsEnabled is false) return;
         if (Nav.GetIsEnabled(Item) is false) return;
 
         // The selection is read before the click is handled: the manual mode selects the clicked item right
@@ -92,14 +114,13 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     }
 
     // The chevron is a div with a button role, so Enter and Space have to be wired up by hand, as the
-    // WAI-ARIA button pattern describes. The default action of Space (scrolling the page) is suppressed
-    // through a flag rather than a constant, so Tab still leaves the chevron; Blazor evaluates the
-    // directive at render time, so the flag takes effect from the render that follows the first press.
+    // WAI-ARIA button pattern describes. The page-scrolling default of Space is cancelled by the
+    // capture-phase guard in BitNav.ts, which decides on the key actually pressed instead of the
+    // render-time @onkeydown:preventDefault, which lags a keystroke behind and would swallow the Tab
+    // that follows an activation.
     private async Task HandleToggleKeyDown(KeyboardEventArgs e)
     {
-        _preventToggleKeyDownDefault = e.Key is "Enter" or " " or "Spacebar";
-
-        if (_preventToggleKeyDownDefault is false) return;
+        if (e.Key is not ("Enter" or " " or "Spacebar")) return;
 
         await ToggleItem();
     }
@@ -108,6 +129,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         if (Nav is null) return;
         if (Nav.NoCollapse) return;
+        if (Nav.IsEnabled is false) return;
 
         if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
 
@@ -118,7 +140,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         var classes = new List<string>();
 
-        if (Nav.GetIsEnabled(Item) is false)
+        if (Nav.IsEnabled is false || Nav.GetIsEnabled(Item) is false)
         {
             classes.Add("bit-nav-dis");
         }
@@ -146,7 +168,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 
         if (Nav.FitWidth && Nav.IconOnly is false)
         {
-            styles.Add($"padding-inline-end:{Nav.IndentPadding}px;");
+            styles.Add($"padding-inline-end:{Nav.IndentPadding}px");
         }
 
         if (Nav.Styles?.ItemContainer is not null)
@@ -159,7 +181,9 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
             styles.Add(Nav.Styles?.SelectedItemContainer!);
         }
 
-        return string.Join(" ", styles);
+        // The fragments are declarations, so they are joined with a semicolon: a space would run two of
+        // them together into a single malformed declaration.
+        return string.Join(";", styles);
     }
 
     private string GetItemClasses()
@@ -180,24 +204,24 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
 
     private string GetItemStyles()
     {
-        var classes = new List<string>();
+        var styles = new List<string>();
         if (Nav.Styles?.Item is not null)
         {
-            classes.Add(Nav.Styles?.Item!);
+            styles.Add(Nav.Styles?.Item!);
         }
 
         if (Nav.IsSelected(Item) && Nav.Styles?.SelectedItem is not null)
         {
-            classes.Add(Nav.Styles?.SelectedItem!);
+            styles.Add(Nav.Styles?.SelectedItem!);
         }
 
-        return string.Join(" ", classes);
+        return string.Join(";", styles);
     }
 
     // rel="noopener noreferrer" only protects against a cross-origin target, so it is only added to the
     // links that actually leave the app: the ones carrying a scheme (https://, mailto:, ...) or a
     // protocol-relative host (//host/path).
-    private static readonly Regex _AbsoluteUrlRegex = new("^([a-zA-Z][a-zA-Z0-9+.-]*:)?//", RegexOptions.Compiled);
+    private static readonly Regex _AbsoluteUrlRegex = new("^(?:[a-zA-Z][a-zA-Z0-9+.-]*:|//)", RegexOptions.Compiled);
 
     private static bool IsRelativeUrl(string? url) => url.HasNoValue() || _AbsoluteUrlRegex.IsMatch(url!) is false;
 
@@ -225,7 +249,10 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         if (_disposed || disposing is false) return;
 
-        Nav?.UnregisterItemElement(Item);
+        if (_registeredItem is not null)
+        {
+            Nav?.UnregisterItemElement(_registeredItem, _registeredElement);
+        }
 
         _disposed = true;
     }

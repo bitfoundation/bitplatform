@@ -359,8 +359,10 @@ private static readonly List<BitNavItem> colorNavItems =
     <BitButton OnClick=""ExpandAllApiItems"">ExpandAll</BitButton>
     <BitButton OnClick=""CollapseAllApiItems"">CollapseAll</BitButton>
     <BitButton OnClick=""ToggleFruitsApiItem"">Toggle Fruits</BitButton>
+    <BitButton OnClick=""ExpandFastFoodsApiItem"">Expand Fast foods</BitButton>
+    <BitButton OnClick=""CollapseFastFoodsApiItem"">Collapse Fast foods</BitButton>
     <BitButton OnClick=""SelectIceCreamApiItem"">Select Ice Cream</BitButton>
-    <BitButton OnClick=""FocusCookieApiItem"">Focus Cookie</BitButton>
+    <BitButton OnClick=""FocusVeggieBurgerApiItem"">Focus Veggie Burger</BitButton>
 </BitStack>
 
 <BitNav @ref=""apiNavRef"" Items=""apiNavItems"" Mode=""BitNavMode.Manual"" FitWidth />";
@@ -370,8 +372,10 @@ private BitNav<BitNavItem>? apiNavRef;
 private void ExpandAllApiItems() => apiNavRef?.ExpandAll();
 private void CollapseAllApiItems() => apiNavRef?.CollapseAll();
 private async Task ToggleFruitsApiItem() { if (apiNavRef is not null) await apiNavRef.ToggleItem(apiNavItems[1]); }
+private async Task ExpandFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.ExpandItem(apiNavItems[0]); }
+private async Task CollapseFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.CollapseItem(apiNavItems[0]); }
 private async Task SelectIceCreamApiItem() { if (apiNavRef is not null) await apiNavRef.SelectItem(apiNavItems[2]); }
-private async Task FocusCookieApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(apiNavItems[3]); }
+private async Task FocusVeggieBurgerApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(apiNavItems[0].ChildItems[0].ChildItems[1]); }
 
 private static readonly List<BitNavItem> apiNavItems =
 [
@@ -413,6 +417,61 @@ private BitNavItem SelectedItem = default!;
 private BitNavItem ToggledItem = default!;";
 
     private readonly string example13RazorCode = @"
+<BitNav Items=""matchNavItems"" FitWidth />
+
+<BitNav Items=""prefixMatchNavItems"" Match=""BitNavMatch.Prefix"" FitWidth />
+
+<BitNav Items=""wildcardMatchNavItems"" Match=""BitNavMatch.Wildcard"" FitWidth />
+
+<BitNav Items=""regexMatchNavItems"" Match=""BitNavMatch.Regex"" FitWidth />
+
+<BitNav Items=""itemMatchNavItems"" Match=""BitNavMatch.Exact"" FitWidth />
+
+<BitNav Items=""additionalUrlsNavItems"" FitWidth />";
+    private readonly string example13CsharpCode = @"
+private static readonly List<BitNavItem> matchNavItems =
+[
+    new() { Text = ""Nav (this page)"", IconName = BitIconName.GlobalNavButton, Url = ""/components/nav"" },
+    new() { Text = ""Pivot"", IconName = BitIconName.MiniExpand, Url = ""/components/pivot"" },
+];
+
+private static readonly List<BitNavItem> prefixMatchNavItems =
+[
+    new() { Text = ""Components (/components)"", IconName = BitIconName.F12DevTools, Url = ""/components"" },
+    new() { Text = ""Iconography (/iconography)"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];
+
+private static readonly List<BitNavItem> wildcardMatchNavItems =
+[
+    new() { Text = ""A component page (/components/*)"", IconName = BitIconName.F12DevTools, Url = ""/components/*"" },
+    new() { Text = ""A pro page (/pro/**)"", IconName = BitIconName.Trophy2, Url = ""/pro/**"" },
+];
+
+private static readonly List<BitNavItem> regexMatchNavItems =
+[
+    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", IconName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"" },
+    new() { Text = ""A page starting with P (^/components/p)"", IconName = BitIconName.Page, Url = ""^/components/p"" },
+];
+
+private static readonly List<BitNavItem> itemMatchNavItems =
+[
+    new() { Text = ""Components (its own Prefix)"", IconName = BitIconName.F12DevTools, Url = ""/components"", Match = BitNavMatch.Prefix },
+    new() { Text = ""Pivot (the Exact of the nav)"", IconName = BitIconName.MiniExpand, Url = ""/components/pivot"" },
+];
+
+private static readonly List<BitNavItem> additionalUrlsNavItems =
+[
+    new()
+    {
+        Text = ""Navigation (also /components/nav)"",
+        IconName = BitIconName.GlobalNavButton,
+        Url = ""/components/navbar"",
+        AdditionalUrls = [""/components/nav"", ""/components/breadcrumb""]
+    },
+    new() { Text = ""Inputs"", IconName = BitIconName.TextField, Url = ""/components/textfield"" },
+];";
+
+    private readonly string example14RazorCode = @"
 <BitNav FitWidth Color=""BitColor.Primary"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Secondary"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Tertiary"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
@@ -426,7 +485,7 @@ private BitNavItem ToggledItem = default!;";
 <BitNav FitWidth Accent=""BitColor.Success"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />
 <BitNav FitWidth Accent=""BitColor.Warning"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />
 <BitNav FitWidth Accent=""BitColor.Error"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private static readonly List<BitNavItem> colorNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home },
@@ -441,7 +500,7 @@ private static readonly List<BitNavItem> accentNavItems =
     new() { Text = ""Settings"", IconName = BitIconName.Settings },
 ];";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNav Items=""externalIconNavItems"" FitWidth />
@@ -449,7 +508,7 @@ private static readonly List<BitNavItem> accentNavItems =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitNav Items=""bootstrapIconNavItems"" ChevronDownIcon=""bootstrapChevronIcon"" FitWidth />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private static readonly List<BitNavItem> externalIconNavItems =
 [
     new()
@@ -493,13 +552,13 @@ private static readonly List<BitNavItem> bootstrapIconNavItems =
     new() { Text = ""Iconography"", Icon = BitIconInfo.Bi(""emoji-smile""), Url = ""/iconography"" },
 ];";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitNav FitWidth Size=""BitSize.Small"" Items=""sizeNavItems"" />
 
 <BitNav FitWidth Size=""BitSize.Medium"" Items=""sizeNavItems"" />
 
 <BitNav FitWidth Size=""BitSize.Large"" Items=""sizeNavItems"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private static readonly List<BitNavItem> sizeNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home, Description = ""The main page"" },
@@ -507,7 +566,7 @@ private static readonly List<BitNavItem> sizeNavItems =
     new() { Text = ""Settings"", IconName = BitIconName.Settings, Description = ""The app settings"" },
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitNav Items=""colorNavItems"" Style=""max-width: max-content; border: 1px solid tomato;"" />
 
 <BitNav Items=""colorNavItems"" Class=""custom-class"" />
@@ -542,7 +601,7 @@ private static readonly List<BitNavItem> sizeNavItems =
                            ItemText = ""custom-item-text"",
                            ToggleIcon = ""custom-toggle-icon"",
                            Description = ""custom-description"" })"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private static readonly List<BitNavItem> styleClassNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home, Style = ""background: rgba(255,99,71,0.2);"" },
@@ -588,11 +647,11 @@ private static readonly List<BitNavItem> customClassNavItems =
     },
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <div dir=""rtl"">
     <BitNav Dir=""BitDir.Rtl"" Items=""rtlNavItems"" />
 </div>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private static readonly List<BitNavItem> rtlNavItems =
 [
     new()

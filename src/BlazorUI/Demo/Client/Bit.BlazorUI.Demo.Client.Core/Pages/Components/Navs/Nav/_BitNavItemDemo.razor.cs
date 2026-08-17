@@ -270,6 +270,48 @@ public partial class _BitNavItemDemo
         new() { Text = "Cookie", IconName = BitIconName.Cake },
     ];
 
+    private static readonly List<BitNavItem> matchNavItems =
+    [
+        new() { Text = "Nav (this page)", IconName = BitIconName.GlobalNavButton, Url = "/components/nav" },
+        new() { Text = "Pivot", IconName = BitIconName.MiniExpand, Url = "/components/pivot" },
+    ];
+
+    private static readonly List<BitNavItem> prefixMatchNavItems =
+    [
+        new() { Text = "Components (/components)", IconName = BitIconName.F12DevTools, Url = "/components" },
+        new() { Text = "Iconography (/iconography)", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
+    ];
+
+    private static readonly List<BitNavItem> wildcardMatchNavItems =
+    [
+        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*" },
+        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**" },
+    ];
+
+    private static readonly List<BitNavItem> regexMatchNavItems =
+    [
+        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$" },
+        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p" },
+    ];
+
+    private static readonly List<BitNavItem> itemMatchNavItems =
+    [
+        new() { Text = "Components (its own Prefix)", IconName = BitIconName.F12DevTools, Url = "/components", Match = BitNavMatch.Prefix },
+        new() { Text = "Pivot (the Exact of the nav)", IconName = BitIconName.MiniExpand, Url = "/components/pivot" },
+    ];
+
+    private static readonly List<BitNavItem> additionalUrlsNavItems =
+    [
+        new()
+        {
+            Text = "Navigation (also /components/nav)",
+            IconName = BitIconName.GlobalNavButton,
+            Url = "/components/navbar",
+            AdditionalUrls = ["/components/nav", "/components/breadcrumb"]
+        },
+        new() { Text = "Inputs", IconName = BitIconName.TextField, Url = "/components/textfield" },
+    ];
+
     private static readonly List<BitNavItem> colorNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home },
@@ -489,8 +531,10 @@ public partial class _BitNavItemDemo
     private void ExpandAllApiItems() => apiNavRef?.ExpandAll();
     private void CollapseAllApiItems() => apiNavRef?.CollapseAll();
     private async Task ToggleFruitsApiItem() { if (apiNavRef is not null) await apiNavRef.ToggleItem(apiNavItems[1]); }
+    private async Task ExpandFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.ExpandItem(apiNavItems[0]); }
+    private async Task CollapseFastFoodsApiItem() { if (apiNavRef is not null) await apiNavRef.CollapseItem(apiNavItems[0]); }
     private async Task SelectIceCreamApiItem() { if (apiNavRef is not null) await apiNavRef.SelectItem(apiNavItems[2]); }
-    private async Task FocusCookieApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(apiNavItems[3]); }
+    private async Task FocusVeggieBurgerApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(apiNavItems[0].ChildItems[0].ChildItems[1]); }
 
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     [

@@ -266,31 +266,45 @@ private bool iconOnly;";
 <BitStack Horizontal Wrap>
     <BitButton OnClick=""ExpandAllApiOptions"">ExpandAll</BitButton>
     <BitButton OnClick=""CollapseAllApiOptions"">CollapseAll</BitButton>
+    <BitButton OnClick=""ToggleFruitsApiOption"">Toggle Fruits</BitButton>
+    <BitButton OnClick=""ExpandFastFoodsApiOption"">Expand Fast foods</BitButton>
+    <BitButton OnClick=""CollapseFastFoodsApiOption"">Collapse Fast foods</BitButton>
+    <BitButton OnClick=""SelectIceCreamApiOption"">Select Ice Cream</BitButton>
+    <BitButton OnClick=""FocusVeggieBurgerApiOption"">Focus Veggie Burger</BitButton>
 </BitStack>
 
 <BitNav @ref=""apiNavRef"" TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" FitWidth>
-    <BitNavOption Text=""Fast foods"" IconName=""@BitIconName.HeartBroken"">
+    <BitNavOption @ref=""fastFoodsOption"" Text=""Fast foods"" IconName=""@BitIconName.HeartBroken"">
         <BitNavOption Text=""Burgers"">
             <BitNavOption Text=""Beef Burger"" />
-            <BitNavOption Text=""Veggie Burger"" />
+            <BitNavOption @ref=""veggieBurgerOption"" Text=""Veggie Burger"" />
         </BitNavOption>
         <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" />
             <BitNavOption Text=""Meat Pizza"" />
         </BitNavOption>
     </BitNavOption>
-    <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
+    <BitNavOption @ref=""fruitsOption"" Text=""Fruits"" IconName=""@BitIconName.Health"">
         <BitNavOption Text=""Apple"" />
         <BitNavOption Text=""Orange"" />
     </BitNavOption>
-    <BitNavOption Text=""Ice Cream"" IconName=""@BitIconName.Emoji2"" />
+    <BitNavOption @ref=""iceCreamOption"" Text=""Ice Cream"" IconName=""@BitIconName.Emoji2"" />
     <BitNavOption Text=""Cookie"" IconName=""@BitIconName.Cake"" />
 </BitNav>";
     private readonly string example11CsharpCode = @"
 private BitNav<BitNavOption>? apiNavRef;
+private BitNavOption? fruitsOption;
+private BitNavOption? iceCreamOption;
+private BitNavOption? fastFoodsOption;
+private BitNavOption? veggieBurgerOption;
 
 private void ExpandAllApiOptions() => apiNavRef?.ExpandAll();
-private void CollapseAllApiOptions() => apiNavRef?.CollapseAll();";
+private void CollapseAllApiOptions() => apiNavRef?.CollapseAll();
+private async Task ToggleFruitsApiOption() { if (apiNavRef is not null && fruitsOption is not null) await apiNavRef.ToggleItem(fruitsOption); }
+private async Task ExpandFastFoodsApiOption() { if (apiNavRef is not null && fastFoodsOption is not null) await apiNavRef.ExpandItem(fastFoodsOption); }
+private async Task CollapseFastFoodsApiOption() { if (apiNavRef is not null && fastFoodsOption is not null) await apiNavRef.CollapseItem(fastFoodsOption); }
+private async Task SelectIceCreamApiOption() { if (apiNavRef is not null && iceCreamOption is not null) await apiNavRef.SelectItem(iceCreamOption); }
+private async Task FocusVeggieBurgerApiOption() { if (apiNavRef is not null && veggieBurgerOption is not null) await apiNavRef.FocusItem(veggieBurgerOption); }";
 
     private readonly string example12RazorCode = @"
 <BitNav Mode=""BitNavMode.Manual""
@@ -329,6 +343,40 @@ private BitNavOption ToggledOption = default!;
 private BitNavOption SelectedOption = default!;";
 
     private readonly string example13RazorCode = @"
+<BitNav TItem=""BitNavOption"" FitWidth>
+    <BitNavOption Text=""Nav (this page)"" IconName=""@BitIconName.GlobalNavButton"" Url=""/components/nav"" />
+    <BitNavOption Text=""Pivot"" IconName=""@BitIconName.MiniExpand"" Url=""/components/pivot"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Prefix"" FitWidth>
+    <BitNavOption Text=""Components (/components)"" IconName=""@BitIconName.F12DevTools"" Url=""/components"" />
+    <BitNavOption Text=""Iconography (/iconography)"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Wildcard"" FitWidth>
+    <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" />
+    <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Regex"" FitWidth>
+    <BitNavOption Text=""Nav or NavBar (^/components/nav(bar)?$)"" IconName=""@BitIconName.GlobalNavButton"" Url=""^/components/nav(bar)?$"" />
+    <BitNavOption Text=""A page starting with P (^/components/p)"" IconName=""@BitIconName.Page"" Url=""^/components/p"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Exact"" FitWidth>
+    <BitNavOption Text=""Components (its own Prefix)"" IconName=""@BitIconName.F12DevTools"" Url=""/components"" Match=""BitNavMatch.Prefix"" />
+    <BitNavOption Text=""Pivot (the Exact of the nav)"" IconName=""@BitIconName.MiniExpand"" Url=""/components/pivot"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" FitWidth>
+    <BitNavOption Text=""Navigation (also /components/nav)""
+                  IconName=""@BitIconName.GlobalNavButton""
+                  Url=""/components/navbar""
+                  AdditionalUrls=""@([""/components/nav"", ""/components/breadcrumb""])"" />
+    <BitNavOption Text=""Inputs"" IconName=""@BitIconName.TextField"" Url=""/components/textfield"" />
+</BitNav>";
+
+    private readonly string example14RazorCode = @"
 <BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Primary"" Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
@@ -343,7 +391,7 @@ private BitNavOption SelectedOption = default!;";
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual""> ... </BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual""> ... </BitNav>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNav TItem=""BitNavOption"" FitWidth>
@@ -365,7 +413,7 @@ private BitNavOption SelectedOption = default!;";
     </BitNavOption>
     <BitNavOption Text=""Iconography"" Icon=""bootstrapSmileIcon"" Url=""/iconography"" />
 </BitNav>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css(""fa-solid fa-house"");
 private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa(""solid code"");
 private static readonly BitIconInfo fontAwesomeTagIcon = BitIconInfo.Css(""fa-solid fa-tag"");
@@ -377,7 +425,7 @@ private static readonly BitIconInfo bootstrapCodeIcon = BitIconInfo.Bi(""code-sl
 private static readonly BitIconInfo bootstrapTagIcon = BitIconInfo.Bi(""tag-fill"");
 private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-smile"");";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Small"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Description=""The main page"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" Description=""All of the products"" />
@@ -388,7 +436,7 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
 
 <BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large""> ... </BitNav>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitNav TItem=""BitNavOption"" Style=""max-width: max-content; border: 1px solid tomato;"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
@@ -449,7 +497,7 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
     </BitNavOption>
 </BitNav>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <div dir=""rtl"">
     <BitNav TItem=""BitNavOption"" Dir=""BitDir.Rtl"">
         <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">
