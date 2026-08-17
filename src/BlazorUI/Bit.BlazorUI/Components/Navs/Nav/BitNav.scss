@@ -3,6 +3,12 @@
 .bit-nav {
     color: $clr-fg-pri;
     font-family: $tg-font-family;
+    // The size tokens live on the root so a single class swaps the metrics of every part at once.
+    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-min-height: #{spacing(6)};
+    --bit-nav-des-font-size: #{spacing(1.5)};
+    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-header-height: #{spacing(5.5)};
 
     ul {
         margin: 0;
@@ -57,11 +63,25 @@
     display: flex;
     gap: spacing(1.25);
     align-items: center;
-    height: spacing(5.5);
+    height: var(--bit-nav-header-height);
     border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-nav-iit {
         gap: spacing(1.25);
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+
+        .bit-nav-ghd,
+        .bit-nav-iic {
+            color: $clr-fg-dis;
+        }
     }
 }
 
@@ -69,7 +89,7 @@
     flex-grow: 1;
     display: flex;
     font-weight: 500;
-    font-size: spacing(2.25);
+    font-size: var(--bit-nav-header-font-size);
 }
 
 .bit-nav-itg {
@@ -93,11 +113,17 @@
     gap: spacing(0.25);
     padding: spacing(0.5);
     box-sizing: border-box;
-    min-height: spacing(6.0);
     border-color: transparent;
+    min-height: var(--bit-nav-item-min-height);
     border-radius: $shp-border-radius;
     border-inline-start-width: spacing(0.375);
     border-inline-start-style: $shp-border-style;
+
+    // The item resets every inherited style with `all: unset`, which also drops the native focus
+    // indicator, so the themed one has to be put back explicitly.
+    &:focus-visible {
+        @include focus-ring;
+    }
 
     @media (hover: hover) {
         &:hover {
@@ -129,7 +155,7 @@
     white-space: nowrap;
     flex-flow: row nowrap;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: var(--bit-nav-item-font-size);
 }
 
 .bit-nav-des {
@@ -141,7 +167,7 @@
     color: $clr-fg-ter;
     white-space: nowrap;
     font-weight: normal;
-    font-size: spacing(1.5);
+    font-size: var(--bit-nav-des-font-size);
     background: transparent;
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
@@ -157,6 +183,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-nav-iic {
@@ -176,10 +206,6 @@
 
     .bit-nav-itx {
         display: none;
-    }
-
-    .bit-nav-sel {
-        //border: none;
     }
 }
 
@@ -214,6 +240,31 @@
 .bit-nav-sep {
     height: 0;
     border: 1px solid $clr-brd-sec;
+}
+
+
+.bit-nav-sm {
+    --bit-nav-item-font-size: #{spacing(1.5)};
+    --bit-nav-item-min-height: #{spacing(4.5)};
+    --bit-nav-des-font-size: #{spacing(1.25)};
+    --bit-nav-header-font-size: #{spacing(1.875)};
+    --bit-nav-header-height: #{spacing(4.5)};
+}
+
+.bit-nav-md {
+    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-min-height: #{spacing(6)};
+    --bit-nav-des-font-size: #{spacing(1.5)};
+    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-header-height: #{spacing(5.5)};
+}
+
+.bit-nav-lg {
+    --bit-nav-item-font-size: #{spacing(2)};
+    --bit-nav-item-min-height: #{spacing(7)};
+    --bit-nav-des-font-size: #{spacing(1.75)};
+    --bit-nav-header-font-size: #{spacing(2.625)};
+    --bit-nav-header-height: #{spacing(6.5)};
 }
 
 

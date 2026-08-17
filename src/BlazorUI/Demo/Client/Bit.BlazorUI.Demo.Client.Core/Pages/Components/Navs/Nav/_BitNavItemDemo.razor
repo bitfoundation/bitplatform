@@ -1,16 +1,56 @@
 <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+    <div>
+        The nav renders the tree given to <b>Items</b> as a list of links. Each <b>BitNavItem</b> carries its
+        <b>Text</b>, an optional <b>IconName</b>, <b>Description</b> and <b>Url</b>, and the items nested in
+        its <b>ChildItems</b> turn it into an expandable node. An item with <b>IsEnabled</b> set to false is
+        rendered but neither clickable nor selectable.
+    </div>
+    <br />
     <BitNav Items="basicNavItems" />
 </DemoExample>
 
-<DemoExample Title="FitWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+<DemoExample Title="FitWidth & FullWidth" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
+    <div>
+        By default the nav takes the width its container gives it. <b>FitWidth</b> shrinks it to the width of
+        its widest item, which is what a nav sitting next to other content usually wants, and <b>FullWidth</b>
+        stretches it over the whole container.
+    </div>
+    <br /><br /><br />
+    <div>FitWidth</div><br />
     <BitNav Items="basicNavItems" FitWidth />
+    <br /><br /><br />
+    <div>FullWidth</div><br />
+    <BitNav Items="basicNavItems" FullWidth />
 </DemoExample>
 
 <DemoExample Title="Grouped" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+    <div>
+        The <b>Grouped</b> render type turns every root item into a group header: a full-width button with a
+        bottom border that expands and collapses the group instead of navigating. Only the root level changes;
+        everything below it keeps rendering as ordinary nav items.
+    </div>
+    <br />
     <BitNav Items="carNavItems" RenderType="BitNavRenderType.Grouped" />
 </DemoExample>
 
-<DemoExample Title="Manual Mode" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+<DemoExample Title="Separator" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+    <div>
+        An item with <b>IsSeparator</b> renders a horizontal rule in place of a link, which groups the items
+        around it without giving that group a header. It is skipped by the keyboard navigation and reported to
+        assistive technologies as a separator rather than as a nav item.
+    </div>
+    <br />
+    <BitNav Items="separatorNavItems" FitWidth />
+</DemoExample>
+
+<DemoExample Title="Manual Mode" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+    <div>
+        In the default <b>Automatic</b> mode the nav keeps the selection in sync with the current URL. The
+        <b>Manual</b> mode hands that over to the app: the clicked item becomes the selected one, the initial
+        selection comes from <b>DefaultSelectedItem</b>, and <b>SelectedItem</b> two-way binds the selection so
+        it can be driven from anywhere else on the page.
+    </div>
+    <br /><br /><br />
     <div>Basic</div><br />
     <BitNav Items="foodNavItems"
             DefaultSelectedItem="foodNavItems[0].ChildItems[2]"
@@ -31,13 +71,66 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="IconOnly" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5" PreventRenderForMcpClient>
+<DemoExample Title="IconOnly" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6" PreventRenderForMcpClient>
+    <div>
+        <b>IconOnly</b> collapses the nav to a rail of icons: the texts, the descriptions and the expand
+        chevrons are all hidden, so only the icon of each item is left. The text still reaches the pointer as
+        the item's tooltip and the screen reader through the item's accessible name.
+    </div>
+    <br />
     <BitToggle @bind-Value="iconOnly" Label="Hide texts?" Inline />
     <br />
     <BitNav Items="iconOnlyNavItems" Mode="BitNavMode.Manual" IconOnly="iconOnly" />
 </DemoExample>
 
-<DemoExample Title="Custom Templates" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+<DemoExample Title="SingleExpand" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+    <div>
+        <b>SingleExpand</b> turns the nav into an accordion: expanding a branch collapses the one that was open
+        before it, so a deep tree never grows past a single open path. <b>ExpandAll</b> is a no-op while this
+        mode is on, since it would break that rule.
+    </div>
+    <br />
+    <BitNav Items="singleExpandNavItems" SingleExpand FitWidth />
+</DemoExample>
+
+<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
+    <div>
+        <b>AllExpanded</b> opens every branch of the tree on the first render. <b>NoCollapse</b> goes further
+        and removes the expand/collapse buttons altogether, together with the space they reserve at the start
+        of each item, which is how a nav that is always fully open is rendered.
+    </div>
+    <br />
+    <BitNav Items="noCollapseNavItems" AllExpanded NoCollapse />
+</DemoExample>
+
+<DemoExample Title="Chevron & Indentation" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9" PreventRenderForMcpClient>
+    <div>
+        <b>ReversedChevron</b> moves the expand chevron to the trailing side of the item, and
+        <b>ChevronDownIconName</b> (or <b>ChevronDownIcon</b>, for an external icon library) replaces the icon
+        it renders while keeping its rotation. The indentation is arithmetic: <b>IndentValue</b> is the padding
+        added per level of depth, <b>IndentPadding</b> is the space a childless item reserves in place of the
+        chevron, and <b>IndentReversedPadding</b> replaces it while the chevron is reversed.
+    </div>
+    <br /><br /><br />
+    <div>ReversedChevron</div><br />
+    <BitNav Items="chevronNavItems" ReversedChevron AllExpanded FitWidth />
+    <br /><br /><br />
+    <div>Custom chevron icon</div><br />
+    <BitNav Items="chevronNavItems" ChevronDownIconName="@BitIconName.CircleAdditionSolid" AllExpanded FitWidth />
+    <br /><br /><br />
+    <div>IndentValue &amp; IndentPadding</div><br />
+    <BitNav Items="chevronNavItems" IndentValue="40" IndentPadding="40" AllExpanded FitWidth />
+</DemoExample>
+
+<DemoExample Title="Custom Templates" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+    <div>
+        <b>HeaderTemplate</b> replaces the content of the group headers in the Grouped render type and
+        <b>ItemTemplate</b> replaces the content of every ordinary item, both receiving the item as their
+        context. The matching <b>HeaderTemplateRenderMode</b> and <b>ItemTemplateRenderMode</b> decide whether
+        the template renders inside the item's own link (<b>Normal</b>) or takes its place entirely
+        (<b>Replace</b>), and the <b>Template</b> of a single item overrides both for that item alone.
+    </div>
+    <br /><br /><br />
     <div>Header Template (Grouped)</div><br />
     <BitNav Items="carNavItems" RenderType="BitNavRenderType.Grouped">
         <HeaderTemplate Context="item">
@@ -58,9 +151,44 @@
             </div>
         </ItemTemplate>
     </BitNav>
+    <br /><br /><br />
+    <div>Item Template (Replace)</div><br />
+    <BitNav Items="colorNavItems" FitWidth ItemTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <ItemTemplate Context="item">
+            <div class="nav-custom-item">
+                <BitIcon IconName="@item.IconName" />
+                <span>@item.Text</span>
+                <BitTag Color="BitColor.SecondaryBackground">custom</BitTag>
+            </div>
+        </ItemTemplate>
+    </BitNav>
 </DemoExample>
 
-<DemoExample Title="Events" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+<DemoExample Title="Public API" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11" PreventRenderForMcpClient>
+    <div>
+        A reference to the nav exposes its state as methods: <b>ExpandAll</b> and <b>CollapseAll</b> open or
+        close the whole tree (or a single subtree, when given an item), <b>ToggleItem</b> flips one item,
+        <b>SelectItem</b> selects one without a click, and <b>FocusItem</b> moves the keyboard focus to it.
+    </div>
+    <br />
+    <BitStack Horizontal Wrap>
+        <BitButton OnClick="ExpandAllApiItems">ExpandAll</BitButton>
+        <BitButton OnClick="CollapseAllApiItems">CollapseAll</BitButton>
+        <BitButton OnClick="ToggleFruitsApiItem">Toggle Fruits</BitButton>
+        <BitButton OnClick="SelectIceCreamApiItem">Select Ice Cream</BitButton>
+        <BitButton OnClick="FocusCookieApiItem">Focus Cookie</BitButton>
+    </BitStack>
+    <br />
+    <BitNav @ref="apiNavRef" Items="apiNavItems" Mode="BitNavMode.Manual" FitWidth />
+</DemoExample>
+
+<DemoExample Title="Events" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+    <div>
+        <b>OnItemClick</b> fires for every click on an item, <b>OnSelectItem</b> only when the selection
+        actually changes, and <b>OnItemToggle</b> when a branch is expanded or collapsed. Setting
+        <b>Reselectable</b> makes the select events fire again for an item that is already selected.
+    </div>
+    <br />
     <div class="example-box">
         <BitNav Items="foodNavItems"
                 Mode="BitNavMode.Manual"
@@ -76,31 +204,142 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="AllExpanded & NoCollapse" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8" PreventRenderForMcpClient>
-    <BitNav Items="noCollapseNavItems" AllExpanded NoCollapse />
+<DemoExample Title="Color" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13" PreventRenderForMcpClient>
+    <div>
+        <b>Color</b> paints the parts that carry the nav's identity: the icons and the border of the selected
+        item. <b>Accent</b> is a separate role that paints the hover and the selected background, so a nav can
+        keep a colorful icon set over a neutral background. Both accept every value of <b>BitColor</b>,
+        including the background, foreground and border roles that are not listed here.
+    </div>
+    <br /><br /><br />
+    <div>Primary</div><br />
+    <BitNav FitWidth Color="BitColor.Primary" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Secondary</div><br />
+    <BitNav FitWidth Color="BitColor.Secondary" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Tertiary</div><br />
+    <BitNav FitWidth Color="BitColor.Tertiary" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Info</div><br />
+    <BitNav FitWidth Color="BitColor.Info" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Success</div><br />
+    <BitNav FitWidth Color="BitColor.Success" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Warning</div><br />
+    <BitNav FitWidth Color="BitColor.Warning" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>SevereWarning</div><br />
+    <BitNav FitWidth Color="BitColor.SevereWarning" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br />
+    <div>Error</div><br />
+    <BitNav FitWidth Color="BitColor.Error" Items="colorNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="colorNavItems[0]" />
+    <br /><br /><br /><br />
+    <div><b>Accent</b>:</div>
+    <br /><br />
+    <div>Primary</div><br />
+    <BitNav FitWidth Accent="BitColor.Primary" Items="accentNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="accentNavItems[0]" />
+    <br /><br /><br />
+    <div>Success</div><br />
+    <BitNav FitWidth Accent="BitColor.Success" Items="accentNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="accentNavItems[0]" />
+    <br /><br /><br />
+    <div>Warning</div><br />
+    <BitNav FitWidth Accent="BitColor.Warning" Items="accentNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="accentNavItems[0]" />
+    <br /><br /><br />
+    <div>Error</div><br />
+    <BitNav FitWidth Accent="BitColor.Error" Items="accentNavItems" Mode="BitNavMode.Manual" DefaultSelectedItem="accentNavItems[0]" />
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+<DemoExample Title="External Icons" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
     <div>
-        Use icons from external libraries like FontAwesome with the <BitLink Href="#bit-icon-info">Icon</BitLink> parameter 
-        (<BitLink Href="#nav-item">BitNavItem</BitLink>.<BitLink Href="#bit-icon-info">Icon</BitLink>). 
-        See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage. 
-        Built-in Fluent UI icons use <BitLink Href="#nav-item">IconName</BitLink>.
+        Besides the built-in icons of <b>IconName</b>, the <b>Icon</b> parameter of an item accepts the CSS
+        classes of any external icon library, such as FontAwesome or Bootstrap Icons, and takes precedence over
+        <b>IconName</b>. The same applies to the <b>ChevronDownIcon</b> of the nav itself.
+    </div>
+    <br /><br />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <div><b>FontAwesome Icons:</b></div>
+    <br />
+    <BitNav Items="externalIconNavItems" FitWidth />
+    <br /><br /><br /><br />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <div><b>Bootstrap Icons:</b></div>
+    <br />
+    <BitNav Items="bootstrapIconNavItems" ChevronDownIcon="bootstrapChevronIcon" FitWidth />
+</DemoExample>
+
+<DemoExample Title="Size" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+    <div>
+        <b>Size</b> scales the metrics of every part of the nav at once: the height of the items, the size of
+        their text and description, and the height and text of the group headers.
+    </div>
+    <br /><br /><br />
+    <div>Small</div><br />
+    <BitNav FitWidth Size="BitSize.Small" Items="sizeNavItems" />
+    <br /><br /><br />
+    <div>Medium</div><br />
+    <BitNav FitWidth Size="BitSize.Medium" Items="sizeNavItems" />
+    <br /><br /><br />
+    <div>Large</div><br />
+    <BitNav FitWidth Size="BitSize.Large" Items="sizeNavItems" />
+</DemoExample>
+
+<DemoExample Title="Style & Class" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+    <div>
+        <b>Style</b> and <b>Class</b> reach the root element, the <b>Style</b> and <b>Class</b> of an item reach
+        the list element of that item, and the <b>Styles</b> and <b>Classes</b> objects reach every part of the
+        nav separately: the root, the item container and its selected variant, the item and its selected
+        variant, the item icon and text, the toggle button and its chevron icon, the description, the group
+        header and its text, and the separator.
+    </div>
+    <br /><br /><br />
+    <div>Component's Style & Class:</div><br />
+    <BitNav Items="colorNavItems" Style="max-width: max-content; border: 1px solid tomato;" />
+    <br /><br />
+    <BitNav Items="colorNavItems" Class="custom-class" />
+    <br /><br /><br /><br />
+    <div>Item's Style & Class:</div><br />
+    <BitNav Items="styleClassNavItems" FitWidth />
+    <br /><br /><br /><br />
+    <div><b>Styles</b> & <b>Classes</b>:</div><br />
+    <BitNav Items="customStyleNavItems"
+            AllExpanded
+            Mode="BitNavMode.Manual"
+            DefaultSelectedItem="customStyleNavItems[1]"
+            Styles="@(new() { Root = "background: #2a2a2a; border-radius: 8px; padding: 4px;",
+                              ItemContainer = "border: 1px solid green; margin: 2px;",
+                              SelectedItemContainer = "border-color: gold;",
+                              ToggleButton = "color: cyan;",
+                              ToggleIcon = "font-size: 12px;",
+                              Item = "color: orangered;",
+                              SelectedItem = "color: gold;",
+                              ItemIcon = "color: gold; margin-inline-end: 15px;",
+                              ItemText = "letter-spacing: 1px;",
+                              Description = "color: darkseagreen;",
+                              Separator = "border-color: cyan;" })" />
+    <br /><br />
+    <BitNav Items="customClassNavItems"
+            AllExpanded
+            RenderType="BitNavRenderType.Grouped"
+            Classes="@(new() { Root = "custom-root",
+                               Header = "custom-header",
+                               HeaderText = "custom-header-text",
+                               ItemContainer = "custom-item-container",
+                               Item = "custom-item",
+                               ItemIcon = "custom-item-icon",
+                               ItemText = "custom-item-text",
+                               ToggleIcon = "custom-toggle-icon",
+                               Description = "custom-description" })" />
+</DemoExample>
+
+<DemoExample Title="RTL" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <div>
+        Setting <b>Dir</b> to <b>Rtl</b> flips the nav and everything it renders: the chevrons, the
+        indentation of the levels and the direction of the arrow keys, so the Right arrow steps out of a branch
+        and the Left arrow steps into it.
     </div>
     <br />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-    <BitNav Items="externalIconNavItems" />
-</DemoExample>
-
-<DemoExample Title="Custom Styles" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-    <BitNav Items="customStyleNavItems"
-            Styles="@(new() { ItemContainer = "border: 1px solid green; margin: 2px;",
-                              ToggleButton = "color: cyan;",
-                              Item = "color: red;",
-                              ItemIcon = "color: gold; margin-right: 15px;" })" />
-</DemoExample>
-
-<DemoExample Title="RTL" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
     <div dir="rtl">
         <BitNav Dir="BitDir.Rtl" Items="rtlNavItems" />
     </div>

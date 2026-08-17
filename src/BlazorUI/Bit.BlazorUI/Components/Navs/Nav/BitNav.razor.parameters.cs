@@ -39,6 +39,13 @@ public partial class BitNav<TItem>
     [Parameter] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
+    /// The default aria-label of the expand/collapse button of an expanded item.
+    /// The CollapseAriaLabel of the item takes precedence over this value, and when neither is provided
+    /// the text of the item is used, so the button is never left without an accessible name.
+    /// </summary>
+    [Parameter] public string? CollapseAriaLabel { get; set; }
+
+    /// <summary>
     /// The general color of the nav that is only used for colored parts like icons.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -48,6 +55,13 @@ public partial class BitNav<TItem>
     /// The initially selected item in manual mode.
     /// </summary>
     [Parameter] public TItem? DefaultSelectedItem { get; set; }
+
+    /// <summary>
+    /// The default aria-label of the expand/collapse button of a collapsed item.
+    /// The ExpandAriaLabel of the item takes precedence over this value, and when neither is provided
+    /// the text of the item is used, so the button is never left without an accessible name.
+    /// </summary>
+    [Parameter] public string? ExpandAriaLabel { get; set; }
 
     /// <summary>
     /// Renders the nav in a width to only fit its content.
@@ -172,6 +186,12 @@ public partial class BitNav<TItem>
     [Parameter, TwoWayBound]
     [CallOnSet(nameof(OnSetSelectedItem))]
     public TItem? SelectedItem { get; set; }
+
+    /// <summary>
+    /// The size of the nav items.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitSize? Size { get; set; }
 
     /// <summary>
     /// Enables the single-expand mode in the BitNav.
