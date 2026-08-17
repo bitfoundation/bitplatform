@@ -23,7 +23,7 @@
 
     <DemoSection Title="1. Handshake"
                  Api="initialize"
-                 Description="Every session opens with an initialize call: the client states the protocol version it speaks and what it supports, and the server answers with the same for itself - here, tools, prompts, resources and logging. The client then sends an initialized notification, which takes no id and gets no result back. This page does both automatically when it loads."
+                 Description="Every session opens with an initialize call: the client states the protocol version it speaks and what it supports, and the server answers with the same for itself - here, tools, prompts, resources and logging. Each of those comes back as an empty object, which is the protocol working as intended: the key's presence is the declaration, and what goes inside it is only the optional extras, such as a promise to notify the client when the list changes. A capability a server does not have is absent, not empty. The client then sends an initialized notification, which takes no id and gets no result back. This page does both automatically when it loads."
                  Code=@("""
 POST /mcp
 Accept: application/json, text/event-stream
@@ -172,9 +172,7 @@ Accept: application/json, text/event-stream
     <DemoSection Title="5. The same tools over plain HTTP"
                  Api="/api/mcp/{tool}"
                  Description="Every tool is also an ordinary GET endpoint returning ordinary JSON - no handshake, no session, no JSON-RPC envelope. That is not a second implementation: it is the same method on the same controller, attributed twice. It exists so a tool can be checked in a browser tab, curl or a test, which is a much shorter loop than wiring up an MCP client to find out what one returns."
-                 Code=@("""
-curl "https://localhost:5253/api/mcp/InspectButilApi?name=WakeLock"
-""")
+                 Code=@($"curl \"{HttpEndpoint}InspectButilApi?name=WakeLock\"")
                  Language="shell">
         <div class="field-row">
             <div class="field">
