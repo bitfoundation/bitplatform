@@ -9,7 +9,11 @@
      fragment would never run.
    It lives in the client project because Routes.razor binds the router to that assembly only. *@
 
-<PageTitle>Not found - bit Bswup</PageTitle>
+@* Not in DocsCatalog, so the copy lives here. noindex comes from SiteMetadata.NoIndexUrls - and
+   is what keeps a soft-404 (this page rendered under a URL a crawler followed) out of the index. *@
+<PageOutlet Slug="not-found"
+            Title="Not found - bit Bswup"
+            Description="There is no page at this address. Browse the bit Bswup documentation from here." />
 
 <div class="docs-not-found">
     <h1>404</h1>

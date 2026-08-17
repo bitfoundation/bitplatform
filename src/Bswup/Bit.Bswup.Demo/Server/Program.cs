@@ -1,4 +1,6 @@
 using System.IO.Compression;
+using System.Text;
+using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -68,6 +70,25 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 
 app.MapStaticAssets();
 app.UseAntiforgery();
+
+// Built once at startup from the same catalog the nav panel and the MCP server read, so a page
+// added there is advertised to search engines without a second list to remember. The URLs are
+// absolute and point at production (SiteMetadata.Origin) rather than at the serving host: a
+// preview deployment that advertised its own address would compete with the real site for the
+// same content. Pages carrying a "noindex" meta are left out - PageOutlet reads that same list.
+var siteMapUrls = DocsCatalog.AllPages
+    .Select(page => page.Url)
+    .Where(url => SiteMetadata.NoIndexUrls.Contains(url) is false)
+    .Select(url => $"<url><loc>{SiteMetadata.AbsoluteUrl(url)}</loc></url>");
+
+var siteMap = $"""
+    <?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {string.Join(Environment.NewLine, siteMapUrls)}
+    </urlset>
+    """;
+
+app.MapGet("/sitemap.xml", () => Results.Text(siteMap, "application/xml", Encoding.UTF8));
 
 // Both are declared before the Razor components below: /api/... and /mcp are literal routes that
 // no page owns, but keeping them first says out loud that they are not part of the app's UI.

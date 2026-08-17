@@ -1,8 +1,13 @@
 ﻿{
+    "id": "/",
     "name": "bit Bswup",
     "short_name": "Bswup",
     "description": "Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps.",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": ["developer", "productivity"],
     "start_url": "./",
+    "scope": "./",
     "display": "standalone",
     "background_color": "#0F1318",
     "theme_color": "#0F1318",
