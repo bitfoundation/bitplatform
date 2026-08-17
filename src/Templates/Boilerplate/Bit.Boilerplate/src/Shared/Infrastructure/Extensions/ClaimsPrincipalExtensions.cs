@@ -3,11 +3,53 @@ namespace System.Security.Claims;
 
 public static partial class ClaimsPrincipalExtensions
 {
+    /// <summary>
+    /// Claims a token refresh rewrites without changing anything the user is allowed to do: issued-at, not-before,
+    /// expiry and the token's own id. Everything else the token carries - the user id, the roles, the features, the
+    /// tenant, the session id, and the privileged/elevated markers - decides what the app may show and what the
+    /// server will authorize, so all of it is significant.
+    /// </summary>
+    private static string[]? volatileClaimTypes;
+
     extension(ClaimsPrincipal? claimsPrincipal)
     {
         public bool IsAuthenticated()
         {
             return claimsPrincipal?.Identity?.IsAuthenticated is true;
+        }
+
+        /// <summary>
+        /// True when two principals grant exactly the same thing - same identity, same roles, same features, same
+        /// tenant, same session - ignoring only the claims a refresh rewrites for its own sake.
+        /// <para>
+        /// This is the question every <c>AuthenticationStateChanged</c> handler actually wants to ask. Comparing the
+        /// user id alone is not enough: a tenant switch, an elevated-access grant and a role change all issue a new
+        /// token for the SAME user, and a handler keyed on the user id treats them as "nothing happened".
+        /// </para>
+        /// </summary>
+        public bool IsTheSame(ClaimsPrincipal? other)
+        {
+            if (ReferenceEquals(claimsPrincipal, other)) return true;
+
+            if (claimsPrincipal is null || other is null) return false;
+
+            if (claimsPrincipal.IsAuthenticated() != other.IsAuthenticated()) return false;
+
+            volatileClaimTypes ??= ["exp", "iat", "nbf", "jti", "auth_time"];
+
+            static Dictionary<(string Type, string Value), int> SignificantClaims(ClaimsPrincipal principal)
+            {
+                return principal.Claims
+                                .Where(claim => volatileClaimTypes.Contains(claim.Type, StringComparer.OrdinalIgnoreCase) is false)
+                                .GroupBy(claim => (claim.Type, claim.Value))
+                                .ToDictionary(group => group.Key, group => group.Count());
+            }
+
+            var current = SignificantClaims(claimsPrincipal);
+            var others = SignificantClaims(other);
+
+            return current.Count == others.Count &&
+                   current.All(claim => others.TryGetValue(claim.Key, out var count) && count == claim.Value);
         }
     }
 

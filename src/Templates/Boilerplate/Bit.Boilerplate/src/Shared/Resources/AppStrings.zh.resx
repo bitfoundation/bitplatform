@@ -177,6 +177,157 @@
   <data name="TransientException" xml:space="preserve">
     <value>无法连接到服务器。</value>
   </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>没有可显示的记录。</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>加载中…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ 添加</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>清除筛选</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>导出 Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>列</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>全选</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>选择行</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>选择行：{0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>筛选…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>按 {0} 筛选</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>{0} 的筛选运算符</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>包含</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>不包含</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>开头为</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>结尾为</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>按 {0} 分组</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>取消按 {0} 分组</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>展开分组 {0}：{1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>折叠分组 {0}：{1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1}，共 {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} 条/页</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>每页行数</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>首页</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>下一页</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>末页</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- 结果结束 -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>切换详情</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>切换子项</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>拖动以重新排序，或聚焦后使用方向键移动该行</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>重新排序行。按向上或向下方向键移动该行。</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>{0} 的值无效。</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>按 {0} 升序排序</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>按 {0} 降序排序</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>已移除按 {0} 的排序</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>已对 {0} 应用筛选</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>已清除对 {0} 的筛选</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>行已删除</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>活动</value>

@@ -5,35 +5,37 @@ public partial class Routes
 {
     [Parameter] public Type? Layout { get; set; }
 
-    [AutoInject] NavigationManager? navigationManager { set => universalLinksNavigationManager = value; get => universalLinksNavigationManager; }
-    private static NavigationManager? universalLinksNavigationManager;
+    [AutoInject]
+    NavigationManager? navigationManager
+    {
+        set
+        {
+            if (value is not null)
+            {
+                current = value;
+                NavigationManagerProvider.TrySetResult();
+            }
+        }
+        get;
+    }
+    private static NavigationManager? current;
+    private static readonly TaskCompletionSource NavigationManagerProvider = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public static async Task OpenUniversalLink(string url, bool forceLoad = false, bool replace = false)
     {
-        await EnsureNavigationManagerIsReady();
+        await NavigationManagerProvider.Task;
+
+        var navigationManager = current!;
 
         if (CultureInfoManager.InvariantGlobalization is false &&
             forceLoad == false &&
             (AppPlatform.IsAndroid || AppPlatform.IsIos))
         {
-            var currentCulture = CultureInfo.CurrentUICulture.Name;
-            var uri = new Uri(url);
-            var urlCulture = uri.GetCulture();
-            forceLoad = urlCulture is not null && string.Equals(currentCulture, urlCulture, StringComparison.InvariantCultureIgnoreCase) is false;
+            var urlCulture = new Uri(new Uri(navigationManager.BaseUri), url).GetCulture();
+            forceLoad = urlCulture is not null && string.Equals(CultureInfo.CurrentUICulture.Name, urlCulture, StringComparison.InvariantCultureIgnoreCase) is false;
         }
 
-        universalLinksNavigationManager!.NavigateTo(url, forceLoad, replace);
-    }
-
-    private static async Task EnsureNavigationManagerIsReady()
-    {
-        await Task.Run(async () =>
-        {
-            while (universalLinksNavigationManager is null)
-            {
-                await Task.Yield();
-            }
-        });
+        navigationManager.NavigateTo(url, forceLoad, replace);
     }
 }
 

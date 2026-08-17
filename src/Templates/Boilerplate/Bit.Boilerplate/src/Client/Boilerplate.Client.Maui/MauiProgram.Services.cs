@@ -32,6 +32,7 @@ public static partial class MauiProgram
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
             services.AddScoped<IAppUpdateService, MauiAppUpdateService>();
+            services.AddScoped<IPermissionService, MauiPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, MauiDeviceCoordinator>();
             services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
 

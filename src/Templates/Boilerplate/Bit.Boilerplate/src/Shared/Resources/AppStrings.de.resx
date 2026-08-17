@@ -177,6 +177,157 @@
   <data name="TransientException" xml:space="preserve">
     <value>Verbindung zum Server nicht möglich.</value>
   </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Keine Datensätze vorhanden.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Wird geladen…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Hinzufügen</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Filter zurücksetzen</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>CSV exportieren</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Excel exportieren</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Spalten</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Alle auswählen</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Zeile auswählen</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Zeile auswählen: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtern…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Nach {0} filtern</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Filteroperator für {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Enthält</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Enthält nicht</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Beginnt mit</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Endet mit</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Wahr</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Falsch</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Nach {0} gruppieren</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Gruppierung nach {0} aufheben</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Gruppe {0} erweitern: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Gruppe {0} reduzieren: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} von {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Seite {0} von {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / Seite</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Zeilen pro Seite</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Erste Seite</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Vorherige Seite</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Nächste Seite</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Letzte Seite</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Ende der Ergebnisse -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Details ein-/ausblenden</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Untereinträge ein-/ausblenden</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Zum Neuanordnen ziehen oder fokussieren und die Pfeiltasten verwenden, um diese Zeile zu verschieben</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Zeile neu anordnen. Drücken Sie Pfeil nach oben oder unten, um diese Zeile zu verschieben.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Ungültiger Wert für {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Sortiert nach {0}, aufsteigend</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Sortiert nach {0}, absteigend</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Sortierung nach {0} entfernt</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filter auf {0} angewendet</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filter auf {0} entfernt</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Seite {0} von {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Zeile gelöscht</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Aktiv</value>

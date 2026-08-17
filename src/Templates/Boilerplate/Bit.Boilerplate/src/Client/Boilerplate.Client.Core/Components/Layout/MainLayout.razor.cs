@@ -154,6 +154,7 @@ public partial class MainLayout : IAsyncDisposable
         }
     }
 
+    private ClaimsPrincipal? lastAuthUser;
     private async Task SetCurrentUser(Task<AuthenticationState> task)
     {
         var authUser = (await task).User;
@@ -173,7 +174,7 @@ public partial class MainLayout : IAsyncDisposable
         }
         else
         {
-            if (authUser.GetUserId() != currentUser?.Id)
+            if (currentUser is null || authUser.IsTheSame(lastAuthUser) is false)
             {
                 currentUser = await userController.GetCurrentUser(getCurrentUserCts.Token);
             }
@@ -182,6 +183,8 @@ public partial class MainLayout : IAsyncDisposable
             await SetCurrentTenantIfNeeded(authUser.GetTenantId(), getCurrentUserCts.Token);
             //#endif
         }
+
+        lastAuthUser = authUser;
     }
 
     //#if (multitenant == true)

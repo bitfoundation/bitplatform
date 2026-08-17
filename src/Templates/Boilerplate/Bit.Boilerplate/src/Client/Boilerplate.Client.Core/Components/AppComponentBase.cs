@@ -263,8 +263,12 @@ public partial class AppComponentBase : OwningComponentBase, IAsyncDisposable
         await currentCts.TryCancel();
     }
 
+    private bool disposed;
     public async ValueTask DisposeAsync()
     {
+        if (disposed) return;
+        disposed = true;
+
         try
         {
             if (cts != null)

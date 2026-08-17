@@ -177,6 +177,157 @@
   <data name="TransientException" xml:space="preserve">
     <value>सर्वर से कनेक्ट करने में असमर्थ।</value>
   </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>प्रदर्शित करने के लिए कोई रिकॉर्ड नहीं है।</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>लोड हो रहा है…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>क्रियाएँ</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ जोड़ें</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>फ़िल्टर साफ़ करें</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>CSV निर्यात करें</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Excel निर्यात करें</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>कॉलम</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>संपादित करें</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>हटाएँ</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>सहेजें</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>रद्द करें</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>सभी चुनें</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>पंक्ति चुनें</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>पंक्ति चुनें: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>फ़िल्टर…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>{0} के अनुसार फ़िल्टर करें</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>सभी</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>{0} के लिए फ़िल्टर ऑपरेटर</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>शामिल है</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>शामिल नहीं है</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>से शुरू होता है</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>से समाप्त होता है</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>सत्य</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>असत्य</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>{0} के अनुसार समूहित करें</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>{0} के अनुसार समूह हटाएँ</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>समूह {0} विस्तृत करें: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>समूह {0} संक्षिप्त करें: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{2} में से {0}–{1}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>पृष्ठ {0} / {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / पृष्ठ</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>प्रति पृष्ठ पंक्तियाँ</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>पहला पृष्ठ</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>पिछला पृष्ठ</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>अगला पृष्ठ</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>अंतिम पृष्ठ</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- परिणामों का अंत -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>विवरण दिखाएँ/छिपाएँ</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>उप-आइटम दिखाएँ/छिपाएँ</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>पुनः क्रमित करने के लिए खींचें, या फ़ोकस करके तीर कुंजियों से इस पंक्ति को ले जाएँ</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>पंक्ति पुनः क्रमित करें। इस पंक्ति को ले जाने के लिए ऊपर या नीचे तीर दबाएँ।</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>{0} के लिए अमान्य मान।</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>{0} के अनुसार आरोही क्रम में क्रमबद्ध</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>{0} के अनुसार अवरोही क्रम में क्रमबद्ध</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>{0} के अनुसार क्रमबद्धता हटाई गई</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>{0} पर फ़िल्टर लागू किया गया</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>{0} पर फ़िल्टर हटाया गया</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>पृष्ठ {0} / {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>पंक्ति हटाई गई</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>सक्रिय</value>

@@ -97,20 +97,20 @@ public partial class RolesPage
             if (loadRoleDataCts is not null)
             {
                 using var currentCts = loadRoleDataCts;
-                loadRoleDataCts = new();
+                loadRoleDataCts = null;
 
                 await currentCts.TryCancel();
             }
 
-            loadRoleDataCts = new();
+            var loadCts = loadRoleDataCts = new();
 
             selectedRoleItem = item;
             loadingRoleKey = item.Key;
             editRoleName = selectedRoleItem.Text;
 
             var id = Guid.Parse(item.Key!);
-            await Task.WhenAll(LoadRoleUsers(id, loadRoleDataCts.Token),
-                               LoadRoleClaims(id, loadRoleDataCts.Token));
+            await Task.WhenAll(LoadRoleUsers(id, loadCts),
+                               LoadRoleClaims(id, loadCts));
         }
         finally
         {
@@ -121,14 +121,22 @@ public partial class RolesPage
         }
     }
 
-    private async Task LoadRoleUsers(Guid roleId, CancellationToken cancellationToken)
+    private async Task LoadRoleUsers(Guid roleId, CancellationTokenSource cancellationToken)
     {
-        selectedRoleUsers = await roleManagementController.GetUsers(roleId, cancellationToken);
+        var roleUsers = await roleManagementController.GetUsers(roleId, cancellationToken.Token);
+
+        if (ReferenceEquals(loadRoleDataCts, cancellationToken) is false) return; // User tapped on another role while this one was loading, so ignore the results
+
+        selectedRoleUsers = roleUsers;
     }
 
-    private async Task LoadRoleClaims(Guid roleId, CancellationToken cancellationToken)
+    private async Task LoadRoleClaims(Guid roleId, CancellationTokenSource cancellationToken)
     {
-        selectedRoleClaims = await roleManagementController.GetClaims(roleId, cancellationToken);
+        var roleClaims = await roleManagementController.GetClaims(roleId, cancellationToken.Token);
+
+        if (ReferenceEquals(loadRoleDataCts, cancellationToken) is false) return; // User tapped on another role while this one was loading, so ignore the results
+
+        selectedRoleClaims = roleClaims;
 
         var maxPrivilegedSessionsValue = selectedRoleClaims.FirstOrDefault(c => c.ClaimType == AppClaimTypes.MAX_PRIVILEGED_SESSIONS)?.ClaimValue;
         maxPrivilegedSessions = maxPrivilegedSessionsValue is null

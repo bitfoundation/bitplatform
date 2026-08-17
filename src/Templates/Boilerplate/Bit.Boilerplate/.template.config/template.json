@@ -645,6 +645,7 @@
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelReadAloudUITests.cs",
+                        "src/Tests/Features/Chatbot/AiChatPanelDictationUITests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs"
