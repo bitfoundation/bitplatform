@@ -33,6 +33,26 @@ troubleshooting guide), and a `/playground` index of live, clickable demo routes
 self-contained Blazor WebAssembly app with prerendering - and it is routed by Brouter itself, so
 every page you read is also a working proof of the feature it documents.
 
+That same server hosts an **MCP server** at `/mcp`, so an AI agent can work against Brouter's real
+API instead of guessing at it. Point an MCP client at `http://localhost:5185/mcp`; every tool is
+also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
+
+- **Search** across everything at once (`SearchBrouter`) - the guide below, the docs pages, every
+  public member, the constraints and the demo's sources - with the exact follow-up call on each hit.
+- **Setup** per Blazor render mode (`GetBrouterSetupGuide`), as the real files of a working project.
+- **The exact API** (`GetBrouterApiList` / `GetBrouterApiDetails`), reflected out of the shipped
+  assembly with every parameter's type, default value and XML documentation.
+- **Route-template checking** (`InspectBrouterRouteTemplate`, `AnalyzeBrouterRouteTable`) using
+  Brouter's own parser: parameters, constraints, specificity ranking, ambiguous pairs, real errors.
+- **The docs and the guide** as text, the constraint catalog, the demo's source files, and the typed
+  routes the source generator emitted for this very site.
+- **Resources** (`brouter://guide/...`, `brouter://api/...`, `brouter://docs/...`) and **prompts**
+  for the four common jobs: adding Brouter to an app, implementing a routing feature, migrating off
+  the built-in Router, and debugging a route that will not match.
+
+Start with the `GetBrouterOverview` tool. See
+[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs).
+
 [`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
 [Core](Samples/Core/) project of demo routes, hosted unchanged under
 [Server](Samples/Server/), [WASM](Samples/Wasm/) and [Auto](Samples/Auto/) so the same routing
