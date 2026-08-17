@@ -450,6 +450,57 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitVariant.Fill, "bit-drm-fil")]
+    [DataRow(BitVariant.Outline, "bit-drm-otl")]
+    [DataRow(BitVariant.Text, "bit-drm-tex")]
+    public void BitDropMenuShouldAddVariantClass(BitVariant variant, string expectedClass)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        Assert.IsTrue(component.Find(".bit-drm").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotAddAVariantClassByDefault()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        // Leaving Variant unset renders no variant class at all, which is what keeps the filled look
+        // the drop menu has always had by default from being spelled out on every one of them.
+        var root = component.Find(".bit-drm");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-drm-fil"));
+        Assert.IsFalse(root.ClassList.Contains("bit-drm-otl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-drm-tex"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldCombineTheVariantWithTheColorAndTheSize()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        var root = component.Find(".bit-drm");
+
+        // The variant decides how the color is painted, so the two classes are always rendered together.
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-otl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drm-lg"));
+    }
+
+    [TestMethod]
     [DataRow(BitSize.Small, "bit-drm-sm")]
     [DataRow(BitSize.Medium, "bit-drm-md")]
     [DataRow(BitSize.Large, "bit-drm-lg")]
@@ -859,16 +910,34 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldOpenOnTheArrowKeys()
+    [DataRow("ArrowDown")]
+    [DataRow("ArrowUp")]
+    public void BitDropMenuShouldOpenOnTheArrowKeys(string key)
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
         });
 
-        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = key });
 
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldTakeTheScrollingKeysFromThePageOnTheButton()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Utils.preventDefaultKeys");
+
+        // The arrow keys open the callout, and their default behavior - scrolling the page - is not
+        // something a Blazor keydown handler can suppress per key from within itself.
+        Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[0]);
+        CollectionAssert.AreEqual(new[] { "ArrowDown", "ArrowUp" }, (string[])setup.Arguments[1]!);
     }
 
     [TestMethod]
@@ -914,12 +983,15 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm-btn").Click();
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
 
+        var before = CountInvocations("Blazor._internal.domWrapper.focus");
+
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "Tab" });
 
         // The callout sits at the end of the body while open, so the tab sequence runs past it into the
-        // page: leaving it open would float it over a page the keyboard has already moved on from.
+        // page: leaving it open would float it over a page the keyboard has already moved on from. The
+        // focus itself is left to the browser to move, since the whole point of the key is to move on.
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
-        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus") - before);
     }
 
     [TestMethod]
@@ -1266,11 +1338,12 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         component.Find(".bit-drm-btn").Click();
-        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus"));
+
+        var before = CountInvocations("Blazor._internal.domWrapper.focus");
 
         component.Find(".bit-drm-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus") - before);
     }
 
     [TestMethod]
@@ -1282,9 +1355,65 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         component.Find(".bit-drm-btn").Click();
+
+        var before = CountInvocations("Blazor._internal.domWrapper.focus");
+
         component.Find(".bit-drm-ovl").Click();
 
         // The pointer moved the focus somewhere of its own; pulling it back would take it from there.
+        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus") - before);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldFocusTheTriggerOnAPointerActivation()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        // Not every engine focuses a button it has just dispatched a click for, and a trigger that never
+        // took the focus is a drop menu without its Escape key: the handler that closes the callout on
+        // it sits on the trigger.
+        Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.focusFirstElement"));
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void BitDropMenuShouldLeaveTheFocusToTheCalloutWhenTheCalloutIsTheOneTakingIt(bool autoFocus, bool trapFocus)
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.AutoFocus, autoFocus);
+            parameters.Add(p => p.TrapFocus, trapFocus);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        // Pulling the focus back to the trigger here would take it straight off the content the callout
+        // was just asked to hand it to.
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.focusFirstElement"));
+        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotFocusTheTriggerOnAKeyboardActivation()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        component.Find(".bit-drm-btn").Click();
+
+        // The keyboard hands the focus over to the content, and it is already on the trigger anyway.
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.focusFirstElement"));
         Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus"));
     }
 
@@ -1689,6 +1818,184 @@ public class BitDropMenuTests : BunitTestContext
         });
 
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-busy"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldPassThePositioningInputsToTheCallout()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.MatchWidth, true);
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.DropDirection, BitDropDirection.All);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[1]);
+        Assert.AreEqual(component.Find(".bit-drm-cal").Id, toggle.Arguments[3]);
+        Assert.AreEqual(component.Find(".bit-drm-ovl").Id, toggle.Arguments[5]);
+        Assert.AreEqual(true, toggle.Arguments[6]);
+        Assert.AreEqual(BitResponsiveMode.Panel, toggle.Arguments[7]);
+        Assert.AreEqual(BitDropDirection.All, toggle.Arguments[8]);
+        Assert.AreEqual(true, toggle.Arguments[9]);
+        // MatchWidth is applied after the callout is measured, which is what makes it win over Width.
+        Assert.AreEqual(true, toggle.Arguments[14]);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldPassTheNamedScrollContainerToTheCallout()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.ScrollContainerId, "the-scroller");
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // Whatever the consumer named as the scrollable part of the content is what the positioning
+        // code caps to the room the viewport leaves, instead of the callout itself.
+        Assert.AreEqual("the-scroller", toggle.Arguments[10]);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotPositionTheCalloutInTheResponsiveModeAgainstTheViewport()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // A responsive drop menu is a panel sized against the screen on exactly the screens where the
+        // callout would not have fit, so nothing else has to cap it.
+        Assert.AreEqual(string.Empty, toggle.Arguments[10]);
+    }
+
+    [TestMethod]
+    public async Task BitDropMenuShouldDismissWhenAnotherCalloutTakesOver()
+    {
+        var dismisses = 0;
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.TrapFocus, true);
+            parameters.Add(p => p.OnDismiss, () => dismisses++);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+        Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+
+        var before = CountCalloutToggles();
+
+        // The JS side has already hidden the callout to make room for the one taking over, so only the
+        // state and the registrations tied to it are left to unwind here.
+        await component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened());
+
+        Assert.AreEqual(1, dismisses);
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusTrap"));
+        Assert.AreEqual(0, CountCalloutToggles() - before);
+        // The focus is left where it is: whatever took the callout over is about to take it.
+        Assert.AreEqual(0, CountInvocations("Blazor._internal.domWrapper.focus"));
+    }
+
+    [TestMethod]
+    public async Task BitDropMenuShouldCloseWhenTheResponsivePanelIsSwipedAway()
+    {
+        var dismisses = 0;
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Responsive, true);
+            parameters.Add(p => p.OnDismiss, () => dismisses++);
+        });
+
+        component.Find(".bit-drm-btn").Click();
+
+        await component.InvokeAsync(() => component.Instance._OnClose());
+
+        Assert.AreEqual(1, dismisses);
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldNotCloseOnAContentClickOfADisabledDropMenuWithAutoClose()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.AutoClose, true);
+            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.Body, (RenderFragment)(b => b.AddMarkupContent(0, @"<button class=""item"">Item</button>")));
+        });
+
+        var before = CountCalloutToggles();
+
+        component.Find(".bit-drm-cal").Click();
+
+        // The parent owns the state here, so nothing about the callout may move on a click the drop
+        // menu is in no state to answer.
+        Assert.AreEqual(0, CountCalloutToggles() - before);
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldApplyTheSpinnerAndOverlayClassesAndStyles()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.Classes, new BitDropMenuClassStyles { Spinner = "cls-spinner", Overlay = "cls-overlay" });
+            parameters.Add(p => p.Styles, new BitDropMenuClassStyles { Spinner = "color:olive", Overlay = "color:navy" });
+        });
+
+        Assert.IsTrue(component.Find(".bit-drm-spn").ClassList.Contains("cls-spinner"));
+        Assert.IsTrue(component.Find(".bit-drm-spn").GetAttribute("style")!.Contains("color:olive"));
+        Assert.IsTrue(component.Find(".bit-drm-ovl").ClassList.Contains("cls-overlay"));
+        Assert.IsTrue(component.Find(".bit-drm-ovl").GetAttribute("style")!.Contains("color:navy"));
+    }
+
+    [TestMethod]
+    public async Task BitDropMenuShouldReleaseWhatItRegisteredOnTheJsSideWhenItIsDisposed()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        var calloutId = component.Find(".bit-drm-cal").Id;
+        var buttonId = component.Find(".bit-drm-btn").Id;
+
+        await component.Instance.DisposeAsync();
+
+        // The callout lives at the end of the body while it is open and every registration is keyed by
+        // its id, so a drop menu that goes away without unwinding them leaves both behind.
+        Assert.AreEqual(1, Context.JSInterop.Invocations
+            .Count(i => i.Identifier == "BitBlazorUI.Callouts.clear" && (string)i.Arguments[0]! == calloutId));
+        Assert.AreEqual(1, Context.JSInterop.Invocations
+            .Count(i => i.Identifier == "BitBlazorUI.Utils.disposePreventDefaultKeys" && (string)i.Arguments[0]! == buttonId));
+        Assert.AreEqual(1, Context.JSInterop.Invocations
+            .Count(i => i.Identifier == "BitBlazorUI.Utils.disposeFocusTrap" && (string)i.Arguments[0]! == calloutId));
+        Assert.AreEqual(1, Context.JSInterop.Invocations
+            .Count(i => i.Identifier == "BitBlazorUI.Swipes.dispose" && (string)i.Arguments[0]! == calloutId));
     }
 
     private int CountInvocations(string identifier)

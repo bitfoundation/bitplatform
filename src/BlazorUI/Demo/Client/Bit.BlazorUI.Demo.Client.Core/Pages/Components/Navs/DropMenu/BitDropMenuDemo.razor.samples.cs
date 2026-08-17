@@ -322,6 +322,35 @@ private int dismissCounter;";
 private string autoCloseAction = ""none"";";
 
     private readonly string example15RazorCode = @"
+<BitChoiceGroup @bind-Value=""variant"" Horizontal
+                Label=""Variant""
+                TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
+    <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
+    <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
+    <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
+</BitChoiceGroup>
+
+<BitDropMenu Text=""Primary"" Variant=""variant"" Color=""BitColor.Primary"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Error"" Variant=""variant"" Color=""BitColor.Error"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Disabled"" Variant=""variant"" Color=""BitColor.Primary"" IsEnabled=""false"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
+    </BitStack>
+</BitDropMenu>";
+    private readonly string example15CsharpCode = @"
+private BitVariant variant = BitVariant.Fill;";
+
+    private readonly string example16RazorCode = @"
 <BitChoiceGroup @bind-Value=""color"" Horizontal
                 Label=""Color""
                 TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
@@ -349,10 +378,10 @@ private string autoCloseAction = ""none"";";
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private BitColor color = BitColor.Primary;";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDropMenu Text=""House"" Icon=""@(""fa-solid fa-house"")"">
@@ -388,7 +417,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitDropMenu Text=""Small"" Size=""BitSize.Small"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
@@ -407,7 +436,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -479,7 +508,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitDropMenu Text=""منو"" Dir=""BitDir.Rtl"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>

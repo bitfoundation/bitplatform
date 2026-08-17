@@ -447,7 +447,16 @@
             const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
                 .filter(el => el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0);
 
-            if (focusables.length === 0) return;
+            if (focusables.length === 0) {
+                // Nothing inside the container can take the focus, which leaves the container itself
+                // holding it - the components that trap the focus make it programmatically focusable for
+                // exactly this case. Tabbing on from there would walk straight out of the trap and into
+                // the page behind it, so the key is swallowed instead of being left to the browser.
+                if (document.activeElement === root) {
+                    e.preventDefault();
+                }
+                return;
+            }
 
             const first = focusables[0];
             const last = focusables[focusables.length - 1];

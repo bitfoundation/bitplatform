@@ -295,6 +295,13 @@ public partial class BitDropMenu : BitComponentBase
     [Parameter] public bool TrapFocus { get; set; }
 
     /// <summary>
+    /// The visual variant of the button of the drop menu: filled (the default look), outlined, or text only.
+    /// It decides how the <see cref="Color"/> is painted onto the button, so the two are set together.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
+    /// <summary>
     /// The width of the callout of the drop menu as a CSS value (e.g. "20rem"). By default the callout is
     /// only as wide as its content needs. <see cref="MatchWidth"/> takes precedence over it.
     /// </summary>
@@ -349,11 +356,23 @@ public partial class BitDropMenu : BitComponentBase
     [JSInvokable("CloseCallout")]
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
-        // The callout has already been hidden by the JS side, which is why nothing is toggled here. The
-        // focus is deliberately left where it is: whatever took over from this callout is about to take it.
+        // The callout has already been hidden by the JS side, which is why nothing is toggled here: the
+        // state is all that is left to correct, and going back through the positioning code would only
+        // hide a callout that is already hidden - and restore one that is already back where it came
+        // from. Assigning the state is what would otherwise take that path, so it is suppressed for it.
+        // The focus is deliberately left where it is: whatever took over from this callout is about to
+        // take it.
         await DisposeFocusTrap();
 
-        await DismissCallout();
+        _selfDrivenIsOpen = true;
+        try
+        {
+            await DismissCallout();
+        }
+        finally
+        {
+            _selfDrivenIsOpen = false;
+        }
 
         StateHasChanged();
     }
@@ -401,6 +420,14 @@ public partial class BitDropMenu : BitComponentBase
             BitColor.PrimaryBorder => "bit-drm-pbr",
             BitColor.SecondaryBorder => "bit-drm-sbr",
             BitColor.TertiaryBorder => "bit-drm-tbr",
+            _ => string.Empty
+        });
+
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-drm-fil",
+            BitVariant.Outline => "bit-drm-otl",
+            BitVariant.Text => "bit-drm-tex",
             _ => string.Empty
         });
 
@@ -543,6 +570,17 @@ public partial class BitDropMenu : BitComponentBase
         else if (HoverDriven is false || _hoverInside is false)
         {
             await CloseCallout();
+        }
+
+        // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus
+        // where it was - and a drop menu whose trigger never took the focus is a drop menu without its
+        // Escape key, since the handler that closes the callout on it sits on the trigger. Doing it here
+        // is what the engines that focus it have already done, so nothing moves for them. It is left
+        // alone where the callout is the one taking the focus, which is the case an activation from the
+        // keyboard and the AutoFocus and TrapFocus modes each ask for.
+        if (focusCallout is false && AutoFocus is false && TrapFocus is false)
+        {
+            await FocusButton();
         }
 
         await OnClick.InvokeAsync();

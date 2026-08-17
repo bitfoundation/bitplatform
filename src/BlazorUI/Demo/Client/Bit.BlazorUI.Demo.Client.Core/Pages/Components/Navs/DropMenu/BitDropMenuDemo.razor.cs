@@ -317,6 +317,15 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual variant of the button of the drop menu: filled (the default look), outlined, or text only. It decides how the Color is painted onto the button, so the two are set together.",
+            LinkType = LinkType.Link,
+            Href = "#variant-enum"
+        },
+        new()
+        {
             Name = "Width",
             Type = "string?",
             DefaultValue = "null",
@@ -556,6 +565,18 @@ public partial class BitDropMenuDemo
                 new() { Name = "Medium", Description = "The medium size.", Value = "1" },
                 new() { Name = "Large", Description = "The large size.", Value = "2" },
             ]
+        },
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines the variant of the content that controls the rendered style of the corresponding element(s).",
+            Items =
+            [
+                new() { Name = "Fill", Description = "Fill styled variant.", Value = "0" },
+                new() { Name = "Outline", Description = "Outline styled variant.", Value = "1" },
+                new() { Name = "Text", Description = "Text styled variant.", Value = "2" },
+            ]
         }
     ];
 
@@ -568,6 +589,7 @@ public partial class BitDropMenuDemo
     private BitDropMenu? dropMenuRef;
     private string autoCloseAction = "none";
     private BitColor color = BitColor.Primary;
+    private BitVariant variant = BitVariant.Fill;
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;
     private BitDropDirection dropDirection = BitDropDirection.TopAndBottom;

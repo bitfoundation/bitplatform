@@ -3,18 +3,28 @@
 
 .bit-drm {
     width: fit-content;
+    box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    border-radius: $shp-border-radius;
     color: var(--bit-drm-clr-txt);
     background-color: var(--bit-drm-clr);
-    transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    border-radius: $shp-border-radius;
+    // The border is on the root rather than on the button so that it wraps the whole drop menu, and it
+    // is declared here rather than only in the outlined variant so that turning that variant on does not
+    // resize the button. It is transparent until a variant paints it, which is also what makes a border
+    // color the consumer sets through Style or Styles.Root land on something.
+    border-width: $shp-border-width;
+    border-style: $shp-border-style;
+    border-color: transparent;
+    // The variants below repaint all three on hover/active, so they animate together from here.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
     --bit-drm-transform-factor: 1;
 
     // The default look, kept identical to a BitColor of PrimaryBackground, is declared here rather than
     // through a role class so that leaving Color unset renders no color class at all.
     --bit-drm-clr: #{$clr-bg-pri};
     --bit-drm-clr-txt: #{$clr-fg-pri};
+    --bit-drm-clr-flt: #{$clr-fg-pri};
     --bit-drm-clr-hover: #{$clr-bg-pri-hover};
     --bit-drm-clr-active: #{$clr-bg-pri-active};
     --bit-drm-clr-focus: #{$clr-pri-focus};
@@ -105,12 +115,6 @@
     }
 }
 
-.bit-drm-ldg {
-    .bit-drm-btn {
-        cursor: default;
-    }
-}
-
 .bit-drm-spn {
     width: 1em;
     height: 1em;
@@ -122,24 +126,6 @@
     border-width: spacing(0.2125);
     border-style: $shp-border-style;
     animation: bit-drm-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
-}
-
-// While the callout is open the button keeps the pressed look, so it stays visibly tied to it.
-.bit-drm-omn {
-    background-color: var(--bit-drm-clr-active);
-}
-
-.bit-drm-trn {
-    background-color: transparent;
-
-    &:hover,
-    &:active {
-        background-color: transparent;
-    }
-
-    &.bit-dis {
-        background-color: transparent;
-    }
 }
 
 .bit-drm-ovl {
@@ -222,7 +208,14 @@
 
     &.bit-drm-mxh {
         overflow: hidden auto;
-        max-height: var(--bit-drm-cal-mxh);
+        // The cap the consumer asked for, itself kept within the screen: a callout capped taller than the
+        // shortest screen it is shown on would otherwise run off the bottom of it, where a fixed-positioned
+        // element is out of reach of the page's own scrolling. Whatever the cap resolves to is what the
+        // positioning code measures, so the placement is decided against the height the callout really has.
+        // dvh follows the browser chrome of a mobile device as it retracts, and vh is the fallback for the
+        // engines that do not know it - the slightly too tall behavior there rather than no cap at all.
+        max-height: min(var(--bit-drm-cal-mxh), calc(100vh - #{spacing(2)}));
+        max-height: min(var(--bit-drm-cal-mxh), calc(100dvh - #{spacing(2)}));
     }
 
     // The positioning code caps the callout to the room the viewport leaves; scrolling is what turns that
@@ -342,6 +335,155 @@
         --bit-drm-clr-focus: #{role($tokens, focus)};
         --bit-drm-clr-dis: #{role($tokens, dis)};
         --bit-drm-clr-dis-text: #{role($tokens, dis-text)};
+
+        // The readable foreground of a button whose surface is not painted (the outlined and text
+        // variants, and the Transparent flag). An accent role writes itself onto the page in its own
+        // color, while the color of a neutral surface role *is* the page, so that one keeps the contrast
+        // color it would have been written in on top of itself.
+        @if role($tokens, kind) == semantic {
+            --bit-drm-clr-flt: #{role($tokens, main)};
+        }
+        @else {
+            --bit-drm-clr-flt: #{role($tokens, on)};
+        }
+    }
+}
+
+
+// The three looks shared by the button-like components of the library. Leaving Variant unset renders no
+// variant class at all, which leaves the drop menu with the filled look it has always had by default.
+.bit-drm-fil {
+    color: var(--bit-drm-clr-txt);
+    border-color: var(--bit-drm-clr);
+    background-color: var(--bit-drm-clr);
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: var(--bit-drm-clr-hover);
+            background-color: var(--bit-drm-clr-hover);
+        }
+    }
+
+    &:active {
+        border-color: var(--bit-drm-clr-active);
+        background-color: var(--bit-drm-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: var(--bit-drm-clr-dis);
+    }
+}
+
+.bit-drm-otl {
+    color: var(--bit-drm-clr-flt);
+    border-color: var(--bit-drm-clr);
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-drm-clr-txt);
+            border-color: var(--bit-drm-clr-hover);
+            background-color: var(--bit-drm-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-drm-clr-txt);
+        border-color: var(--bit-drm-clr-active);
+        background-color: var(--bit-drm-clr-active);
+    }
+
+    &.bit-dis {
+        border-color: var(--bit-drm-clr-dis);
+        background-color: transparent;
+    }
+}
+
+.bit-drm-tex {
+    color: var(--bit-drm-clr-flt);
+    border-color: transparent;
+    background-color: transparent;
+
+    @media (hover: hover) {
+        &:hover {
+            color: var(--bit-drm-clr-txt);
+            background-color: var(--bit-drm-clr-hover);
+        }
+    }
+
+    &:active {
+        color: var(--bit-drm-clr-txt);
+        background-color: var(--bit-drm-clr-active);
+    }
+
+    &.bit-dis {
+        background-color: transparent;
+    }
+}
+
+
+// The state classes come after the variants so that the look a state gives the button wins over the one
+// its variant gives it, which is what the two of them together are: a variant with a state on top of it.
+
+// While the callout is open the button keeps the pressed look, so it stays visibly tied to it.
+.bit-drm-omn {
+    background-color: var(--bit-drm-clr-active);
+
+    &.bit-drm-fil {
+        border-color: var(--bit-drm-clr-active);
+    }
+
+    // The pressed background is the color itself, so an unpainted variant switches its label over to the
+    // contrast color of that background the way it does on hover.
+    &.bit-drm-otl,
+    &.bit-drm-tex {
+        color: var(--bit-drm-clr-txt);
+    }
+
+    // A transparent drop menu never takes that background, so it never takes the label that goes with it
+    // either - which on an accent color is the one meant to be read on top of it, not next to it.
+    &.bit-drm-trn {
+        color: var(--bit-drm-clr-flt);
+    }
+}
+
+.bit-drm-trn {
+    color: var(--bit-drm-clr-flt);
+    background-color: transparent;
+
+    // The label is pinned along with the background, since the variants repaint the two together and the
+    // one they switch to is only readable on top of the background this drop menu is not painting.
+    &:hover,
+    &:active {
+        color: var(--bit-drm-clr-flt);
+        background-color: transparent;
+    }
+
+    &.bit-dis {
+        background-color: transparent;
+    }
+}
+
+// A drop menu that is loading takes no interaction either, so it wears the look of a disabled one rather
+// than repainting under a pointer whose clicks its button no longer answers.
+.bit-drm-ldg {
+    pointer-events: none;
+    color: var(--bit-drm-clr-dis-text);
+    background-color: var(--bit-drm-clr-dis);
+
+    .bit-drm-btn {
+        cursor: default;
+    }
+
+    &.bit-drm-fil,
+    &.bit-drm-otl {
+        border-color: var(--bit-drm-clr-dis);
+    }
+
+    &.bit-drm-otl,
+    &.bit-drm-tex,
+    &.bit-drm-trn {
+        background-color: transparent;
     }
 }
 

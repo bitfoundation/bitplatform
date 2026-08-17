@@ -5,7 +5,7 @@
             Description="DropMenu is a button that opens a callout hosting any content: an action list, a form, a filter panel, or a navigation menu." />
 
 <DemoPage Name="DropMenu"
-          Description="DropMenu is a button that opens a callout hosting any content you put in it: an action list, a form, a filter panel, or a navigation menu. The callout is anchored to the button, flips to the side with the most room, can be sized in every direction, and closes on an outside click or the Escape key. It opens on a click or on hover, carries the menu-button semantics and the keyboard that goes with them, can keep the focus inside itself while it is open or close itself as soon as its content is clicked, and turns into a swipeable side panel on small screens."
+          Description="DropMenu is a button that opens a callout hosting any content you put in it: an action list, a form, a filter panel, or a navigation menu. The callout is anchored to the button, flips to the side with the most room, can be sized in every direction, and closes on an outside click or the Escape key. It opens on a click or on hover, carries the menu-button semantics and the keyboard that goes with them, can keep the focus inside itself while it is open or close itself as soon as its content is clicked, and turns into a swipeable side panel on small screens. The button itself comes in the filled, outlined and text variants of every color of the library, in three sizes."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -212,7 +212,8 @@
             <b>IsLoading</b> swaps the icon of the button for a spinner, marks the button busy for the screen readers
             and blocks the callout from opening, which is what you want while the content of the menu is still being
             fetched. A callout that is already open is closed, so the content on the screen never outlives the data
-            behind it.
+            behind it, and the button wears the look of a disabled one for as long as it lasts rather than repainting
+            under a pointer whose clicks it no longer answers.
         </div>
         <br />
         <BitToggle @bind-Value="isLoading" Label="IsLoading" />
@@ -233,8 +234,9 @@
             after the callout is measured, which is why it wins over <b>Width</b>. <b>MaxHeight</b> caps the height and
             scrolls the content past that point, which keeps a long list usable. Without one, the callout is capped to
             the room the viewport leaves and scrolls on its own, so content taller than the screen never ends up out of
-            reach below it &mdash; a MaxHeight takes that automatic cap over, so keep it within what the shortest
-            screen you target can show.
+            reach below it; a MaxHeight takes that automatic cap over and is itself kept within the height of the
+            screen, so a cap set taller than the shortest screen you target still leaves the callout scrolling inside
+            the viewport rather than running off it.
         </div>
         <br />
         <BitDropMenu Text="A rather wide drop menu button" MatchWidth>
@@ -357,10 +359,11 @@
         <div>
             The button carries the full menu-button semantics (aria-haspopup, aria-controls and aria-expanded), opens on
             <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> or <b>ArrowUp</b>, and closes on <b>Escape</b>. Every one of
-            those keys hands the focus straight to the content, unlike a click, which leaves it where the pointer put
-            it, and the arrow keys reach the content of an already open callout too. <b>Tab</b> off the button closes
-            the callout and carries on through the page, and whenever the callout is closed while the focus is inside
-            it the focus goes back to the button, so the keyboard never ends up at the top of the page.
+            those keys hands the focus straight to the content, unlike a click, which leaves it on the button, and the
+            arrow keys reach the content of an already open callout too. <b>Tab</b> off the button closes the callout
+            and carries on through the page, and whenever the callout is closed while the focus is inside it the focus
+            goes back to the button, so the keyboard never ends up at the top of the page. A click puts the focus on
+            the button whichever browser dispatched it, so Escape reaches a menu opened with the pointer as well.
         </div>
         <br />
         <div>
@@ -369,6 +372,13 @@
             keyboard inside: Tab and Shift+Tab cycle within the callout instead of running on into the page behind it,
             and the callout reports itself as a modal dialog to the screen readers. It is what a callout hosting a form
             or a filter panel needs, and it implies AutoFocus.
+        </div>
+        <br />
+        <div>
+            <b>AriaLabel</b> names the button for the screen readers where the visible text does not, which is the case
+            of an icon-only drop menu, <b>AriaDescription</b> points at the id of an element describing it further, and
+            <b>AriaHidden</b> takes the button out of the accessibility tree entirely, for the cases where something
+            else already conveys it.
         </div>
         <br />
         <BitDropMenu Text="AutoFocus" AutoFocus>
@@ -432,10 +442,48 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Variant" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+        <div>
+            <b>Variant</b> decides how the <b>Color</b> is painted onto the button: <b>Fill</b> is the default look, a
+            solid surface in that color; <b>Outline</b> keeps the surface clear and draws the color as a border and as
+            the label; <b>Text</b> drops the border too and leaves only the label. Outline and Text write the accent
+            colors onto the page in their own color rather than in the contrast color a filled button needs, so a
+            colored drop menu stays readable without a surface behind it. <b>Transparent</b> is the shorthand for a
+            button with no surface at all, in any variant, and it keeps that background on hover as well.
+        </div>
+        <br />
+        <BitChoiceGroup @bind-Value="variant" Horizontal
+                        Label="Variant"
+                        TItem="BitChoiceGroupOption<BitVariant>" TValue="BitVariant">
+            <BitChoiceGroupOption Text="Fill" Value="BitVariant.Fill" />
+            <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
+            <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
+        </BitChoiceGroup>
+        <br />
+        <BitStack Horizontal Wrap Gap="1rem" FitHeight>
+            <BitDropMenu Text="Primary" Variant="variant" Color="BitColor.Primary">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+            <BitDropMenu Text="Error" Variant="variant" Color="BitColor.Error">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+            <BitDropMenu Text="Disabled" Variant="variant" Color="BitColor.Primary" IsEnabled="false">
+                <BitStack Gap="1rem" Style="padding:0.5rem">
+                    <BitText Typography="BitTypography.Subtitle1">This is the content</BitText>
+                </BitStack>
+            </BitDropMenu>
+        </BitStack>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <b>Color</b> paints the button with one of the general colors of the library. The accent colors give a filled
             button with a matching text color, and the background, foreground and border colors give the neutral surfaces.
+            Pair it with <b>Variant</b> to get the outlined and text-only looks of the same color.
         </div>
         <br />
         <BitChoiceGroup @bind-Value="color" Horizontal
@@ -467,7 +515,7 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> and <b>ChevronDownIcon</b> parameters.</div>
         <br />
         <div>
@@ -520,7 +568,7 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Size</b> scales the font and the padding of the button together, from <b>Small</b> through <b>Medium</b>
             (the default) to <b>Large</b>. The callout is not scaled, since its size comes from its content.
@@ -545,11 +593,12 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
-            part of the component on their own: the root, the button, the icon, the text, the chevron, the overlay, the
-            callout, and the <b>Opened</b> slot that only applies while the callout is open.
+            part of the component on their own: the root, the button, the spinner, the icon, the text, the chevron, the
+            overlay, the callout, and the <b>Opened</b> slot that only applies while the callout is open. The root
+            carries the border of the drop menu, so a border color set here paints one in any variant.
         </div>
         <br /><br />
         <div>Component's Style & Class:</div><br />
@@ -591,7 +640,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
             Use <b>Dir</b> to render the drop menu right-to-left. The button mirrors its icon and chevron, the callout is
             anchored from the right edge of the button, and a responsive panel slides in from the mirrored side and is
