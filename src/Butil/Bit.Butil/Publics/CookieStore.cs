@@ -14,6 +14,7 @@ namespace Bit.Butil;
 /// because <c>document.cookie</c> doesn't expose other attributes. Use this service when you need the full
 /// metadata (Domain/Path/Expires/SameSite). Browser support is Chromium-only at the time of writing.
 /// </remarks>
+[ButilService(typeof(CookieStore))]
 public class CookieStore(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ChangeMethodName = nameof(InvokeCookieStoreChange);

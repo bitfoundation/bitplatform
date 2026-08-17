@@ -21,6 +21,7 @@ namespace Bit.Butil;
 /// buffers when done where practical, and prefer server-side key custody when the threat model
 /// requires keys never to leave a hardware/secure boundary.
 /// </remarks>
+[ButilService(typeof(Crypto))]
 public class Crypto(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>crypto.subtle</c>.</summary>

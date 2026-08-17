@@ -38,6 +38,7 @@ namespace Bit.Butil;
 // generic keeps its own RUC/RDC attributes so a trimming/AOT consumer is still warned at the real call
 // site. Scoped to this type (not assembly-wide).
 [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "DotNetObjectReference.Create preserves all public methods; the RUC JSON API it pulls in is never invoked through this ref and stays annotated for consumers.")]
+[ButilService(typeof(Navigation))]
 public class Navigation(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeNavigation);

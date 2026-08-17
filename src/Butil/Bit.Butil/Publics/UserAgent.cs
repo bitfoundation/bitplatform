@@ -7,6 +7,7 @@ namespace Bit.Butil;
 /// <summary>
 /// This service is used to detect the user agent information such as the Operating System, browser or web-view, versions and properties.
 /// </summary>
+[ButilService(typeof(UserAgent))]
 public class UserAgent(IJSRuntime js)
 {
     /// <summary>

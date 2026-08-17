@@ -8,6 +8,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices">navigator.mediaDevices</see>.
 /// </summary>
+[ButilService(typeof(MediaDevices))]
 public class MediaDevices(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeDisplayEnded);

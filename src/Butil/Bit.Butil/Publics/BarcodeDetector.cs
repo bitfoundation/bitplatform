@@ -21,6 +21,7 @@ namespace Bit.Butil;
 /// which is why <see cref="GetSupportedFormats"/> exists and why asking for a format the device
 /// can't decode makes detection return nothing rather than throw.
 /// </remarks>
+[ButilService(typeof(BarcodeDetector))]
 public class BarcodeDetector(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeBarcodesDetected);

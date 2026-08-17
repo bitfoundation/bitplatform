@@ -14,6 +14,7 @@ namespace Bit.Butil;
 /// <see cref="IsSupported"/> returns false and <see cref="GetStatus"/> reports a charged-AC-power
 /// stub so callers don't have to special-case missing data.
 /// </remarks>
+[ButilService(typeof(Battery))]
 public class Battery(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ChangeMethodName = nameof(InvokeBatteryChange);

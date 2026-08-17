@@ -9,6 +9,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps <see href="https://developer.mozilla.org/en-US/docs/Web/API/Permissions">navigator.permissions</see>.
 /// </summary>
+[ButilService(typeof(Permissions))]
 public class Permissions(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ChangeMethodName = nameof(InvokePermissionChange);

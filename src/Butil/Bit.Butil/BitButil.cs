@@ -1,72 +1,48 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.Butil;
 
 public static class BitButil
 {
+    /// <summary>
+    /// Registers every Butil service - each class marked with <see cref="ButilServiceAttribute"/> - as scoped.
+    /// </summary>
+    /// <remarks>
+    /// Scoped matches Blazor's "one circuit / one WASM app instance per user" model. Transient would create
+    /// a fresh wrapper on every <c>@inject</c>, fragmenting per-instance listener bookkeeping and keeping
+    /// captured component delegates alive longer than the component itself.
+    /// <br/>
+    /// The services are discovered by reflection rather than by a list of <c>AddScoped&lt;T&gt;()</c> calls,
+    /// and that is a trimming decision, not a style one. <c>AddScoped&lt;T&gt;()</c> annotates <c>T</c> with
+    /// <see cref="DynamicallyAccessedMemberTypes.PublicConstructors"/>, so naming all the Butil classes in
+    /// one method roots all of them: a consumer that injects only <see cref="LocalStorage"/> still carried
+    /// every other Butil class in their trimmed output. Reflecting over the assembly gives the trimmer
+    /// nothing to follow, so a class nobody injects is removed from the consumer's app and is simply not
+    /// there to be discovered here - <see cref="System.Reflection.Assembly.GetTypes"/> returns only the
+    /// types that survived. Constructors of the classes that DO survive are preserved by the annotated
+    /// type argument of <see cref="ButilServiceAttribute"/>; see that type for why it is shaped that way.
+    /// <br/>
+    /// Consequence worth knowing: in a trimmed app this registers a subset, so injecting a Butil class from
+    /// code the trimmer removed (or purely through reflection) fails at runtime rather than at build time.
+    /// Untrimmed apps - Blazor Server, and the prerendering host of a WebAssembly app - register everything.
+    /// </remarks>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Enumerating this assembly's types is the point: types the trimmer removed are absent from the consumer's app, so skipping them is correct rather than a defect. Constructors of the surviving types are preserved by ButilServiceAttribute's annotated type argument.")]
     public static IServiceCollection AddBitButilServices(this IServiceCollection services)
     {
-        // Scoped matches Blazor's "one circuit / one WASM app instance per user" model.
-        // Transient would create a fresh wrapper on every @inject, fragmenting per-instance
-        // listener bookkeeping and keeping captured component delegates alive longer than
-        // the component itself.
-        services.AddScoped<Clipboard>();
-        services.AddScoped<Console>();
-        services.AddScoped<Cookie>();
-        services.AddScoped<CookieStore>();
-        services.AddScoped<Crypto>();
-        services.AddScoped<Battery>();
-        services.AddScoped<BackgroundSync>();
-        services.AddScoped<BarcodeDetector>();
-        services.AddScoped<BroadcastChannel>();
-        services.AddScoped<CacheStorage>();
-        services.AddScoped<Compression>();
-        services.AddScoped<ContactPicker>();
-        services.AddScoped<DeviceOrientation>();
-        services.AddScoped<Document>();
-        services.AddScoped<EventSource>();
-        services.AddScoped<EyeDropper>();
-        services.AddScoped<Fetch>();
-        services.AddScoped<FileReader>();
-        services.AddScoped<FileSystem>();
-        services.AddScoped<Gamepad>();
-        services.AddScoped<Geolocation>();
-        services.AddScoped<History>();
-        services.AddScoped<IdleDetector>();
-        services.AddScoped<IndexedDb>();
-        services.AddScoped<Keyboard>();
-        services.AddScoped<LocalStorage>();
-        services.AddScoped<SessionStorage>();
-        services.AddScoped<Location>();
-        services.AddScoped<MediaDevices>();
-        services.AddScoped<MediaRecorder>();
-        services.AddScoped<MediaSession>();
-        services.AddScoped<Navigation>();
-        services.AddScoped<Navigator>();
-        services.AddScoped<NetworkInformation>();
-        services.AddScoped<Nfc>();
-        services.AddScoped<Notification>();
-        services.AddScoped<ObjectUrls>();
-        services.AddScoped<Performance>();
-        services.AddScoped<Permissions>();
-        services.AddScoped<PictureInPicture>();
-        services.AddScoped<Push>();
-        services.AddScoped<Reporting>();
-        services.AddScoped<Screen>();
-        services.AddScoped<ScreenOrientation>();
-        services.AddScoped<ServiceWorker>();
-        services.AddScoped<SpeechRecognition>();
-        services.AddScoped<SpeechSynthesis>();
-        services.AddScoped<StorageAccess>();
-        services.AddScoped<StorageManager>();
-        services.AddScoped<UserAgent>();
-        services.AddScoped<ViewTransition>();
-        services.AddScoped<VisualViewport>();
-        services.AddScoped<WakeLock>();
-        services.AddScoped<WebAudio>();
-        services.AddScoped<WebLocks>();
-        services.AddScoped<Window>();
-        services.AddScoped<WebAuthn>();
+        foreach (var type in typeof(BitButil).Assembly.GetTypes())
+        {
+            if (type.GetCustomAttribute<ButilServiceAttribute>(inherit: false) is not { } butilService) continue;
+
+            // Registering ServiceType rather than the scanned type is what keeps this call trim-clean:
+            // the property carries the PublicConstructors annotation, so no suppression is needed here.
+            // TryAdd so that a consumer registration made before this call wins, and so that calling this
+            // method twice on the same collection cannot produce duplicate descriptors.
+            services.TryAddScoped(butilService.ServiceType);
+        }
 
         return services;
     }

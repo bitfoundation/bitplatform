@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// All operations target a named cache. The browser persists caches per origin and they
 /// outlive the page, so this service is intentionally side-effect-only - no instance state.
 /// </remarks>
+[ButilService(typeof(CacheStorage))]
 public class CacheStorage(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>caches</c>.</summary>

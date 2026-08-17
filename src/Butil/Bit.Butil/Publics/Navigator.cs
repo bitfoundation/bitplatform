@@ -9,6 +9,7 @@ namespace Bit.Butil;
 /// <br/>
 /// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator">https://developer.mozilla.org/en-US/docs/Web/API/Navigator</see>
 /// </summary>
+[ButilService(typeof(Navigator))]
 public class Navigator(IJSRuntime js)
 {
     /// <summary>

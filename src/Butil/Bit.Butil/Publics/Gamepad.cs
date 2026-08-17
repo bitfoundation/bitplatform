@@ -20,6 +20,7 @@ namespace Bit.Butil;
 /// <see cref="GetGamepads"/> returns an empty array even though a controller is plugged in. Ask the
 /// user to press a button.
 /// </remarks>
+[ButilService(typeof(Gamepad))]
 public class Gamepad(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ConnectedMethodName = nameof(InvokeGamepadConnected);

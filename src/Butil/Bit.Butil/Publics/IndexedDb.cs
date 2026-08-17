@@ -19,6 +19,7 @@ namespace Bit.Butil;
 /// a submitted batch (<see cref="IndexedDbHandle.Transact"/>). Both run their whole walk or batch
 /// inside a single real transaction on the JS side.
 /// </remarks>
+[ButilService(typeof(IndexedDb))]
 public class IndexedDb(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>indexedDB</c>.</summary>

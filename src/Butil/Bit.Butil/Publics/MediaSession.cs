@@ -20,6 +20,7 @@ namespace Bit.Butil;
 /// Most platforms only surface the session once audio is actually playing, so setting metadata on
 /// a silent page usually shows nothing.
 /// </remarks>
+[ButilService(typeof(MediaSession))]
 public class MediaSession(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeMediaSessionAction);

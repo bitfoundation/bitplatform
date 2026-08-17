@@ -6,6 +6,7 @@ namespace Bit.Butil;
 /// <summary>
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/EyeDropper">EyeDropper API</see>.
 /// </summary>
+[ButilService(typeof(EyeDropper))]
 public class EyeDropper(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>window.EyeDropper</c>.</summary>

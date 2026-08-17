@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+[ButilService(typeof(Clipboard))]
 public class Clipboard(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.clipboard</c>.</summary>

@@ -6,6 +6,7 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+[ButilService(typeof(Document))]
 public class Document(IJSRuntime js) : IAsyncDisposable
 {
     private const string ElementName = "document";

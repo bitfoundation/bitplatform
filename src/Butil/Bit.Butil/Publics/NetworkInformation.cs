@@ -10,6 +10,7 @@ namespace Bit.Butil;
 /// Wraps the <see href="https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation">Network Information API</see>
 /// (<c>navigator.connection</c>) plus the always-available <c>navigator.onLine</c>.
 /// </summary>
+[ButilService(typeof(NetworkInformation))]
 public class NetworkInformation(IJSRuntime js) : IAsyncDisposable
 {
     internal const string ChangeMethodName = nameof(InvokeNetworkChange);

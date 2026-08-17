@@ -23,6 +23,7 @@ namespace Bit.Butil;
 /// </item>
 /// </list>
 /// </remarks>
+[ButilService(typeof(WebLocks))]
 public class WebLocks(IJSRuntime js)
 {
     /// <summary>True when the runtime exposes <c>navigator.locks</c>.</summary>

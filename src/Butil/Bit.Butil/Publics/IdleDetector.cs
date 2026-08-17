@@ -12,6 +12,7 @@ namespace Bit.Butil;
 /// Requires the <c>idle-detection</c> permission, which the browser will prompt for on first
 /// <see cref="Start"/>.
 /// </summary>
+[ButilService(typeof(IdleDetector))]
 public class IdleDetector(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeIdleDetector);

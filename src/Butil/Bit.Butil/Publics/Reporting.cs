@@ -13,6 +13,7 @@ namespace Bit.Butil;
 /// Useful for surfacing browser-emitted deprecation, intervention, CSP-violation, and crash
 /// reports to your monitoring stack alongside ordinary errors.
 /// </remarks>
+[ButilService(typeof(Reporting))]
 public class Reporting(IJSRuntime js) : IAsyncDisposable
 {
     internal const string InvokeMethodName = nameof(InvokeBrowserReport);

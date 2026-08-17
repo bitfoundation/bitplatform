@@ -17,7 +17,7 @@
                  Language="html" />
 
     <DemoSection Title="Cannot provide a value for property 'clipboard'"
-                 Description="AddBitButilServices was never called, or it was called in only one of the two containers your app has. A prerendering app instantiates every component twice - once on the server for the prerender pass and once in the browser - so both service collections have to register the same set, or prerendering fails with a missing-service exception before the browser ever sees the page."
+                 Description="AddBitButilServices was never called, or it was called in only one of the two containers your app has. A prerendering app instantiates every component twice - once on the server for the prerender pass and once in the browser - so both service collections have to register the same set, or prerendering fails with a missing-service exception before the browser ever sees the page. If this only happens in a published build, the cause is trimming instead: registration discovers services by reflection, so a Butil class reached only through reflection - never through an injection point, a field or a parameter anywhere in your code - is removed from the bundle and is not there to register."
                  Code=@("""
 // Client/Program.cs
 builder.Services.AddBitButilServices();

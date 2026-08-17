@@ -20,6 +20,7 @@ namespace Bit.Butil;
 /// subscribing. Elsewhere there is no gate and it returns <see cref="DeviceSensorPermission.Granted"/>
 /// straight away - see <see cref="NeedsPermission"/>.
 /// </remarks>
+[ButilService(typeof(DeviceOrientation))]
 public class DeviceOrientation(IJSRuntime js) : IAsyncDisposable
 {
     internal const string OrientationMethodName = nameof(InvokeOrientation);
