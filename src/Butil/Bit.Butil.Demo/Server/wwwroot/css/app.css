@@ -301,6 +301,7 @@ code, kbd, pre, samp {
    Butil does not actually do. */
 .header a:focus-visible,
 .header button:focus-visible,
+.header input:focus-visible,
 .nav-panel a:focus-visible,
 .nav-panel input:focus-visible,
 .side-rail a:focus-visible,
@@ -522,6 +523,134 @@ code, kbd, pre, samp {
     background-color: var(--bit-clr-bg-sec);
 }
 
+/* Site-wide docs search: a 2rem field that lines up with the buttons beside it,
+   the magnifier inset at its start, the shortcut hint at its end, and the hits
+   hanging off the bar as a floating list. */
+.header-search {
+    flex: none;
+    display: flex;
+    min-width: 0;
+    position: relative;
+    align-items: center;
+}
+
+.header-search-icon {
+    top: 50%;
+    left: 0.5rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    position: absolute;
+    pointer-events: none;
+    transform: translateY(-50%);
+    color: var(--bit-clr-fg-ter);
+}
+
+/* Padded at both ends so a long query scrolls under the magnifier and the hint
+   rather than behind either of them. */
+.header-search input {
+    width: 12rem;
+    height: 2rem;
+    padding: 0 3.25rem 0 1.75rem;
+    border-color: var(--bit-clr-brd-sec);
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                width var(--bit-mot-duration) var(--bit-mot-easing);
+}
+
+.header-search input:focus {
+    width: 16rem;
+}
+
+/* The hint is decoration over an interactive control: it must not eat the click
+   that would otherwise land on the input and focus it. */
+.search-hint {
+    top: 50%;
+    right: 0.375rem;
+    position: absolute;
+    pointer-events: none;
+    transform: translateY(-50%);
+    padding: 0.0625rem 0.375rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+    border-radius: 0.25rem;
+    background-color: var(--bit-clr-bg-pri);
+    color: var(--bit-clr-fg-ter);
+    font-family: inherit;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+/* A focused field is being typed into - the reminder of how to get there has
+   done its job. */
+.header-search input:focus + .search-hint {
+    opacity: 0;
+}
+
+/* The one list on the site that keeps a drop shadow: it really does float over
+   the page, so the elevation is information rather than decoration. */
+.header-search-results {
+    right: 0;
+    margin: 0;
+    z-index: 1300;
+    width: 22rem;
+    max-width: 84vw;
+    padding: 0.25rem;
+    list-style: none;
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    box-shadow: var(--bit-shd-cal);
+    background-color: var(--bit-clr-bg-pri);
+    border-radius: var(--bit-shp-brd-radius);
+    border: var(--bit-shp-brd-width) var(--bit-shp-brd-style) var(--bit-clr-brd-ter);
+}
+
+.header-search-results li {
+    gap: 0.5rem;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.header-search-results li:hover,
+.header-search-results li.active {
+    background-color: var(--bit-clr-bg-sec);
+}
+
+.header-search-result-icon {
+    flex: none;
+    line-height: 1;
+    font-size: 0.875rem;
+}
+
+.header-search-result-title {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--bit-clr-fg-pri);
+}
+
+.header-search-result-group {
+    flex: none;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08333em;
+    color: var(--bit-clr-fg-ter);
+}
+
+.header-search-results li.header-search-empty {
+    cursor: default;
+    color: var(--bit-clr-fg-ter);
+}
+
+.header-search-results li.header-search-empty:hover {
+    background-color: transparent;
+}
+
 /* The page is prerendered on the server and inert until the WebAssembly runtime
    takes over, so the bar says so rather than letting clicks silently do nothing. */
 .hydrating {
@@ -572,38 +701,10 @@ code, kbd, pre, samp {
 .nav-panel-search {
     flex: none;
     padding: 0.75rem 0.5rem;
-    /* Holds the shortcut hint over the right-hand end of the field. */
-    position: relative;
 }
 
 .nav-panel-search input {
     width: 100%;
-    /* Room for the hint, so a long query scrolls under it rather than behind it. */
-    padding-right: 3.25rem;
-}
-
-/* The hint is decoration over an interactive control: it must not eat the click that would
-   otherwise land on the input and focus it. */
-.search-hint {
-    position: absolute;
-    top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
-    pointer-events: none;
-    padding: 0.0625rem 0.375rem;
-    border: 1px solid var(--bit-clr-brd-sec);
-    border-radius: 0.25rem;
-    background-color: var(--bit-clr-bg-pri);
-    color: var(--bit-clr-fg-ter);
-    font-family: inherit;
-    font-size: 0.6875rem;
-    line-height: 1.4;
-    white-space: nowrap;
-}
-
-/* A focused field is being typed into - the reminder of how to get there has done its job. */
-.nav-panel-search input:focus + .search-hint {
-    opacity: 0;
 }
 
 .nav-panel-items {
@@ -653,13 +754,6 @@ code, kbd, pre, samp {
     color: var(--bit-clr-pri);
     background-color: var(--bit-clr-bg-sec);
     border-inline-start-color: var(--bit-clr-pri);
-}
-
-.nav-panel-item .ico {
-    flex: none;
-    width: 1.25em;
-    text-align: center;
-    font-size: 0.9em;
 }
 
 .nav-panel-empty {
@@ -2055,7 +2149,139 @@ label.check {
 }
 
 /* ---------------------------------------------------------------------------
-   18. Blazor error UI
+   18. MCP playground
+
+   The MCP page shows both halves of a call, so its unit is a pair of code panes
+   rather than a demo area with a console under it. Side by side while there is
+   room for two columns of JSON, stacked when there is not - a request folded
+   into forty-character lines is worse than one below the other.
+   --------------------------------------------------------------------------- */
+
+.mcp-endpoints {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    align-items: center;
+}
+
+.mcp-endpoints > div {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.mcp-exchange {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-direction: column;
+}
+
+.mcp-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.mcp-endpoint {
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-ter);
+    font-family: var(--demo-font-mono);
+    word-break: break-all;
+}
+
+/* The status, the method and the timing read as one strip of facts about the
+   call; the two that can say "this went wrong" are the only coloured ones. */
+.mcp-chip {
+    font-size: 0.6875rem;
+    padding: 0.0625rem 0.5rem;
+    white-space: nowrap;
+    font-family: var(--demo-font-mono);
+    color: var(--bit-clr-fg-sec);
+    background-color: var(--bit-clr-bg-sec);
+    border-radius: var(--bit-shp-brd-radius);
+    border: var(--bit-shp-brd-width) var(--bit-shp-brd-style) var(--bit-clr-brd-sec);
+}
+
+.mcp-chip.ok {
+    color: var(--bit-clr-suc);
+    border-color: var(--bit-clr-suc);
+}
+
+.mcp-chip.bad {
+    color: var(--bit-clr-err);
+    border-color: var(--bit-clr-err);
+}
+
+.mcp-panes {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+}
+
+.mcp-pane {
+    display: flex;
+    min-width: 0;
+    gap: 0.25rem;
+    flex-direction: column;
+}
+
+/* Bounded, and scrolling inside itself: a response is as long as it is, and the
+   next section should not be a page-scroll away because of one of them. */
+.mcp-pane .code-holder pre {
+    overflow: auto;
+    max-height: 22rem;
+}
+
+.mcp-idle {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--bit-clr-fg-ter);
+}
+
+.mcp-tool-desc {
+    margin-top: 0.75rem;
+}
+
+.mcp-tools {
+    margin-top: 1rem;
+}
+
+/* Sized the way the API table is, and for the same reason: a row is max-content wide by default,
+   so a column holding a sentence would push the row into a horizontal scroll instead of wrapping.
+   The name and the button are fixed; the description takes what is left. */
+.mcp-tools .th-row,
+.mcp-tools .tdata-row {
+    min-width: 40rem;
+}
+
+.mcp-tools .th-cell:nth-child(1),
+.mcp-tools .td-cell:nth-child(1) {
+    flex: 0 0 12rem;
+}
+
+.mcp-tools .th-cell:nth-child(2),
+.mcp-tools .td-cell:nth-child(2) {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.8125rem;
+    font-family: var(--demo-font-sans);
+}
+
+.mcp-tools .th-cell:nth-child(3),
+.mcp-tools .td-cell:nth-child(3) {
+    flex: 0 0 6.5rem;
+}
+
+.mcp-tools .td-cell:nth-child(1) code {
+    word-break: break-all;
+}
+
+/* ---------------------------------------------------------------------------
+   19. Blazor error UI
    --------------------------------------------------------------------------- */
 
 #blazor-error-ui {
@@ -2084,13 +2310,19 @@ label.check {
 }
 
 /* ---------------------------------------------------------------------------
-   19. Responsive
+   20. Responsive
 
    The breakpoints are the library's own (media-queries.scss): lg 1200, md 960,
    sm 600.
    --------------------------------------------------------------------------- */
 
 @media (max-width: 60rem) { /* lt-lg: 960px */
+    /* Two columns of JSON below this width are two columns of wrapped fragments;
+       one after the other keeps each line readable. */
+    .mcp-panes {
+        grid-template-columns: 1fr;
+    }
+
     .header .container {
         padding: 0 0.625rem;
     }
@@ -2101,6 +2333,14 @@ label.check {
 
     .header .logo {
         margin: 0 0.625rem;
+    }
+
+    .header-search input {
+        width: 9rem;
+    }
+
+    .header-search input:focus {
+        width: 12rem;
     }
 
     .demo-area {
@@ -2164,6 +2404,36 @@ label.check {
     }
 
     .header .nuget-btn {
+        display: none;
+    }
+
+    /* The mark is the first thing to give up room at this width, so the field
+       can take whatever is left of the row instead of staying a stub that
+       truncates its own placeholder. There is nothing to grow into on focus any
+       more, so the width animation stops too - and a phone has no Ctrl key for
+       the hint to advertise. */
+    .header .logo {
+        width: 2.25rem;
+        height: 2.25rem;
+        margin: 0 0.375rem;
+    }
+
+    .header .header-end {
+        gap: 0.375rem;
+    }
+
+    .header-search {
+        flex: 1;
+    }
+
+    .header-search input,
+    .header-search input:focus {
+        width: 100%;
+        padding-right: 0.5rem;
+        transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
+    }
+
+    .search-hint {
         display: none;
     }
 

@@ -285,5 +285,10 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 Start with the `GetButilOverview` tool. See
 [McpController](Bit.Butil.Demo/Server/Controllers/McpController.cs).
 
+The site's own **`/mcp-server` page** is a working client for it: it handshakes with this server on
+load, lists its tools, and lets you call one and read both halves of the exchange - the JSON-RPC
+request, the response, and the text a model would be handed. It is the fastest way to see what a
+tool actually returns before wiring an agent up to it.
+
 Every public member carries XML documentation with a link to the corresponding MDN page, so IntelliSense
 is the reference of record.

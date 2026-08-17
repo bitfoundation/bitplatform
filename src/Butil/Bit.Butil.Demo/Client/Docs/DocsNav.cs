@@ -86,6 +86,7 @@ public static class DocsNav
             new("Render modes", "render-modes", "🧩", "How Butil behaves under WebAssembly, Server, Hybrid and prerendering.", typeof(RenderModesPage), ApiSupport.Guide),
             new("Browser support", "browser-support", "🧪", "Which APIs need a secure context, a permission or a specific engine.", typeof(BrowserSupportPage), ApiSupport.Guide),
             new("Troubleshooting", "troubleshooting", "🩺", "The errors people hit first, and what each one actually means.", typeof(TroubleshootingPage), ApiSupport.Guide),
+            new("MCP server", "mcp-server", "🤖", "This site as tools an AI agent can call - and a live client to try them in.", typeof(McpServerPage), ApiSupport.Guide),
         ]),
         new("Window & Browsing",
         [
@@ -201,6 +202,11 @@ public static class DocsNav
     /// </summary>
     public static string RouteKey(this NavigationManager navManager) =>
         navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Trim('/');
+
+    /// <summary>
+    /// The group a link is declared in - the category label the header search shows beside a hit.
+    /// </summary>
+    public static string GroupOf(DocLink link) => Groups.First(g => g.Links.Contains(link)).Title;
 
     /// <summary>Finds the entry documenting <paramref name="url"/> ("clipboard"), or null.</summary>
     public static DocLink? FindByUrl(string? url)

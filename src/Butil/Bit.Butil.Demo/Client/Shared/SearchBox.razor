@@ -1,0 +1,192 @@
+@implements IAsyncDisposable
+@inject NavigationManager navManager
+@inject Bit.Butil.Keyboard keyboard
+@inject Bit.Butil.UserAgent userAgent
+
+@* Client-side docs search over DocsNav - no index build and no server call: the taxonomy's titles,
+   summaries, slugs, group names and documented type names are the corpus. It lives in the header
+   rather than in the nav panel so it also works on the home page, where there is no panel.
+
+   The input is a WAI-ARIA combobox: ArrowUp/ArrowDown move the highlighted option, Enter opens it,
+   Escape closes the list. Options navigate on mousedown so the click wins the race against the
+   input's blur, which is what closes the list. *@
+
+<div class="header-search">
+    <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16" y2="16" />
+    </svg>
+
+    @* The hint is the standard way to advertise the shortcut, and it doubles as the label for what
+       the key does - so it is aria-hidden and the input's own label carries the wording for a
+       screen reader instead of it being read as loose text after the field. *@
+    <input @ref="_input" type="search" placeholder="Search docs"
+           aria-label="Search the documentation. Press Control K, or Command K on a Mac, to focus this field."
+           role="combobox"
+           aria-autocomplete="list"
+           aria-expanded="@(_results is null ? "false" : "true")"
+           aria-controls="header-search-listbox"
+           aria-activedescendant="@(_results is { Length: > 0 } ? $"header-search-option-{_activeIndex}" : null)"
+           value="@_query"
+           @oninput="OnInput"
+           @onkeydown="OnKeyDown"
+           @onblur="() => _results = null" />
+    <kbd class="search-hint" aria-hidden="true">@(_isApple ? "⌘" : "Ctrl") K</kbd>
+
+    @if (_results is { Length: > 0 })
+    {
+        <ul id="header-search-listbox" class="header-search-results" role="listbox">
+            @foreach (var (hit, index) in _results.Select((hit, index) => (hit, index)))
+            {
+                <li role="option"
+                    id="@($"header-search-option-{index}")"
+                    aria-selected="@(index == _activeIndex ? "true" : "false")"
+                    class="@(index == _activeIndex ? "active" : null)"
+                    @key="hit.Link.Url"
+                    @onmousedown="() => Go(hit.Link)" @onmousedown:preventDefault>
+                    <span class="header-search-result-icon" aria-hidden="true">@hit.Link.Icon</span>
+                    <span class="header-search-result-title">@hit.Link.Title</span>
+                    <span class="header-search-result-group">@hit.Group</span>
+                </li>
+            }
+        </ul>
+    }
+    else if (_results is { Length: 0 })
+    {
+        <ul id="header-search-listbox" class="header-search-results" role="listbox">
+            <li class="header-search-empty" role="presentation">Nothing matches "@_query".</li>
+        </ul>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// One searchable page. The fields are held apart rather than concatenated into a single
+    /// haystack so a hit in the title can outrank a hit in a summary.
+    /// </summary>
+    private sealed record Entry(DocLink Link, string Group, string Types, string Slug);
+
+    private sealed record Hit(DocLink Link, string Group);
+
+    // The taxonomy is static, so the corpus is built once for the lifetime of the app.
+    private static readonly Entry[] _entries =
+    [
+        .. DocsNav.Groups.SelectMany(group => group.Links.Select(link =>
+            new Entry(link, group.Title, string.Join(' ', link.TypeNames()), link.Url.Replace('-', ' ')))),
+    ];
+
+    private string _query = "";
+    private Hit[]? _results;
+    private int _activeIndex;
+    private bool _isApple;
+    private ElementReference _input;
+    private ButilSubscription? _ctrlK;
+    private ButilSubscription? _metaK;
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? "";
+        _results = _query.Trim().Length < 2 ? null : Find(_query.Trim());
+        _activeIndex = 0;
+    }
+
+    private static Hit[] Find(string query)
+    {
+        var terms = query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        return [.. _entries
+            .Select(entry => (Entry: entry, Score: Score(entry, terms)))
+            .Where(hit => hit.Score > 0)
+            .OrderByDescending(hit => hit.Score)
+            .ThenBy(hit => hit.Entry.Link.Title, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(hit => new Hit(hit.Entry.Link, hit.Entry.Group))];
+    }
+
+    /// <summary>
+    /// The sum of every term's best field, or zero as soon as one term matches nothing: two words
+    /// narrow the result set rather than widening it.
+    /// </summary>
+    private static int Score(Entry entry, string[] terms)
+    {
+        var total = 0;
+
+        foreach (var term in terms)
+        {
+            var score = Score(entry, term);
+            if (score == 0) return 0;
+
+            total += score;
+        }
+
+        return total;
+    }
+
+    // The name someone reaches for is rarely the name the platform chose - "copy" is on Clipboard,
+    // "keep the screen on" is WakeLock - so the summary and the group name are searched too. They
+    // score lowest: a page whose title is the word wins over a page that merely mentions it.
+    private static int Score(Entry entry, string term) => true switch
+    {
+        _ when entry.Link.Title.StartsWith(term, StringComparison.OrdinalIgnoreCase) => 6,
+        _ when entry.Link.Title.Contains(term, StringComparison.OrdinalIgnoreCase) => 4,
+        _ when entry.Types.Contains(term, StringComparison.OrdinalIgnoreCase) => 3,
+        _ when entry.Slug.Contains(term, StringComparison.OrdinalIgnoreCase) => 2,
+        _ when entry.Link.Summary.Contains(term, StringComparison.OrdinalIgnoreCase) => 1,
+        _ when entry.Group.Contains(term, StringComparison.OrdinalIgnoreCase) => 1,
+        _ => 0,
+    };
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (_results is { Length: > 0 })
+        {
+            if (e.Key == "ArrowDown") _activeIndex = Math.Min(_activeIndex + 1, _results.Length - 1);
+            else if (e.Key == "ArrowUp") _activeIndex = Math.Max(_activeIndex - 1, 0);
+            else if (e.Key == "Enter") Go(_results[Math.Clamp(_activeIndex, 0, _results.Length - 1)].Link);
+        }
+
+        if (e.Key == "Escape") Reset();
+    }
+
+    private void Go(DocLink link)
+    {
+        Reset();
+        navManager.NavigateTo(link.Url);
+    }
+
+    private void Reset()
+    {
+        _query = "";
+        _results = null;
+        _activeIndex = 0;
+    }
+
+    // Ctrl+K / Cmd+K is what every developer already has in their fingers, and registering it
+    // through Bit.Butil.Keyboard is the site using the library it documents rather than a
+    // hand-written keydown listener. Both chords are registered rather than branching on the
+    // platform: an external keyboard on a Mac, or a Mac user on a Windows layout, should not have
+    // to guess which one this site chose.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _ctrlK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Ctrl);
+        _metaK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Meta);
+
+        // Only affects which glyph the hint shows, so a browser without UA-CH simply gets "Ctrl".
+        var platform = await userAgent.GetPlatform();
+        _isApple = platform.Contains("mac", StringComparison.OrdinalIgnoreCase);
+
+        StateHasChanged();
+    }
+
+    // Arrives from the JS listener rather than from Blazor's dispatcher, so the focus call is
+    // marshalled back onto it.
+    private void FocusSearch() => InvokeAsync(() => _input.FocusAsync().AsTask());
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_ctrlK is not null) await _ctrlK.DisposeAsync();
+        if (_metaK is not null) await _metaK.DisposeAsync();
+    }
+}
