@@ -29,6 +29,7 @@ public static partial class Program
             services.AddScoped<SharedExceptionHandler>(sp => sp.GetRequiredService<ClientExceptionHandlerBase>());
 
             services.AddScoped<IAppUpdateService, WindowsAppUpdateService>();
+            services.AddScoped<IPermissionService, WindowsPermissionService>();
             services.AddScoped<IBitDeviceCoordinator, WindowsDeviceCoordinator>();
 
             services.AddScoped<HttpClient>(sp =>

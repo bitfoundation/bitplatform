@@ -177,6 +177,157 @@
   <data name="TransientException" xml:space="preserve">
     <value>Kan inte ansluta till servern.</value>
   </data>
+  <!-- Bit.BlazorUI messages -->
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Inga poster att visa.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Läser in…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Åtgärder</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Lägg till</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Rensa filter</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>Exportera CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Exportera Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Kolumner</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Redigera</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Markera alla</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Markera rad</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Markera rad: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtrera…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filtrera efter {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Alla</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Filteroperator för {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Innehåller</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Innehåller inte</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Börjar med</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Slutar med</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Sant</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Falskt</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Gruppera efter {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Ta bort gruppering efter {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Expandera grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Dölj grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} av {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / sida</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Rader per sida</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Första sidan</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Föregående sida</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Nästa sida</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Sista sidan</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Slut på resultaten -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Visa/dölj detaljer</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Visa/dölj underordnade</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Dra för att ändra ordning, eller fokusera och använd piltangenterna för att flytta raden</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Ändra ordning på raden. Tryck på uppåt- eller nedåtpil för att flytta raden.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Ogiltigt värde för {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Sorterat efter {0}, stigande</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Sorterat efter {0}, fallande</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Sortering efter {0} borttagen</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filter tillämpat på {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filter på {0} rensat</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Raden har tagits bort</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Aktiv</value>

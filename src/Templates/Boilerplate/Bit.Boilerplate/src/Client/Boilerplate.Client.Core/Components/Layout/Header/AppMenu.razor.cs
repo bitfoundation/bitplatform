@@ -17,6 +17,9 @@ public partial class AppMenu
     [AutoInject] private IUserController userController = default!;
     [AutoInject] private CultureInfoManager cultureInfoManager = default!;
     [AutoInject] private SignInModalService signInModalService = default!;
+    //#if (brouter == true && multitenant == true)
+    [AutoInject] private IBrouter brouter = default!;
+    //#endif
 
 
     private bool isOpen;
@@ -91,6 +94,10 @@ public partial class AppMenu
         // Switching calls the refresh token api that stores the new tenant id in the token's claims (See IdentityController.Refresh).
         if (await AuthManager.SwitchTenant(newTenantId, CurrentCancellationToken))
         {
+            //#if (brouter == true)
+            brouter.ClearKeepAlive();
+            //#endif
+
             NavigationManager.RefreshCurrentPage(); // Re-renders the current page so it reflects the new tenant's data.
             // The layout's tenant display (next to the app version) updates on its own: switching changes the tenant claim, which
             // triggers the authentication-state change that MainLayout re-resolves the current tenant from (See MainLayout.SetCurrentTenantIfNeeded).

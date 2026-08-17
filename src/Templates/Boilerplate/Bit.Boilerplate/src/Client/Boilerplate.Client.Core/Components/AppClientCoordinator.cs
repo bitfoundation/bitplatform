@@ -37,6 +37,9 @@ public partial class AppClientCoordinator : AppComponentBase
     //#if (notification == true)
     [AutoInject] private IPushNotificationService pushNotificationService = default!;
     //#endif
+    //#if (brouter == true)
+    [AutoInject] private IBrouter brouter = default!;
+    //#endif
 
     private List<Action> unsubscribes = [];
 
@@ -75,16 +78,8 @@ public partial class AppClientCoordinator : AppComponentBase
 
             if (AppPlatform.IsBlazorHybrid is false)
             {
-                try
-                {
-                    BitButil.UseFastInvoke(); // Ensures that `TelemetryContext.Platform` is available to components using this value in their `OnInitAsync` method, such as `SignInPage.razor.cs`.
-                    var userAgentData = await userAgent.Extract();
-                    TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
-                }
-                finally
-                {
-                    BitButil.UseNormalInvoke();
-                }
+                var userAgentData = await userAgent.Extract();
+                TelemetryContext.Platform = string.Join(' ', [userAgentData.Manufacturer, userAgentData.OsName, userAgentData.Name, "browser"]);
             }
             TelemetryContext.TimeZone = await jsRuntime.GetTimeZone();
             TelemetryContext.Culture = CultureInfo.CurrentCulture.Name;
@@ -146,9 +141,9 @@ public partial class AppClientCoordinator : AppComponentBase
         navigatorLogger.LogInformation("Navigator's location changed to {Location}", TelemetryContext.PageUrl);
     }
 
-    private Guid? lastPropagatedUserId = Guid.Empty;
+    private ClaimsPrincipal? lastPropagatedUser;
     /// <summary>
-    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others, 
+    /// This code manages the association of a user with sensitive services, such as SignalR, push notifications, App Insights, and others,
     /// ensuring the user is correctly set or cleared as needed.
     /// </summary>
     public async Task PropagateAuthState(bool firstRun, Task<AuthenticationState> task)
@@ -158,9 +153,19 @@ public partial class AppClientCoordinator : AppComponentBase
             var user = (await task).User;
             var isAuthenticated = user.IsAuthenticated();
             var userId = isAuthenticated ? user.GetUserId() : (Guid?)null;
-            if (lastPropagatedUserId == userId)
+
+            if (user.IsTheSame(lastPropagatedUser))
                 return;
+
             await Abort(); // Cancels ongoing user id propagation, because the new authentication state is available.
+
+            //#if (brouter == true)
+            // KeepAlive routes are hidden rather than disposed, so a retained page would otherwise hand the next
+            // principal the previous one's search text and grid filters. This is what makes a full page reload
+            // unnecessary after a tenant switch (see NavigationManagerExtensions.RefreshCurrentPage).
+            brouter.ClearKeepAlive();
+            //#endif
+
             TelemetryContext.UserId = userId;
             TelemetryContext.UserSessionId = isAuthenticated ? user.GetSessionId() : null;
 
@@ -204,7 +209,7 @@ public partial class AppClientCoordinator : AppComponentBase
                 await UpdateUserSession();
             }
 
-            lastPropagatedUserId = userId;
+            lastPropagatedUser = user;
         }
         catch (Exception exp)
         {
@@ -249,9 +254,9 @@ public partial class AppClientCoordinator : AppComponentBase
             }
             else
             {
-                if (data is not null) return false; // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown.
-
                 SnackBarService.Show("Boilerplate", message);
+
+                return data is null;  // Snack bar service does not support payload data. It would be a good idea to return false to the server so server knows that the message was not shown properly.
             }
 
             return true; // Message gets shown successfully. You CAN (not implemented yet) use this in server side in order to not to send push notifications for messages that are already shown in the client side.
@@ -373,6 +378,10 @@ public partial class AppClientCoordinator : AppComponentBase
         if (exception is null)
         {
             logger.LogInformation("SignalR state changed to {State}", hubConnection!.State);
+        }
+        else if (exception is OperationCanceledException)
+        {
+            logger.LogInformation("SignalR connection attempt cancelled.");
         }
         else
         {

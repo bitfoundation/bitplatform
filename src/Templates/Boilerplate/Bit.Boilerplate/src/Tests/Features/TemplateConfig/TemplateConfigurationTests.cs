@@ -39,7 +39,10 @@ public class TemplateConfigurationTests
     /// </summary>
     private const string TemplateOnlySymbol = "IsInsideProjectTemplate";
 
-    private static readonly string[] skippedDirectories = ["bin", "obj", ".git", ".vs", "node_modules", ".playwright-mcp", "App_Data"];
+    // Build and test output, all of it gitignored. `TestResults` matters as much as `bin`: Playwright writes video
+    // recordings there, and a .webm whose bytes happen to contain a directive-opening sequence is reported as a
+    // template defect on any machine that has run the UI tests.
+    private static readonly string[] skippedDirectories = ["bin", "obj", ".git", ".vs", "node_modules", ".playwright-mcp", "App_Data", "TestResults"];
 
     /// <summary>
     /// Template conditionals are always written with a parenthesized condition - <c>#if (aspire == true)</c> - in
@@ -176,6 +179,129 @@ public class TemplateConfigurationTests
             "These template.json rules name a path that does not exist, so they exclude nothing - the file they were " +
             "written for either moved (and now ships in configurations that must not have it) or is gone and the rule " +
             $"is dead weight:{Environment.NewLine}{string.Join(Environment.NewLine, missing)}");
+    }
+
+    /// <summary>
+    /// True when the number at <paramref name="index"/> is the argument of a port flag on a documented command line -
+    /// <c>-p PORT</c>, <c>--port PORT</c>, <c>--port=PORT</c>. Those really are the app's port and are SUPPOSED to be
+    /// rewritten per generation; a calendar year or a quantity in the same sentence is not, and neither is preceded by
+    /// a port flag. Kept as a whitelist of flag spellings rather than "any digits after a space", which would exempt
+    /// exactly the prose the check exists for.
+    /// </summary>
+    private static bool IsPortFlagArgument(string line, int index) => portFlag.IsMatch(line[..index]);
+
+    /// <summary>
+    /// The flag has to be a command-line token of its own, anchored to the start of the line or preceded by
+    /// whitespace - <c>EndsWith("-p")</c> would also accept any word ending in those two characters.
+    /// </summary>
+    private static readonly Regex portFlag = new(@"(?:^|[ \t])(?:-p|--port|-Port)[ \t]*=?[ \t]*$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Test files that this review's own suite adds live under <c>src/Tests/Features/**</c> and are gated on
+    /// <c>advancedTests</c> (plus whatever feature symbol they need), because a generated project should not inherit
+    /// them and the packages several of them use are gated on the same symbol. Forget the exclusion entry and the
+    /// DEFAULT generation stops compiling - the file ships while the base class, fake or helper it derives from does
+    /// not.
+    /// <para>
+    /// That has happened: <c>AiChatPanelDictationUITests.cs</c> shipped in no exclude list while its base class
+    /// <c>AiChatPanelTestBase.cs</c> and the <c>TestChatClient</c> it uses were both removed at
+    /// <c>advancedTests != true || signalR != true</c>, so <c>dotnet new bit-bp</c> with no arguments produced a test
+    /// project with two CS0246s. Nothing caught it: inside the template every conditional is a comment so the local
+    /// build is green, and CI never generates the one combination that breaks - its build-only job passes
+    /// <c>--signalR false</c> without <c>--advancedTests</c>, and both of its test jobs pass <c>--advancedTests</c>.
+    /// </para>
+    /// <para>
+    /// The allow-list below is the set that is MEANT to ship in every generated project - the sample tests a
+    /// customer is expected to read and extend. Adding to it is a deliberate act; forgetting an exclusion is not.
+    /// </para>
+    /// <para>
+    /// <b>Scope.</b> This proves the DEFAULT configuration only - the one CI never generates, and the one the
+    /// failure above shipped in. It does not prove that a file gated on <c>advancedTests</c> alone is also gated on
+    /// every symbol its dependencies need, so <c>--advancedTests true --signalR false</c> could still pair a test
+    /// with a missing base class. Closing that needs each file's dependencies resolved against each rule's
+    /// condition; the generation matrix in CI is the cheaper place to catch it.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    public void EveryTestFile_Should_BeExcludedFromGeneratedProjects_UnlessItIsADeliberateSample()
+    {
+        string[] shippedToEveryGeneratedProject =
+        [
+            "src/Tests/Features/Identity/IntegrationTests.cs",
+            "src/Tests/Features/Identity/UITests.cs",
+            "src/Tests/Features/Identity/BunitUITests.cs",
+            "src/Tests/Features/Identity/TestData.cs"
+        ];
+
+        var (templateRoot, template) = LoadTemplateJson();
+
+        HashSet<string> excluded = new(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var source in template.RootElement.GetProperty("sources").EnumerateArray())
+        {
+            if (source.TryGetProperty("modifiers", out var modifiers) is false)
+                continue;
+
+            foreach (var modifier in modifiers.EnumerateArray())
+            {
+                if (modifier.TryGetProperty("exclude", out var rule) is false || rule.ValueKind is not JsonValueKind.Array)
+                    continue;
+
+                // Only rules that actually FIRE in the default configuration count. A rule keeps its file whenever
+                // its condition is false, so "named in some rule" is not the same as "removed by default": an
+                // exclusion conditioned solely on `(signalR != true)` leaves the file in place as soon as signalR is
+                // on. Every rule in this list is an OR-chain that starts with `advancedTests != true`, and
+                // advancedTests defaults to false, so requiring that clause is exactly "this rule fires by default"
+                // - checked as text rather than by evaluating the expression, which the engine owns.
+                var condition = modifier.TryGetProperty("condition", out var conditionElement) ? conditionElement.GetString() : null;
+
+                if (condition is null || condition.Contains("advancedTests != true", StringComparison.Ordinal) is false)
+                    continue;
+
+                foreach (var pathElement in rule.EnumerateArray())
+                {
+                    var path = pathElement.GetString();
+
+                    if (string.IsNullOrWhiteSpace(path))
+                        continue;
+
+                    excluded.Add(path.Replace('\\', '/').TrimEnd('/'));
+                }
+            }
+        }
+
+        var testsRoot = Path.Combine(templateRoot, "src", "Tests", "Features");
+        List<string> unguarded = [];
+        var filesChecked = 0;
+
+        foreach (var file in EnumerateTemplateFiles(testsRoot).Where(file => Path.GetExtension(file) is ".cs"))
+        {
+            var relativePath = Path.GetRelativePath(templateRoot, file).Replace('\\', '/');
+
+            if (shippedToEveryGeneratedProject.Contains(relativePath, StringComparer.OrdinalIgnoreCase))
+                continue;
+
+            filesChecked++;
+
+            // Either the file itself is named, or a `some/directory/**` rule above it removes the whole folder.
+            var isGated = excluded.Contains(relativePath) ||
+                          excluded.Any(entry => entry.EndsWith("/**", StringComparison.Ordinal) &&
+                                                relativePath.StartsWith(entry[..^2], StringComparison.OrdinalIgnoreCase));
+
+            if (isGated is false)
+            {
+                unguarded.Add(relativePath);
+            }
+        }
+
+        // Non-vacuity: the suite has ~90 files under Features.
+        Assert.IsGreaterThan(50, filesChecked, $"Only {filesChecked} test files were scanned - the scan is not reaching src/Tests/Features.");
+
+        Assert.IsEmpty(unguarded,
+            "These test files are in no template.json exclude rule that fires in the DEFAULT configuration, so they " +
+            "ship into a generated project where the base classes and fakes they depend on have been removed. Add " +
+            "each to the exclude list that matches the symbols it actually needs (advancedTests, plus signalR/" +
+            $"notification/module/... where relevant):{Environment.NewLine}{string.Join(Environment.NewLine, unguarded)}");
     }
 
     /// <summary>
@@ -514,9 +640,11 @@ public class TemplateConfigurationTests
                             {
                                 offenders.Add($"[{token} inside a number] {where}");
                             }
-                            // Prose: in markdown a port is always written after a `:` (localhost:5030, *:5030). Anything
-                            // else is a sentence that happens to contain the digits.
-                            else if (isMarkdown && before is not ':')
+                            // Prose: in markdown a port is written either after a `:` (localhost:PORT, *:PORT) or as
+                            // the argument of a port flag in a documented command line (`-p PORT`, `--port PORT`).
+                            // Anything else is a sentence that happens to contain the digits - a calendar year, a
+                            // quantity - and the rewrite corrupts it.
+                            else if (isMarkdown && before is not ':' && IsPortFlagArgument(line, index) is false)
                             {
                                 offenders.Add($"[{token} in markdown prose] {where}");
                             }
@@ -716,7 +844,7 @@ public class TemplateConfigurationTests
             .Where(file => Path.GetRelativePath(templateRoot, file)
                                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
                                .Any(segment => skippedDirectories.Contains(segment, StringComparer.OrdinalIgnoreCase)) is false)
-            .Where(file => Path.GetExtension(file) is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".ico" or ".woff" or ".woff2" or ".ttf" or ".dll" or ".pdb" or ".zip" or ".keystore" or ".p12" or ".pfx" or ".webp" or ".mp4"));
+            .Where(file => Path.GetExtension(file) is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".ico" or ".woff" or ".woff2" or ".ttf" or ".dll" or ".pdb" or ".zip" or ".keystore" or ".p12" or ".pfx" or ".webp" or ".mp4" or ".webm"));
     }
 
     /// <summary>

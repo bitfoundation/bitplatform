@@ -104,13 +104,12 @@ public partial class UsersPage
         {
             if (loadRoleDataCts is not null)
             {
-                using var currentCts = loadRoleDataCts;
-                loadRoleDataCts = new();
-
-                await currentCts.TryCancel();
+                using var previousCts = loadRoleDataCts;
+                loadRoleDataCts = null;
+                await previousCts.TryCancel();
             }
 
-            loadRoleDataCts = new();
+            var loadCts = loadRoleDataCts = new();
 
             loadingUserKey = item.Key;
             selectedUserItem = item;
@@ -118,7 +117,11 @@ public partial class UsersPage
 
             user.Patch(selectedUserDto);
 
-            allUserSessions = await userManagementController.GetUserSessions(user.Id, CurrentCancellationToken);
+            var userSessions = await userManagementController.GetUserSessions(user.Id, loadCts.Token);
+
+            if (ReferenceEquals(loadRoleDataCts, loadCts) is false) return; // Selected user changed while we were loading, so don't assign the sessions to the previous user.
+
+            allUserSessions = userSessions;
 
             SearchSessions();
         }

@@ -69,6 +69,7 @@ public static partial class Program
             //#endif
             services.AddScoped<IWebAuthnService, WebAuthnService>();
             services.AddScoped<IAppUpdateService, WebAppUpdateService>();
+            services.AddScoped<IPermissionService, WebPermissionService>();
 
             services.AddSingleton(sp => sp.GetRequiredService<IOptions<ClientWebSettings>>().Value);
 

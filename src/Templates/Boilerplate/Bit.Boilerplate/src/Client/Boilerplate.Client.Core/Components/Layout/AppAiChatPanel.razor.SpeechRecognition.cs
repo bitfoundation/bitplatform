@@ -6,6 +6,7 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class AppAiChatPanel
 {
     [AutoInject] private SpeechRecognition speechRecognition = default!;
+    [AutoInject] private IPermissionService permissionService = default!;
     [AutoInject] private ILogger<AppAiChatPanel> logger = default!;
 
 
@@ -32,6 +33,13 @@ public partial class AppAiChatPanel
         if (isListening)
         {
             await StopDictation();
+            return;
+        }
+
+        if (await permissionService.RequestMicrophonePermission() is false)
+        {
+            SnackBarService.Error(Localizer[nameof(AppStrings.AiChatPanelDictation)],
+                                  Localizer[nameof(AppStrings.AiChatPanelMicrophoneBlocked)]);
             return;
         }
 
