@@ -42,6 +42,13 @@ public static class ButilSearchIndex
         "butil", "blazor", "browser", "javascript"
     };
 
+    /// <summary>
+    /// Builds the index ahead of the first query. Reflecting over the whole assembly and walking
+    /// every catalog takes long enough to be noticed, and the caller who happens to be first is the
+    /// one who would wait for it; startup has the time to spare.
+    /// </summary>
+    public static void Warm() => _ = _entries.Value;
+
     public static ButilSearchHitDto[] Search(string query, int limit)
     {
         var terms = Tokenize(query);

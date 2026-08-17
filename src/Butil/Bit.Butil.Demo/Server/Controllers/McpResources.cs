@@ -126,11 +126,11 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         var page = DocsNav.FindByUrl(slug);
         if (page is null) return $"No documentation page has the slug '{slug}'.";
 
-        var request = httpContextAccessor.HttpContext?.Request;
-        var baseUri = request is null ? "https://localhost/" : $"{request.Scheme}://{request.Host}/";
+        // The same rendering the tool serves: one render per page and origin, and the same cap on
+        // what a single answer may cost a client's context window.
+        var (markdown, error) = await DocsPageRenderer.RenderCachedMarkdownAsync(
+            htmlRenderer, navigationManager, DocsPageRenderer.BaseUri(httpContextAccessor), page);
 
-        var (markdown, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, navigationManager, baseUri, page);
-
-        return markdown ?? DocsPageRenderer.Unavailable(page, error);
+        return markdown is null ? DocsPageRenderer.Unavailable(page, error) : DocsPageRenderer.Truncate(markdown);
     }
 }

@@ -1,7 +1,6 @@
 using System.Text;
 using System.Reflection;
 using System.ComponentModel;
-using System.Collections.Concurrent;
 using ModelContextProtocol.Server;
 using Bit.Butil.Demo.Client.Docs;
 using Bit.Butil.Demo.Server.Dtos;
@@ -29,13 +28,6 @@ namespace Bit.Butil.Demo.Server.Controllers;
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
 public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor) : ControllerBase
 {
-    // The docs pages are rich enough that a couple of them would otherwise dominate a client's
-    // context window; the ones on this site land far below the cap.
-    private const int MaxDocumentLength = 40_000;
-
-    // The rendered Markdown of every docs page served so far, keyed by slug.
-    private static readonly ConcurrentDictionary<string, string> _renderedPages = new(StringComparer.Ordinal);
-
     private static readonly string ButilVersion =
         typeof(BitButil).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? typeof(BitButil).Assembly.GetName().Version?.ToString()
@@ -213,23 +205,14 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
             return $"No documentation page has the slug '{slug}'. Available slugs: {slugs}.";
         }
 
-        // Rendering a page and flattening it costs far more than serving it; the pages are static,
-        // so the first caller pays for it and everyone after reads the same Markdown.
-        if (_renderedPages.TryGetValue(page.Url, out var cached)) return cached;
-
         // The page is rendered by the same component the site serves, so the documentation an agent
         // reads is the documentation a human reads - there is no second copy that could go stale.
-        var (rendered, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, navigationManager, BaseUri, page);
+        var (rendered, error) = await DocsPageRenderer.RenderCachedMarkdownAsync(htmlRenderer, navigationManager, BaseUri, page);
 
-        // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
         if (rendered is null) return DocsPageRenderer.Unavailable(page, error);
 
         // The page renders its own <h1>, so only its source is prepended here.
-        var markdown = Truncate($"Bit.Butil documentation page: /{page.Url}\n\n{rendered}");
-
-        _renderedPages[page.Url] = markdown;
-
-        return markdown;
+        return Truncate($"Bit.Butil documentation page: /{page.Url}\n\n{rendered}");
     }
 
     [HttpGet]
@@ -288,19 +271,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
         return Truncate(content);
     }
 
-    /// <summary>
-    /// The origin this request arrived on - what a docs page's canonical URL and anchors are built
-    /// from while it renders. Behind a reverse proxy the forwarded-headers middleware has already
-    /// rewritten Scheme and Host, so this is the public origin rather than the container's.
-    /// <para>
-    /// Read off the accessor rather than off <c>ControllerBase.Request</c>: over MCP these methods
-    /// are invoked on an instance the tool host built from DI, which never had a ControllerContext
-    /// assigned, so <c>Request</c> would be a null reference on exactly the transport that matters.
-    /// </para>
-    /// </summary>
-    private string BaseUri => httpContextAccessor.HttpContext is { Request: var request }
-        ? $"{request.Scheme}://{request.Host}/"
-        : "https://localhost/";
+    /// <summary>The origin this request arrived on - see <see cref="DocsPageRenderer.BaseUri"/>.</summary>
+    private string BaseUri => DocsPageRenderer.BaseUri(httpContextAccessor);
 
     /// <summary>
     /// A renamed README heading must not silently leave a blank gap in the overview - the agent is
@@ -314,10 +286,5 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
                .AppendLine();
     }
 
-    private static string Truncate(string text)
-    {
-        return text.Length <= MaxDocumentLength
-            ? text
-            : $"{text[..MaxDocumentLength]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
-    }
+    private static string Truncate(string text) => DocsPageRenderer.Truncate(text);
 }

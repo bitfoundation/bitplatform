@@ -29,9 +29,10 @@ public static partial class ButilXmlDocs
     private static string? GetSection(string documentationId, string section)
     {
         // Overloads are told apart by their parameter list; when building it did not produce an exact
-        // hit (generics, modifiers), one overload's documentation still beats none.
+        // hit (generics, modifiers), one overload's documentation still beats none. The fallback table
+        // is keyed without the parameter list, so the id has to shed its own to match.
         if (_members.Value.TryGetValue(documentationId, out var member) is false &&
-            _overloads.Value.TryGetValue(documentationId, out member) is false) return null;
+            _overloads.Value.TryGetValue(WithoutParameters(documentationId), out member) is false) return null;
 
         var element = member.Element(section);
 
@@ -49,8 +50,16 @@ public static partial class ButilXmlDocs
     {
         return _members.Value.Where(m => m.Key.Contains('(', StringComparison.Ordinal))
                              .OrderBy(m => m.Key, StringComparer.Ordinal)
-                             .GroupBy(m => m.Key[..m.Key.IndexOf('(', StringComparison.Ordinal)], StringComparer.Ordinal)
+                             .GroupBy(m => WithoutParameters(m.Key), StringComparer.Ordinal)
                              .ToFrozenDictionary(g => g.Key, g => g.First().Value, StringComparer.Ordinal);
+    }
+
+    /// <summary>A documentation id up to its parameter list - the key <see cref="BuildOverloads"/> groups on.</summary>
+    private static string WithoutParameters(string documentationId)
+    {
+        var parameters = documentationId.IndexOf('(', StringComparison.Ordinal);
+
+        return parameters < 0 ? documentationId : documentationId[..parameters];
     }
 
     private static FrozenDictionary<string, XElement> Load()

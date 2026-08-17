@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Bit.Butil.Demo.Client.Docs;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,6 +25,73 @@ namespace Bit.Butil.Demo.Server.Services;
 /// </summary>
 public static class DocsPageRenderer
 {
+    /// <summary>
+    /// The docs pages are rich enough that a couple of them would otherwise dominate a client's
+    /// context window; the ones on this site land far below the cap.
+    /// </summary>
+    public const int MaxDocumentLength = 40_000;
+
+    // The rendered Markdown of every docs page served so far, keyed by origin and slug.
+    private static readonly ConcurrentDictionary<string, string> _rendered = new(StringComparer.Ordinal);
+
+    // Bounded on purpose: half of that key is the Host header, which nothing here can vouch for. A
+    // deployment answers on one or two origins, so real traffic never approaches this cap and only
+    // forged Hosts could - past which pages still render, they just stop being kept.
+    private const int MaxCachedPages = 512;
+
+    /// <summary>
+    /// The origin the current request arrived on - what a docs page's canonical URL and anchors are
+    /// built from while it renders, and what the MCP page prints as this server's own endpoints.
+    /// Behind a reverse proxy the forwarded-headers middleware has already rewritten Scheme and
+    /// Host, so this is the public origin rather than the container's.
+    /// <para>
+    /// Read off the accessor rather than off <c>ControllerBase.Request</c>: over MCP the tools are
+    /// invoked on an instance the tool host built from DI, which never had a ControllerContext
+    /// assigned, so <c>Request</c> would be a null reference on exactly the transport that matters.
+    /// </para>
+    /// </summary>
+    public static string BaseUri(IHttpContextAccessor httpContextAccessor)
+    {
+        return httpContextAccessor.HttpContext is { Request: var request }
+            ? $"{request.Scheme}://{request.Host}/"
+            : "https://localhost/";
+    }
+
+    /// <summary>
+    /// The same as <see cref="TryRenderMarkdownAsync"/>, rendering each page once per origin.
+    /// <para>
+    /// Rendering a page and flattening it costs far more than serving it, and a page's Markdown only
+    /// depends on the origin it was rendered for - the MCP page prints this server's endpoint URLs
+    /// into its own body - so the first caller from an origin pays for it and everyone after reads
+    /// the same Markdown.
+    /// </para>
+    /// </summary>
+    public static async Task<(string? Markdown, string? Error)> RenderCachedMarkdownAsync(
+        HtmlRenderer htmlRenderer, NavigationManager navigationManager, string baseUri, DocLink page)
+    {
+        // '\n' cannot occur in either part, so no pair of them can collide on one key.
+        var key = $"{baseUri}\n{page.Url}";
+
+        if (_rendered.TryGetValue(key, out var cached)) return (cached, null);
+
+        var (markdown, error) = await TryRenderMarkdownAsync(htmlRenderer, navigationManager, baseUri, page);
+
+        // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
+        if (markdown is null) return (null, error);
+
+        if (_rendered.Count < MaxCachedPages) _rendered[key] = markdown;
+
+        return (markdown, null);
+    }
+
+    /// <summary>Cuts a document down to what an MCP client can be handed in one answer.</summary>
+    public static string Truncate(string text)
+    {
+        return text.Length <= MaxDocumentLength
+            ? text
+            : $"{text[..MaxDocumentLength]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
+    }
+
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
     public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
         HtmlRenderer htmlRenderer, NavigationManager navigationManager, string baseUri, DocLink page)

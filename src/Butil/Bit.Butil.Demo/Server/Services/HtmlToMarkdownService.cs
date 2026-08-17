@@ -91,7 +91,7 @@ public static partial class HtmlToMarkdownService
                 return;
 
             case "code" when node.ParentNode is null || node.ParentNode.Name.Equals("pre", StringComparison.OrdinalIgnoreCase) is false:
-                AppendText(builder, $"`{Inline(node)}`", collapse: false);
+                AppendInlineCode(node, builder);
                 return;
 
             case "strong" or "b":
@@ -136,6 +136,20 @@ public static partial class HtmlToMarkdownService
         WriteChildren(node, builder, listDepth);
 
         if (isBlock) AppendBlockBreak(builder);
+    }
+
+    private static void AppendInlineCode(HtmlNode node, StringBuilder builder)
+    {
+        var code = Inline(node);
+
+        // Same rule as a fenced block: the delimiter has to outrun the longest run of backticks in
+        // the span, or it closes in the middle of its own content. A span that starts or ends with
+        // one needs a space too, otherwise its first backtick merges into the opening delimiter.
+        var longest = BacktickRunRegex().Matches(code).Select(match => match.Length).DefaultIfEmpty(0).Max();
+        var delimiter = new string('`', longest + 1);
+        var padding = code.StartsWith('`') || code.EndsWith('`') ? " " : string.Empty;
+
+        AppendText(builder, $"{delimiter}{padding}{code}{padding}{delimiter}", collapse: false);
     }
 
     private static void AppendWrapped(HtmlNode node, StringBuilder builder, string marker)

@@ -1,5 +1,6 @@
 ﻿using Bit.Butil.Demo.Client.Docs;
 using Bit.Butil.Demo.Server.Components;
+using Bit.Butil.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -158,6 +159,12 @@ app.MapGet("/sse/ticks", async (HttpContext context, CancellationToken cancellat
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Butil.Demo.Client._Imports).Assembly);
+
+// SearchButil is the tool an agent reaches for first, and its index is the most expensive thing
+// here to build - a reflection walk over the whole library plus every catalog. Built in the
+// background from startup, no caller waits for it; the index stays lazy, so nothing is delayed and
+// a build that fails still surfaces at the call rather than taking the site down with it.
+_ = Task.Run(ButilSearchIndex.Warm);
 
 app.Run();
 
