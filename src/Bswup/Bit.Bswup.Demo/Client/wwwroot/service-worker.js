@@ -23,6 +23,11 @@ self.isPassive = false;
 self.assetsExclude = [/\.scp\.css$/];
 self.caseInsensitiveUrl = true;
 
+// The MCP server (Server/Controllers/McpController.cs) and the plain HTTP mirror of its tools
+// belong to the server. Without this, opening /api/mcp/... in a controlled tab is a navigation
+// like any other and would be answered with the cached app shell instead of the tool's output.
+self.serverHandledUrls = [/\/api\//, /\/mcp(\/|$)/];
+
 // Assets the client's service-worker-assets.js cannot list, because the HOST project owns them.
 self.externalAssets = [
     // There is no index.html any more - the app shell is the server-rendered host document.

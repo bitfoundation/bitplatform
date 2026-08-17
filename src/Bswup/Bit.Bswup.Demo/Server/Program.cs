@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using Bit.Bswup.Demo.Server.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,18 @@ builder.Services.AddRazorComponents()
 // App.razor reads the "no-prerender" query off HttpContext to honor the service worker's
 // escape hatch (see self.noPrerenderQuery in the client's service-worker files).
 builder.Services.AddHttpContextAccessor();
+
+// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
+builder.Services.AddControllers();
+builder.Services.AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly();
+
+// Renders a docs page outside of a request's component hierarchy, so its content can be handed to
+// an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
+builder.Services.AddScoped<HtmlRenderer>();
 
 builder.Services.AddResponseCompression(opts =>
 {
@@ -49,6 +62,11 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 
 app.MapStaticAssets();
 app.UseAntiforgery();
+
+// Both are declared before the Razor components below: /api/... and /mcp are literal routes that
+// no page owns, but keeping them first says out loud that they are not part of the app's UI.
+app.MapControllers();
+app.MapMcp("/mcp");
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
