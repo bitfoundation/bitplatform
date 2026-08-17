@@ -1,5 +1,6 @@
 ﻿using Bit.Butil.Demo.Client.Docs;
 using Bit.Butil.Demo.Server.Components;
+using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,19 @@ builder.Services.AddRazorComponents()
 // The prerender pass instantiates the client's components in this container, so it has to
 // register the very same services the WebAssembly container does.
 builder.Services.AddDemoServices();
+
+// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly();
+
+// Renders a docs page outside of a request's component hierarchy, so its content can be handed to
+// an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
+builder.Services.AddScoped<HtmlRenderer>();
 
 var app = builder.Build();
 
@@ -32,6 +46,11 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// The MCP server, and the same tools as plain HTTP GETs under /api/mcp/... so each of them is
+// inspectable from a browser. Both are literal routes, so they never compete with the app's pages.
+app.MapControllers();
+app.MapMcp("/mcp");
 
 // Discovery files - for crawlers and, increasingly, for the AI assistants people ask about this
 // library instead of searching. All three are generated from DocsNav rather than written by hand,
@@ -93,6 +112,9 @@ app.MapGet("/llms.txt", (HttpContext context) =>
         {sections}
         ## Optional
 
+        - [MCP server]({origin}/mcp): this same site as tools an AI agent can call - search, the exact API of
+          every service, what each one needs from the page, and the setup per hosting model. Every tool is also a
+          plain HTTP GET under `{origin}/api/mcp/...`.
         - [NuGet package](https://www.nuget.org/packages/Bit.Butil): the published package.
         - [Source repository](https://github.com/bitfoundation/bitplatform): issues and source.
 
