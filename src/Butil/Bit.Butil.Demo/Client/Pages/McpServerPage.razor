@@ -143,7 +143,7 @@ Accept: application/json, text/event-stream
 
     <DemoSection Title="4. Prompts and resources"
                  Api="prompts/list, resources/list, resources/read"
-                 Description="Tools are for an agent that has decided what it needs. Prompts are ready-made workflows a person picks from a menu - 'add Butil to an app', 'debug a call that does nothing' - and resources are documents a client can attach to a conversation up front or let someone browse. This server exposes four of each; resources are addressed by URI, so butil://support is the whole browser-support matrix in one read."
+                 Description="Tools are for an agent that has decided what it needs. Prompts are ready-made workflows a person picks from a menu - 'add Butil to an app', 'debug a call that does nothing' - and resources are documents a client can attach to a conversation up front or let someone browse. This server exposes four prompts and seven resources - three fixed ones, which is what resources/list returns, and four URI templates, which come back from resources/templates/list. Resources are addressed by URI, so butil://support is the whole browser-support matrix in one read."
                  Code=@("""
 { "jsonrpc": "2.0", "id": 4, "method": "resources/read",
   "params": { "uri": "butil://support" } }
@@ -355,7 +355,16 @@ Accept: application/json, text/event-stream
 
         _tools.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));
 
-        Load(_selectedTool ?? "SearchButil");
+        // Only when there is nothing to keep: Load resets the arguments, and re-sending tools/list
+        // to look at the table again would otherwise throw away whatever was typed in section 3.
+        if (_selectedTool is null || _tools.Any(t => t.Name == _selectedTool) is false)
+        {
+            Load("SearchButil");
+        }
+        else
+        {
+            _selectedDescription = _tools.FirstOrDefault(t => t.Name == _selectedTool)?.Description;
+        }
     }
 
     /// <summary>
@@ -491,8 +500,9 @@ Accept: application/json, text/event-stream
         }
 
         var body = Encoding.UTF8.GetString(response.Body);
-        var payload = Unframe(body);
-        var (result, resultText, resultLabel) = Interpret(payload);
+        var contentType = response.Headers.FirstOrDefault(h => string.Equals(h.Key, "content-type", StringComparison.OrdinalIgnoreCase)).Value ?? string.Empty;
+        var payload = Unframe(body, contentType);
+        var (result, resultText, resultLabel, isError) = Interpret(payload);
 
         var call = new McpExchange.Roundtrip(
             Method: method,
@@ -504,7 +514,7 @@ Accept: application/json, text/event-stream
             ResultLabel: resultLabel,
             Status: response.Status,
             Elapsed: stopwatch.ElapsedMilliseconds,
-            Ok: response.Ok && response.Error is null && payload.Contains("\"error\"", StringComparison.Ordinal) is false);
+            Ok: response.Ok && response.Error is null && isError is false);
 
         return (call, result);
     }
@@ -557,32 +567,50 @@ Accept: application/json, text/event-stream
     /// <summary>
     /// The JSON out of a streamable-HTTP response. A result arrives as a server-sent event frame -
     /// "event: message" then "data: {...}" - and only the data lines are the JSON-RPC message.
+    /// <para>
+    /// Decided by the content type rather than by looking for "data:" in the body: the transport is
+    /// allowed to answer either way, and a plain JSON answer that happens to contain those five
+    /// characters - which GetButilDocsPage(slug: "object-urls") does, in its own prose - would
+    /// otherwise be unframed down to nothing at all.
+    /// </para>
     /// </summary>
-    private static string Unframe(string body)
+    private static string Unframe(string body, string contentType)
     {
-        if (body.Contains("data:", StringComparison.Ordinal) is false) return body;
+        if (contentType.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) is false) return body;
 
         var data = body.Replace("\r\n", "\n", StringComparison.Ordinal)
                        .Split('\n')
                        .Where(line => line.StartsWith("data:", StringComparison.Ordinal))
-                       .Select(line => line[5..].Trim());
+                       .Select(line => line[5..].Trim())
+                       .ToArray();
 
-        return string.Join('\n', data);
+        // An event-stream that carried no data line at all is still better shown as it arrived.
+        return data.Length == 0 ? body : string.Join('\n', data);
     }
 
     /// <summary>
-    /// The JSON-RPC result, plus the text inside it that a client would hand to the model. Where
-    /// that text sits differs per method, and none of the three places is the response itself.
+    /// The JSON-RPC result, plus the text inside it that a client would hand to the model, plus
+    /// whether the envelope carried an error instead. Where that text sits differs per method, and
+    /// none of the three places is the response itself.
+    /// <para>
+    /// The error is read off the parsed envelope rather than by looking for "error" in the raw
+    /// payload: the document is already open here, and a substring is a guess about how the server
+    /// spaces its JSON that would paint a successful exchange red for no visible reason.
+    /// </para>
     /// </summary>
-    private static (JsonElement? Result, string? Text, string Label) Interpret(string payload)
+    private static (JsonElement? Result, string? Text, string Label, bool IsError) Interpret(string payload)
     {
         try
         {
             using var document = JsonDocument.Parse(payload);
 
+            if (document.RootElement.ValueKind is not JsonValueKind.Object) return (null, null, string.Empty, false);
+
+            var isError = document.RootElement.TryGetProperty("error", out _);
+
             if (document.RootElement.TryGetProperty("result", out var result) is false)
             {
-                return (null, null, string.Empty);
+                return (null, null, string.Empty, isError);
             }
 
             // Cloned: the element is a window onto the document, which is disposed on the way out.
@@ -593,26 +621,28 @@ Accept: application/json, text/event-stream
                 // A tool that answers with data sends its JSON as one line inside a JSON string,
                 // which is unreadable twice over; a tool that answers with Markdown comes back
                 // untouched, because Pretty returns anything that is not JSON as it arrived.
-                return (clone, Pretty(toolText.GetString() ?? string.Empty), "result → content[0].text (what the model sees)");
+                return (clone, Pretty(toolText.GetString() ?? string.Empty), "result → content[0].text (what the model sees)", isError);
             }
 
             if (First(clone, "contents") is { } contents && contents.TryGetProperty("text", out var resourceText))
             {
-                return (clone, resourceText.GetString(), "result → contents[0].text (the resource)");
+                return (clone, resourceText.GetString(), "result → contents[0].text (the resource)", isError);
             }
 
             if (First(clone, "messages") is { } message &&
                 message.TryGetProperty("content", out var messageContent) &&
                 messageContent.TryGetProperty("text", out var promptText))
             {
-                return (clone, promptText.GetString(), "result → messages[0].content.text (the prompt)");
+                return (clone, promptText.GetString(), "result → messages[0].content.text (the prompt)", isError);
             }
 
-            return (clone, null, string.Empty);
+            return (clone, null, string.Empty, isError);
         }
         catch (JsonException)
         {
-            return (null, null, string.Empty);
+            // Not JSON at all - a 202 with no body from a notification, or an HTML error page. The
+            // status and the response pane already say what happened; nothing here can add to it.
+            return (null, null, string.Empty, false);
         }
     }
 

@@ -61,15 +61,26 @@ public static class ButilCapabilityCatalog
 
         // A member reads as the API it belongs to: "Geolocation.WatchPosition" is a question about
         // Geolocation, and answering "no such type" to it would be technically true and useless.
-        var owner = query.Contains('.', StringComparison.Ordinal) ? query[..query.IndexOf('.', StringComparison.Ordinal)] : query;
+        // The whole query is tried first, and only what is left of the LAST dot after that: a
+        // fully qualified name is a type, and "Bit.Butil.Clipboard" is not a member of "Bit".
+        var type = ButilApiCatalog.Find(query);
 
-        var type = ButilApiCatalog.Find(owner);
+        var owner = type is not null || query.Contains('.', StringComparison.Ordinal) is false
+            ? query
+            : query[..query.LastIndexOf('.')];
+
+        type ??= ButilApiCatalog.Find(owner);
+
         var link = FindLink(owner, type);
 
         if (type is null && link is null)
         {
+            // The last segment, so a misspelled fully qualified name is still matched against the
+            // type names rather than against the namespace it was written with.
+            var simple = owner[(owner.LastIndexOf('.') + 1)..];
+
             var candidates = ButilApiCatalog.Types
-                .Where(t => t.Name.Contains(owner, StringComparison.OrdinalIgnoreCase))
+                .Where(t => simple.Length > 0 && t.Name.Contains(simple, StringComparison.OrdinalIgnoreCase))
                 .Select(t => t.Name)
                 .Take(8)
                 .ToArray();
@@ -123,8 +134,12 @@ public static class ButilCapabilityCatalog
         var inspections = names.Select(Inspect).ToArray();
         var known = inspections.Where(i => i.IsKnown).ToArray();
 
+        // Distinct: two services documented on one page - LocalStorage and SessionStorage, or the
+        // several behind the Element page - would otherwise name that page twice in every line of
+        // the checklist it appears in.
         var links = known.Select(i => DocsNav.AllLinks.FirstOrDefault(l => l.Title == i.Api))
                          .OfType<DocLink>()
+                         .Distinct()
                          .ToArray();
 
         var secure = links.Any(l => l.Needs.HasFlag(ApiNeeds.SecureContext));
@@ -132,7 +147,12 @@ public static class ButilCapabilityCatalog
         var gesture = links.Any(l => l.Needs.HasFlag(ApiNeeds.UserGesture));
         var experimental = links.Where(l => l.Needs.HasFlag(ApiNeeds.Experimental)).ToArray();
         var limited = links.Where(l => l.Support is not ApiSupport.Broad).ToArray();
-        var disposing = known.Where(i => i.Disposables is { Length: > 0 }).ToArray();
+        // Grouped for the same reason the links are deduplicated: two services documented as one
+        // API inspect to the same answer, and naming it twice in the checklist reads as two things.
+        var disposing = known.Where(i => i.Disposables is { Length: > 0 })
+                             .GroupBy(i => i.Api, StringComparer.OrdinalIgnoreCase)
+                             .Select(group => group.First())
+                             .ToArray();
 
         var checklist = new List<string>
         {
@@ -225,7 +245,11 @@ public static class ButilCapabilityCatalog
 
         foreach (var type in types)
         {
-            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            // The same hierarchy walk the reference does: a subscription- or handle-returning method
+            // that moves to a shared Butil base class is still a thing to dispose, and reporting
+            // "nothing to dispose" for it is exactly the leak this list exists to prevent.
+            foreach (var method in ButilApiCatalog.Hierarchy(type).SelectMany(t => t.GetMethods(
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)))
             {
                 if (method.IsSpecialName) continue;
 

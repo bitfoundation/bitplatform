@@ -29,7 +29,12 @@ public static class ButilSearchIndex
 
     private const int MaxTerms = 16;
 
-    private static readonly Lazy<Entry[]> _entries = new(Build);
+    // PublicationOnly rather than the default: the default mode caches the exception a failed build
+    // threw and rethrows it for the lifetime of the process, so one transient failure would leave
+    // SearchButil permanently broken. Here a failed build is simply retried by the next caller, at
+    // the price of two callers racing being able to build it twice - which costs time, not
+    // correctness, since the index is the same array either way.
+    private static readonly Lazy<Entry[]> _entries = new(Build, LazyThreadSafetyMode.PublicationOnly);
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -48,6 +53,13 @@ public static class ButilSearchIndex
     /// one who would wait for it; startup has the time to spare.
     /// </summary>
     public static void Warm() => _ = _entries.Value;
+
+    /// <summary>
+    /// Whether a query still holds a term after the stop words and the short words are dropped.
+    /// "how do I get the browser" does not, and an empty result for it means something different
+    /// from an empty result for "quantum clipboard".
+    /// </summary>
+    public static bool IsSearchable(string? query) => Tokenize(query).Length > 0;
 
     public static ButilSearchHitDto[] Search(string query, int limit)
     {

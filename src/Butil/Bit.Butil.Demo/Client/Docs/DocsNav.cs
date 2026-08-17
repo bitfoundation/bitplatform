@@ -203,11 +203,6 @@ public static class DocsNav
     public static string RouteKey(this NavigationManager navManager) =>
         navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Trim('/');
 
-    /// <summary>
-    /// The group a link is declared in - the category label the header search shows beside a hit.
-    /// </summary>
-    public static string GroupOf(DocLink link) => Groups.First(g => g.Links.Contains(link)).Title;
-
     /// <summary>Finds the entry documenting <paramref name="url"/> ("clipboard"), or null.</summary>
     public static DocLink? FindByUrl(string? url)
     {

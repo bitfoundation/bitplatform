@@ -139,7 +139,7 @@ public static class ButilApiCatalog
     /// The type and every base of it that Bit.Butil itself declares. What a wrapper inherits from
     /// its own base belongs in its reference; what it gets from System.Object does not.
     /// </summary>
-    private static IEnumerable<Type> Hierarchy(Type type)
+    internal static IEnumerable<Type> Hierarchy(Type type)
     {
         for (var current = type; current is not null && current.Assembly == _assembly; current = current.BaseType)
         {

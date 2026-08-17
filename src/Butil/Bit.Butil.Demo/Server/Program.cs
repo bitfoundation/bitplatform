@@ -163,8 +163,10 @@ app.MapRazorComponents<App>()
 // SearchButil is the tool an agent reaches for first, and its index is the most expensive thing
 // here to build - a reflection walk over the whole library plus every catalog. Built in the
 // background from startup, no caller waits for it; the index stays lazy, so nothing is delayed and
-// a build that fails still surfaces at the call rather than taking the site down with it.
-_ = Task.Run(ButilSearchIndex.Warm);
+// a build that fails leaves the site up and is retried by the first caller rather than swallowed.
+_ = Task.Run(ButilSearchIndex.Warm).ContinueWith(
+    task => app.Logger.LogError(task.Exception, "Building the Bit.Butil search index failed at startup. SearchButil will rebuild it on the next call."),
+    TaskContinuationOptions.OnlyOnFaulted);
 
 app.Run();
 

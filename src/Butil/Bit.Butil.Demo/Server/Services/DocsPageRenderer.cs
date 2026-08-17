@@ -96,7 +96,12 @@ public static class DocsPageRenderer
     public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
         HtmlRenderer htmlRenderer, NavigationManager navigationManager, string baseUri, DocLink page)
     {
-        EnsureLocation(navigationManager, baseUri, page.Url);
+        if (EnsureLocation(navigationManager, baseUri, page.Url) is false)
+        {
+            return (null, $"this request already rendered a different page, and its NavigationManager " +
+                          $"cannot be pointed at /{page.Url} a second time - the canonical URL and the " +
+                          $"anchors would be the other page's. Ask for one page per request.");
+        }
 
         try
         {
@@ -116,7 +121,8 @@ public static class DocsPageRenderer
     }
 
     /// <summary>
-    /// Tells the request's NavigationManager where it is, before a page asks.
+    /// Tells the request's NavigationManager where it is, before a page asks - and reports whether
+    /// it now says what this page needs it to say.
     /// <para>
     /// Outside a component endpoint nothing initializes it, and every page on this site reads it
     /// indirectly: PageHeader emits a canonical URL from it and DemoSection builds its anchors from
@@ -124,19 +130,28 @@ public static class DocsPageRenderer
     /// it with the URL the page really lives at also means the anchors and canonicals in the
     /// Markdown are the site's own, rather than invented.
     /// </para>
+    /// <para>
+    /// It can only be initialized once per scope, so a scope that has already rendered another page
+    /// cannot render this one honestly: every anchor and canonical would name the first page. That
+    /// is worse than not answering, because the answer is then cached under this page's own key.
+    /// </para>
     /// </summary>
-    private static void EnsureLocation(NavigationManager navigationManager, string baseUri, string url)
+    private static bool EnsureLocation(NavigationManager navigationManager, string baseUri, string url)
     {
-        if (navigationManager is not IHostEnvironmentNavigationManager host) return;
+        if (navigationManager is not IHostEnvironmentNavigationManager host) return true;
+
+        var uri = $"{baseUri}{url}";
 
         try
         {
-            host.Initialize(baseUri, $"{baseUri}{url}");
+            host.Initialize(baseUri, uri);
+
+            return true;
         }
         catch (InvalidOperationException)
         {
-            // Already initialized - this scope has rendered a page before, and the location it was
-            // given is close enough: it differs only in which docs page the URL names.
+            // Already initialized: usable only if it happens to point at this very page.
+            return string.Equals(navigationManager.Uri, uri, StringComparison.OrdinalIgnoreCase);
         }
     }
 

@@ -68,6 +68,14 @@ public static partial class HtmlToMarkdownService
 
         if (_skippedElements.Contains(name)) return;
 
+        // Before anything else, because a grid table is a <div>: every API-reference table on this
+        // site, the browser-support matrix and the tool list are CSS grids carrying the ARIA roles
+        // rather than <table> elements, and reading only <table> would flatten each of them into a
+        // run of loose paragraphs - losing the header row and which cell belonged to which row.
+        // A table with no rows of its own falls through to the block handling below rather than
+        // dropping whatever it does hold - an empty-state message is still worth reading.
+        if (IsTable(node) && AppendTable(node, builder)) return;
+
         switch (name)
         {
             case "br":
@@ -113,10 +121,6 @@ public static partial class HtmlToMarkdownService
 
             case "ul" or "ol":
                 AppendList(node, builder, listDepth);
-                return;
-
-            case "table":
-                AppendTable(node, builder);
                 return;
 
             case "dl":
@@ -245,21 +249,21 @@ public static partial class HtmlToMarkdownService
         AppendBlockBreak(builder);
     }
 
-    private static void AppendTable(HtmlNode node, StringBuilder builder)
+    /// <summary>Writes the table, or returns false when it holds no row to write.</summary>
+    private static bool AppendTable(HtmlNode node, StringBuilder builder)
     {
         // Descendants() reaches into a nested table too, and its rows belong to that table - which
         // renders itself when the cell holding it is written out.
         var rows = node.Descendants()
-                       .Where(n => n.Name.Equals("tr", StringComparison.OrdinalIgnoreCase) && OwningTable(n) == node)
-                       .Select(tr => tr.ChildNodes
-                                       .Where(c => c.Name.Equals("th", StringComparison.OrdinalIgnoreCase) ||
-                                                   c.Name.Equals("td", StringComparison.OrdinalIgnoreCase))
-                                       .Select(c => Inline(c).Replace("|", "\\|", StringComparison.Ordinal))
-                                       .ToArray())
+                       .Where(n => IsRow(n) && OwningTable(n) == node)
+                       .Select(row => row.ChildNodes
+                                         .Where(IsCell)
+                                         .Select(c => Inline(c).Replace("|", "\\|", StringComparison.Ordinal))
+                                         .ToArray())
                        .Where(cells => cells.Length > 0)
                        .ToArray();
 
-        if (rows.Length == 0) return;
+        if (rows.Length == 0) return false;
 
         var columns = rows.Max(r => r.Length);
 
@@ -285,6 +289,8 @@ public static partial class HtmlToMarkdownService
         }
 
         AppendBlockBreak(builder);
+
+        return true;
     }
 
     /// <summary>The innermost table a row sits in.</summary>
@@ -292,11 +298,26 @@ public static partial class HtmlToMarkdownService
     {
         for (var parent = row.ParentNode; parent is not null; parent = parent.ParentNode)
         {
-            if (parent.Name.Equals("table", StringComparison.OrdinalIgnoreCase)) return parent;
+            if (IsTable(parent)) return parent;
         }
 
         return null;
     }
+
+    /// <summary>A real table, or the ARIA role a grid of &lt;div&gt;s uses to be one.</summary>
+    private static bool IsTable(HtmlNode node) =>
+        node.Name.Equals("table", StringComparison.OrdinalIgnoreCase) || Role(node) is "table" or "grid" or "treegrid";
+
+    private static bool IsRow(HtmlNode node) =>
+        node.Name.Equals("tr", StringComparison.OrdinalIgnoreCase) || Role(node) is "row";
+
+    private static bool IsCell(HtmlNode node) =>
+        node.Name.Equals("th", StringComparison.OrdinalIgnoreCase) ||
+        node.Name.Equals("td", StringComparison.OrdinalIgnoreCase) ||
+        Role(node) is "cell" or "gridcell" or "columnheader" or "rowheader";
+
+    private static string Role(HtmlNode node) =>
+        node.NodeType == HtmlNodeType.Element ? node.GetAttributeValue("role", string.Empty).ToLowerInvariant() : string.Empty;
 
     /// <summary>Renders a node's content as a single line, for headings and table/list cells.</summary>
     private static string Inline(HtmlNode node)

@@ -103,9 +103,25 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     [HttpGet]
     [McpServerTool(Name = nameof(SearchButil))]
     [Description("Searches everything known about Bit.Butil at once - the reference guide, the documentation pages, every public type and member, the browser-support matrix and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which service or member does the job. Example queries: 'copy text to clipboard', 'keep the screen awake', 'detect when an element scrolls into view', 'store data offline', 'read a file the user picked'.")]
-    public ButilSearchHitDto[] SearchButil(string query, int limit = 12)
+    public ButilSearchResultDto SearchButil(string query, int limit = 12)
     {
-        return ButilSearchIndex.Search(query, limit);
+        var hits = ButilSearchIndex.Search(query, limit);
+
+        if (hits.Length > 0) return new ButilSearchResultDto { Hits = hits };
+
+        // An empty list on its own is unreadable: every other tool here answers an input it cannot
+        // resolve with a sentence naming what to try instead, and this is the one agents call first.
+        return new ButilSearchResultDto
+        {
+            Hits = [],
+            Message = ButilSearchIndex.IsSearchable(query)
+                ? $"Nothing in Bit.Butil matches '{query}'. Try the capability rather than the wording - " +
+                  "\"copy text\", \"screen awake\", \"scrolls into view\" - or call GetButilBrowserSupport " +
+                  "for every documented API and GetButilDocsList for every page."
+                : $"'{query}' carries no searchable term: words under three letters and words common to " +
+                  "every entry here (\"how\", \"the\", \"get\", \"browser\", \"blazor\", \"butil\") are dropped " +
+                  "before matching. Search for the capability itself, e.g. \"clipboard\" or \"wake lock\"."
+        };
     }
 
     [HttpGet]
@@ -113,8 +129,13 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     [Description("Gets the complete wiring needed to add Bit.Butil to a Blazor app in one hosting model, as the real files of a working project: 'wasm' (standalone Blazor WebAssembly), 'web-app' (Blazor Web App with prerendering), 'server' (Blazor Server) or 'hybrid' (MAUI/WPF/WinForms). Call this before writing any setup code - which host page carries the script tag and how many DI containers register the services differ per hosting model, and getting either wrong produces an app where every browser call silently does nothing.")]
     public string GetButilSetupGuide(string hostingModel)
     {
-        return ButilSetupGuide.Get(hostingModel)
-            ?? $"'{hostingModel}' is not a known hosting model. Use one of: {string.Join(", ", ButilSetupGuide.HostingModels)}.";
+        var guide = ButilSetupGuide.Get(hostingModel);
+
+        // Truncated like every other document this controller hands out: this is the one that
+        // concatenates several whole files, so it is the last one that should go out uncapped.
+        return guide is null
+            ? $"'{hostingModel}' is not a known hosting model. Use one of: {string.Join(", ", ButilSetupGuide.HostingModels)}."
+            : Truncate(guide);
     }
 
     [HttpGet]
@@ -134,10 +155,17 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
 
         if (details is not null) return new ButilApiDetailsResultDto { Details = details };
 
-        var candidates = ButilApiCatalog.Types
-            .Where(t => t.Name.Contains(typeName ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            .Select(t => t.Name)
-            .ToArray();
+        var needle = (typeName ?? string.Empty).Trim();
+
+        // Capped, and never on an empty needle: Contains("") matches every type, and a "did you
+        // mean" listing the whole public surface is the client's context window spent on nothing.
+        string[] candidates = needle.Length == 0
+            ? []
+            : ButilApiCatalog.Types
+                .Where(t => t.Name.Contains(needle, StringComparison.OrdinalIgnoreCase))
+                .Select(t => t.Name)
+                .Take(10)
+                .ToArray();
 
         return new ButilApiDetailsResultDto
         {

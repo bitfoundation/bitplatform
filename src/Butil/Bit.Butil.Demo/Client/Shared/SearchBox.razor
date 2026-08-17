@@ -9,7 +9,13 @@
 
    The input is a WAI-ARIA combobox: ArrowUp/ArrowDown move the highlighted option, Enter opens it,
    Escape closes the list. Options navigate on mousedown so the click wins the race against the
-   input's blur, which is what closes the list. *@
+   input's blur, which is what closes the list.
+
+   Those three keys belong to the listbox, so their default has to be suppressed - otherwise the
+   arrows drive the text caret at the same time as the highlight. Blazor's @onkeydown:preventDefault
+   is decided when the element renders and so cannot single out three keys of the keyboard, which is
+   why they are bound through Butil's own element-scoped Keyboard.SubscribeOn instead. Escape stays
+   on the Blazor handler: nothing about its default needs suppressing. *@
 
 <div class="header-search">
     <svg class="header-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -82,6 +88,7 @@
     private ElementReference _input;
     private ButilSubscription? _ctrlK;
     private ButilSubscription? _metaK;
+    private readonly List<ButilSubscription> _listboxKeys = [];
 
     private void OnInput(ChangeEventArgs e)
     {
@@ -138,15 +145,29 @@
 
     private void OnKeyDown(KeyboardEventArgs e)
     {
-        if (_results is { Length: > 0 })
-        {
-            if (e.Key == "ArrowDown") _activeIndex = Math.Min(_activeIndex + 1, _results.Length - 1);
-            else if (e.Key == "ArrowUp") _activeIndex = Math.Max(_activeIndex - 1, 0);
-            else if (e.Key == "Enter") Go(_results[Math.Clamp(_activeIndex, 0, _results.Length - 1)].Link);
-        }
-
         if (e.Key == "Escape") Reset();
     }
+
+    // The three listbox keys, arriving from the JS listener rather than from Blazor's dispatcher -
+    // so like FocusSearch they are marshalled back onto it, and the render they cause is asked for
+    // explicitly. The listener is scoped to this input and suppresses the default whether or not
+    // the list is open, which is the combobox pattern: on a combobox those keys are the listbox's,
+    // and Home/End/Left/Right are still there to move through the query text.
+    private void Move(int delta) => InvokeAsync(() =>
+    {
+        if (_results is not { Length: > 0 } results) return;
+
+        _activeIndex = Math.Clamp(_activeIndex + delta, 0, results.Length - 1);
+        StateHasChanged();
+    });
+
+    private void Choose() => InvokeAsync(() =>
+    {
+        if (_results is not { Length: > 0 } results) return;
+
+        Go(results[Math.Clamp(_activeIndex, 0, results.Length - 1)].Link);
+        StateHasChanged();
+    });
 
     private void Go(DocLink link)
     {
@@ -173,6 +194,14 @@
         _ctrlK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Ctrl);
         _metaK = await keyboard.Subscribe(ButilKeyCodes.KeyK, FocusSearch, ButilModifiers.Meta);
 
+        // Repeating, so holding an arrow walks the list the way it walks anything else. Propagation
+        // is left alone: nothing else listens for these, and stopping it would only hide them.
+        _listboxKeys.Add(await keyboard.SubscribeOn(_input, ButilKeyCodes.ArrowDown, () => Move(1), stopPropagation: false, repeat: true));
+        _listboxKeys.Add(await keyboard.SubscribeOn(_input, ButilKeyCodes.ArrowUp, () => Move(-1), stopPropagation: false, repeat: true));
+        // Both Enters: matching is by the physical key, so the one on the numeric keypad is its own code.
+        _listboxKeys.Add(await keyboard.SubscribeOn(_input, ButilKeyCodes.Enter, Choose, stopPropagation: false));
+        _listboxKeys.Add(await keyboard.SubscribeOn(_input, ButilKeyCodes.NumpadEnter, Choose, stopPropagation: false));
+
         // Only affects which glyph the hint shows, so a browser without UA-CH simply gets "Ctrl".
         var platform = await userAgent.GetPlatform();
         _isApple = platform.Contains("mac", StringComparison.OrdinalIgnoreCase);
@@ -188,5 +217,8 @@
     {
         if (_ctrlK is not null) await _ctrlK.DisposeAsync();
         if (_metaK is not null) await _metaK.DisposeAsync();
+
+        foreach (var key in _listboxKeys) await key.DisposeAsync();
+        _listboxKeys.Clear();
     }
 }
