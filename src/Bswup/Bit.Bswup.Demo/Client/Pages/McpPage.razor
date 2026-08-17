@@ -1,0 +1,698 @@
+﻿@page "/mcp-server"
+@using System.Net.Http.Headers
+@using System.Text
+@using System.Text.Json
+@using System.Text.Json.Nodes
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>MCP Server - bit Bswup</PageTitle>
+
+<h1>MCP Server</h1>
+<p class="docs-lead">
+    This site is also an <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a>
+    server: point an AI agent at <code>/mcp</code> and it can read this documentation, look up any
+    setting with its real default, and have the service worker file it just wrote reviewed - without
+    guessing from a training snapshot.
+</p>
+
+<Callout Type="note" Title="Where the answers come from">
+    <p>
+        Nothing below is a hand-maintained copy of the docs. The option and event catalogs are parsed out
+        of the TypeScript that compiles into the shipped <code>bit-bswup.js</code> / <code>bit-bswup.sw.js</code>
+        bundles, the component parameters are reflected off the shipped assembly, and a documentation page
+        is rendered by the very component this site serves. When the library changes, the answers change
+        with it.
+    </p>
+</Callout>
+
+<h2 id="connect">Connect an agent</h2>
+<p>
+    The server speaks MCP over streamable HTTP at <code>@McpEndpoint</code>. Add it to Claude Code with:
+</p>
+<CodeBlock Language="bash" Code="@ClaudeCommand" />
+<p>
+    Or, for any client that reads an <code>mcp.json</code> (VS Code, Claude Desktop, Cursor, ...):
+</p>
+<CodeBlock Language="json" Code="@McpJson" />
+<p>
+    Every tool is also mounted as a plain HTTP GET under <code>/api/mcp/&lt;ToolName&gt;</code>, so you can
+    read any of them in a browser tab - no MCP client required. The explorer below uses the real MCP
+    endpoint, and shows you both.
+</p>
+
+<h2 id="explorer">Try it live</h2>
+<p>
+    This calls the running server from your browser and shows the exact JSON-RPC that goes over the wire.
+</p>
+
+<div class="mcp-examples">
+    <span class="mcp-examples-label">Quick examples:</span>
+    @foreach (var example in _examples)
+    {
+        <button type="button"
+                class="button-secondary"
+                disabled="@_busy"
+                @onclick="() => ApplyExample(example)">@example.Title</button>
+    }
+</div>
+
+<div class="mcp-explorer">
+    <div class="mcp-controls">
+        <label class="mcp-field">
+            <span>Method</span>
+            <select value="@_method" @onchange="OnMethodChanged">
+                @foreach (var method in _methods)
+                {
+                    <option value="@method">@method</option>
+                }
+            </select>
+        </label>
+
+        @if (_method is "tools/call")
+        {
+            <label class="mcp-field">
+                <span>Tool</span>
+                <select value="@_selectedTool" @onchange="e => SelectTool(e.Value?.ToString())">
+                    @if (_tools.Count == 0)
+                    {
+                        <option value="">loading the catalog...</option>
+                    }
+                    @foreach (var tool in _tools)
+                    {
+                        <option value="@tool.Name">@tool.Name</option>
+                    }
+                </select>
+            </label>
+        }
+        else if (_method is "prompts/get")
+        {
+            <label class="mcp-field">
+                <span>Prompt</span>
+                <select value="@_selectedPrompt" @onchange="e => SelectPrompt(e.Value?.ToString())">
+                    @foreach (var prompt in _prompts)
+                    {
+                        <option value="@prompt.Name">@prompt.Name</option>
+                    }
+                </select>
+            </label>
+        }
+        else if (_method is "resources/read")
+        {
+            <label class="mcp-field">
+                <span>Resource URI</span>
+                <input type="text" value="@_resourceUri" @onchange="e => _resourceUri = e.Value?.ToString() ?? string.Empty" />
+            </label>
+        }
+    </div>
+
+    @if (_description is not null)
+    {
+        <p class="mcp-description">@_description</p>
+    }
+
+    @if (_arguments.Count > 0)
+    {
+        <div class="mcp-arguments">
+            @foreach (var argument in _arguments)
+            {
+                <label class="mcp-field">
+                    <span>
+                        @argument.Name
+                        <em>@argument.Type@(argument.Required ? ", required" : null)</em>
+                    </span>
+                    @if (argument.Multiline)
+                    {
+                        <textarea rows="8"
+                                  spellcheck="false"
+                                  value="@argument.Value"
+                                  @onchange="e => argument.Value = e.Value?.ToString() ?? string.Empty"></textarea>
+                    }
+                    else
+                    {
+                        <input type="text"
+                               spellcheck="false"
+                               value="@argument.Value"
+                               @onchange="e => argument.Value = e.Value?.ToString() ?? string.Empty" />
+                    }
+                </label>
+            }
+        </div>
+    }
+
+    <div class="actions">
+        <button type="button" class="button-primary" disabled="@_busy" @onclick="SendAsync">
+            @(_busy ? "Sending..." : "Send request")
+        </button>
+        @if (_mirrorUrl is not null)
+        {
+            <a class="button-secondary" href="@_mirrorUrl" target="_blank" rel="noopener">Open the HTTP mirror</a>
+        }
+    </div>
+
+    <div class="mcp-panes">
+        <section class="mcp-pane">
+            <h3>Request <span class="mcp-pane-meta">POST @McpEndpoint</span></h3>
+            <pre><code>@(_requestText ?? "Pick a method and press Send.")</code></pre>
+        </section>
+        <section class="mcp-pane">
+            <h3>
+                Response
+                @if (_responseMeta is not null)
+                {
+                    <span class="mcp-pane-meta">@_responseMeta</span>
+                }
+            </h3>
+            <pre><code>@(_responseText ?? "-")</code></pre>
+        </section>
+    </div>
+</div>
+
+<h2 id="catalog">What the server exposes</h2>
+
+@if (_catalogError is not null)
+{
+    <Callout Type="warning" Title="The catalog could not be loaded">
+        <p>@_catalogError</p>
+    </Callout>
+}
+else if (_tools.Count == 0)
+{
+    <p class="mcp-loading">Loading the catalog from the server...</p>
+}
+else
+{
+    <h3>Tools (@_tools.Count)</h3>
+    <div class="docs-table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var tool in _tools)
+                {
+                    <tr>
+                        <td><code>@tool.Name</code></td>
+                        <td>@Shorten(tool.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Prompts (@_prompts.Count)</h3>
+    <div class="docs-table-wrapper">
+        <table>
+            <thead>
+                <tr><th>Prompt</th><th>Workflow</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var prompt in _prompts)
+                {
+                    <tr>
+                        <td><code>@prompt.Name</code></td>
+                        <td>@Shorten(prompt.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Resources (@(_resources.Count + _resourceTemplates.Count))</h3>
+    <div class="docs-table-wrapper">
+        <table>
+            <thead>
+                <tr><th>URI</th><th>Content</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var resource in _resources.Concat(_resourceTemplates))
+                {
+                    <tr>
+                        <td><code>@resource.Name</code></td>
+                        <td>@Shorten(resource.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<h2 id="how">How it is built</h2>
+<p>
+    The whole server is one controller and a handful of catalogs in this site's host project - roughly the
+    smallest shape an MCP server can take on top of an existing ASP.NET Core app:
+</p>
+<ul>
+    <li>
+        <code>Server/Controllers/McpController.cs</code> - every tool is a controller action carrying both
+        <code>[HttpGet]</code> and <code>[McpServerTool]</code>, which is what gives each one an MCP name and
+        a browsable URL at the same time.
+    </li>
+    <li>
+        <code>Server/Services/BswupScriptCatalog.cs</code> - parses the library's TypeScript for the script
+        attributes, the <code>self.*</code> settings, the mode presets, the <code>BswupMessage</code>
+        constants and the built-in asset filters.
+    </li>
+    <li>
+        <code>Server/Services/BswupServiceWorkerInspector.cs</code> - reads a submitted
+        <code>service-worker.js</code> the way the engine does, and reports the failures that otherwise only
+        surface on a user's machine, offline.
+    </li>
+    <li>
+        <code>Server/Program.cs</code> - <code>AddMcpServer().WithHttpTransport()</code> plus
+        <code>app.MapMcp("/mcp")</code>.
+    </li>
+</ul>
+<p>
+    Ask the server for its own source with
+    <code>GetBswupSourceFile(path: "Demo/Server/Program.cs")</code> - it hands out the files it is running.
+</p>
+
+<div class="pager">
+    <a href="playground">
+        <span class="pager-label">Previous</span>
+        <b>← Live Playground</b>
+    </a>
+    <a class="pager-next" href="recipes">
+        <span class="pager-label">Next</span>
+        <b>Recipes →</b>
+    </a>
+</div>
+
+@code {
+    private static readonly string[] _methods =
+        ["tools/call", "tools/list", "prompts/list", "prompts/get", "resources/list", "resources/read"];
+
+    private record CatalogEntry(string Name, string Description, JsonNode? Schema);
+
+    private sealed class ArgumentField
+    {
+        public required string Name { get; init; }
+        public required string Type { get; init; }
+        public required bool Required { get; init; }
+        public required bool Multiline { get; init; }
+        public string Value { get; set; } = string.Empty;
+    }
+
+    private record Example(string Title, string Method, string? Target, Dictionary<string, string> Arguments);
+
+    private readonly List<CatalogEntry> _tools = [];
+    private readonly List<CatalogEntry> _prompts = [];
+    private readonly List<CatalogEntry> _resources = [];
+    private readonly List<CatalogEntry> _resourceTemplates = [];
+    private readonly List<ArgumentField> _arguments = [];
+
+    private string _method = "tools/call";
+    private string? _selectedTool;
+    private string? _selectedPrompt;
+    private string _resourceUri = "bswup://guide/JavaScript%20API";
+    private string? _description;
+    private string? _requestText;
+    private string? _responseText;
+    private string? _responseMeta;
+    private string? _mirrorUrl;
+    private string? _catalogError;
+    private bool _busy;
+    private int _id = 1;
+
+    private string? _baseUri;
+
+    /// <summary>
+    /// The site's own MCP endpoint, spelled out in full so the connect snippets can be copied as
+    /// they are. The base URI is only known when a request (or the browser) is behind the render:
+    /// the MCP server renders this very page for an agent through a bare HtmlRenderer, where
+    /// reading it throws - hence the placeholder, which is the honest answer in that context.
+    /// </summary>
+    private string McpEndpoint => _baseUri is null ? "https://<this-site>/mcp" : $"{_baseUri.TrimEnd('/')}/mcp";
+
+    private string ClaudeCommand => $"claude mcp add --transport http bit-bswup {McpEndpoint}";
+
+    private string McpJson => $$"""
+        {
+          "servers": {
+            "bit-bswup": {
+              "type": "http",
+              "url": "{{McpEndpoint}}"
+            }
+          }
+        }
+        """;
+
+    // The service worker of an imaginary app, with the three mistakes that produce no error anyone
+    // sees: a setting assigned after the import, a misspelled setting, and a root shell URL that no
+    // asset serves. The explorer's whole point is that the server catches them.
+    private const string SampleServiceWorker = """
+        self.defaultUrl = '/';
+        self.assetsExclude = [/\.scp\.css$/, 'app.css'];
+        self.serverHandledUrls = [/\/api\//];
+
+        self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js');
+
+        self.enableIntegrityChek = true;
+        """;
+
+    private const string SampleAssetUrls = """
+        _framework/blazor.boot.json
+        _framework/dotnet.native.wasm.br
+        css/app.css
+        css/app.scp.css
+        data/notes.db
+        service-worker.js
+        """;
+
+    private static readonly Example[] _examples =
+    [
+        new("Search the docs", "tools/call", "SearchBswup",
+            new() { ["query"] = "app never picks up new versions", ["limit"] = "5" }),
+
+        new("Review a service worker", "tools/call", "InspectBswupServiceWorker",
+            new() { ["script"] = SampleServiceWorker }),
+
+        new("Will this asset be cached?", "tools/call", "AnalyzeBswupAssetCaching",
+            new() { ["script"] = SampleServiceWorker, ["assetUrls"] = SampleAssetUrls }),
+
+        new("Look up a setting", "tools/call", "GetBswupServiceWorkerSettings", []),
+
+        new("List every tool", "tools/list", null, []),
+    ];
+
+    // Values that make a tool answer something worth reading on the first press, instead of an
+    // error about a missing argument.
+    private static readonly Dictionary<string, string> _prefills = new(StringComparer.Ordinal)
+    {
+        ["SearchBswup.query"] = "cache an external CDN script",
+        ["SearchBswup.limit"] = "5",
+        ["GetBswupDocsPage.slug"] = "events",
+        ["GetBswupGuideSection.heading"] = "JavaScript API",
+        ["GetBswupSetupGuide.hostingModel"] = "blazor-web-app",
+        ["GetBswupSourceFile.path"] = "Demo/Client/wwwroot/service-worker.published.js",
+        ["InspectBswupServiceWorker.script"] = SampleServiceWorker,
+        ["AnalyzeBswupAssetCaching.script"] = SampleServiceWorker,
+        ["AnalyzeBswupAssetCaching.assetUrls"] = SampleAssetUrls,
+    };
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            _baseUri = Navigation.BaseUri;
+        }
+        catch (InvalidOperationException)
+        {
+            // Rendered outside any request - see McpEndpoint.
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Deliberately not OnInitializedAsync: this component is prerendered on the server, where a
+        // round trip to the very server rendering it would run before the endpoint is reachable -
+        // and would then run a second time in the browser anyway.
+        if (firstRender is false) return;
+
+        await LoadCatalogAsync();
+    }
+
+    private async Task LoadCatalogAsync()
+    {
+        try
+        {
+            var tools = await CallAsync("tools/list", null);
+            Fill(_tools, tools?["result"]?["tools"], "name", "description", "inputSchema");
+
+            var prompts = await CallAsync("prompts/list", null);
+            Fill(_prompts, prompts?["result"]?["prompts"], "name", "description", "arguments");
+
+            var resources = await CallAsync("resources/list", null);
+            Fill(_resources, resources?["result"]?["resources"], "uri", "description", null);
+
+            var templates = await CallAsync("resources/templates/list", null);
+            Fill(_resourceTemplates, templates?["result"]?["resourceTemplates"], "uriTemplate", "description", null);
+
+            _selectedTool ??= _tools.FirstOrDefault(tool => tool.Name == "SearchBswup")?.Name ?? _tools.FirstOrDefault()?.Name;
+            _selectedPrompt ??= _prompts.FirstOrDefault()?.Name;
+
+            BuildArguments();
+        }
+        catch (Exception exception)
+        {
+            _catalogError = exception.Message;
+        }
+
+        StateHasChanged();
+    }
+
+    private static void Fill(List<CatalogEntry> target, JsonNode? items, string nameKey, string descriptionKey, string? schemaKey)
+    {
+        target.Clear();
+
+        if (items is not JsonArray array) return;
+
+        foreach (var item in array)
+        {
+            if (item is null) continue;
+
+            target.Add(new CatalogEntry(
+                item[nameKey]?.GetValue<string>() ?? "(unnamed)",
+                item[descriptionKey]?.GetValue<string>() ?? string.Empty,
+                schemaKey is null ? null : item[schemaKey]));
+        }
+    }
+
+    private void OnMethodChanged(ChangeEventArgs e)
+    {
+        _method = e.Value?.ToString() ?? "tools/list";
+        _mirrorUrl = null;
+        BuildArguments();
+    }
+
+    private void SelectTool(string? name)
+    {
+        _selectedTool = name;
+        BuildArguments();
+    }
+
+    private void SelectPrompt(string? name)
+    {
+        _selectedPrompt = name;
+        BuildArguments();
+    }
+
+    private void ApplyExample(Example example)
+    {
+        _method = example.Method;
+
+        if (example.Method is "tools/call") _selectedTool = example.Target;
+        if (example.Method is "prompts/get") _selectedPrompt = example.Target;
+
+        BuildArguments();
+
+        foreach (var argument in _arguments)
+        {
+            if (example.Arguments.TryGetValue(argument.Name, out var value)) argument.Value = value;
+        }
+    }
+
+    /// <summary>
+    /// Rebuilds the argument form from the schema the server just handed out, so the inputs are the
+    /// ones the tool actually declares rather than a list maintained on this page.
+    /// </summary>
+    private void BuildArguments()
+    {
+        _arguments.Clear();
+        _description = null;
+        _mirrorUrl = null;
+
+        if (_method is "tools/call")
+        {
+            var tool = _tools.FirstOrDefault(t => t.Name == _selectedTool);
+            if (tool is null) return;
+
+            _description = tool.Description;
+
+            var properties = tool.Schema?["properties"] as JsonObject;
+            var required = (tool.Schema?["required"] as JsonArray)?.Select(node => node?.GetValue<string>()).ToHashSet();
+
+            foreach (var (name, schema) in properties ?? new JsonObject())
+            {
+                var type = schema?["type"]?.ToString() ?? "string";
+                var prefill = _prefills.GetValueOrDefault($"{tool.Name}.{name}", string.Empty);
+
+                _arguments.Add(new ArgumentField
+                {
+                    Name = name,
+                    Type = type,
+                    Required = required?.Contains(name) == true,
+                    // The two tools that take a whole file need a box a file fits in.
+                    Multiline = prefill.Contains('\n') || name is "script" or "assetUrls",
+                    Value = prefill
+                });
+            }
+        }
+        else if (_method is "prompts/get")
+        {
+            var prompt = _prompts.FirstOrDefault(p => p.Name == _selectedPrompt);
+            if (prompt is null) return;
+
+            _description = prompt.Description;
+
+            // A prompt declares its arguments as a list, not as a JSON schema.
+            foreach (var argument in prompt.Schema as JsonArray ?? new JsonArray())
+            {
+                _arguments.Add(new ArgumentField
+                {
+                    Name = argument?["name"]?.GetValue<string>() ?? "(unnamed)",
+                    Type = "string",
+                    Required = argument?["required"]?.GetValue<bool>() == true,
+                    Multiline = false
+                });
+            }
+        }
+    }
+
+    private async Task SendAsync()
+    {
+        _busy = true;
+        _responseText = null;
+        _responseMeta = null;
+
+        try
+        {
+            var response = await CallAsync(_method, BuildParameters(), capture: true);
+
+            _responseText = response is null ? _responseText : Pretty(response);
+        }
+        catch (Exception exception)
+        {
+            _responseText = exception.Message;
+            _responseMeta = "request failed";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private JsonObject? BuildParameters()
+    {
+        var arguments = new JsonObject();
+
+        foreach (var argument in _arguments)
+        {
+            if (string.IsNullOrWhiteSpace(argument.Value)) continue;
+
+            // Numbers and booleans go over the wire as themselves: a tool declaring `limit` as an
+            // integer rejects the string "5".
+            arguments[argument.Name] = argument.Type switch
+            {
+                "integer" or "number" when long.TryParse(argument.Value, out var number) => JsonValue.Create(number),
+                "boolean" when bool.TryParse(argument.Value, out var flag) => JsonValue.Create(flag),
+                _ => JsonValue.Create(argument.Value)
+            };
+        }
+
+        return _method switch
+        {
+            "tools/call" => new JsonObject { ["name"] = _selectedTool, ["arguments"] = arguments },
+            "prompts/get" => new JsonObject { ["name"] = _selectedPrompt, ["arguments"] = arguments },
+            "resources/read" => new JsonObject { ["uri"] = _resourceUri },
+            _ => null
+        };
+    }
+
+    /// <summary>
+    /// One JSON-RPC call against the site's own /mcp endpoint. <paramref name="capture"/> records
+    /// what went over the wire so the two panes can show it verbatim.
+    /// </summary>
+    private async Task<JsonNode?> CallAsync(string method, JsonObject? parameters, bool capture = false)
+    {
+        var payload = new JsonObject
+        {
+            ["jsonrpc"] = "2.0",
+            ["id"] = _id++,
+            ["method"] = method
+        };
+
+        if (parameters is not null) payload["params"] = parameters;
+
+        var body = payload.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+
+        if (capture)
+        {
+            _requestText = body;
+            _mirrorUrl = BuildMirrorUrl();
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "mcp")
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json")
+        };
+
+        // The transport answers either with plain JSON or with a single server-sent event,
+        // depending on the client's Accept header - both are handled below.
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+
+        var started = DateTimeOffset.UtcNow;
+        using var response = await Http.SendAsync(request);
+        var text = await response.Content.ReadAsStringAsync();
+        var elapsed = (DateTimeOffset.UtcNow - started).TotalMilliseconds;
+
+        if (capture)
+        {
+            _responseMeta = $"{(int)response.StatusCode} {response.ReasonPhrase} - {elapsed:N0} ms - {text.Length:N0} bytes";
+        }
+
+        var json = Unwrap(text);
+
+        if (capture && json is null) _responseText = text;
+
+        return json;
+    }
+
+    /// <summary>The JSON payload of the response, whether it arrived bare or inside an SSE frame.</summary>
+    private static JsonNode? Unwrap(string text)
+    {
+        var payload = text.TrimStart().StartsWith("data:", StringComparison.Ordinal) || text.Contains("\ndata:", StringComparison.Ordinal)
+            ? string.Concat(text.Split('\n')
+                                .Where(line => line.StartsWith("data:", StringComparison.Ordinal))
+                                .Select(line => line["data:".Length..].Trim()))
+            : text;
+
+        try
+        {
+            return JsonNode.Parse(payload);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The same call as a plain URL, which is the point of mounting every tool on both surfaces -
+    /// dropped when the arguments are too long to sit in a query string (a whole worker file does not).
+    /// </summary>
+    private string? BuildMirrorUrl()
+    {
+        if (_method is not "tools/call" || _selectedTool is null) return null;
+
+        var query = string.Join('&', _arguments
+            .Where(argument => string.IsNullOrWhiteSpace(argument.Value) is false)
+            .Select(argument => $"{Uri.EscapeDataString(argument.Name)}={Uri.EscapeDataString(argument.Value)}"));
+
+        var url = $"api/mcp/{_selectedTool}{(query.Length == 0 ? null : $"?{query}")}";
+
+        return url.Length > 1500 ? null : url;
+    }
+
+    private static string Pretty(JsonNode node) => node.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+
+    private static string Shorten(string text)
+    {
+        var stop = text.IndexOf(". ", StringComparison.Ordinal);
+        var summary = stop > 0 ? text[..(stop + 1)] : text;
+
+        return summary.Length <= 200 ? summary : $"{summary[..197]}...";
+    }
+}

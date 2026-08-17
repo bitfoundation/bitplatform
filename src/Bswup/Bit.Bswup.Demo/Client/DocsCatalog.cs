@@ -72,6 +72,10 @@ public static class DocsCatalog
                 "This site running on Bswup: inspect its worker, drive the JavaScript API, and watch the events arrive live.",
                 "playground demo live events log inspect registration caches try it",
                 typeof(PlaygroundPage)),
+            new("mcp-server", "MCP Server",
+                "The MCP server this site exposes at /mcp: how to connect an agent to it, and a live explorer that shows the JSON-RPC of every call.",
+                "mcp model context protocol agent ai tools prompts resources json-rpc explorer claude vscode cursor endpoint",
+                typeof(McpPage)),
         ]),
         new("Guides",
         [

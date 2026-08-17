@@ -25,6 +25,12 @@ builder.Services.AddMcpServer()
 // an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
 builder.Services.AddScoped<HtmlRenderer>();
 
+// The MCP explorer page (Client/Pages/McpPage.razor) injects an HttpClient. It only ever calls one
+// after the browser has taken over, but the component is also prerendered here - and rendered here
+// again when an MCP client asks for that page - so the dependency has to resolve in this container
+// too, or both of those fail with nothing rendered.
+builder.Services.AddScoped(_ => new HttpClient());
+
 builder.Services.AddResponseCompression(opts =>
 {
     opts.EnableForHttps = true;
