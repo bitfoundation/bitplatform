@@ -33,7 +33,9 @@ public partial class _BitNavOptionDemo
     private static readonly BitIconInfo bootstrapTagIcon = BitIconInfo.Bi("tag-fill");
     private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi("emoji-smile");
 
-    private string? SelectedOptionKey = "French Fries";
+    // The nav below starts with nothing selected and only reports the selection through OnSelectItem, so the
+    // dropdown starts empty as well: naming an option here would show a selection the nav does not have.
+    private string? SelectedOptionKey;
     private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
     [
         new() { Text = "Beef Burger", Value = "Beef Burger" },

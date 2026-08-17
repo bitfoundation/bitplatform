@@ -248,7 +248,9 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography", IconName = BitIconName.AppIconDefault },
     ];
 
-    private static readonly List<BitNavItem> apiNavItems =
+    // Not static: the buttons of the Public API example expand, collapse and select these items, and a
+    // static list would carry that state over to the next visit of the page.
+    private readonly List<BitNavItem> apiNavItems =
     [
         new()
         {
@@ -282,16 +284,18 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography (/iconography)", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
+    // The URL of a Wildcard or Regex item is a pattern rather than a route, so these items are disabled:
+    // they still light up on a match, but a click cannot navigate to a URL no page answers.
     private static readonly List<BitNavItem> wildcardMatchNavItems =
     [
-        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*" },
-        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**" },
+        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*", IsEnabled = false },
+        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**", IsEnabled = false },
     ];
 
     private static readonly List<BitNavItem> regexMatchNavItems =
     [
-        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$" },
-        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p" },
+        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$", IsEnabled = false },
+        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p", IsEnabled = false },
     ];
 
     private static readonly List<BitNavItem> itemMatchNavItems =
@@ -313,13 +317,6 @@ public partial class _BitNavItemDemo
     ];
 
     private static readonly List<BitNavItem> colorNavItems =
-    [
-        new() { Text = "Home", IconName = BitIconName.Home },
-        new() { Text = "Products", IconName = BitIconName.Product },
-        new() { Text = "Settings", IconName = BitIconName.Settings },
-    ];
-
-    private static readonly List<BitNavItem> accentNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home },
         new() { Text = "Products", IconName = BitIconName.Product },

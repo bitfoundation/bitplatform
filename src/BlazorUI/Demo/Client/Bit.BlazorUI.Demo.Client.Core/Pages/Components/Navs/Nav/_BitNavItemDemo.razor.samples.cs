@@ -56,7 +56,8 @@ private static readonly List<BitNavItem> basicNavItems =
 
 <BitNav Items=""basicNavItems"" FullWidth />";
     private readonly string example2CsharpCode = @"
-private static readonly List<BitNavItem> basicNavItems = [ /* see the Basic example */ ];";
+// the very same items the Basic example above lists in full
+private static readonly List<BitNavItem> basicNavItems = [ /* ... */ ];";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""carNavItems"" RenderType=""BitNavRenderType.Grouped"" />";
@@ -284,7 +285,8 @@ private static readonly List<BitNavItem> singleExpandNavItems =
     private readonly string example8RazorCode = @"
 <BitNav Items=""noCollapseNavItems"" AllExpanded NoCollapse />";
     private readonly string example8CsharpCode = @"
-private static readonly List<BitNavItem> noCollapseNavItems = [ /* the same shape as basicNavItems */ ];";
+// the very same items the Basic example above lists in full
+private static readonly List<BitNavItem> noCollapseNavItems = [ /* ... */ ];";
 
     private readonly string example9RazorCode = @"
 <BitNav Items=""chevronNavItems"" ReversedChevron AllExpanded FitWidth />
@@ -377,7 +379,9 @@ private async Task CollapseFastFoodsApiItem() { if (apiNavRef is not null) await
 private async Task SelectIceCreamApiItem() { if (apiNavRef is not null) await apiNavRef.SelectItem(apiNavItems[2]); }
 private async Task FocusVeggieBurgerApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(apiNavItems[0].ChildItems[0].ChildItems[1]); }
 
-private static readonly List<BitNavItem> apiNavItems =
+// Not static: the buttons above expand, collapse and select these items, and a static list would carry
+// that state over to the next visit of the page.
+private readonly List<BitNavItem> apiNavItems =
 [
     new()
     {
@@ -441,16 +445,18 @@ private static readonly List<BitNavItem> prefixMatchNavItems =
     new() { Text = ""Iconography (/iconography)"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];
 
+// The URL of a Wildcard or Regex item is a pattern rather than a route, so these items are disabled:
+// they still light up on a match, but a click cannot navigate to a URL no page answers.
 private static readonly List<BitNavItem> wildcardMatchNavItems =
 [
-    new() { Text = ""A component page (/components/*)"", IconName = BitIconName.F12DevTools, Url = ""/components/*"" },
-    new() { Text = ""A pro page (/pro/**)"", IconName = BitIconName.Trophy2, Url = ""/pro/**"" },
+    new() { Text = ""A component page (/components/*)"", IconName = BitIconName.F12DevTools, Url = ""/components/*"", IsEnabled = false },
+    new() { Text = ""A pro page (/pro/**)"", IconName = BitIconName.Trophy2, Url = ""/pro/**"", IsEnabled = false },
 ];
 
 private static readonly List<BitNavItem> regexMatchNavItems =
 [
-    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", IconName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"" },
-    new() { Text = ""A page starting with P (^/components/p)"", IconName = BitIconName.Page, Url = ""^/components/p"" },
+    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", IconName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"", IsEnabled = false },
+    new() { Text = ""A page starting with P (^/components/p)"", IconName = BitIconName.Page, Url = ""^/components/p"", IsEnabled = false },
 ];
 
 private static readonly List<BitNavItem> itemMatchNavItems =
@@ -481,19 +487,12 @@ private static readonly List<BitNavItem> additionalUrlsNavItems =
 <BitNav FitWidth Color=""BitColor.SevereWarning"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Error"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
 
-<BitNav FitWidth Accent=""BitColor.Primary"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Success"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Warning"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Error"" Items=""accentNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""accentNavItems[0]"" />";
+<BitNav FitWidth Accent=""BitColor.Primary"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Success"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Warning"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Error"" Items=""colorNavItems"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""colorNavItems[0]"" />";
     private readonly string example14CsharpCode = @"
 private static readonly List<BitNavItem> colorNavItems =
-[
-    new() { Text = ""Home"", IconName = BitIconName.Home },
-    new() { Text = ""Products"", IconName = BitIconName.Product },
-    new() { Text = ""Settings"", IconName = BitIconName.Settings },
-];
-
-private static readonly List<BitNavItem> accentNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home },
     new() { Text = ""Products"", IconName = BitIconName.Product },

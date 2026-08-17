@@ -214,9 +214,12 @@
         In the <b>Automatic</b> mode the nav selects the item whose URL points at the current page.
         <b>Match</b> sets how those URLs are compared for the whole nav, and the <b>Match</b> of an item
         overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
-        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character,
-        <b>*</b> for one path segment and <b>**</b> for any number of them, and <b>Regex</b> reads it as a
-        regular expression. The comparison ignores the letter case, a trailing slash and the query string, and
+        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single
+        character other than <b>/</b>, <b>*</b> for any number of them and <b>**</b> for any number of
+        characters at all, slashes included, and <b>Regex</b> reads it as a regular expression. The
+        comparison ignores the query string, and <b>Exact</b> and <b>Prefix</b> also ignore the letter case
+        and a trailing slash; <b>Wildcard</b> and <b>Regex</b> run the pattern exactly as it was written, so
+        those two tell the letter cases apart and see a trailing slash as a difference.
         <b>AdditionalUrls</b> gives an item other URLs to light up on. Both of them are read from the custom
         item through the <b>Match</b> and <b>AdditionalUrls</b> name selectors. The navs below are all matched
         against the URL of this page.
@@ -275,16 +278,16 @@
     <div><b>Accent</b>:</div>
     <br /><br />
     <div>Primary</div><br />
-    <BitNav FitWidth Accent="BitColor.Primary" Items="customAccentNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customAccentNavItems[0]" />
+    <BitNav FitWidth Accent="BitColor.Primary" Items="customColorNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customColorNavItems[0]" />
     <br /><br /><br />
     <div>Success</div><br />
-    <BitNav FitWidth Accent="BitColor.Success" Items="customAccentNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customAccentNavItems[0]" />
+    <BitNav FitWidth Accent="BitColor.Success" Items="customColorNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customColorNavItems[0]" />
     <br /><br /><br />
     <div>Warning</div><br />
-    <BitNav FitWidth Accent="BitColor.Warning" Items="customAccentNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customAccentNavItems[0]" />
+    <BitNav FitWidth Accent="BitColor.Warning" Items="customColorNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customColorNavItems[0]" />
     <br /><br /><br />
     <div>Error</div><br />
-    <BitNav FitWidth Accent="BitColor.Error" Items="customAccentNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customAccentNavItems[0]" />
+    <BitNav FitWidth Accent="BitColor.Error" Items="customColorNavItems" NameSelectors="sectionSelectors" Mode="BitNavMode.Manual" DefaultSelectedItem="customColorNavItems[0]" />
 </DemoExample>
 
 <DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>

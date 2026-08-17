@@ -30,7 +30,12 @@ namespace BitBlazorUI {
                 const item = target.closest('.bit-nav-ict, .bit-nav-gcb');
                 if (!item || item.closest('.bit-nav.bit-dis')) return;
 
-                if (e.key === ' ' || e.key === 'Spacebar') {
+                // Space and Enter are the activation keys of the chevron, which sits inside the item's own
+                // anchor: on top of the page scrolling of Space, the browser also follows that link when a
+                // key is pressed on something it contains. Both defaults are cancelled here, exactly like
+                // the click of the chevron is, and the toggling is left to the chevron's own handler.
+                // Outside the chevron nothing is taken away: Enter keeps activating the item itself.
+                if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') {
                     if (target.closest('.bit-nav-cbt')) {
                         e.preventDefault();
                     }

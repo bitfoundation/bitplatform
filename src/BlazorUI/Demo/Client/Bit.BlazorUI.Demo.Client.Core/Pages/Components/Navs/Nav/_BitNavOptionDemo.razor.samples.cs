@@ -117,7 +117,7 @@ public partial class _BitNavOptionDemo
              Label=""Selected Item""
              Items=""FoodMenuDropdownItems"" />";
     private readonly string example5CsharpCode = @"
-private string? SelectedOptionKey = ""French Fries"";
+private string? SelectedOptionKey;
 
 private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
 [
@@ -354,13 +354,13 @@ private BitNavOption SelectedOption = default!;";
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Wildcard"" FitWidth>
-    <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" />
-    <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" />
+    <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" IsEnabled=""false"" />
+    <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" IsEnabled=""false"" />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Regex"" FitWidth>
-    <BitNavOption Text=""Nav or NavBar (^/components/nav(bar)?$)"" IconName=""@BitIconName.GlobalNavButton"" Url=""^/components/nav(bar)?$"" />
-    <BitNavOption Text=""A page starting with P (^/components/p)"" IconName=""@BitIconName.Page"" Url=""^/components/p"" />
+    <BitNavOption Text=""Nav or NavBar (^/components/nav(bar)?$)"" IconName=""@BitIconName.GlobalNavButton"" Url=""^/components/nav(bar)?$"" IsEnabled=""false"" />
+    <BitNavOption Text=""A page starting with P (^/components/p)"" IconName=""@BitIconName.Page"" Url=""^/components/p"" IsEnabled=""false"" />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Exact"" FitWidth>
@@ -383,13 +383,13 @@ private BitNavOption SelectedOption = default!;";
     <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Success"" Mode=""BitNavMode.Manual""> ... </BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Warning"" Mode=""BitNavMode.Manual""> ... </BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Error"" Mode=""BitNavMode.Manual""> ... </BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Warning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Primary"" Mode=""BitNavMode.Manual""> ... </BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual""> ... </BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual""> ... </BitNav>";
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Primary"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>";
 
     private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
@@ -432,9 +432,9 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
     <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" Description=""The app settings"" />
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Medium""> ... </BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Medium"">@* ... the same options ... *@</BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large""> ... </BitNav>";
+<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large"">@* ... the same options ... *@</BitNav>";
 
     private readonly string example17RazorCode = @"
 <BitNav TItem=""BitNavOption"" Style=""max-width: max-content; border: 1px solid tomato;"">

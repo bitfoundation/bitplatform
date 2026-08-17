@@ -114,10 +114,11 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     }
 
     // The chevron is a div with a button role, so Enter and Space have to be wired up by hand, as the
-    // WAI-ARIA button pattern describes. The page-scrolling default of Space is cancelled by the
-    // capture-phase guard in BitNav.ts, which decides on the key actually pressed instead of the
-    // render-time @onkeydown:preventDefault, which lags a keystroke behind and would swallow the Tab
-    // that follows an activation.
+    // WAI-ARIA button pattern describes. The defaults of both keys (the page scrolling of Space, and the
+    // navigation of the anchor the chevron lives in) are cancelled by the capture-phase guard in
+    // BitNav.ts, which decides on the key actually pressed instead of the render-time
+    // @onkeydown:preventDefault, which lags a keystroke behind and would swallow the Tab that follows an
+    // activation.
     private async Task HandleToggleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is not ("Enter" or " " or "Spacebar")) return;
