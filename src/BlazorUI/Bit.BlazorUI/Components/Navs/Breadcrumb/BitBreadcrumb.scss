@@ -1,7 +1,8 @@
-﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/functions.scss";
 
 .bit-brc {
     white-space: nowrap;
+    font-family: $tg-font-family;
     --bit-brc-div-transform: scaleX(1);
 
     &.bit-rtl {
@@ -26,7 +27,33 @@
     }
 }
 
+// Lets a long trail flow onto more than one line instead of overflowing its container.
+.bit-brc-wrp {
+    white-space: normal;
+
+    .bit-brc-icn {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+}
+
+// Hands a trail that does not fit a scrollbar of its own instead of letting it overflow its
+// container. The block padding is there because the focus ring of an item is a shadow around it,
+// which a scroll container would otherwise clip.
+.bit-brc-scr {
+    .bit-brc-icn {
+        overflow: auto hidden;
+        scrollbar-width: thin;
+        padding-block: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+    }
+}
+
+// The trail is an ordered list for the semantics of the pattern, not for the look of one: the margins
+// and the markers a list comes with are dropped.
 .bit-brc-icn {
+    margin: 0;
+    list-style: none;
     padding-inline-start: 0;
 
     li {
@@ -42,25 +69,35 @@
     button {
         background-color: transparent;
         border-radius: $shp-border-radius;
+        // A button carries the font of the browser rather than the one of its page, so a step
+        // rendered as one would read in another typeface than the steps rendered as links.
+        font-family: inherit;
     }
 }
 
+// A divider icon points the way the trail runs, so it is mirrored along with it in a RTL layout.
+// A text divider is not: a mirrored "/" is a different character.
 .bit-brc-div {
-    color: $clr-fg-sec;
+    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
+    transform: var(--bit-brc-div-transform);
 }
 
-.bit-brc-trd {
-    transform: var(--bit-brc-div-transform);
+.bit-brc-dtx {
+    user-select: none;
+    padding: 0 spacing(0.5);
+    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
+    font-size: var(--bit-brc-font-size, #{spacing(2.5)});
+    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
 }
 
 .bit-brc-obt {
     display: flex;
     cursor: pointer;
-    color: $clr-fg-sec;
     align-items: center;
     justify-content: center;
-    line-height: spacing(4.5);
     padding: 0px spacing(1.25);
+    color: var(--bit-brc-clr-div, #{$clr-fg-sec});
+    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
 
     @media (hover: hover) {
         &:hover {
@@ -69,7 +106,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
     }
 }
 
@@ -78,10 +115,14 @@
     display: flex;
     gap: spacing(1);
     font-weight: 400;
-    color: $clr-fg-pri;
     padding: 0 spacing(1);
-    font-size: spacing(2.5);
-    line-height: spacing(4.5);
+    color: var(--bit-brc-clr, #{$clr-fg-pri});
+    font-size: var(--bit-brc-font-size, #{spacing(2.5)});
+    line-height: var(--bit-brc-line-height, #{spacing(4.5)});
+}
+
+.bit-brc-nii {
+    cursor: default;
 }
 
 .bit-brc-itm {
@@ -94,8 +135,17 @@
     }
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
     }
+}
+
+// Truncates the text of an item to the max width the consumer set, keeping the trail on one line
+// when a single step carries a long title. The title attribute of the item stays the way to read it.
+.bit-brc-itx {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: var(--bit-brc-itm-max-width, none);
 }
 
 .bit-brc-rvi {
@@ -107,20 +157,22 @@
     display: none;
     position: fixed;
     font-weight: 400;
+    font-family: $tg-font-family;
     overflow: hidden auto;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     background-color: $clr-bg-pri;
     box-shadow: $box-shadow-callout;
     border-radius: $shp-border-radius;
+    font-size: var(--bit-brc-of-font-size, #{spacing(1.75)});
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
 
     ul {
         margin: 0;
+        list-style: none;
         padding-inline-start: 0;
     }
 }
@@ -136,29 +188,34 @@
     display: flex;
     gap: spacing(1);
     overflow: hidden;
-    text-align: left;
+    text-align: start;
     font-weight: 400;
     user-select: none;
-    color: $clr-fg-pri;
     position: relative;
     align-items: center;
     white-space: nowrap;
-    height: spacing(4.5);
     outline: transparent;
+    font-family: inherit;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
     min-width: spacing(22.5);
-    line-height: spacing(2.5);
+    color: var(--bit-brc-clr, #{$clr-fg-pri});
+    height: var(--bit-brc-of-height, #{spacing(4.5)});
+    font-size: var(--bit-brc-of-font-size, #{spacing(1.75)});
+    line-height: var(--bit-brc-of-line-height, #{spacing(2.5)});
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
     border-radius: $shp-border-radius;
 
     &:focus-visible {
-        @include focus-ring;
+        @include focus-ring(var(--bit-brc-clr-fcs, #{$clr-pri-focus}));
     }
+}
+
+.bit-brc-ofn {
+    cursor: default;
 }
 
 .bit-brc-ofi {
@@ -189,4 +246,49 @@
 
 .bit-brc-sel {
     font-weight: 600;
+}
+
+// forced-colors: the current item is conveyed by a heavier weight only, which High Contrast keeps,
+// but the disabled items lose their dimmed color, so they are repainted with the system color.
+@media (forced-colors: active) {
+    .bit-brc-dis {
+        color: GrayText;
+    }
+}
+
+
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Only the item and divider colors are driven by the role, the surfaces stay neutral so the trail
+// keeps reading as text rather than as a filled control.
+@each $role, $tokens in $bit-color-roles {
+    .bit-brc-#{$role} {
+        --bit-brc-clr: #{role($tokens, main)};
+        --bit-brc-clr-div: #{role($tokens, main)};
+        --bit-brc-clr-fcs: #{role($tokens, focus)};
+    }
+}
+
+
+.bit-brc-sm {
+    --bit-brc-font-size: #{spacing(2)};
+    --bit-brc-line-height: #{spacing(3.5)};
+    --bit-brc-of-font-size: #{spacing(1.5)};
+    --bit-brc-of-line-height: #{spacing(2)};
+    --bit-brc-of-height: #{spacing(3.5)};
+}
+
+.bit-brc-md {
+    --bit-brc-font-size: #{spacing(2.5)};
+    --bit-brc-line-height: #{spacing(4.5)};
+    --bit-brc-of-font-size: #{spacing(1.75)};
+    --bit-brc-of-line-height: #{spacing(2.5)};
+    --bit-brc-of-height: #{spacing(4.5)};
+}
+
+.bit-brc-lg {
+    --bit-brc-font-size: #{spacing(3)};
+    --bit-brc-line-height: #{spacing(5.5)};
+    --bit-brc-of-font-size: #{spacing(2.25)};
+    --bit-brc-of-line-height: #{spacing(3)};
+    --bit-brc-of-height: #{spacing(5.5)};
 }

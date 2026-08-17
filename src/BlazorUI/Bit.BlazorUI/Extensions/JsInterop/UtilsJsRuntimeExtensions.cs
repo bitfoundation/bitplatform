@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class UtilsJsRuntimeExtensions
 {
@@ -77,6 +79,19 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsRegisterPreventShiftWheel(this IJSRuntime jsRuntime, ElementReference element, bool active)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerPreventShiftWheel", element, active);
+    }
+
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitOverflowMetrics))]
+    internal static ValueTask<BitOverflowMetrics?> BitUtilsGetOverflowMetrics(this IJSRuntime jsRuntime, string containerId, string childSelector)
+    {
+        return jsRuntime.Invoke<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", containerId, childSelector);
+    }
+
+
+    internal static ValueTask BitUtilsFocusItem(this IJSRuntime jsRuntime, string containerId, string selector, string mode, string? character)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusItem", containerId, selector, mode, character);
     }
 
 

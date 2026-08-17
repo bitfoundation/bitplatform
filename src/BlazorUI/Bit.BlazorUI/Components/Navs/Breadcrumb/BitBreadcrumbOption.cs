@@ -18,6 +18,11 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
 
 
     /// <summary>
+    /// The accessible label of the breadcrumb option, replacing its text content for assistive technologies.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// CSS class attribute for breadcrumb option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
@@ -74,6 +79,11 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     [Parameter] public string? Style { get; set; }
 
     /// <summary>
+    /// The target of the link of the breadcrumb option (for example "_blank"), applied when the Href is provided.
+    /// </summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>
     /// The custom template for the option.
     /// </summary>
     [Parameter] public RenderFragment<BitBreadcrumbOption>? Template { get; set; }
@@ -82,6 +92,11 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
     /// Text to display in the breadcrumb option.
     /// </summary>
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) of the breadcrumb option, useful to reveal the full text of a truncated option.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
 
 
@@ -100,7 +115,8 @@ public partial class BitBreadcrumbOption : ComponentBase, IDisposable
         // since OnParametersSet runs on every parent render. Reference-type params are folded into a
         // value-based signature (e.g. the icon's CSS classes) so an equal-but-new instance won't churn.
         // Template/OverflowTemplate are compared by reference identity since the parent renders them too.
-        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsEnabled, IsSelected, Class, Style, ReversedIcon, Key);
+        var signature = string.Join('\u001F', Text, Href, IconName, Icon?.GetCssClasses(), IsEnabled, IsSelected,
+                                                  Class, Style, ReversedIcon, Key, Title, Target, AriaLabel);
 
         var changed = _lastParametersSignature != signature ||
                       ReferenceEquals(_lastTemplate, Template) is false ||

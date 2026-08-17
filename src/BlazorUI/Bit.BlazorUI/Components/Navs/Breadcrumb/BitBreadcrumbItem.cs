@@ -3,6 +3,11 @@
 public class BitBreadcrumbItem
 {
     /// <summary>
+    /// The accessible label of the breadcrumb item, replacing its text content for assistive technologies.
+    /// </summary>
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// CSS class attribute for breadcrumb item.
     /// </summary>
     public string? Class { get; set; }
@@ -59,6 +64,11 @@ public class BitBreadcrumbItem
     public string? Style { get; set; }
 
     /// <summary>
+    /// The target of the link of the breadcrumb item (for example "_blank"), applied when the Href is provided.
+    /// </summary>
+    public string? Target { get; set; }
+
+    /// <summary>
     /// The custom template for the item.
     /// </summary>
     public RenderFragment<BitBreadcrumbItem>? Template { get; set; }
@@ -67,4 +77,9 @@ public class BitBreadcrumbItem
     /// Text to display in the breadcrumb item.
     /// </summary>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// The title (tooltip) of the breadcrumb item, useful to reveal the full text of a truncated item.
+    /// </summary>
+    public string? Title { get; set; }
 }

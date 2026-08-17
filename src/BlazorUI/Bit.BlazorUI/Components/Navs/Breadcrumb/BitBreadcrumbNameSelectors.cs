@@ -3,6 +3,11 @@
 public class BitBreadcrumbNameSelectors<TItem> where TItem : class
 {
     /// <summary>
+    /// The AriaLabel field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> AriaLabel { get; set; } = new(nameof(BitBreadcrumbItem.AriaLabel));
+
+    /// <summary>
     /// The CSS Class field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitBreadcrumbItem.Class));
@@ -58,6 +63,11 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     public BitNameSelectorPair<TItem, string?> Style { get; set; } = new(nameof(BitBreadcrumbItem.Style));
 
     /// <summary>
+    /// The Target field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Target { get; set; } = new(nameof(BitBreadcrumbItem.Target));
+
+    /// <summary>
     /// The Template field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, RenderFragment<TItem>?> Template { get; set; } = new(nameof(BitBreadcrumbItem.Template));
@@ -66,4 +76,9 @@ public class BitBreadcrumbNameSelectors<TItem> where TItem : class
     /// The Text field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Text { get; set; } = new(nameof(BitBreadcrumbItem.Text));
+
+    /// <summary>
+    /// The Title field name and selector of the custom input class.
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Title { get; set; } = new(nameof(BitBreadcrumbItem.Title));
 }

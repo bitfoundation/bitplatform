@@ -8,10 +8,24 @@ public partial class BitBreadcrumbDemo
     [
         new()
         {
+            Name = "AutoCollapse",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Collapses the items that do not fit the width of the breadcrumb into the overflow menu, and brings them back as the room for them returns, so the trail always stays on a single line. MaxDisplayedItems, when it is set, still caps how many items the automatic collapsing may leave in the trail. It is turned off entirely by Wrap, since a trail that may flow onto another line has no items that do not fit."
+        },
+        new()
+        {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the rendered order of the items in sync with the markup order of the options even when existing options are only reordered (not added or removed). It reads the DOM order of the options after each render, so it adds a JS interop call per render and is opt-in. It only affects the options API (ChildContent/Options)."
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The content of the BitBreadcrumb, that are BitBreadOption components."
+            Description = "The content of the BitBreadcrumb, that are BitBreadcrumbOption components."
         },
         new()
         {
@@ -21,6 +35,15 @@ public partial class BitBreadcrumbDemo
             Description = "Custom CSS classes for different parts of the breadcrumb.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Color",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "The general color of the items and the divider of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -47,10 +70,24 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "DividerText",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "A plain text divider (for example \"/\" or \"›\") to render in place of the default chevron icon. It is ignored when the DividerIconTemplate is provided."
+        },
+        new()
+        {
+            Name = "ExpandOverflow",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu. The whole trail is revealed at once and the button is gone with the collapsing it undid. The next change of the items or of the collapsing settings starts the breadcrumb over as collapsed."
+        },
+        new()
+        {
             Name = "Items",
             Type = "IList<TItem>",
             DefaultValue = "[]",
-            Description = "Collection of BreadLists to render.",
+            Description = "Collection of the items to render in the breadcrumb.",
             LinkType = LinkType.Link,
             Href = "#breadcrumb-item",
         },
@@ -66,7 +103,14 @@ public partial class BitBreadcrumbDemo
             Name = "MaxDisplayedItems",
             Type = "uint",
             DefaultValue = "0",
-            Description = "The maximum number of breadcrumbs to display before coalescing. If not specified, all breadcrumbs will be rendered."
+            Description = "The maximum number of items to display before coalescing. If not specified, all of the items will be rendered."
+        },
+        new()
+        {
+            Name = "MaxItemWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The maximum width of the text of each item as a CSS length (for example \"8rem\"). The text of a longer item is truncated with an ellipsis, and the text of an item that carries no Title of its own becomes its tooltip so that the full text stays reachable."
         },
         new()
         {
@@ -81,7 +125,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "OnItemClick",
             Type = "EventCallback<TItem>",
-            Description = "Callback for when the breadcrumb item clicked."
+            Description = "Callback for when a breadcrumb item is clicked, no matter whether it is rendered as a link or as a button."
         },
         new()
         {
@@ -94,15 +138,15 @@ public partial class BitBreadcrumbDemo
         {
             Name = "OverflowAriaLabel",
             Type = "string?",
-            DefaultValue = "null",
-            Description = "Aria label for the overflow button."
+            DefaultValue = "More items",
+            Description = "Aria label of the overflow button and of the overflow menu."
         },
         new()
         {
             Name = "OverflowIndex",
             Type = "uint",
             DefaultValue = "0",
-            Description = "Optional index where overflow items will be collapsed."
+            Description = "Optional index where overflow items will be collapsed. It is the position the overflow button takes among the displayed items, and the items that collapse are the ones that start there, so the default of 0 collapses the trail from its root while 1 keeps the root visible and collapses the middle instead."
         },
         new()
         {
@@ -143,12 +187,49 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "Scrollable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it, which is what a trail whose every step is worth keeping in place asks for. It has nothing to do while Wrap is on, since a trail that may flow onto another line never runs out of room on one."
+        },
+        new()
+        {
+            Name = "SelectedItemAsText",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the selected item as plain text instead of as a link or a button, which is what the breadcrumb pattern asks of the page the user is already on. It keeps its aria-current either way, and the items around it stay actionable."
+        },
+        new()
+        {
+            Name = "Size",
+            Type = "BitSize?",
+            DefaultValue = "null",
+            Description = "The size of the items of the breadcrumb.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
+        },
+        new()
+        {
+            Name = "StructuredData",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the trail as a schema.org BreadcrumbList in a JSON-LD script next to it, which is what search engines read to show the hierarchy of the page in their results. The whole hierarchy is written, including the items the overflow menu holds, and the Href of each item is resolved against the base address of the app."
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitBreadcrumbClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the breadcrumb.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "Wrap",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse and Scrollable off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
         }
     ];
 
@@ -237,9 +318,27 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "string?",
+                   Description = "The target of the link of the breadcrumb item (for example \"_blank\"), applied when the Href is provided.",
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "RenderFragment<BitBreadcrumbItem>?",
                    Description = "The custom template for the item.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   Description = "The title (tooltip) of the breadcrumb item, useful to reveal the full text of a truncated item.",
+               },
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   Description = "The accessible label of the breadcrumb item, replacing its text content for assistive technologies.",
                }
             ]
         },
@@ -321,14 +420,32 @@ public partial class BitBreadcrumbDemo
                new()
                {
                    Name = "OverflowTemplate",
-                   Type = "RenderFragment<BitBreadcrumbItem>?",
-                   Description = "The custom template for the item in overflow list.",
+                   Type = "RenderFragment<BitBreadcrumbOption>?",
+                   Description = "The custom template for the option in overflow list.",
+               },
+               new()
+               {
+                   Name = "Target",
+                   Type = "string?",
+                   Description = "The target of the link of the breadcrumb option (for example \"_blank\"), applied when the Href is provided.",
                },
                new()
                {
                    Name = "Template",
-                   Type = "RenderFragment<BitBreadcrumbItem>?",
-                   Description = "The custom template for the item.",
+                   Type = "RenderFragment<BitBreadcrumbOption>?",
+                   Description = "The custom template for the option.",
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "string?",
+                   Description = "The title (tooltip) of the breadcrumb option, useful to reveal the full text of a truncated option.",
+               },
+               new()
+               {
+                   Name = "AriaLabel",
+                   Type = "string?",
+                   Description = "The accessible label of the breadcrumb option, replacing its text content for assistive technologies.",
                }
             ]
         },
@@ -481,10 +598,19 @@ public partial class BitBreadcrumbDemo
             [
                new()
                {
+                   Name = "AriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.AriaLabel))",
+                   Description = "The AriaLabel field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "Key",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitBreadcrumbItem.Key))",
-                   Description = "The Id field name and selector of the custom input class.",
+                   Description = "The Key field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                },
@@ -586,10 +712,28 @@ public partial class BitBreadcrumbDemo
                },
                new()
                {
+                   Name = "Target",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Target))",
+                   Description = "The Target field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
                    Name = "Template",
                    Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
                    DefaultValue = "new(nameof(BitBreadcrumbItem.Template))",
                    Description = "The Template field name and selector of the custom input class.",
+                   LinkType = LinkType.Link,
+                   Href = "#name-selector-pair"
+               },
+               new()
+               {
+                   Name = "Title",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitBreadcrumbItem.Title))",
+                   Description = "The Title field name and selector of the custom input class.",
                    LinkType = LinkType.Link,
                    Href = "#name-selector-pair"
                }
@@ -645,5 +789,47 @@ public partial class BitBreadcrumbDemo
                 },
             ]
         },
+    ];
+
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        new()
+        {
+            Id = "color-enum",
+            Name = "BitColor",
+            Description = "Defines the general colors available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Primary", Description = "Primary general color.", Value = "0" },
+                new() { Name = "Secondary", Description = "Secondary general color.", Value = "1" },
+                new() { Name = "Tertiary", Description = "Tertiary general color.", Value = "2" },
+                new() { Name = "Info", Description = "Info general color.", Value = "3" },
+                new() { Name = "Success", Description = "Success general color.", Value = "4" },
+                new() { Name = "Warning", Description = "Warning general color.", Value = "5" },
+                new() { Name = "SevereWarning", Description = "SevereWarning general color.", Value = "6" },
+                new() { Name = "Error", Description = "Error general color.", Value = "7" },
+                new() { Name = "PrimaryBackground", Description = "Primary background color.", Value = "8" },
+                new() { Name = "SecondaryBackground", Description = "Secondary background color.", Value = "9" },
+                new() { Name = "TertiaryBackground", Description = "Tertiary background color.", Value = "10" },
+                new() { Name = "PrimaryForeground", Description = "Primary foreground color.", Value = "11" },
+                new() { Name = "SecondaryForeground", Description = "Secondary foreground color.", Value = "12" },
+                new() { Name = "TertiaryForeground", Description = "Tertiary foreground color.", Value = "13" },
+                new() { Name = "PrimaryBorder", Description = "Primary border color.", Value = "14" },
+                new() { Name = "SecondaryBorder", Description = "Secondary border color.", Value = "15" },
+                new() { Name = "TertiaryBorder", Description = "Tertiary border color.", Value = "16" }
+            ]
+        },
+        new()
+        {
+            Id = "size-enum",
+            Name = "BitSize",
+            Description = "Defines the sizes available in the bit BlazorUI.",
+            Items =
+            [
+                new() { Name = "Small", Description = "The small size.", Value = "0" },
+                new() { Name = "Medium", Description = "The medium size.", Value = "1" },
+                new() { Name = "Large", Description = "The large size.", Value = "2" }
+            ]
+        }
     ];
 }

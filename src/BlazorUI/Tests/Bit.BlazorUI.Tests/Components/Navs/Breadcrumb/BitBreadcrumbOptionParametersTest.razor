@@ -1,0 +1,9 @@
+@using Bit.BlazorUI
+
+<BitBreadcrumb TItem="BitBreadcrumbOption">
+    <BitBreadcrumbOption Text="@Text" />
+</BitBreadcrumb>
+
+@code {
+    [Parameter] public string? Text { get; set; }
+}

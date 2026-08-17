@@ -344,6 +344,82 @@
             }
         }
 
+        // Measures how much room a single-line list of children needs against the room it has, so a
+        // component can decide how many of them to keep. `content` is what the children take in total
+        // and `available` is the width of the container, both in pixels, and `widths` carries the
+        // children in DOM order so the caller can tell how much room dropping one of them frees.
+        // The content is measured off the children rather than off the scrollWidth of the container,
+        // since that one never drops below the clientWidth: a trail that fits would report no room to
+        // spare and the caller could never tell that a child it dropped has room to come back to.
+        // It is the extent from the leftmost edge to the rightmost one rather than the sum of the
+        // widths, so that whatever sits between the children (a gap, a margin, a whitespace text node)
+        // is counted as the room it takes; the sum would report a trail that overflows as one that fits.
+        public static getOverflowMetrics(containerId: string, childSelector: string) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+
+            try {
+                const rects = (Array.from(container.querySelectorAll(childSelector)) as HTMLElement[])
+                    .map(el => el.getBoundingClientRect());
+
+                const left = Math.min(...rects.map(rect => rect.left));
+                const right = Math.max(...rects.map(rect => rect.right));
+
+                return {
+                    available: container.clientWidth,
+                    content: rects.length === 0 ? 0 : right - left,
+                    widths: rects.map(rect => rect.width)
+                };
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.getOverflowMetrics:", e);
+                return null;
+            }
+        }
+
+        // Moves the focus between the items of a popup (a menu, an overflow list, ...) that a component
+        // drives from its keydown handlers. The items are the elements of `container` matching `selector`,
+        // in DOM order, minus the disabled ones. `mode` is one of first/last/next/prev/char, where next
+        // and prev wrap around and char jumps to the next item whose text starts with `char`.
+        public static focusItem(containerId: string, selector: string, mode: string, char: string | null) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            try {
+                const items = (Array.from(container.querySelectorAll(selector)) as HTMLElement[])
+                    .filter(el => !(el as HTMLButtonElement).disabled && el.getAttribute('aria-disabled') !== 'true');
+                if (items.length === 0) return;
+
+                const current = items.indexOf(document.activeElement as HTMLElement);
+                let index = -1;
+
+                if (mode === 'first') {
+                    index = 0;
+                } else if (mode === 'last') {
+                    index = items.length - 1;
+                } else if (mode === 'next') {
+                    index = current < 0 ? 0 : (current + 1) % items.length;
+                } else if (mode === 'prev') {
+                    index = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
+                } else if (mode === 'char' && char) {
+                    const c = char.toLowerCase();
+                    const start = current < 0 ? 0 : current + 1;
+                    for (let i = 0; i < items.length; i++) {
+                        const candidate = (start + i) % items.length;
+                        if ((items[candidate].textContent || '').trim().toLowerCase().indexOf(c) === 0) {
+                            index = candidate;
+                            break;
+                        }
+                    }
+                }
+
+                if (index > -1) {
+                    items[index].focus();
+                }
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.focusItem:", e);
+            }
+        }
+
         public static setStyle(element: HTMLElement, key: string, value: string) {
             if (!element || !element.style) return;
 
