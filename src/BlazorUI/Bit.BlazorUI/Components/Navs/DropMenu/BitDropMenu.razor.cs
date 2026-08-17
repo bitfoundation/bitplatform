@@ -808,7 +808,7 @@ public partial class BitDropMenu : BitComponentBase
                 // the room the viewport leaves. With nothing named, the callout itself takes that role, so that
                 // content taller than the screen scrolls inside the callout instead of running off the bottom
                 // of it, where a fixed-positioned element leaves it out of reach of the page's own scrolling.
-                scrollContainerId: ScrollContainerId ?? (FitsToViewport ? _calloutId : ""),
+                scrollContainerId: ScrollContainerId.HasValue() ? ScrollContainerId! : (FitsToViewport ? _calloutId : ""),
                 scrollOffset: 0,
                 headerId: "",
                 footerId: "",

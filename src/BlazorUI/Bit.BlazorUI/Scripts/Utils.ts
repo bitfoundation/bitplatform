@@ -151,7 +151,7 @@
             Utils._focusTraps.delete(elementId);
         }
 
-        private static _preventedKeys = new Map<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }>();
+        private static _preventedKeys = new Map<string, AbortController>();
 
         // Suppresses the default behavior (page scrolling) of the given keys on an element, for the
         // components whose keyboard logic runs in Blazor keydown handlers, which cannot decide to
@@ -162,23 +162,24 @@
             const element = document.getElementById(elementId);
             if (!element) return;
 
+            const controller = new AbortController();
+
             // A modified key is a shortcut of the browser or of the operating system rather than the key
             // the component handles, so its default action is left alone.
-            const handler = (e: KeyboardEvent) => {
+            element.addEventListener('keydown', (e: KeyboardEvent) => {
                 if (keys.indexOf(e.key) !== -1 && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
                     e.preventDefault();
                 }
-            };
+            }, { signal: controller.signal });
 
-            element.addEventListener('keydown', handler);
-            Utils._preventedKeys.set(elementId, { element, handler });
+            Utils._preventedKeys.set(elementId, controller);
         }
 
         public static disposePreventDefaultKeys(elementId: string) {
-            const entry = Utils._preventedKeys.get(elementId);
-            if (!entry) return;
+            const controller = Utils._preventedKeys.get(elementId);
+            if (!controller) return;
 
-            entry.element.removeEventListener('keydown', entry.handler);
+            controller.abort();
             Utils._preventedKeys.delete(elementId);
         }
 

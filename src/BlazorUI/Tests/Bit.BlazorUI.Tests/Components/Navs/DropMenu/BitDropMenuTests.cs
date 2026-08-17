@@ -297,6 +297,21 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropMenuShouldTakeAnAriaHiddenButtonOutOfTheTabSequence()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.AriaHidden, true);
+        });
+
+        // A button hidden from assistive technology that the keyboard can still reach is focus a screen
+        // reader cannot announce, so the tab index it was given does not apply to it.
+        Assert.AreEqual("-1", component.Find(".bit-drm-btn").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitDropMenuShouldNotAddNoShadowClassByDefault()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
@@ -606,13 +621,15 @@ public class BitDropMenuTests : BunitTestContext
 
         var setup = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Swipes.setup");
 
+        // The arguments of Swipes.setup, in order: id, trigger, position, isRtl, orientationLock,
+        // dotnetObj, isResponsive, scrollContainerId.
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
         Assert.AreEqual(position, setup.Arguments[2]);
         Assert.AreEqual(expected, setup.Arguments[4]);
     }
 
     [TestMethod]
-    public void BitDropMenuShouldNotRegisterTheSwipesWithoutTheResponsiveMode()
+    public void BitDropMenuShouldRegisterAndDisposeTheSwipesWithTheResponsiveMode()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -1067,11 +1084,6 @@ public class BitDropMenuTests : BunitTestContext
         Assert.AreEqual(1, CountCalloutToggles() - before);
     }
 
-    private int CountCalloutToggles()
-    {
-        return Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
-    }
-
     [TestMethod]
     public async Task BitDropMenuShouldNotInvokeTheOpenAndDismissCallbacksForANoOpStateChange()
     {
@@ -1435,7 +1447,7 @@ public class BitDropMenuTests : BunitTestContext
 
         component.Find(".bit-drm").MouseLeave();
 
-        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+        component.WaitForAssertion(() => Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded")));
     }
 
     [TestMethod]
@@ -1564,7 +1576,7 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitDropMenuShouldWaitOutTheHoverOpenDelay()
+    public void BitDropMenuShouldWaitOutTheHoverOpenDelay()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice", _ => true).SetResult(true);
 
@@ -1577,10 +1589,8 @@ public class BitDropMenuTests : BunitTestContext
 
         component.Find(".bit-drm").MouseEnter();
 
-        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
-
-        await Task.Delay(200);
-
+        // The delay is waited out on a timer of its own, so the open state arrives after the event that
+        // asked for it rather than with it.
         component.WaitForAssertion(() => Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded")));
     }
 
@@ -1589,17 +1599,21 @@ public class BitDropMenuTests : BunitTestContext
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice", _ => true).SetResult(true);
 
+        var hoverOpenDelay = 60;
+
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.HoverOpenDelay, 60);
+            parameters.Add(p => p.HoverOpenDelay, hoverOpenDelay);
         });
 
         component.Find(".bit-drm").MouseEnter();
         component.Find(".bit-drm").MouseLeave();
 
-        await Task.Delay(200);
+        // Nothing happening is what is asserted here, so the wait has to outlast the open delay by enough
+        // of a margin that a menu which did open would have opened by the time the assertion runs.
+        await Task.Delay(hoverOpenDelay * 4);
 
         // The pointer was only passing over the button on its way somewhere else.
         Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
@@ -1618,7 +1632,8 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm-btn").Click();
 
         // With nothing else named as the scrollable part of the content, the callout itself is what the
-        // positioning code caps to the room the viewport leaves.
+        // positioning code caps to the room the viewport leaves. Argument 10 of Callouts.toggle is the
+        // scrollContainerId, which is the argument every scrollContainerId assertion here reads.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, toggle.Arguments[10]);
     }
@@ -1998,11 +2013,6 @@ public class BitDropMenuTests : BunitTestContext
             .Count(i => i.Identifier == "BitBlazorUI.Swipes.dispose" && (string)i.Arguments[0]! == calloutId));
     }
 
-    private int CountInvocations(string identifier)
-    {
-        return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
-    }
-
     [TestMethod]
     [DataRow(BitVisibility.Visible, "")]
     [DataRow(BitVisibility.Hidden, "visibility:hidden")]
@@ -2028,5 +2038,15 @@ public class BitDropMenuTests : BunitTestContext
         {
             Assert.IsTrue(style.Contains(expectedStyle));
         }
+    }
+
+    private int CountCalloutToggles()
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+    }
+
+    private int CountInvocations(string identifier)
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
     }
 }

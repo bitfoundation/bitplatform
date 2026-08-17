@@ -8,13 +8,15 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
+    @* A button hidden from assistive technology that is still in the tab sequence is focus a screen
+       reader cannot announce, so hiding it takes it out of the tab order along with it. *@
     <button @ref="_buttonRef"
             @onclick="HandleOnClick"
             @onkeydown="HandleOnButtonKeyDown"
             type="button"
             id="@_buttonId"
             title="@Title"
-            tabindex="@TabIndex"
+            tabindex="@(AriaHidden ? "-1" : TabIndex)"
             aria-label="@AriaLabel"
             aria-haspopup="@(TrapFocus ? "dialog" : "true")"
             aria-controls="@_calloutId"
