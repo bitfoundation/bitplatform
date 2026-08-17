@@ -246,12 +246,15 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Truncation & Wrapping" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+<DemoExample Title="Truncation, Wrapping & Scrolling" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
     <div>
-        A trail of long titles is kept on a single line by default. MaxItemWidth truncates the text of each
-        item with an ellipsis at the given CSS length, in which case the text of an item that carries no mapped
-        Title of its own becomes its tooltip so the full text stays reachable, and Wrap lets the trail flow onto
-        more than one line instead.
+        A trail of long titles is kept on a single line by default, which makes it overflow a container that is
+        too narrow for it. MaxItemWidth truncates the text of each item with an ellipsis at the given CSS length,
+        in which case the text of an item that carries no mapped Title of its own becomes its tooltip so the full
+        text stays reachable. Wrap lets the trail flow onto more than one line instead, and Scrollable keeps it on
+        a single line but hands it a scrollbar of its own, which is what a trail whose every step is worth keeping
+        in place asks for. Wrap wins over Scrollable, since a trail that may flow onto another line never runs out
+        of room on one.
     </div>
     <br /><br />
     <div class="example-box">
@@ -271,6 +274,12 @@
             <div>Wrap</div>
             <div class="narrow-box">
                 <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" Wrap />
+            </div>
+        </div>
+        <div>
+            <div>Scrollable</div>
+            <div class="narrow-box">
+                <BitBreadcrumb Items="CustomBreadcrumbItemsWithLongText" NameSelectors="nameSelectors" Scrollable />
             </div>
         </div>
     </div>
@@ -326,8 +335,10 @@
     <div>
         ExpandOverflow turns the overflow button into a disclosure of the collapsed steps: pressing it puts them
         back into the trail instead of opening them in a menu, and the button is gone along with the collapsing it
-        undid. The expanded trail may be wider than the room it has, so pairing it with Wrap keeps it readable.
-        It works the same way over an automatically collapsed trail, which stops measuring once it is expanded.
+        undid. The focus it held is handed over to the first of the steps it revealed, so the keyboard carries on
+        from where the trail grew. The expanded trail may be wider than the room it has, so pairing it with Wrap
+        (or with Scrollable) keeps it readable. It works the same way over an automatically collapsed trail, which
+        stops measuring once it is expanded.
     </div>
     <br /><br />
     <div class="example-box">

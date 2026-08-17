@@ -2,6 +2,7 @@
 
 .bit-brc {
     white-space: nowrap;
+    font-family: $tg-font-family;
     --bit-brc-div-transform: scaleX(1);
 
     &.bit-rtl {
@@ -37,6 +38,17 @@
     }
 }
 
+// Hands a trail that does not fit a scrollbar of its own instead of letting it overflow its
+// container. The block padding is there because the focus ring of an item is a shadow around it,
+// which a scroll container would otherwise clip.
+.bit-brc-scr {
+    .bit-brc-icn {
+        overflow: auto hidden;
+        scrollbar-width: thin;
+        padding-block: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
+    }
+}
+
 // The trail is an ordered list for the semantics of the pattern, not for the look of one: the margins
 // and the markers a list comes with are dropped.
 .bit-brc-icn {
@@ -57,6 +69,9 @@
     button {
         background-color: transparent;
         border-radius: $shp-border-radius;
+        // A button carries the font of the browser rather than the one of its page, so a step
+        // rendered as one would read in another typeface than the steps rendered as links.
+        font-family: inherit;
     }
 }
 
@@ -142,6 +157,7 @@
     display: none;
     position: fixed;
     font-weight: 400;
+    font-family: $tg-font-family;
     overflow: hidden auto;
     box-sizing: border-box;
     z-index: $zindex-callout;
@@ -179,6 +195,7 @@
     align-items: center;
     white-space: nowrap;
     outline: transparent;
+    font-family: inherit;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;

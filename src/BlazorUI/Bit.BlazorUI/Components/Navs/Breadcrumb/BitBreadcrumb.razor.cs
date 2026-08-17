@@ -18,6 +18,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private bool _lastExpandOverflow;
     private bool _resizeObserverRegistered;
     private bool _measureRequested;
+    private bool _focusRevealedItems;
+    private uint _revealedOverflowIndex;
     private int _measurePasses;
     private uint _autoMaxDisplayedItems;
     private uint _internalOverflowIndex;
@@ -210,6 +212,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [Parameter] public bool ReversedIcon { get; set; }
 
     /// <summary>
+    /// Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it.
+    /// <br />
+    /// It is what a trail whose every step is worth keeping in place asks for, rather than collapsing the
+    /// steps that do not fit or letting them flow onto another line. It has nothing to do while Wrap is on,
+    /// since a trail that may flow onto another line never runs out of room on one.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public bool Scrollable { get; set; }
+
+    /// <summary>
     /// Renders the selected item as plain text instead of as a link or a button.
     /// <br />
     /// The current page is where the user already is, so the breadcrumb pattern asks for it to be a step to read
@@ -241,8 +253,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line.
     /// <br />
-    /// It turns AutoCollapse off while it is on, since a trail that may flow onto another line has no items that
-    /// do not fit. A fixed MaxDisplayedItems still collapses what it is told to, wrapping or not.
+    /// It turns AutoCollapse and Scrollable off while it is on, since a trail that may flow onto another line has
+    /// no items that do not fit. A fixed MaxDisplayedItems still collapses what it is told to, wrapping or not.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool Wrap { get; set; }
@@ -344,6 +356,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         ClassBuilder.Register(GetSizeClass);
 
         ClassBuilder.Register(() => Wrap ? "bit-brc-wrp" : null);
+
+        ClassBuilder.Register(() => Scrollable && Wrap is false ? "bit-brc-scr" : null);
     }
 
     protected override void RegisterCssStyles()
@@ -484,6 +498,16 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             catch (JSException) { } // the element of the observer may already be gone with its parent
         }
 
+        // The overflow button is gone with the collapsing it undid, taking the focus it held with it, so a
+        // disclosure that reveals its steps in place hands the focus over to the first of them, the way the
+        // menu of the other overflow button hands it over to its first item.
+        if (_focusRevealedItems)
+        {
+            _focusRevealedItems = false;
+
+            await FocusRevealedItem();
+        }
+
         if (_optionsOrderDirty)
         {
             _optionsOrderDirty = false;
@@ -551,6 +575,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
         if (ExpandOverflow)
         {
+            // The position the button holds is where the steps it reveals start, which is read before the
+            // expansion since the settings it applies may move the position the button would have taken.
+            _revealedOverflowIndex = _internalOverflowIndex;
+            _focusRevealedItems = true;
             _isOverflowExpanded = true;
 
             ApplyDisplaySettings();
@@ -1357,6 +1385,22 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
         catch (JSException) { } // the callout may already be gone with the items it held
+    }
+
+    // The first of the steps the overflow button just revealed that can take the focus. The list items
+    // alternate between an item and the divider that goes with it, so the revealed ones start at the list
+    // item of the position the button held, and the search runs from there to the end of the trail since
+    // a step that is neither a link nor a button is nothing to hand the focus to.
+    private async Task FocusRevealedItem()
+    {
+        var position = _revealedOverflowIndex * 2 + 1;
+
+        try
+        {
+            await _js.BitUtilsFocusItem(_Id, $".bit-brc-icn > li:nth-child(n+{position}) .bit-brc-itm", "first", null);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
+        catch (JSException) { } // the trail may already be gone with the items it revealed
     }
 
     private async Task FocusOverflowButton()

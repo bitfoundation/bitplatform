@@ -254,6 +254,14 @@ private void RemoveOption()
         <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
         <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
     </BitBreadcrumb>
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Scrollable>
+        <BitBreadcrumbOption Text=""Very long option name 1"" Href=""/components/breadcrumb"" Title=""Very long option name 1"" />
+        <BitBreadcrumbOption Text=""Very long option name 2"" Href=""/components/breadcrumb"" Title=""Very long option name 2"" />
+        <BitBreadcrumbOption Text=""Very long option name 3"" Href=""/components/breadcrumb"" Title=""Very long option name 3"" IsSelected />
+    </BitBreadcrumb>
 </div>";
 
     private readonly string example9RazorCode = @"

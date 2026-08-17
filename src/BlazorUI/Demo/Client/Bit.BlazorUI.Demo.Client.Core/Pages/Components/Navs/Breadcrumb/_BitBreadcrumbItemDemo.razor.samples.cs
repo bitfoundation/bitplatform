@@ -256,6 +256,10 @@ private void RemoveBreadcrumbItem()
 
 <div class=""narrow-box"">
     <BitBreadcrumb Items=""BreadcrumbItemsWithLongText"" Wrap />
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb Items=""BreadcrumbItemsWithLongText"" Scrollable />
 </div>";
     private readonly string example8CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithLongText =

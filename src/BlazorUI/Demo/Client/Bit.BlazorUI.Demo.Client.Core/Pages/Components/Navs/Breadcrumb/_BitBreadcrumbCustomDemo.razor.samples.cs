@@ -333,6 +333,10 @@ private void RemoveCustomItem()
 
 <div class=""narrow-box"">
     <BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" Wrap />
+</div>
+
+<div class=""narrow-box"">
+    <BitBreadcrumb Items=""CustomBreadcrumbItemsWithLongText"" NameSelectors=""nameSelectors"" Scrollable />
 </div>";
     private readonly string example8CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItemsWithLongText =

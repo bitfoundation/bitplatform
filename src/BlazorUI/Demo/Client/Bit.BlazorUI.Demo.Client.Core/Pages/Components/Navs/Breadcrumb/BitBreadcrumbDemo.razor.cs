@@ -187,6 +187,13 @@ public partial class BitBreadcrumbDemo
         },
         new()
         {
+            Name = "Scrollable",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Lets a long breadcrumb trail scroll sideways inside its container instead of overflowing it, which is what a trail whose every step is worth keeping in place asks for. It has nothing to do while Wrap is on, since a trail that may flow onto another line never runs out of room on one."
+        },
+        new()
+        {
             Name = "SelectedItemAsText",
             Type = "bool",
             DefaultValue = "false",
@@ -222,7 +229,7 @@ public partial class BitBreadcrumbDemo
             Name = "Wrap",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
+            Description = "Lets a long breadcrumb trail wrap into multiple lines instead of overflowing its container in a single line. It turns AutoCollapse and Scrollable off while it is on, though a fixed MaxDisplayedItems still collapses what it is told to."
         }
     ];
 

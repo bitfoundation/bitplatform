@@ -455,6 +455,41 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitBreadcrumbShouldTakeScrollable(bool scrollable)
+    {
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Scrollable, scrollable);
+        });
+
+        Assert.AreEqual(scrollable, component.Find(".bit-brc").ClassList.Contains("bit-brc-scr"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldNotScrollATrailThatWraps()
+    {
+        // A trail that may flow onto another line never runs out of room on one, so there is nothing
+        // for the sideways scrolling to do while the wrapping is on.
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.Scrollable, true);
+            parameters.Add(p => p.Wrap, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-scr"));
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-wrp"));
+
+        component.Render(parameters => parameters.Add(p => p.Wrap, false));
+
+        Assert.IsTrue(component.Find(".bit-brc").ClassList.Contains("bit-brc-scr"));
+    }
+
+    [TestMethod,
       DataRow("10rem")
     ]
     public void BitBreadcrumbShouldTakeMaxItemWidth(string maxItemWidth)
@@ -749,6 +784,68 @@ public class BitBreadcrumbTests : BunitTestContext
         Assert.AreEqual(3, links.Count);
         Assert.AreEqual("Custom 1", links[0].TextContent.Trim());
         Assert.AreEqual("page", component.Find(".bit-brc-sel").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldReadEveryRemainingPartOfACustomItemThroughTheNameSelectors()
+    {
+        // The parts of an item the trail is not built out of are read through their selectors too: the
+        // key it is rendered under, the look of it, the icon next to its text and the templates that
+        // replace its content in the trail and in the overflow menu.
+        var items = new List<CustomItem>
+        {
+            new()
+            {
+                Id = "the-first-one", Label = "Custom 1", Look = "custom-look", Paint = "color:red",
+                Glyph = "Home", IconLast = true
+            },
+            new()
+            {
+                Label = "Custom 2", GlyphInfo = BitIconInfo.Css("fa-solid fa-folder"),
+                Fragment = item => builder => builder.AddMarkupContent(0, $"<span class='custom-fragment'>{item.Label}</span>"),
+                OverflowFragment = item => builder => builder.AddMarkupContent(0, $"<span class='custom-overflow-fragment'>{item.Label}</span>")
+            },
+            new() { Label = "Custom 3" }
+        };
+
+        var component = RenderComponent<BitBreadcrumb<CustomItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+            parameters.Add(p => p.NameSelectors, new BitBreadcrumbNameSelectors<CustomItem>()
+            {
+                Key = { Selector = i => i.Id },
+                Text = { Selector = i => i.Label },
+                Class = { Selector = i => i.Look },
+                Style = { Selector = i => i.Paint },
+                Icon = { Selector = i => i.GlyphInfo },
+                IconName = { Selector = i => i.Glyph },
+                AriaLabel = { Selector = i => i.Label },
+                ReversedIcon = { Selector = i => i.IconLast },
+                Template = { Selector = i => i.Fragment },
+                OverflowTemplate = { Selector = i => i.OverflowFragment },
+            });
+        });
+
+        var first = component.Find(".bit-brc-icn .bit-brc-nii");
+
+        Assert.IsTrue(first.ClassList.Contains("custom-look"));
+        Assert.IsTrue(first.ClassList.Contains("bit-brc-rvi"));
+        Assert.IsTrue(first.GetAttribute("style")!.Contains("color:red"));
+        Assert.AreEqual("Custom 1", first.GetAttribute("aria-label"));
+        Assert.IsTrue(first.QuerySelector("i")!.ClassList.Contains("bit-icon--Home"));
+
+        // The templates of the collapsed step replace its content in the overflow menu, not in the trail.
+        Assert.AreEqual(0, component.FindAll(".bit-brc-icn .custom-fragment").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-brc-scn .custom-overflow-fragment").Count);
+
+        // The whole trail, the keys of its items included, is rebuilt when the collapsing goes away.
+        component.Render(parameters => parameters.Add(p => p.MaxDisplayedItems, (uint)0));
+
+        Assert.AreEqual(1, component.FindAll(".bit-brc-icn .custom-fragment").Count);
+        Assert.IsTrue(component.FindAll(".bit-brc-icn i")[0].ClassList.Contains("bit-icon--Home"));
+        Assert.IsTrue(component.FindAll(".bit-brc-icn .bit-brc-nii")[1].QuerySelector("i") is null);
     }
 
     [TestMethod]
@@ -1297,6 +1394,36 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBreadcrumbShouldHandTheFocusOverToTheRevealedItemsWithExpandOverflow()
+    {
+        var handler = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.focusItem", _ => true);
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.MaxDisplayedItems, (uint)2);
+            parameters.Add(p => p.OverflowIndex, (uint)1);
+            parameters.Add(p => p.ExpandOverflow, true);
+        });
+
+        Assert.AreEqual(0, handler.Invocations.Count);
+
+        component.Find(".bit-brc-obt").Click();
+
+        // The button is gone with the collapsing it undid, so the focus it held goes to the first of the
+        // steps it revealed: the list items alternate between an item and a divider, so the ones that were
+        // revealed start at the list item of the position the button held.
+        component.WaitForAssertion(() => Assert.AreEqual(1, handler.Invocations.Count));
+
+        var invocation = handler.Invocations.Single();
+
+        Assert.AreEqual(component.Find(".bit-brc").Id, invocation.Arguments[0]);
+        Assert.AreEqual(".bit-brc-icn > li:nth-child(n+3) .bit-brc-itm", invocation.Arguments[1]);
+        Assert.AreEqual("first", invocation.Arguments[2]);
+        Assert.IsNull(invocation.Arguments[3]);
+    }
+
+    [TestMethod]
     public void BitBreadcrumbShouldCollapseTheExpandedTrailAgainWhenTheItemsOrTheSettingsChange()
     {
         var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
@@ -1495,5 +1622,14 @@ public class BitBreadcrumbTests : BunitTestContext
         public string? Window { get; set; }
         public bool IsCurrent { get; set; }
         public bool Active { get; set; } = true;
+        public string? Id { get; set; }
+        public string? Label { get; set; }
+        public string? Look { get; set; }
+        public string? Paint { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? GlyphInfo { get; set; }
+        public bool? IconLast { get; set; }
+        public RenderFragment<CustomItem>? Fragment { get; set; }
+        public RenderFragment<CustomItem>? OverflowFragment { get; set; }
     }
 }
