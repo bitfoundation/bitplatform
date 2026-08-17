@@ -129,6 +129,18 @@ private BitColorKind borderColorKind = BitColorKind.Primary;";
             <BitText Typography=""BitTypography.Subtitle1"" NoWrap>This is the content</BitText>
         </BitStack>
     </div>
+</BitDropMenu>
+
+<BitDropMenu Text=""Top PanelPosition"" Responsive PanelPosition=""BitPanelPosition.Top"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">Swipe up to dismiss it</BitText>
+    </BitStack>
+</BitDropMenu>
+
+<BitDropMenu Text=""Bottom PanelPosition"" Responsive PanelPosition=""BitPanelPosition.Bottom"">
+    <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
+        <BitText Typography=""BitTypography.Subtitle1"">Swipe down to dismiss it</BitText>
+    </BitStack>
 </BitDropMenu>";
 
     private readonly string example6RazorCode = @"
@@ -290,6 +302,26 @@ private int openCounter;
 private int dismissCounter;";
 
     private readonly string example14RazorCode = @"
+<BitDropMenu Text=""@($""AutoClose ({autoCloseAction})"")"" AutoClose IconName=""@BitIconName.More"">
+    <BitStack Gap=""0.25rem"" Style=""padding:0.5rem"">
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => autoCloseAction = ""Renamed"")"">Rename</BitButton>
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => autoCloseAction = ""Duplicated"")"">Duplicate</BitButton>
+        <BitButton Variant=""BitVariant.Text"" OnClick=""@(() => autoCloseAction = ""Deleted"")"">Delete</BitButton>
+    </BitStack>
+</BitDropMenu>
+
+@* Without AutoClose the callout stays open while the content is being used. *@
+<BitDropMenu Text=""Without AutoClose"" IconName=""@BitIconName.Filter"">
+    <BitStack Gap=""0.5rem"" Style=""padding:0.5rem"">
+        <BitCheckbox Label=""Active"" />
+        <BitCheckbox Label=""Archived"" />
+        <BitCheckbox Label=""Draft"" />
+    </BitStack>
+</BitDropMenu>";
+    private readonly string example14CsharpCode = @"
+private string autoCloseAction = ""none"";";
+
+    private readonly string example15RazorCode = @"
 <BitChoiceGroup @bind-Value=""color"" Horizontal
                 Label=""Color""
                 TItem=""BitChoiceGroupOption<BitColor>"" TValue=""BitColor"">
@@ -317,10 +349,10 @@ private int dismissCounter;";
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
     </BitStack>
 </BitDropMenu>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private BitColor color = BitColor.Primary;";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitDropMenu Text=""House"" Icon=""@(""fa-solid fa-house"")"">
@@ -356,7 +388,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitDropMenu Text=""Small"" Size=""BitSize.Small"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">This is the content</BitText>
@@ -375,7 +407,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         border-radius: 1rem;
@@ -447,7 +479,7 @@ private BitColor color = BitColor.Primary;";
     </BitStack>
 </BitDropMenu>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitDropMenu Text=""منو"" Dir=""BitDir.Rtl"">
     <BitStack Gap=""1rem"" Style=""padding:0.5rem"">
         <BitText Typography=""BitTypography.Subtitle1"">این یک محتوای تستی می باشد.</BitText>

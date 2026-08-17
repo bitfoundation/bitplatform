@@ -71,7 +71,8 @@
      id="@_overlayId"
      class="@($"bit-drm-ovl{(HoverDriven ? " bit-drm-ovl-hov" : null)} {Classes?.Overlay}")"></div>
 
-<div @onkeydown="HandleOnCalloutKeyDown"
+<div @onclick="HandleOnCalloutClick"
+     @onkeydown="HandleOnCalloutKeyDown"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
      id="@_calloutId"

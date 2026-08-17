@@ -20,6 +20,13 @@ public partial class BitDropMenuDemo
         },
         new()
         {
+            Name = "AutoClose",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Closes the callout as soon as a click lands anywhere inside it, which is what an action list is expected to do: picking an item completes the interaction. It is off by default, since a callout hosting a form or a filter panel is meant to stay open while it is being used."
+        },
+        new()
+        {
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
@@ -153,7 +160,7 @@ public partial class BitDropMenuDemo
             Name = "IsLoading",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and disables the button, so the callout can no longer be opened by the user or by the Open and Toggle methods."
+            Description = "Determines whether the drop menu is in the loading state. It replaces the icon of the button with a spinner and disables the button, so the callout can no longer be opened by the user or by the Open and Toggle methods, and a callout that is already open is closed."
         },
         new()
         {
@@ -174,7 +181,7 @@ public partial class BitDropMenuDemo
             Name = "MaxHeight",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The maximum height of the callout of the drop menu as a CSS value (e.g. \"20rem\"), beyond which its content scrolls."
+            Description = "The maximum height of the callout of the drop menu as a CSS value (e.g. \"20rem\"), beyond which its content scrolls. It takes over from the automatic cap that otherwise keeps the callout within the room the viewport leaves, so it should stay within what the shortest screen the drop menu is used on can show."
         },
         new()
         {
@@ -323,7 +330,7 @@ public partial class BitDropMenuDemo
         {
             Name = "Open",
             Type = "() => Task",
-            Description = "Opens the callout of the drop menu programmatically."
+            Description = "Opens the callout of the drop menu programmatically, unless the drop menu is disabled or loading."
         },
         new()
         {
@@ -559,6 +566,7 @@ public partial class BitDropMenuDemo
     private int dismissCounter;
     private bool mountDefaultIsOpen;
     private BitDropMenu? dropMenuRef;
+    private string autoCloseAction = "none";
     private BitColor color = BitColor.Primary;
     private BitColorKind backgroundColorKind = BitColorKind.Primary;
     private BitColorKind borderColorKind = BitColorKind.Primary;

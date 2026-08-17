@@ -5,7 +5,7 @@
             Description="DropMenu is a button that opens a callout hosting any content: an action list, a form, a filter panel, or a navigation menu." />
 
 <DemoPage Name="DropMenu"
-          Description="DropMenu is a button that opens a callout hosting any content you put in it: an action list, a form, a filter panel, or a navigation menu. The callout is anchored to the button, flips to the side with the most room, can be sized in every direction, and closes on an outside click or the Escape key. It opens on a click or on hover, carries the menu-button semantics and the keyboard that goes with them, can keep the focus inside itself while it is open, and turns into a swipeable side panel on small screens."
+          Description="DropMenu is a button that opens a callout hosting any content you put in it: an action list, a form, a filter panel, or a navigation menu. The callout is anchored to the button, flips to the side with the most room, can be sized in every direction, and closes on an outside click or the Escape key. It opens on a click or on hover, carries the menu-button semantics and the keyboard that goes with them, can keep the focus inside itself while it is open or close itself as soon as its content is clicked, and turns into a swipeable side panel on small screens."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubClasses="componentSubClasses"
@@ -15,9 +15,9 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
         <div>
             The <b>Text</b> parameter labels the button and the content of the component becomes the body of the callout.
-            <b>IsEnabled</b> turns the whole drop menu off, <b>Transparent</b> drops the background of the button,
-            <b>NoShadow</b> drops the box-shadow of the callout, and <b>FullWidth</b> stretches the button to the
-            available width.
+            <b>IsEnabled</b> turns the whole drop menu off, down to the Open and Toggle methods, and closes a callout
+            that was already open. <b>Transparent</b> drops the background of the button, <b>NoShadow</b> drops the
+            box-shadow of the callout, and <b>FullWidth</b> stretches the button to the available width.
         </div>
         <br />
         <BitDropMenu Text="Basic">
@@ -143,10 +143,11 @@
 
     <DemoExample Title="Responsive" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            With <b>Responsive</b>, the callout becomes a full-height panel on small screens (under 600px) that slides in
-            from the edge given by <b>PanelPosition</b> and can be swiped away. Point <b>ScrollContainerId</b> at the
-            scrollable element inside the content so the swipe gesture does not fight its scrolling. Resize the window
-            to see it.
+            With <b>Responsive</b>, the callout becomes a panel on small screens (under 600px) that slides in from the
+            edge given by <b>PanelPosition</b> and is swiped away along the same axis it slid in on: sideways for
+            <b>Start</b> and <b>End</b>, up or down for <b>Top</b> and <b>Bottom</b>. Point <b>ScrollContainerId</b> at
+            the scrollable element inside the content so the swipe gesture does not fight its scrolling. Resize the
+            window to see it.
         </div>
         <br />
         <BitDropMenu Text="End PanelPosition" Responsive ScrollContainerId="sc-con1" PanelPosition="BitPanelPosition.End">
@@ -169,6 +170,18 @@
                     <BitText Typography="BitTypography.Subtitle1" NoWrap>This is the content</BitText>
                 </BitStack>
             </div>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="Top PanelPosition" Responsive PanelPosition="BitPanelPosition.Top">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">Swipe up to dismiss it</BitText>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="Bottom PanelPosition" Responsive PanelPosition="BitPanelPosition.Bottom">
+            <BitStack Gap="1rem" Style="padding:0.5rem">
+                <BitText Typography="BitTypography.Subtitle1">Swipe down to dismiss it</BitText>
+            </BitStack>
         </BitDropMenu>
     </DemoExample>
 
@@ -196,8 +209,10 @@
 
     <DemoExample Title="Loading" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
-            <b>IsLoading</b> swaps the icon of the button for a spinner and blocks the callout from opening, which is
-            what you want while the content of the menu is still being fetched.
+            <b>IsLoading</b> swaps the icon of the button for a spinner, marks the button busy for the screen readers
+            and blocks the callout from opening, which is what you want while the content of the menu is still being
+            fetched. A callout that is already open is closed, so the content on the screen never outlives the data
+            behind it.
         </div>
         <br />
         <BitToggle @bind-Value="isLoading" Label="IsLoading" />
@@ -218,7 +233,8 @@
             after the callout is measured, which is why it wins over <b>Width</b>. <b>MaxHeight</b> caps the height and
             scrolls the content past that point, which keeps a long list usable. Without one, the callout is capped to
             the room the viewport leaves and scrolls on its own, so content taller than the screen never ends up out of
-            reach below it.
+            reach below it &mdash; a MaxHeight takes that automatic cap over, so keep it within what the shortest
+            screen you target can show.
         </div>
         <br />
         <BitDropMenu Text="A rather wide drop menu button" MatchWidth>
@@ -340,9 +356,11 @@
     <DemoExample Title="Keyboard &amp; focus" RazorCode="@example12RazorCode" Id="example12">
         <div>
             The button carries the full menu-button semantics (aria-haspopup, aria-controls and aria-expanded), opens on
-            <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> or <b>ArrowUp</b>, and closes on <b>Escape</b>. The arrow keys
-            also hand the focus straight to the content, and whenever the callout is closed while the focus is inside it
-            the focus goes back to the button, so the keyboard never ends up at the top of the page.
+            <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> or <b>ArrowUp</b>, and closes on <b>Escape</b>. Every one of
+            those keys hands the focus straight to the content, unlike a click, which leaves it where the pointer put
+            it, and the arrow keys reach the content of an already open callout too. <b>Tab</b> off the button closes
+            the callout and carries on through the page, and whenever the callout is closed while the focus is inside
+            it the focus goes back to the button, so the keyboard never ends up at the top of the page.
         </div>
         <br />
         <div>
@@ -388,7 +406,33 @@
         <div>Clicked: @clickCounter, Opened: @openCounter, Dismissed: @dismissCounter</div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Auto close" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>AutoClose</b> closes the callout as soon as a click lands anywhere inside it, which is what an action
+            list is expected to do: picking an item completes the interaction. It is off by default, so that a callout
+            hosting a form, a filter panel or anything else that is used before it is dismissed stays open while the
+            user works in it. The focus follows the callout back to the button, so a keyboard user carries on from the
+            trigger they left.
+        </div>
+        <br />
+        <BitDropMenu Text="@($"AutoClose ({autoCloseAction})")" AutoClose IconName="@BitIconName.More">
+            <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Renamed")">Rename</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Duplicated")">Duplicate</BitButton>
+                <BitButton Variant="BitVariant.Text" OnClick="@(() => autoCloseAction = "Deleted")">Delete</BitButton>
+            </BitStack>
+        </BitDropMenu>
+        <br />
+        <BitDropMenu Text="Without AutoClose" IconName="@BitIconName.Filter">
+            <BitStack Gap="0.5rem" Style="padding:0.5rem">
+                <BitCheckbox Label="Active" />
+                <BitCheckbox Label="Archived" />
+                <BitCheckbox Label="Draft" />
+            </BitStack>
+        </BitDropMenu>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>Color</b> paints the button with one of the general colors of the library. The accent colors give a filled
             button with a matching text color, and the background, foreground and border colors give the neutral surfaces.
@@ -423,7 +467,7 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> and <b>ChevronDownIcon</b> parameters.</div>
         <br />
         <div>
@@ -476,7 +520,7 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Size</b> scales the font and the padding of the button together, from <b>Small</b> through <b>Medium</b>
             (the default) to <b>Large</b>. The callout is not scaled, since its size comes from its content.
@@ -501,7 +545,7 @@
         </BitDropMenu>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
             part of the component on their own: the root, the button, the icon, the text, the chevron, the overlay, the
@@ -547,7 +591,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Use <b>Dir</b> to render the drop menu right-to-left. The button mirrors its icon and chevron, the callout is
             anchored from the right edge of the button, and a responsive panel slides in from the mirrored side and is

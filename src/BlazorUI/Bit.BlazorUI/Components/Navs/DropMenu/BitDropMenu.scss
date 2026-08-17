@@ -187,6 +187,15 @@
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
     --bit-drm-transform-factor: 1;
 
+    // The callout is programmatically focusable, and the focus lands on it when the content holds nothing
+    // focusable of its own, so it needs an indicator of its own to stay perceivable (WCAG 2.4.7). The ring
+    // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
+    // take the place of the elevation the callout is drawn with.
+    &:focus-visible {
+        outline: $shp-focus-ring-width solid $clr-pri-focus;
+        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    }
+
     &[data-bit-cal-pos="above"] {
         --bit-drm-cal-tra-ent: translateY(#{spacing(0.5)});
     }
@@ -296,19 +305,26 @@
             transform: translateX(calc(var(--bit-drm-transform-factor) * 100%));
         }
 
+        // A panel that comes down from the top or up from the bottom is a sheet as tall as its content,
+        // unlike the side ones, which run the full height of the screen: the full height the rule above
+        // gives them all would leave a sheet covering the page it is meant to sit over. The positioning
+        // code caps it to the visible viewport on its own, so a taller content is capped rather than cut.
         &.bit-drm-top {
             top: 0;
             width: 100%;
             max-width: 100%;
             inset-inline: 0;
+            height: fit-content;
             transform: translateY(-100%);
         }
 
         &.bit-drm-btm {
+            top: unset;
             bottom: 0;
             width: 100%;
             max-width: 100%;
             inset-inline: 0;
+            height: fit-content;
             transform: translateY(100%);
         }
     }
