@@ -67,14 +67,15 @@ public static class DocsPageRenderer
     /// </para>
     /// </summary>
     public static async Task<(string? Markdown, string? Error)> RenderCachedMarkdownAsync(
-        HtmlRenderer htmlRenderer, NavigationManager navigationManager, string baseUri, DocLink page)
+        HtmlRenderer htmlRenderer, NavigationManager navigationManager, ILogger logger, string baseUri, DocLink page,
+        CancellationToken cancellationToken = default)
     {
         // '\n' cannot occur in either part, so no pair of them can collide on one key.
         var key = $"{baseUri}\n{page.Url}";
 
         if (_rendered.TryGetValue(key, out var cached)) return (cached, null);
 
-        var (markdown, error) = await TryRenderMarkdownAsync(htmlRenderer, navigationManager, baseUri, page);
+        var (markdown, error) = await TryRenderMarkdownAsync(htmlRenderer, navigationManager, logger, baseUri, page, cancellationToken);
 
         // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
         if (markdown is null) return (null, error);
@@ -94,7 +95,8 @@ public static class DocsPageRenderer
 
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
     public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
-        HtmlRenderer htmlRenderer, NavigationManager navigationManager, string baseUri, DocLink page)
+        HtmlRenderer htmlRenderer, NavigationManager navigationManager, ILogger logger, string baseUri, DocLink page,
+        CancellationToken cancellationToken = default)
     {
         if (EnsureLocation(navigationManager, baseUri, page.Url) is false)
         {
@@ -105,6 +107,11 @@ public static class DocsPageRenderer
 
         try
         {
+            // Checked here and once more after the render: HtmlRenderer has no overload that takes a
+            // token, so the render itself cannot be interrupted - but a client that gave up while a
+            // page was queued behind the dispatcher should not then be charged for flattening it.
+            cancellationToken.ThrowIfCancellationRequested();
+
             var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
             {
                 var component = await htmlRenderer.RenderComponentAsync(page.PageType);
@@ -112,11 +119,26 @@ public static class DocsPageRenderer
                 return component.ToHtmlString();
             });
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             return (html.ToMarkdown(), null);
+        }
+        catch (OperationCanceledException)
+        {
+            // The client cancelled or disconnected. Rethrown rather than reported: this is not a
+            // page that failed to render, and answering with prose about it would put an
+            // explanation of the cancellation into the transcript of a request that no longer exists.
+            throw;
         }
         catch (Exception exception)
         {
-            return (null, exception.Message);
+            // Logged with the slug, answered with a fixed sentence: the exception's own message can
+            // carry paths, connection strings and internals of this server, and the caller is an
+            // arbitrary MCP client. What went wrong belongs in the server's log, where whoever can
+            // fix it will look; the client only needs to know that this page is not coming.
+            logger.LogError(exception, "Rendering the Bit.Butil documentation page /{Slug} failed.", page.Url);
+
+            return (null, "the page threw while rendering - the server's log has the detail");
         }
     }
 

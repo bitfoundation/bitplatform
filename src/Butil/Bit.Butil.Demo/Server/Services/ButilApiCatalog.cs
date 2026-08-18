@@ -30,6 +30,25 @@ public static class ButilApiCatalog
 
     private static readonly ConcurrentDictionary<string, ButilApiTypeDetailsDto> _typeDetails = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// The version of the Bit.Butil assembly these answers are reflected out of - what the MCP
+    /// server reports as its own version, because that is what an answer from it is true of. The
+    /// informational version carries the source-revision suffix the build stamps on, which is
+    /// exactly what identifies one build of a documentation server from another.
+    /// </summary>
+    public static string Version { get; } =
+        _assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? _assembly.GetName().Version?.ToString()
+        ?? "unknown";
+
+    /// <summary>
+    /// The same version with the build metadata cut off - "1.0.0" rather than "1.0.0+eba7b0d97...".
+    /// Used wherever the version is read as prose rather than matched as an identity: a forty-
+    /// character commit hash mid-sentence costs a client's context window and tells a reader nothing
+    /// they can act on, and the full string is still one initialize away in serverInfo.
+    /// </summary>
+    public static string DisplayVersion { get; } = Version.Split('+')[0];
+
     private static readonly Lazy<ButilApiTypeDto[]> _types = new(() =>
         [.. _publicTypes.Value.Select(t => new ButilApiTypeDto
         {

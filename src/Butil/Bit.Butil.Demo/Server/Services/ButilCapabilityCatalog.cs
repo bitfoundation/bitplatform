@@ -27,6 +27,13 @@ public static class ButilCapabilityCatalog
     /// </summary>
     private static readonly string[] _fastInvokeServices = ["LocalStorage", "SessionStorage", "Cookie", "Console", "Location"];
 
+    /// <summary>
+    /// How many names one plan will inspect. Every name costs a reflection lookup and a walk of the
+    /// docs nav, and the parameter is free text off a public endpoint: a feature built on more than
+    /// this many APIs is not a feature, so the rest are reported back rather than resolved.
+    /// </summary>
+    public const int MaxPlannedApis = 25;
+
     private static readonly Lazy<ButilCapabilityDto[]> _capabilities = new(() =>
         [.. DocsNav.ApiLinks.Select(link => new ButilCapabilityDto
         {
@@ -131,7 +138,12 @@ public static class ButilCapabilityCatalog
     /// </summary>
     public static ButilFeaturePlanDto Plan(IEnumerable<string> names)
     {
-        var inspections = names.Select(Inspect).ToArray();
+        var requested = names.ToArray();
+
+        // Taken in the order they were passed, so a caller over the cap keeps the APIs it named
+        // first rather than an arbitrary subset of them.
+        var inspections = requested.Take(MaxPlannedApis).Select(Inspect).ToArray();
+        var ignored = requested.Skip(MaxPlannedApis).ToArray();
         var known = inspections.Where(i => i.IsKnown).ToArray();
 
         // Distinct: two services documented on one page - LocalStorage and SessionStorage, or the
@@ -213,6 +225,12 @@ public static class ButilCapabilityCatalog
         checklist.Add("Confirm each member you call with GetButilApiDetails before writing against it - the wrappers follow " +
                       "the browser API's own naming, which is not always the name you would guess.");
 
+        if (ignored.Length > 0)
+        {
+            checklist.Add($"This plan covers the first {MaxPlannedApis} APIs named. Not planned: " +
+                $"{string.Join(", ", ignored)}. Call PlanButilFeature again with those to see what they add.");
+        }
+
         return new ButilFeaturePlanDto
         {
             Apis = inspections,
@@ -221,7 +239,8 @@ public static class ButilCapabilityCatalog
             RequiresPermission = permission,
             RequiresUserGesture = gesture,
             EngineLimited = [.. limited.Select(l => $"{l.Title}: {l.Support.Label()}")],
-            Checklist = [.. checklist]
+            Checklist = [.. checklist],
+            Ignored = ignored.Length > 0 ? ignored : null
         };
     }
 

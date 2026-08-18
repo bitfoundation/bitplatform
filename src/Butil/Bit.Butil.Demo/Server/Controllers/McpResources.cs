@@ -15,20 +15,27 @@ namespace Bit.Butil.Demo.Server.Controllers;
 /// attach documentation to a conversation up front, or let a person browse and pin it. Both read
 /// the same catalogs, so neither can go stale relative to the other.
 /// </para>
+/// <para>
+/// Each one carries a slug for its Name and a sentence for its Title, which is the split the
+/// protocol asks for and the split a resource picker needs: the name is the identifier a client
+/// stores and a completion returns, and it has to stay the same across releases, while the title
+/// is the line a person reads in the list and is free to be rewritten whenever it reads better.
+/// </para>
 /// </summary>
 [McpServerResourceType]
-public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor)
+public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor,
+                          ILogger<McpResources> logger)
 {
-    [McpServerResource(UriTemplate = "butil://guide", Name = "Bit.Butil reference guide", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://guide", Name = "butil-guide", Title = "Bit.Butil reference guide", MimeType = "text/markdown")]
     [Description("The complete Bit.Butil reference guide (the library's README), every section in one document.")]
     public static string Guide() => ButilSourceCatalog.Readme;
 
-    [McpServerResource(UriTemplate = "butil://guide/{heading}", Name = "Guide section", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://guide/{heading}", Name = "butil-guide-section", Title = "Guide section", MimeType = "text/markdown")]
     [Description("One section of the Bit.Butil reference guide by heading, e.g. butil://guide/Subscriptions%20are%20disposable.")]
     public static string GuideSection(string heading)
         => ButilSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.";
 
-    [McpServerResource(UriTemplate = "butil://api", Name = "Bit.Butil public API", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://api", Name = "butil-api", Title = "Bit.Butil public API", MimeType = "text/markdown")]
     [Description("Every public Bit.Butil type with its kind and summary, the injectable services first.")]
     public static string ApiList()
     {
@@ -49,7 +56,7 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         return builder.ToString();
     }
 
-    [McpServerResource(UriTemplate = "butil://api/{typeName}", Name = "Type reference", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://api/{typeName}", Name = "butil-api-type", Title = "Type reference", MimeType = "text/markdown")]
     [Description("The full reference of one Bit.Butil type, e.g. butil://api/Clipboard.")]
     public static string ApiType(string typeName)
     {
@@ -83,7 +90,7 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         return builder.ToString();
     }
 
-    [McpServerResource(UriTemplate = "butil://support", Name = "Browser support matrix", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://support", Name = "butil-support", Title = "Browser support matrix", MimeType = "text/markdown")]
     [Description("Every browser API Bit.Butil wraps, with the engines that implement it and what it needs from the page.")]
     public static string Support()
     {
@@ -114,14 +121,14 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         }
     }
 
-    [McpServerResource(UriTemplate = "butil://source/{path}", Name = "Demo source file", MimeType = "text/plain")]
+    [McpServerResource(UriTemplate = "butil://source/{path}", Name = "butil-source", Title = "Demo source file", MimeType = "text/plain")]
     [Description("One source file of the demo or of the hosting samples, e.g. butil://source/Demo%2FClient%2FPages%2FClipboardPage.razor.")]
     public static string Source(string path)
         => ButilSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
 
-    [McpServerResource(UriTemplate = "butil://docs/{slug}", Name = "Documentation page", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "butil://docs/{slug}", Name = "butil-docs-page", Title = "Documentation page", MimeType = "text/markdown")]
     [Description("One page of the Bit.Butil documentation site, rendered as Markdown, e.g. butil://docs/clipboard.")]
-    public async Task<string> DocsPage(string slug)
+    public async Task<string> DocsPage(string slug, CancellationToken cancellationToken)
     {
         var page = DocsNav.FindByUrl(slug);
         if (page is null) return $"No documentation page has the slug '{slug}'.";
@@ -129,7 +136,7 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         // The same rendering the tool serves: one render per page and origin, and the same cap on
         // what a single answer may cost a client's context window.
         var (markdown, error) = await DocsPageRenderer.RenderCachedMarkdownAsync(
-            htmlRenderer, navigationManager, DocsPageRenderer.BaseUri(httpContextAccessor), page);
+            htmlRenderer, navigationManager, logger, DocsPageRenderer.BaseUri(httpContextAccessor), page, cancellationToken);
 
         return markdown is null ? DocsPageRenderer.Unavailable(page, error) : DocsPageRenderer.Truncate(markdown);
     }

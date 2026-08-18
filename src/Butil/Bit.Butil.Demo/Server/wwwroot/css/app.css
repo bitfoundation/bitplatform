@@ -2280,6 +2280,44 @@ label.check {
     word-break: break-all;
 }
 
+/* The name column now carries the tool's arguments and its annotations under the name itself. Kept
+   to a second line rather than a column of their own: they are qualifications of the name, and the
+   description column is the one that has to keep the width it has. */
+.mcp-tools .mcp-tool-meta {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+    column-gap: 0.375rem;
+    align-items: center;
+    margin-top: 0.375rem;
+}
+
+.mcp-tools .mcp-args {
+    font-size: 0.6875rem;
+    color: var(--bit-clr-fg-ter);
+    font-family: var(--demo-font-mono);
+    overflow-wrap: anywhere;
+}
+
+/* The values a completion came back with. They arrive on every keystroke, so the row wraps and
+   grows rather than scrolling: a list that moves under the cursor is harder to read than a tall one. */
+.mcp-completions {
+    row-gap: 0.375rem;
+}
+
+/* The name column has to give when the viewport cannot hold three columns of it. */
+@media (max-width: 40rem) {
+    .mcp-tools .th-row,
+    .mcp-tools .tdata-row {
+        min-width: 0;
+    }
+
+    .mcp-tools .th-cell:nth-child(1),
+    .mcp-tools .td-cell:nth-child(1) {
+        flex: 0 0 9rem;
+    }
+}
+
 /* ---------------------------------------------------------------------------
    19. Blazor error UI
    --------------------------------------------------------------------------- */
@@ -2335,12 +2373,15 @@ label.check {
         margin: 0 0.625rem;
     }
 
+    /* Wide enough that the placeholder and a typed query still have room: the field
+       spends 5rem of its width on the padding that keeps text clear of the magnifier
+       and the shortcut hint, so 9rem left barely four characters visible. */
     .header-search input {
-        width: 9rem;
+        width: 11rem;
     }
 
     .header-search input:focus {
-        width: 12rem;
+        width: 14rem;
     }
 
     .demo-area {

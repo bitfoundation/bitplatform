@@ -151,7 +151,7 @@ public record ButilApiInspectionDto
     /// <summary>The Bit.Butil types behind it.</summary>
     public string[]? Services { get; init; }
 
-    /// <summary>The injection line to put in a component, when the API is an injectable service.</summary>
+    /// <summary>The injection lines to put in a component, one per injectable service behind the API.</summary>
     public string[]? Inject { get; init; }
 
     public string? BrowserSupport { get; init; }
@@ -192,6 +192,9 @@ public record ButilFeaturePlanDto
 
     /// <summary>The ordered checklist for shipping this feature.</summary>
     public required string[] Checklist { get; init; }
+
+    /// <summary>Names past the per-plan cap, which were not inspected. Pass them in a second call.</summary>
+    public string[]? Ignored { get; init; }
 }
 
 /// <summary>A source file of the demo/samples, retrievable through GetButilSourceFile.</summary>

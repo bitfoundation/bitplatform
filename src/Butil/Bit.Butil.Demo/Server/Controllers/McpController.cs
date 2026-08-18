@@ -1,5 +1,4 @@
 using System.Text;
-using System.Reflection;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 using Bit.Butil.Demo.Client.Docs;
@@ -20,21 +19,29 @@ namespace Bit.Butil.Demo.Server.Controllers;
 /// version actually does rather than a snapshot someone wrote down. The same methods are exposed as
 /// plain HTTP GET endpoints under /api/mcp/..., which makes each of them inspectable from a browser.
 /// </para>
+/// <para>
+/// Every one of them carries the same four annotations, because every one of them is the same kind
+/// of call: it reads, it reads only from this process, and asking twice gives the same answer.
+/// Those are not decoration. A client that is told a tool is read-only can run it without stopping
+/// to ask a person for confirmation first, which is the difference between an agent that consults
+/// the documentation and one that guesses rather than interrupt; and OpenWorld = false says the
+/// answers come from this build rather than from the web, so a disagreement with a search result is
+/// this library's version of the truth. The tools that answer with data also set
+/// UseStructuredContent, which publishes an output schema and puts the object itself in
+/// structuredContent - a client that can consume it no longer has to re-parse JSON out of prose.
+/// </para>
 /// </summary>
 [ApiController]
 [McpServerToolType]
 // Fully qualified: Microsoft.AspNetCore.Components brings its own RouteAttribute, and this file
 // needs that namespace for the renderer and the NavigationManager.
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
-public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor) : ControllerBase
+public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor,
+                          ILogger<McpController> logger) : ControllerBase
 {
-    private static readonly string ButilVersion =
-        typeof(BitButil).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? typeof(BitButil).Assembly.GetName().Version?.ToString()
-        ?? "unknown";
-
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilOverview))]
+    [McpServerTool(Name = nameof(GetButilOverview), Title = "Bit.Butil overview",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Start here. Explains what Bit.Butil is, how to install and register it, shows a minimal working page, and lists which of the other Butil tools to call for what.")]
     public string GetButilOverview()
     {
@@ -45,7 +52,7 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
         builder.AppendLine(firstSection > 0 ? readme[..firstSection].Trim() : readme).AppendLine();
 
         // Which build the answers come from: every tool below reflects THIS assembly, not a remembered version.
-        builder.AppendLine($"_These tools answer from Bit.Butil {ButilVersion}, loaded in this server, " +
+        builder.AppendLine($"_These tools answer from Bit.Butil {ButilApiCatalog.DisplayVersion}, loaded in this server, " +
                            $"and cover {ButilApiCatalog.Services.Length} injectable services across " +
                            $"{DocsNav.ApiLinks.Count()} documented browser APIs._").AppendLine();
 
@@ -97,11 +104,14 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
               `false`/`null` rather than throwing. Treat it as a branch, not as an error.
             """);
 
-        return builder.ToString();
+        // Capped like the rest: this one is assembled from README sections, and a section that grows
+        // is a section that would otherwise grow the first answer of every session with it.
+        return Truncate(builder.ToString());
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(SearchButil))]
+    [McpServerTool(Name = nameof(SearchButil), Title = "Search everything about Bit.Butil",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Searches everything known about Bit.Butil at once - the reference guide, the documentation pages, every public type and member, the browser-support matrix and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which service or member does the job. Example queries: 'copy text to clipboard', 'keep the screen awake', 'detect when an element scrolls into view', 'store data offline', 'read a file the user picked'.")]
     public ButilSearchResultDto SearchButil(string query, int limit = 12)
     {
@@ -125,7 +135,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilSetupGuide))]
+    [McpServerTool(Name = nameof(GetButilSetupGuide), Title = "Setup guide for one hosting model",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets the complete wiring needed to add Bit.Butil to a Blazor app in one hosting model, as the real files of a working project: 'wasm' (standalone Blazor WebAssembly), 'web-app' (Blazor Web App with prerendering), 'server' (Blazor Server) or 'hybrid' (MAUI/WPF/WinForms). Call this before writing any setup code - which host page carries the script tag and how many DI containers register the services differ per hosting model, and getting either wrong produces an app where every browser call silently does nothing.")]
     public string GetButilSetupGuide(string hostingModel)
     {
@@ -139,7 +150,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilApiList))]
+    [McpServerTool(Name = nameof(GetButilApiList), Title = "List every public Bit.Butil type",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every public type of the Bit.Butil library - the injectable services, the static extension classes, the option types, enums and event/key-code catalogs - with its kind and summary. The 'IsInjectable' ones are the classes you inject by their own name. Use it to pick the type to pass to GetButilApiDetails.")]
     public ButilApiTypeDto[] GetButilApiList()
     {
@@ -147,7 +159,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilApiDetails))]
+    [McpServerTool(Name = nameof(GetButilApiDetails), Title = "Full reference of one type",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Gets the full reference of one Bit.Butil type: every method with its complete signature and default parameter values, every property, event or enum value, each with the XML documentation that ships with the library. Call it before using a member you are unsure about, e.g. 'Clipboard', 'LocalStorage', 'Geolocation', 'ElementReferenceExtensions', 'ButilEvents', 'ButilSubscription'.")]
     public ButilApiDetailsResultDto GetButilApiDetails(string typeName)
     {
@@ -176,7 +189,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(InspectButilApi))]
+    [McpServerTool(Name = nameof(InspectButilApi), Title = "What one API needs from the page",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Reports what using one Butil API entails beyond its signatures: which engines implement the browser API underneath it, what the calling page has to arrange first (HTTPS, a permission prompt, a user gesture), what it returns that has to be disposed, and how it behaves while the app is prerendering. Call it before writing the code, not after: these are the mistakes that compile and then silently do nothing. Accepts a service name ('Clipboard'), a member ('Geolocation.WatchPosition'), or a docs slug ('web-authn').")]
     public ButilApiInspectionDto InspectButilApi(string name)
     {
@@ -184,7 +198,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(PlanButilFeature))]
+    [McpServerTool(Name = nameof(PlanButilFeature), Title = "Plan a feature across several APIs",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Takes the set of Butil APIs a feature needs and reports their combined consequences: whether the app now has to be served over HTTPS, which permission prompts the UI has to explain, which calls must start from a click, which engines will run all of them, what has to be disposed - and the ordered checklist for shipping it. Pass the API or service names separated by newlines, commas or semicolons, e.g. 'MediaDevices, MediaRecorder, FileSystem'.")]
     public ButilFeaturePlanDto PlanButilFeature(string apis)
     {
@@ -194,7 +209,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilBrowserSupport))]
+    [McpServerTool(Name = nameof(GetButilBrowserSupport), Title = "Browser-support matrix",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every browser API Bit.Butil wraps with the engines that implement it and the preconditions it imposes on the page - a secure context, a permission prompt, a user gesture, an experimental flag. Use it to choose between two APIs that would both work, or to find out up front what a feature will demand of the deployment.")]
     public ButilCapabilityDto[] GetButilBrowserSupport()
     {
@@ -202,7 +218,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilDocsList))]
+    [McpServerTool(Name = nameof(GetButilDocsList), Title = "List the documentation pages",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists the pages of the Bit.Butil documentation site - one per browser API, plus the guide pages - with their summaries, the services they document and their browser support. Use it to pick the slug to pass to GetButilDocsPage.")]
     public ButilDocsPageDto[] GetButilDocsList()
     {
@@ -220,9 +237,10 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilDocsPage))]
+    [McpServerTool(Name = nameof(GetButilDocsPage), Title = "Read one documentation page",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one page of the Bit.Butil documentation site as Markdown, including its code samples and its API-reference table. Pass a slug from GetButilDocsList, e.g. 'clipboard', 'indexed-db', 'render-modes' or 'troubleshooting'.")]
-    public async Task<string> GetButilDocsPage(string slug)
+    public async Task<string> GetButilDocsPage(string slug, CancellationToken cancellationToken)
     {
         var page = DocsNav.FindByUrl(slug);
 
@@ -235,7 +253,7 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
 
         // The page is rendered by the same component the site serves, so the documentation an agent
         // reads is the documentation a human reads - there is no second copy that could go stale.
-        var (rendered, error) = await DocsPageRenderer.RenderCachedMarkdownAsync(htmlRenderer, navigationManager, BaseUri, page);
+        var (rendered, error) = await DocsPageRenderer.RenderCachedMarkdownAsync(htmlRenderer, navigationManager, logger, BaseUri, page, cancellationToken);
 
         if (rendered is null) return DocsPageRenderer.Unavailable(page, error);
 
@@ -244,7 +262,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilGuideSections))]
+    [McpServerTool(Name = nameof(GetButilGuideSections), Title = "List the reference guide's sections",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every section of the Bit.Butil reference guide (the library's README), with its heading and size. Use it to pick the heading to pass to GetButilGuideSection.")]
     public ButilGuideSectionDto[] GetButilGuideSections()
     {
@@ -252,7 +271,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilGuideSection))]
+    [McpServerTool(Name = nameof(GetButilGuideSection), Title = "Read one section of the guide",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one section of the Bit.Butil reference guide as Markdown, with its code samples - e.g. 'Getting started', 'Prerendering is safe by default', 'Subscriptions are disposable', 'Trimming and AOT'. Sub-sections are included. Heading matching ignores case and punctuation.")]
     public string GetButilGuideSection(string heading)
     {
@@ -269,7 +289,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilSourceFiles))]
+    [McpServerTool(Name = nameof(GetButilSourceFiles), Title = "List the working source files",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists the working Bit.Butil source files this server can hand out: every page of this documentation site (one per browser API, each a complete working example), and the minimal hosting samples. Use it to pick the path to pass to GetButilSourceFile.")]
     public ButilSourceFileDto[] GetButilSourceFiles()
     {
@@ -277,7 +298,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetButilSourceFile))]
+    [McpServerTool(Name = nameof(GetButilSourceFile), Title = "Read one working source file",
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one source file listed by GetButilSourceFiles, verbatim - e.g. 'Demo/Client/Pages/ClipboardPage.razor' for a complete, working page that exercises one browser API end to end.")]
     public string GetButilSourceFile(string path)
     {

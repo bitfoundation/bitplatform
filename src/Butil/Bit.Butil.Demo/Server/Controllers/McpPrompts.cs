@@ -18,7 +18,7 @@ namespace Bit.Butil.Demo.Server.Controllers;
 [McpServerPromptType]
 public static class McpPrompts
 {
-    [McpServerPrompt(Name = "add-butil-to-app")]
+    [McpServerPrompt(Name = "add-butil-to-app", Title = "Add Bit.Butil to a Blazor app")]
     [Description("Walks through adding Bit.Butil to an existing Blazor app, in the right order for its hosting model.")]
     public static string AddButilToApp(
         [Description("The app's hosting model: wasm, web-app, server or hybrid. Pass 'unknown' to have it determined from the project first.")] string hostingModel = "unknown")
@@ -46,7 +46,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "implement-butil-feature")]
+    [McpServerPrompt(Name = "implement-butil-feature", Title = "Implement a browser feature with Bit.Butil")]
     [Description("Implements a browser-platform feature with Bit.Butil - clipboard, storage, media, sensors, observers - using its real API rather than a guessed one.")]
     public static string ImplementButilFeature(
         [Description("What the feature should do, in your own words - e.g. 'let the user pick a photo and save a cropped copy back to disk' or 'keep the screen awake while a recipe is on screen'.")] string feature)
@@ -79,7 +79,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "replace-jsinterop-with-butil")]
+    [McpServerPrompt(Name = "replace-jsinterop-with-butil", Title = "Replace hand-written JS interop with Bit.Butil")]
     [Description("Replaces hand-written IJSRuntime interop and .js files in an app with the equivalent Bit.Butil services.")]
     public static string ReplaceJsInteropWithButil()
     {
@@ -107,7 +107,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "debug-butil-issue")]
+    [McpServerPrompt(Name = "debug-butil-issue", Title = "Debug a Bit.Butil problem")]
     [Description("Diagnoses a Bit.Butil problem - a call that returns nothing, a permission that never prompts, an event that never fires, a feature that works in one browser only.")]
     public static string DebugButilIssue(
         [Description("What goes wrong, with the service and member involved if you know them.")] string symptom)

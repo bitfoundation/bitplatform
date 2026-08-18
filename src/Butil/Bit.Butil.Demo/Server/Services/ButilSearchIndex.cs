@@ -85,6 +85,7 @@ public static class ButilSearchIndex
     private static int Score(Entry entry, string[] terms)
     {
         var score = 0;
+        var body = 0;
         var matched = 0;
 
         foreach (var term in terms)
@@ -100,8 +101,16 @@ public static class ButilSearchIndex
 
             // A term in a name is worth far more than the same term buried in prose: someone asking
             // for "ReadText" wants the method, not the paragraphs that happen to mention it.
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, 6);
+            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5;
+            body += Math.Min(inBody, 3);
         }
+
+        // A body here is a whole document - a guide section, a docs page and the source it is
+        // written in - and a long enough document mentions everything. Capping the prose as a whole
+        // rather than per term is what lets full text be indexed at all: it can still rank a hit and
+        // break a tie between two of them, but it can never outweigh the entry whose NAME was asked
+        // for, which is the ranking the entire index exists to produce.
+        score += Math.Min(body, 9);
 
         // Every term matching is the strongest signal a hit is the right one.
         return matched == 0 ? 0 : score * matched;
@@ -200,6 +209,25 @@ public static class ButilSearchIndex
             .Take(MaxTerms)];
     }
 
+    /// <summary>
+    /// The text of a docs page: the source of the component that renders it.
+    /// <para>
+    /// A page's own summary is one sentence, and an index of nothing but one-sentence summaries only
+    /// ever finds the page whose title someone already knew. The prose that answers a question -
+    /// what the API is for, which member does what, the caveat halfway down - lives in the page,
+    /// and so does every code sample on it. The source is the static copy of all of that: the
+    /// rendered Markdown would be truer, but rendering needs a request scope and a live renderer,
+    /// which an index built once at startup has neither of.
+    /// </para>
+    /// <para>
+    /// The markup around the prose (attribute names, CSS classes) rides along as noise. It is
+    /// harmless here because a body can only ever contribute a capped number of points - see
+    /// <see cref="Score"/> - so matching markup can rank a page but never win on it.
+    /// </para>
+    /// </summary>
+    private static string PageText(DocLink link)
+        => ButilSourceCatalog.GetSourceFile($"Demo/Client/Pages/{link.PageType.Name}.razor") ?? string.Empty;
+
     private static Entry[] Build()
     {
         var entries = new List<Entry>(4096);
@@ -219,7 +247,7 @@ public static class ButilSearchIndex
                 // The types behind a page are boosted, so "LocalStorage" finds the page titled
                 // "Local & Session Storage" - which does not contain the word at all.
                 entries.Add(new Entry("Docs page", link.Title, group.Title,
-                    $"GetButilDocsPage(slug: \"{link.Url}\")", link.Summary,
+                    $"GetButilDocsPage(slug: \"{link.Url}\")", $"{link.Summary}\n{PageText(link)}",
                     $"{link.Url} {string.Join(' ', link.TypeNames())}"));
             }
         }
