@@ -1,0 +1,966 @@
+@page "/mcp"
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+@* The MCP server's own documentation page. Everything interactive on it calls the demo's real
+   /api/mcp endpoints - the same methods the MCP server exposes as tools - so what a reader tries
+   here is exactly what an agent gets, and the page cannot document a tool that does not work.
+
+   The tool, prompt and resource tables are fetched rather than written out, for the same reason:
+   they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
+
+<PageTitle>MCP server - Bit.Bmotion</PageTitle>
+
+<h1>MCP server</h1>
+
+<p class="page-intro">
+    This demo ships a <strong>Model Context Protocol</strong> server, so an AI agent can write
+    Bmotion code from what the library <em>actually</em> is rather than from what it remembers.
+    Half of its tools answer from this build's own text - the guide, the XML documentation compiled
+    into the assembly, the source of every page you have been reading. The other half answer by
+    <strong>running the real animation engine off-screen</strong> and reporting what it did. That
+    second half is the reason it exists: no amount of documentation can tell you that
+    <code>Bm.Spring(stiffness: 400, damping: 2)</code> wobbles for five seconds, or that animating
+    <code>height</code> stops moving the moment your app is served over Blazor Server.
+</p>
+
+<div class="demo-section">
+    <h2>Why an animation library needs one</h2>
+    <p>
+        Almost every way of getting an animation wrong is silent. There is no compiler error, no
+        exception, and nothing in the browser console - the page simply does not move, or moves
+        differently in production than it did on your machine. Three examples this server answers
+        directly:
+    </p>
+
+    <div class="mcp-why">
+        @foreach (var (index, problem) in _problems.Index())
+        {
+            <Bmotion Initial="Bm.To(opacity: 0, y: 18)"
+                     WhileInView="Bm.To(opacity: 1, y: 0)"
+                     Once="true"
+                     Transition="@Bm.Spring(bounce: 0.2, duration: 0.5).WithDelay(index * 0.08)">
+                <div class="mcp-why-card">
+                    <span class="mcp-why-symptom">@problem.Symptom</span>
+                    <p>@problem.Cause</p>
+                    <code>@problem.Tool</code>
+                </div>
+            </Bmotion>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Connect your agent</h2>
+    <p>
+        The server speaks MCP over HTTP at <code>/mcp</code>. Run this demo, then point any MCP
+        client at it. The same methods are also plain <code>GET</code> endpoints under
+        <code>/api/mcp/...</code>, so you can open any of them in a browser tab - which is exactly
+        what the panels further down this page do.
+    </p>
+
+    <div class="mcp-tabs" role="tablist">
+        @foreach (var client in _clients)
+        {
+            <button type="button" role="tab" class="mcp-tab @(_client == client.Name ? "active" : null)"
+                    aria-selected="@(_client == client.Name)"
+                    @onclick="@(() => _client = client.Name)">
+                @client.Name
+            </button>
+        }
+    </div>
+
+    @{
+        var selected = _clients.First(c => c.Name == _client);
+    }
+
+    <p class="mcp-tab-note">@selected.Note</p>
+    <CodeSnippet Code="@selected.Config" />
+</div>
+
+<div class="demo-section">
+    <h2>The transition lab</h2>
+    <p>
+        <code>SimulateBmotionTransition</code> plays a transition on the real engine with no browser
+        involved, and reports what the motion does. A spring has no duration argument - how long it
+        takes and how far it overshoots fall out of the physics - so this is the only way to know
+        what one feels like before shipping it.
+    </p>
+    <p>
+        The box below is not an approximation: it replays the exact per-frame values the server
+        measured, handed back as keyframes.
+    </p>
+
+    <div class="mcp-lab">
+        <div class="mcp-lab-controls">
+            <label for="mcp-spec">Transition</label>
+            <input id="mcp-spec" type="text" value="@_spec" @onchange="OnSpecChanged" disabled="@_busy" />
+
+            <div class="mcp-presets">
+                @foreach (var preset in _presets)
+                {
+                    <button type="button" class="mcp-chip" disabled="@_busy"
+                            @onclick="@(() => RunSimulationAsync(preset))">
+                        @preset
+                    </button>
+                }
+            </div>
+
+            <button class="btn-bm" @onclick="@(() => RunSimulationAsync(_spec))" disabled="@_busy">
+                @(_busy ? "Measuring..." : "Measure it")
+            </button>
+        </div>
+
+        <div class="mcp-lab-stage">
+            @if (_simulation is { Samples.Length: > 1 })
+            {
+                @* @key on the replay counter: changing it re-mounts the element, which is what makes
+                   the keyframe animation play again rather than sit at its resting value. *@
+                <Bmotion Animate="Bm.To(x: _replayFrames)"
+                         Transition="Bm.Tween(_simulation.SettleSeconds, BmEase.Linear)"
+                         @key="_replay">
+                    <div class="box box-sm" />
+                </Bmotion>
+            }
+            else
+            {
+                <div class="box box-sm mcp-box-idle" />
+            }
+        </div>
+    </div>
+
+    @if (_error is not null)
+    {
+        <p class="mcp-error">@_error</p>
+    }
+    else if (_simulation is not null)
+    {
+        <div class="mcp-metrics">
+            <div><span>Settles in</span><strong>@_simulation.SettleSeconds.ToString("0.00")s</strong></div>
+            <div><span>Overshoot</span><strong>@_simulation.OvershootPercent.ToString("0.#")%</strong></div>
+            <div><span>Crossings</span><strong>@_simulation.TargetCrossings</strong></div>
+            <div><span>90% at</span><strong>@_simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+        </div>
+
+        <pre class="mcp-sparkline">@_simulation.Sparkline</pre>
+        <p class="mcp-reading">@_simulation.Reading</p>
+
+        @foreach (var warning in _simulation.Warnings)
+        {
+            <p class="mcp-warning">@warning</p>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Will it work on Blazor Server?</h2>
+    <p>
+        Only animations the browser compositor can own play on Blazor Server; everything else needs
+        the C# per-frame loop, which does not exist there, and becomes an instant jump.
+        <code>AnalyzeBmotionAnimation</code> does not consult a table - it starts the animation on
+        the real engine and watches which path the engine takes.
+    </p>
+
+    <div class="mcp-check">
+        <div class="mcp-check-row">
+            <label for="mcp-props">Properties</label>
+            <input id="mcp-props" type="text" value="@_properties" @onchange="OnPropertiesChanged" disabled="@_checking" />
+        </div>
+        <div class="mcp-check-row">
+            <label for="mcp-trans">Transition</label>
+            <input id="mcp-trans" type="text" value="@_checkSpec" @onchange="OnCheckSpecChanged" disabled="@_checking" />
+        </div>
+
+        <div class="mcp-presets">
+            @foreach (var example in _checkExamples)
+            {
+                <button type="button" class="mcp-chip" disabled="@_checking"
+                        @onclick="@(() => RunCheckAsync(example.Properties, example.Transition))">
+                    @example.Properties
+                </button>
+            }
+        </div>
+
+        <button class="btn-bm" @onclick="@(() => RunCheckAsync(_properties, _checkSpec))" disabled="@_checking">
+            @(_checking ? "Asking the engine..." : "Ask the engine")
+        </button>
+    </div>
+
+    @* An unreadable transition comes back as data rather than as a failed call, so the verdict is
+       only shown when there is one - a "Snaps on Blazor Server" banner for an animation that was
+       never analysed would be a claim about the animation, and a wrong one. *@
+    @if (_playback?.Error is not null)
+    {
+        <p class="mcp-error">@_playback.Error</p>
+    }
+    else if (_playback is not null)
+    {
+        <div class="mcp-verdict @(_playback.WorksOnBlazorServer ? "ok" : "warn")">
+            <strong>@(_playback.WorksOnBlazorServer ? "Plays on Blazor Server" : "Snaps on Blazor Server")</strong>
+            <span>@_playback.Path</span>
+        </div>
+
+        <p class="mcp-reading">@_playback.Reason</p>
+
+        @if (_playback.HowToOffload is { Length: > 0 })
+        {
+            <ul class="mcp-fixes">
+                @foreach (var fix in _playback.HowToOffload)
+                {
+                    <li>@fix</li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Review your markup</h2>
+    <p>
+        <code>ReviewBmotionCode</code> is the pass that closes the loop after an agent writes code.
+        It looks for the mistakes that compile cleanly and then do nothing - an <code>Exit</code>
+        with no presence component around it, a <code>@@foreach</code> with no <code>@@key</code>, a
+        spring whose duration the engine ignores. The sample below contains several on purpose.
+    </p>
+
+    <textarea class="mcp-code" rows="9" spellcheck="false"
+              value="@_review" @onchange="OnReviewChanged" disabled="@_reviewing"></textarea>
+
+    <div class="demo-actions">
+        <button class="btn-bm" @onclick="RunReviewAsync" disabled="@_reviewing">
+            @(_reviewing ? "Reviewing..." : "Review it")
+        </button>
+    </div>
+
+    @if (_findings is not null)
+    {
+        @if (_findings.Findings.Length == 0)
+        {
+            <p class="mcp-reading">Nothing to report - all @_findings.RulesApplied.Length rules passed.</p>
+        }
+        else
+        {
+            <ul class="mcp-findings">
+                @foreach (var finding in _findings.Findings)
+                {
+                    <Bmotion Initial="Bm.To(opacity: 0, x: -12)"
+                             Animate="Bm.To(opacity: 1, x: 0)"
+                             Transition="Bm.Tween(0.25)">
+                        <li class="mcp-finding @finding.Severity.ToLowerInvariant()">
+                            <span class="mcp-severity">@finding.Severity</span>
+                            <span class="mcp-rule">@finding.Rule</span>
+                            <span class="mcp-line">line @finding.Line</span>
+                            <p>@finding.Message</p>
+                            <p class="mcp-fix">@finding.Fix</p>
+                        </li>
+                    </Bmotion>
+                }
+            </ul>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>One search across everything</h2>
+    <p>
+        An agent rarely knows which corpus holds the answer. <code>SearchBmotion</code> covers the
+        guide, every public member, the animatable properties, the easing presets, the recipes, the
+        setup guides and the demo's sources at once - and every hit carries the exact follow-up call
+        that returns it in full.
+    </p>
+
+    <div class="mcp-search">
+        <input type="search" value="@_query" @onchange="OnQueryChanged" disabled="@_searching"
+               placeholder="make a list appear one item at a time" aria-label="Search Bmotion" />
+        <button class="btn-bm" @onclick="RunSearchAsync" disabled="@_searching">
+            @(_searching ? "Searching..." : "Search")
+        </button>
+    </div>
+
+    @if (_hits is { Length: > 0 })
+    {
+        <ul class="mcp-hits">
+            @foreach (var hit in _hits)
+            {
+                <li>
+                    <span class="mcp-hit-kind">@hit.Kind</span>
+                    <span class="mcp-hit-title">@hit.Title</span>
+                    <code>@hit.Tool</code>
+                </li>
+            }
+        </ul>
+    }
+    else if (_hits is not null)
+    {
+        <p class="mcp-reading">Nothing matched that.</p>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Tools</h2>
+    <p>
+        Eighteen of them, listed here straight from the attributes that declare them - so this table
+        cannot fall out of step with the server.
+    </p>
+
+    @if (_catalog is null)
+    {
+        <p class="mcp-reading">Loading the catalog...</p>
+    }
+    else
+    {
+        <div class="mcp-table-wrap">
+            <table class="mcp-table">
+                <thead>
+                    <tr><th>Tool</th><th>Parameters</th><th>What it answers</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var tool in _catalog.Tools)
+                    {
+                        <tr>
+                            <td><code>@tool.Name</code></td>
+                            <td class="mcp-params">
+                                @if (tool.Parameters.Length == 0)
+                                {
+                                    <span class="mcp-none">none</span>
+                                }
+                                else
+                                {
+                                    @foreach (var parameter in tool.Parameters)
+                                    {
+                                        <code>@parameter</code>
+                                    }
+                                }
+                            </td>
+                            <td>@Shorten(tool.Description)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Prompts</h2>
+    <p>
+        Prompts are the workflows: the order to call the tools in for a whole task. They exist
+        because the failure mode of an agent holding eighteen tools is not ignorance - it is calling
+        them in a sequence that skips the check which would have caught the bug.
+    </p>
+
+    @if (_catalog is not null)
+    {
+        <div class="mcp-cards">
+            @foreach (var prompt in _catalog.Prompts)
+            {
+                <Bmotion WhileHover="Bm.To(y: -3, scale: 1.01)" Transition="Bm.Spring(stiffness: 400, damping: 28)">
+                    <div class="mcp-card">
+                        <code>@prompt.Name</code>
+                        <p>@prompt.Description</p>
+                        @if (prompt.Parameters.Length > 0)
+                        {
+                            <span class="mcp-card-params">@string.Join(" · ", prompt.Parameters)</span>
+                        }
+                    </div>
+                </Bmotion>
+            }
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Resources</h2>
+    <p>
+        The same knowledge as URIs, for clients that attach documentation to a conversation up front
+        or let a person browse and pin it. They read the same catalogs the tools do, so neither can
+        go stale relative to the other.
+    </p>
+
+    @if (_catalog is not null)
+    {
+        <ul class="mcp-resources">
+            @foreach (var resource in _catalog.Resources)
+            {
+                <li><code>@resource.Name</code><span>@resource.Description</span></li>
+            }
+        </ul>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>How it stays true</h2>
+    <p>
+        Documentation that is written down separately drifts, and an agent cannot tell a stale answer
+        from a fresh one. So nothing here is written down twice:
+    </p>
+
+    <ul class="mcp-principles">
+        <li>
+            <strong>The API reference is reflected</strong> out of the shipped assembly and paired
+            with the XML documentation compiled into it. A new component parameter appears the moment
+            it is written, with the default value it actually has - read off a freshly constructed
+            instance. In an animation library the defaults <em>are</em> the behaviour.
+        </li>
+        <li>
+            <strong>The guide, the demo pages and their sources are embedded</strong> into the server
+            assembly, so the tools keep working from a published deployment and always hand out the
+            same text this site renders.
+        </li>
+        <li>
+            <strong>The motion is measured, not described.</strong> A headless
+            <code>IBmotionInterop</code> lets the server construct a real
+            <code>BmotionAnimationEngine</code> with no DOM anywhere and advance its frame clock
+            itself. A three-second spring is simulated in microseconds.
+        </li>
+        <li>
+            <strong>The compositor verdict is observed.</strong> The engine decides whether an
+            animation can go to the browser through a long rule set; restating that rule set here
+            would mean maintaining a second copy of it and being wrong in exactly the cases that
+            matter. Instead the server starts the animation and records whether the engine reached
+            for the Web Animations API - including for every animatable property, once, to build the
+            table behind <code>GetBmotionAnimatableProperties</code>.
+        </li>
+    </ul>
+
+    <CodeSnippet Code="@_architectureCode" />
+</div>
+
+@code {
+    private sealed record Problem(string Symptom, string Cause, string Tool);
+
+    private sealed record McpClient(string Name, string Note, string Config);
+
+    private sealed record CheckExample(string Properties, string Transition);
+
+    // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather
+    // than sharing them: the client project does not reference the host, and these are the four
+    // fields the page renders out of each - not the whole contract.
+    private sealed record Simulation(double SettleSeconds, double OvershootPercent, int TargetCrossings,
+        double TimeTo90Percent, Sample[] Samples, string Sparkline, string Reading, string[] Warnings, string? Error);
+
+    private sealed record Sample(double Seconds, double Value);
+
+    private sealed record Playback(string Path, bool WorksOnBlazorServer, string Reason, string[]? HowToOffload, string? Error);
+
+    private sealed record Review(bool Passed, Finding[] Findings, string[] RulesApplied);
+
+    private sealed record Finding(string Severity, string Rule, int? Line, string Message, string Fix);
+
+    private sealed record Hit(string Kind, string Title, string? Context, string Tool, string Snippet);
+
+    private sealed record Catalog(CatalogMember[] Tools, CatalogMember[] Prompts, CatalogMember[] Resources);
+
+    private sealed record CatalogMember(string Name, string Description, string[] Parameters);
+
+    private static readonly Problem[] _problems =
+    [
+        new("It works locally, not in production",
+            "The animation touches a property the browser compositor cannot own, so it needs the C# frame loop - which does not exist on Blazor Server.",
+            "AnalyzeBmotionAnimation"),
+        new("The exit animation never plays",
+            "Blazor removed the element the moment the condition flipped. Exit needs a presence component to hold it in the DOM.",
+            "ReviewBmotionCode"),
+        new("The spring feels wrong and the numbers do not help",
+            "Stiffness and damping do not describe motion out loud. How long it takes and how far it overshoots are consequences, not settings.",
+            "SimulateBmotionTransition"),
+    ];
+
+    private static readonly McpClient[] _clients =
+    [
+        new("Claude Code",
+            "One command, from anywhere in your project.",
+            """
+            claude mcp add --transport http bmotion https://localhost:5001/mcp
+            """),
+        new("Claude Desktop",
+            "Add it to claude_desktop_config.json, then restart the app.",
+            """
+            {
+              "mcpServers": {
+                "bmotion": {
+                  "type": "http",
+                  "url": "https://localhost:5001/mcp"
+                }
+              }
+            }
+            """),
+        new("VS Code",
+            "Add it to .vscode/mcp.json in the workspace, and it is offered to Copilot in agent mode.",
+            """
+            {
+              "servers": {
+                "bmotion": {
+                  "type": "http",
+                  "url": "https://localhost:5001/mcp"
+                }
+              }
+            }
+            """),
+        new("Cursor",
+            "Add it to .cursor/mcp.json for this project, or to ~/.cursor/mcp.json for all of them.",
+            """
+            {
+              "mcpServers": {
+                "bmotion": {
+                  "url": "https://localhost:5001/mcp"
+                }
+              }
+            }
+            """),
+    ];
+
+    private static readonly string[] _presets =
+    [
+        "spring(stiffness: 260, damping: 12)",
+        "spring(bounce: 0.2, duration: 0.4)",
+        "spring(stiffness: 400, damping: 2)",
+        "tween(0.4, InOut)",
+        "tween(0.6, BackOut)",
+        "inertia(velocity: 500)",
+    ];
+
+    private static readonly CheckExample[] _checkExamples =
+    [
+        new("x, opacity", "spring(stiffness: 200, damping: 20)"),
+        new("width, height", "tween(0.4)"),
+        new("backgroundColor", "tween(0.4)"),
+        new("x", "inertia(velocity: 500)"),
+    ];
+
+    private const string _architectureCode = """
+        // Server/Services/BmotionMotionLab.cs - the whole trick, in five lines.
+        //
+        // HeadlessBmotionInterop is an IBmotionInterop that reports IsInProcess = true and forwards
+        // nothing to a browser, so the engine behaves exactly as it does on WebAssembly while the
+        // simulation owns the clock. Frames are advanced by calling ComputeFrame directly.
+
+        var interop = new HeadlessBmotionInterop();
+        await using var engine = new BmotionAnimationEngine(interop);
+        var service = new BmotionAnimateService(engine, interop);
+
+        var frames = new List<(double Seconds, double Value)>();
+        var clockMs = 0.0;
+
+        var animation = service.AnimateAsync(from, to, value => frames.Add((clockMs / 1000, value)), transition);
+
+        while (animation.IsCompleted is false && clockMs < MaxMs)
+        {
+            engine.ComputeFrame(clockMs);
+            clockMs += 1000.0 / 60;
+        }
+
+        // For the render-mode question the interop is the instrument rather than the stage: if the
+        // engine called PlayWaapiAnimationAsync, the browser owns the animation - and it plays on
+        // Blazor Server. If it never did, the animation needs the frame loop, and it does not.
+        """;
+
+    private string _spec = "spring(stiffness: 260, damping: 12)";
+    private string _client = "Claude Code";
+    private bool _busy;
+    private int _replay;
+    private string? _error;
+    private Simulation? _simulation;
+    private double[] _replayFrames = [];
+
+    private string _properties = "x, opacity";
+    private string _checkSpec = "spring(stiffness: 200, damping: 20)";
+    private bool _checking;
+    private Playback? _playback;
+
+    private string _review = """
+        @if (_show)
+        {
+            <Bmotion Animate="Bm.To(opacity: 1)"
+                     Exit="Bm.To(opacity: 0)"
+                     Transition="Bm.Spring(duration: 0.5)">
+                <div class="toast">Saved</div>
+            </Bmotion>
+        }
+        """;
+
+    private bool _reviewing;
+    private Review? _findings;
+
+    private string _query = "make a list appear one item at a time";
+    private bool _searching;
+    private Hit[]? _hits;
+
+    private Catalog? _catalog;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Every call on this page goes to the app's own API, which prerendering has no way to reach
+        // and no reason to: the catalog is chrome, not content.
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        _catalog = await GetAsync<Catalog>("api/mcp/GetMcpCatalog");
+
+        StateHasChanged();
+    }
+
+    private void OnSpecChanged(ChangeEventArgs e) => _spec = e.Value?.ToString() ?? "";
+
+    private void OnPropertiesChanged(ChangeEventArgs e) => _properties = e.Value?.ToString() ?? "";
+
+    private void OnCheckSpecChanged(ChangeEventArgs e) => _checkSpec = e.Value?.ToString() ?? "";
+
+    private void OnReviewChanged(ChangeEventArgs e) => _review = e.Value?.ToString() ?? "";
+
+    private void OnQueryChanged(ChangeEventArgs e) => _query = e.Value?.ToString() ?? "";
+
+    private async Task RunSimulationAsync(string spec)
+    {
+        _spec = spec;
+        _busy = true;
+        _error = null;
+
+        var result = await GetAsync<Simulation>($"api/mcp/SimulateBmotionTransition?transition={Uri.EscapeDataString(spec)}");
+
+        if (result is null)
+        {
+            _error = "The demo's own API did not answer. Is the server still running?";
+            _simulation = null;
+        }
+        else if (result.Error is not null)
+        {
+            // The server read the spec and could not make sense of it, and said why - which is a
+            // better message than anything this page could compose about it.
+            _error = result.Error;
+            _simulation = null;
+        }
+        else
+        {
+            _simulation = result;
+
+            // The samples are evenly spaced in time, so they are keyframes as they stand: replaying
+            // them with a linear tween of the measured settle time reproduces the motion the server
+            // measured, rather than a second animation that merely resembles it.
+            _replayFrames = [.. result.Samples.Select(sample => sample.Value / 100 * 220)];
+            _replay++;
+        }
+
+        _busy = false;
+    }
+
+    private async Task RunCheckAsync(string properties, string transition)
+    {
+        _properties = properties;
+        _checkSpec = transition;
+        _checking = true;
+
+        _playback = await GetAsync<Playback>(
+            $"api/mcp/AnalyzeBmotionAnimation?properties={Uri.EscapeDataString(properties)}" +
+            $"&transition={Uri.EscapeDataString(transition)}");
+
+        _checking = false;
+    }
+
+    private async Task RunReviewAsync()
+    {
+        _reviewing = true;
+
+        _findings = await GetAsync<Review>($"api/mcp/ReviewBmotionCode?code={Uri.EscapeDataString(_review)}");
+
+        _reviewing = false;
+    }
+
+    private async Task RunSearchAsync()
+    {
+        _searching = true;
+
+        _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmotion?query={Uri.EscapeDataString(_query)}&limit=8") ?? [];
+
+        _searching = false;
+    }
+
+    /// <summary>
+    /// Calls one of the demo's own MCP endpoints. A failure leaves the panel showing what it showed
+    /// before rather than taking the page down - these are demonstrations, and the page around them
+    /// is documentation that still reads perfectly well without a live answer.
+    /// </summary>
+    private async Task<T?> GetAsync<T>(string url)
+    {
+        try
+        {
+            return await Http.GetFromJsonAsync<T>(url);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private static string Shorten(string description)
+    {
+        // The tool descriptions are written for an agent deciding whether to call the tool, so they
+        // are long by design. The table wants the first sentence.
+        var stop = description.IndexOf(". ", StringComparison.Ordinal);
+
+        return stop > 0 ? description[..(stop + 1)] : description;
+    }
+}
+
+<style>
+    .mcp-why {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+        margin-block: 1.25rem;
+    }
+
+    .mcp-why-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        padding: 1rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: .5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-why-symptom { font-weight: 700; color: var(--bit-clr-fg-pri); }
+
+    .mcp-why-card p { margin: 0; font-size: .875rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-why-card code { align-self: flex-start; margin-top: auto; }
+
+    .mcp-tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: 1rem .75rem; }
+
+    .mcp-tab {
+        padding: .4rem .85rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: 2rem;
+        background: none;
+        color: var(--bit-clr-fg-sec);
+        font: inherit;
+        font-size: .875rem;
+        cursor: pointer;
+    }
+
+    .mcp-tab:hover { border-color: var(--bit-clr-pri); color: var(--bit-clr-fg-pri); }
+
+    .mcp-tab.active {
+        border-color: var(--bit-clr-pri);
+        background-color: var(--bit-clr-pri);
+        color: var(--bit-clr-pri-text, #fff);
+    }
+
+    .mcp-tab-note { font-size: .875rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-lab {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1.25rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: .5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-lab-controls { flex: 1 1 20rem; display: flex; flex-direction: column; gap: .6rem; }
+
+    .mcp-lab-controls label { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-lab-controls input,
+    .mcp-check input,
+    .mcp-search input,
+    .mcp-code {
+        width: 100%;
+        padding: .5rem .65rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: .375rem;
+        background-color: var(--bit-clr-bg-pri);
+        color: var(--bit-clr-fg-pri);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .8125rem;
+    }
+
+    .mcp-lab-controls .btn-bm { align-self: flex-start; }
+
+    .mcp-presets { display: flex; flex-wrap: wrap; gap: .4rem; }
+
+    .mcp-chip {
+        padding: .25rem .6rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: 2rem;
+        background: none;
+        color: var(--bit-clr-fg-sec);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .75rem;
+        cursor: pointer;
+    }
+
+    .mcp-chip:hover { border-color: var(--bit-clr-pri); color: var(--bit-clr-fg-pri); }
+
+    .mcp-lab-stage {
+        flex: 1 1 16rem;
+        min-height: 5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .mcp-box-idle { opacity: .35; }
+
+    .mcp-metrics {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+        margin-block: 1rem .75rem;
+    }
+
+    .mcp-metrics div { display: flex; flex-direction: column; gap: .15rem; }
+
+    .mcp-metrics span { font-size: .75rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-metrics strong { font-size: 1.25rem; color: var(--bit-clr-fg-pri); }
+
+    .mcp-sparkline {
+        overflow-x: auto;
+        margin: 0 0 .75rem;
+        padding: .6rem .75rem;
+        border-radius: .375rem;
+        background-color: var(--bit-clr-bg-sec);
+        color: var(--bit-clr-pri);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .8125rem;
+        white-space: pre;
+    }
+
+    .mcp-reading, .mcp-warning, .mcp-error { font-size: .875rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-warning, .mcp-error { color: #d2691e; }
+
+    .mcp-check { display: flex; flex-direction: column; gap: .6rem; margin-block: 1rem; }
+
+    .mcp-check-row { display: flex; flex-direction: column; gap: .25rem; }
+
+    .mcp-check-row label { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-check .btn-bm { align-self: flex-start; }
+
+    .mcp-verdict {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem 1rem;
+        align-items: baseline;
+        padding: .75rem 1rem;
+        border-left: 3px solid;
+        border-radius: .375rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-verdict.ok { border-color: #2fa35e; }
+
+    .mcp-verdict.warn { border-color: #d2691e; }
+
+    .mcp-verdict span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-fixes { margin: .5rem 0 0; padding-left: 1.25rem; font-size: .875rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-code { min-height: 9rem; resize: vertical; line-height: 1.5; }
+
+    .mcp-findings { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .6rem; }
+
+    .mcp-finding {
+        padding: .75rem 1rem;
+        border-left: 3px solid var(--bit-clr-brd-sec);
+        border-radius: .375rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-finding.error { border-color: #d9534f; }
+
+    .mcp-finding.warning { border-color: #d2691e; }
+
+    .mcp-finding.suggestion { border-color: var(--bit-clr-pri); }
+
+    .mcp-severity, .mcp-rule, .mcp-line { font-size: .75rem; margin-right: .5rem; }
+
+    .mcp-severity { font-weight: 700; color: var(--bit-clr-fg-pri); }
+
+    .mcp-rule { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--bit-clr-pri); }
+
+    .mcp-line { color: var(--bit-clr-fg-sec); }
+
+    .mcp-finding p { margin: .4rem 0 0; font-size: .875rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-fix { color: var(--bit-clr-fg-pri) !important; }
+
+    .mcp-search { display: flex; flex-wrap: wrap; gap: .6rem; margin-block: 1rem; }
+
+    .mcp-search input { flex: 1 1 18rem; }
+
+    .mcp-hits { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+
+    .mcp-hits li {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem .75rem;
+        align-items: baseline;
+        padding: .5rem .75rem;
+        border-radius: .375rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-hit-kind { font-size: .6875rem; text-transform: uppercase; letter-spacing: .04em; color: var(--bit-clr-fg-sec); }
+
+    .mcp-hit-title { font-weight: 600; color: var(--bit-clr-fg-pri); }
+
+    .mcp-table-wrap { overflow-x: auto; }
+
+    .mcp-table { width: 100%; border-collapse: collapse; font-size: .8125rem; }
+
+    .mcp-table th, .mcp-table td {
+        padding: .5rem .6rem;
+        border-bottom: 1px solid var(--bit-clr-brd-sec);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .mcp-table th { font-weight: 700; color: var(--bit-clr-fg-pri); }
+
+    .mcp-table td { color: var(--bit-clr-fg-sec); }
+
+    .mcp-params { display: flex; flex-direction: column; gap: .2rem; }
+
+    .mcp-none { opacity: .6; }
+
+    .mcp-cards {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    }
+
+    .mcp-card {
+        height: 100%;
+        padding: .9rem 1rem;
+        border: 1px solid var(--bit-clr-brd-sec);
+        border-radius: .5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .mcp-card p { margin: .45rem 0 0; font-size: .8125rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-card-params {
+        display: block;
+        margin-top: .5rem;
+        font-size: .75rem;
+        color: var(--bit-clr-fg-sec);
+        opacity: .8;
+    }
+
+    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+
+    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; }
+
+    .mcp-resources span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
+
+    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; gap: .6rem; }
+
+    .mcp-principles li { color: var(--bit-clr-fg-sec); }
+
+    .mcp-principles strong { color: var(--bit-clr-fg-pri); }
+</style>

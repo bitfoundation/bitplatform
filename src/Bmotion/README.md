@@ -29,6 +29,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 - [Scroll timelines](#scroll-timelines)
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
+- [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Accessibility](#accessibility)
 
 ---
@@ -904,6 +905,46 @@ Scroll-linked animations compose end-to-end:
 See the `Demo` samples app for runnable examples of basic animations, gestures, springs,
 drag, variants & stagger, keyframes, enter/exit transitions, presence switching, layout
 (FLIP) animations, scroll-linked motion values and programmatic control.
+
+---
+
+## MCP server (for AI agents)
+
+The demo hosts an **MCP server** at `/mcp`, so an AI agent can write Bmotion code from what the
+library actually is rather than from what it remembers. Point an MCP client at
+`https://localhost:5001/mcp`; every tool is also a plain HTTP GET under `/api/mcp/...` if you just
+want to look, and the demo's own `/mcp` page documents and exercises all of them.
+
+What sets it apart from a documentation server is that half of its tools **answer by running the
+real animation engine off-screen** - a headless `IBmotionInterop` lets it construct a genuine
+`BmotionAnimationEngine` with no DOM and advance the frame clock itself, so a three-second spring
+is measured in microseconds:
+
+- **`SimulateBmotionTransition`** plays a transition and reports how long it takes to settle, how
+  far it overshoots and what the curve looks like. A spring has no duration argument, so this is
+  the only way to know what one does before shipping it. `CompareBmotionTransitions` ranks several.
+- **`AnalyzeBmotionAnimation`** starts an animation and reports which playback path the engine
+  chose - the browser compositor, or the C# frame loop. That choice is exactly what decides whether
+  the animation plays or silently snaps on Blazor Server, and nothing in a build log says which.
+- **`ReviewBmotionCode`** checks written markup for the mistakes that compile cleanly and then do
+  nothing: an `Exit` with no presence component, a `@foreach` with no `@key`, a spring whose
+  duration the engine ignores.
+- **`GetBmotionRecipes`** / **`GetBmotionRecipe`** hand over complete, copy-pasteable patterns - a
+  staggered list, a modal, a scroll reveal, a shared-element transition - each with the caveat that
+  is not visible in the code.
+- **`SearchBmotion`** covers this guide, every public member, the animatable properties, the easing
+  presets, the recipes, the setup guides and the demo's sources at once, with the exact follow-up
+  call on each hit.
+- **The exact API** (`GetBmotionApiList` / `GetBmotionApiDetails`) is reflected out of the shipped
+  assembly, with every parameter's type, XML documentation and **real default value** - which in an
+  animation library is the behaviour.
+- **Resources** (`bmotion://guide/...`, `bmotion://api/...`, `bmotion://recipes`) and **prompts**
+  for the four common jobs: building an animation, adding Bmotion to an app, tuning how something
+  feels, and debugging an animation that does not move.
+
+Start with the `GetBmotionOverview` tool. See
+[McpController](Bit.Bmotion.Demo/Server/Controllers/McpController.cs) and
+[BmotionMotionLab](Bit.Bmotion.Demo/Server/Services/BmotionMotionLab.cs).
 
 ---
 

@@ -42,8 +42,12 @@
     {
         _filter = e.Value?.ToString() ?? "";
 
+        // Keywords are matched as well as titles: a reader searching for "hover" or "stagger" is
+        // naming the feature, not the page it happens to live on, and every page carries the terms
+        // it covers (see NavItem).
         _visibleItems = _filter.Trim() is { Length: > 0 } term
-            ? NavItem.All.Where(i => i.Title.Contains(term, StringComparison.OrdinalIgnoreCase)).ToArray()
+            ? NavItem.All.Where(i => i.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+                                  || i.Keywords.Contains(term, StringComparison.OrdinalIgnoreCase)).ToArray()
             : NavItem.All;
     }
 }

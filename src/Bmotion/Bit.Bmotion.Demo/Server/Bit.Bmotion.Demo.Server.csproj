@@ -10,11 +10,41 @@
   <ItemGroup>
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Bit.Bmotion\Bit.Bmotion.csproj" />
     <ProjectReference Include="..\Client\Bit.Bmotion.Demo.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Bit.Bmotion" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="BmotionDocs/README.md" />
+
+    <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
+                      Exclude="..\Client\bin\**;..\Client\obj\**">
+      <LogicalName>BmotionSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The host: how a Blazor Web App is wired up around Bmotion, which is what the setup guide
+         has to be able to show as a real file rather than as a paraphrase. -->
+    <EmbeddedResource Include="Program.cs" LogicalName="BmotionSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched,
+         so it would start at the folder below and drop the one the components live in. -->
+    <EmbeddedResource Include="Components\**\*.razor">
+      <LogicalName>BmotionSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

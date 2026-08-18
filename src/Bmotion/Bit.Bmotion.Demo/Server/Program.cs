@@ -9,6 +9,15 @@ builder.Services.AddRazorComponents()
 // register the very same services the WebAssembly container does.
 builder.Services.AddDemoServices();
 
+// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it - the
+// same methods, reachable from a browser, which is what the /mcp demo page calls to show them live.
+builder.Services.AddControllers();
+builder.Services.AddMcpServer()
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -31,6 +40,11 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// Both are literal routes, so they are matched before any component route regardless of order;
+// declaring them first says so out loud.
+app.MapControllers();
+app.MapMcp("/mcp");
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
