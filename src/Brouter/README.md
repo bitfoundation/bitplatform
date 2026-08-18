@@ -51,7 +51,10 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
   the built-in Router, and debugging a route that will not match.
 
 Start with the `GetBrouterOverview` tool. See
-[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs).
+[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
+is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
+calls them and prints every JSON-RPC message in both directions - so the server can be tried, and
+watched, without wiring up a client first.
 
 [`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
 [Core](Samples/Core/) project of demo routes, hosted unchanged under

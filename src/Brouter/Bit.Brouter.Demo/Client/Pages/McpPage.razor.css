@@ -1,0 +1,104 @@
+/* Local chrome for the MCP page: the argument forms and the wire log. Everything else on the page
+   reuses the site's .bb-* classes, so only what has no equivalent there is defined here. */
+
+.mcp-field {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin: .9rem 0;
+}
+
+    .mcp-field label {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .85rem;
+        font-weight: 600;
+        font-family: var(--bb-mono);
+        color: var(--bb-text);
+    }
+
+    .mcp-field input,
+    .mcp-field textarea,
+    .mcp-field select {
+        padding: .45rem .7rem;
+        border: 1px solid var(--bb-border);
+        border-radius: var(--bb-radius-sm);
+        background: var(--bb-surface);
+        color: var(--bb-text);
+        font-family: var(--bb-mono);
+        font-size: .85rem;
+        width: 100%;
+        max-width: 46rem;
+    }
+
+    .mcp-field textarea {
+        resize: vertical;
+    }
+
+.mcp-hint,
+.mcp-muted {
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+}
+
+.mcp-description {
+    color: var(--bb-text-muted);
+    font-size: .9rem;
+    margin: .2rem 0 .8rem;
+}
+
+.mcp-status {
+    color: var(--bb-text-muted);
+    font-size: .88rem;
+    font-style: italic;
+}
+
+.mcp-result-meta {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 1rem 0 .35rem;
+    color: var(--bb-text-muted);
+    font-size: .82rem;
+}
+
+/* The outputs are long by nature - a tool answer is a document. They scroll in place rather than
+   pushing the next section a screen and a half down. */
+.mcp-output,
+.mcp-wire {
+    max-height: 22rem;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.mcp-exchange {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    padding: .5rem .75rem;
+    margin-bottom: .5rem;
+}
+
+    .mcp-exchange summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem;
+        cursor: pointer;
+        font-size: .88rem;
+    }
+
+    .mcp-exchange .mcp-exchange-index {
+        color: var(--bb-text-muted);
+        font-family: var(--bb-mono);
+        font-size: .8rem;
+    }
+
+.mcp-wire-label {
+    margin: .75rem 0 .25rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--bb-text-muted);
+    font-family: var(--bb-mono);
+}
