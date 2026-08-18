@@ -1,0 +1,1019 @@
+﻿@page "/mcp-server"
+@using System.Diagnostics
+@inject Bit.Butil.Fetch fetch
+@inject NavigationManager navManager
+
+<PageTitle>MCP server - Bit.Butil</PageTitle>
+
+<PageHeader Category="Overview"
+            Title="MCP server"
+            Lead="This site is also an MCP server: the same documentation, API reference and browser-support data, exposed as tools an AI agent can call. The sections below are a working client - they speak the protocol to this very server and show you both halves of every exchange." />
+
+<div class="stack">
+    <DemoSection Title="Connect a client"
+                 Api="/mcp"
+                 Description="The server speaks MCP over streamable HTTP at /mcp - one POST endpoint, JSON-RPC in the body. Point any MCP client at it with a config like this one; the URL below is the origin you are reading this page on. Every tool is also a plain GET under /api/mcp/..., which is what makes it inspectable from a browser address bar."
+                 Code="@_clientConfig"
+                 Language="json">
+        <div class="mcp-endpoints">
+            <div><span class="mcp-chip">MCP</span> <code>POST @McpEndpoint</code></div>
+            <div><span class="mcp-chip">HTTP mirror</span> <code>GET @HttpEndpoint{toolName}?arg=value</code></div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="1. Handshake"
+                 Api="initialize"
+                 Description="Every session opens with an initialize call: the client states the protocol version it speaks and what it supports, and the server answers with the same for itself - here, tools, prompts, resources, completions and logging. Each of those comes back as an empty object, which is the protocol working as intended: the key's presence is the declaration, and what goes inside it is only the optional extras, such as a promise to notify the client when the list changes. A capability a server does not have is absent, not empty. The answer also carries instructions - the one block of text a server writes straight into the model's context before it has called anything - so read it in the response pane below; it is what tells an agent to search before it guesses. Nothing here hands back a session id: streamable HTTP is stateless, so every request stands on its own and any replica can answer it. The client then sends an initialized notification, which takes no id and gets no result back. This page does both automatically when it loads."
+                 Code=@("""
+POST /mcp
+Accept: application/json, text/event-stream
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-11-25",
+    "capabilities": {},
+    "clientInfo": { "name": "bit-butil-docs", "version": "1.0" }
+  }
+}
+""")
+                 Language="http">
+        <div class="controls">
+            <button @onclick="Handshake" disabled="@_busy">Send initialize</button>
+            @if (_serverName is not null)
+            {
+                <span class="mcp-chip ok">@_serverName</span>
+                <span class="mcp-chip">protocol @_protocolVersion</span>
+                <span class="mcp-chip">@(_sessionId is null ? "stateless" : $"session {_sessionId}")</span>
+                @if (_instructionsLength > 0)
+                {
+                    <span class="mcp-chip">@_instructionsLength.ToString("N0") chars of instructions</span>
+                }
+            }
+        </div>
+        <McpExchange Call="_handshake" Placeholder="Connecting..." />
+    </DemoSection>
+
+    <DemoSection Title="2. Discover the tools"
+                 Api="tools/list"
+                 Description="tools/list is how an agent learns what a server can do: every tool comes back with its name, the description the model reads to decide whether to call it, and a JSON Schema for its arguments. Nothing about this list is configured on the client - which is the point of the protocol."
+                 Code=@("""
+{ "jsonrpc": "2.0", "id": 2, "method": "tools/list" }
+""")
+                 Language="json">
+        <div class="controls">
+            <button @onclick="ListTools" disabled="@_busy">Send tools/list</button>
+            @if (_tools.Count > 0)
+            {
+                <span class="mcp-chip ok">@_tools.Count tools</span>
+            }
+        </div>
+
+        @if (_tools.Count > 0)
+        {
+            <div class="table-view mcp-tools" role="table" aria-label="Tools this server exposes">
+                <div class="th-row" role="row">
+                    <div class="th-cell" role="columnheader">Tool</div>
+                    <div class="th-cell" role="columnheader">What it answers</div>
+                    <div class="th-cell" role="columnheader"></div>
+                </div>
+                @foreach (var tool in _tools)
+                {
+                    <div class="tdata-row @(tool.Name == _selectedTool ? "current" : "")" role="row">
+                        <div class="td-cell" role="cell">
+                            <code>@tool.Name</code>
+                            <div class="mcp-tool-meta">
+                                @if (tool.Arguments.Length > 0)
+                                {
+                                    <span class="mcp-args">(@string.Join(", ", tool.Arguments))</span>
+                                }
+                                else
+                                {
+                                    <span class="mcp-args">(no arguments)</span>
+                                }
+                                @* The annotations the server publishes, shown because they are what a
+                                   client reads to decide whether it may call a tool without asking. *@
+                                @if (tool.ReadOnly)
+                                {
+                                    <span class="mcp-chip ok" title="readOnlyHint: the tool changes nothing">read-only</span>
+                                }
+                                @if (tool.HasOutputSchema)
+                                {
+                                    <span class="mcp-chip" title="The tool publishes an outputSchema and answers with structuredContent">typed</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="td-cell" role="cell">@Summarize(tool.Description, 180)</div>
+                        <div class="td-cell" role="cell">
+                            <button class="secondary" disabled="@_busy" @onclick="() => TryTool(tool.Name)">Try it</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <McpExchange Call="_discovery" Placeholder="Nothing sent yet." />
+    </DemoSection>
+
+    @* Wrapped so "Try it" up in the tool table can bring this section to the reader: it is a
+       screen and a half further down, and a button whose whole effect happens off-screen reads as
+       a button that does nothing. The scroll goes through Butil's own ElementReference extension. *@
+    <div @ref="_callSection">
+    <DemoSection Title="3. Call a tool"
+                 Api="tools/call"
+                 Description="The one that does the work. Pick a tool, edit its arguments, and send - the response pane shows the JSON-RPC envelope the client receives, and the pane under it shows the text inside it, which is what an agent would actually put in front of the model. Try SearchButil with a task described in your own words, or InspectButilApi with an API you are considering."
+                 Code=@("""
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "SearchButil",
+    "arguments": { "query": "copy text to clipboard" }
+  }
+}
+""")
+                 Language="json">
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label" for="mcp-tool">Tool</label>
+                <select id="mcp-tool" @bind="_selectedTool" @bind:after="OnToolChanged" disabled="@(_tools.Count == 0)">
+                    @foreach (var tool in _tools)
+                    {
+                        <option value="@tool.Name">@tool.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        @if (_selectedDescription is not null)
+        {
+            <p class="section-desc mcp-tool-desc">@_selectedDescription</p>
+        }
+
+        <div class="field">
+            <label class="field-label" for="mcp-args">Arguments (JSON)</label>
+            <textarea id="mcp-args" rows="4" spellcheck="false" @bind="_arguments" @bind:event="oninput"></textarea>
+        </div>
+
+        <div class="controls">
+            <button @onclick="CallTool" disabled="@(_busy || _tools.Count == 0)">Send tools/call</button>
+            <button class="secondary" @onclick="ResetArguments" disabled="@(_selectedTool is null)">Reset arguments</button>
+        </div>
+
+        <McpExchange Call="_call" Placeholder="Pick a tool and send it." />
+    </DemoSection>
+    </div>
+
+    <DemoSection Title="4. Prompts and resources"
+                 Api="prompts/list, prompts/get, resources/list, resources/templates/list, resources/read"
+                 Description="Tools are for an agent that has decided what it needs. Prompts are ready-made workflows a person picks from a menu - 'add Butil to an app', 'debug a call that does nothing' - and resources are documents a client can attach to a conversation up front or let someone browse. This server exposes four prompts and seven resources: three fixed ones, which is what resources/list returns, and four URI templates, which come back from resources/templates/list. Resources are addressed by URI, so butil://support is the whole browser-support matrix in one read. prompts/list only names a prompt; prompts/get is where the workflow itself comes back, with the argument you passed already written into it."
+                 Code=@("""
+{ "jsonrpc": "2.0", "id": 4, "method": "resources/read",
+  "params": { "uri": "butil://support" } }
+""")
+                 Language="json">
+        <div class="controls">
+            <button @onclick="ListPrompts" disabled="@_busy">Send prompts/list</button>
+            <button @onclick="ListResources" disabled="@_busy">Send resources/list</button>
+            <button @onclick="ListResourceTemplates" disabled="@_busy">Send resources/templates/list</button>
+        </div>
+
+        <div class="field">
+            <label class="field-label" for="mcp-uri">Resource URI</label>
+            <input id="mcp-uri" spellcheck="false" @bind="_resourceUri" placeholder="butil://support" />
+        </div>
+        <div class="controls">
+            <button @onclick="ReadResource" disabled="@_busy">Send resources/read</button>
+            @foreach (var uri in _resourceExamples)
+            {
+                <button class="secondary" @onclick="() => ReadResource(uri)" disabled="@_busy">@uri</button>
+            }
+        </div>
+
+        @* The prompts come from prompts/list, so this row is whatever the server actually has
+           rather than a list written down here that could disagree with it. *@
+        @if (_prompts.Count > 0)
+        {
+            <div class="field">
+                <label class="field-label" for="mcp-prompt">Prompt</label>
+                <select id="mcp-prompt" @bind="_selectedPrompt">
+                    @foreach (var prompt in _prompts)
+                    {
+                        <option value="@prompt">@prompt</option>
+                    }
+                </select>
+            </div>
+            <div class="controls">
+                <button @onclick="GetPrompt" disabled="@_busy">Send prompts/get</button>
+            </div>
+        }
+
+        <McpExchange Call="_extras" Placeholder="Nothing sent yet." />
+    </DemoSection>
+
+    <DemoSection Title="5. Completing an argument"
+                 Api="completion/complete"
+                 Description=@($"The half of the protocol that exists for the person rather than the model. A prompt argument and a resource template's placeholder are both free text, and every one of this server's is drawn from a closed set - four hosting models, the {DocsNav.AllLinks.Count()} docs slugs, every public type name. completion/complete is how a client fills the picker: it sends what has been typed so far and gets back what would be valid, prefix matches first. Type below and watch the values change with each keystroke.")
+                 Code=@("""
+{ "jsonrpc": "2.0", "id": 5, "method": "completion/complete",
+  "params": {
+    "ref": { "type": "ref/resource", "uri": "butil://docs/{slug}" },
+    "argument": { "name": "slug", "value": "stor" }
+  } }
+""")
+                 Language="json">
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label" for="mcp-complete-ref">Argument</label>
+                <select id="mcp-complete-ref" @bind="_completionTarget" @bind:after="Complete">
+                    @foreach (var target in _completionTargets)
+                    {
+                        <option value="@target.Label">@target.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label" for="mcp-complete-value">Typed so far</label>
+                <input id="mcp-complete-value" spellcheck="false" @bind="_completionValue" @bind:event="oninput" @bind:after="Complete" placeholder="stor" />
+            </div>
+        </div>
+
+        @if (_completions.Length > 0)
+        {
+            <div class="controls mcp-completions">
+                @foreach (var value in _completions)
+                {
+                    <span class="mcp-chip ok">@value</span>
+                }
+            </div>
+        }
+
+        <McpExchange Call="_completion" Placeholder="Pick an argument and start typing." />
+    </DemoSection>
+
+    <DemoSection Title="6. The same tools over plain HTTP"
+                 Api="/api/mcp/{tool}"
+                 Description="Every tool is also an ordinary GET endpoint returning ordinary JSON - no handshake, no session, no JSON-RPC envelope. That is not a second implementation: it is the same method on the same controller, attributed twice. It exists so a tool can be checked in a browser tab, curl or a test, which is a much shorter loop than wiring up an MCP client to find out what one returns."
+                 Code=@($"curl \"{HttpEndpoint}InspectButilApi?name=WakeLock\"")
+                 Language="shell">
+        <div class="field-row">
+            <div class="field">
+                <label class="field-label" for="mcp-http-tool">Tool</label>
+                @* Not gated on the handshake: this endpoint needs neither one nor a session, so it
+                   stays usable when tools/list came back empty - falling back to the default tool. *@
+                <select id="mcp-http-tool" @bind="_httpTool">
+                    @if (_tools.Count == 0)
+                    {
+                        <option value="@_httpTool">@_httpTool</option>
+                    }
+                    @foreach (var tool in _tools)
+                    {
+                        <option value="@tool.Name">@tool.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label" for="mcp-http-query">Query string</label>
+                <input id="mcp-http-query" spellcheck="false" @bind="_httpQuery" placeholder="name=WakeLock" />
+            </div>
+        </div>
+        <div class="controls">
+            <button @onclick="CallHttp" disabled="@_busy">Send GET</button>
+        </div>
+
+        <McpExchange Call="_http" Placeholder="Nothing sent yet." />
+    </DemoSection>
+</div>
+
+<Callout Type="info" Title="Why a documentation site hosts one">
+    An agent writing Butil code has the same problem a person does: sixty services, and the browser's name
+    for a capability is rarely the name the task suggests. The tools answer from the assembly loaded in this
+    process and from these very pages - <code>GetButilApiDetails</code> reflects over the shipped
+    <code>Bit.Butil</code>, <code>GetButilDocsPage</code> renders the same component you are reading - so
+    there is no second copy of the documentation to fall out of date with the library.
+</Callout>
+
+<Callout Type="warning" Title="Responses are clipped here, not on the wire">
+    A real client gets the whole payload; this page shows the first few thousand characters of each pane so
+    one <code>GetButilOverview</code> does not fill the screen. The byte count above each exchange is what
+    actually arrived.
+</Callout>
+
+<ApiTable Title="What the server exposes">
+    <ApiMember Name="Tools" Signature="@ToolsSignature" Description="Search, the exact API of every service, what each one needs from the page, the setup per hosting model, the docs pages, the guide, the browser-support matrix and the demo's own source files." />
+    <ApiMember Name="Tool annotations" Signature="readOnlyHint, idempotentHint, destructiveHint, openWorldHint" Description="Every tool here reads, reads only from this process, and answers the same way twice. A client that is told so can consult the documentation without stopping to ask permission first." />
+    <ApiMember Name="Output schemas" Signature="@OutputSchemasSignature" Description="The ones that answer with data publish an outputSchema and return structuredContent alongside the text, so a client can consume the object instead of re-parsing JSON out of prose." />
+    <ApiMember Name="Instructions" Signature="returned by initialize" Description="The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the four rules that separate Butil code that compiles from Butil code that works." />
+    <ApiMember Name="Prompts" Signature="@PromptsSignature" Description="Ready-made workflows, each spending its words on the order to call the tools in and the mistakes that compile." />
+    <ApiMember Name="Resources" Signature="butil://guide, butil://guide/{heading}, butil://api, butil://api/{typeName}, butil://docs/{slug}, butil://source/{path}, butil://support" Description="The same knowledge as documents a client can attach or browse, addressed by URI." />
+    <ApiMember Name="Completions" Signature="completion/complete" Description="Every prompt argument and template placeholder is drawn from a closed set - the hosting models, the docs slugs, the type names - so a client's picker can offer them rather than ask someone to type one blind." />
+    <ApiMember Name="Transport" Signature="POST /mcp (streamable HTTP, stateless)" Description="JSON-RPC in the body; responses arrive as a text/event-stream frame. No session id - SEP-2567 removed them from this transport, so any replica can answer any request. Mapped by MapMcp in the host's Program.cs, with CORS so browser-based clients can reach it." />
+</ApiTable>
+
+@code {
+    // Long enough that a search result or an inspection arrives whole, short enough that one docs
+    // page does not become the entire screen. The full payload is on the wire either way.
+    private const int MaxPaneLength = 3_000;
+    private const int MaxResultLength = 6_000;
+
+    // The arguments each tool is worth trying first. A tool's schema says what is required, not what
+    // makes a good question of it - and a playground whose fields start empty demonstrates nothing.
+    private static readonly Dictionary<string, string> _examples = new(StringComparer.Ordinal)
+    {
+        ["SearchButil"] = """{ "query": "copy text to the clipboard", "limit": 5 }""",
+        ["GetButilSetupGuide"] = """{ "hostingModel": "web-app" }""",
+        ["GetButilApiDetails"] = """{ "typeName": "Clipboard" }""",
+        ["InspectButilApi"] = """{ "name": "WakeLock" }""",
+        ["PlanButilFeature"] = """{ "apis": "MediaDevices, MediaRecorder, FileSystem" }""",
+        ["GetButilDocsPage"] = """{ "slug": "clipboard" }""",
+        ["GetButilGuideSection"] = """{ "heading": "Subscriptions are disposable" }""",
+        ["GetButilSourceFile"] = """{ "path": "Demo/Client/Pages/ClipboardPage.razor" }""",
+    };
+
+    private static readonly string[] _resourceExamples = ["butil://support", "butil://api/WakeLock", "butil://docs/clipboard"];
+
+    // The arguments worth completing, and the reference each one belongs to. A completion is always
+    // about one argument of one prompt or one resource template - there is no "complete anything"
+    // request - so a demonstration has to name both, and these are this server's four closed sets.
+    private static readonly CompletionTarget[] _completionTargets =
+    [
+        new("butil://docs/{slug} → slug", """{ "type": "ref/resource", "uri": "butil://docs/{slug}" }""", "slug"),
+        new("butil://api/{typeName} → typeName", """{ "type": "ref/resource", "uri": "butil://api/{typeName}" }""", "typeName"),
+        new("butil://source/{path} → path", """{ "type": "ref/resource", "uri": "butil://source/{path}" }""", "path"),
+        new("add-butil-to-app → hostingModel", """{ "type": "ref/prompt", "name": "add-butil-to-app" }""", "hostingModel"),
+    ];
+
+    // Indented, and with the relaxed encoder: the panes are already a re-serialization rather than
+    // the bytes verbatim, and a quote inside a string reads as \" the way anyone would write it -
+    // the default encoder's " turns a nested tool call into line noise. Nothing here is
+    // interpolated into markup, so the escaping the default encoder exists to provide is not needed.
+    private static readonly JsonSerializerOptions _readable = new()
+    {
+        WriteIndented = true,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
+
+    private readonly List<ToolInfo> _tools = [];
+    private readonly List<string> _prompts = [];
+
+    // The inventory below the demos is counted from what tools/list and prompts/list actually
+    // returned, rather than written down beside a server that keeps growing. Before the handshake
+    // there is nothing to count - and during the prerender pass there never will be - so each one
+    // falls back to the sentence that is true without a number in it.
+    private string ToolsSignature => _tools.Count == 0
+        ? "over MCP and as GET /api/mcp/{tool}"
+        : $"{_tools.Count}, over MCP and as GET /api/mcp/{{tool}}";
+
+    private string OutputSchemasSignature => _tools.Count == 0
+        ? "on the tools that answer with data"
+        : $"{_tools.Count(tool => tool.HasOutputSchema)} of the {_tools.Count} tools";
+
+    private string PromptsSignature => _prompts.Count == 0 ? "prompts/list" : string.Join(", ", _prompts);
+
+    private ElementReference _callSection;
+
+    private McpExchange.Roundtrip? _handshake;
+    private McpExchange.Roundtrip? _discovery;
+    private McpExchange.Roundtrip? _call;
+    private McpExchange.Roundtrip? _extras;
+    private McpExchange.Roundtrip? _completion;
+    private McpExchange.Roundtrip? _http;
+
+    // Kept, and still sent when the server does supply one, because a client that only works
+    // against a stateless server is not an MCP client. Streamable HTTP dropped Mcp-Session-Id in
+    // SEP-2567 and the transport this site runs is stateless, so in practice this stays null - the
+    // chip above says "stateless" rather than reporting a header as missing.
+    private string? _sessionId;
+
+    // The newest revision this server accepts through the handshake. It answers with the revision
+    // it settled on rather than the one that was asked for, which is why the field is not a const.
+    private string _protocolVersion = "2025-11-25";
+    private string? _serverName;
+    private int _instructionsLength;
+
+    private string? _selectedTool;
+    private string? _selectedDescription;
+    private string _arguments = "{}";
+    private string _resourceUri = "butil://support";
+    private string? _selectedPrompt;
+    private string _httpTool = "InspectButilApi";
+    private string _httpQuery = "name=WakeLock";
+
+    private string _completionTarget = _completionTargets[0].Label;
+    private string _completionValue = "stor";
+    private string[] _completions = [];
+
+    // Completions fire per keystroke, so their answers can arrive out of order - "sto" after
+    // "stor" would leave the wrong list on screen for as long as nobody typed again. Each request
+    // takes the next number and only the newest one is allowed to write its result.
+    private int _completionRequest;
+
+    private bool _busy;
+    private int _id;
+
+    private string McpEndpoint => $"{navManager.BaseUri}mcp";
+    private string HttpEndpoint => $"{navManager.BaseUri}api/mcp/";
+
+    // The config an MCP client wants, with this deployment's own origin already in it - the one
+    // detail a reader would otherwise have to fill in, and the one this page happens to know.
+    private string _clientConfig = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _clientConfig = $$"""
+            {
+              "mcpServers": {
+                "bit-butil": {
+                  "type": "http",
+                  "url": "{{navManager.BaseUri}}mcp"
+                }
+              }
+            }
+            """;
+    }
+
+    // The handshake needs the browser; during the prerender pass there is none. OnAfterRenderAsync
+    // does not run then, which is exactly why the connection is opened from here.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await Handshake();
+        await ListTools();
+
+        // The prompt picker in section 4 and the completion demo in section 5 both need a round trip
+        // before they have anything to show, and a section that starts empty reads as one that does
+        // not work. Both are cheap, and neither blocks the two above.
+        await ListPrompts();
+        await Complete();
+
+        // Blazor re-renders after an event handler, but not after OnAfterRenderAsync - without this
+        // the page would sit on its empty state until the first click, holding results it already has.
+        StateHasChanged();
+    }
+
+    private async Task Handshake()
+    {
+        _sessionId = null;
+
+        var parameters = $$"""
+            {
+              "protocolVersion": "{{_protocolVersion}}",
+              "capabilities": {},
+              "clientInfo": { "name": "bit-butil-docs", "version": "1.0" }
+            }
+            """;
+
+        var (call, result) = await Rpc("initialize", parameters);
+        _handshake = call;
+
+        if (result is { } payload && payload.TryGetProperty("serverInfo", out var info))
+        {
+            // The title when the server states one - it is what a person is meant to read - and the
+            // name only as the fallback, which is what a server that predates the field will send.
+            var identity = Text(info, "title") is { Length: > 0 } title ? title : Text(info, "name");
+            _serverName = $"{identity} {Text(info, "version").Split('+')[0]}".Trim();
+
+            _instructionsLength = payload.TryGetProperty("instructions", out var instructions)
+                ? instructions.GetString()?.Length ?? 0
+                : 0;
+
+            if (payload.TryGetProperty("protocolVersion", out var version) && version.GetString() is { } negotiated)
+            {
+                // Answering in a different version than the one asked for is allowed, and every
+                // later request has to carry the one that was agreed rather than the one requested.
+                _protocolVersion = negotiated;
+            }
+        }
+
+        // A notification carries no id, so the server answers 202 with an empty body rather than a
+        // result. It is not shown as an exchange for that reason - there would be nothing to show.
+        await Rpc("notifications/initialized", null, notification: true);
+    }
+
+    private async Task ListTools()
+    {
+        var (call, result) = await Rpc("tools/list", null);
+        _discovery = call;
+
+        if (result is not { } payload || payload.TryGetProperty("tools", out var tools) is false) return;
+
+        _tools.Clear();
+        foreach (var tool in tools.EnumerateArray())
+        {
+            _tools.Add(new ToolInfo(
+                Name: Text(tool, "name"),
+                Description: Text(tool, "description"),
+                Arguments: ArgumentNames(tool),
+                // Absent means "assume the worst", which is the whole reason a server states it.
+                ReadOnly: tool.TryGetProperty("annotations", out var annotations)
+                          && annotations.TryGetProperty("readOnlyHint", out var readOnly)
+                          && readOnly.ValueKind is JsonValueKind.True,
+                HasOutputSchema: tool.TryGetProperty("outputSchema", out _)));
+        }
+
+        // tools/list has no defined order - this one arrives in whatever order the server reflected
+        // over its own methods - so the table sorts, or the same server reads differently per build.
+        _tools.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));
+
+        // Only when there is nothing to keep: Load resets the arguments, and re-sending tools/list
+        // to look at the table again would otherwise throw away whatever was typed in section 3.
+        if (_selectedTool is null || _tools.Any(t => t.Name == _selectedTool) is false)
+        {
+            Load("SearchButil");
+        }
+        else
+        {
+            _selectedDescription = _tools.FirstOrDefault(t => t.Name == _selectedTool)?.Description;
+        }
+    }
+
+    /// <summary>
+    /// The tool table's "Try it": load the tool with its example arguments, bring the section that
+    /// holds it into view, and send it. Loading alone would be correct and look like nothing
+    /// happened - the controls it changes are a screen and a half below the button.
+    /// </summary>
+    private async Task TryTool(string name)
+    {
+        Load(name);
+
+        // Rendered before scrolling, so the section being scrolled to already shows the tool that
+        // was picked rather than the previous one.
+        StateHasChanged();
+
+        await _callSection.ScrollIntoView(new ScrollIntoViewOptions
+        {
+            Behavior = ScrollBehavior.Smooth,
+            Block = ScrollLogicalPosition.Start,
+        });
+
+        await CallTool();
+    }
+
+    private void Load(string name)
+    {
+        if (_tools.Any(t => t.Name == name) is false) return;
+
+        _selectedTool = name;
+        OnToolChanged();
+    }
+
+    private void OnToolChanged()
+    {
+        _selectedDescription = _tools.FirstOrDefault(t => t.Name == _selectedTool)?.Description;
+
+        ResetArguments();
+    }
+
+    private void ResetArguments()
+    {
+        _arguments = _selectedTool is not null && _examples.TryGetValue(_selectedTool, out var example) ? example : "{}";
+    }
+
+    private async Task CallTool()
+    {
+        if (_selectedTool is null) return;
+
+        // Parsed here rather than shipped and rejected: a JSON-RPC parse error would come back as a
+        // protocol error, which reads as "the server broke" instead of "the textarea has a typo".
+        try
+        {
+            using var parsed = JsonDocument.Parse(_arguments);
+
+            // The envelope below drops this in as the value of "arguments", which the protocol says
+            // is an object. A number, a string or an array parses perfectly well and then produces
+            // exactly the protocol error this check exists to keep off the screen.
+            if (parsed.RootElement.ValueKind is not JsonValueKind.Object)
+            {
+                _call = Invalid("tools/call", "The arguments have to be a JSON object - a name and a value per argument, in braces.");
+                return;
+            }
+        }
+        catch (JsonException exception)
+        {
+            _call = Invalid("tools/call", $"The arguments are not valid JSON: {exception.Message}");
+            return;
+        }
+
+        var parameters = $$"""
+            {
+              "name": "{{_selectedTool}}",
+              "arguments": {{_arguments.Trim()}}
+            }
+            """;
+
+        (_call, _) = await Rpc("tools/call", parameters);
+    }
+
+    private async Task ListPrompts()
+    {
+        var (call, result) = await Rpc("prompts/list", null);
+        _extras = call;
+
+        if (result is not { } payload || payload.TryGetProperty("prompts", out var prompts) is false) return;
+
+        _prompts.Clear();
+        foreach (var prompt in prompts.EnumerateArray())
+        {
+            _prompts.Add(Text(prompt, "name"));
+        }
+
+        if (_selectedPrompt is null || _prompts.Contains(_selectedPrompt) is false)
+        {
+            _selectedPrompt = _prompts.FirstOrDefault();
+        }
+    }
+
+    private async Task ListResources() => (_extras, _) = await Rpc("resources/list", null);
+
+    /// <summary>
+    /// The parameterised resources, which resources/list deliberately leaves out: a template is not
+    /// a document, it is the shape of the URIs that address a family of them.
+    /// </summary>
+    private async Task ListResourceTemplates() => (_extras, _) = await Rpc("resources/templates/list", null);
+
+    /// <summary>
+    /// prompts/get, which is where a prompt stops being a menu entry and becomes the workflow. The
+    /// arguments an example needs are supplied here so the exchange shows one that was filled in.
+    /// </summary>
+    private async Task GetPrompt()
+    {
+        if (_selectedPrompt is null) return;
+
+        var arguments = _selectedPrompt switch
+        {
+            "add-butil-to-app" => """{ "hostingModel": "web-app" }""",
+            "implement-butil-feature" => """{ "feature": "let the user pick a photo and save a cropped copy back to disk" }""",
+            "debug-butil-issue" => """{ "symptom": "Clipboard.WriteText returns without error but nothing is on the clipboard" }""",
+            _ => "{}"
+        };
+
+        (_extras, _) = await Rpc("prompts/get", $$"""{ "name": "{{_selectedPrompt}}", "arguments": {{arguments}} }""");
+    }
+
+    /// <summary>
+    /// One completion/complete round trip for whatever is currently typed. Called from the select
+    /// and from every keystroke of the input, which is exactly how a client's picker uses it.
+    /// </summary>
+    private async Task Complete()
+    {
+        var target = _completionTargets.FirstOrDefault(t => t.Label == _completionTarget) ?? _completionTargets[0];
+        var request = ++_completionRequest;
+
+        var parameters = $$"""
+            {
+              "ref": {{target.Reference}},
+              "argument": { "name": "{{target.Argument}}", "value": {{JsonSerializer.Serialize(_completionValue)}} }
+            }
+            """;
+
+        // Not marked busy: this runs on every keystroke, and disabling every button on the page
+        // while it does would make the rest of the page flicker for as long as someone is typing.
+        var (call, result) = await Rpc("completion/complete", parameters, busy: false);
+
+        // A slower earlier request must not overwrite the answer to a later one.
+        if (request != _completionRequest) return;
+
+        _completion = call;
+        _completions = result is { } payload && payload.TryGetProperty("completion", out var completion)
+                       && completion.TryGetProperty("values", out var values) && values.ValueKind is JsonValueKind.Array
+            ? [.. values.EnumerateArray().Select(v => v.GetString() ?? string.Empty)]
+            : [];
+    }
+
+    private Task ReadResource() => ReadResource(_resourceUri);
+
+    private async Task ReadResource(string uri)
+    {
+        _resourceUri = uri;
+
+        // Serialized rather than interpolated: the URI is free text from the box above, and a quote
+        // or a backslash in it would otherwise close the string and send a malformed request.
+        (_extras, _) = await Rpc("resources/read", $$"""{ "uri": {{JsonSerializer.Serialize(uri)}} }""");
+    }
+
+    /// <summary>
+    /// One JSON-RPC round trip to /mcp, formatted for both panes.
+    /// </summary>
+    /// <param name="busy">
+    /// Whether the page's controls are disabled while it runs. False for the calls a keystroke
+    /// makes, where disabling the whole page for each one is worse than letting two overlap.
+    /// </param>
+    private async Task<(McpExchange.Roundtrip Call, JsonElement? Result)> Rpc(string method, string? parameters, bool notification = false, bool busy = true)
+    {
+        // Only a call that claims the page clears the flag afterwards. A completion firing on a
+        // keystroke must not re-enable the buttons a tools/call in flight has disabled.
+        if (busy)
+        {
+            _busy = true;
+            StateHasChanged();
+        }
+
+        var envelope = notification
+            ? $$"""{ "jsonrpc": "2.0", "method": "{{method}}" }"""
+            : $$"""{ "jsonrpc": "2.0", "id": {{++_id}}, "method": "{{method}}"{{(parameters is null ? "" : $", \"params\": {parameters}")}} }""";
+
+        var headers = new Dictionary<string, string>
+        {
+            ["Content-Type"] = "application/json",
+            // Both are offered because the transport may answer either way: a single result comes
+            // back as one text/event-stream frame, and that is what this server does.
+            ["Accept"] = "application/json, text/event-stream",
+        };
+
+        if (_sessionId is not null) headers["Mcp-Session-Id"] = _sessionId;
+        if (notification is false || _sessionId is not null) headers["MCP-Protocol-Version"] = _protocolVersion;
+
+        var stopwatch = Stopwatch.StartNew();
+
+        FetchResponse response;
+        try
+        {
+            response = await fetch.Send(new FetchRequest
+            {
+                Url = McpEndpoint,
+                Method = "POST",
+                Headers = headers,
+                Body = Encoding.UTF8.GetBytes(envelope),
+                Cache = "no-store",
+            });
+        }
+        catch (Exception exception)
+        {
+            return (Invalid(method, exception.Message, Pretty(envelope)), null);
+        }
+        finally
+        {
+            stopwatch.Stop();
+            if (busy) _busy = false;
+        }
+
+        if (response.Headers.FirstOrDefault(h => string.Equals(h.Key, "mcp-session-id", StringComparison.OrdinalIgnoreCase)).Value is { Length: > 0 } session)
+        {
+            _sessionId = session;
+        }
+
+        var body = Encoding.UTF8.GetString(response.Body);
+        var contentType = response.Headers.FirstOrDefault(h => string.Equals(h.Key, "content-type", StringComparison.OrdinalIgnoreCase)).Value ?? string.Empty;
+        var payload = Unframe(body, contentType);
+        var (result, resultText, resultLabel, isError) = Interpret(payload);
+
+        var call = new McpExchange.Roundtrip(
+            Method: method,
+            Verb: "POST",
+            Endpoint: McpEndpoint,
+            Request: Pretty(envelope),
+            Response: Describe(response, payload),
+            Result: resultText is null ? null : Clip(resultText, MaxResultLength),
+            ResultLabel: resultLabel,
+            Status: response.Status,
+            Elapsed: stopwatch.ElapsedMilliseconds,
+            Ok: response.Ok && response.Error is null && isError is false);
+
+        return (call, result);
+    }
+
+    /// <summary>The same tool over its plain HTTP mirror - no envelope, no session, no framing.</summary>
+    private async Task CallHttp()
+    {
+        var url = $"{HttpEndpoint}{_httpTool}{(string.IsNullOrWhiteSpace(_httpQuery) ? "" : $"?{_httpQuery.TrimStart('?')}")}";
+
+        _busy = true;
+        var stopwatch = Stopwatch.StartNew();
+
+        FetchResponse response;
+        try
+        {
+            response = await fetch.Send(new FetchRequest { Url = url, Cache = "no-store" });
+        }
+        catch (Exception exception)
+        {
+            _busy = false;
+            _http = Invalid(_httpTool, exception.Message, url);
+            return;
+        }
+        finally
+        {
+            stopwatch.Stop();
+            _busy = false;
+        }
+
+        var body = Encoding.UTF8.GetString(response.Body);
+
+        // A tool that answers with a string sends a JSON string - which is the whole document with
+        // its newlines escaped, unreadable in the response pane and the point of the call. A tool
+        // that answers with data is already readable in the response pane above.
+        var text = body.StartsWith('"') ? TryUnquote(body) : null;
+
+        _http = new McpExchange.Roundtrip(
+            Method: _httpTool,
+            Verb: "GET",
+            Endpoint: url,
+            Request: url,
+            Response: Describe(response, body),
+            Result: text is null ? null : Clip(text, MaxResultLength),
+            ResultLabel: "the response, unescaped",
+            Status: response.Status,
+            Elapsed: stopwatch.ElapsedMilliseconds,
+            Ok: response.Ok && response.Error is null);
+    }
+
+    /// <summary>
+    /// The JSON out of a streamable-HTTP response. A result arrives as a server-sent event frame -
+    /// "event: message" then "data: {...}" - and only the data lines are the JSON-RPC message.
+    /// <para>
+    /// Decided by the content type rather than by looking for "data:" in the body: the transport is
+    /// allowed to answer either way, and a plain JSON answer that happens to contain those five
+    /// characters - which GetButilDocsPage(slug: "object-urls") does, in its own prose - would
+    /// otherwise be unframed down to nothing at all.
+    /// </para>
+    /// </summary>
+    private static string Unframe(string body, string contentType)
+    {
+        if (contentType.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) is false) return body;
+
+        var data = body.Replace("\r\n", "\n", StringComparison.Ordinal)
+                       .Split('\n')
+                       .Where(line => line.StartsWith("data:", StringComparison.Ordinal))
+                       .Select(line => line[5..].Trim())
+                       .ToArray();
+
+        // An event-stream that carried no data line at all is still better shown as it arrived.
+        return data.Length == 0 ? body : string.Join('\n', data);
+    }
+
+    /// <summary>
+    /// The JSON-RPC result, plus the text inside it that a client would hand to the model, plus
+    /// whether the envelope carried an error instead. Where that text sits differs per method, and
+    /// none of the three places is the response itself.
+    /// <para>
+    /// The error is read off the parsed envelope rather than by looking for "error" in the raw
+    /// payload: the document is already open here, and a substring is a guess about how the server
+    /// spaces its JSON that would paint a successful exchange red for no visible reason.
+    /// </para>
+    /// </summary>
+    private static (JsonElement? Result, string? Text, string Label, bool IsError) Interpret(string payload)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(payload);
+
+            if (document.RootElement.ValueKind is not JsonValueKind.Object) return (null, null, string.Empty, false);
+
+            var isError = document.RootElement.TryGetProperty("error", out _);
+
+            if (document.RootElement.TryGetProperty("result", out var result) is false)
+            {
+                return (null, null, string.Empty, isError);
+            }
+
+            // Cloned: the element is a window onto the document, which is disposed on the way out.
+            var clone = result.Clone();
+
+            if (First(clone, "content") is { } content && content.TryGetProperty("text", out var toolText))
+            {
+                // A tool that answers with data sends its JSON as one line inside a JSON string,
+                // which is unreadable twice over; a tool that answers with Markdown comes back
+                // untouched, because Pretty returns anything that is not JSON as it arrived.
+                return (clone, Pretty(toolText.GetString() ?? string.Empty), "result → content[0].text (what the model sees)", isError);
+            }
+
+            if (First(clone, "contents") is { } contents && contents.TryGetProperty("text", out var resourceText))
+            {
+                return (clone, resourceText.GetString(), "result → contents[0].text (the resource)", isError);
+            }
+
+            if (First(clone, "messages") is { } message &&
+                message.TryGetProperty("content", out var messageContent) &&
+                messageContent.TryGetProperty("text", out var promptText))
+            {
+                return (clone, promptText.GetString(), "result → messages[0].content.text (the prompt)", isError);
+            }
+
+            return (clone, null, string.Empty, isError);
+        }
+        catch (JsonException)
+        {
+            // Not JSON at all - a 202 with no body from a notification, or an HTML error page. The
+            // status and the response pane already say what happened; nothing here can add to it.
+            return (null, null, string.Empty, false);
+        }
+    }
+
+    private static JsonElement? First(JsonElement element, string arrayName)
+    {
+        if (element.TryGetProperty(arrayName, out var array) is false || array.ValueKind != JsonValueKind.Array) return null;
+
+        foreach (var item in array.EnumerateArray()) return item;
+
+        return null;
+    }
+
+    private McpExchange.Roundtrip Invalid(string method, string message, string? request = null) =>
+        new(method, "POST", McpEndpoint, request ?? "-", message, null, string.Empty, 0, 0, false);
+
+    private static string Text(JsonElement element, string name)
+        => element.TryGetProperty(name, out var value) ? value.GetString() ?? string.Empty : string.Empty;
+
+    private static string? TryUnquote(string json)
+    {
+        try
+        {
+            return JsonDocument.Parse(json).RootElement.GetString();
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// The response pane's text. A call that came back without a status never reached the server at
+    /// all, and the browser's own reason for that - a server that is no longer running, a blocked
+    /// origin, a refused certificate - is the only thing there is to report. Without it the pane
+    /// shows an empty body as though the server had answered with one, which reads as a server that
+    /// is broken rather than as one that is not there.
+    /// </summary>
+    private static string Describe(FetchResponse response, string payload)
+    {
+        if (response.Status != 0)
+        {
+            return $"// {response.Body.Length:N0} bytes\n{Clip(Pretty(payload), MaxPaneLength)}";
+        }
+
+        var reason = response.Aborted
+            ? "the request was cancelled before it finished"
+            : response.Error is { Length: > 0 } error
+                ? error
+                : "the request never reached the server";
+
+        return $"""
+            // No response: {reason}
+            //
+            // Nothing came back, so nothing here came from the server - this is the browser
+            // reporting that the request itself failed. The usual cause is that the app hosting
+            // this page is no longer running: restart it and reload the page.
+            """;
+    }
+
+    private static string Pretty(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+
+            return JsonSerializer.Serialize(document.RootElement, _readable);
+        }
+        catch (JsonException)
+        {
+            // Not JSON at all - an HTML error page, or an empty body. Showing it as it arrived says
+            // more than "could not parse" would.
+            return json.Length == 0 ? "(empty body)" : json;
+        }
+    }
+
+    /// <summary>Clips a pane, and says so: a payload that stops mid-word is otherwise a bug report.</summary>
+    private static string Clip(string text, int max)
+        => text.Length <= max ? text : $"{text[..max]}\n\n... clipped after {max:N0} of {text.Length:N0} characters";
+
+    /// <summary>Clips a table cell, where a sentence about the clipping would be longer than the room saved.</summary>
+    private static string Summarize(string text, int max)
+        => text.Length <= max ? text : $"{text[..max].TrimEnd()}…";
+
+    /// <summary>
+    /// The argument names out of a tool's inputSchema, required ones first and marked. The schema
+    /// is what a model reads to build a call; the table only needs enough of it to say what a tool
+    /// wants, and the full schema is one tools/list away in the response pane below.
+    /// </summary>
+    private static string[] ArgumentNames(JsonElement tool)
+    {
+        if (tool.TryGetProperty("inputSchema", out var schema) is false ||
+            schema.TryGetProperty("properties", out var properties) is false ||
+            properties.ValueKind is not JsonValueKind.Object) return [];
+
+        var required = new HashSet<string>(StringComparer.Ordinal);
+        if (schema.TryGetProperty("required", out var names) && names.ValueKind is JsonValueKind.Array)
+        {
+            foreach (var name in names.EnumerateArray())
+            {
+                if (name.GetString() is { } value) required.Add(value);
+            }
+        }
+
+        return [.. properties.EnumerateObject()
+            .Select(p => new { p.Name, Required = required.Contains(p.Name) })
+            .OrderByDescending(p => p.Required)
+            .Select(p => p.Required ? p.Name : $"{p.Name}?")];
+    }
+
+    /// <param name="ReadOnly">The server's readOnlyHint - what lets a client skip asking first.</param>
+    /// <param name="HasOutputSchema">Whether the tool also answers with typed structuredContent.</param>
+    private record ToolInfo(string Name, string Description, string[] Arguments, bool ReadOnly, bool HasOutputSchema);
+
+    /// <param name="Reference">The "ref" object verbatim - a ref/prompt or a ref/resource.</param>
+    /// <param name="Argument">The name of the argument being completed within it.</param>
+    private record CompletionTarget(string Label, string Reference, string Argument);
+}

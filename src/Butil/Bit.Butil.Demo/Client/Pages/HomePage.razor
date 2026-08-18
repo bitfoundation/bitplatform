@@ -1,19 +1,19 @@
 @page "/"
 @inject NavigationManager navManager
 
-<PageTitle>Bit.Butil - browser APIs for Blazor, without JavaScript</PageTitle>
+<PageTitle>bit Butil - browser APIs for Blazor, without JavaScript</PageTitle>
 
 @* The only page with no PageHeader to emit these for it. *@
 <HeadContent>
     <link rel="canonical" href="@navManager.BaseUri" />
     <meta name="description" content="@Description" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit.Butil" />
-    <meta property="og:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta property="og:site_name" content="bit Butil" />
+    <meta property="og:title" content="bit Butil - browser APIs for Blazor, without JavaScript" />
     <meta property="og:description" content="@Description" />
     <meta property="og:url" content="@navManager.BaseUri" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Bit.Butil - browser APIs for Blazor, without JavaScript" />
+    <meta name="twitter:title" content="bit Butil - browser APIs for Blazor, without JavaScript" />
     <meta name="twitter:description" content="@Description" />
 </HeadContent>
 
@@ -31,7 +31,7 @@
         </h1>
 
         <p class="hero-subtitle">
-            Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media,
+            bit Butil wraps the entire browser platform - window, document, storage, crypto, media,
             sensors and much more - in strongly-typed C# classes you simply inject and call. It works
             in every interactive Blazor mode: WebAssembly, Server and Hybrid (MAUI).
         </p>
@@ -96,7 +96,7 @@
     // One string, used as the description, the og:description and the twitter:description - the
     // three places that all want "what is this page, in a sentence" and must not disagree.
     private const string Description =
-        "Bit.Butil wraps the entire browser platform - window, document, storage, crypto, media, " +
+        "bit Butil wraps the entire browser platform - window, document, storage, crypto, media, " +
         "sensors and more - in strongly-typed C# classes for Blazor WebAssembly, Server and Hybrid. " +
         "No JavaScript to write.";
 }

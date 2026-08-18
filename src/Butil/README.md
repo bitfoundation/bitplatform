@@ -263,5 +263,32 @@ The `Bit.Butil.Demo` project in this repository is a full documentation site: on
 with runnable samples, an API reference table, and a browser-support matrix. Run it to try any of
 the above in your own browser.
 
+That same server hosts an **MCP server** at `/mcp`, so an AI agent can work against Butil's real
+API instead of guessing at it. Point an MCP client at `https://localhost:5253/mcp`; every tool is
+also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
+
+- **Search** across everything at once (`SearchButil`) - this guide, the docs pages, every public
+  member, the browser-support matrix and the demo's sources - with the exact follow-up call on each
+  hit. The name a task suggests is rarely the name the web platform chose, which is what this is for.
+- **The exact API** (`GetButilApiList` / `GetButilApiDetails`), reflected out of the shipped
+  assembly: every service, every signature, every default argument, with the XML documentation.
+- **What an API needs before it works** (`InspectButilApi`, `PlanButilFeature`): the engines that
+  implement it, whether it wants HTTPS, a permission prompt or a user gesture, what has to be
+  disposed, and how it behaves under prerendering - the mistakes that compile and then do nothing.
+- **Setup** per hosting model (`GetButilSetupGuide`), as the real files of a working project.
+- **The docs and this guide** as text, the full browser-support matrix, and every page of the demo
+  site as working source.
+- **Resources** (`butil://guide/...`, `butil://api/...`, `butil://docs/...`, `butil://support`) and
+  **prompts** for the four common jobs: adding Butil to an app, implementing a feature with it,
+  replacing hand-written JS interop, and debugging a call that silently does nothing.
+
+Start with the `GetButilOverview` tool. See
+[McpController](Bit.Butil.Demo/Server/Controllers/McpController.cs).
+
+The site's own **`/mcp-server` page** is a working client for it: it handshakes with this server on
+load, lists its tools, and lets you call one and read both halves of the exchange - the JSON-RPC
+request, the response, and the text a model would be handed. It is the fastest way to see what a
+tool actually returns before wiring an agent up to it.
+
 Every public member carries XML documentation with a link to the corresponding MDN page, so IntelliSense
 is the reference of record.

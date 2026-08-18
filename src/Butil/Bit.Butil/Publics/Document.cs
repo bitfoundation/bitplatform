@@ -6,6 +6,11 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The DOM document object: its title, cookies, character set, visibility, fullscreen and design mode.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document">https://developer.mozilla.org/en-US/docs/Web/API/Document</see>
+/// </summary>
 [ButilService(typeof(Document))]
 public class Document(IJSRuntime js) : IAsyncDisposable
 {

@@ -1,5 +1,13 @@
 ﻿using Bit.Butil.Demo.Client.Docs;
+using ModelContextProtocol.Protocol;
 using Bit.Butil.Demo.Server.Components;
+using Bit.Butil.Demo.Server.Controllers;
+using Bit.Butil.Demo.Server.Services;
+using Microsoft.AspNetCore.Components.Web;
+
+// The CORS policy the two MCP routes opt into, defined here and named on the controller so the
+// GET mirror carries it as endpoint metadata rather than inheriting it from MapControllers().
+const string McpCorsPolicy = McpController.CorsPolicy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +17,55 @@ builder.Services.AddRazorComponents()
 // The prerender pass instantiates the client's components in this container, so it has to
 // register the very same services the WebAssembly container does.
 builder.Services.AddDemoServices();
+
+// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
+builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMcpServer(options =>
+{
+    options.ServerInfo = new Implementation
+    {
+        Name = "bit-butil",
+        Title = "Bit.Butil - the browser platform for Blazor",
+        Version = ButilApiCatalog.Version,
+        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Butil"
+    };
+
+    // The one field a server gets to write directly into the model's context, once, before it has
+    // called anything. Everything here is what the tool descriptions cannot say individually: which
+    // tool to reach for first, and the four facts about this library that turn compiling code into
+    // working code. It is deliberately short - it is paid for on every request of every session.
+    options.ServerInstructions = ButilMcpInstructions.Text;
+})
+    .WithHttpTransport()
+    .WithToolsFromAssembly()
+    .WithResourcesFromAssembly()
+    .WithPromptsFromAssembly()
+    // Argument autocompletion for the prompts and the resource templates. Their arguments are all
+    // drawn from closed sets this server already holds - the hosting models, the docs slugs, the
+    // type names - and without this a person picking a prompt in their editor is asked to type one
+    // with nothing to type it from. See Services/ButilCompletions.cs.
+    .WithCompleteHandler((context, _) => ValueTask.FromResult(ButilCompletions.Complete(context.Params)));
+
+// Browser-based MCP clients - and the "connect a server" flows built into web-hosted agents - call
+// /mcp with fetch from another origin, and a browser will not hand them the response unless the
+// server says so. Everything behind these two routes is public read-only documentation served
+// anonymously, so there is nothing here that an origin check was protecting: without this the
+// endpoint is simply unreachable from a browser, which is where a growing share of MCP clients run.
+// AllowAnyOrigin and credentials are mutually exclusive by design, and that is the right way round -
+// no cookie of this site's should ever ride along on a cross-origin tool call.
+builder.Services.AddCors(options => options.AddPolicy(McpCorsPolicy, policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .WithMethods("GET", "POST", "DELETE", "OPTIONS")
+    // A cross-origin caller cannot read a response header that is not named here. The negotiated
+    // protocol revision is the one this transport still answers with - Mcp-Session-Id is not, because
+    // streamable HTTP is stateless by default now that SEP-2567 has removed sessions from it.
+    .WithExposedHeaders("MCP-Protocol-Version", "WWW-Authenticate")));
+
+// Renders a docs page outside of a request's component hierarchy, so its content can be handed to
+// an MCP client as text. Scoped: a renderer belongs to the request that asked for the page.
+builder.Services.AddScoped<HtmlRenderer>();
 
 var app = builder.Build();
 
@@ -29,9 +86,20 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 
 app.UseHttpsRedirection();
 
+// Before the endpoints, so the preflight OPTIONS a cross-origin MCP client sends is answered by
+// the middleware rather than falling through to a route that does not handle it.
+app.UseCors();
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
+// The MCP server, and the same tools as plain HTTP GETs under /api/mcp/... so each of them is
+// inspectable from a browser. Both are literal routes, so they never compete with the app's pages.
+// The GET mirror opts into the policy with [EnableCors] on McpController itself, so a controller
+// added to this app later does not silently inherit an open one.
+app.MapControllers();
+app.MapMcp("/mcp").RequireCors(McpCorsPolicy);
 
 // Discovery files - for crawlers and, increasingly, for the AI assistants people ask about this
 // library instead of searching. All three are generated from DocsNav rather than written by hand,
@@ -93,6 +161,10 @@ app.MapGet("/llms.txt", (HttpContext context) =>
         {sections}
         ## Optional
 
+        - [MCP endpoint]({origin}/mcp): this same site as tools an AI agent can call over streamable HTTP - search,
+          the exact API of every service, what each one needs from the page, and the setup per hosting model. What it
+          exposes is documented at {origin}/mcp-server, listed above; every tool is also a plain HTTP GET under
+          `{origin}/api/mcp/...`, which is the quickest way to see what one answers.
         - [NuGet package](https://www.nuget.org/packages/Bit.Butil): the published package.
         - [Source repository](https://github.com/bitfoundation/bitplatform): issues and source.
 
@@ -136,6 +208,14 @@ app.MapGet("/sse/ticks", async (HttpContext context, CancellationToken cancellat
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Butil.Demo.Client._Imports).Assembly);
+
+// SearchButil is the tool an agent reaches for first, and its index is the most expensive thing
+// here to build - a reflection walk over the whole library plus every catalog. Built in the
+// background from startup, no caller waits for it; the index stays lazy, so nothing is delayed and
+// a build that fails leaves the site up and is retried by the first caller rather than swallowed.
+_ = Task.Run(ButilSearchIndex.Warm).ContinueWith(
+    task => app.Logger.LogError(task.Exception, "Building the Bit.Butil search index failed at startup. SearchButil will rebuild it on the next call."),
+    TaskContinuationOptions.OnlyOnFaulted);
 
 app.Run();
 

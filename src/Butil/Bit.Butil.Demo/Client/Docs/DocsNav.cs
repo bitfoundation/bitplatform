@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Bit.Butil.Demo.Client.Pages;
 
 namespace Bit.Butil.Demo.Client.Docs;
 
@@ -49,13 +50,25 @@ public enum ApiNeeds
     Experimental = 8,
 }
 
+/// <param name="PageType">
+/// The component routed at <paramref name="Url"/>. Naming it here is what lets the MCP server
+/// (Server/Controllers/McpController.cs) render a page's documentation on demand, so an agent reads
+/// the same text a human does instead of a second copy that could go stale.
+/// </param>
+/// <param name="Services">
+/// The Bit.Butil public types the page documents, when they are not simply the title without its
+/// spaces. Only the pages whose title is not a type name ("Local &amp; Session Storage") or whose
+/// API is a set of extension methods ("Element", "Animation") need to state them.
+/// </param>
 public record DocLink(
     string Title,
     string Url,
     string Icon,
     string Summary,
+    Type PageType,
     ApiSupport Support = ApiSupport.Broad,
-    ApiNeeds Needs = ApiNeeds.None);
+    ApiNeeds Needs = ApiNeeds.None,
+    string[]? Services = null);
 
 public record DocGroup(string Title, DocLink[] Links);
 
@@ -69,98 +82,105 @@ public static class DocsNav
     [
         new("Overview",
         [
-            new("Getting started", "getting-started", "🚀", "Install the package, add the script, register the services.", ApiSupport.Guide),
-            new("Render modes", "render-modes", "🧩", "How Butil behaves under WebAssembly, Server, Hybrid and prerendering.", ApiSupport.Guide),
-            new("Browser support", "browser-support", "🧪", "Which APIs need a secure context, a permission or a specific engine.", ApiSupport.Guide),
-            new("Troubleshooting", "troubleshooting", "🩺", "The errors people hit first, and what each one actually means.", ApiSupport.Guide),
+            new("Getting started", "getting-started", "🚀", "Install the package, add the script, register the services.", typeof(GettingStartedPage), ApiSupport.Guide),
+            new("Render modes", "render-modes", "🧩", "How Butil behaves under WebAssembly, Server, Hybrid and prerendering.", typeof(RenderModesPage), ApiSupport.Guide),
+            new("Browser support", "browser-support", "🧪", "Which APIs need a secure context, a permission or a specific engine.", typeof(BrowserSupportPage), ApiSupport.Guide),
+            new("Troubleshooting", "troubleshooting", "🩺", "The errors people hit first, and what each one actually means.", typeof(TroubleshootingPage), ApiSupport.Guide),
+            new("MCP server", "mcp-server", "🤖", "This site as tools an AI agent can call - and a live client to try them in.", typeof(McpServerPage), ApiSupport.Guide),
         ]),
         new("Window & Browsing",
         [
-            new("Window", "window", "🪟", "The DOM window object: events, dialogs, sizes and more."),
-            new("Document", "document", "📄", "The DOM document object: title, cookies, fullscreen, design mode.", ApiSupport.Broad, ApiNeeds.UserGesture),
-            new("History", "history", "🕘", "Session history: navigate back/forward and push/replace states."),
-            new("Navigation", "navigation", "🗺️", "The modern successor to History - read the entry list, and finally know whether you can go back."),
-            new("Location", "location", "📍", "Read and mutate the current URL, reload or navigate."),
-            new("Navigator", "navigator", "🧭", "Browser identity, languages, share, vibrate, badges and more.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
-            new("UserAgent", "user-agent", "🪪", "Parsed user-agent brands, platform and mobile-ness.", ApiSupport.Partial),
+            new("Window", "window", "🪟", "The DOM window object: events, dialogs, sizes and more.", typeof(WindowPage)),
+            new("Document", "document", "📄", "The DOM document object: title, cookies, fullscreen, design mode.", typeof(DocumentPage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("History", "history", "🕘", "Session history: navigate back/forward and push/replace states.", typeof(HistoryPage)),
+            new("Navigation", "navigation", "🗺️", "The modern successor to History - read the entry list, and finally know whether you can go back.", typeof(NavigationPage)),
+            new("Location", "location", "📍", "Read and mutate the current URL, reload or navigate.", typeof(LocationPage)),
+            new("Navigator", "navigator", "🧭", "Browser identity, languages, share, vibrate, badges and more.", typeof(NavigatorPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("UserAgent", "user-agent", "🪪", "Parsed user-agent brands, platform and mobile-ness.", typeof(UserAgentPage), ApiSupport.Partial),
         ]),
         new("Screen & Diagnostics",
         [
-            new("Screen", "screen", "🖥️", "Physical screen metrics, color depth and availability.", ApiSupport.Partial),
-            new("ScreenOrientation", "screen-orientation", "🔄", "Read, lock and observe the screen orientation.", ApiSupport.Partial),
-            new("VisualViewport", "visual-viewport", "🔍", "The visual viewport: scale, offsets and resize events."),
-            new("Performance", "performance", "⏱️", "High-resolution timing, marks, measures and entries.", ApiSupport.Partial),
-            new("Reporting", "reporting", "🧾", "Observe deprecation, intervention and crash reports.", ApiSupport.Chromium),
-            new("Console", "console", "🖨️", "The full browser console API from C#: log, table, group, time."),
+            new("Screen", "screen", "🖥️", "Physical screen metrics, color depth and availability.", typeof(ScreenPage), ApiSupport.Partial),
+            new("ScreenOrientation", "screen-orientation", "🔄", "Read, lock and observe the screen orientation.", typeof(ScreenOrientationPage), ApiSupport.Partial),
+            new("VisualViewport", "visual-viewport", "🔍", "The visual viewport: scale, offsets and resize events.", typeof(VisualViewportPage)),
+            new("Performance", "performance", "⏱️", "High-resolution timing, marks, measures and entries.", typeof(PerformancePage), ApiSupport.Partial),
+            new("Reporting", "reporting", "🧾", "Observe deprecation, intervention and crash reports.", typeof(ReportingPage), ApiSupport.Chromium),
+            new("Console", "console", "🖨️", "The full browser console API from C#: log, table, group, time.", typeof(ConsolePage)),
         ]),
         new("DOM & Interaction",
         [
-            new("Element", "element", "🧱", "Attributes, scrolling, fullscreen, pointer capture and events on any ElementReference."),
-            new("Animation", "animation", "✨", "Run and control Web Animations on any element, straight from C#."),
-            new("PictureInPicture", "picture-in-picture", "🖼️", "Float a video in an always-on-top window outside the page.", ApiSupport.Broad, ApiNeeds.UserGesture),
-            new("ViewTransition", "view-transition", "🎞️", "Let the browser animate between two states of the page.", ApiSupport.Partial),
-            new("Keyboard", "keyboard", "⌨️", "App-wide keyboard shortcuts with modifier support."),
-            new("IntersectionObserver", "intersection-observer", "👁️", "Observe element visibility inside the viewport or a scroll container."),
-            new("MutationObserver", "mutation-observer", "🧬", "Observe DOM tree, attribute and character-data mutations."),
-            new("ResizeObserver", "resize-observer", "📐", "Observe element size changes with box-model detail."),
+            new("Element", "element", "🧱", "Attributes, scrolling, fullscreen, pointer capture and events on any ElementReference.", typeof(ElementPage), ApiSupport.Broad, ApiNeeds.None,
+                ["ElementReferenceExtensions", "ElementReferenceEventExtensions", "ElementReferenceMediaExtensions"]),
+            new("Animation", "animation", "✨", "Run and control Web Animations on any element, straight from C#.", typeof(AnimationPage), ApiSupport.Broad, ApiNeeds.None,
+                ["ElementReferenceAnimationExtensions", "AnimationHandle"]),
+            new("PictureInPicture", "picture-in-picture", "🖼️", "Float a video in an always-on-top window outside the page.", typeof(PictureInPicturePage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("ViewTransition", "view-transition", "🎞️", "Let the browser animate between two states of the page.", typeof(ViewTransitionPage), ApiSupport.Partial),
+            new("Keyboard", "keyboard", "⌨️", "App-wide keyboard shortcuts with modifier support.", typeof(KeyboardPage)),
+            new("IntersectionObserver", "intersection-observer", "👁️", "Observe element visibility inside the viewport or a scroll container.", typeof(IntersectionObserverPage), ApiSupport.Broad, ApiNeeds.None,
+                ["IntersectionObserverExtensions", "IntersectionObserverOptions"]),
+            new("MutationObserver", "mutation-observer", "🧬", "Observe DOM tree, attribute and character-data mutations.", typeof(MutationObserverPage), ApiSupport.Broad, ApiNeeds.None,
+                ["MutationObserverExtensions", "MutationObserverOptions"]),
+            new("ResizeObserver", "resize-observer", "📐", "Observe element size changes with box-model detail.", typeof(ResizeObserverPage), ApiSupport.Broad, ApiNeeds.None,
+                ["ResizeObserverExtensions"]),
         ]),
         new("Storage",
         [
-            new("Local & Session Storage", "storage", "💾", "Synchronous key/value storage scoped to the origin or the tab."),
-            new("Cookie", "cookie", "🍪", "Read, set and remove document cookies with full options."),
-            new("CookieStore", "cookie-store", "🗄️", "The async Cookie Store API with change events.", ApiSupport.Chromium, ApiNeeds.SecureContext),
-            new("IndexedDb", "indexed-db", "🧮", "Structured, transactional client-side database."),
-            new("CacheStorage", "cache-storage", "📦", "The service-worker Cache API: store and match requests.", ApiSupport.Broad, ApiNeeds.SecureContext),
-            new("StorageManager", "storage-manager", "🧰", "Storage quota, usage estimates and persistence.", ApiSupport.Broad, ApiNeeds.SecureContext),
-            new("StorageAccess", "storage-access", "🔓", "Ask for unpartitioned storage from inside a third-party iframe.", ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("Local & Session Storage", "storage", "💾", "Synchronous key/value storage scoped to the origin or the tab.", typeof(StoragePage), ApiSupport.Broad, ApiNeeds.None,
+                ["LocalStorage", "SessionStorage"]),
+            new("Cookie", "cookie", "🍪", "Read, set and remove document cookies with full options.", typeof(CookiePage)),
+            new("CookieStore", "cookie-store", "🗄️", "The async Cookie Store API with change events.", typeof(CookieStorePage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("IndexedDb", "indexed-db", "🧮", "Structured, transactional client-side database.", typeof(IndexedDbPage)),
+            new("CacheStorage", "cache-storage", "📦", "The service-worker Cache API: store and match requests.", typeof(CacheStoragePage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("StorageManager", "storage-manager", "🧰", "Storage quota, usage estimates and persistence.", typeof(StorageManagerPage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("StorageAccess", "storage-access", "🔓", "Ask for unpartitioned storage from inside a third-party iframe.", typeof(StorageAccessPage), ApiSupport.Broad, ApiNeeds.UserGesture),
         ]),
         new("Files & Data",
         [
-            new("FileReader", "file-reader", "📁", "Read user-selected files as text, data URLs or bytes."),
-            new("ObjectUrls", "object-urls", "🔗", "Create and revoke blob: object URLs from C# data."),
-            new("Clipboard", "clipboard", "📋", "Read and write text and typed items on the system clipboard.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
-            new("Crypto", "crypto", "🔐", "SubtleCrypto encryption, decryption, hashing and random values.", ApiSupport.Broad, ApiNeeds.SecureContext),
-            new("Fetch", "fetch", "🌐", "The browser fetch API with full request/response control."),
-            new("FileSystem", "file-system", "🗂️", "Pick real files and folders, then read and write them back.", ApiSupport.Chromium, ApiNeeds.UserGesture),
-            new("Compression", "compression", "🗜️", "Gzip and deflate through the browser's native codec.", ApiSupport.Broad),
+            new("FileReader", "file-reader", "📁", "Read user-selected files as text, data URLs or bytes.", typeof(FileReaderPage)),
+            new("ObjectUrls", "object-urls", "🔗", "Create and revoke blob: object URLs from C# data.", typeof(ObjectUrlsPage)),
+            new("Clipboard", "clipboard", "📋", "Read and write text and typed items on the system clipboard.", typeof(ClipboardPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+            new("Crypto", "crypto", "🔐", "SubtleCrypto encryption, decryption, hashing and random values.", typeof(CryptoPage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("Fetch", "fetch", "🌐", "The browser fetch API with full request/response control.", typeof(FetchPage)),
+            new("FileSystem", "file-system", "🗂️", "Pick real files and folders, then read and write them back.", typeof(FileSystemPage), ApiSupport.Chromium, ApiNeeds.UserGesture),
+            new("Compression", "compression", "🗜️", "Gzip and deflate through the browser's native codec.", typeof(CompressionPage), ApiSupport.Broad),
         ]),
         new("Network & Workers",
         [
-            new("ServiceWorker", "service-worker", "⚙️", "Register and inspect service workers.", ApiSupport.Broad, ApiNeeds.SecureContext),
-            new("BackgroundSync", "background-sync", "🔁", "Defer work until the user has connectivity.", ApiSupport.Chromium, ApiNeeds.SecureContext),
-            new("Push", "push", "📨", "Subscribe to web push notifications.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),
-            new("NetworkInformation", "network-information", "📶", "Connection type, speed, save-data and change events.", ApiSupport.Chromium),
-            new("BroadcastChannel", "broadcast-channel", "📡", "Message other tabs and windows of the same origin."),
-            new("WebLocks", "web-locks", "🔒", "Cross-tab cooperative resource locking.", ApiSupport.Broad, ApiNeeds.SecureContext),
-            new("EventSource", "event-source", "📻", "Server-sent events, with reconnection built into the browser."),
+            new("ServiceWorker", "service-worker", "⚙️", "Register and inspect service workers.", typeof(ServiceWorkerPage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("BackgroundSync", "background-sync", "🔁", "Defer work until the user has connectivity.", typeof(BackgroundSyncPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("Push", "push", "📨", "Subscribe to web push notifications.", typeof(PushPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("NetworkInformation", "network-information", "📶", "Connection type, speed, save-data and change events.", typeof(NetworkInformationPage), ApiSupport.Chromium),
+            new("BroadcastChannel", "broadcast-channel", "📡", "Message other tabs and windows of the same origin.", typeof(BroadcastChannelPage)),
+            new("WebLocks", "web-locks", "🔒", "Cross-tab cooperative resource locking.", typeof(WebLocksPage), ApiSupport.Broad, ApiNeeds.SecureContext),
+            new("EventSource", "event-source", "📻", "Server-sent events, with reconnection built into the browser.", typeof(EventSourcePage)),
         ]),
         new("Device & Hardware",
         [
-            new("Battery", "battery", "🔋", "Battery level, charging state and related events.", ApiSupport.Chromium, ApiNeeds.SecureContext),
-            new("Geolocation", "geolocation", "🛰️", "Current position, watch positions and errors.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
-            new("MediaDevices", "media-devices", "🎥", "Enumerate cameras/microphones, capture the screen, and open streams.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
-            new("Gamepad", "gamepad", "🎮", "Read game controllers - buttons, sticks and rumble.", ApiSupport.Broad),
-            new("DeviceOrientation", "device-orientation", "🧲", "Tilt, acceleration and rotation from the device's own sensors.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
-            new("Nfc", "nfc", "🏷️", "Read and write NDEF messages on NFC tags.", ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
-            new("WakeLock", "wake-lock", "☀️", "Keep the screen awake while your app needs it.", ApiSupport.Partial, ApiNeeds.SecureContext),
-            new("IdleDetector", "idle-detector", "💤", "Detect user and screen idle state changes.", ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
-            new("ContactPicker", "contact-picker", "👥", "Let users pick contacts to share with your app.", ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
-            new("EyeDropper", "eye-dropper", "🎨", "Sample any pixel color on the screen.", ApiSupport.ChromiumDesktop, ApiNeeds.UserGesture | ApiNeeds.Experimental),
-            new("BarcodeDetector", "barcode-detector", "🔎", "Find QR codes and barcodes in a camera frame or an image.", ApiSupport.Chromium, ApiNeeds.Experimental),
+            new("Battery", "battery", "🔋", "Battery level, charging state and related events.", typeof(BatteryPage), ApiSupport.Chromium, ApiNeeds.SecureContext),
+            new("Geolocation", "geolocation", "🛰️", "Current position, watch positions and errors.", typeof(GeolocationPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("MediaDevices", "media-devices", "🎥", "Enumerate cameras/microphones, capture the screen, and open streams.", typeof(MediaDevicesPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+            new("Gamepad", "gamepad", "🎮", "Read game controllers - buttons, sticks and rumble.", typeof(GamepadPage), ApiSupport.Broad),
+            new("DeviceOrientation", "device-orientation", "🧲", "Tilt, acceleration and rotation from the device's own sensors.", typeof(DeviceOrientationPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+            new("Nfc", "nfc", "🏷️", "Read and write NDEF messages on NFC tags.", typeof(NfcPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("WakeLock", "wake-lock", "☀️", "Keep the screen awake while your app needs it.", typeof(WakeLockPage), ApiSupport.Partial, ApiNeeds.SecureContext),
+            new("IdleDetector", "idle-detector", "💤", "Detect user and screen idle state changes.", typeof(IdleDetectorPage), ApiSupport.Chromium, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("ContactPicker", "contact-picker", "👥", "Let users pick contacts to share with your app.", typeof(ContactPickerPage), ApiSupport.ChromiumMobile, ApiNeeds.SecureContext | ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("EyeDropper", "eye-dropper", "🎨", "Sample any pixel color on the screen.", typeof(EyeDropperPage), ApiSupport.ChromiumDesktop, ApiNeeds.UserGesture | ApiNeeds.Experimental),
+            new("BarcodeDetector", "barcode-detector", "🔎", "Find QR codes and barcodes in a camera frame or an image.", typeof(BarcodeDetectorPage), ApiSupport.Chromium, ApiNeeds.Experimental),
         ]),
         new("Identity & Permissions",
         [
-            new("WebAuthn", "web-authn", "🔑", "Passkeys: create credentials and verify assertions.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
-            new("Permissions", "permissions", "✅", "Query the state of any browser permission.", ApiSupport.Partial),
-            new("Notification", "notification", "🔔", "Request permission and show system notifications.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
+            new("WebAuthn", "web-authn", "🔑", "Passkeys: create credentials and verify assertions.", typeof(WebAuthnPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.UserGesture),
+            new("Permissions", "permissions", "✅", "Query the state of any browser permission.", typeof(PermissionsPage), ApiSupport.Partial),
+            new("Notification", "notification", "🔔", "Request permission and show system notifications.", typeof(NotificationPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission | ApiNeeds.UserGesture),
         ]),
         new("Media & Speech",
         [
-            new("SpeechSynthesis", "speech-synthesis", "🗣️", "Text-to-speech with voices, pitch and rate.", ApiSupport.Broad, ApiNeeds.UserGesture),
-            new("SpeechRecognition", "speech-recognition", "🎙️", "Speech-to-text with interim results and events.", ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),
-            new("WebAudio", "web-audio", "🎵", "Play and control audio buffers with the Web Audio API.", ApiSupport.Broad, ApiNeeds.UserGesture),
-            new("MediaRecorder", "media-recorder", "⏺️", "Record a camera, microphone or screen share to a file.", ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
-            new("MediaSession", "media-session", "🎛️", "Lock-screen metadata and hardware media-key handlers.", ApiSupport.Partial),
+            new("SpeechSynthesis", "speech-synthesis", "🗣️", "Text-to-speech with voices, pitch and rate.", typeof(SpeechSynthesisPage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("SpeechRecognition", "speech-recognition", "🎙️", "Speech-to-text with interim results and events.", typeof(SpeechRecognitionPage), ApiSupport.Partial, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("WebAudio", "web-audio", "🎵", "Play and control audio buffers with the Web Audio API.", typeof(WebAudioPage), ApiSupport.Broad, ApiNeeds.UserGesture),
+            new("MediaRecorder", "media-recorder", "⏺️", "Record a camera, microphone or screen share to a file.", typeof(MediaRecorderPage), ApiSupport.Broad, ApiNeeds.SecureContext | ApiNeeds.Permission),
+            new("MediaSession", "media-session", "🎛️", "Lock-screen metadata and hardware media-key handlers.", typeof(MediaSessionPage), ApiSupport.Partial),
         ]),
     ];
 
@@ -182,6 +202,25 @@ public static class DocsNav
     /// </summary>
     public static string RouteKey(this NavigationManager navManager) =>
         navManager.ToBaseRelativePath(navManager.Uri).Split('?', '#')[0].Trim('/');
+
+    /// <summary>Finds the entry documenting <paramref name="url"/> ("clipboard"), or null.</summary>
+    public static DocLink? FindByUrl(string? url)
+    {
+        var trimmed = (url ?? string.Empty).Trim('/');
+
+        return AllLinks.FirstOrDefault(l => string.Equals(l.Url, trimmed, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// The Bit.Butil public types a page documents. A guide page documents none; every other page
+    /// either states them explicitly or is named after the single type it wraps.
+    /// </summary>
+    public static string[] TypeNames(this DocLink link) => link switch
+    {
+        { Support: ApiSupport.Guide } => [],
+        { Services: { Length: > 0 } services } => services,
+        _ => [link.Title.Replace(" ", string.Empty, StringComparison.Ordinal)]
+    };
 
     /// <summary>
     /// The links either side of <paramref name="url"/> in <see cref="ReadingOrder"/>, or nulls at
@@ -205,6 +244,22 @@ public static class DocsNav
         ApiSupport.ChromiumMobile => "Chromium on Android",
         _ => "Guide",
     };
+
+    /// <summary>
+    /// The preconditions spelled out, one sentence each - what a caller has to arrange before the
+    /// API will do anything. An API with none returns an empty array.
+    /// </summary>
+    public static string[] Labels(this ApiNeeds needs)
+    {
+        var labels = new List<string>(4);
+
+        if (needs.HasFlag(ApiNeeds.SecureContext)) labels.Add("Secure context: only available over HTTPS or on localhost.");
+        if (needs.HasFlag(ApiNeeds.Permission)) labels.Add("Permission: the browser prompts the user, and a denial fails the call.");
+        if (needs.HasFlag(ApiNeeds.UserGesture)) labels.Add("User gesture: must be called from a click or another user-initiated handler.");
+        if (needs.HasFlag(ApiNeeds.Experimental)) labels.Add("Experimental: behind a flag or an origin trial in at least one shipping engine.");
+
+        return [.. labels];
+    }
 
     public static string CssClass(this ApiSupport support) => support switch
     {
