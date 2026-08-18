@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazorUI;
+namespace Bit.BlazorUI;
 
 public class BitDropMenuClassStyles
 {
@@ -8,7 +8,8 @@ public class BitDropMenuClassStyles
     public string? Root { get; set; }
 
     /// <summary>
-    /// Custom CSS classes/styles for the opened callout state of the BitDropMenu.
+    /// Custom CSS classes/styles for the root element of the BitDropMenu while its callout is open,
+    /// applied on top of the <see cref="Root"/> ones.
     /// </summary>
     public string? Opened { get; set; }
 
@@ -16,6 +17,11 @@ public class BitDropMenuClassStyles
     /// Custom CSS classes/styles for the button of the BitDropMenu.
     /// </summary>
     public string? Button { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the loading spinner of the BitDropMenu.
+    /// </summary>
+    public string? Spinner { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the icon of the BitDropMenu.
