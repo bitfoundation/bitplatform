@@ -18,7 +18,16 @@ public static class McpResources
 {
     [McpServerResource(UriTemplate = "bmotion://guide", Name = "Bit.Bmotion guide", MimeType = "text/markdown")]
     [Description("The complete Bit.Bmotion guide (the library README), every section in one document.")]
-    public static string Guide() => BmotionSourceCatalog.Readme;
+    public static string Guide()
+    {
+        var readme = BmotionSourceCatalog.Readme;
+
+        // The guide is an embedded resource, so an empty one means it was not embedded in this build.
+        // Saying so is an answer; an empty document reads as a library with nothing written about it.
+        return readme.Length > 0
+            ? readme
+            : "The Bit.Bmotion guide is not available in this build: the README was not embedded in the assembly.";
+    }
 
     [McpServerResource(UriTemplate = "bmotion://guide/{heading}", Name = "Guide section", MimeType = "text/markdown")]
     [Description("One section of the Bit.Bmotion guide by heading, e.g. bmotion://guide/Variants.")]

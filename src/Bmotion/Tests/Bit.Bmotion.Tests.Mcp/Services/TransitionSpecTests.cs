@@ -260,6 +260,40 @@ public class TransitionSpecTests
         }
     }
 
+    /// <summary>
+    /// Whether an argument exists and whether its value reads as a number are two questions. Answered
+    /// as one, a good name with a bad value comes back as a name the kind does not have - which sends
+    /// the caller off renaming the argument that was already right.
+    /// </summary>
+    [TestMethod]
+    [DataRow("spring(stiffness: fast)", "spring")]
+    [DataRow("tween(duration: quick)", "tween")]
+    [DataRow("inertia(velocity: fast)", "inertia")]
+    public void Parse_AKnownArgumentWithAnUnreadableValue_IsOnlyReportedAsABadValue(string spec, string kind)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.IsNull(result.Error);
+
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+                      $"Nothing said the value could not be read. Warnings: {string.Join(" | ", result.Warnings)}");
+
+        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal)),
+                       $"A correct argument name was reported as unknown. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
+    [TestMethod]
+    [DataRow("spring(stifness: 260)", "spring")]
+    [DataRow("tween(durration: 0.4)", "tween")]
+    [DataRow("inertia(velcity: 500)", "inertia")]
+    public void Parse_AMisspelledArgument_StillNamesTheOnesThatExist(string spec, string kind)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains($"is not an argument of a {kind}", StringComparison.Ordinal)),
+                      $"A misspelled argument passed unremarked. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
     [TestMethod]
     public void Parse_IsTotal_NoInputThrows()
     {

@@ -83,6 +83,22 @@ public class XmlDocsTests
         }
     }
 
+    /// <summary>
+    /// A &lt;para&gt; is the only marker of a paragraph in a doc comment, and the pass that unwraps the
+    /// source's line breaks turns a single newline back into a space. This pins the outcome: the break
+    /// the author wrote is still a break by the time an agent reads it.
+    /// </summary>
+    [TestMethod]
+    public void GetSummary_AParagraphAfterProse_KeepsTheBreak()
+    {
+        // Bmotion.Inherit is documented as prose followed by a <para>, and has no <code> sample that
+        // would produce a blank line of its own.
+        var summary = BmotionXmlDocs.GetSummary($"P:{typeof(Bit.Bmotion.Bmotion).FullName}.{nameof(Bit.Bmotion.Bmotion.Inherit)}");
+
+        Assert.IsNotNull(summary);
+        StringAssert.Contains(summary, "\n\n", $"The paragraph break was flattened away:\n{summary}");
+    }
+
     [TestMethod]
     public void GetSummary_TheProseIsUnwrapped_NotLeftAtTheSourcesLineWidth()
     {

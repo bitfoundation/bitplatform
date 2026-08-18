@@ -59,23 +59,41 @@
         what the panels further down this page do.
     </p>
 
-    <div class="mcp-tabs" role="tablist">
+    @* A tablist is one stop in the tab order: tab moves past the whole group, and the arrow keys
+       move between the tabs inside it. Announced as tabs but navigated as four separate buttons,
+       these would be worse than plain buttons - so the roles come with the behaviour they promise:
+       every tab names the panel it controls, and only the selected one is tabbable.
+
+       aria-selected is written out as a word rather than bound to the bool: a false bool renders
+       as no attribute at all, and an unselected tab has to say so. *@
+    <div class="mcp-tabs" role="tablist" aria-label="MCP client">
         @foreach (var client in _clients)
         {
-            <button type="button" role="tab" class="mcp-tab @(_client == client.Name ? "active" : null)"
-                    aria-selected="@(_client == client.Name)"
-                    @onclick="@(() => _client = client.Name)">
+            var isSelected = _client == client.Name;
+
+            <button type="button" role="tab" class="mcp-tab @(isSelected ? "active" : null)"
+                    id="@TabId(client.Name)"
+                    aria-selected="@(isSelected ? "true" : "false")"
+                    aria-controls="@PanelId(client.Name)"
+                    tabindex="@(isSelected ? 0 : -1)"
+                    @ref="_tabs[client.Name]"
+                    @onclick="@(() => _client = client.Name)"
+                    @onkeydown="OnTabKeyDown">
                 @client.Name
             </button>
         }
     </div>
 
-    @{
-        var selected = _clients.First(c => c.Name == _client);
+    @* Every panel is rendered, and the ones that are not selected are hidden: aria-controls has to
+       point at an element that exists, on the tabs that are not the current one too. *@
+    @foreach (var client in _clients)
+    {
+        <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
+             hidden="@(_client != client.Name)">
+            <p class="mcp-tab-note">@client.Note</p>
+            <CodeSnippet Code="@client.Config" />
+        </div>
     }
-
-    <p class="mcp-tab-note">@selected.Note</p>
-    <CodeSnippet Code="@selected.Config" />
 </div>
 
 <div class="demo-section">
@@ -145,7 +163,7 @@
         <pre class="mcp-sparkline">@_simulation.Sparkline</pre>
         <p class="mcp-reading">@_simulation.Reading</p>
 
-        @foreach (var warning in _simulation.Warnings)
+        @foreach (var warning in _simulation.Warnings ?? [])
         {
             <p class="mcp-warning">@warning</p>
         }
@@ -234,9 +252,9 @@
 
     @if (_findings is not null)
     {
-        @if (_findings.Findings.Length == 0)
+        @if (_findings.Findings is null or { Length: 0 })
         {
-            <p class="mcp-reading">Nothing to report - all @_findings.RulesApplied.Length rules passed.</p>
+            <p class="mcp-reading">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
         }
         else
         {
@@ -246,7 +264,7 @@
                     <Bmotion Initial="Bm.To(opacity: 0, x: -12)"
                              Animate="Bm.To(opacity: 1, x: 0)"
                              Transition="Bm.Tween(0.25)">
-                        <li class="mcp-finding @finding.Severity.ToLowerInvariant()">
+                        <li class="mcp-finding @finding.Severity?.ToLowerInvariant()">
                             <span class="mcp-severity">@finding.Severity</span>
                             <span class="mcp-rule">@finding.Rule</span>
                             <span class="mcp-line">line @finding.Line</span>
@@ -298,10 +316,6 @@
 
 <div class="demo-section">
     <h2>Tools</h2>
-    <p>
-        Eighteen of them, listed here straight from the attributes that declare them - so this table
-        cannot fall out of step with the server.
-    </p>
 
     @if (_catalog is null)
     {
@@ -309,6 +323,11 @@
     }
     else
     {
+        <p>
+            @_catalog.Tools.Length of them, listed here straight from the attributes that declare
+            them - so this table cannot fall out of step with the server, and neither can this count.
+        </p>
+
         <div class="mcp-table-wrap">
             <table class="mcp-table">
                 <thead>
@@ -437,15 +456,18 @@
     // than sharing them: the client project does not reference the host, and these are the four
     // fields the page renders out of each - not the whole contract.
     private sealed record Simulation(double SettleSeconds, double OvershootPercent, int TargetCrossings,
-        double TimeTo90Percent, Sample[] Samples, string Sparkline, string Reading, string[] Warnings, string? Error);
+        double TimeTo90Percent, Sample[]? Samples, string Sparkline, string Reading, string[]? Warnings, string? Error);
 
     private sealed record Sample(double Seconds, double Value);
 
     private sealed record Playback(string Path, bool WorksOnBlazorServer, string Reason, string[]? HowToOffload, string? Error);
 
-    private sealed record Review(bool Passed, Finding[] Findings, string[] RulesApplied);
+    // Nullable arrays throughout: what comes back is JSON, and a body that is missing a field - or a
+    // panel pointed at a server that answers with something else entirely - deserialises to null
+    // rather than to an empty array.
+    private sealed record Review(bool Passed, Finding[]? Findings, string[]? RulesApplied);
 
-    private sealed record Finding(string Severity, string Rule, int? Line, string Message, string Fix);
+    private sealed record Finding(string? Severity, string Rule, int? Line, string Message, string Fix);
 
     private sealed record Hit(string Kind, string Title, string? Context, string Tool, string Snippet);
 
@@ -557,6 +579,10 @@
 
     private string _spec = "spring(stiffness: 260, damping: 12)";
     private string _client = "Claude Code";
+
+    /// <summary>The tab buttons by client name, so arrow-key navigation can move focus with the selection.</summary>
+    private readonly Dictionary<string, ElementReference> _tabs = [];
+
     private bool _busy;
     private int _replay;
     private string? _error;
@@ -599,6 +625,36 @@
         StateHasChanged();
     }
 
+    private static string TabId(string client) => $"mcp-tab-{Slug(client)}";
+
+    private static string PanelId(string client) => $"mcp-panel-{Slug(client)}";
+
+    private static string Slug(string client) => client.ToLowerInvariant().Replace(' ', '-');
+
+    /// <summary>
+    /// Arrow keys move between the tabs, wrapping at both ends - the tablist pattern. The focus moves
+    /// with the selection: leaving it on the tab that was pressed would put the focus ring on a tab
+    /// that is no longer the current one.
+    /// </summary>
+    private async Task OnTabKeyDown(KeyboardEventArgs e)
+    {
+        var step = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => 1,
+            "ArrowLeft" or "ArrowUp" => -1,
+            _ => 0
+        };
+
+        if (step == 0) return;
+
+        var index = Array.FindIndex(_clients, client => client.Name == _client);
+        var next = _clients[((index + step) % _clients.Length + _clients.Length) % _clients.Length];
+
+        _client = next.Name;
+
+        if (_tabs.TryGetValue(next.Name, out var tab)) await tab.FocusAsync();
+    }
+
     private void OnSpecChanged(ChangeEventArgs e) => _spec = e.Value?.ToString() ?? "";
 
     private void OnPropertiesChanged(ChangeEventArgs e) => _properties = e.Value?.ToString() ?? "";
@@ -609,38 +665,47 @@
 
     private void OnQueryChanged(ChangeEventArgs e) => _query = e.Value?.ToString() ?? "";
 
+    // The four handlers below each reset their own flag in a finally: the flag disables the panel's
+    // controls while a call is out, so losing it - to a body that did not deserialise into the shape
+    // these records describe, say - would leave the panel disabled with no way back but a reload.
+
     private async Task RunSimulationAsync(string spec)
     {
         _spec = spec;
         _busy = true;
         _error = null;
 
-        var result = await GetAsync<Simulation>($"api/mcp/SimulateBmotionTransition?transition={Uri.EscapeDataString(spec)}");
-
-        if (result is null)
+        try
         {
-            _error = "The demo's own API did not answer. Is the server still running?";
-            _simulation = null;
-        }
-        else if (result.Error is not null)
-        {
-            // The server read the spec and could not make sense of it, and said why - which is a
-            // better message than anything this page could compose about it.
-            _error = result.Error;
-            _simulation = null;
-        }
-        else
-        {
-            _simulation = result;
+            var result = await GetAsync<Simulation>($"api/mcp/SimulateBmotionTransition?transition={Uri.EscapeDataString(spec)}");
 
-            // The samples are evenly spaced in time, so they are keyframes as they stand: replaying
-            // them with a linear tween of the measured settle time reproduces the motion the server
-            // measured, rather than a second animation that merely resembles it.
-            _replayFrames = [.. result.Samples.Select(sample => sample.Value / 100 * 220)];
-            _replay++;
-        }
+            if (result is null)
+            {
+                _error = "The demo's own API did not answer. Is the server still running?";
+                _simulation = null;
+            }
+            else if (result.Error is not null)
+            {
+                // The server read the spec and could not make sense of it, and said why - which is a
+                // better message than anything this page could compose about it.
+                _error = result.Error;
+                _simulation = null;
+            }
+            else
+            {
+                _simulation = result;
 
-        _busy = false;
+                // The samples are evenly spaced in time, so they are keyframes as they stand: replaying
+                // them with a linear tween of the measured settle time reproduces the motion the server
+                // measured, rather than a second animation that merely resembles it.
+                _replayFrames = [.. (result.Samples ?? []).Select(sample => sample.Value / 100 * 220)];
+                _replay++;
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task RunCheckAsync(string properties, string transition)
@@ -649,29 +714,44 @@
         _checkSpec = transition;
         _checking = true;
 
-        _playback = await GetAsync<Playback>(
-            $"api/mcp/AnalyzeBmotionAnimation?properties={Uri.EscapeDataString(properties)}" +
-            $"&transition={Uri.EscapeDataString(transition)}");
-
-        _checking = false;
+        try
+        {
+            _playback = await GetAsync<Playback>(
+                $"api/mcp/AnalyzeBmotionAnimation?properties={Uri.EscapeDataString(properties)}" +
+                $"&transition={Uri.EscapeDataString(transition)}");
+        }
+        finally
+        {
+            _checking = false;
+        }
     }
 
     private async Task RunReviewAsync()
     {
         _reviewing = true;
 
-        _findings = await GetAsync<Review>($"api/mcp/ReviewBmotionCode?code={Uri.EscapeDataString(_review)}");
-
-        _reviewing = false;
+        try
+        {
+            _findings = await GetAsync<Review>($"api/mcp/ReviewBmotionCode?code={Uri.EscapeDataString(_review)}");
+        }
+        finally
+        {
+            _reviewing = false;
+        }
     }
 
     private async Task RunSearchAsync()
     {
         _searching = true;
 
-        _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmotion?query={Uri.EscapeDataString(_query)}&limit=8") ?? [];
-
-        _searching = false;
+        try
+        {
+            _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmotion?query={Uri.EscapeDataString(_query)}&limit=8") ?? [];
+        }
+        finally
+        {
+            _searching = false;
+        }
     }
 
     /// <summary>

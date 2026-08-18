@@ -39,7 +39,9 @@ public static class BmotionSearchIndex
 
     private const int MaxTerms = 16;
 
-    private static readonly Lazy<Task<Entry[]>> _entries = new(BuildAsync);
+    // Not readonly: a Lazy<Task> holds on to a faulted task, which would answer every later search
+    // with the exception the first one hit. Replacing it lets the next search build the index again.
+    private static Lazy<Task<Entry[]>> _entries = new(BuildAsync);
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -62,7 +64,7 @@ public static class BmotionSearchIndex
         var terms = Tokenize(query);
         if (terms.Length == 0) return [];
 
-        var entries = await _entries.Value;
+        var entries = await GetEntriesAsync();
 
         return [.. entries
             .Select(entry => (Entry: entry, Score: Score(entry, terms)))
@@ -78,6 +80,23 @@ public static class BmotionSearchIndex
                 Tool = hit.Entry.Tool,
                 Snippet = Snippet(hit.Entry.Body, terms)
             })];
+    }
+
+    private static async Task<Entry[]> GetEntriesAsync()
+    {
+        var lazy = _entries;
+
+        try
+        {
+            return await lazy.Value;
+        }
+        catch (Exception)
+        {
+            // Whoever loses this race has the winner's fresh Lazy, which is equally unbuilt.
+            Interlocked.CompareExchange(ref _entries, new Lazy<Task<Entry[]>>(BuildAsync), lazy);
+
+            throw;
+        }
     }
 
     private static int Score(Entry entry, string[] terms)

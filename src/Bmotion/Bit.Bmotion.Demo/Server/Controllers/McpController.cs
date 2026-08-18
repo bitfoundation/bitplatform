@@ -151,16 +151,19 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionRecipe))]
     [Description("Gets one Bit.Bmotion recipe in full: the Razor markup, and the caveat that is not visible in the code - the missing @key, the presence component it needs, the render mode it will not survive. Pass an id from GetBmotionRecipes, e.g. 'staggered-list', 'exit-animation', 'modal-dialog', 'reveal-on-scroll', 'shared-element'.")]
-    public object GetBmotionRecipe(string id)
+    public BmotionRecipeResultDto GetBmotionRecipe(string id)
     {
         var recipe = BmotionRecipeCatalog.Find(id);
 
-        if (recipe is not null) return recipe;
+        if (recipe is not null) return new BmotionRecipeResultDto { Recipe = recipe };
 
         var ids = string.Join(", ", BmotionRecipeCatalog.All.Select(entry => entry.Id));
 
-        return $"There is no recipe called '{id}'. Available recipes: {ids}. " +
-               "Call SearchBmotion with what you are trying to build if none of them fit.";
+        return new BmotionRecipeResultDto
+        {
+            Message = $"There is no recipe called '{id}'. Available recipes: {ids}. " +
+                      "Call SearchBmotion with what you are trying to build if none of them fit."
+        };
     }
 
     [HttpGet]
@@ -189,14 +192,9 @@ public class McpController : ControllerBase
             .Take(8)
             .ToArray();
 
-        var results = new List<BmotionSimulationDto>(specs.Length);
-
-        foreach (var spec in specs)
-        {
-            results.Add(await BmotionMotionLab.SimulateAsync(spec, from, to));
-        }
-
-        return [.. results];
+        // Every run owns its engine and its frame clock (see BmotionMotionLab), so the comparison
+        // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for.
+        return await Task.WhenAll(specs.Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
     }
 
     [HttpGet]
@@ -219,7 +217,32 @@ public class McpController : ControllerBase
     public BmotionReviewDto ReviewBmotionCode(
         [Description("The Razor markup or C# to review. A component, a fragment, or just the <Bmotion> element in question.")] string code)
     {
-        return BmotionCodeReview.Review(code);
+        var text = code ?? string.Empty;
+
+        // Every rule below is a pass over every line, so the reviewed body is bounded by the same
+        // limit as the documents this server hands out. What was cut is reported rather than dropped:
+        // a review that silently covered the first half of a file would read as a clean bill of health.
+        if (text.Length <= MaxDocumentLength) return BmotionCodeReview.Review(text);
+
+        var review = BmotionCodeReview.Review(text[..MaxDocumentLength]);
+
+        return review with
+        {
+            Passed = false,
+            Findings =
+            [
+                new BmotionReviewFindingDto
+                {
+                    Severity = "Warning",
+                    Rule = "code-too-long",
+                    Message = $"Only the first {MaxDocumentLength} characters were reviewed; the code passed in is " +
+                              $"{text.Length} characters long, so anything after that was not checked.",
+                    Fix = "Review the component or the fragment in question rather than a whole file, and call this " +
+                          "tool once per piece."
+                },
+                .. review.Findings
+            ]
+        };
     }
 
     [HttpGet]

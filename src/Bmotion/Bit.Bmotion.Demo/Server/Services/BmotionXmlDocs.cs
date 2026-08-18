@@ -124,9 +124,13 @@ public static partial class BmotionXmlDocs
                         return;
 
                     case "para":
-                        builder.Append('\n');
+                        // A blank line on either side, as the code case does. A single newline is how
+                        // the source wraps its prose, and the unwrapping pass turns one of those back
+                        // into a space: the break would survive only for as long as every <para> in the
+                        // library keeps being written on a line of its own.
+                        builder.Append("\n\n");
                         foreach (var child in element.Nodes()) Write(child, builder, codeSamples);
-                        builder.Append('\n');
+                        builder.Append("\n\n");
                         return;
 
                     case "code":
@@ -137,8 +141,11 @@ public static partial class BmotionXmlDocs
                         return;
 
                     case "param" or "typeparam":
-                        builder.Append('\n').Append(element.Attribute("name")?.Value).Append(": ");
+                        // Each parameter is a paragraph of its own, for the same reason - and the
+                        // trailing break is what separates the last one from prose that follows it.
+                        builder.Append("\n\n").Append(element.Attribute("name")?.Value).Append(": ");
                         foreach (var child in element.Nodes()) Write(child, builder, codeSamples);
+                        builder.Append("\n\n");
                         return;
 
                     default:

@@ -80,7 +80,7 @@ public class McpControllerTests
     [TestMethod]
     public void GetBmotionRecipe_AKnownId_ReturnsTheRecipeWithItsCode()
     {
-        var recipe = _controller.GetBmotionRecipe("staggered-list") as BmotionRecipeDto;
+        var recipe = _controller.GetBmotionRecipe("staggered-list").Recipe;
 
         Assert.IsNotNull(recipe, "A known id did not come back as a recipe.");
         Assert.AreEqual("staggered-list", recipe.Id);
@@ -91,7 +91,7 @@ public class McpControllerTests
     [TestMethod]
     public void GetBmotionRecipe_AnUnknownId_NamesEveryIdThatExists()
     {
-        var answer = _controller.GetBmotionRecipe("teleport") as string;
+        var answer = _controller.GetBmotionRecipe("teleport").Message;
 
         Assert.IsNotNull(answer, "An unknown id did not come back as an explanation.");
 
@@ -309,6 +309,29 @@ public class McpControllerTests
 
         // GetMcpCatalog is deliberately not a tool: an agent gets this from tools/list.
         Assert.IsFalse(catalog.Tools.Any(tool => tool.Name == nameof(McpController.GetMcpCatalog)));
+    }
+
+    /// <summary>
+    /// The reviewed body is bounded like every other document this server hands out, and what was cut
+    /// is said out loud: a review that silently covered the first half of a file would read as a clean
+    /// bill of health for the second.
+    /// </summary>
+    [TestMethod]
+    public void ReviewBmotionCode_CodeLongerThanTheLimit_ReviewsWhatFitsAndNamesWhatDidNot()
+    {
+        const string Markup =
+            "<Bmotion Animate=\"Bm.To(opacity: 1)\" Transition=\"Bm.Spring(duration: 0.5)\"><div /></Bmotion>";
+
+        var review = _controller.ReviewBmotionCode(Markup + new string('\n', 60_000) + Markup);
+
+        Assert.IsFalse(review.Passed);
+
+        Assert.IsTrue(review.Findings.Any(finding => finding.Rule == "code-too-long"),
+                      "Nothing said the code was cut short.");
+
+        // And the rules still ran over the part that fit.
+        Assert.IsTrue(review.Findings.Any(finding => finding.Rule == "spring-duration-without-bounce"),
+                      "The head of the code was not reviewed.");
     }
 
     [TestMethod]

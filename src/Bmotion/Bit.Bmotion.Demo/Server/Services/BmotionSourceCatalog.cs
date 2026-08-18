@@ -117,7 +117,11 @@ public static partial class BmotionSourceCatalog
 
             if (fenced) continue;
 
-            if (TryReadHeading(lines[i], out var level, out var text) && level is 2 or 3)
+            // Every level is collected, not only the two that are reported: a section ends at the
+            // next heading of the same or a higher rank, and a level 1 heading outranks both - so
+            // leaving those out would run a section on into the chapter after it, as GetGuideSection
+            // (which reads all of them) would not.
+            if (TryReadHeading(lines[i], out var level, out var text))
             {
                 headings.Add((i, level, text));
             }
@@ -130,7 +134,9 @@ public static partial class BmotionSourceCatalog
         {
             var (index, level, text) = headings[i];
 
-            if (level == 2) parent = text;
+            if (level <= 2) parent = level == 2 ? text : null;
+
+            if (level is not (2 or 3)) continue;
 
             // The section runs until the next heading of the same or a higher rank.
             var end = lines.Length;

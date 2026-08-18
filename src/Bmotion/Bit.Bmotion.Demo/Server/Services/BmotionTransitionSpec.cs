@@ -32,6 +32,16 @@ public static partial class BmotionTransitionSpec
     /// <summary>The transition kinds a spec can name, for error messages and tool descriptions.</summary>
     public static readonly string[] Kinds = ["spring", "tween", "inertia"];
 
+    // The numeric arguments of each kind, lower-cased. Matching the name before reading the value is
+    // what keeps an unreadable value from being reported as an argument the kind does not have.
+    private static readonly string[] _springArguments =
+        ["stiffness", "damping", "mass", "bounce", "duration", "visualduration", "velocity", "restspeed", "restdelta", "delay"];
+
+    private static readonly string[] _tweenArguments = ["duration", "delay", "steps"];
+
+    private static readonly string[] _inertiaArguments =
+        ["velocity", "timeconstant", "power", "min", "max", "restdelta", "delay"];
+
     /// <summary>
     /// Reads a transition spec. Accepts <c>spring</c>, <c>tween</c> and <c>inertia</c>, with or
     /// without a <c>Bm.</c> prefix, parentheses, named arguments (<c>name: value</c> or
@@ -142,53 +152,62 @@ public static partial class BmotionTransitionSpec
 
         foreach (var (name, value) in named)
         {
-            switch (name.ToLowerInvariant())
+            var argument = name.ToLowerInvariant();
+
+            // Whether the name is one a spring takes and whether its value reads as a number are two
+            // separate questions. Asked as one, "stiffness: fast" comes back as an argument a spring
+            // does not have - which sends the caller off renaming an argument that was already right.
+            if (_springArguments.Contains(argument) is false)
             {
-                case "stiffness" when TryNumber(name, value, warnings, out var stiffness):
-                    spring.Stiffness = stiffness;
-                    written.Add($"stiffness: {Number(stiffness)}");
+                Unknown(name, "spring", "stiffness, damping, mass, bounce, duration, velocity, restSpeed, restDelta, delay", warnings);
+                continue;
+            }
+
+            if (TryNumber(name, value, warnings, out var number) is false) continue;
+
+            switch (argument)
+            {
+                case "stiffness":
+                    spring.Stiffness = number;
+                    written.Add($"stiffness: {Number(number)}");
                     break;
 
-                case "damping" when TryNumber(name, value, warnings, out var damping):
-                    spring.Damping = damping;
-                    written.Add($"damping: {Number(damping)}");
+                case "damping":
+                    spring.Damping = number;
+                    written.Add($"damping: {Number(number)}");
                     break;
 
-                case "mass" when TryNumber(name, value, warnings, out var mass):
-                    spring.Mass = mass;
-                    written.Add($"mass: {Number(mass)}");
+                case "mass":
+                    spring.Mass = number;
+                    written.Add($"mass: {Number(number)}");
                     break;
 
-                case "bounce" when TryNumber(name, value, warnings, out var bounce):
-                    spring.Bounce = bounce;
-                    written.Add($"bounce: {Number(bounce)}");
+                case "bounce":
+                    spring.Bounce = number;
+                    written.Add($"bounce: {Number(number)}");
                     break;
 
-                case "duration" or "visualduration" when TryNumber(name, value, warnings, out var duration):
-                    spring.Duration = duration;
-                    written.Add($"duration: {Number(duration)}");
+                case "duration" or "visualduration":
+                    spring.Duration = number;
+                    written.Add($"duration: {Number(number)}");
                     break;
 
-                case "velocity" when TryNumber(name, value, warnings, out var velocity):
-                    spring.Velocity = velocity;
-                    written.Add($"velocity: {Number(velocity)}");
+                case "velocity":
+                    spring.Velocity = number;
+                    written.Add($"velocity: {Number(number)}");
                     break;
 
-                case "restspeed" when TryNumber(name, value, warnings, out var restSpeed):
-                    spring.RestSpeed = restSpeed;
+                case "restspeed":
+                    spring.RestSpeed = number;
                     break;
 
-                case "restdelta" when TryNumber(name, value, warnings, out var restDelta):
-                    spring.RestDelta = restDelta;
+                case "restdelta":
+                    spring.RestDelta = number;
                     break;
 
-                case "delay" when TryNumber(name, value, warnings, out var delay):
-                    spring.Delay = delay;
-                    written.Add($"delay: {Number(delay)}");
-                    break;
-
-                default:
-                    Unknown(name, "spring", "stiffness, damping, mass, bounce, duration, velocity, restSpeed, restDelta, delay", warnings);
+                case "delay":
+                    spring.Delay = number;
+                    written.Add($"delay: {Number(number)}");
                     break;
             }
         }
@@ -211,51 +230,65 @@ public static partial class BmotionTransitionSpec
 
         foreach (var (name, value) in named)
         {
-            switch (name.ToLowerInvariant())
+            var argument = name.ToLowerInvariant();
+
+            if (argument is "ease" or "easing")
             {
-                case "duration" when TryNumber(name, value, warnings, out var duration):
-                    tween.Duration = duration;
-                    written.Insert(0, Number(duration));
+                if (TryEase(value, out var ease))
+                {
+                    tween.Ease = ease;
+                    written.Add($"BmEase.{ease}");
+                }
+                else
+                {
+                    warnings.Add($"'{value}' is not a BmEase value; the tween kept BmEase.{tween.Ease}. " +
+                                 "Call GetBmotionEasings for the full list.");
+                }
+
+                continue;
+            }
+
+            if (argument is "bezier")
+            {
+                var bezier = Numbers(value);
+
+                if (bezier.Length == 4)
+                {
+                    tween.Bezier = bezier;
+                    written.Add($"bezier: [{string.Join(", ", bezier.Select(Number))}]");
+                }
+                else
+                {
+                    warnings.Add("'bezier' needs exactly four numbers, e.g. bezier: [0.42, 0, 0.58, 1].");
+                }
+
+                continue;
+            }
+
+            // A value that is not a number is reported as that, not as an unknown name: see BuildSpring.
+            if (_tweenArguments.Contains(argument) is false)
+            {
+                Unknown(name, "tween", "duration, ease, delay, steps, bezier", warnings);
+                continue;
+            }
+
+            if (TryNumber(name, value, warnings, out var number) is false) continue;
+
+            switch (argument)
+            {
+                case "duration":
+                    tween.Duration = number;
+                    written.Insert(0, Number(number));
                     break;
 
-                case "ease" or "easing":
-                    if (TryEase(value, out var ease))
-                    {
-                        tween.Ease = ease;
-                        written.Add($"BmEase.{ease}");
-                    }
-                    else
-                    {
-                        warnings.Add($"'{value}' is not a BmEase value; the tween kept BmEase.{tween.Ease}. " +
-                                     "Call GetBmotionEasings for the full list.");
-                    }
+                case "delay":
+                    tween.Delay = number;
+                    written.Add($"delay: {Number(number)}");
                     break;
 
-                case "delay" when TryNumber(name, value, warnings, out var delay):
-                    tween.Delay = delay;
-                    written.Add($"delay: {Number(delay)}");
-                    break;
-
-                case "steps" when TryNumber(name, value, warnings, out var steps):
-                    tween.Steps = (int)steps;
-                    written.Add($"steps: {(int)steps}");
-                    break;
-
-                case "bezier":
-                    var bezier = Numbers(value);
-                    if (bezier.Length == 4)
-                    {
-                        tween.Bezier = bezier;
-                        written.Add($"bezier: [{string.Join(", ", bezier.Select(Number))}]");
-                    }
-                    else
-                    {
-                        warnings.Add("'bezier' needs exactly four numbers, e.g. bezier: [0.42, 0, 0.58, 1].");
-                    }
-                    break;
-
-                default:
-                    Unknown(name, "tween", "duration, ease, delay, steps, bezier", warnings);
+                case "steps":
+                    tween.Steps = (int)number;
+                    written.Add($"steps: {(int)number}");
                     break;
             }
         }
@@ -270,44 +303,51 @@ public static partial class BmotionTransitionSpec
 
         foreach (var (name, value) in named)
         {
-            switch (name.ToLowerInvariant())
+            var argument = name.ToLowerInvariant();
+
+            // A value that is not a number is reported as that, not as an unknown name: see BuildSpring.
+            if (_inertiaArguments.Contains(argument) is false)
             {
-                case "velocity" when TryNumber(name, value, warnings, out var velocity):
-                    inertia.Velocity = velocity;
-                    written.Add($"velocity: {Number(velocity)}");
+                Unknown(name, "inertia", "velocity, timeConstant, power, min, max, restDelta, delay", warnings);
+                continue;
+            }
+
+            if (TryNumber(name, value, warnings, out var number) is false) continue;
+
+            switch (argument)
+            {
+                case "velocity":
+                    inertia.Velocity = number;
+                    written.Add($"velocity: {Number(number)}");
                     break;
 
-                case "timeconstant" when TryNumber(name, value, warnings, out var timeConstant):
-                    inertia.TimeConstant = timeConstant;
-                    written.Add($"timeConstant: {Number(timeConstant)}");
+                case "timeconstant":
+                    inertia.TimeConstant = number;
+                    written.Add($"timeConstant: {Number(number)}");
                     break;
 
-                case "power" when TryNumber(name, value, warnings, out var power):
-                    inertia.Power = power;
-                    written.Add($"power: {Number(power)}");
+                case "power":
+                    inertia.Power = number;
+                    written.Add($"power: {Number(number)}");
                     break;
 
-                case "min" when TryNumber(name, value, warnings, out var min):
-                    inertia.Min = min;
-                    written.Add($"min: {Number(min)}");
+                case "min":
+                    inertia.Min = number;
+                    written.Add($"min: {Number(number)}");
                     break;
 
-                case "max" when TryNumber(name, value, warnings, out var max):
-                    inertia.Max = max;
-                    written.Add($"max: {Number(max)}");
+                case "max":
+                    inertia.Max = number;
+                    written.Add($"max: {Number(number)}");
                     break;
 
-                case "restdelta" when TryNumber(name, value, warnings, out var restDelta):
-                    inertia.RestDelta = restDelta;
+                case "restdelta":
+                    inertia.RestDelta = number;
                     break;
 
-                case "delay" when TryNumber(name, value, warnings, out var delay):
-                    inertia.Delay = delay;
-                    written.Add($"delay: {Number(delay)}");
-                    break;
-
-                default:
-                    Unknown(name, "inertia", "velocity, timeConstant, power, min, max, restDelta, delay", warnings);
+                case "delay":
+                    inertia.Delay = number;
+                    written.Add($"delay: {Number(number)}");
                     break;
             }
         }

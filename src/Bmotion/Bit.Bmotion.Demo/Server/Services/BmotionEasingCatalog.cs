@@ -45,7 +45,20 @@ public static class BmotionEasingCatalog
 
         foreach (var ease in Enum.GetValues<BmEase>())
         {
-            var curve = await BmotionMotionLab.SampleEaseAsync(ease);
+            double[] curve;
+
+            try
+            {
+                curve = await BmotionMotionLab.SampleEaseAsync(ease);
+            }
+            catch (Exception)
+            {
+                // Same reasoning as BmotionPropertyCatalog: this list is built once for the life of
+                // the process. A preset that would not sample is left out rather than described with
+                // a curve nobody measured, and every other preset still answers.
+                continue;
+            }
+
             var name = ease.ToString();
 
             easings.Add(new BmotionEasingDto

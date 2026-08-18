@@ -300,6 +300,15 @@ public record BmotionRecipeDto
     public string? SeeAlso { get; init; }
 }
 
+/// <summary>The answer of GetBmotionRecipe: the recipe, or a message naming the ones that exist.</summary>
+public record BmotionRecipeResultDto
+{
+    public BmotionRecipeDto? Recipe { get; init; }
+
+    /// <summary>Set instead of Recipe when no recipe goes by the requested id.</summary>
+    public string? Message { get; init; }
+}
+
 /// <summary>One page of the Bit.Bmotion demo site.</summary>
 public record BmotionDemoPageDto
 {

@@ -289,19 +289,30 @@ public static class BmotionPropertyCatalog
         // probed; it is a CSS write, which is never compositor-eligible.
         if (unknown.Length > 0) return false;
 
-        var interop = new HeadlessBmotionInterop();
-        await using var engine = new BmotionAnimationEngine(interop);
-        var service = new BmotionAnimateService(engine, interop);
+        try
+        {
+            var interop = new HeadlessBmotionInterop();
+            await using var engine = new BmotionAnimationEngine(interop);
+            var service = new BmotionAnimateService(engine, interop);
 
-        var controls = await service.AnimateAsync(".bmotion-probe", props, new BmTween { Duration = 0.3 });
+            var controls = await service.AnimateAsync(".bmotion-probe", props, new BmTween { Duration = 0.3 });
 
-        // The hand-off is asynchronous; give its continuations a turn before reading the verdict.
-        await Task.Yield();
-        await Task.Yield();
+            // The hand-off is asynchronous; give its continuations a turn before reading the verdict.
+            await Task.Yield();
+            await Task.Yield();
 
-        controls.Stop();
+            controls.Stop();
 
-        return interop.WaapiCalls.Count > 0;
+            return interop.WaapiCalls.Count > 0;
+        }
+        catch (Exception)
+        {
+            // The catalog is built once and cached for the life of the process, so a throw here would
+            // not cost one property its verdict - it would leave the whole tool answering with the
+            // same exception forever. A property that could not be probed is reported the way an
+            // unprobeable one already is: not offloaded.
+            return false;
+        }
     }
 
     /// <summary>

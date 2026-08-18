@@ -515,7 +515,11 @@ public static partial class BmotionCodeReview
     [GeneratedRegex(@"^\s*<(?<tag>[A-Za-z][\w.]*)")]
     private static partial Regex FirstChildTagRegex();
 
-    [GeneratedRegex(@"\bBm\.To\s*\((?<args>[^()]*(\([^()]*\))?[^()]*)\)")]
+    // The two runs of non-parenthesis text around the optional nested call are ambiguous, so a
+    // Bm.To( that is never closed - which is exactly what half-written code under review looks like -
+    // makes the backtracking engine walk the line quadratically. NonBacktracking matches the same
+    // strings in one pass.
+    [GeneratedRegex(@"\bBm\.To\s*\((?<args>[^()]*(\([^()]*\))?[^()]*)\)", RegexOptions.NonBacktracking)]
     private static partial Regex TargetCallRegex();
 
     [GeneratedRegex(@"(?<name>[a-zA-Z][a-zA-Z0-9]*)\s*:")]
