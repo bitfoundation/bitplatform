@@ -18,9 +18,22 @@
 <head>
     <base href="/" />
     <meta charset="utf-8" />
-    <title>bit Bswup - Blazor Service Worker Update Progress</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps." />
+    @* The title and the description of a page come from its PageOutlet, through HeadOutlet at the
+       bottom of this head - one per page, and correct for the URL that was requested.
+
+       They are only written here when prerendering is off, because HeadOutlet then renders
+       nothing until the WebAssembly runtime has booted and there would be no title at all in the
+       meantime. That request is the service worker fetching the app shell (see above), so these
+       are the values the shell carries offline until the router picks a page - deliberately the
+       generic ones, since the shell is route-agnostic. When the document IS prerendered, writing
+       them here as well would put a second <title> in the head, and the browser (like a crawler)
+       keeps the FIRST one - every page would be titled with the site's front door. *@
+    @if (noPrerender)
+    {
+        <title>bit Bswup - Blazor Service Worker Update Progress</title>
+        <meta name="description" content="Install progress, controlled background updates and offline support for Blazor WebAssembly apps - with a single script tag." />
+    }
     @* One tag per scheme, matching --bit-clr-bg-pri in each theme block of app.css. A single
        fixed value would paint the browser chrome dark behind a light page. *@
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
@@ -47,6 +60,65 @@
     </script>
     <link rel="stylesheet" href="_content/Bit.Bswup/bit-bswup.progress.css" />
     <link rel="stylesheet" href="app.css" />
+
+    @* Site-wide structured data. It belongs here rather than in PageOutlet because none of it is
+       per-page: the same three entities describe every URL, and the host document is the one
+       place that is rendered statically for every one of them - including the requests where
+       HeadOutlet renders nothing (see the title above).
+
+       Written as literal JSON on purpose: '@@' is Razor's escape for a single '@@', so the
+       schema.org keywords survive, and nothing here is interpolated - a value that came from C#
+       would be HTML-encoded ('&' -> '&amp;') and break the JSON. *@
+    <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@graph": [
+                {
+                    "@@type": "Organization",
+                    "@@id": "https://bswup.bitplatform.dev/#organization",
+                    "name": "bit platform",
+                    "url": "https://bitplatform.dev/",
+                    "logo": "https://bswup.bitplatform.dev/icon-512.png",
+                    "sameAs": [
+                        "https://github.com/bitfoundation/bitplatform",
+                        "https://twitter.com/bitplatformhq",
+                        "https://www.youtube.com/channel/UCtk33NQ91f3GOJG0HAdkdog",
+                        "https://www.linkedin.com/company/bitplatformhq"
+                    ]
+                },
+                {
+                    "@@type": "WebSite",
+                    "@@id": "https://bswup.bitplatform.dev/#website",
+                    "name": "bit Bswup",
+                    "url": "https://bswup.bitplatform.dev/",
+                    "inLanguage": "en",
+                    "description": "Documentation and live showcase of bit Bswup - install progress, background updates, and offline support for Blazor WebAssembly apps.",
+                    "publisher": { "@@id": "https://bswup.bitplatform.dev/#organization" }
+                },
+                {
+                    "@@type": "SoftwareApplication",
+                    "@@id": "https://bswup.bitplatform.dev/#software",
+                    "name": "Bit.Bswup",
+                    "alternateName": "bit Bswup",
+                    "applicationCategory": "DeveloperApplication",
+                    "operatingSystem": "Any",
+                    "url": "https://bswup.bitplatform.dev/",
+                    "downloadUrl": "https://www.nuget.org/packages/Bit.Bswup",
+                    "codeRepository": "https://github.com/bitfoundation/bitplatform",
+                    "programmingLanguage": ["C#", "JavaScript"],
+                    "description": "A Blazor WebAssembly service worker with an install progress UI, controlled background updates, resilient downloads and offline support - configured from a single script tag.",
+                    "license": "https://github.com/bitfoundation/bitplatform/blob/develop/LICENSE",
+                    "author": { "@@id": "https://bswup.bitplatform.dev/#organization" },
+                    "offers": {
+                        "@@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "USD"
+                    }
+                }
+            ]
+        }
+    </script>
+
     <HeadOutlet @rendermode="@renderMode" />
 </head>
 

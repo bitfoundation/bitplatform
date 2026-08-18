@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Configurations>
     <Platform Name="Any CPU" />
     <Platform Name="iPhone" />
@@ -86,6 +86,9 @@
   <Folder Name="/Bswup/Bit.Bswup.Demo/">
     <Project Path="Bswup/Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
     <Project Path="Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bswup/Tests/">
+    <Project Path="Bswup/Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Bswup/Samples/">
     <Project Path="Bswup/Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />

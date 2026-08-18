@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -11,6 +11,57 @@
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
         <ProjectReference Include="..\Client\Bit.Bswup.Demo.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+        <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
+        <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BswupDocs/README.md" />
+
+        <!-- The library's own sources. Bswup ships as JavaScript, so this TypeScript is where its
+             defaults, message names and asset filters are actually written down - BswupScriptCatalog
+             reads the reference straight out of it rather than out of prose that can drift.
+
+             WithCulture=false is load-bearing here: MSBuild reads the second-to-last extension of a
+             resource file name as a culture, and "bit-bswup.sw.ts" ends up looking like Swahili -
+             which quietly moves the service worker's own source into a satellite assembly, where
+             nothing on this side can find it. -->
+        <EmbeddedResource Include="..\..\Bit.Bswup\Scripts\*.ts" WithCulture="false">
+            <LogicalName>BswupSource/Library/Scripts/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="..\..\Bit.Bswup\BswupProgress.razor" LogicalName="BswupSource/Library/BswupProgress.razor" WithCulture="false" />
+
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css;..\Client\**\*.js"
+                          Exclude="..\Client\bin\**;..\Client\obj\**"
+                          WithCulture="false">
+            <LogicalName>BswupSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Program.cs" LogicalName="BswupSource/Demo/Server/Program.cs" WithCulture="false" />
+
+        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**'
+             matched, so it starts at the folder below and would drop the one the components live in. -->
+        <EmbeddedResource Include="Components\**\*.razor" WithCulture="false">
+            <LogicalName>BswupSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The minimal samples - one per hosting model. Their host documents, service-worker files
+             and project files are what GetBswupSetupGuide hands out as working setup. -->
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js"
+                          Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**"
+                          WithCulture="false">
+            <LogicalName>BswupSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 
 </Project>
