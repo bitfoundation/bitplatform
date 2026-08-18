@@ -25,6 +25,8 @@ public partial class _BitNavOptionDemo
     private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css("fa-solid fa-house");
     private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa("solid code");
     private static readonly BitIconInfo fontAwesomeTagIcon = BitIconInfo.Css("fa-solid fa-tag");
+    private static readonly BitIconInfo fontAwesomeInfoIcon = BitIconInfo.Fa("solid circle-info");
+    private static readonly BitIconInfo fontAwesomeEnvelopeIcon = BitIconInfo.Css("fa-solid fa-envelope");
     private static readonly BitIconInfo fontAwesomeIconsIcon = BitIconInfo.Css("fa-solid fa-icons");
 
     private static readonly BitIconInfo bootstrapChevronIcon = BitIconInfo.Bi("chevron-right");
@@ -40,7 +42,11 @@ public partial class _BitNavOptionDemo
     [
         new() { Text = "Beef Burger", Value = "Beef Burger" },
         new() { Text = "Veggie Burger", Value = "Veggie Burger" },
+        new() { Text = "Bison Burger", Value = "Bison Burger" },
+        new() { Text = "Wild Salmon Burger", Value = "Wild Salmon Burger" },
         new() { Text = "Cheese Pizza", Value = "Cheese Pizza" },
+        new() { Text = "Veggie Pizza", Value = "Veggie Pizza" },
+        new() { Text = "Pepperoni Pizza", Value = "Pepperoni Pizza" },
         new() { Text = "Meat Pizza", Value = "Meat Pizza" },
         new() { Text = "French Fries", Value = "French Fries" },
         new() { Text = "Apple", Value = "Apple" },

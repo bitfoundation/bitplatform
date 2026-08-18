@@ -1,5 +1,24 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The accent fills the whole hovered or selected item, so everything drawn on top of it moves to the
+// accent's own colors at once. Each part had been given a color that reads on the page background
+// (the item text and the chevron the primary foreground, the icon the Color role, the description the
+// muted tertiary foreground), and none of those are meant to sit on a filled accent.
+@mixin accented-item-content {
+    .bit-nav-itm,
+    .bit-nav-cbt {
+        color: var(--bit-nav-clr-text);
+    }
+
+    .bit-nav-iic {
+        color: var(--bit-nav-clr-icon);
+    }
+
+    .bit-nav-des {
+        color: var(--bit-nav-clr-des);
+    }
+}
+
 .bit-nav {
     color: $clr-fg-pri;
     font-family: $tg-font-family;
@@ -130,9 +149,7 @@
         &:hover {
             background-color: var(--bit-nav-clr-hover);
 
-            .bit-nav-itm {
-                color: var(--bit-nav-clr-text);
-            }
+            @include accented-item-content;
         }
     }
 }
@@ -214,17 +231,10 @@
     border-color: var(--bit-nav-clr);
     background-color: var(--bit-nav-clr-active);
 
-    @media (hover:hover) {
-        &:hover {
-            .bit-nav-itm {
-                color: var(--bit-nav-clr-text);
-            }
-        }
-    }
+    @include accented-item-content;
 
     .bit-nav-itm {
         font-weight: 600;
-        color: $clr-fg-pri;
     }
 }
 
@@ -275,6 +285,19 @@
         --bit-nav-clr-text: #{role($tokens, on)};
         --bit-nav-clr-hover: #{role($tokens, hover)};
         --bit-nav-clr-active: #{role($tokens, active)};
+
+        @if role($tokens, kind) == semantic {
+            // A semantic accent covers the item with a vivid fill, so the icon and the description
+            // follow the accent's on-color together with the text.
+            --bit-nav-clr-icon: #{role($tokens, on)};
+            --bit-nav-clr-des: #{role($tokens, on)};
+        }
+        @else {
+            // A surface accent only tints the item's background, so the icon stays on the Color role
+            // and the description stays muted, exactly as they are when the item is not selected.
+            --bit-nav-clr-icon: var(--bit-nav-clr);
+            --bit-nav-clr-des: #{$clr-fg-ter};
+        }
     }
 }
 

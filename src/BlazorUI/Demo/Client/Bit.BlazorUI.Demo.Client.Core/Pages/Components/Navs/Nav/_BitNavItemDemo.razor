@@ -1,4 +1,4 @@
-<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+﻿<DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
     <div>
         The nav renders the tree given to <b>Items</b> as a list of links. Each <b>BitNavItem</b> carries its
         <b>Text</b>, an optional <b>IconName</b>, <b>Description</b> and <b>Url</b>, and the items nested in
@@ -244,8 +244,9 @@
 <DemoExample Title="Color" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14" PreventRenderForMcpClient>
     <div>
         <b>Color</b> paints the parts that carry the nav's identity: the icons and the border of the selected
-        item. <b>Accent</b> is a separate role that paints the hover and the selected background, so a nav can
-        keep a colorful icon set over a neutral background. Both accept every value of <b>BitColor</b>,
+        item. <b>Accent</b> is a separate role that paints the hovered and the selected item: a background,
+        foreground or border role only tints it, so the colorful icon set shows through, while a semantic
+        role fills it and takes its text and icon along. Both accept every value of <b>BitColor</b>,
         including the background, foreground and border roles that are not listed here.
     </div>
     <br /><br /><br />

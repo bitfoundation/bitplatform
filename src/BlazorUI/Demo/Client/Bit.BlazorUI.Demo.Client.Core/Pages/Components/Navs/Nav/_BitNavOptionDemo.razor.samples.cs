@@ -31,17 +31,29 @@ public partial class _BitNavOptionDemo
 <BitNav TItem=""BitNavOption"" FitWidth>
     <BitNavOption Text=""bit platform"" Description=""the bit platform description"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-        <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""Project Templates"">
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+        </BitNavOption>
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
+    </BitNavOption>
+    <BitNavOption Text=""Community"">
+        <BitNavOption Text=""LinkedIn"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""GitHub repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" FullWidth>
-    <BitNavOption Text=""bit platform"" Description=""the bit platform description"">
-        <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-        <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-    </BitNavOption>
-    <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
+    @* ... the same options ... *@
 </BitNav>";
 
     private readonly string example3RazorCode = @"
@@ -61,6 +73,11 @@ public partial class _BitNavOptionDemo
             <BitNavOption Text=""A Class"" Url=""https://www.mbusa.com/en/vehicles/class/a-class/sedan"" Target=""_blank"" />
             <BitNavOption Text=""C Class"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/sedan"" Target=""_blank"" />
             <BitNavOption Text=""E Class"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/sedan"" Target=""_blank"" />
+        </BitNavOption>
+        <BitNavOption Text=""Coupes"">
+            <BitNavOption Text=""CLA Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/cla/coupe"" Target=""_blank"" />
+            <BitNavOption Text=""C Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/coupe"" Target=""_blank"" />
+            <BitNavOption Text=""E Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/coupe"" Target=""_blank"" />
         </BitNavOption>
     </BitNavOption>
     <BitNavOption Text=""Tesla""
@@ -91,9 +108,13 @@ public partial class _BitNavOptionDemo
         <BitNavOption Text=""Burgers"" Description=""List of burgers"">
             <BitNavOption Text=""Beef Burger"" Key=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" Key=""Veggie Burger"" />
+            <BitNavOption Text=""Bison Burger"" Key=""Bison Burger"" />
+            <BitNavOption Text=""Wild Salmon Burger"" Key=""Wild Salmon Burger"" />
         </BitNavOption>
         <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" Key=""Cheese Pizza"" />
+            <BitNavOption Text=""Veggie Pizza"" Key=""Veggie Pizza"" />
+            <BitNavOption Text=""Pepperoni Pizza"" Key=""Pepperoni Pizza"" />
             <BitNavOption Text=""Meat Pizza"" Key=""Meat Pizza"" />
         </BitNavOption>
         <BitNavOption Text=""French Fries"" Key=""French Fries"" />
@@ -123,7 +144,11 @@ private static readonly List<BitDropdownItem<string>> FoodMenuDropdownItems =
 [
     new() { Text = ""Beef Burger"", Value = ""Beef Burger"" },
     new() { Text = ""Veggie Burger"", Value = ""Veggie Burger"" },
+    new() { Text = ""Bison Burger"", Value = ""Bison Burger"" },
+    new() { Text = ""Wild Salmon Burger"", Value = ""Wild Salmon Burger"" },
     new() { Text = ""Cheese Pizza"", Value = ""Cheese Pizza"" },
+    new() { Text = ""Veggie Pizza"", Value = ""Veggie Pizza"" },
+    new() { Text = ""Pepperoni Pizza"", Value = ""Pepperoni Pizza"" },
     new() { Text = ""Meat Pizza"", Value = ""Meat Pizza"" },
     new() { Text = ""French Fries"", Value = ""French Fries"" },
     new() { Text = ""Apple"", Value = ""Apple"" },
@@ -162,10 +187,12 @@ private bool iconOnly;";
             <BitNavOption Text=""Cheese Pizza"" />
             <BitNavOption Text=""Meat Pizza"" />
         </BitNavOption>
+        <BitNavOption Text=""French Fries"" />
     </BitNavOption>
     <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
         <BitNavOption Text=""Apple"" />
         <BitNavOption Text=""Orange"" />
+        <BitNavOption Text=""Banana"" />
     </BitNavOption>
     <BitNavOption Text=""Drinks"" IconName=""@BitIconName.Coffee"">
         <BitNavOption Text=""Water"" />
@@ -178,11 +205,21 @@ private bool iconOnly;";
     <BitNavOption Text=""bit platform"" Description=""the bit platform description"">
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""Project Templates"">
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+            </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-            <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+            <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+            <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
         </BitNavOption>
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Community"">
+        <BitNavOption Text=""LinkedIn"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+        <BitNavOption Text=""Twitter"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
         <BitNavOption Text=""GitHub repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
@@ -194,6 +231,7 @@ private bool iconOnly;";
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
         <BitNavOption Text=""Products & Services"" IconName=""@BitIconName.Product"">
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" />
+            <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" />
         </BitNavOption>
     </BitNavOption>
     <BitNavOption Text=""Iconography"" IconName=""@BitIconName.AppIconDefault"" />
@@ -216,13 +254,35 @@ private bool iconOnly;";
         </div>
     </HeaderTemplate>
     <ChildContent>
-        <BitNavOption Text=""Mercedes-Benz"" IsExpanded=""true"">
-            <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
-            <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
+        <BitNavOption Text=""Mercedes-Benz""
+                      Title=""Mercedes-Benz Car Models""
+                      Description=""Cars manufactured under the brand of Mercedes-Benz""
+                      ExpandAriaLabel=""Mercedes-Benz Expanded""
+                      CollapseAriaLabel=""Mercedes-Benz Collapsed""
+                      IsExpanded=""true"">
+            <BitNavOption Text=""SUVs"">
+                <BitNavOption Text=""GLA"" Url=""https://www.mbusa.com/en/vehicles/class/gla/suv"" Target=""_blank"" />
+                <BitNavOption Text=""GLB"" Url=""https://www.mbusa.com/en/vehicles/class/glb/suv"" Target=""_blank"" />
+                <BitNavOption Text=""GLC"" Url=""https://www.mbusa.com/en/vehicles/class/glc/suv"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""Sedans & Wagons"">
+                <BitNavOption Text=""A Class"" Url=""https://www.mbusa.com/en/vehicles/class/a-class/sedan"" Target=""_blank"" />
+                <BitNavOption Text=""C Class"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/sedan"" Target=""_blank"" />
+                <BitNavOption Text=""E Class"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/sedan"" Target=""_blank"" />
+            </BitNavOption>
+            <BitNavOption Text=""Coupes"">
+                <BitNavOption Text=""CLA Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/cla/coupe"" Target=""_blank"" />
+                <BitNavOption Text=""C Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/c-class/coupe"" Target=""_blank"" />
+                <BitNavOption Text=""E Class Coupe"" Url=""https://www.mbusa.com/en/vehicles/class/e-class/coupe"" Target=""_blank"" />
+            </BitNavOption>
         </BitNavOption>
-        <BitNavOption Text=""Tesla"">
+        <BitNavOption Text=""Tesla""
+                      Title=""Tesla Car Models""
+                      ExpandAriaLabel=""Tesla Expanded""
+                      CollapseAriaLabel=""Tesla Collapsed"">
             <BitNavOption Text=""Model S"" Url=""https://www.tesla.com/models"" Target=""_blank"" />
             <BitNavOption Text=""Model X"" Url=""https://www.tesla.com/modelx"" Target=""_blank"" />
+            <BitNavOption Text=""Model Y"" Url=""https://www.tesla.com/modely"" Target=""_blank"" />
         </BitNavOption>
     </ChildContent>
 </BitNav>
@@ -236,14 +296,29 @@ private bool iconOnly;";
         </div>
     </ItemTemplate>
     <ChildContent>
-        <BitNavOption Text=""Fast foods"" IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
-            <BitNavOption Text=""Burgers"" />
-            <BitNavOption Text=""Pizza"" />
+        <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
+                      IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
+            <BitNavOption Text=""Burgers"" Description=""List of burgers"">
+                <BitNavOption Text=""Beef Burger"" />
+                <BitNavOption Text=""Veggie Burger"" />
+                <BitNavOption Text=""Bison Burger"" />
+                <BitNavOption Text=""Wild Salmon Burger"" />
+            </BitNavOption>
+            <BitNavOption Text=""Pizza"">
+                <BitNavOption Text=""Cheese Pizza"" />
+                <BitNavOption Text=""Veggie Pizza"" />
+                <BitNavOption Text=""Pepperoni Pizza"" />
+                <BitNavOption Text=""Meat Pizza"" />
+            </BitNavOption>
+            <BitNavOption Text=""French Fries"" />
         </BitNavOption>
         <BitNavOption Text=""Fruits"" IconName=""@BitIconName.Health"">
             <BitNavOption Text=""Apple"" />
             <BitNavOption Text=""Orange"" />
+            <BitNavOption Text=""Banana"" />
         </BitNavOption>
+        <BitNavOption Text=""Ice Cream"" />
+        <BitNavOption Text=""Cookie"" />
     </ChildContent>
 </BitNav>
 
@@ -313,12 +388,16 @@ private async Task FocusVeggieBurgerApiOption() { if (apiNavRef is not null && v
         OnItemToggle=""(BitNavOption option) => ToggledOption = option"">
     <BitNavOption Text=""Fast foods"" Description=""List of fast foods""
                   IconName=""@BitIconName.HeartBroken"" IsExpanded=""true"">
-        <BitNavOption Text=""Burgers"">
+        <BitNavOption Text=""Burgers"" Description=""List of burgers"">
             <BitNavOption Text=""Beef Burger"" />
             <BitNavOption Text=""Veggie Burger"" />
+            <BitNavOption Text=""Bison Burger"" />
+            <BitNavOption Text=""Wild Salmon Burger"" />
         </BitNavOption>
         <BitNavOption Text=""Pizza"">
             <BitNavOption Text=""Cheese Pizza"" />
+            <BitNavOption Text=""Veggie Pizza"" />
+            <BitNavOption Text=""Pepperoni Pizza"" />
             <BitNavOption Text=""Meat Pizza"" />
         </BitNavOption>
         <BitNavOption Text=""French Fries"" />
@@ -385,12 +464,17 @@ private BitNavOption SelectedOption = default!;";
     <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
 </BitNav>
 
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Secondary"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Tertiary"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Info"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Warning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.SevereWarning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Primary"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Warning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>";
 
     private readonly string example15RazorCode = @"
@@ -399,8 +483,12 @@ private BitNavOption SelectedOption = default!;";
 <BitNav TItem=""BitNavOption"" FitWidth>
     <BitNavOption Text=""bit platform"" Description=""Nav with external icons (FontAwesome)"">
         <BitNavOption Text=""Home"" Icon=""fontAwesomeHomeIcon"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-        <BitNavOption Text=""BlazorUI"" Icon=""fontAwesomeCodeIcon"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-        <BitNavOption Text=""Pricing"" Icon=""fontAwesomeTagIcon"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""Products & Services"">
+            <BitNavOption Text=""BlazorUI"" Icon=""fontAwesomeCodeIcon"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
+            <BitNavOption Text=""Pricing"" Icon=""fontAwesomeTagIcon"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        </BitNavOption>
+        <BitNavOption Text=""About"" Icon=""fontAwesomeInfoIcon"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
+        <BitNavOption Text=""Contact us"" Icon=""fontAwesomeEnvelopeIcon"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Iconography"" Icon=""fontAwesomeIconsIcon"" Url=""/iconography"" />
 </BitNav>
@@ -419,6 +507,8 @@ private BitNavOption SelectedOption = default!;";
 private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css(""fa-solid fa-house"");
 private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa(""solid code"");
 private static readonly BitIconInfo fontAwesomeTagIcon = BitIconInfo.Css(""fa-solid fa-tag"");
+private static readonly BitIconInfo fontAwesomeInfoIcon = BitIconInfo.Fa(""solid circle-info"");
+private static readonly BitIconInfo fontAwesomeEnvelopeIcon = BitIconInfo.Css(""fa-solid fa-envelope"");
 private static readonly BitIconInfo fontAwesomeIconsIcon = BitIconInfo.Css(""fa-solid fa-icons"");
 
 private static readonly BitIconInfo bootstrapChevronIcon = BitIconInfo.Bi(""chevron-right"");
@@ -442,11 +532,13 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
 <BitNav TItem=""BitNavOption"" Style=""max-width: max-content; border: 1px solid tomato;"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
+    <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" Class=""custom-class"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
+    <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
 </BitNav>
 
 <BitNav TItem=""BitNavOption"" FitWidth>
@@ -505,14 +597,21 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
         <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">
             <BitNavOption Text=""خانه"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
             <BitNavOption Text=""محصولات و خدمات"">
+                <BitNavOption Text=""قالب های پروژه"">
+                    <BitNavOption Text=""نمونه ی Todo"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                    <BitNavOption Text=""نمونه ی AdminPanel"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                </BitNavOption>
                 <BitNavOption Text=""رابط کاربری Blazor"" IconName=""@BitIconName.F12DevTools"" Url=""https://blazorui.bitplatform.dev/"" Target=""_blank"" />
                 <BitNavOption Text=""راه های هاست ابری"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
+                <BitNavOption Text=""آکادمی بیت"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsEnabled=""false"" />
             </BitNavOption>
             <BitNavOption Text=""قیمت"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+            <BitNavOption Text=""درباره ما"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
             <BitNavOption Text=""ارتباط با ما"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
         </BitNavOption>
         <BitNavOption Text=""انجمن ها"">
             <BitNavOption Text=""لینکدین"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
+            <BitNavOption Text=""توییتر"" IconName=""@BitIconName.Globe"" Url=""https://twitter.com/bitplatformhq"" Target=""_blank"" />
             <BitNavOption Text=""گیتهاب"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
         </BitNavOption>
         <BitNavOption Text=""شمایل نگاری"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
