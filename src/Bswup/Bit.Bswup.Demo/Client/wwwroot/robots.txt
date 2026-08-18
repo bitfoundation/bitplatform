@@ -6,7 +6,10 @@ Allow: /
 # crawler would never read the noindex and could still list the page from inbound links alone.
 
 # Machine endpoints, not documentation: the MCP server and the plain HTTP mirror of its tools.
+# The /mcp rules are anchored to that exact path and its descendants, so the /mcp-server docs
+# page stays crawlable.
 Disallow: /api/
-Disallow: /mcp
+Disallow: /mcp$
+Disallow: /mcp/
 
 Sitemap: https://bswup.bitplatform.dev/sitemap.xml

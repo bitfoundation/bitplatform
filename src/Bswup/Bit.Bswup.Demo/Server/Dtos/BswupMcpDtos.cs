@@ -268,3 +268,23 @@ public record BswupAssetAnalysisDto
 
     public required string[] Notes { get; init; }
 }
+
+/// <summary>
+/// The body of the POST form of InspectBswupServiceWorker. A whole service-worker file does not fit
+/// in a query string - the GET mirror of that tool is for snippets and for reading in a browser.
+/// </summary>
+public record BswupInspectRequestDto
+{
+    /// <summary>The full content of the service-worker.js file to check, verbatim.</summary>
+    public required string Script { get; init; }
+}
+
+/// <summary>The body of the POST form of AnalyzeBswupAssetCaching, for the same reason.</summary>
+public record BswupAssetAnalysisRequestDto
+{
+    /// <summary>The full content of the service-worker.js file whose lists should decide these assets.</summary>
+    public required string Script { get; init; }
+
+    /// <summary>The asset URLs to decide - one per line, or separated by commas or semicolons.</summary>
+    public required string AssetUrls { get; init; }
+}

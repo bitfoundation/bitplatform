@@ -21,7 +21,8 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 /// go further and run an app's own service-worker file through the same rules the shipped worker
 /// applies, which is the only way to answer "will this configuration cache that asset?" without
 /// deploying it. The same methods are exposed as plain HTTP GET endpoints under /api/mcp/...,
-/// which makes each of them inspectable from a browser.
+/// which makes each of them inspectable from a browser - and those two, whose input is a whole
+/// file, take a POST with a JSON body at the same URL, because a query string cannot carry one.
 /// </para>
 /// </summary>
 [ApiController]
@@ -194,6 +195,19 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         return BswupServiceWorkerInspector.Inspect(script);
     }
 
+    /// <summary>
+    /// The POST form of <see cref="InspectBswupServiceWorker"/>: same answer, with the file in the
+    /// request body. The GET mirror carries the script in the query string, which a real
+    /// service-worker file overruns - a request line has a length limit (8 KB by default in
+    /// Kestrel) and the request is rejected before it reaches this controller.
+    /// </summary>
+    [HttpPost]
+    [ActionName(nameof(InspectBswupServiceWorker))]
+    public BswupServiceWorkerInspectionDto InspectBswupServiceWorkerFromBody([FromBody] BswupInspectRequestDto request)
+    {
+        return InspectBswupServiceWorker(request.Script);
+    }
+
     [HttpGet]
     [McpServerTool(Name = nameof(AnalyzeBswupAssetCaching), Title = "Will this asset be cached?",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
@@ -216,6 +230,18 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         {
             Notes = [.. analysis.Notes, $"Only the first {MaxAnalyzedAssetUrls} of the {urls.Length} URLs passed were analyzed; ask again with the rest to cover them."]
         };
+    }
+
+    /// <summary>
+    /// The POST form of <see cref="AnalyzeBswupAssetCaching"/>, for the same reason: it takes the
+    /// service-worker file and the URL list in the body instead of the query string. It delegates,
+    /// so the same URL cap and the note that says when it was applied hold here too.
+    /// </summary>
+    [HttpPost]
+    [ActionName(nameof(AnalyzeBswupAssetCaching))]
+    public BswupAssetAnalysisDto AnalyzeBswupAssetCachingFromBody([FromBody] BswupAssetAnalysisRequestDto request)
+    {
+        return AnalyzeBswupAssetCaching(request.Script, request.AssetUrls);
     }
 
     [HttpGet]

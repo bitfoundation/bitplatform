@@ -554,6 +554,10 @@ else
             _protocolVersion = handshake?["result"]?["protocolVersion"]?.GetValue<string>();
             _instructions = handshake?["result"]?["instructions"]?.GetValue<string>();
 
+            // The handshake is only over once the client says so. Everything below is a request the
+            // protocol allows only after this notification has gone out.
+            await NotifyAsync("notifications/initialized");
+
             var tools = await CallAsync("tools/list", null);
             Fill(_tools, tools?["result"]?["tools"], "name", "description", "inputSchema");
 
@@ -858,6 +862,29 @@ else
         if (capture && json is null) _responseText = text;
 
         return json;
+    }
+
+    /// <summary>
+    /// A JSON-RPC notification: no id, and nothing to read back - the transport answers 202 with an
+    /// empty body. Sent once, between <c>initialize</c> and the first real request.
+    /// </summary>
+    private async Task NotifyAsync(string method)
+    {
+        var body = new JsonObject { ["jsonrpc"] = "2.0", ["method"] = method }.ToJsonString();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "mcp")
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json")
+        };
+
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+
+        // No Mcp-Session-Id is echoed here or anywhere else on this page: the server runs in the
+        // stateless mode this SDK version defaults to, so it issues no session id at all. A server
+        // configured with Stateless = false would hand one back on initialize and expect it on
+        // every request that follows, this one included.
+        using var response = await Http.SendAsync(request);
     }
 
     /// <summary>The JSON payload of the response, whether it arrived bare or inside an SSE frame.</summary>

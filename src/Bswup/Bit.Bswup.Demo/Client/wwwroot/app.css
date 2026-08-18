@@ -1693,15 +1693,15 @@ code, kbd, pre, samp {
     background: var(--bit-clr-bg-sec);
     border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
     border-radius: 999px;
-    font-family: var(--bit-fnt-fam-mono, monospace);
+    font-family: var(--demo-font-mono);
     font-size: 0.75rem;
     color: var(--bit-clr-fg-pri);
     cursor: pointer;
 }
 
 .mcp-chip:hover {
-    border-color: var(--bit-clr-pri-main);
-    color: var(--bit-clr-pri-main);
+    border-color: var(--bit-clr-pri);
+    color: var(--bit-clr-pri);
 }
 
 /* What the server declares about a tool, next to the tool's name. */

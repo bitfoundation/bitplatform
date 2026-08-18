@@ -463,6 +463,17 @@ public static partial class BswupServiceWorkerInspector
         }
 
         var end = literal.LastIndexOf('/');
+
+        if (end < 1)
+        {
+            // Not a regex literal at all - an opening slash with nothing closing it. Reported the
+            // same way a pattern .NET cannot compile is, rather than thrown at the caller who
+            // pasted the file.
+            notes.Add($"The pattern {literal} could not be evaluated here (it is not a closed regular-expression literal); it was left out of this analysis.");
+
+            return new Pattern(description, null, null);
+        }
+
         var body = literal[1..end];
         var flags = literal[(end + 1)..];
 
