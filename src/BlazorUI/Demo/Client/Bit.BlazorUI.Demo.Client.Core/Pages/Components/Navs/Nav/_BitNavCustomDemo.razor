@@ -214,9 +214,12 @@
         In the <b>Automatic</b> mode the nav selects the item whose URL points at the current page.
         <b>Match</b> sets how those URLs are compared for the whole nav, and the <b>Match</b> of an item
         overrides it: <b>Exact</b> asks for the same URL, <b>Prefix</b> also matches everything below it,
-        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character,
-        <b>*</b> for one path segment and <b>**</b> for any number of them, and <b>Regex</b> reads it as a
-        regular expression. The comparison ignores the letter case, a trailing slash and the query string, and
+        <b>Wildcard</b> reads the URL of the item as a pattern in which <b>?</b> stands for a single character
+        other than a slash, <b>*</b> for any number of them (so it never runs past a path segment) and
+        <b>**</b> for any number of segments, and <b>Regex</b> reads it as a regular expression.
+        <b>Exact</b> and <b>Prefix</b> ignore the letter case and a trailing slash, while a <b>Wildcard</b> or
+        a <b>Regex</b> pattern is matched exactly as it was written, so it is case sensitive and a trailing
+        slash tells two URLs apart. The query string never stands in the way, and
         <b>AdditionalUrls</b> gives an item other URLs to light up on. Both of them are read from the custom
         item through the <b>Match</b> and <b>AdditionalUrls</b> name selectors. The navs below are all matched
         against the URL of this page.

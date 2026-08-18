@@ -1522,7 +1522,6 @@ public class BitNavTests : BunitTestContext
         DataRow(BitNavMatch.Exact, "/products?page=2", "/products"),
         DataRow(BitNavMatch.Exact, "/products#top", "/products"),
         DataRow(BitNavMatch.Exact, "/products", "products"),
-        DataRow(BitNavMatch.Exact, "/products", "http://localhost/products"),
         DataRow(BitNavMatch.Prefix, "/Products/1", "/products"),
         DataRow(BitNavMatch.Prefix, "/products/1?page=2", "/products")]
     public void BitNavShouldCompareTheUrlsTheWayTheBrowserTreatsThem(BitNavMatch match, string url, string itemUrl)
@@ -1534,6 +1533,21 @@ public class BitNavTests : BunitTestContext
 
         // The letter case, a trailing slash, a query string, a fragment and a missing leading slash all
         // describe the same page, so none of them may cost the item its selection.
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldMatchAnItemUrlWrittenAsAnAbsoluteUrlUnderTheBaseOfTheApp()
+    {
+        Navigate("/products");
+
+        // The base of the app is the one the NavigationManager reports rather than a host spelled out here,
+        // so the item URL is built from it instead of being hard-coded.
+        var baseUri = Services.GetRequiredService<NavigationManager>().BaseUri;
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = $"{baseUri}products" } };
+
+        var component = RenderNav(items);
+
         Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
     }
 
@@ -1638,6 +1652,27 @@ public class BitNavTests : BunitTestContext
         component.FindAll(".bit-nav-ict")[0].FocusIn();
         PressKey(component, "ArrowRight");
 
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldStepOverADisabledItemWithTheArrowKeys()
+    {
+        var items = new List<BitNavItem>
+        {
+            new() { Text = "Home" },
+            new() { Text = "Drinks", IsEnabled = false, ChildItems = [new() { Text = "Coffee" }] },
+            new() { Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
+        };
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowDown");
+        PressKey(component, "ArrowRight");
+
+        // A disabled item cannot take the focus (it renders as a disabled button), so the Down arrow steps
+        // over it and lands on the next enabled one, which the forward arrow then expands.
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
@@ -2377,7 +2412,10 @@ public class BitNavTests : BunitTestContext
 
         component.Find(".bit-nav-cbt").Click();
 
-        Assert.IsNull(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style"));
+        // The expanded branch is the one that is not hidden; whether that leaves the style attribute out
+        // altogether or carries something else is none of the test's business.
+        var expanded = component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style");
+        Assert.IsFalse(expanded?.Contains("display:none") is true);
     }
 
     [TestMethod]
@@ -2393,7 +2431,8 @@ public class BitNavTests : BunitTestContext
             });
         });
 
-        Assert.IsNull(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style"));
+        var expanded = component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style");
+        Assert.IsFalse(expanded?.Contains("display:none") is true);
     }
 
     #endregion

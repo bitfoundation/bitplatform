@@ -79,7 +79,20 @@ private static readonly List<Section> customBasicNavItems =
 
 <BitNav Items=""customBasicNavItems"" FullWidth NameSelectors=""sectionSelectors"" />";
     private readonly string example2CsharpCode = @"
-private static readonly List<Section> customBasicNavItems = [ /* see the Basic example */ ];";
+private static readonly List<Section> customBasicNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Comment = ""the bit platform description"",
+        Links =
+        [
+            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+        ],
+    },
+    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"" />";
@@ -481,6 +494,7 @@ public class Section
     public string Text { get; set; } = string.Empty;
     public string? ImageName { get; set; }
     public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
     public BitNavMatch? UrlMatch { get; set; }
     public IEnumerable<string>? OtherUrls { get; set; }
     public List<Section> Links { get; set; } = [];
@@ -506,16 +520,18 @@ private static readonly List<Section> customPrefixMatchNavItems =
     new() { Text = ""Iconography (/iconography)"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];
 
+// The URL of a Wildcard or a Regex item is a pattern rather than a page, so these items are disabled:
+// they still light up when the pattern matches the current URL, but a click cannot follow them.
 private static readonly List<Section> customWildcardMatchNavItems =
 [
-    new() { Text = ""A component page (/components/*)"", ImageName = BitIconName.F12DevTools, Url = ""/components/*"" },
-    new() { Text = ""A pro page (/pro/**)"", ImageName = BitIconName.Trophy2, Url = ""/pro/**"" },
+    new() { Text = ""A component page (/components/*)"", ImageName = BitIconName.F12DevTools, Url = ""/components/*"", IsEnabled = false },
+    new() { Text = ""A pro page (/pro/**)"", ImageName = BitIconName.Trophy2, Url = ""/pro/**"", IsEnabled = false },
 ];
 
 private static readonly List<Section> customRegexMatchNavItems =
 [
-    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", ImageName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"" },
-    new() { Text = ""A page starting with P (^/components/p)"", ImageName = BitIconName.Page, Url = ""^/components/p"" },
+    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", ImageName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"", IsEnabled = false },
+    new() { Text = ""A page starting with P (^/components/p)"", ImageName = BitIconName.Page, Url = ""^/components/p"", IsEnabled = false },
 ];
 
 private static readonly List<Section> customItemMatchNavItems =
@@ -574,9 +590,22 @@ private static readonly List<Section> customAccentNavItems =
 
 <BitNav Items=""customBootstrapIconNavItems"" ChevronDownIcon=""bootstrapChevronIcon"" FitWidth NameSelectors=""sectionIconSelectors"" />";
     private readonly string example15CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public BitIconInfo? Icon { get; set; }
+    public string? Url { get; set; }
+    public bool IsDivider { get; set; }
+    public string? Comment { get; set; }
+    public List<Section> Links { get; set; } = [];
+}
+
+// The external icons are carried by a BitIconInfo of their own instead of by an icon name string: a
+// BitIconInfo assigned to a string property is reduced to its Name, which drops the base class and the
+// prefix an external library needs (the ""bi bi-"" of Bootstrap Icons, for instance).
 private static readonly BitNavNameSelectors<Section> sectionIconSelectors = new()
 {
-    Icon = { Name = nameof(Section.ImageName) },
+    Icon = { Name = nameof(Section.Icon) },
     ChildItems = { Name = nameof(Section.Links) },
     Description = { Name = nameof(Section.Comment) },
     IsSeparator = { Name = nameof(Section.IsDivider) },
@@ -590,21 +619,21 @@ private static readonly List<Section> customExternalIconNavItems =
         Comment = ""Nav with external icons (FontAwesome)"",
         Links =
         [
-            new() { Text = ""Home"", ImageName = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""Home"", Icon = BitIconInfo.Css(""fa-solid fa-house""), Url = ""https://bitplatform.dev/"" },
             new()
             {
                 Text = ""Products & Services"",
                 Links =
                 [
-                    new() { Text = ""BlazorUI"", ImageName = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Pricing"", ImageName = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
+                    new() { Text = ""BlazorUI"", Icon = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
+                    new() { Text = ""Pricing"", Icon = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
                 ]
             },
-            new() { Text = ""About"", ImageName = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
-            new() { Text = ""Contact us"", ImageName = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
+            new() { Text = ""About"", Icon = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
+            new() { Text = ""Contact us"", Icon = BitIconInfo.Css(""fa-solid fa-envelope""), Url = ""https://bitplatform.dev/contact-us"" },
         ],
     },
-    new() { Text = ""Iconography"", ImageName = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
+    new() { Text = ""Iconography"", Icon = BitIconInfo.Css(""fa-solid fa-icons""), Url = ""/iconography"" },
 ];
 
 private static readonly BitIconInfo bootstrapChevronIcon = BitIconInfo.Bi(""chevron-right"");
@@ -617,12 +646,12 @@ private static readonly List<Section> customBootstrapIconNavItems =
         Comment = ""Nav with external icons (Bootstrap Icons)"",
         Links =
         [
-            new() { Text = ""Home"", ImageName = BitIconInfo.Bi(""house-fill""), Url = ""https://bitplatform.dev/"" },
-            new() { Text = ""BlazorUI"", ImageName = BitIconInfo.Bi(""code-slash""), Url = ""https://bitplatform.dev/components"" },
-            new() { Text = ""Pricing"", ImageName = BitIconInfo.Bi(""tag-fill""), Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""Home"", Icon = BitIconInfo.Bi(""house-fill""), Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""BlazorUI"", Icon = BitIconInfo.Bi(""code-slash""), Url = ""https://bitplatform.dev/components"" },
+            new() { Text = ""Pricing"", Icon = BitIconInfo.Bi(""tag-fill""), Url = ""https://bitplatform.dev/pricing"" },
         ],
     },
-    new() { Text = ""Iconography"", ImageName = BitIconInfo.Bi(""emoji-smile""), Url = ""/iconography"" },
+    new() { Text = ""Iconography"", Icon = BitIconInfo.Bi(""emoji-smile""), Url = ""/iconography"" },
 ];";
 
     private readonly string example16RazorCode = @"

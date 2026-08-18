@@ -282,16 +282,19 @@ public partial class _BitNavItemDemo
         new() { Text = "Iconography (/iconography)", IconName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
+    // The URL of a Wildcard or a Regex item is a pattern rather than a page, so these items are disabled:
+    // they still light up when the pattern matches the current URL, but a click cannot follow them to a
+    // route that does not exist.
     private static readonly List<BitNavItem> wildcardMatchNavItems =
     [
-        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*" },
-        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**" },
+        new() { Text = "A component page (/components/*)", IconName = BitIconName.F12DevTools, Url = "/components/*", IsEnabled = false },
+        new() { Text = "A pro page (/pro/**)", IconName = BitIconName.Trophy2, Url = "/pro/**", IsEnabled = false },
     ];
 
     private static readonly List<BitNavItem> regexMatchNavItems =
     [
-        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$" },
-        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p" },
+        new() { Text = @"Nav or NavBar (^/components/nav(bar)?$)", IconName = BitIconName.GlobalNavButton, Url = "^/components/nav(bar)?$", IsEnabled = false },
+        new() { Text = @"A page starting with P (^/components/p)", IconName = BitIconName.Page, Url = "^/components/p", IsEnabled = false },
     ];
 
     private static readonly List<BitNavItem> itemMatchNavItems =

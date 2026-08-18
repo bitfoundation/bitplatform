@@ -56,7 +56,20 @@ private static readonly List<BitNavItem> basicNavItems =
 
 <BitNav Items=""basicNavItems"" FullWidth />";
     private readonly string example2CsharpCode = @"
-private static readonly List<BitNavItem> basicNavItems = [ /* see the Basic example */ ];";
+private static readonly List<BitNavItem> basicNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Description = ""the bit platform description"",
+        ChildItems =
+        [
+            new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+        ],
+    },
+    new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""carNavItems"" RenderType=""BitNavRenderType.Grouped"" />";
@@ -284,7 +297,20 @@ private static readonly List<BitNavItem> singleExpandNavItems =
     private readonly string example8RazorCode = @"
 <BitNav Items=""noCollapseNavItems"" AllExpanded NoCollapse />";
     private readonly string example8CsharpCode = @"
-private static readonly List<BitNavItem> noCollapseNavItems = [ /* the same shape as basicNavItems */ ];";
+private static readonly List<BitNavItem> noCollapseNavItems =
+[
+    new()
+    {
+        Text = ""bit platform"",
+        Description = ""the bit platform description"",
+        ChildItems =
+        [
+            new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
+            new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
+        ],
+    },
+    new() { Text = ""Iconography"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
+];";
 
     private readonly string example9RazorCode = @"
 <BitNav Items=""chevronNavItems"" ReversedChevron AllExpanded FitWidth />
@@ -441,16 +467,18 @@ private static readonly List<BitNavItem> prefixMatchNavItems =
     new() { Text = ""Iconography (/iconography)"", IconName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];
 
+// The URL of a Wildcard or a Regex item is a pattern rather than a page, so these items are disabled:
+// they still light up when the pattern matches the current URL, but a click cannot follow them.
 private static readonly List<BitNavItem> wildcardMatchNavItems =
 [
-    new() { Text = ""A component page (/components/*)"", IconName = BitIconName.F12DevTools, Url = ""/components/*"" },
-    new() { Text = ""A pro page (/pro/**)"", IconName = BitIconName.Trophy2, Url = ""/pro/**"" },
+    new() { Text = ""A component page (/components/*)"", IconName = BitIconName.F12DevTools, Url = ""/components/*"", IsEnabled = false },
+    new() { Text = ""A pro page (/pro/**)"", IconName = BitIconName.Trophy2, Url = ""/pro/**"", IsEnabled = false },
 ];
 
 private static readonly List<BitNavItem> regexMatchNavItems =
 [
-    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", IconName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"" },
-    new() { Text = ""A page starting with P (^/components/p)"", IconName = BitIconName.Page, Url = ""^/components/p"" },
+    new() { Text = ""Nav or NavBar (^/components/nav(bar)?$)"", IconName = BitIconName.GlobalNavButton, Url = ""^/components/nav(bar)?$"", IsEnabled = false },
+    new() { Text = ""A page starting with P (^/components/p)"", IconName = BitIconName.Page, Url = ""^/components/p"", IsEnabled = false },
 ];
 
 private static readonly List<BitNavItem> itemMatchNavItems =

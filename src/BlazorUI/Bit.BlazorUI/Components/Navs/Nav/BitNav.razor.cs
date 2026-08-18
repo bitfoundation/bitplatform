@@ -814,8 +814,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         catch (InvalidOperationException) { } // the element is no longer in the DOM
     }
 
-    // The items the keyboard can reach: the rendered ones, in the order they appear, which means the
-    // children of a collapsed item are skipped and a separator is never a stop.
+    // The items the keyboard can reach: the rendered and focusable ones, in the order they appear, which
+    // means the children of a collapsed item are skipped and neither a separator nor a disabled item is a
+    // stop. The children of a disabled item are still reachable, since they carry their own enabled state.
     private List<TItem> GetVisibleItems()
     {
         List<TItem> result = [];
@@ -828,9 +829,13 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
         {
             foreach (var item in items)
             {
-                if (GetIsSeparator(item)) continue;
-
-                result.Add(item);
+                // A disabled item is not a stop either: it renders as a disabled button (or as an anchor
+                // without an href and out of the tab order), so it cannot take the focus at all and the
+                // keyboard would come to a halt on it.
+                if (GetIsSeparator(item) is false && GetIsEnabled(item))
+                {
+                    result.Add(item);
+                }
 
                 var childItems = GetChildItems(item);
                 if (childItems.Count > 0 && GetItemExpanded(item))
