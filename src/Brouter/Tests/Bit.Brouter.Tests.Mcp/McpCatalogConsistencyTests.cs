@@ -160,10 +160,26 @@ public partial class McpCatalogConsistencyTests
         {
             var guide = await McpCall.TextAsync("GetBrouterSetupGuide", new() { ["renderMode"] = renderMode });
 
+            var quotedPaths = 0;
+
             foreach (var quoted in QuotedPathRegex().Matches(guide).Select(match => match.Groups["path"].Value))
             {
+                // Samples/ has no standalone WebAssembly project, so that one guide writes its files
+                // out by hand and heads each with a bare file name. Only a heading naming a path is
+                // a claim that the server can hand that file over.
+                if (quoted.Contains('/', StringComparison.Ordinal) is false) continue;
+
+                quotedPaths++;
+
                 Assert.IsTrue(paths.Contains(quoted),
                     $"The '{renderMode}' guide quotes '{quoted}', which GetBrouterSourceFiles does not list.");
+            }
+
+            // A guide built from the catalog that suddenly quotes nothing has stopped finding its
+            // sample, which would leave the loop above asserting nothing at all.
+            if (renderMode is not "standalone-wasm")
+            {
+                Assert.IsTrue(quotedPaths > 0, $"The '{renderMode}' guide no longer hands out any file from the source catalog.");
             }
         }
     }
@@ -193,6 +209,6 @@ public partial class McpCatalogConsistencyTests
     private static partial Regex ToolCallRegex();
 
     // The setup guide introduces each file it quotes as a "### `path`" heading.
-    [GeneratedRegex(@"^### `(?<path>[^`]+)`$", RegexOptions.Multiline)]
+    [GeneratedRegex(@"^### `(?<path>[^`]+)`\r?$", RegexOptions.Multiline)]
     private static partial Regex QuotedPathRegex();
 }
