@@ -5,6 +5,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace Bit.Brouter.Demo.Client;
 
@@ -72,6 +73,10 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
         WriteIndented = true,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
+    // Long enough for a cold server to render a docs page, short enough that a stream the server
+    // never closes ends as a message on the page rather than as a call that hangs for good.
+    private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(30);
 
     private int _lastId;
 
@@ -201,7 +206,9 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
 
         // A notification is a request without an id: it gets no answer, so nothing can be correlated
         // back to it - which is exactly why the spec allows one only where no answer is needed.
-        if (notification is false) envelope["id"] = ++_lastId;
+        int? requestId = notification ? null : ++_lastId;
+
+        if (requestId is not null) envelope["id"] = requestId;
 
         envelope["method"] = method;
         if (parameters is not null) envelope["params"] = parameters;
@@ -233,7 +240,13 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
             if (SessionId is not null) request.Headers.TryAddWithoutValidation("Mcp-Session-Id", SessionId);
             if (ProtocolVersion is not null) request.Headers.TryAddWithoutValidation("MCP-Protocol-Version", ProtocolVersion);
 
-            using var response = await httpClient.SendAsync(request);
+            // Without this the browser hands the body over only once it is complete, and reading a
+            // stream as it arrives - the whole point of the SSE shape - cannot happen.
+            if (OperatingSystem.IsBrowser()) request.SetBrowserResponseStreamingEnabled(true);
+
+            using var cancellation = new CancellationTokenSource(_timeout);
+
+            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation.Token);
 
             exchange.StatusCode = (int)response.StatusCode;
             exchange.ContentType = response.Content.Headers.ContentType?.ToString();
@@ -245,7 +258,7 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
                 SessionId = sessionIds.FirstOrDefault() ?? SessionId;
             }
 
-            var payload = ExtractMessage(await response.Content.ReadAsStringAsync(), exchange.ContentType);
+            var payload = await ReadMessageAsync(response, exchange.ContentType, requestId, cancellation.Token);
 
             if (payload.Length == 0)
             {
@@ -271,6 +284,12 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
 
             return new McpCallResult(message?["result"], null, exchange);
         }
+        catch (OperationCanceledException)
+        {
+            exchange.Error = $"The server sent no answer within {_timeout.TotalSeconds:0} seconds.";
+
+            return new McpCallResult(null, exchange.Error, exchange);
+        }
         catch (Exception exception)
         {
             exchange.Error = exception.Message;
@@ -284,28 +303,28 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
     }
 
     /// <summary>
-    /// Pulls the JSON-RPC message out of the body. A plain JSON response is already the message; an
-    /// SSE response wraps it in an event whose "data:" lines hold it.
+    /// Pulls this call's JSON-RPC message out of the body as it arrives. A plain JSON response is
+    /// already the message; an SSE response carries one message per event, and the answer is not
+    /// necessarily the first of them - the server may put notifications on the same stream ahead of
+    /// it, so the event repeating this request's id is the one worth waiting for.
     /// </summary>
-    private static string ExtractMessage(string body, string? contentType)
+    private static async Task<string> ReadMessageAsync(HttpResponseMessage response, string? contentType, int? requestId, CancellationToken cancellationToken)
     {
-        if (contentType?.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) is not true) return body.Trim();
+        // The reader owns the stream, and disposing it disposes the response body with it.
+        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync(cancellationToken), Encoding.UTF8);
+
+        if (contentType?.Contains("text/event-stream", StringComparison.OrdinalIgnoreCase) is not true)
+        {
+            return (await reader.ReadToEndAsync(cancellationToken)).Trim();
+        }
 
         var data = new StringBuilder();
 
-        // The message is the first event on the stream: a blank line closes an event, so anything
-        // past it belongs to a later one. Within that event every "data:" line is its own line of
+        // A blank line closes an event, and within one event every "data:" line is its own line of
         // the payload, which is how a message spanning several lines survives the trip.
-        foreach (var line in body.Split('\n'))
+        while (await reader.ReadLineAsync(cancellationToken) is string line)
         {
             var trimmed = line.TrimEnd('\r');
-
-            if (trimmed.Length == 0)
-            {
-                if (data.Length > 0) break;
-
-                continue;
-            }
 
             if (trimmed.StartsWith("data:", StringComparison.Ordinal))
             {
@@ -315,9 +334,47 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
                 }
 
                 data.Append(trimmed[5..].TrimStart());
+
+                continue;
             }
+
+            // Anything else - a comment, an "event:" or an "id:" line - says nothing about which
+            // message this is, so only the closing blank line of a non-empty event is acted on.
+            if (trimmed.Length > 0 || data.Length == 0) continue;
+
+            var message = data.ToString().Trim();
+
+            data.Clear();
+
+            if (IsAnswerTo(message, requestId)) return message;
         }
 
-        return data.ToString().Trim();
+        // A stream cut short of its closing blank line still delivered whatever it had got to.
+        var last = data.ToString().Trim();
+
+        return IsAnswerTo(last, requestId) ? last : string.Empty;
+    }
+
+    /// <summary>
+    /// Whether an event carries the answer to this request: a response repeats the id it answers,
+    /// while a notification carries none and belongs to no one waiting.
+    /// </summary>
+    private static bool IsAnswerTo(string message, int? requestId)
+    {
+        if (message.Length == 0) return false;
+
+        // Nothing was sent that an answer could correlate to, so whatever came back is all there is.
+        if (requestId is null) return true;
+
+        try
+        {
+            return JsonNode.Parse(message)?["id"] is JsonValue id
+                   && id.TryGetValue<int>(out var value)
+                   && value == requestId;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }

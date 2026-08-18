@@ -273,11 +273,33 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
     [HttpGet]
     [McpServerTool(Name = nameof(AnalyzeBrouterRouteTable), Title = "Analyze a whole route table", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Parses a whole set of route templates together and reports how they relate: the order in which the router prefers them when several match the same URL (by specificity), any templates that are indistinguishable - Brouter throws at registration for those - and the exact error for each invalid one. Pass one template per line. Use it after adding routes to an existing table.")]
+    [Description("Parses a whole set of route templates together and reports how they relate: the order in which the router prefers them when several match the same URL (by specificity), any templates that are indistinguishable - Brouter throws at registration for those - and the exact error for each invalid one. Pass one template per line. Use it after adding routes to an existing table. At most 200 templates are analyzed in one call; send more and the answer comes back with isPartial set, covering only the first 200 - never treat such an answer as an analysis of the whole table.")]
     public BrouterRouteTableAnalysisDto AnalyzeBrouterRouteTable(
         [Description("The route templates, one per line. A semicolon separates them too, and so does a top-level comma - but never a comma inside a constraint such as range(1,10).")] string templates)
     {
-        return BrouterTemplateInspector.Analyze(SplitTemplates(templates), brouterOptions.Value.Constraints);
+        var analyzed = SplitTemplates(templates, out var submitted);
+
+        var analysis = BrouterTemplateInspector.Analyze(analyzed, brouterOptions.Value.Constraints);
+
+        if (submitted <= analyzed.Length) return analysis;
+
+        // An analysis of part of a route table is not an analysis of the route table: the ambiguity
+        // report above all is only ever as complete as the set it saw. So the answer says which it
+        // is, in its own shape and not only in prose, and says it before anything else it has to
+        // say - an agent that stopped reading here still cannot mistake it for a clean table.
+        return analysis with
+        {
+            IsPartial = true,
+            SubmittedTemplateCount = submitted,
+            AnalyzedTemplateCount = analyzed.Length,
+            Notes =
+            [
+                $"INCOMPLETE ANALYSIS: {submitted} templates were sent and only the first {analyzed.Length} were " +
+                $"analyzed, which is all this server analyzes in one call. The rest were not parsed and were not " +
+                $"compared against these for ambiguity, so this says nothing about them - send them in a further call.",
+                .. analysis.Notes
+            ]
+        };
     }
 
     [HttpGet]
@@ -323,7 +345,16 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     /// templates puts it anyway.
     /// </para>
     /// </summary>
-    internal static string[] SplitTemplates(string? templates)
+    internal static string[] SplitTemplates(string? templates) => SplitTemplates(templates, out _);
+
+    /// <inheritdoc cref="SplitTemplates(string?)"/>
+    /// <param name="templates">The route table as it was written.</param>
+    /// <param name="submitted">
+    /// How many templates it held, before the cap - which is more than the return value holds
+    /// whenever the caller sent more than this server analyzes at once, and the only way the answer
+    /// can own up to being partial instead of passing a cut table off as the whole one.
+    /// </param>
+    internal static string[] SplitTemplates(string? templates, out int submitted)
     {
         var parts = new List<string>();
         var current = new StringBuilder();
@@ -345,6 +376,8 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
         }
 
         Flush(parts, current);
+
+        submitted = parts.Count;
 
         return [.. parts.Take(MaxAnalyzedTemplates)];
 

@@ -248,6 +248,20 @@ public record BrouterRouteTableAnalysisDto
     public required string[][] Ambiguous { get; init; }
 
     public required string[] Notes { get; init; }
+
+    /// <summary>
+    /// True when more templates were sent than this server analyzes in one call, which makes every
+    /// other member a partial answer - <see cref="Ambiguous"/> most of all, since it can only report
+    /// collisions among the templates it was given. Treat such an answer as covering the first
+    /// <see cref="AnalyzedTemplateCount"/> templates and nothing else.
+    /// </summary>
+    public bool IsPartial { get; init; }
+
+    /// <summary>How many templates the call sent - present only when <see cref="IsPartial"/> is true.</summary>
+    public int? SubmittedTemplateCount { get; init; }
+
+    /// <summary>How many of them were analyzed - present only when <see cref="IsPartial"/> is true.</summary>
+    public int? AnalyzedTemplateCount { get; init; }
 }
 
 /// <summary>One '/'-separated segment of a parsed route template.</summary>

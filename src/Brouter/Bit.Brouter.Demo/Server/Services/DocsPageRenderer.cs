@@ -32,7 +32,14 @@ public static class DocsPageRenderer
     /// </para>
     /// </summary>
     public static DocsPageInfo? FindPage(string? slug)
-        => DocsCatalog.FindBySlug(slug is "overview" or "index" or "docs" ? string.Empty : slug);
+    {
+        // Normalized the way the catalog itself matches slugs - slashes off, case ignored - before
+        // the stand-ins are recognized, so "/Overview" reaches the overview exactly as "overview"
+        // does rather than falling through as a slug no page has.
+        var trimmed = (slug ?? string.Empty).Trim('/');
+
+        return DocsCatalog.FindBySlug(trimmed.ToLowerInvariant() is "overview" or "index" or "docs" ? string.Empty : trimmed);
+    }
 
     /// <summary>What to answer when no page has that slug: the ones that do.</summary>
     public static string NoSuchPage(string? slug)

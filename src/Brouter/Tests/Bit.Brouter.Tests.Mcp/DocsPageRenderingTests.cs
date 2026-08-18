@@ -29,6 +29,15 @@ public class DocsPageRenderingTests
             Assert.AreEqual(string.Empty, DocsPageRenderer.FindPage(alias)?.Slug, $"'{alias}' did not resolve to the overview.");
         }
 
+        // A slug arrives from a URL as often as from an agent, so the stand-ins are recognized the
+        // way the catalog recognizes every other slug: slashes trimmed and case ignored.
+        foreach (var alias in new[] { "/overview", "Overview", "/docs/", "INDEX" })
+        {
+            Assert.AreEqual(string.Empty, DocsPageRenderer.FindPage(alias)?.Slug, $"'{alias}' did not resolve to the overview.");
+        }
+
+        Assert.AreEqual("guards", DocsPageRenderer.FindPage("/Guards/")?.Slug);
+
         Assert.IsNull(DocsPageRenderer.FindPage("nope"));
     }
 

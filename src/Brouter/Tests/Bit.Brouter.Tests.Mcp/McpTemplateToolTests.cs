@@ -273,6 +273,23 @@ public class McpTemplateToolTests
         var analysis = await AnalyzeAsync(pasted);
 
         Assert.AreEqual(200, analysis.Routes.Length, "The number of analyzed templates is capped at 200.");
+
+        // A cut table analyzed silently would read as a clean bill of health for routes nothing
+        // ever looked at - above all for ambiguity, which only means anything over a whole table.
+        Assert.IsTrue(analysis.IsPartial, "A cut route table came back with nothing saying it was cut.");
+        Assert.AreEqual(500, analysis.SubmittedTemplateCount);
+        Assert.AreEqual(200, analysis.AnalyzedTemplateCount);
+        StringAssert.Contains(analysis.Notes[0], "INCOMPLETE", "The truncation has to be the first thing the notes say.");
+    }
+
+    [TestMethod]
+    public async Task A_route_table_that_fits_is_not_reported_as_a_partial_answer()
+    {
+        var analysis = await AnalyzeAsync("/users/{id:int}\n/users/{slug}");
+
+        Assert.IsFalse(analysis.IsPartial);
+        Assert.IsNull(analysis.SubmittedTemplateCount);
+        Assert.IsNull(analysis.AnalyzedTemplateCount);
     }
 
     [TestMethod]

@@ -58,6 +58,15 @@ public class McpControllerInternalsTests
 
         Assert.AreEqual(200, templates.Length);
         Assert.AreEqual("/r0", templates[0], "The cut should keep the beginning, which is the part a caller meant to send.");
+
+        // What was cut has to remain knowable, or the answer cannot own up to being partial.
+        McpController.SplitTemplates(pasted, out var submitted);
+
+        Assert.AreEqual(1_000, submitted);
+
+        McpController.SplitTemplates("/a\n/b", out var few);
+
+        Assert.AreEqual(2, few);
     }
 
     [TestMethod]

@@ -102,7 +102,7 @@ public static class DocsCatalog
                 "generator source generator BrouterRoutes typed url builder compile-time Names",
                 typeof(GeneratorPage)),
             new("mcp", "MCP server",
-                "The Model Context Protocol server this site hosts - its tools, resources and prompts, called live with every JSON-RPC message on show.",
+                "The Model Context Protocol server this site hosts: the page calls its tools, resources and prompts live and shows every JSON-RPC message they exchange.",
                 "mcp model context protocol ai agent tools resources prompts json-rpc streamable http claude copilot server",
                 typeof(McpPage)),
             new("migration", "Migrating from the built-in Router",
