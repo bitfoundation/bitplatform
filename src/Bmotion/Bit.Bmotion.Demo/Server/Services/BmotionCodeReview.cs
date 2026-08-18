@@ -186,34 +186,57 @@ public static partial class BmotionCodeReview
     /// <summary>A &lt;Bmotion&gt; inside a loop with no @key: Blazor reuses elements across items.</summary>
     private static void CheckLoopKeys(string[] lines, List<BmotionReviewFindingDto> findings)
     {
-        var loopDepth = -1;
+        var loopStart = -1;
+        var braces = 0;
+        var bodyOpened = false;
 
         for (int i = 0; i < lines.Length; i++)
         {
-            if (LoopRegex().IsMatch(lines[i])) loopDepth = i;
-
-            // The loop body is assumed to be the dozen lines after the @foreach - enough for a
-            // realistic item template, short enough not to reach unrelated markup below it.
-            if (loopDepth < 0 || i - loopDepth > 12) continue;
-
-            if (lines[i].Contains("<Bmotion", StringComparison.Ordinal) is false) continue;
-
-            var window = string.Join('\n', lines[i..Math.Min(lines.Length, i + 4)]);
-
-            if (window.Contains("@key", StringComparison.Ordinal)) continue;
-
-            findings.Add(new BmotionReviewFindingDto
+            if (loopStart < 0)
             {
-                Severity = "Warning",
-                Rule = "missing-key-in-loop",
-                Line = i + 1,
-                Message = "An animated element inside a loop has no @key. Blazor reuses DOM elements between " +
-                          "renders, so when the collection changes an item's animation state carries over to " +
-                          "whatever item takes its place - entrances are skipped and exits play on the wrong row.",
-                Fix = "Add @key=\"item.Id\" (any stable identity) to the <Bmotion> element."
-            });
+                if (LoopRegex().IsMatch(lines[i]) is false) continue;
 
-            loopDepth = -1;
+                loopStart = i;
+                braces = 0;
+                bodyOpened = false;
+            }
+
+            if (lines[i].Contains("<Bmotion", StringComparison.Ordinal))
+            {
+                var window = string.Join('\n', lines[i..Math.Min(lines.Length, i + 4)]);
+
+                if (window.Contains("@key", StringComparison.Ordinal) is false)
+                {
+                    findings.Add(new BmotionReviewFindingDto
+                    {
+                        Severity = "Warning",
+                        Rule = "missing-key-in-loop",
+                        Line = i + 1,
+                        Message = "An animated element inside a loop has no @key. Blazor reuses DOM elements between " +
+                                  "renders, so when the collection changes an item's animation state carries over to " +
+                                  "whatever item takes its place - entrances are skipped and exits play on the wrong row.",
+                        Fix = "Add @key=\"item.Id\" (any stable identity) to the <Bmotion> element."
+                    });
+
+                    loopStart = -1;
+
+                    continue;
+                }
+            }
+
+            // Where the loop body ends. Tracking its braces rather than counting lines is what keeps
+            // the rule off the markup *after* a correctly keyed loop - the else branch of the @if
+            // around it is not a second iteration of anything, and reporting it there is the kind of
+            // false positive that teaches an agent to stop reading the review.
+            foreach (var c in lines[i])
+            {
+                if (c == '{') { braces++; bodyOpened = true; }
+                else if (c == '}') braces--;
+            }
+
+            // The line cap stays as the backstop for a body this cannot read - one whose braces sit
+            // inside a Razor expression, or a single-line body written without any.
+            if ((bodyOpened && braces <= 0) || i - loopStart > 12) loopStart = -1;
         }
     }
 

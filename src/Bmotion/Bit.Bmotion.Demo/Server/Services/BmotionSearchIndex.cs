@@ -27,6 +27,14 @@ public static class BmotionSearchIndex
         /// rather than merely appearing inside one.
         /// </summary>
         public string[] TitleWords { get; } = SplitWords(Title);
+
+        /// <summary>
+        /// The name without the type that owns it: "StaggerChildren" out of
+        /// "BmTransition.StaggerChildren". Splitting the title into humps alone would not match a
+        /// query typed as the whole name - which is how a member is written in code, and therefore
+        /// how it is searched for.
+        /// </summary>
+        public string LocalName { get; } = Title[(Title.LastIndexOf('.') + 1)..];
     }
 
     private const int MaxTerms = 16;
@@ -79,7 +87,8 @@ public static class BmotionSearchIndex
 
         foreach (var term in terms)
         {
-            var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
+            var isTitleWord = Equivalent(entry.LocalName, term)
+                           || entry.TitleWords.Any(word => Equivalent(word, term));
             var inTitle = isTitleWord ? 0 : Count(entry.Title, term);
             var inBoosted = Count(entry.Boosted, term);
             var inBody = Count(entry.Body, term);

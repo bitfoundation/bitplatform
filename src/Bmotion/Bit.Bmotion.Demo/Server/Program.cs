@@ -51,3 +51,10 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(Bit.Bmotion.Demo.Client._Imports).Assembly);
 
 app.Run();
+
+/// <summary>
+/// Named so the tests can host this exact file in-memory. Top-level statements compile to an
+/// internal Program, which WebApplicationFactory cannot reach - and testing a second, hand-written
+/// registration of the MCP server instead would leave the wiring above the only part nothing checks.
+/// </summary>
+public partial class Program;

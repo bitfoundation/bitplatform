@@ -399,11 +399,16 @@ public static partial class BmotionTransitionSpec
         return [.. parts];
     }
 
+    /// <summary>
+    /// The leading token of a spec written without parentheses. A comma ends it as surely as a
+    /// space does: "0.4, InOut" names a duration followed by an easing, and reading "0.4," as the
+    /// kind would leave a plain tween spec unparseable.
+    /// </summary>
     private static string FirstWord(string text)
     {
-        var space = text.IndexOfAny([' ', '\t']);
+        var end = text.IndexOfAny([' ', '\t', ',']);
 
-        return space < 0 ? text : text[..space];
+        return end < 0 ? text : text[..end];
     }
 
     private static string Number(double value) => value.ToString("0.####", CultureInfo.InvariantCulture);
