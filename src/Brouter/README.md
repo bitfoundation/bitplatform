@@ -49,9 +49,16 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 - **Resources** (`brouter://guide/...`, `brouter://api/...`, `brouter://docs/...`) and **prompts**
   for the four common jobs: adding Brouter to an app, implementing a routing feature, migrating off
   the built-in Router, and debugging a route that will not match.
+- **Server instructions** handed over at `initialize` - the working rules an agent reads before it
+  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), output schemas with
+  validated structured results, and `completion/complete` for every argument that is a key into a
+  closed set: the docs slugs, the guide headings, the type names, the source paths.
 
 Start with the `GetBrouterOverview` tool. See
-[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs).
+[McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
+is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
+calls them and prints every JSON-RPC message in both directions - so the server can be tried, and
+watched, without wiring up a client first.
 
 [`Samples`](Samples/) is the render-mode harness rather than the docs: one shared
 [Core](Samples/Core/) project of demo routes, hosted unchanged under

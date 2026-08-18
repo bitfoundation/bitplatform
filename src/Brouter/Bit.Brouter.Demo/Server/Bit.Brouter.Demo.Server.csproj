@@ -26,6 +26,13 @@
         <Using Include="Microsoft.Extensions.Options" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The MCP tests boot this very app: WebApplicationFactory needs its entry point type,
+             which top-level statements declare as internal, and the tests reach the internal
+             template splitter behind AnalyzeBrouterRouteTable the same way. -->
+        <InternalsVisibleTo Include="Bit.Brouter.Tests.Mcp" />
+    </ItemGroup>
+
     <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
          working from a published deployment, where none of these files exist next to the app.
          LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->

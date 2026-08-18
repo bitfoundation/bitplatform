@@ -41,6 +41,13 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<DemoState>();
 
+        // The MCP demo page's browser-side client for this app's own /mcp endpoint. No BaseAddress
+        // is configured: McpDemoClient builds an absolute URL from NavigationManager when it sends,
+        // which keeps the registration valid in the prerender container as well - there,
+        // NavigationManager has nothing to say at the moment a service is constructed.
+        services.AddScoped<HttpClient>();
+        services.AddScoped<McpDemoClient>();
+
         return services;
     }
 }

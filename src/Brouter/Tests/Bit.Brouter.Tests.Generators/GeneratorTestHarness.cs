@@ -3,8 +3,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
+using Bit.Brouter.Generators;
 
-namespace Bit.Brouter.Generators.Tests;
+namespace Bit.Brouter.Tests.Generators;
 
 /// <summary>
 /// Drives <see cref="BrouterRoutesGenerator"/> end-to-end: feeds it .razor files as AdditionalTexts,

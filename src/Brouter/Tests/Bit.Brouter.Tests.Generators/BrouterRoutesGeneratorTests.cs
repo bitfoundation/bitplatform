@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using static Bit.Brouter.Generators.Tests.GeneratorTestHarness;
+using static Bit.Brouter.Tests.Generators.GeneratorTestHarness;
 
-namespace Bit.Brouter.Generators.Tests;
+namespace Bit.Brouter.Tests.Generators;
 
 [TestClass]
 public class BrouterRoutesGeneratorTests

@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/.Solution Items/">
     <File Path="../../.gitignore" />
     <File Path="../.editorconfig" />
@@ -26,7 +26,8 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
-    <Project Path="Tests/Bit.Brouter.Generators.Tests/Bit.Brouter.Generators.Tests.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj" />
+    <Project Path="Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj" />
     <Project Path="Tests/Bit.Brouter.Benchmarks/Bit.Brouter.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.Brouter/Bit.Brouter.csproj" />

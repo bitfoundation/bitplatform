@@ -1,5 +1,6 @@
 using ModelContextProtocol.Server;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Bit.Brouter.Demo.Server.Controllers;
 
@@ -16,9 +17,12 @@ namespace Bit.Brouter.Demo.Server.Controllers;
 [McpServerPromptType]
 public static class McpPrompts
 {
-    [McpServerPrompt(Name = "add-brouter-to-app")]
+    [McpServerPrompt(Name = "add-brouter-to-app", Title = "Add Bit.Brouter to a Blazor app")]
     [Description("Walks through adding Bit.Brouter to an existing Blazor app, in the right order for its render mode.")]
     public static string AddBrouterToApp(
+        // The five values go into the prompt's own argument schema, which is what a client offers as
+        // completions - so picking the mode is a choice from a list rather than a spelling test.
+        [AllowedValues("unknown", "server", "wasm", "auto", "standalone-wasm")]
         [Description("The app's Blazor render mode: server, wasm, auto or standalone-wasm. Pass 'unknown' to have it determined from the project first.")] string renderMode = "unknown")
     {
         return $"""
@@ -46,7 +50,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "implement-brouter-feature")]
+    [McpServerPrompt(Name = "implement-brouter-feature", Title = "Implement a routing feature")]
     [Description("Implements a routing feature with Bit.Brouter - guards, loaders, nested layouts, keep-alive, transitions - using its real API rather than a guessed one.")]
     public static string ImplementBrouterFeature(
         [Description("What the routing should do, in your own words - e.g. 'warn before leaving a half-filled form' or 'load the order before the page renders and cache it for 30 seconds'.")] string feature)
@@ -73,7 +77,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "migrate-to-brouter")]
+    [McpServerPrompt(Name = "migrate-to-brouter", Title = "Migrate off the built-in Router")]
     [Description("Migrates an app from Blazor's built-in Router to Bit.Brouter, keeping its existing @page components and authorization.")]
     public static string MigrateToBrouter()
     {
@@ -98,7 +102,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "debug-brouter-routing")]
+    [McpServerPrompt(Name = "debug-brouter-routing", Title = "Debug a routing problem")]
     [Description("Diagnoses a Bit.Brouter routing problem - a URL that does not match, a parameter that arrives null, a guard that does not fire, stale loader data.")]
     public static string DebugBrouterRouting(
         [Description("What goes wrong, with the URL and the route template involved if you know them.")] string symptom)

@@ -1,0 +1,20 @@
+﻿@* Two sibling routes with caller-supplied templates. Registering them is what makes the router
+   itself rule on whether they are ambiguous - which is the verdict AnalyzeBrouterRouteTable claims
+   to predict. *@
+
+<Brouter>
+    <Routes>
+        <Broute Path="@PathA">
+            <Content><div data-testid="a">a</div></Content>
+        </Broute>
+        <Broute Path="@PathB">
+            <Content><div data-testid="b">b</div></Content>
+        </Broute>
+    </Routes>
+</Brouter>
+
+@code {
+    [Parameter, EditorRequired] public string PathA { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string PathB { get; set; } = default!;
+}

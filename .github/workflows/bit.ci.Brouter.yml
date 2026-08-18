@@ -53,3 +53,11 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Brouter/Bit.Brouter.slnx
+
+    - name: dotnet test
+      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj --no-build
+
+    - name: dotnet test (MCP server)
+      # Run from inside src so src/global.json's "test" runner setting applies
+      # (from the repo root the SDK falls back to the unsupported VSTest path).
+      run: cd src/Brouter && dotnet test Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj --no-build
