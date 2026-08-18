@@ -178,8 +178,16 @@ public static class DocsPageRenderer
     }
 
     /// <summary>What to answer with when the page did not render - and where its content is anyway.</summary>
-    public static string Unavailable(DocLink page, string? error) =>
-        $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
-        $"It is readable at /{page.Url} on the live documentation site. For the same material as text, call " +
-        $"InspectButilApi(name: \"{page.Url}\") for what the API needs, and GetButilApiDetails for its members.";
+    public static string Unavailable(DocLink page, string? error)
+    {
+        // A narrative page - "Getting started", "Render modes" - documents no API, so its slug is
+        // not a name InspectButilApi can be asked about. Sending an agent there produces a second
+        // miss on top of the first one.
+        var instead = page.Support == ApiSupport.Guide
+            ? "call GetButilGuideSections for the same ground in the library's own reference guide, or GetButilApiList for its public API."
+            : $"call InspectButilApi(name: \"{page.Url}\") for what the API needs, and GetButilApiDetails for its members.";
+
+        return $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
+               $"It is readable at /{page.Url} on the live documentation site. For the same material as text, {instead}";
+    }
 }

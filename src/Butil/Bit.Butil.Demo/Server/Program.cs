@@ -1,13 +1,13 @@
 ﻿using Bit.Butil.Demo.Client.Docs;
 using ModelContextProtocol.Protocol;
 using Bit.Butil.Demo.Server.Components;
+using Bit.Butil.Demo.Server.Controllers;
 using Bit.Butil.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 
-// The CORS policy the two MCP routes opt into, defined where it is added and required where it is
-// mapped. Named up here because a top-level program is one method body: a local declared further
-// down does not exist yet for the statements above it.
-const string McpCorsPolicy = "mcp";
+// The CORS policy the two MCP routes opt into, defined here and named on the controller so the
+// GET mirror carries it as endpoint metadata rather than inheriting it from MapControllers().
+const string McpCorsPolicy = McpController.CorsPolicy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,7 +96,9 @@ app.MapStaticAssets();
 
 // The MCP server, and the same tools as plain HTTP GETs under /api/mcp/... so each of them is
 // inspectable from a browser. Both are literal routes, so they never compete with the app's pages.
-app.MapControllers().RequireCors(McpCorsPolicy);
+// The GET mirror opts into the policy with [EnableCors] on McpController itself, so a controller
+// added to this app later does not silently inherit an open one.
+app.MapControllers();
 app.MapMcp("/mcp").RequireCors(McpCorsPolicy);
 
 // Discovery files - for crawlers and, increasingly, for the AI assistants people ask about this

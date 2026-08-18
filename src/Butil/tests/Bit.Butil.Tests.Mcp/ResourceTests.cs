@@ -32,7 +32,10 @@ public class ResourceTests : McpTestBase
 
             foreach (var (name, uri) in ButilMcp.Resources)
             {
-                Assert.That(advertised[name], Is.EqualTo(uri));
+                // TryGetValue rather than the indexer: a resource that is gone should fail the
+                // assertion above and this one, not throw out of the whole Multiple block.
+                Assert.That(advertised.TryGetValue(name, out var advertisedUri), Is.True, $"{name} is not advertised at all.");
+                Assert.That(advertisedUri, Is.EqualTo(uri));
             }
 
             foreach (var resource in resources)
@@ -60,7 +63,8 @@ public class ResourceTests : McpTestBase
 
             foreach (var (name, expected) in ButilMcp.ResourceTemplates)
             {
-                Assert.That(advertised[name], Is.EqualTo(expected.UriTemplate));
+                Assert.That(advertised.TryGetValue(name, out var advertisedTemplate), Is.True, $"{name} is not advertised at all.");
+                Assert.That(advertisedTemplate, Is.EqualTo(expected.UriTemplate));
             }
 
             foreach (var template in templates)

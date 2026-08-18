@@ -303,11 +303,11 @@ Accept: application/json, text/event-stream
 </Callout>
 
 <ApiTable Title="What the server exposes">
-    <ApiMember Name="Tools" Signature="14, over MCP and as GET /api/mcp/{tool}" Description="Search, the exact API of every service, what each one needs from the page, the setup per hosting model, the docs pages, the guide, the browser-support matrix and the demo's own source files." />
+    <ApiMember Name="Tools" Signature="@ToolsSignature" Description="Search, the exact API of every service, what each one needs from the page, the setup per hosting model, the docs pages, the guide, the browser-support matrix and the demo's own source files." />
     <ApiMember Name="Tool annotations" Signature="readOnlyHint, idempotentHint, destructiveHint, openWorldHint" Description="Every tool here reads, reads only from this process, and answers the same way twice. A client that is told so can consult the documentation without stopping to ask permission first." />
-    <ApiMember Name="Output schemas" Signature="9 of the 14 tools" Description="The ones that answer with data publish an outputSchema and return structuredContent alongside the text, so a client can consume the object instead of re-parsing JSON out of prose." />
+    <ApiMember Name="Output schemas" Signature="@OutputSchemasSignature" Description="The ones that answer with data publish an outputSchema and return structuredContent alongside the text, so a client can consume the object instead of re-parsing JSON out of prose." />
     <ApiMember Name="Instructions" Signature="returned by initialize" Description="The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the four rules that separate Butil code that compiles from Butil code that works." />
-    <ApiMember Name="Prompts" Signature="add-butil-to-app, implement-butil-feature, replace-jsinterop-with-butil, debug-butil-issue" Description="Ready-made workflows, each spending its words on the order to call the tools in and the mistakes that compile." />
+    <ApiMember Name="Prompts" Signature="@PromptsSignature" Description="Ready-made workflows, each spending its words on the order to call the tools in and the mistakes that compile." />
     <ApiMember Name="Resources" Signature="butil://guide, butil://guide/{heading}, butil://api, butil://api/{typeName}, butil://docs/{slug}, butil://source/{path}, butil://support" Description="The same knowledge as documents a client can attach or browse, addressed by URI." />
     <ApiMember Name="Completions" Signature="completion/complete" Description="Every prompt argument and template placeholder is drawn from a closed set - the hosting models, the docs slugs, the type names - so a client's picker can offer them rather than ask someone to type one blind." />
     <ApiMember Name="Transport" Signature="POST /mcp (streamable HTTP, stateless)" Description="JSON-RPC in the body; responses arrive as a text/event-stream frame. No session id - SEP-2567 removed them from this transport, so any replica can answer any request. Mapped by MapMcp in the host's Program.cs, with CORS so browser-based clients can reach it." />
@@ -358,6 +358,20 @@ Accept: application/json, text/event-stream
 
     private readonly List<ToolInfo> _tools = [];
     private readonly List<string> _prompts = [];
+
+    // The inventory below the demos is counted from what tools/list and prompts/list actually
+    // returned, rather than written down beside a server that keeps growing. Before the handshake
+    // there is nothing to count - and during the prerender pass there never will be - so each one
+    // falls back to the sentence that is true without a number in it.
+    private string ToolsSignature => _tools.Count == 0
+        ? "over MCP and as GET /api/mcp/{tool}"
+        : $"{_tools.Count}, over MCP and as GET /api/mcp/{{tool}}";
+
+    private string OutputSchemasSignature => _tools.Count == 0
+        ? "on the tools that answer with data"
+        : $"{_tools.Count(tool => tool.HasOutputSchema)} of the {_tools.Count} tools";
+
+    private string PromptsSignature => _prompts.Count == 0 ? "prompts/list" : string.Join(", ", _prompts);
 
     private ElementReference _callSection;
 
@@ -567,7 +581,16 @@ Accept: application/json, text/event-stream
         // protocol error, which reads as "the server broke" instead of "the textarea has a typo".
         try
         {
-            using var _ = JsonDocument.Parse(_arguments);
+            using var parsed = JsonDocument.Parse(_arguments);
+
+            // The envelope below drops this in as the value of "arguments", which the protocol says
+            // is an object. A number, a string or an array parses perfectly well and then produces
+            // exactly the protocol error this check exists to keep off the screen.
+            if (parsed.RootElement.ValueKind is not JsonValueKind.Object)
+            {
+                _call = Invalid("tools/call", "The arguments have to be a JSON object - a name and a value per argument, in braces.");
+                return;
+            }
         }
         catch (JsonException exception)
         {

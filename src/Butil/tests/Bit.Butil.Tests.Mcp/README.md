@@ -1,4 +1,4 @@
-# Bit.Butil MCP server tests
+﻿# Bit.Butil MCP server tests
 
 NUnit suite for the Butil MCP server (`Bit.Butil.Demo/Server/Controllers/McpController.cs` and the
 catalogs behind it). It boots the demo server as a child process and drives `/mcp` with a **real
@@ -19,6 +19,9 @@ after that it is incremental and the whole suite runs in seconds.
 | --- | --- |
 | `BUTIL_MCP_BASE_URL` | Run against a server you started yourself — a local `dotnet run`, or a deployed instance — instead of launching one. This is also how you smoke-test a real deployment: `$env:BUTIL_MCP_BASE_URL = "https://butil.bitplatform.dev"`. |
 | `BUTIL_MCP_ARTIFACTS_PATH` | Where the child server's build output goes. Defaults to a stable folder under the temp directory. |
+
+On CI the suite runs as part of `.github/workflows/bit.ci.Butil.yml`, on every pull request that
+touches `src/Butil/**`.
 
 ## Why a child process rather than a `WebApplicationFactory`
 
@@ -54,7 +57,6 @@ suite runs the app the way the app runs.
 | `HttpSurfaceTests.cs` | The `/api/mcp/...` GET mirror, CORS for browser-based clients, and the discovery files that advertise the endpoint. |
 | `CatalogConsistencyTests.cs` | The five catalogs held against each other — the dangling cross-references no single catalog can catch. |
 | `ResilienceTests.cs` | Concurrency, caching, idempotence, cancellation, and one realistic agent session end to end. |
-| `ci/bit.ci.Butil.mcp.yml` | A ready-made workflow that is **not currently enabled**: copy it into `.github/workflows/` to turn it on. |
 
 ## What a failure here usually means
 

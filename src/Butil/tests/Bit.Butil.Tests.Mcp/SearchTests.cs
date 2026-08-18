@@ -157,25 +157,54 @@ public class SearchTests : McpTestBase
                     continue;
                 }
 
-                // Every "not found" answer on this server starts by saying so, in one of these
-                // shapes. A follow-up call landing on one means the hit pointed at nothing.
-                if (text.StartsWith("No documentation page has the slug", StringComparison.Ordinal)
-                    || text.StartsWith("No source file at", StringComparison.Ordinal)
-                    || text.Contains("has no section called", StringComparison.Ordinal)
-                    || text.Contains("has no public type called", StringComparison.Ordinal)
-                    || text.Contains("has nothing called", StringComparison.Ordinal))
+                // A follow-up call landing on a "not found" answer means the hit pointed at nothing.
+                if (ResolvedToNothing(text))
                 {
                     failures.Add($"'{hit.Tool}' resolved to nothing: {text[..Math.Min(200, text.Length)]}");
                 }
             }
         }
 
+        // The detection above reads prose, because a miss here is not a protocol error - it is a
+        // sentence naming the nearest candidates, deliberately. Prose the server later rewords would
+        // turn this test green by ceasing to detect anything at all, so the detector is first shown
+        // to fire on calls that are known to miss.
+        var controls = new (string Tool, object Arguments)[]
+        {
+            ("GetButilDocsPage", new { slug = "no-such-page" }),
+            ("GetButilSourceFile", new { path = "Demo/Client/Pages/NoSuchPage.razor" }),
+            ("GetButilGuideSection", new { heading = "No such section" }),
+            ("GetButilApiDetails", new { typeName = "NoSuchType" }),
+            ("InspectButilApi", new { name = "NoSuchApi" }),
+        };
+
+        var undetected = new List<string>();
+
+        foreach (var (tool, arguments) in controls)
+        {
+            var control = Text(await CallRawAsync(tool, arguments));
+
+            if (ResolvedToNothing(control) is false)
+            {
+                undetected.Add($"{tool} answered a miss this test would have read as a hit: {control[..Math.Min(200, control.Length)]}");
+            }
+        }
+
         Assert.Multiple(() =>
         {
             Assert.That(seen, Is.Not.Empty, "No follow-up calls were exercised, so this test proved nothing.");
+            Assert.That(undetected, Is.Empty, $"The shapes a miss is recognised by no longer match what the server says: {string.Join(" | ", undetected)}");
             Assert.That(failures, Is.Empty, $"Follow-up calls that did not resolve:\n{string.Join("\n", failures)}");
         });
     }
+
+    /// <summary>Every "not found" answer on this server says so in one of these shapes.</summary>
+    private static bool ResolvedToNothing(string text)
+        => text.StartsWith("No documentation page has the slug", StringComparison.Ordinal)
+        || text.StartsWith("No source file at", StringComparison.Ordinal)
+        || text.Contains("has no section called", StringComparison.Ordinal)
+        || text.Contains("has no public type called", StringComparison.Ordinal)
+        || text.Contains("has nothing called", StringComparison.Ordinal);
 
     [Test]
     public async Task The_index_covers_every_corpus_the_tool_claims()

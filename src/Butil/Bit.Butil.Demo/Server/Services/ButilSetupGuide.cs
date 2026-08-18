@@ -170,6 +170,8 @@ public static partial class ButilSetupGuide
 
             ```csharp
             using Bit.Butil;
+            // Where App.razor lives, so MapRazorComponents<App>() below resolves.
+            using MyApp.Components;
 
             var builder = WebApplication.CreateBuilder(args);
 

@@ -421,6 +421,25 @@ public class ToolBehaviourTests : McpTestBase
     [Test]
     public async Task Setup_guide_answers_for_every_hosting_model()
     {
+        // The server names its own hosting models when it cannot resolve one, and that sentence is
+        // the only list a client ever sees. Checked against the pinned list first: a model added to
+        // the server and not here would otherwise go untested by the loop below, and one dropped
+        // from the server would leave the loop asserting over an empty set.
+        const string marker = "Use one of:";
+
+        var refused = Text(await CallRawAsync("GetButilSetupGuide", new { hostingModel = "no-such-model" }));
+        var listed = refused.IndexOf(marker, StringComparison.Ordinal);
+
+        Assert.That(ButilMcp.HostingModels, Is.Not.Empty);
+        Assert.That(listed, Is.GreaterThanOrEqualTo(0), $"An unknown hosting model was answered with: {refused}");
+
+        var offered = refused[(listed + marker.Length)..]
+            .TrimEnd('.', ' ')
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.That(offered, Is.EquivalentTo(ButilMcp.HostingModels),
+            "The hosting models the server offers are not the ones this suite covers.");
+
         foreach (var model in ButilMcp.HostingModels)
         {
             var text = Text(await CallAsync("GetButilSetupGuide", new { hostingModel = model }));

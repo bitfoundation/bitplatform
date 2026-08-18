@@ -60,9 +60,17 @@ public class CompletionTests : McpTestBase
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://docs/{slug}" }, "slug", "");
 
         var pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+        var slugs = pages.Select(page => page.Slug).ToArray();
 
-        Assert.That(completion.Values, Is.EquivalentTo(pages.Select(page => page.Slug)),
-            "The completion list and the docs listing have drifted apart, so a completed slug may not resolve.");
+        Assert.Multiple(() =>
+        {
+            // The protocol caps one response at 100 values, so Total - not the length of Values - is
+            // what has to agree with the listing. Every value offered still has to come from it.
+            Assert.That(completion.Total, Is.EqualTo(slugs.Length));
+            Assert.That(completion.Values, Is.Not.Empty);
+            Assert.That(completion.Values, Is.SubsetOf(slugs),
+                "The completion list and the docs listing have drifted apart, so a completed slug may not resolve.");
+        });
     }
 
     [Test]
@@ -102,8 +110,15 @@ public class CompletionTests : McpTestBase
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://guide/{heading}" }, "heading", "");
 
         var sections = await CallStructuredAsync<GuideSection[]>("GetButilGuideSections");
+        var headings = sections.Select(section => section.Heading).ToArray();
 
-        Assert.That(completion.Values, Is.EquivalentTo(sections.Select(section => section.Heading)));
+        Assert.Multiple(() =>
+        {
+            Assert.That(completion.Total, Is.EqualTo(headings.Length));
+            Assert.That(completion.Values, Is.Not.Empty);
+            Assert.That(completion.Values, Is.SubsetOf(headings),
+                "The completion list and the guide's own section list have drifted apart.");
+        });
     }
 
     [Test]

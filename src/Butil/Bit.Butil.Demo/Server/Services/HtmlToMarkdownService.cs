@@ -198,8 +198,32 @@ public static partial class HtmlToMarkdownService
         var fence = new string('`', Math.Max(3, longest + 1));
 
         AppendBlockBreak(builder);
-        builder.Append(fence).Append('\n').Append(code).Append('\n').Append(fence);
+        builder.Append(fence).Append(Language(node)).Append('\n').Append(code).Append('\n').Append(fence);
         AppendBlockBreak(builder);
+    }
+
+    /// <summary>
+    /// The fence's info string, so a client is told what the sample is written in. CodeBlock.razor
+    /// keeps the language in a data attribute; a "language-csharp" class on the inner code element
+    /// is the other convention and costs nothing to read. With neither, an unlabelled fence is
+    /// still perfectly good Markdown.
+    /// </summary>
+    private static string Language(HtmlNode node)
+    {
+        const string prefix = "language-";
+
+        var language = node.GetAttributeValue("data-language", string.Empty);
+
+        if (string.IsNullOrWhiteSpace(language))
+        {
+            var classes = node.Descendants("code").FirstOrDefault()?.GetAttributeValue("class", string.Empty) ?? string.Empty;
+
+            language = classes.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                              .FirstOrDefault(token => token.StartsWith(prefix, StringComparison.Ordinal))?[prefix.Length..]
+                       ?? string.Empty;
+        }
+
+        return language.Trim();
     }
 
     private static void AppendList(HtmlNode node, StringBuilder builder, int listDepth)

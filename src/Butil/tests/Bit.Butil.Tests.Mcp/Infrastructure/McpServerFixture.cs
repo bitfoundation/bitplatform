@@ -37,6 +37,20 @@ public class McpServerFixture
     /// </summary>
     public static HttpClient Http { get; private set; } = null!;
 
+    /// <summary>
+    /// The very first search this server ever answered, taken before any fixture connects - or null
+    /// when the suite was pointed at a server it did not start, which is nobody's cold start to
+    /// catch.
+    /// <para>
+    /// The search index is built in the background from startup and nothing waits for it, so "the
+    /// first caller still gets a real answer" is a claim about a genuinely cold app. By the time any
+    /// test runs, another fixture may already have warmed it; readiness deliberately polls
+    /// robots.txt, which renders nothing and searches nothing, so this is the call that arrives
+    /// first.
+    /// </para>
+    /// </summary>
+    public static string? ColdSearch { get; private set; }
+
     private Process? _process;
 
     [OneTimeSetUp]
@@ -91,6 +105,12 @@ public class McpServerFixture
         _process.BeginErrorReadLine();
 
         await WaitForReady(BaseUrl);
+
+        // Before any fixture connects, so it is genuinely the first search this process answers.
+        // Asserted on in ResilienceTests rather than here: a failed assertion in a [SetUpFixture]
+        // reports as every test erroring, which says nothing about what actually broke.
+        using var firstSearch = await Http.GetAsync(Url("api/mcp/SearchButil?query=clipboard"));
+        ColdSearch = firstSearch.IsSuccessStatusCode ? await firstSearch.Content.ReadAsStringAsync() : string.Empty;
     }
 
     [OneTimeTearDown]

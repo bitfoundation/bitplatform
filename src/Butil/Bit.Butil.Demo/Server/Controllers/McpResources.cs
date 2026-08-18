@@ -26,6 +26,12 @@ namespace Bit.Butil.Demo.Server.Controllers;
 public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor,
                           ILogger<McpResources> logger)
 {
+    /// <summary>
+    /// The one answer here that is deliberately not capped: "every section in one document" is what
+    /// this resource is for, and a resource is attached by a person who asked for the whole guide
+    /// rather than pulled by a model mid-turn. The per-item resources below are capped like the
+    /// tools covering the same material, because those are reached by guessing.
+    /// </summary>
     [McpServerResource(UriTemplate = "butil://guide", Name = "butil-guide", Title = "Bit.Butil reference guide", MimeType = "text/markdown")]
     [Description("The complete Bit.Butil reference guide (the library's README), every section in one document.")]
     public static string Guide() => ButilSourceCatalog.Readme;
@@ -33,7 +39,7 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
     [McpServerResource(UriTemplate = "butil://guide/{heading}", Name = "butil-guide-section", Title = "Guide section", MimeType = "text/markdown")]
     [Description("One section of the Bit.Butil reference guide by heading, e.g. butil://guide/Subscriptions%20are%20disposable.")]
     public static string GuideSection(string heading)
-        => ButilSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.";
+        => DocsPageRenderer.Truncate(ButilSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.");
 
     [McpServerResource(UriTemplate = "butil://api", Name = "butil-api", Title = "Bit.Butil public API", MimeType = "text/markdown")]
     [Description("Every public Bit.Butil type with its kind and summary, the injectable services first.")]
@@ -124,7 +130,7 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
     [McpServerResource(UriTemplate = "butil://source/{path}", Name = "butil-source", Title = "Demo source file", MimeType = "text/plain")]
     [Description("One source file of the demo or of the hosting samples, e.g. butil://source/Demo%2FClient%2FPages%2FClipboardPage.razor.")]
     public static string Source(string path)
-        => ButilSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
+        => DocsPageRenderer.Truncate(ButilSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.");
 
     [McpServerResource(UriTemplate = "butil://docs/{slug}", Name = "butil-docs-page", Title = "Documentation page", MimeType = "text/markdown")]
     [Description("One page of the Bit.Butil documentation site, rendered as Markdown, e.g. butil://docs/clipboard.")]

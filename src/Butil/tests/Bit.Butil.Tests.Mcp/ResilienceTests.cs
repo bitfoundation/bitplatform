@@ -177,7 +177,16 @@ public class ResilienceTests : McpTestBase
     public async Task A_fresh_session_needs_no_warm_up()
     {
         // The search index is built in the background from startup and nothing waits for it, so the
-        // first caller must still get a real answer rather than an empty one.
+        // first caller must still get a real answer rather than an empty one. That first caller
+        // cannot be a test - by the time one runs, another fixture may have warmed the app - so the
+        // fixture makes the call itself, before anything connects, and it is checked here.
+        if (McpServerFixture.ColdSearch is { } cold)
+        {
+            Assert.That(cold, Does.Contain("Clipboard"),
+                "The first search the server answered, made before any fixture connected, found nothing: the index needs warming up.");
+        }
+
+        // And a session opened later still needs no warm-up call of its own.
         var transport = new HttpClientTransport(new HttpClientTransportOptions
         {
             Endpoint = McpServerFixture.Url("mcp"),

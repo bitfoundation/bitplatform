@@ -167,9 +167,23 @@ public static partial class ButilXmlDocs
         }
     }
 
-    /// <summary>Turns a cref such as "M:Bit.Butil.Clipboard.WriteText(System.String)" into "Clipboard.WriteText".</summary>
+    /// <summary>
+    /// Turns a cref such as "M:Bit.Butil.Clipboard.WriteText(System.String)" into "Clipboard.WriteText",
+    /// and a <c>see href</c> - a link out to the web rather than a documentation id - into a Markdown
+    /// link, so the URL survives into the Markdown the tools answer with.
+    /// </summary>
     private static string Reference(XElement element)
     {
+        // Butil's remarks link to MDN this way constantly. The text of one is prose, not a
+        // documentation id, so none of the trimming below applies to it.
+        var href = element.Attribute("href")?.Value;
+        if (string.IsNullOrWhiteSpace(href) is false)
+        {
+            var label = element.Value.Trim();
+
+            return label.Length == 0 ? href : $"[{label}]({href})";
+        }
+
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;
 
         if (string.IsNullOrEmpty(target)) return string.Empty;

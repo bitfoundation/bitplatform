@@ -22,12 +22,35 @@ public class CatalogConsistencyTests : McpTestBase
     private Capability[] _capabilities = null!;
     private DocsPage[] _pages = null!;
 
+    /// <summary>
+    /// The full reference of every advertised type, fetched once. Several of the tests below walk
+    /// the same list, and the tool is idempotent - fetching it per test is the same round trip paid
+    /// over again for an answer that cannot have changed.
+    /// </summary>
+    private readonly Dictionary<string, ApiDetailsResult> _details = new(StringComparer.OrdinalIgnoreCase);
+
     [OneTimeSetUp]
     public async Task LoadCatalogs()
     {
         _types = await CallStructuredAsync<ApiType[]>("GetButilApiList");
         _capabilities = await CallStructuredAsync<Capability[]>("GetButilBrowserSupport");
         _pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+
+        foreach (var type in _types)
+        {
+            _details[type.Name] = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = type.Name });
+        }
+    }
+
+    /// <summary>
+    /// The cached reference of one type, fetched on the spot for a name the listing never
+    /// advertised - which is itself one of the things these tests are looking for.
+    /// </summary>
+    private async Task<ApiDetailsResult> DetailsAsync(string typeName)
+    {
+        if (_details.TryGetValue(typeName, out var cached)) return cached;
+
+        return _details[typeName] = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName });
     }
 
     [Test]
@@ -80,7 +103,7 @@ public class CatalogConsistencyTests : McpTestBase
     }
 
     [Test]
-    public async Task Every_type_the_list_advertises_can_be_fetched_in_full()
+    public void Every_type_the_list_advertises_can_be_fetched_in_full()
     {
         // GetButilApiList exists to pick the type to pass to GetButilApiDetails. A name in the first
         // that the second cannot resolve is a dead end an agent has no way to recover from.
@@ -88,7 +111,7 @@ public class CatalogConsistencyTests : McpTestBase
 
         foreach (var type in _types)
         {
-            var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = type.Name });
+            var result = _details[type.Name];
 
             if (result.Details is null)
             {
@@ -111,7 +134,7 @@ public class CatalogConsistencyTests : McpTestBase
     }
 
     [Test]
-    public async Task Every_injectable_service_says_how_to_inject_it_and_what_it_does()
+    public void Every_injectable_service_says_how_to_inject_it_and_what_it_does()
     {
         // The services are the library. One that reports no members is a reflection walk that found
         // nothing; one that reports no summary is XML documentation that did not ship.
@@ -119,8 +142,7 @@ public class CatalogConsistencyTests : McpTestBase
 
         foreach (var service in _types.Where(type => type.IsInjectable))
         {
-            var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = service.Name });
-            var details = result.Details;
+            var details = _details[service.Name].Details;
 
             if (details is null)
             {
@@ -151,7 +173,7 @@ public class CatalogConsistencyTests : McpTestBase
     }
 
     [Test]
-    public async Task Every_method_reports_a_signature_and_a_return_type()
+    public void Every_method_reports_a_signature_and_a_return_type()
     {
         // The wrappers follow the browser API's own naming, which is exactly why an agent has to be
         // given the real signature rather than left to infer one.
@@ -159,7 +181,7 @@ public class CatalogConsistencyTests : McpTestBase
 
         foreach (var service in _types.Where(type => type.IsInjectable).Take(25))
         {
-            var details = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = service.Name })).Details!;
+            var details = _details[service.Name].Details!;
 
             foreach (var method in details.Members.Where(member => member.Kind == "Method"))
             {
@@ -186,7 +208,7 @@ public class CatalogConsistencyTests : McpTestBase
         {
             foreach (var service in page.Services)
             {
-                var details = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = service })).Details;
+                var details = (await DetailsAsync(service)).Details;
 
                 if (details is null)
                 {

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Xml.Linq;
 using NUnit.Framework;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -19,7 +20,7 @@ namespace Bit.Butil.Tests.Mcp;
 /// </summary>
 [TestFixture]
 [Parallelizable(ParallelScope.Self)]
-public class HttpSurfaceTests
+public class HttpSurfaceTests : McpTestBase
 {
     private static HttpClient Http => McpServerFixture.Http;
 
@@ -59,17 +60,25 @@ public class HttpSurfaceTests
     public async Task The_GET_mirror_answers_the_same_data_as_the_tool()
     {
         // The mirror is the same method, so a difference here means one of the two paths is doing
-        // something the other is not - a filter, a cache, a different origin.
+        // something the other is not - a filter, a cache, a different origin. Held against the tool
+        // itself rather than against a hand-written expectation, which is the only way the two can
+        // be shown not to have drifted.
         using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilBrowserSupport"));
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-        var capabilities = JsonSerializer.Deserialize<Capability[]>(await response.Content.ReadAsStringAsync(), McpTestBase.JsonOptions);
+        var overHttp = JsonSerializer.Deserialize<Capability[]>(await response.Content.ReadAsStringAsync(), JsonOptions);
+        var overMcp = await CallStructuredAsync<Capability[]>("GetButilBrowserSupport");
 
         Assert.Multiple(() =>
         {
-            Assert.That(capabilities, Is.Not.Null.And.Not.Empty);
-            Assert.That(capabilities!.Select(capability => capability.Api), Does.Contain("Clipboard"));
+            Assert.That(overHttp, Is.Not.Null.And.Not.Empty);
+            Assert.That(overHttp!.Select(capability => capability.Api), Does.Contain("Clipboard"));
+
+            // Re-serialized rather than compared as records: the payload carries arrays, and record
+            // equality on those is by reference.
+            Assert.That(JsonSerializer.Serialize(overHttp, JsonOptions), Is.EqualTo(JsonSerializer.Serialize(overMcp, JsonOptions)),
+                "The GET mirror and the tool answered with different data.");
         });
     }
 
@@ -116,6 +125,8 @@ public class HttpSurfaceTests
 
         Assert.Multiple(() =>
         {
+            // First, or a 500 that happens to carry the headers reads as a pass.
+            Assert.That(response.IsSuccessStatusCode, Is.True, $"The cross-origin tools/list was answered with {(int)response.StatusCode}.");
             Assert.That(response.Headers.Contains("Access-Control-Allow-Origin"), Is.True, "The response carries no Access-Control-Allow-Origin.");
             Assert.That(exposed, Does.Contain("MCP-Protocol-Version").IgnoreCase);
             Assert.That(exposed, Does.Contain("WWW-Authenticate").IgnoreCase);
@@ -192,7 +203,15 @@ public class HttpSurfaceTests
         var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"))).Content.ReadAsStringAsync();
         var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
 
-        var missingFromSitemap = pages.Where(page => sitemap.Contains($"/{page.Slug}<", StringComparison.Ordinal) is false).ToArray();
+        // The sitemap is parsed rather than searched: a substring test on "/{slug}<" is also
+        // satisfied by any longer URL that happens to end in the same slug.
+        var sitemapped = XDocument.Parse(sitemap)
+            .Descendants()
+            .Where(element => element.Name.LocalName == "loc")
+            .Select(element => new Uri(element.Value).AbsolutePath.Trim('/'))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var missingFromSitemap = pages.Where(page => sitemapped.Contains(page.Slug.Trim('/')) is false).ToArray();
         var missingFromLlms = pages.Where(page => llms.Contains($"/{page.Slug})", StringComparison.Ordinal) is false).ToArray();
 
         Assert.Multiple(() =>

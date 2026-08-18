@@ -1,5 +1,6 @@
 using System.Text;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Cors;
 using ModelContextProtocol.Server;
 using Bit.Butil.Demo.Client.Docs;
 using Bit.Butil.Demo.Server.Dtos;
@@ -36,9 +37,16 @@ namespace Bit.Butil.Demo.Server.Controllers;
 // Fully qualified: Microsoft.AspNetCore.Components brings its own RouteAttribute, and this file
 // needs that namespace for the renderer and the NavigationManager.
 [Microsoft.AspNetCore.Mvc.Route("api/[controller]/[action]")]
+// On the controller rather than on MapControllers(): the open policy belongs to the GET mirror of
+// the MCP tools, which is public read-only documentation, and nothing else. A controller added to
+// this app later would otherwise inherit it by having been mapped alongside this one.
+[EnableCors(McpController.CorsPolicy)]
 public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor,
                           ILogger<McpController> logger) : ControllerBase
 {
+    /// <summary>The CORS policy this controller and the /mcp endpoint share. Defined in Program.cs.</summary>
+    public const string CorsPolicy = "mcp";
+
     [HttpGet]
     [McpServerTool(Name = nameof(GetButilOverview), Title = "Bit.Butil overview",
                    ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
