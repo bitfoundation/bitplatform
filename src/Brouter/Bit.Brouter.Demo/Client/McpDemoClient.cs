@@ -88,6 +88,16 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
     /// <summary>The server's own name and version, from the <c>initialize</c> result.</summary>
     public JsonNode? ServerInfo { get; private set; }
 
+    /// <summary>
+    /// The server's <c>instructions</c>, handed over during the handshake.
+    /// <para>
+    /// A client puts this in front of the model once, before anything has been called, which makes
+    /// it the only thing a server says that an agent reads whether or not it decides to use the
+    /// tools - so it is worth showing on the page rather than leaving buried in the wire log.
+    /// </para>
+    /// </summary>
+    public string? Instructions { get; private set; }
+
     /// <summary>Which of tools, resources and prompts this server offers - the client learns it here, not from configuration.</summary>
     public JsonNode? Capabilities { get; private set; }
 
@@ -106,6 +116,7 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
         ProtocolVersion = null;
         ServerInfo = null;
         Capabilities = null;
+        Instructions = null;
 
         var call = await SendAsync("initialize", new JsonObject
         {
@@ -123,6 +134,7 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
             ProtocolVersion = call.Result?["protocolVersion"]?.GetValue<string>();
             ServerInfo = call.Result?["serverInfo"];
             Capabilities = call.Result?["capabilities"];
+            Instructions = call.Result?["instructions"]?.GetValue<string>();
 
             await SendAsync("notifications/initialized", null, notification: true);
         }
@@ -177,6 +189,7 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
             ProtocolVersion = null;
             ServerInfo = null;
             Capabilities = null;
+            Instructions = null;
         }
     }
 

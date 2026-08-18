@@ -102,3 +102,70 @@
     color: var(--bb-text-muted);
     font-family: var(--bb-mono);
 }
+
+/* The name and self-declared annotations of the selected tool or prompt, above its description. */
+.mcp-badges {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .2rem 0 .35rem;
+    font-size: .95rem;
+}
+
+/* The server's own instructions: long, worth reading once, not worth scrolling past every visit. */
+.mcp-instructions {
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+    padding: .5rem .75rem;
+    margin: 1rem 0;
+}
+
+    .mcp-instructions summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .5rem;
+        cursor: pointer;
+        font-size: .88rem;
+    }
+
+.mcp-subhead {
+    margin: 1.6rem 0 .35rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--bb-text);
+}
+
+/* Two dozen documentation pages is a list to scan, not a section to scroll past. */
+.mcp-scroll {
+    max-height: 24rem;
+    overflow: auto;
+    border: 1px solid var(--bb-border);
+    border-radius: var(--bb-radius-sm);
+}
+
+/* What completion/complete answered with: values to click, not prose to read. */
+.mcp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin: .35rem 0 .8rem;
+}
+
+.mcp-chip {
+    padding: .25rem .6rem;
+    border: 1px solid var(--bb-border);
+    border-radius: 999px;
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    font-family: var(--bb-mono);
+    font-size: .78rem;
+    cursor: pointer;
+}
+
+    .mcp-chip:hover {
+        border-color: var(--bb-primary);
+        color: var(--bb-primary-hover);
+        background: var(--bb-primary-soft);
+    }

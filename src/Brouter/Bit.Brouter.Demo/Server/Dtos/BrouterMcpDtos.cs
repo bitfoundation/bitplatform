@@ -157,6 +157,28 @@ public record BrouterSearchHitDto
     public required string Snippet { get; init; }
 }
 
+/// <summary>What SearchBrouter answers: the ranked hits, or - when there are none - why, and what to try instead.</summary>
+public record BrouterSearchResultDto
+{
+    /// <summary>The query as it was received, so a result read out of context still says what was asked.</summary>
+    public required string Query { get; init; }
+
+    /// <summary>The words the query was actually searched by: punctuation, duplicates and filler words removed.</summary>
+    public required string[] Terms { get; init; }
+
+    /// <summary>The matches, best first. Empty when nothing matched - Message then says what to do about it.</summary>
+    public required BrouterSearchHitDto[] Hits { get; init; }
+
+    /// <summary>True when the ranking was cut short at the requested limit, so a narrower query would show more.</summary>
+    public bool HasMore { get; init; }
+
+    /// <summary>Set only when Hits is empty: the reason, and the tool to fall back to.</summary>
+    public string? Message { get; init; }
+
+    /// <summary>Titles that nearly matched, when nothing matched outright - a query worth retrying with.</summary>
+    public string[]? DidYouMean { get; init; }
+}
+
 /// <summary>One URL builder emitted by the Bit.Brouter.Generators source generator.</summary>
 public record BrouterTypedRouteDto
 {
@@ -183,6 +205,16 @@ public record BrouterTypedRoutesDto
 
     /// <summary>The constants under BrouterRoutes.Names - one per named route, for IBrouter.NavigateToName.</summary>
     public required Dictionary<string, string> Names { get; init; }
+}
+
+/// <summary>What GetBrouterTypedRoutes answers: the generated output, or why this build has none.</summary>
+public record BrouterTypedRoutesResultDto
+{
+    /// <summary>The builders and route names the generator emitted for the documentation site.</summary>
+    public BrouterTypedRoutesDto? TypedRoutes { get; init; }
+
+    /// <summary>Set instead of TypedRoutes when the generator did not run for this build.</summary>
+    public string? Message { get; init; }
 }
 
 /// <summary>One route of an analyzed route table.</summary>

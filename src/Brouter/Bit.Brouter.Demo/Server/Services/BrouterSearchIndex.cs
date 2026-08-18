@@ -27,6 +27,11 @@ public static class BrouterSearchIndex
 
     private const int MaxTerms = 16;
 
+    /// <summary>The most hits one search may return, whatever the caller asked for.</summary>
+    private const int MaxHits = 50;
+
+    private const int MaxSuggestions = 8;
+
     private static readonly Lazy<Entry[]> _entries = new(Build);
 
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
@@ -37,25 +42,91 @@ public static class BrouterSearchIndex
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
     };
 
-    public static BrouterSearchHitDto[] Search(string query, int limit)
+    public static BrouterSearchResultDto Search(string? query, int limit)
     {
         var terms = Tokenize(query);
-        if (terms.Length == 0) return [];
 
-        return [.. _entries.Value
+        if (terms.Length == 0)
+        {
+            // Nothing was left to search by, which is a different failure from "searched and found
+            // nothing" - and the fix is on the caller's side, so it has to be said rather than
+            // returned as an empty list the agent would read as "Brouter cannot do this".
+            return new BrouterSearchResultDto
+            {
+                Query = query ?? string.Empty,
+                Terms = [],
+                Hits = [],
+                Message = "The query held no word longer than two letters that was not a filler word, so there was " +
+                          "nothing to rank by. Search for the thing itself - 'guard', 'loader cache', 'query string' - " +
+                          "rather than for a sentence, or call GetBrouterOverview for what the library covers."
+            };
+        }
+
+        var ranked = _entries.Value
             .Select(entry => (Entry: entry, Score: Score(entry, terms)))
             .Where(hit => hit.Score > 0)
             .OrderByDescending(hit => hit.Score)
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
-            .Take(Math.Clamp(limit, 1, 50))
-            .Select(hit => new BrouterSearchHitDto
+            .ToArray();
+
+        var take = Math.Clamp(limit, 1, MaxHits);
+
+        var hits = ranked.Take(take).Select(hit => new BrouterSearchHitDto
+        {
+            Kind = hit.Entry.Kind,
+            Title = hit.Entry.Title,
+            Context = hit.Entry.Context,
+            Tool = hit.Entry.Tool,
+            Snippet = Snippet(hit.Entry.Body, terms)
+        }).ToArray();
+
+        if (hits.Length > 0)
+        {
+            return new BrouterSearchResultDto
             {
-                Kind = hit.Entry.Kind,
-                Title = hit.Entry.Title,
-                Context = hit.Entry.Context,
-                Tool = hit.Entry.Tool,
-                Snippet = Snippet(hit.Entry.Body, terms)
-            })];
+                Query = query ?? string.Empty,
+                Terms = terms,
+                Hits = hits,
+                HasMore = ranked.Length > hits.Length
+            };
+        }
+
+        // A search that found nothing is where an agent is most likely to conclude the library has
+        // no such feature and hand-roll one. Whatever came closest is named instead, so the next
+        // call is a better query rather than a worse decision.
+        var nearby = Suggest(terms);
+
+        return new BrouterSearchResultDto
+        {
+            Query = query ?? string.Empty,
+            Terms = terms,
+            Hits = [],
+            Message = nearby.Length > 0
+                ? $"Nothing matched {string.Join(" + ", terms)}. The closest names are listed in didYouMean - " +
+                   "search for one of those, or for a single word out of this query."
+                : $"Nothing matched {string.Join(" + ", terms)}. Try one word rather than several, or list what " +
+                   "there is with GetBrouterGuideSections, GetBrouterDocsList or GetBrouterApiList. A concept " +
+                   "Brouter does not name is often the same idea under another word - 'middleware' is a guard, " +
+                   "'resolver' is a loader, 'child route' is a nested route.",
+            DidYouMean = nearby.Length > 0 ? nearby : null
+        };
+    }
+
+    /// <summary>
+    /// The titles that nearly matched: an entry whose name merely begins with one of the query's
+    /// words, which the ranking itself ignores on purpose - a prefix is far too weak a signal to
+    /// rank a hit by, and exactly strong enough to suggest a word to search for instead.
+    /// </summary>
+    private static string[] Suggest(string[] terms)
+    {
+        return [.. _entries.Value
+            .Where(entry => terms.Any(term => term.Length >= 4
+                                              && entry.TitleWords.Any(word => word.StartsWith(term, StringComparison.OrdinalIgnoreCase)
+                                                                              || term.StartsWith(word, StringComparison.OrdinalIgnoreCase))))
+            .Select(entry => entry.Title)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .Take(MaxSuggestions)];
     }
 
     private static int Score(Entry entry, string[] terms)

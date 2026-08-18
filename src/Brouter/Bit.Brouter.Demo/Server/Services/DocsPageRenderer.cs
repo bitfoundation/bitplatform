@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Bit.Brouter.Demo.Client;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -16,9 +17,36 @@ namespace Bit.Brouter.Demo.Server.Services;
 /// </summary>
 public static class DocsPageRenderer
 {
-    /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
-    public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, DocsPageInfo page)
+    // Rendering a page and flattening it costs far more than serving it, and the pages are static:
+    // the first caller pays for it and every caller after reads the same Markdown. The cache lives
+    // here rather than in either caller so the tool and the resource cannot end up with two copies
+    // of it - or, worse, with one of them re-rendering a page the other already has.
+    private static readonly ConcurrentDictionary<string, string> _markdown = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The page a slug names, or null when none does.
+    /// <para>
+    /// The overview's own slug is the empty string, which is not a thing anyone types, so the words
+    /// a caller does reach for stand in for it. The tool and the resource resolve slugs through this
+    /// one method, so a slug that works in one cannot fail in the other.
+    /// </para>
+    /// </summary>
+    public static DocsPageInfo? FindPage(string? slug)
+        => DocsCatalog.FindBySlug(slug is "overview" or "index" or "docs" ? string.Empty : slug);
+
+    /// <summary>What to answer when no page has that slug: the ones that do.</summary>
+    public static string NoSuchPage(string? slug)
     {
+        var slugs = string.Join(", ", DocsCatalog.AllPages.Select(page => page.Slug.Length == 0 ? "overview" : page.Slug));
+
+        return $"No documentation page has the slug '{slug}'. Available slugs: {slugs}.";
+    }
+
+    /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
+    public static async ValueTask<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, DocsPageInfo page)
+    {
+        if (_markdown.TryGetValue(page.Slug, out var cached)) return (cached, null);
+
         try
         {
             var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -28,7 +56,13 @@ public static class DocsPageRenderer
                 return component.ToHtmlString();
             });
 
-            return (html.ToMarkdown(), null);
+            var markdown = html.ToMarkdown();
+
+            // Only a success is kept: a page that failed to render is a bug to be fixed, not a
+            // stale answer to serve for the lifetime of the process.
+            _markdown[page.Slug] = markdown;
+
+            return (markdown, null);
         }
         catch (Exception exception)
         {
