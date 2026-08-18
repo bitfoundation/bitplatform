@@ -1,4 +1,4 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/.Solution Items/">
     <File Path="../../.gitignore" />
     <File Path="../.editorconfig" />
@@ -9,6 +9,9 @@
   <Folder Name="/Bit.Bswup.Demo/">
     <Project Path="Bit.Bswup.Demo/Client/Bit.Bswup.Demo.Client.csproj" />
     <Project Path="Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="Samples/BasicSample/Bit.Bswup.BasicSample.csproj" />

@@ -83,9 +83,14 @@ public static class DocsCatalog
                 "Production-shaped answers: hosting headers, sub-path deployments, build-stamped cache versions, custom update banners, keeping the API out of the worker.",
                 "recipes cache-control headers sub-path base href cacheVersion build stamp update banner api bypass cdn hosting",
                 typeof(RecipesPage)),
+            // The keywords are phrased as the symptoms the page's own headings are phrased in
+            // ("Users keep running an old version", "Publishing a new build raises no update",
+            // "The app never appears"), because this is the page a question arrives at before
+            // anyone knows the name of the setting that causes it - and search matches words, not
+            // meaning, so the words people report a problem in have to be here.
             new("troubleshooting", "Troubleshooting & FAQ",
                 "Symptoms mapped back to their causes: stale versions, blank first loads, assets not caching, offline deep links.",
-                "troubleshooting faq problem stale not updating blank splash stuck offline 404 deep link cache error install failed",
+                "troubleshooting faq problem symptom app never picks up new versions stale not updating old version new build publish raises no update blank splash stuck frozen reload button offline 404 deep link cache error install failed storage evicted",
                 typeof(TroubleshootingPage)),
             new("cleanup", "Backing Out of Bswup",
                 "Remove Bswup from a deployed app - or recover clients stuck on a broken worker - with the self-destructing cleanup worker.",

@@ -16,17 +16,45 @@ namespace Bit.Bswup.Demo.Server.Services;
 /// </summary>
 public static class BswupSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted)
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, int Weight = ReferenceWeight)
     {
         /// <summary>
-        /// The title split into words, camel-case humps included, so "updateOnVisibility" is found
-        /// by "visibility" - and so a query word only counts as a title hit when it IS one of those
+        /// The words the title is found by: what punctuation leaves behind AND those pieces split
+        /// at their camel-case humps, so "self.assetsExclude" answers to "assetsExclude" and to
+        /// "exclude" alike - and so a query word only counts as a title hit when it IS one of those
         /// words, rather than merely appearing inside one.
         /// </summary>
         public string[] TitleWords { get; } = SplitWords(Title);
     }
 
     private const int MaxTerms = 16;
+
+    /// <summary>The weight of an entry that answers a question: a setting, an event, a page.</summary>
+    private const int ReferenceWeight = 10;
+
+    /// <summary>
+    /// The weight of a source file. They are examples, not answers, and their titles are paths
+    /// whose segments ("Client", "Pages", "Shared") are common words carrying no topic - without
+    /// this every question phrased with one of them is answered with a directory listing.
+    /// </summary>
+    private const int ExampleWeight = 4;
+
+    /// <summary>
+    /// The weight of a guide section that is most of the guide. The README's first heading covers
+    /// two thirds of the file, so it matches nearly every query and answers none of them with more
+    /// than "read the guide". It stays findable; anything precise outranks it.
+    /// </summary>
+    private const int BroadSectionWeight = 4;
+
+    /// <summary>A section holding more than this fraction of the guide counts as one of those.</summary>
+    private const int BroadSectionFraction = 4;
+
+    /// <summary>
+    /// The most an entry can earn from prose, however much of it there is. A long section mentions
+    /// everything, so without a ceiling the biggest document in the corpus is the top hit for
+    /// every query - and a name match, which is the far stronger signal, never gets ahead of it.
+    /// </summary>
+    private const int MaxBodyScore = 8;
 
     private static readonly Lazy<Entry[]> _entries = new(Build);
 
@@ -62,6 +90,7 @@ public static class BswupSearchIndex
     private static int Score(Entry entry, string[] terms)
     {
         var score = 0;
+        var body = 0;
         var matched = 0;
 
         foreach (var term in terms)
@@ -77,11 +106,14 @@ public static class BswupSearchIndex
 
             // A term in a name is worth far more than the same term buried in prose: someone asking
             // for "stallTimeout" wants the option, not the paragraphs that happen to mention it.
-            score += (isTitleWord ? 12 : 0) + inTitle * 3 + inBoosted * 5 + Math.Min(inBody, 6);
+            score += (isTitleWord ? 12 : 0) + (inTitle * 3) + (inBoosted * 5);
+
+            // Prose is counted apart from the names so it can be capped as a whole (see MaxBodyScore).
+            body += Math.Min(inBody, 6);
         }
 
         // Every term matching is the strongest signal a hit is the right one.
-        return matched == 0 ? 0 : score * matched;
+        return matched == 0 ? 0 : (score + Math.Min(body, MaxBodyScore)) * matched * entry.Weight;
     }
 
     /// <summary>
@@ -131,22 +163,33 @@ public static class BswupSearchIndex
         return $"{(start > 0 ? "..." : null)}{snippet}{(start + length < body.Length ? "..." : null)}";
     }
 
-    /// <summary>Splits a name or heading into words, breaking camel-case humps as well as punctuation.</summary>
+    /// <summary>
+    /// Splits a name or heading into the words it should be found by: the pieces punctuation leaves
+    /// behind, AND those pieces broken at their camel-case humps.
+    /// <para>
+    /// Both are needed, and keeping only the humps is the trap: "stallTimeout" would then be known
+    /// as "stall" and "Timeout" and nothing else, so someone typing the option's own name matches
+    /// no word of its title at all - and the docs page that merely lists the name among its
+    /// keywords outranks the option itself.
+    /// </para>
+    /// </summary>
     private static string[] SplitWords(string text)
     {
         var words = new List<string>();
         var current = new System.Text.StringBuilder();
+        var segment = new System.Text.StringBuilder();
 
         foreach (var c in text)
         {
             if (char.IsLetterOrDigit(c) is false)
             {
-                if (current.Length > 0) { words.Add(current.ToString()); current.Clear(); }
+                Flush();
                 continue;
             }
 
             // A capital after a lowercase letter starts a new word ("updateOnVisibility" -> update
-            // on visibility), while a run of capitals stays together ("URL", "SRI").
+            // on visibility), while a run of capitals stays together ("URL", "SRI"). The segment
+            // keeps accumulating across the hump, so the undivided name survives alongside them.
             if (char.IsUpper(c) && current.Length > 0 && char.IsLower(current[^1]))
             {
                 words.Add(current.ToString());
@@ -154,11 +197,18 @@ public static class BswupSearchIndex
             }
 
             current.Append(c);
+            segment.Append(c);
         }
 
-        if (current.Length > 0) words.Add(current.ToString());
+        Flush();
 
-        return [.. words];
+        return [.. words.Distinct(StringComparer.OrdinalIgnoreCase)];
+
+        void Flush()
+        {
+            if (current.Length > 0) { words.Add(current.ToString()); current.Clear(); }
+            if (segment.Length > 0) { words.Add(segment.ToString()); segment.Clear(); }
+        }
     }
 
     private static string[] Tokenize(string? query)
@@ -180,12 +230,16 @@ public static class BswupSearchIndex
     {
         var entries = new List<Entry>(256);
 
+        var guideLines = Math.Max(1, BswupSourceCatalog.Readme.Count(c => c == '\n'));
+
         foreach (var section in BswupSourceCatalog.GuideSections)
         {
             var body = BswupSourceCatalog.GetGuideSection(section.Heading) ?? string.Empty;
 
+            var weight = section.Lines * BroadSectionFraction > guideLines ? BroadSectionWeight : ReferenceWeight;
+
             entries.Add(new Entry("Guide section", section.Heading, section.Parent,
-                $"GetBswupGuideSection(heading: \"{section.Heading}\")", body, string.Empty));
+                $"GetBswupGuideSection(heading: \"{section.Heading}\")", body, string.Empty, weight));
         }
 
         foreach (var page in DocsCatalog.Sections.SelectMany(s => s.Pages.Select(p => (Section: s.Title, Page: p))))
@@ -240,7 +294,7 @@ public static class BswupSearchIndex
         foreach (var file in BswupSourceCatalog.SourceFiles)
         {
             entries.Add(new Entry("Source file", file.Path, file.Kind,
-                $"GetBswupSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty));
+                $"GetBswupSourceFile(path: \"{file.Path}\")", file.Description ?? string.Empty, string.Empty, ExampleWeight));
         }
 
         return [.. entries];

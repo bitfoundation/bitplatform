@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using System.Globalization;
 using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
@@ -10,6 +11,9 @@ using ModelContextProtocol.Protocol;
 
 // The rate-limiting policy the MCP endpoints and their HTTP mirror share.
 const string McpRateLimiterPolicy = "mcp";
+
+// Requests one caller may make to those endpoints per minute.
+const int McpRequestsPerMinute = 240;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,10 +40,39 @@ builder.Services.AddRateLimiter(options =>
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 240,
+            PermitLimit = McpRequestsPerMinute,
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+
+    // Writing the rejection out here is load-bearing, not a courtesy. The default rejection is a
+    // bare status with no body, and UseStatusCodePagesWithReExecute below re-executes exactly
+    // those through the Blazor app: a throttled GET came back as the 16 KB /not-found page, and a
+    // throttled POST - every MCP call and both file-checking endpoints - came back as 400 "The
+    // request has an incorrect Content-type." from the antiforgery middleware rejecting the
+    // re-executed request. A client that should have backed off saw a malformed-request error
+    // instead. A response that carries its own body and content type is left alone.
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        var response = context.HttpContext.Response;
+
+        response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+        var retryAfter = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var window)
+            ? (int)Math.Ceiling(window.TotalSeconds)
+            : 60;
+
+        response.Headers.RetryAfter = retryAfter.ToString(CultureInfo.InvariantCulture);
+
+        await response.WriteAsJsonAsync(
+            new
+            {
+                error = "too_many_requests",
+                message = $"This endpoint allows {McpRequestsPerMinute} requests per minute per caller. Retry in {retryAfter} seconds.",
+                retryAfterSeconds = retryAfter
+            },
+            cancellationToken);
+    };
 });
 
 builder.Services.AddMcpServer(options =>

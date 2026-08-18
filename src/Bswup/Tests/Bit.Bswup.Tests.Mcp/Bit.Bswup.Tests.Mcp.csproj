@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.3.3" />
+        <!-- Hosts the real Server project in-process, so the protocol tests drive the same
+             pipeline (routing, rate limiter, MCP transport) a deployment runs. -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bswup.Demo\Server\Bit.Bswup.Demo.Server.csproj" />
+    </ItemGroup>
+
+</Project>
