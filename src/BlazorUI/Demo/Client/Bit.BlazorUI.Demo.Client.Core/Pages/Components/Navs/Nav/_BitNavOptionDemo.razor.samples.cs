@@ -353,6 +353,8 @@ private BitNavOption SelectedOption = default!;";
     <BitNavOption Text=""Iconography (/iconography)"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
 </BitNav>
 
+@* The URL of a Wildcard or Regex option is a pattern rather than a route, so these options are
+   disabled: they still light up on a match, but a click cannot navigate to a URL no page answers. *@
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Wildcard"" FitWidth>
     <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" IsEnabled=""false"" />
     <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" IsEnabled=""false"" />

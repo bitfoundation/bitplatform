@@ -485,6 +485,7 @@ public class Section
     public string Text { get; set; } = string.Empty;
     public string? ImageName { get; set; }
     public string? Url { get; set; }
+    public bool IsEnabled { get; set; } = true;
     public BitNavMatch? UrlMatch { get; set; }
     public IEnumerable<string>? OtherUrls { get; set; }
     public List<Section> Links { get; set; } = [];
@@ -510,6 +511,8 @@ private static readonly List<Section> customPrefixMatchNavItems =
     new() { Text = ""Iconography (/iconography)"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];
 
+// The URL of a Wildcard or Regex item is a pattern rather than a route, so these items are disabled:
+// they still light up on a match, but a click cannot navigate to a URL no page answers.
 private static readonly List<Section> customWildcardMatchNavItems =
 [
     new() { Text = ""A component page (/components/*)"", ImageName = BitIconName.F12DevTools, Url = ""/components/*"", IsEnabled = false },
