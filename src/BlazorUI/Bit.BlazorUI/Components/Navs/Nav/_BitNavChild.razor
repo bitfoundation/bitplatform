@@ -5,21 +5,36 @@
     @{
         var template = Nav.GetTemplate(Item);
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
-        var isEnabled = Nav.GetIsEnabled(Item);
+        // A disabled nav disables everything it renders: greying the items out is not enough, since a link
+        // that keeps its href and its tab stop can still be followed with the keyboard.
+        var isEnabled = Nav.IsEnabled && Nav.GetIsEnabled(Item);
         var isExpanded = Nav.GetItemExpanded(Item);
         var isSeparator = Nav.GetIsSeparator(Item);
-        var colAriaLabel = Nav.GetCollapseAriaLabel(Item);
-        var expAriaLabel = Nav.GetExpandAriaLabel(Item);
         var text = Nav.GetText(Item);
         var childItems = Nav.GetChildItems(Item);
         var description = Nav.GetDescription(Item);
-        var chevronIcon = BitIconInfo.From(Nav.ChevronDownIcon, Nav.ChevronDownIconName ?? $"ChevronRight {(isExpanded ? "bit-nav-exp" : "bit-ico-r90")}");
+        // The rotation class is applied next to the icon classes instead of being smuggled into the icon
+        // name, so a custom ChevronDownIcon/ChevronDownIconName rotates on expand just like the default one.
+        var chevronIcon = BitIconInfo.From(Nav.ChevronDownIcon, Nav.ChevronDownIconName ?? "ChevronRight");
+        var chevronRotation = isExpanded ? "bit-nav-exp" : "bit-ico-r90";
         var icon = Nav.GetIcon(Item);
         var url = Nav.GetUrl(Item);
         var title = Nav.GetTitle(Item);
         var target = Nav.GetTarget(Item);
         var renderLink = url.HasValue() || Nav.GetForceAnchor(Item);
-        var href = (isEnabled && (Nav.SelectedItem != Item || Nav.Reselectable)) ? url : null;
+        var isSelected = Nav.IsSelected(Item);
+        var href = isEnabled ? url : null;
+        var isToggleable = childItems.Any() && Nav.NoCollapse is false;
+        var hasChevron = isToggleable && Nav.IconOnly is false;
+        // A collapsed or expanded item reports its state through aria-expanded; an item that can never be
+        // toggled must not report one at all, so it is not announced as an expandable node.
+        var ariaExpanded = isToggleable ? (isExpanded ? "true" : "false") : null;
+        var toggleAriaLabel = (isExpanded ? Nav.GetCollapseAriaLabel(Item) ?? Nav.CollapseAriaLabel
+                                          : Nav.GetExpandAriaLabel(Item) ?? Nav.ExpandAriaLabel) ?? text;
+        // The chevron lives inside the item and carries a name of its own, which the item would otherwise
+        // fold into its own name and announce twice ("Fruits Fruits"), so an item that renders one is
+        // named explicitly after its text instead of after its content.
+        var ariaLabel = Nav.GetAriaLabel(Item) ?? (hasChevron ? text : null);
     }
 
     @if (Nav.RenderType is BitNavRenderType.Grouped && Parent is null)
@@ -32,7 +47,7 @@
             }
             else
             {
-                <div class="bit-nav-sep @Nav.Classes?.Separator" style="@Nav.Styles?.Separator"></div>
+                <div role="separator" class="bit-nav-sep @Nav.Classes?.Separator" style="@Nav.Styles?.Separator"></div>
             }
         }
         else if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
@@ -45,12 +60,17 @@
         }
         else
         {
-            <button @onclick="ToggleItem"
-                    tabindex="0"
+            <button @ref="_headerElement"
+                    @onclick="ToggleItem"
+                    @onfocusin="HandleOnFocusIn"
+                    @onkeydown="HandleOnKeyDown"
                     type="button"
-                    class="bit-nav-gcb"
-                    aria-expanded="@(isExpanded ? "true" : "false")"
-                    aria-label="@(isEnabled ? colAriaLabel : expAriaLabel)">
+                    title="@(title is not null ? title : text)"
+                    disabled="@(isEnabled is false)"
+                    style="@Nav.Styles?.Header"
+                    class="bit-nav-gcb @Nav.Classes?.Header"
+                    aria-expanded="@ariaExpanded"
+                    aria-label="@(Nav.GetAriaLabel(Item) ?? toggleAriaLabel)">
                 @if (template is not null)
                 {
                     @template(Item)
@@ -65,11 +85,17 @@
                     {
                         <div class="bit-nav-itg">
                             <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                                @if (Nav.NoCollapse is false)
+                                @if (isToggleable)
                                 {
-                                    <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
+                                    <i style="@Nav.Styles?.ToggleIcon"
+                                       class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                       aria-hidden="true" />
                                 }
-                                <span class="bit-nav-ghd">@text</span>
+                                @if (icon is not null)
+                                {
+                                    <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic @icon.GetCssClasses() @Nav.Classes?.ItemIcon" aria-hidden="true" />
+                                }
+                                <span style="@Nav.Styles?.HeaderText" class="bit-nav-ghd @Nav.Classes?.HeaderText">@text</span>
                             </div>
                             <div title="@description"
                                  class="bit-nav-des @Nav.Classes?.Description"
@@ -81,11 +107,17 @@
                     else
                     {
                         <div class="bit-nav-iit" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                            @if (Nav.NoCollapse is false)
+                            @if (isToggleable)
                             {
-                                <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
+                                <i style="@Nav.Styles?.ToggleIcon"
+                                   class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                   aria-hidden="true" />
                             }
-                            <span class="bit-nav-ghd">@text</span>
+                            @if (icon is not null)
+                            {
+                                <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic @icon.GetCssClasses() @Nav.Classes?.ItemIcon" aria-hidden="true" />
+                            }
+                            <span style="@Nav.Styles?.HeaderText" class="bit-nav-ghd @Nav.Classes?.HeaderText">@text</span>
                         </div>
                     }
                 }
@@ -102,7 +134,7 @@
             }
             else
             {
-                <div style="@Nav.Styles?.Separator" class="bit-nav-sep @Nav.Classes?.Separator"></div>
+                <div role="separator" style="@Nav.Styles?.Separator" class="bit-nav-sep @Nav.Classes?.Separator"></div>
             }
         }
         else
@@ -122,30 +154,41 @@
             }
             else
             {
-                <_BitNavItemContainer Href="@href"
+                <_BitNavItemContainer @ref="_container"
+                                      Href="@href"
                                       Target="@target"
                                       OnClick="HandleOnClick"
                                       RenderLink="renderLink"
+                                      OnFocusIn="HandleOnFocusIn"
+                                      OnKeyDown="HandleOnKeyDown"
                                       Disabled="@(isEnabled is false)"
-                                      AriaLabel="@Nav.GetAriaLabel(Item)"
+                                      AriaExpanded="@ariaExpanded"
+                                      AriaLabel="@ariaLabel"
                                       Title="@(title is not null ? title : text)"
                                       Class="@($"bit-nav-ict {GetItemContainerClasses()}")"
                                       Style="@($"padding-inline-start:{padding}px;{GetItemContainerStyles()}")"
-                                      AriaCurrent="@(Item == Nav.SelectedItem ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
+                                      AriaCurrent="@(isSelected ? _AriaCurrentMap[Nav.GetAriaCurrent(Item)] : null)"
+                                      TabIndex="@(isEnabled is false ? "-1" : (renderLink && href.HasNoValue() ? "0" : null))"
                                       Rel="@(url.HasValue() && target.HasValue() && IsRelativeUrl(url!) is false ? "noopener noreferrer" : null)">
                     <div class="bit-nav-mct" style="@(Nav.ReversedChevron ? "flex-flow:row-reverse" : null)">
-                        @if (childItems.Any() && Nav.IconOnly is false && Nav.NoCollapse is false)
+                        @if (hasChevron)
                         {
+                            @* The chevron cannot be a button, since it lives inside the item's own anchor or
+                               button, so it carries the button role and its keyboard activation explicitly. *@
                             <div @onclick="ToggleItem"
                                  @onclick:preventDefault="true"
                                  @onclick:stopPropagation="true"
-                                 tabindex="0"
-                                 type="button"
+                                 @onkeydown="HandleToggleKeyDown"
+                                 role="button"
                                  style="@Nav.Styles?.ToggleButton"
                                  class="bit-nav-cbt @Nav.Classes?.ToggleButton"
+                                 tabindex="@(isEnabled ? "0" : "-1")"
+                                 aria-disabled="@(isEnabled ? null : "true")"
                                  aria-expanded="@(isExpanded ? "true" : "false")"
-                                 aria-label="@(isExpanded ? colAriaLabel : expAriaLabel)">
-                                <i class="@chevronIcon?.GetCssClasses()" aria-hidden="true" />
+                                 aria-label="@toggleAriaLabel">
+                                <i style="@Nav.Styles?.ToggleIcon"
+                                   class="@chevronIcon?.GetCssClasses() @chevronRotation @Nav.Classes?.ToggleIcon"
+                                   aria-hidden="true" />
                             </div>
                         }
                         <div style="@GetItemStyles()"

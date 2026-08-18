@@ -148,7 +148,7 @@ public partial class BitNav<TItem>
             return NameSelectors.Data.Selector!(item);
         }
 
-        return item.GetValueFromProperty<string?>(NameSelectors.Data.Name);
+        return item.GetValueFromProperty<object?>(NameSelectors.Data.Name);
     }
 
     internal string? GetDescription(TItem item)
@@ -310,7 +310,9 @@ public partial class BitNav<TItem>
             return navOption.IsExpanded;
         }
 
-        if (NameSelectors is null) return false;
+        // A custom item type with no NameSelectors has no expansion property to read or write, so the
+        // state is reported as unknown and the nav keeps it in its own dictionary instead.
+        if (NameSelectors is null) return null;
 
         if (NameSelectors.IsExpanded.Selector is not null)
         {

@@ -1,8 +1,34 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// The accent fills the whole hovered or selected item, so everything drawn on top of it moves to the
+// accent's own colors at once. Each part had been given a color that reads on the page background
+// (the item text and the chevron the primary foreground, the icon the Color role, the description the
+// muted tertiary foreground), and none of those are meant to sit on a filled accent.
+@mixin accented-item-content {
+    .bit-nav-itm,
+    .bit-nav-cbt {
+        color: var(--bit-nav-clr-text);
+    }
+
+    .bit-nav-iic {
+        color: var(--bit-nav-clr-icon);
+    }
+
+    .bit-nav-des {
+        color: var(--bit-nav-clr-des);
+    }
+}
+
 .bit-nav {
     color: $clr-fg-pri;
     font-family: $tg-font-family;
+
+    // The size tokens live on the root so a single class swaps the metrics of every part at once.
+    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-min-height: #{spacing(6)};
+    --bit-nav-des-font-size: #{spacing(1.5)};
+    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-header-height: #{spacing(5.5)};
 
     ul {
         margin: 0;
@@ -57,11 +83,25 @@
     display: flex;
     gap: spacing(1.25);
     align-items: center;
-    height: spacing(5.5);
+    height: var(--bit-nav-header-height);
     border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
 
     .bit-nav-iit {
         gap: spacing(1.25);
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+
+        .bit-nav-ghd,
+        .bit-nav-iic {
+            color: $clr-fg-dis;
+        }
     }
 }
 
@@ -69,7 +109,7 @@
     flex-grow: 1;
     display: flex;
     font-weight: 500;
-    font-size: spacing(2.25);
+    font-size: var(--bit-nav-header-font-size);
 }
 
 .bit-nav-itg {
@@ -93,19 +133,23 @@
     gap: spacing(0.25);
     padding: spacing(0.5);
     box-sizing: border-box;
-    min-height: spacing(6.0);
     border-color: transparent;
+    min-height: var(--bit-nav-item-min-height);
     border-radius: $shp-border-radius;
     border-inline-start-width: spacing(0.375);
     border-inline-start-style: $shp-border-style;
+
+    // The item resets every inherited style with `all: unset`, which also drops the native focus
+    // indicator, so the themed one has to be put back explicitly.
+    &:focus-visible {
+        @include focus-ring;
+    }
 
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-nav-clr-hover);
 
-            .bit-nav-itm {
-                color: var(--bit-nav-clr-text);
-            }
+            @include accented-item-content;
         }
     }
 }
@@ -129,7 +173,7 @@
     white-space: nowrap;
     flex-flow: row nowrap;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: var(--bit-nav-item-font-size);
 }
 
 .bit-nav-des {
@@ -141,7 +185,7 @@
     color: $clr-fg-ter;
     white-space: nowrap;
     font-weight: normal;
-    font-size: spacing(1.5);
+    font-size: var(--bit-nav-des-font-size);
     background: transparent;
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
@@ -157,6 +201,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
+    &:focus-visible {
+        @include focus-ring;
+    }
 }
 
 .bit-nav-iic {
@@ -177,27 +225,16 @@
     .bit-nav-itx {
         display: none;
     }
-
-    .bit-nav-sel {
-        //border: none;
-    }
 }
 
 .bit-nav-sel {
     border-color: var(--bit-nav-clr);
     background-color: var(--bit-nav-clr-active);
 
-    @media (hover:hover) {
-        &:hover {
-            .bit-nav-itm {
-                color: var(--bit-nav-clr-text);
-            }
-        }
-    }
+    @include accented-item-content;
 
     .bit-nav-itm {
         font-weight: 600;
-        color: $clr-fg-pri;
     }
 }
 
@@ -217,12 +254,50 @@
 }
 
 
+.bit-nav-sm {
+    --bit-nav-item-font-size: #{spacing(1.5)};
+    --bit-nav-item-min-height: #{spacing(4.5)};
+    --bit-nav-des-font-size: #{spacing(1.25)};
+    --bit-nav-header-font-size: #{spacing(1.875)};
+    --bit-nav-header-height: #{spacing(4.5)};
+}
+
+.bit-nav-md {
+    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-min-height: #{spacing(6)};
+    --bit-nav-des-font-size: #{spacing(1.5)};
+    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-header-height: #{spacing(5.5)};
+}
+
+.bit-nav-lg {
+    --bit-nav-item-font-size: #{spacing(2)};
+    --bit-nav-item-min-height: #{spacing(7)};
+    --bit-nav-des-font-size: #{spacing(1.75)};
+    --bit-nav-header-font-size: #{spacing(2.625)};
+    --bit-nav-header-height: #{spacing(6.5)};
+}
+
+
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-nav-a#{$role} {
         --bit-nav-clr-text: #{role($tokens, on)};
         --bit-nav-clr-hover: #{role($tokens, hover)};
         --bit-nav-clr-active: #{role($tokens, active)};
+
+        @if role($tokens, kind) == semantic {
+            // A semantic accent covers the item with a vivid fill, so the icon and the description
+            // follow the accent's on-color together with the text.
+            --bit-nav-clr-icon: #{role($tokens, on)};
+            --bit-nav-clr-des: #{role($tokens, on)};
+        }
+        @else {
+            // A surface accent only tints the item's background, so the icon stays on the Color role
+            // and the description stays muted, exactly as they are when the item is not selected.
+            --bit-nav-clr-icon: var(--bit-nav-clr);
+            --bit-nav-clr-des: #{$clr-fg-ter};
+        }
     }
 }
 
