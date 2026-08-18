@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Separate from Bit.Bmotion.Tests because the subject is the demo's ASP.NET Core host, which
+         only exists on net10.0, while the library's own tests multi-target back to net8.0. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- A ProjectReference to a Web SDK project leaves OutputType at Library, and the MSTest
+             runner needs an entry point of its own. -->
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.3.3" />
+        <!-- Hosts the real Program.cs in-memory, so the protocol tests exercise the wiring that
+             ships rather than a second registration written for the tests. -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.11" />
+        <!-- The MCP client half of the same library the server is built on: the protocol tests talk
+             to the server the way an agent does, not by calling the C# methods directly. -->
+        <PackageReference Include="ModelContextProtocol" Version="2.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bmotion.Demo\Server\Bit.Bmotion.Demo.Server.csproj" />
+    </ItemGroup>
+
+</Project>

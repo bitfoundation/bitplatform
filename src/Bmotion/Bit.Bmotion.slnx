@@ -12,6 +12,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+    <Project Path="Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
   </Folder>
   <Project Path="Bit.Bmotion/Bit.Bmotion.csproj" />
 </Solution>
