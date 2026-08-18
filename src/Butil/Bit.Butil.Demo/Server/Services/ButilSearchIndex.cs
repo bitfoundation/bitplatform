@@ -24,7 +24,26 @@ public static class ButilSearchIndex
         /// "write text" - and so a query word only counts as a title hit when it IS one of those
         /// words, rather than merely appearing inside one ("cache" inside "CacheStorage").
         /// </summary>
-        public string[] TitleWords { get; } = SplitWords(Title);
+        public string[] TitleWords { get; } = [.. SplitWords(Title).Select(word => word.ToLowerInvariant())];
+
+        /// <summary>
+        /// The searchable text lowered once, when the index is built, so scoring can scan it with
+        /// ordinal comparisons.
+        /// <para>
+        /// Every query term is counted in every entry, and a case-insensitive scan pays to fold each
+        /// character it walks past - over a corpus that includes whole source files, on every search.
+        /// Folding once at startup trades a second copy of the text for a scan that is a plain byte
+        /// comparison. <see cref="Snippet"/> deliberately keeps reading the original: it returns the
+        /// text to the caller, who should see it in the case it was written in.
+        /// </para>
+        /// </summary>
+        public string LoweredTitle { get; } = Title.ToLowerInvariant();
+
+        /// <inheritdoc cref="LoweredTitle"/>
+        public string LoweredBoosted { get; } = Boosted.ToLowerInvariant();
+
+        /// <inheritdoc cref="LoweredTitle"/>
+        public string LoweredBody { get; } = Body.ToLowerInvariant();
     }
 
     private const int MaxTerms = 16;
@@ -91,9 +110,9 @@ public static class ButilSearchIndex
         foreach (var term in terms)
         {
             var isTitleWord = entry.TitleWords.Any(word => Equivalent(word, term));
-            var inTitle = isTitleWord ? 0 : Count(entry.Title, term);
-            var inBoosted = Count(entry.Boosted, term);
-            var inBody = Count(entry.Body, term);
+            var inTitle = isTitleWord ? 0 : Count(entry.LoweredTitle, term);
+            var inBoosted = Count(entry.LoweredBoosted, term);
+            var inBody = Count(entry.LoweredBody, term);
 
             if (isTitleWord is false && inTitle + inBoosted + inBody == 0) continue;
 
@@ -118,31 +137,42 @@ public static class ButilSearchIndex
 
     /// <summary>
     /// Same word, plural aside - "cookie" has to find "Cookies", and nobody phrases a question in
-    /// the number the API happens to use.
+    /// the number the API happens to use. Both sides are already lowered - the title words when the
+    /// entry was built, the term when the query was tokenized - so this compares ordinally.
     /// </summary>
     private static bool Equivalent(string word, string term)
     {
-        return string.Equals(word, term, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(word, $"{term}s", StringComparison.OrdinalIgnoreCase)
-            || string.Equals($"{word}s", term, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(word, term, StringComparison.Ordinal)
+            || (word.Length == term.Length + 1 && word[^1] == 's' && string.Equals(word[..^1], term, StringComparison.Ordinal))
+            || (term.Length == word.Length + 1 && term[^1] == 's' && string.Equals(term[..^1], word, StringComparison.Ordinal));
     }
 
+    /// <summary>
+    /// How often a term occurs in one of an entry's lowered fields. Ordinal on purpose: the text was
+    /// lowered when the index was built and the term when the query was tokenized, so the fold has
+    /// already been paid for and this walks bytes.
+    /// </summary>
     private static int Count(string text, string term)
     {
         if (text.Length == 0) return 0;
 
         var count = 0;
-        var index = text.IndexOf(term, StringComparison.OrdinalIgnoreCase);
+        var index = text.IndexOf(term, StringComparison.Ordinal);
 
         while (index >= 0)
         {
             count++;
-            index = text.IndexOf(term, index + term.Length, StringComparison.OrdinalIgnoreCase);
+            index = text.IndexOf(term, index + term.Length, StringComparison.Ordinal);
         }
 
         return count;
     }
 
+    /// <summary>
+    /// The window of the ORIGINAL body around the first term that occurs in it - what the caller
+    /// reads, so it keeps the case it was written in. One scan per hit that is actually returned,
+    /// rather than one per entry in the index, which is why this can afford to fold as it goes.
+    /// </summary>
     private static string Snippet(string body, string[] terms)
     {
         if (body.Length == 0) return string.Empty;
@@ -203,7 +233,10 @@ public static class ButilSearchIndex
             // the words a question is phrased with do worse than nothing: "how do I read FROM the
             // clipboard" would otherwise score every entry whose text contains "from".
             .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            // Lowered here, once per query, so every comparison downstream can be ordinal against
+            // the entry text that was lowered when the index was built.
+            .Select(term => term.ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
             // Every term is counted in every entry's body, so the work is terms x corpus. No question
             // is phrased in more words than this, while a pasted file as a query would scan for hours.
             .Take(MaxTerms)];
