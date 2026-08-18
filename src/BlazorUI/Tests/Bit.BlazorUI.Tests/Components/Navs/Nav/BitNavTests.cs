@@ -1363,15 +1363,15 @@ public class BitNavTests : BunitTestContext
         await component.InvokeAsync(async () => await component.Instance.FocusItem(items[2]));
         await component.InvokeAsync(async () => await component.Instance.FocusItem(items[1]));
 
-        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]
-                             .Select(i => ((ElementReference)i.Arguments[0]!).Id)
-                             .ToList();
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+        var elements = component.FindAll(".bit-nav-ict");
 
-        // Each call moves the focus to the element of the item it was given, so two items are never
-        // addressed by the same element and the same item is addressed by the same one every time.
+        // Each call moves the focus to the element the item it was given rendered as, so a request never
+        // lands on the element of another item, and the same item is addressed by the same one every time.
         Assert.AreEqual(3, focused.Count);
-        Assert.AreNotEqual(focused[0], focused[1]);
-        Assert.AreEqual(focused[0], focused[2]);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(elements[1]);
+        focused[1].Arguments[0].ShouldBeElementReferenceTo(elements[2]);
+        focused[2].Arguments[0].ShouldBeElementReferenceTo(elements[1]);
     }
 
     #endregion
@@ -1537,15 +1537,15 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavShouldMatchAnItemUrlWrittenAsAnAbsoluteUrlUnderTheBaseOfTheApp()
+    public void BitNavShouldMatchAnItemThatSpellsItsUrlOutInFull()
     {
         Navigate("/products");
 
-        // The base of the app is the one the NavigationManager reports rather than a host spelled out here,
-        // so the item URL is built from it instead of being hard-coded.
-        var baseUri = Services.GetRequiredService<NavigationManager>().BaseUri;
-        var items = new List<BitNavItem> { new() { Text = "Products", Url = $"{baseUri}products" } };
+        // The base is read from the navigation manager rather than hardcoded, so the test states what it
+        // means - an absolute URL under the base of the app - instead of pinning a particular host.
+        var itemUrl = $"{Services.GetRequiredService<NavigationManager>().BaseUri}products";
 
+        var items = new List<BitNavItem> { new() { Text = "Products", Url = itemUrl } };
         var component = RenderNav(items);
 
         Assert.AreEqual(1, component.FindAll(".bit-nav-sel").Count);
@@ -1652,27 +1652,6 @@ public class BitNavTests : BunitTestContext
         component.FindAll(".bit-nav-ict")[0].FocusIn();
         PressKey(component, "ArrowRight");
 
-        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
-    }
-
-    [TestMethod]
-    public void BitNavShouldStepOverADisabledItemWithTheArrowKeys()
-    {
-        var items = new List<BitNavItem>
-        {
-            new() { Text = "Home" },
-            new() { Text = "Drinks", IsEnabled = false, ChildItems = [new() { Text = "Coffee" }] },
-            new() { Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
-        };
-
-        var component = RenderNav(items);
-
-        component.FindAll(".bit-nav-ict")[0].FocusIn();
-        PressKey(component, "ArrowDown");
-        PressKey(component, "ArrowRight");
-
-        // A disabled item cannot take the focus (it renders as a disabled button), so the Down arrow steps
-        // over it and lands on the next enabled one, which the forward arrow then expands.
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
@@ -1925,6 +1904,53 @@ public class BitNavTests : BunitTestContext
 
         // One press lands on "Fruits" rather than on the separator between them.
         Assert.AreEqual(3, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldSkipADisabledItemWhileNavigating()
+    {
+        var items = new List<BitNavItem>
+        {
+            new() { Text = "Home" },
+            new() { Text = "Bit academy", IsEnabled = false },
+            new() { Text = "Fruits", ChildItems = [new() { Text = "Apple" }] },
+        };
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowDown");
+        PressKey(component, "ArrowRight");
+
+        // A disabled item without a URL renders as a native disabled button, which takes no focus at all, so
+        // one press lands on "Fruits" instead of stranding the focus on the item between them.
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldStillReachTheChildrenOfADisabledItemWhileNavigating()
+    {
+        var items = new List<BitNavItem>
+        {
+            new() { Text = "Home" },
+            new()
+            {
+                Text = "Fruits",
+                IsEnabled = false,
+                IsExpanded = true,
+                ChildItems = [new() { Text = "Apple", ChildItems = [new() { Text = "Granny Smith" }] }]
+            },
+        };
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        // Skipping a disabled item does not skip what it holds: one press lands on its enabled child, which
+        // the second press expands.
+        PressKey(component, "ArrowDown");
+        PressKey(component, "ArrowRight");
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
     #endregion
@@ -2408,14 +2434,13 @@ public class BitNavTests : BunitTestContext
         });
 
         var childrenList = component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!;
-        Assert.IsTrue(childrenList.GetAttribute("style")!.Contains("display:none"));
+        Assert.IsTrue(IsHidden(childrenList.GetAttribute("style")));
 
         component.Find(".bit-nav-cbt").Click();
 
-        // The expanded branch is the one that is not hidden; whether that leaves the style attribute out
-        // altogether or carries something else is none of the test's business.
-        var expanded = component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style");
-        Assert.IsFalse(expanded?.Contains("display:none") is true);
+        // An expanded branch is one that is not hidden, which is what is asserted: the style attribute may
+        // well carry other declarations one day without the branch being collapsed by them.
+        Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
     }
 
     [TestMethod]
@@ -2431,9 +2456,12 @@ public class BitNavTests : BunitTestContext
             });
         });
 
-        var expanded = component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style");
-        Assert.IsFalse(expanded?.Contains("display:none") is true);
+        Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
     }
+
+    // The children of an option stay in the DOM while collapsed and are hidden through the style attribute,
+    // so "shown" is the absence of that declaration rather than the absence of the whole attribute.
+    private static bool IsHidden(string? style) => style?.Contains("display:none") is true;
 
     #endregion
 }

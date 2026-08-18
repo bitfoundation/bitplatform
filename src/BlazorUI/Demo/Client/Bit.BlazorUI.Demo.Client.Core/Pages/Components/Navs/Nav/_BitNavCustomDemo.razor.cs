@@ -12,12 +12,12 @@ public partial class _BitNavCustomDemo
         IsSeparator = { Name = nameof(Section.IsDivider) },
     };
 
-    // The external icons are carried by a BitIconInfo of their own instead of by the icon name string: a
-    // BitIconInfo assigned to a string property is reduced to its Name, which drops the base class and the
-    // prefix an external library needs (the "bi bi-" of Bootstrap Icons, for instance).
+    // The external icons live in Section.Icon, which matches BitNavItem.Icon by convention, so only the
+    // renamed members are mapped here. The IconName mapping of sectionSelectors is deliberately left out:
+    // Section.ImageName holds a built-in icon name, and a BitIconInfo squeezed into it would lose the
+    // library it belongs to (a Bootstrap icon its "bi bi-" classes, for instance).
     private static readonly BitNavNameSelectors<Section> sectionIconSelectors = new()
     {
-        Icon = { Name = nameof(Section.Icon) },
         ChildItems = { Name = nameof(Section.Links) },
         Description = { Name = nameof(Section.Comment) },
         IsSeparator = { Name = nameof(Section.IsDivider) },
@@ -285,7 +285,9 @@ public partial class _BitNavCustomDemo
         new() { Text = "Iconography", ImageName = BitIconName.AppIconDefault },
     ];
 
-    private static readonly List<Section> customApiNavItems =
+    // Not static: the buttons of the Public API example expand, collapse and select these items, and a
+    // static list would carry that state over to the next visit of the page.
+    private readonly List<Section> customApiNavItems =
     [
         new()
         {
@@ -328,9 +330,8 @@ public partial class _BitNavCustomDemo
         new() { Text = "Iconography (/iconography)", ImageName = BitIconName.AppIconDefault, Url = "/iconography" },
     ];
 
-    // The URL of a Wildcard or a Regex item is a pattern rather than a page, so these items are disabled:
-    // they still light up when the pattern matches the current URL, but a click cannot follow them to a
-    // route that does not exist.
+    // The URL of a Wildcard or Regex item is a pattern rather than a route, so these items are disabled:
+    // they still light up on a match, but a click cannot navigate to a URL no page answers.
     private static readonly List<Section> customWildcardMatchNavItems =
     [
         new() { Text = "A component page (/components/*)", ImageName = BitIconName.F12DevTools, Url = "/components/*", IsEnabled = false },
@@ -362,13 +363,6 @@ public partial class _BitNavCustomDemo
     ];
 
     private static readonly List<Section> customColorNavItems =
-    [
-        new() { Text = "Home", ImageName = BitIconName.Home },
-        new() { Text = "Products", ImageName = BitIconName.Product },
-        new() { Text = "Settings", ImageName = BitIconName.Settings },
-    ];
-
-    private static readonly List<Section> customAccentNavItems =
     [
         new() { Text = "Home", ImageName = BitIconName.Home },
         new() { Text = "Products", ImageName = BitIconName.Product },

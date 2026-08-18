@@ -79,20 +79,8 @@ private static readonly List<Section> customBasicNavItems =
 
 <BitNav Items=""customBasicNavItems"" FullWidth NameSelectors=""sectionSelectors"" />";
     private readonly string example2CsharpCode = @"
-private static readonly List<Section> customBasicNavItems =
-[
-    new()
-    {
-        Text = ""bit platform"",
-        Comment = ""the bit platform description"",
-        Links =
-        [
-            new() { Text = ""Home"", ImageName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-            new() { Text = ""BlazorUI"", ImageName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
-        ],
-    },
-    new() { Text = ""Iconography"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
-];";
+// the very same items the Basic example above lists in full
+private static readonly List<Section> customBasicNavItems = [ /* ... */ ];";
 
     private readonly string example3RazorCode = @"
 <BitNav Items=""customCarNavItems"" RenderType=""BitNavRenderType.Grouped"" NameSelectors=""carSelectors"" />";
@@ -343,7 +331,8 @@ private static readonly List<Section> customSingleExpandNavItems =
     private readonly string example8RazorCode = @"
 <BitNav Items=""customNoCollapseNavItems"" AllExpanded NoCollapse NameSelectors=""sectionSelectors"" />";
     private readonly string example8CsharpCode = @"
-private static readonly List<Section> customNoCollapseNavItems = [ /* the same shape as customBasicNavItems */ ];";
+// the very same items the Basic example above lists in full
+private static readonly List<Section> customNoCollapseNavItems = [ /* ... */ ];";
 
     private readonly string example9RazorCode = @"
 <BitNav Items=""customChevronNavItems"" ReversedChevron AllExpanded FitWidth NameSelectors=""sectionSelectors"" />
@@ -436,7 +425,9 @@ private async Task CollapseFastFoodsApiItem() { if (apiNavRef is not null) await
 private async Task SelectIceCreamApiItem() { if (apiNavRef is not null) await apiNavRef.SelectItem(customApiNavItems[2]); }
 private async Task FocusVeggieBurgerApiItem() { if (apiNavRef is not null) await apiNavRef.FocusItem(customApiNavItems[0].Links[0].Links[1]); }
 
-private static readonly List<Section> customApiNavItems =
+// Not static: the buttons above expand, collapse and select these items, and a static list would carry
+// that state over to the next visit of the page.
+private readonly List<Section> customApiNavItems =
 [
     new()
     {
@@ -520,8 +511,8 @@ private static readonly List<Section> customPrefixMatchNavItems =
     new() { Text = ""Iconography (/iconography)"", ImageName = BitIconName.AppIconDefault, Url = ""/iconography"" },
 ];
 
-// The URL of a Wildcard or a Regex item is a pattern rather than a page, so these items are disabled:
-// they still light up when the pattern matches the current URL, but a click cannot follow them.
+// The URL of a Wildcard or Regex item is a pattern rather than a route, so these items are disabled:
+// they still light up on a match, but a click cannot navigate to a URL no page answers.
 private static readonly List<Section> customWildcardMatchNavItems =
 [
     new() { Text = ""A component page (/components/*)"", ImageName = BitIconName.F12DevTools, Url = ""/components/*"", IsEnabled = false },
@@ -562,19 +553,12 @@ private static readonly List<Section> customAdditionalUrlsNavItems =
 <BitNav FitWidth Color=""BitColor.SevereWarning"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Error"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 
-<BitNav FitWidth Accent=""BitColor.Primary"" Items=""customAccentNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customAccentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Success"" Items=""customAccentNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customAccentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Warning"" Items=""customAccentNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customAccentNavItems[0]"" />
-<BitNav FitWidth Accent=""BitColor.Error"" Items=""customAccentNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customAccentNavItems[0]"" />";
+<BitNav FitWidth Accent=""BitColor.Primary"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Success"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Warning"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
+<BitNav FitWidth Accent=""BitColor.Error"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />";
     private readonly string example14CsharpCode = @"
 private static readonly List<Section> customColorNavItems =
-[
-    new() { Text = ""Home"", ImageName = BitIconName.Home },
-    new() { Text = ""Products"", ImageName = BitIconName.Product },
-    new() { Text = ""Settings"", ImageName = BitIconName.Settings },
-];
-
-private static readonly List<Section> customAccentNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home },
     new() { Text = ""Products"", ImageName = BitIconName.Product },
@@ -595,17 +579,14 @@ public class Section
     public string Text { get; set; } = string.Empty;
     public BitIconInfo? Icon { get; set; }
     public string? Url { get; set; }
-    public bool IsDivider { get; set; }
-    public string? Comment { get; set; }
     public List<Section> Links { get; set; } = [];
+    public string? Comment { get; set; }
+    // ... the rest of the members
 }
 
-// The external icons are carried by a BitIconInfo of their own instead of by an icon name string: a
-// BitIconInfo assigned to a string property is reduced to its Name, which drops the base class and the
-// prefix an external library needs (the ""bi bi-"" of Bootstrap Icons, for instance).
+// Section.Icon matches BitNavItem.Icon by convention, so only the renamed members are mapped.
 private static readonly BitNavNameSelectors<Section> sectionIconSelectors = new()
 {
-    Icon = { Name = nameof(Section.Icon) },
     ChildItems = { Name = nameof(Section.Links) },
     Description = { Name = nameof(Section.Comment) },
     IsSeparator = { Name = nameof(Section.IsDivider) },

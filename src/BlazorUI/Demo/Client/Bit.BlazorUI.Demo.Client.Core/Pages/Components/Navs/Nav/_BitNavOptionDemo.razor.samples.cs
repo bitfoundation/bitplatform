@@ -353,8 +353,8 @@ private BitNavOption SelectedOption = default!;";
     <BitNavOption Text=""Iconography (/iconography)"" IconName=""@BitIconName.AppIconDefault"" Url=""/iconography"" />
 </BitNav>
 
-@* The URL of a Wildcard or a Regex option is a pattern rather than a page, so these options are
-   disabled: they still light up when the pattern matches the current URL, but a click cannot follow them. *@
+@* The URL of a Wildcard or Regex option is a pattern rather than a route, so these options are
+   disabled: they still light up on a match, but a click cannot navigate to a URL no page answers. *@
 <BitNav TItem=""BitNavOption"" Match=""BitNavMatch.Wildcard"" FitWidth>
     <BitNavOption Text=""A component page (/components/*)"" IconName=""@BitIconName.F12DevTools"" Url=""/components/*"" IsEnabled=""false"" />
     <BitNavOption Text=""A pro page (/pro/**)"" IconName=""@BitIconName.Trophy2"" Url=""/pro/**"" IsEnabled=""false"" />
@@ -385,25 +385,13 @@ private BitNavOption SelectedOption = default!;";
     <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" />
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Success"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Warning"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Error"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Warning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Primary"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>
-<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual"">
-    @* ... the same options ... *@
-</BitNav>";
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Primary"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Success"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>";
 
     private readonly string example15RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
@@ -446,13 +434,9 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
     <BitNavOption Text=""Settings"" IconName=""@BitIconName.Settings"" Description=""The app settings"" />
 </BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Medium"">
-    @* ... the same options ... *@
-</BitNav>
+<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Medium"">@* ... the same options ... *@</BitNav>
 
-<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large"">
-    @* ... the same options ... *@
-</BitNav>";
+<BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large"">@* ... the same options ... *@</BitNav>";
 
     private readonly string example17RazorCode = @"
 <BitNav TItem=""BitNavOption"" Style=""max-width: max-content; border: 1px solid tomato;"">
