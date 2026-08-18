@@ -21,6 +21,11 @@ public static partial class BswupSetupGuide
 {
     public static readonly string[] HostingModels = ["standalone-wasm", "blazor-web-app"];
 
+    // Composing a guide reads and splices in the whole matching sample project, and the answer is
+    // the same every time - so each one is built once and handed out from there.
+    private static readonly Lazy<string> _standaloneWasmGuide = new(ComposeStandaloneWasm);
+    private static readonly Lazy<string> _blazorWebAppGuide = new(ComposeBlazorWebApp);
+
     public static string? Get(string? hostingModel)
     {
         var model = (hostingModel ?? string.Empty).Trim().ToLowerInvariant().Replace(" ", "-", StringComparison.Ordinal);
@@ -34,35 +39,43 @@ public static partial class BswupSetupGuide
 
         return model switch
         {
-            "standalone-wasm" => Compose(
-                "standalone Blazor WebAssembly (wwwroot/index.html is the host document)",
-                """
-                One project. `index.html` is a static file, so it is served before anything runs and is the right
-                place for the splash markup - the `BswupProgress` component cannot help here, because on a first
-                install Blazor only starts once the download finishes, which is far too late to paint a splash.
-                Write the handler and the markup into `index.html` (the sample below is a complete, working one).
-                """,
-                "Sample/BasicSample/"),
-
-            "blazor-web-app" => Compose(
-                "Blazor Web App with an InteractiveWebAssembly client (Components/App.razor is the host document)",
-                """
-                Two projects. `App.razor` on the SERVER is the host document and is statically rendered, so
-                `<BswupProgress />` lands in the first byte of HTML and no hand-written splash is needed. Two things
-                are specific to this model:
-
-                - the client's `service-worker-assets.js` only lists the CLIENT project's assets, so anything the
-                  host owns - the app shell (`/`), `_framework/blazor.web.js`, the fingerprinted
-                  `resource-collection.<hash>.js` - has to be added to `self.externalAssets` by hand, and
-                  `self.defaultUrl` has to point at the shell entry (`'/'`), since there is no `index.html`;
-                - the host prerenders that shell. Cache the NON-prerendered copy by setting `self.noPrerenderQuery`
-                  and reading the same query back in `App.razor` to switch prerendering off for that one request -
-                  otherwise every offline deep link flashes the prerendered home page before the router corrects it.
-                """,
-                "Sample/FullSample/"),
-
+            "standalone-wasm" => _standaloneWasmGuide.Value,
+            "blazor-web-app" => _blazorWebAppGuide.Value,
             _ => null
         };
+    }
+
+    private static string ComposeStandaloneWasm()
+    {
+        return Compose(
+            "standalone Blazor WebAssembly (wwwroot/index.html is the host document)",
+            """
+            One project. `index.html` is a static file, so it is served before anything runs and is the right
+            place for the splash markup - the `BswupProgress` component cannot help here, because on a first
+            install Blazor only starts once the download finishes, which is far too late to paint a splash.
+            Write the handler and the markup into `index.html` (the sample below is a complete, working one).
+            """,
+            "Sample/BasicSample/");
+    }
+
+    private static string ComposeBlazorWebApp()
+    {
+        return Compose(
+            "Blazor Web App with an InteractiveWebAssembly client (Components/App.razor is the host document)",
+            """
+            Two projects. `App.razor` on the SERVER is the host document and is statically rendered, so
+            `<BswupProgress />` lands in the first byte of HTML and no hand-written splash is needed. Two things
+            are specific to this model:
+
+            - the client's `service-worker-assets.js` only lists the CLIENT project's assets, so anything the
+              host owns - the app shell (`/`), `_framework/blazor.web.js`, the fingerprinted
+              `resource-collection.<hash>.js` - has to be added to `self.externalAssets` by hand, and
+              `self.defaultUrl` has to point at the shell entry (`'/'`), since there is no `index.html`;
+            - the host prerenders that shell. Cache the NON-prerendered copy by setting `self.noPrerenderQuery`
+              and reading the same query back in `App.razor` to switch prerendering off for that one request -
+              otherwise every offline deep link flashes the prerendered home page before the router corrects it.
+            """,
+            "Sample/FullSample/");
     }
 
     private static string Compose(string title, string summary, string samplePrefix)

@@ -1,9 +1,13 @@
 using System.IO.Compression;
 using System.Text;
+using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
+
+// The rate-limiting policy the MCP endpoints and their HTTP mirror share.
+const string McpRateLimiterPolicy = "mcp";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +21,25 @@ builder.Services.AddHttpContextAccessor();
 
 // The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
 builder.Services.AddControllers();
+
+// Those two route groups are the only endpoints here that do real work per request - rendering a
+// docs page, parsing a service-worker file a caller pasted in - and anyone with the URL can drive
+// them in a loop. A per-caller window keeps one agent from being everyone else's outage; the site's
+// own pages and static assets are deliberately left out of it. Behind a proxy every caller shares
+// the proxy's address, so the window is sized for a shared bucket rather than for one machine.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(McpRateLimiterPolicy, context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 240,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+});
+
 builder.Services.AddMcpServer()
     .WithHttpTransport()
     .WithToolsFromAssembly()
@@ -70,6 +93,7 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 
 app.MapStaticAssets();
 app.UseAntiforgery();
+app.UseRateLimiter();
 
 // Built once at startup from the same catalog the nav panel and the MCP server read, so a page
 // added there is advertised to search engines without a second list to remember. The URLs are
@@ -92,8 +116,8 @@ app.MapGet("/sitemap.xml", () => Results.Text(siteMap, "application/xml", Encodi
 
 // Both are declared before the Razor components below: /api/... and /mcp are literal routes that
 // no page owns, but keeping them first says out loud that they are not part of the app's UI.
-app.MapControllers();
-app.MapMcp("/mcp");
+app.MapControllers().RequireRateLimiting(McpRateLimiterPolicy);
+app.MapMcp("/mcp").RequireRateLimiting(McpRateLimiterPolicy);
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()

@@ -38,8 +38,13 @@ public static partial class BswupScriptCatalog
     private static readonly Lazy<BswupJsApiDto[]> _jsApi = new(BuildJsApi);
     private static readonly Lazy<string[]> _defaultInclude = new(() => ReadPatternArray(_workerScript.Value, "DEFAULT_ASSETS_INCLUDE"));
     private static readonly Lazy<string[]> _defaultExclude = new(() => ReadPatternArray(_workerScript.Value, "DEFAULT_ASSETS_EXCLUDE"));
+    // Only the settings the shipped worker still declares count as known: a name kept in
+    // _settingRemarks after the worker dropped it is documented, not recognized, and the inspector
+    // has to go on reporting it as a name the engine will silently ignore.
     private static readonly Lazy<FrozenSet<string>> _settingNames = new(() =>
-        _workerSettings.Value.Select(setting => setting.Name).ToFrozenSet(StringComparer.Ordinal));
+        _workerSettings.Value.Where(setting => setting.VerifiedFromSource)
+                             .Select(setting => setting.Name)
+                             .ToFrozenSet(StringComparer.Ordinal));
 
     /// <summary>The version string the shipped scripts stamp onto the page and the worker.</summary>
     public static string Version => _version.Value;

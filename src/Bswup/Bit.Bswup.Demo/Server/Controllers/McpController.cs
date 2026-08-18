@@ -27,11 +27,14 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 [ApiController]
 [McpServerToolType]
 [Route("api/[controller]/[action]")]
-public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
+public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> logger) : ControllerBase
 {
     // The docs pages are rich enough that a couple of them would otherwise dominate a client's
     // context window; the ones on this site land far below the cap.
     private const int MaxDocumentLength = 40_000;
+
+    // The most asset URLs one AnalyzeBswupAssetCaching call will decide on.
+    private const int MaxAnalyzedAssetUrls = 200;
 
     // The rendered Markdown of every docs page served so far, keyed by slug.
     private static readonly ConcurrentDictionary<string, string> _renderedPages = new(StringComparer.Ordinal);
@@ -185,7 +188,18 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
     {
         var urls = (assetUrls ?? string.Empty).Split(['\n', '\r', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        return BswupServiceWorkerInspector.AnalyzeAssets(script, urls);
+        // Every URL is run against every pattern, so an agent that pastes a whole manifest in
+        // turns one call into a lot of matching. The cap sits far above the handful of assets a
+        // real question is about, and the answer says out loud when it was applied - a silently
+        // truncated list would read as 'these are all of them'.
+        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls.Take(MaxAnalyzedAssetUrls));
+
+        if (urls.Length <= MaxAnalyzedAssetUrls) return analysis;
+
+        return analysis with
+        {
+            Notes = [.. analysis.Notes, $"Only the first {MaxAnalyzedAssetUrls} of the {urls.Length} URLs passed were analyzed; ask again with the rest to cover them."]
+        };
     }
 
     [HttpGet]
@@ -233,9 +247,8 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
     [Description("Gets one page of the bit Bswup documentation site as Markdown, including its code samples. Pass a slug from GetBswupDocsList, e.g. 'service-worker', 'events' or 'troubleshooting'. Omit it for the introduction.")]
     public async Task<string> GetBswupDocsPage(string? slug = null)
     {
-        // The introduction's own slug is the empty string; agents reach for a word instead.
-        if (slug is "overview" or "index" or "home" or "introduction") slug = string.Empty;
-
+        // The introduction's own slug is the empty string; agents reach for a word instead, and
+        // DocsCatalog.FindBySlug maps those words for every caller.
         var page = DocsCatalog.FindBySlug(slug);
 
         if (page is null)
@@ -251,7 +264,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
         // The page is rendered by the same component the site serves, so the documentation an agent
         // reads is the documentation a human reads - there is no second copy that could go stale.
-        var (rendered, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page);
+        var (rendered, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page, logger);
 
         // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
         if (rendered is null) return DocsPageRenderer.Unavailable(page, error);

@@ -100,10 +100,19 @@ public static class DocsCatalog
 
     public static readonly DocsPageInfo[] AllPages = Sections.SelectMany(s => s.Pages).ToArray();
 
+    /// <summary>
+    /// The words a caller reaches for when it means the introduction, whose own slug is the empty
+    /// string. They live here so every caller - the MCP tool, the resource, the site - resolves
+    /// them identically instead of each keeping its own list.
+    /// </summary>
+    private static readonly string[] _introductionAliases = ["overview", "index", "home", "introduction"];
+
     /// <summary>Finds the catalog entry for a slug ("" for the home page), or null when there is none.</summary>
     public static DocsPageInfo? FindBySlug(string? slug)
     {
         var trimmed = (slug ?? string.Empty).Trim('/');
+
+        if (_introductionAliases.Contains(trimmed, StringComparer.OrdinalIgnoreCase)) trimmed = string.Empty;
 
         return AllPages.FirstOrDefault(p => string.Equals(p.Slug, trimmed, StringComparison.OrdinalIgnoreCase));
     }

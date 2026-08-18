@@ -15,7 +15,7 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 /// </para>
 /// </summary>
 [McpServerResourceType]
-public class McpResources(HtmlRenderer htmlRenderer)
+public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logger)
 {
     [McpServerResource(UriTemplate = "bswup://guide", Name = "bit Bswup reference guide", MimeType = "text/markdown")]
     [Description("The complete bit Bswup reference guide (the library's README), every section in one document.")]
@@ -84,10 +84,10 @@ public class McpResources(HtmlRenderer htmlRenderer)
     [Description("One page of the bit Bswup documentation site, rendered as Markdown, e.g. bswup://docs/service-worker.")]
     public async Task<string> DocsPage(string slug)
     {
-        var page = DocsCatalog.FindBySlug(slug is "overview" or "index" or "home" ? string.Empty : slug);
+        var page = DocsCatalog.FindBySlug(slug);
         if (page is null) return $"No documentation page has the slug '{slug}'.";
 
-        var (markdown, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page);
+        var (markdown, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page, logger);
 
         return markdown ?? DocsPageRenderer.Unavailable(page, error);
     }

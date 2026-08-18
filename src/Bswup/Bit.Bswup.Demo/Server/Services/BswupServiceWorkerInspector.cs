@@ -20,6 +20,13 @@ public static partial class BswupServiceWorkerInspector
     private const string Engine = "bit-bswup.sw.js";
     private const string CleanupEngine = "bit-bswup.sw-cleanup.js";
 
+    /// <summary>
+    /// The ceiling on one pattern-against-one-URL match. Every pattern here is compiled from a
+    /// service-worker file the caller handed in, so a catastrophically backtracking one is a
+    /// request away; bounding the match keeps that a note in the report instead of a hung request.
+    /// </summary>
+    private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(100);
+
     /// <summary>The URL-matching lists, whose entries carry the string-vs-RegExp semantics worth calling out.</summary>
     private static readonly string[] _urlLists =
         ["assetsInclude", "assetsExclude", "prohibitedUrls", "serverHandledUrls", "serverRenderedUrls"];
@@ -320,7 +327,21 @@ public static partial class BswupServiceWorkerInspector
     {
         public bool Matches(string url)
         {
-            if (Regex is not null) return Regex.IsMatch(url);
+            if (Regex is not null)
+            {
+                try
+                {
+                    return Regex.IsMatch(url);
+                }
+                catch (RegexMatchTimeoutException)
+                {
+                    // The patterns come out of a file the caller pasted in, so one of them can be
+                    // pathological. A pattern that runs out of time decides nothing - the same
+                    // answer as a pattern that could not be compiled at all - rather than taking
+                    // the whole analysis down with it.
+                    return false;
+                }
+            }
 
             return Literal is not null && url.Contains(Literal, StringComparison.OrdinalIgnoreCase);
         }
@@ -377,7 +398,7 @@ public static partial class BswupServiceWorkerInspector
 
         try
         {
-            return new Pattern(description, new Regex(body, options), null);
+            return new Pattern(description, new Regex(body, options, MatchTimeout), null);
         }
         catch (ArgumentException exception)
         {
@@ -392,15 +413,22 @@ public static partial class BswupServiceWorkerInspector
 
     private static (int Index, string? Text) FindImport(string code, string engine)
     {
-        var index = code.IndexOf(engine, StringComparison.OrdinalIgnoreCase);
-        if (index < 0) return (-1, null);
+        // The engine's name can appear before the real import - in a string the file builds the
+        // URL from, say - so every occurrence is tried, not only the first one. Stopping at the
+        // first would report a file that DOES import the engine as one that never does.
+        for (var index = code.IndexOf(engine, StringComparison.OrdinalIgnoreCase);
+             index >= 0;
+             index = code.IndexOf(engine, index + 1, StringComparison.OrdinalIgnoreCase))
+        {
+            var start = code.LastIndexOf("importScripts", index, StringComparison.Ordinal);
+            if (start < 0) continue;
 
-        var start = code.LastIndexOf("importScripts", index, StringComparison.Ordinal);
-        if (start < 0) return (-1, null);
+            var end = code.IndexOf(')', index);
 
-        var end = code.IndexOf(')', index);
+            return (start, end < 0 ? code[start..] : Collapse(code[start..(end + 1)]));
+        }
 
-        return (start, end < 0 ? code[start..] : Collapse(code[start..(end + 1)]));
+        return (-1, null);
     }
 
     /// <summary>Whether a JavaScript expression is truthy, for the literal values a config file holds.</summary>

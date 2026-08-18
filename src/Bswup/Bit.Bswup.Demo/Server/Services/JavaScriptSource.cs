@@ -105,17 +105,15 @@ public static class JavaScriptSource
             while (equals < code.Length && char.IsWhiteSpace(code[equals])) equals++;
 
             // Assignment only: `self.mode === 'x'` is a comparison, `self.errorTolerance ||= 'lax'`
-            // is a defaulting assignment the shipped worker itself uses, so both `=` and `||=`
-            // count while `==`/`===` do not.
-            var isAssignment = equals < code.Length && code[equals] == '=' &&
-                               (equals + 1 >= code.Length || code[equals + 1] != '=');
-            if (isAssignment is false)
+            // is a defaulting assignment the shipped worker itself uses, so `=` and every compound
+            // operator count while `==`/`===` and the `=>` of an arrow function do not.
+            var valueStart = ReadAssignmentOperator(code, equals);
+            if (valueStart < 0)
             {
                 index = nameEnd;
                 continue;
             }
 
-            var valueStart = equals + 1;
             var valueEnd = FindStatementEnd(code, valueStart);
 
             assignments.Add(new JsAssignment(name, code[valueStart..valueEnd].Trim(), start));
@@ -207,8 +205,11 @@ public static class JavaScriptSource
 
             if (nameEnd == index || nameEnd >= body.Length || body[nameEnd] != ':')
             {
-                // Not a plain `key:` - skip to the next top-level comma and try again.
-                index = FindStatementEnd(body, index, ',');
+                // Not a plain `key:` - skip to the next top-level comma and try again. The scan
+                // stops where it stands on a closing bracket, so the skip has to step over that
+                // character itself or the loop would sit on it forever.
+                var skipped = FindStatementEnd(body, index, ',');
+                index = skipped > index ? skipped : index + 1;
                 continue;
             }
 
@@ -225,7 +226,8 @@ public static class JavaScriptSource
 
     /// <summary>
     /// The end of the expression starting at <paramref name="start"/>: the first
-    /// <paramref name="terminator"/> that is not inside a literal, bracket, brace or parenthesis.
+    /// <paramref name="terminator"/> that is not inside a literal, bracket, brace or parenthesis -
+    /// or the line break that ends it, for the semicolon-less files JavaScript also accepts.
     /// </summary>
     private static int FindStatementEnd(string code, int start, char terminator = ';')
     {
@@ -235,6 +237,12 @@ public static class JavaScriptSource
         for (int i = start; i < code.Length; i++)
         {
             var c = code[i];
+
+            // Automatic semicolon insertion: at depth 0 a line break ends the statement unless the
+            // last thing before it was an operator still waiting for a right-hand side. Without
+            // this, one `self.isPassive = false` written without its semicolon swallows the whole
+            // rest of the file as its value.
+            if (c == '\n' && depth == 0 && ContinuesExpression(lastSignificant) is false) return i;
 
             if (c is '\'' or '"' or '`' || (c == '/' && StartsRegex(lastSignificant)))
             {
@@ -297,6 +305,39 @@ public static class JavaScriptSource
         }
 
         return code.Length;
+    }
+
+    /// <summary>Every JavaScript assignment operator, longest first so `>>>=` wins over `>>=`.</summary>
+    private static readonly string[] _assignmentOperators =
+        [">>>=", "**=", "<<=", ">>=", "&&=", "||=", "??=", "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^="];
+
+    /// <summary>
+    /// The index just past the assignment operator at <paramref name="start"/>, or -1 when what is
+    /// there is not one: `==` and `===` compare, and `=>` opens an arrow function.
+    /// </summary>
+    private static int ReadAssignmentOperator(string code, int start)
+    {
+        if (start >= code.Length) return -1;
+
+        foreach (var op in _assignmentOperators)
+        {
+            if (string.CompareOrdinal(code, start, op, 0, op.Length) == 0) return start + op.Length;
+        }
+
+        if (code[start] != '=') return -1;
+        if (start + 1 < code.Length && code[start + 1] is '=' or '>') return -1;
+
+        return start + 1;
+    }
+
+    /// <summary>
+    /// Whether an expression ending in <paramref name="last"/> is still waiting for more - which is
+    /// what decides, at a line break, whether JavaScript would have inserted a semicolon there.
+    /// </summary>
+    private static bool ContinuesExpression(char last)
+    {
+        return last is '+' or '-' or '*' or '/' or '%' or '=' or '<' or '>' or '&' or '|' or '^'
+                    or '!' or '~' or '?' or ':' or ',' or '.' or '(' or '[' or '{';
     }
 
     /// <summary>

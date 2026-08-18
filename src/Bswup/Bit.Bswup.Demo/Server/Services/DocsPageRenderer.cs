@@ -17,7 +17,10 @@ namespace Bit.Bswup.Demo.Server.Services;
 public static class DocsPageRenderer
 {
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
-    public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, DocsPageInfo page)
+    public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
+        HtmlRenderer htmlRenderer,
+        DocsPageInfo page,
+        ILogger logger)
     {
         try
         {
@@ -32,7 +35,12 @@ public static class DocsPageRenderer
         }
         catch (Exception exception)
         {
-            return (null, exception.Message);
+            // What comes back is a fixed sentence, not the exception's own message: every caller
+            // hands this straight to an MCP client or an HTTP response, and a render failure
+            // carries type names, paths and framework internals that belong in the server log.
+            logger.LogError(exception, "Rendering the '{Slug}' documentation page failed.", page.Slug);
+
+            return (null, "the page threw while rendering (the details are in the server log)");
         }
     }
 
