@@ -33,6 +33,20 @@ public class ServiceWorkerInspectionTests
     }
 
     [TestMethod]
+    public void Inspect_EngineNameOnlyInAStringAfterAnImport_IsNotReportedAsImportingIt()
+    {
+        // A file that imports the cleanup worker and then merely names the engine in a string.
+        // The nearest importScripts above that name has already closed, so it is not the call
+        // importing it - and reporting it as one would quote an import line the name is not in.
+        var report = Inspect("""
+            self.importScripts('_content/Bit.Bswup/bit-bswup.sw-cleanup.js');
+            const engine = '_content/Bit.Bswup/bit-bswup.sw.js';
+            """);
+
+        Assert.IsFalse(report.ImportsBswup, $"the engine is only named in a string; Import: {report.Import}");
+    }
+
+    [TestMethod]
     public void Inspect_ListsTheSettingsTheFileAssigns_WithTheirSummaries()
     {
         var report = Inspect(ServiceWorkerFixtures.Clean);

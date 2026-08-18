@@ -509,7 +509,12 @@ public static partial class BswupServiceWorkerInspector
             var start = code.LastIndexOf("importScripts", index, StringComparison.Ordinal);
             if (start < 0) continue;
 
-            var end = code.IndexOf(')', index);
+            var end = code.IndexOf(')', start);
+
+            // The nearest importScripts above the name is only the call importing it when that
+            // call is still open there: one that closed before this occurrence is a different
+            // call, and quoting it would report an import line the engine's name is not even in.
+            if (end >= 0 && end < index) continue;
 
             return (start, end < 0 ? code[start..] : Collapse(code[start..(end + 1)]));
         }

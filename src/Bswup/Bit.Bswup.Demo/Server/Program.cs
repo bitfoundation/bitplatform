@@ -128,7 +128,8 @@ builder.Services.AddScoped<HtmlRenderer>();
 // after the browser has taken over, but the component is also prerendered here - and rendered here
 // again when an MCP client asks for that page - so the dependency has to resolve in this container
 // too, or both of those fail with nothing rendered.
-builder.Services.AddScoped(_ => new HttpClient());
+builder.Services.AddHttpClient();
+builder.Services.AddScoped(services => services.GetRequiredService<IHttpClientFactory>().CreateClient());
 
 builder.Services.AddResponseCompression(opts =>
 {

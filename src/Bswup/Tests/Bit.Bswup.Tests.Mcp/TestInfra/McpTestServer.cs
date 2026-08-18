@@ -148,9 +148,24 @@ public sealed class McpTestServer : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await Mcp.DisposeAsync();
-        await _transport.DisposeAsync();
-        _app.Dispose();
+        // Ordered, but not conditional on each other: a client that throws on disposal would
+        // otherwise leak the transport and the test host behind it, and every later test in the
+        // run pays for a server that was never shut down.
+        try
+        {
+            await Mcp.DisposeAsync();
+        }
+        finally
+        {
+            try
+            {
+                await _transport.DisposeAsync();
+            }
+            finally
+            {
+                _app.Dispose();
+            }
+        }
     }
 
     /// <summary>

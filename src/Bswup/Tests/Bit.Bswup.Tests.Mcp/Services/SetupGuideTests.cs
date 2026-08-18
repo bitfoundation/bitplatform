@@ -120,11 +120,41 @@ public class SetupGuideTests
     [TestMethod]
     public void Guides_FenceEveryFileWithAFenceItsContentCannotClose()
     {
+        // Counting fences would only catch an odd one out. What actually breaks a guide is an
+        // embedded three-backtick sample inside a file opened with three of its own: the count
+        // stays even and the block still ends early. So every open fence is measured against the
+        // fences inside it - the outer one has to be the longer.
         foreach (var guide in new[] { Standalone, BlazorWebApp })
         {
-            var fences = guide.Split('\n').Count(line => line.TrimStart().StartsWith("```", StringComparison.Ordinal));
+            var open = 0;
+            var heading = "(none)";
 
-            Assert.AreEqual(0, fences % 2, "an unbalanced fence means a file closed its own code block early");
+            foreach (var line in guide.Split('\n'))
+            {
+                // Trimmed at both ends: the guide is built with AppendLine, so splitting on
+                // '\n' leaves a trailing carriage return, which would make a bare
+                // closing fence look like content rather than the fence it is.
+                var text = line.Trim();
+
+                if (open == 0 && text.StartsWith("### ", StringComparison.Ordinal)) heading = text;
+
+                if (text.StartsWith("```", StringComparison.Ordinal) is false) continue;
+
+                var length = text.TakeWhile(character => character == '`').Count();
+
+                // A closing fence is as long as the one it opens and carries nothing else; a
+                // shorter one, or one with a language after it, is content inside the block.
+                var closes = length == open && text.Length == length;
+
+                if (open == 0) { open = length; continue; }
+
+                Assert.IsTrue(closes || length < open,
+                    $"the block under {heading} is fenced with {open} backticks and holds a {length}-backtick fence, which closes it early");
+
+                if (closes) open = 0;
+            }
+
+            Assert.AreEqual(0, open, $"the block under {heading} is never closed");
         }
     }
 

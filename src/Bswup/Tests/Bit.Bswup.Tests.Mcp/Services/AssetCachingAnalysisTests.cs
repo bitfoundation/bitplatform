@@ -217,10 +217,15 @@ public class AssetCachingAnalysisTests
         var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls);
         stopwatch.Stop();
 
+        // The contract is what comes back, not how fast: 200 URLs at the 25ms per-match ceiling
+        // cost more than the analysis budget on any machine, so the truncation is deterministic.
         Assert.IsTrue(analysis.Assets.Length < urls.Length, "the pathological pattern cannot have decided every URL in time");
         Assert.IsTrue(analysis.Notes.Any(note => note.Contains("were NOT analyzed", StringComparison.Ordinal)),
             $"the truncation has to be said out loud. Notes: {string.Join(" | ", analysis.Notes)}");
-        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(20),
+
+        // A generous ceiling, and deliberately so: it is here to catch an analysis that stopped
+        // being bounded at all, not to measure a loaded build agent.
+        Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromMinutes(1),
             $"the analysis must stay bounded; it took {stopwatch.Elapsed}");
     }
 

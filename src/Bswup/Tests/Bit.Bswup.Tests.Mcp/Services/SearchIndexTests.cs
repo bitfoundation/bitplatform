@@ -203,15 +203,19 @@ public class SearchIndexTests
     }
 
     [TestMethod]
+    [Timeout(30_000)]
     public void Search_IsNotDerailedByAPastedFile()
     {
         // Every term is counted against every entry, so the term count is capped; a pasted file as
-        // a query must come back rather than scan for minutes.
-        var query = string.Join(" ", Enumerable.Range(0, 5000).Select(index => $"token{index}"));
+        // a query must come back rather than scan for minutes - hence the timeout, which is half
+        // of what is checked here. A term that does match leads the query, so the other half is
+        // that the search still answers the query rather than merely returning from it.
+        var query = "assetsExclude " + string.Join(" ", Enumerable.Range(0, 5000).Select(index => $"token{index}"));
 
         var hits = BswupSearchIndex.Search(query, 12);
 
-        Assert.IsNotNull(hits);
+        Assert.IsTrue(hits.Length > 0, "the one real term in the query still has to be searched for");
+        Assert.IsTrue(hits.Length <= 12, $"the limit still applies to a pasted query; it returned {hits.Length} hits");
     }
 
     [TestMethod]

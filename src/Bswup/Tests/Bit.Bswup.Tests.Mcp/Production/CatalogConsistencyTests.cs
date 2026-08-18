@@ -74,7 +74,14 @@ public class CatalogConsistencyTests
         {
             AssertOnlyRealTools(option.Docs!, $"the Docs pointer of {option.Name}");
 
-            var slug = Regex.Match(option.Docs!, "slug: \"(?<slug>[^\"]*)\"").Groups["slug"].Value;
+            // The match has to succeed before the slug is looked up. An empty slug is valid -
+            // it is the introduction page's own - but it is also what a pointer that names no
+            // slug at all yields, and that one would sail through the assertion below.
+            var match = Regex.Match(option.Docs!, "slug: \"(?<slug>[^\"]*)\"");
+
+            Assert.IsTrue(match.Success, $"the Docs pointer of {option.Name} names no slug: {option.Docs}");
+
+            var slug = match.Groups["slug"].Value;
 
             Assert.IsNotNull(DocsCatalog.FindBySlug(slug), $"{option.Name} points at the '{slug}' page, which does not exist");
         }
@@ -109,7 +116,11 @@ public class CatalogConsistencyTests
 
         foreach (var hit in hits)
         {
-            var slug = Regex.Match(hit.Tool, "slug: \"(?<slug>[^\"]*)\"").Groups["slug"].Value;
+            var match = Regex.Match(hit.Tool, "slug: \"(?<slug>[^\"]*)\"");
+
+            Assert.IsTrue(match.Success, $"the '{hit.Title}' hit names no slug: {hit.Tool}");
+
+            var slug = match.Groups["slug"].Value;
 
             Assert.IsNotNull(DocsCatalog.FindBySlug(slug), $"'{hit.Title}' points at the '{slug}' page, which does not exist");
         }

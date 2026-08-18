@@ -137,7 +137,10 @@ public static partial class BswupScriptCatalog
             .Where(setting => _nonSettings.Contains(setting.Name) is false)
             .ToArray();
 
-        var defaults = ReadWorkerDefaults(worker);
+        // Stripped for the defaults, raw for the interface: the default-assignment shapes
+        // read below appear inside commented-out code too, and a commented default is not
+        // one the worker applies. InterfaceBody needs the comments - they are the summaries.
+        var defaults = ReadWorkerDefaults(JavaScriptSource.StripComments(worker));
 
         var settings = declarations.Select(setting => new BswupOptionDto
         {

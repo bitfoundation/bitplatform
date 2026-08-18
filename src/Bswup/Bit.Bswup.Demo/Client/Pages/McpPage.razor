@@ -885,6 +885,18 @@ else
         // configured with Stateless = false would hand one back on initialize and expect it on
         // every request that follows, this one included.
         using var response = await Http.SendAsync(request);
+
+        // A notification has no reply to check, which is exactly why the status has to be: a
+        // rejected notifications/initialized leaves the handshake unfinished, and every request
+        // after it fails for a reason that is written down nowhere else. Thrown rather than
+        // reported here - the caller already turns this into _catalogError.
+        if (response.IsSuccessStatusCode is false)
+        {
+            var text = await response.Content.ReadAsStringAsync();
+
+            throw new InvalidOperationException(
+                $"The '{method}' notification was refused: {(int)response.StatusCode} {response.ReasonPhrase}. {text}".TrimEnd());
+        }
     }
 
     /// <summary>The JSON payload of the response, whether it arrived bare or inside an SSE frame.</summary>
