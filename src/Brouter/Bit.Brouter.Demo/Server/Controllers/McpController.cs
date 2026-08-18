@@ -356,7 +356,11 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
     /// </param>
     internal static string[] SplitTemplates(string? templates, out int submitted)
     {
-        var parts = new List<string>();
+        // Only the first MaxAnalyzedTemplates are kept - a pasted file of any size costs this list
+        // nothing past the cap - while every template found still counts towards `submitted`, which
+        // is what lets the answer own up to how much of the table it left out.
+        var kept = new List<string>();
+        var count = 0;
         var current = new StringBuilder();
         var depth = 0;
 
@@ -367,7 +371,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
 
             if (c is '\n' or '\r' or ';' || (c is ',' && depth == 0))
             {
-                Flush(parts, current);
+                Flush(kept, ref count, current);
 
                 continue;
             }
@@ -375,19 +379,23 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
             current.Append(c);
         }
 
-        Flush(parts, current);
+        Flush(kept, ref count, current);
 
-        submitted = parts.Count;
+        submitted = count;
 
-        return [.. parts.Take(MaxAnalyzedTemplates)];
+        return [.. kept];
 
-        static void Flush(List<string> parts, StringBuilder current)
+        static void Flush(List<string> kept, ref int count, StringBuilder current)
         {
             var part = current.ToString().Trim();
 
             current.Clear();
 
-            if (part.Length > 0) parts.Add(part);
+            if (part.Length == 0) return;
+
+            count++;
+
+            if (kept.Count < MaxAnalyzedTemplates) kept.Add(part);
         }
     }
 

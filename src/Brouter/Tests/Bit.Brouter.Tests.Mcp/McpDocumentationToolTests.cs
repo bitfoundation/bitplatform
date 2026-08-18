@@ -252,6 +252,11 @@ public class McpDocumentationToolTests
         var answer = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "../../../etc/passwd" });
 
         StringAssert.Contains(answer, "GetBrouterSourceFiles");
+
+        // Pointing at the listing tool is only the polite half; the answer must also be about
+        // nothing, rather than the contents of whatever the path climbed out to.
+        StringAssert.StartsWith(answer, "No source file at '../../../etc/passwd'");
+        Assert.IsFalse(answer.Contains("root:", StringComparison.Ordinal), "The traversal path handed back the file it climbed out to.");
     }
 
     [TestMethod]

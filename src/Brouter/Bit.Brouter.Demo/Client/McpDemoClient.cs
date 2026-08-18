@@ -177,7 +177,9 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
             request.Headers.TryAddWithoutValidation("Mcp-Session-Id", SessionId);
             if (ProtocolVersion is not null) request.Headers.TryAddWithoutValidation("MCP-Protocol-Version", ProtocolVersion);
 
-            using var response = await httpClient.SendAsync(request);
+            using var cancellation = new CancellationTokenSource(_timeout);
+
+            using var response = await httpClient.SendAsync(request, cancellation.Token);
 
             exchange.StatusCode = (int)response.StatusCode;
             exchange.ResponseJson = "(the session is closed - no body)";

@@ -30,7 +30,13 @@ public class BrouterSetupGuideTests
 
         foreach (var (spelling, mode) in spellings)
         {
-            Assert.AreEqual(BrouterSetupGuide.Get(mode), BrouterSetupGuide.Get(spelling), $"'{spelling}' did not resolve to '{mode}'.");
+            var canonical = BrouterSetupGuide.Get(mode);
+
+            // Without this, a canonical mode that stopped resolving would make every spelling of it
+            // "match" - null against null - and the test would pass with no guide behind it.
+            Assert.IsNotNull(canonical, $"'{mode}' resolves to no guide at all, so nothing can be compared against it.");
+
+            Assert.AreEqual(canonical, BrouterSetupGuide.Get(spelling), $"'{spelling}' did not resolve to '{mode}'.");
         }
     }
 

@@ -43,15 +43,19 @@ public class McpPromptTests
     {
         var prompts = await McpTestHost.Client.ListPromptsAsync();
 
-        var feature = prompts.Single(prompt => prompt.Name == "implement-brouter-feature").ProtocolPrompt.Arguments!;
-        Assert.AreEqual("feature", feature[0].Name);
-        Assert.AreEqual(true, feature[0].Required, "A feature request with no feature in it has nothing to work from.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(feature[0].Description));
+        // By name rather than by position: an argument added in front of these would otherwise fail
+        // the test for the wrong reason, or - worse - pass it about the wrong argument.
+        var feature = prompts.Single(prompt => prompt.Name == "implement-brouter-feature")
+                             .ProtocolPrompt.Arguments!.SingleOrDefault(argument => argument.Name == "feature");
+        Assert.IsNotNull(feature, "'implement-brouter-feature' declares no 'feature' argument.");
+        Assert.AreEqual(true, feature.Required, "A feature request with no feature in it has nothing to work from.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(feature.Description));
 
         // The render mode has a documented stand-in, so it is optional rather than required.
-        var renderMode = prompts.Single(prompt => prompt.Name == "add-brouter-to-app").ProtocolPrompt.Arguments!;
-        Assert.AreEqual("renderMode", renderMode[0].Name);
-        Assert.AreNotEqual(true, renderMode[0].Required);
+        var renderMode = prompts.Single(prompt => prompt.Name == "add-brouter-to-app")
+                                .ProtocolPrompt.Arguments!.SingleOrDefault(argument => argument.Name == "renderMode");
+        Assert.IsNotNull(renderMode, "'add-brouter-to-app' declares no 'renderMode' argument.");
+        Assert.AreNotEqual(true, renderMode.Required);
 
         var migrate = prompts.Single(prompt => prompt.Name == "migrate-to-brouter").ProtocolPrompt.Arguments;
         Assert.IsTrue(migrate is null || migrate.Count == 0, "The migration workflow takes no arguments.");

@@ -1,4 +1,6 @@
-﻿using Bit.Brouter.Demo.Server.Services;
+﻿using System.Reflection;
+using System.Xml.Linq;
+using Bit.Brouter.Demo.Server.Services;
 
 namespace Bit.Brouter.Tests.Mcp;
 
@@ -106,12 +108,46 @@ public class BrouterXmlDocsTests
     {
         // Which overload stands in for an inexact id is decided by ordering the candidates: a frozen
         // dictionary enumerates in whatever order it hashed into, so taking one off it directly would
-        // answer differently per build.
-        var first = BrouterXmlDocs.GetSummary("M:Bit.Brouter.IBrouter.NavigateAsync");
+        // answer differently per build. Asking twice cannot see that - the table is built once per
+        // process, so both answers come off the same hashing - which leaves the rule itself as the
+        // only thing worth checking: every stand-in is the ordinally first of its candidates.
+        var members = Table("_members");
+        var overloads = Table("_overloads");
 
-        for (int i = 0; i < 5; i++)
+        Assert.IsTrue(members.Count > 0, "No documentation was loaded, so nothing here is being decided.");
+        Assert.IsTrue(overloads.Count > 0, "No method id has a stand-in, so an inexact id finds nothing.");
+
+        foreach (var (name, chosen) in overloads)
         {
-            Assert.AreEqual(first, BrouterXmlDocs.GetSummary("M:Bit.Brouter.IBrouter.NavigateAsync"));
+            var candidates = members.Keys.Where(id => id.StartsWith($"{name}(", StringComparison.Ordinal))
+                                         .OrderBy(id => id, StringComparer.Ordinal)
+                                         .ToArray();
+
+            // No documented method in Bit.Brouter has two overloads yet, so today every group has
+            // one candidate and this cannot catch a dropped OrderBy on its own. It is the rule that
+            // is written down here; it starts biting the day an overload is documented.
+            Assert.AreNotEqual(0, candidates.Length, $"'{name}' stands in for no member id at all.");
+            Assert.AreSame(members[candidates[0]], chosen,
+                           $"'{name}' answers with something other than the ordinally first of its {candidates.Length} candidates.");
+        }
+
+        // And the ordering has to be the one callers actually reach, not one the test computed for
+        // itself: the inexact id's answer is the ordinally first overload's summary.
+        const string inexactId = "M:Bit.Brouter.IBrouter.NavigateAsync";
+
+        var expected = members.Keys.Where(id => id.StartsWith($"{inexactId}(", StringComparison.Ordinal))
+                                   .OrderBy(id => id, StringComparer.Ordinal)
+                                   .First();
+
+        Assert.AreEqual(BrouterXmlDocs.GetSummary(expected), BrouterXmlDocs.GetSummary(inexactId));
+
+        static IReadOnlyDictionary<string, XElement> Table(string field)
+        {
+            var lazy = typeof(BrouterXmlDocs).GetField(field, BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
+
+            Assert.IsNotNull(lazy, $"BrouterXmlDocs.{field} has been renamed or removed; the ordering rule cannot be checked.");
+
+            return (IReadOnlyDictionary<string, XElement>)lazy.GetType().GetProperty("Value")!.GetValue(lazy)!;
         }
     }
 }

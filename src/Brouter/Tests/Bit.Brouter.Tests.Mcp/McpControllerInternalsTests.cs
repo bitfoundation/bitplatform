@@ -78,14 +78,16 @@ public class McpControllerInternalsTests
 
         Assert.IsNotNull(truncate, "McpController.Truncate has been renamed or removed; nothing is capping the answers any more.");
 
-        // A run of emoji lands a surrogate pair exactly across the 40,000-character boundary.
-        var text = string.Concat(Enumerable.Repeat("\U0001F600", 30_000));
+        // One leading ASCII character puts every emoji on an odd index, so the run straddles the
+        // 40,000-character boundary rather than ending on it: a cut taken there without looking
+        // keeps the high half of a pair and drops the low half that completes it.
+        var text = "-" + string.Concat(Enumerable.Repeat("\U0001F600", 30_000));
         var cut = (string)truncate.Invoke(null, [text])!;
 
         var body = cut[..cut.IndexOf("\n\n[truncated", StringComparison.Ordinal)];
 
         Assert.IsFalse(char.IsHighSurrogate(body[^1]), "The answer was cut in the middle of a surrogate pair.");
-        Assert.AreEqual(body, string.Concat(Enumerable.Repeat("\U0001F600", body.Length / 2)));
+        Assert.AreEqual("-" + string.Concat(Enumerable.Repeat("\U0001F600", (body.Length - 1) / 2)), body);
     }
 
     [TestMethod]
