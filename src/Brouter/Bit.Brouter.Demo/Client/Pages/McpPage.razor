@@ -5,6 +5,7 @@
    to /mcp - the same endpoint an AI agent connects to - and shows every message on the wire, in
    both directions. Nothing here is a recording. *@
 
+@using System.Globalization
 @using System.Text.Json
 @using System.Text.Json.Nodes
 @inject McpDemoClient mcp
@@ -751,8 +752,10 @@ app.MapMcp(<span class="s">"/mcp"</span>);
 
             arguments[argument.Name] = argument.Type switch
             {
-                "integer" when long.TryParse(value, out var whole) => JsonValue.Create(whole),
-                "number" when double.TryParse(value, out var number) => JsonValue.Create(number),
+                // The wire format is JSON, so a number on it is invariant no matter what the
+                // browser's locale would make of the separators the person typed.
+                "integer" when long.TryParse(value, CultureInfo.InvariantCulture, out var whole) => JsonValue.Create(whole),
+                "number" when double.TryParse(value, CultureInfo.InvariantCulture, out var number) => JsonValue.Create(number),
                 "boolean" when bool.TryParse(value, out var flag) => JsonValue.Create(flag),
                 _ => JsonValue.Create(value)
             };

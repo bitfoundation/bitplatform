@@ -280,14 +280,27 @@ public sealed class McpDemoClient(HttpClient httpClient, NavigationManager navig
 
         var data = new StringBuilder();
 
-        // The stream answering a single request carries a single event, so the data lines of the
-        // whole body belong to one message.
+        // The message is the first event on the stream: a blank line closes an event, so anything
+        // past it belongs to a later one. Within that event every "data:" line is its own line of
+        // the payload, which is how a message spanning several lines survives the trip.
         foreach (var line in body.Split('\n'))
         {
             var trimmed = line.TrimEnd('\r');
 
+            if (trimmed.Length == 0)
+            {
+                if (data.Length > 0) break;
+
+                continue;
+            }
+
             if (trimmed.StartsWith("data:", StringComparison.Ordinal))
             {
+                if (data.Length > 0)
+                {
+                    data.Append('\n');
+                }
+
                 data.Append(trimmed[5..].TrimStart());
             }
         }
