@@ -117,14 +117,20 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     /// </summary>
     public ValueTask FocusItem(TItem item)
     {
-        if (_itemElements.ContainsKey(item)) return FocusItemElement(item);
+        // Whether the item is on screen is read from the expansion state of the branches it is nested in,
+        // rather than from the presence of a registered element: the options API keeps the children of a
+        // collapsed item rendered (hidden) to keep their registrations alive, so an element exists long
+        // before the item is reachable and focusing it would move the focus onto a display:none element.
+        if (IsItemOnScreen(item) && _itemElements.ContainsKey(item)) return FocusItemElement(item);
 
-        // The item is inside a collapsed branch, so there is no element to focus yet: the path down to
-        // it is opened and the focus is moved once the render that brings it on screen is done.
+        // The item is inside a collapsed branch, so there is no element to focus yet: the path down to it
+        // is opened and the focus is moved once the render that brings it on screen has registered its
+        // element. An item that is not in the tree at all has no path to open and no element that will
+        // ever register, so no focus request is left pending for it.
+        if (ToggleItemAndParents(_items, item, true) is false) return ValueTask.CompletedTask;
+
         _focusedItem = item;
         _pendingFocusItem = item;
-
-        ToggleItemAndParents(_items, item, true);
 
         RefreshOptions();
         StateHasChanged();
@@ -159,6 +165,15 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     internal void RegisterItemElement(TItem item, ElementReference element)
     {
         _itemElements[item] = element;
+
+        // A focus request that had to open a collapsed branch waits for the element of the item, which only
+        // exists once the child that renders it has rendered: that happens after the nav's own
+        // OnAfterRender, so the request is served here instead of being dropped there.
+        if (_pendingFocusItem is null || AreEqual(_pendingFocusItem, item) is false) return;
+
+        _pendingFocusItem = null;
+
+        _ = FocusItemElement(item).AsTask();
     }
 
     // The element is handed over as well, so a caller only drops its own registration: an item that is
@@ -312,8 +327,11 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // A focus request for an item of a collapsed branch had to wait for the render that opens the
-        // branch, since only then is there an element to move the focus to.
-        if (_pendingFocusItem is not null)
+        // branch, since only then is there an element to move the focus to. The item may already carry one
+        // (the options API keeps the collapsed children rendered), and the focus moves right here in that
+        // case; a branch that had to create its children only registers them in their own OnAfterRender,
+        // which runs after this one, so the request stays pending until RegisterItemElement serves it.
+        if (_pendingFocusItem is not null && _itemElements.ContainsKey(_pendingFocusItem))
         {
             var item = _pendingFocusItem;
             _pendingFocusItem = null;
@@ -540,13 +558,24 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         var items = Items ?? [];
 
-        if (_items.Count == items.Count && _items.SequenceEqual(items)) return;
+        var rootChanged = _items.Count != items.Count || _items.SequenceEqual(items) is false;
 
-        _items = [.. items];
+        if (rootChanged)
+        {
+            _items = [.. items];
+        }
+
+        // The whole tree is read, not only the root list: an item appended in place to a nested ChildItems
+        // collection has to go through the same initialization (and the same URL match) as one appended to
+        // the root, and comparing the root list alone would never see it.
+        var live = Flatten(_items).ToHashSet();
+
+        // Every live item has already been initialized and nothing else has, so the tree is exactly the one
+        // the nav has read before and there is nothing to do.
+        if (rootChanged is false && live.SetEquals(_initializedItems)) return;
 
         // The expansion state of the items that are gone is dropped, so a nav whose items are swapped
         // repeatedly (a filtered list, a reloaded menu, ...) does not keep growing.
-        var live = Flatten(_items).ToHashSet();
         _initializedItems.RemoveWhere(item => live.Contains(item) is false);
         foreach (var item in _itemExpandStates.Keys.Where(item => live.Contains(item) is false).ToArray())
         {
@@ -742,7 +771,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             return;
         }
 
-        var firstChild = childItems.FirstOrDefault(i => GetIsSeparator(i) is false);
+        // The child the focus lands on is the first one the keyboard can reach, which is not necessarily
+        // the first one: a separator is no stop and neither is a disabled item, exactly like the arrow keys
+        // walk them, so the nav never ends up believing the focus sits on an item that cannot hold it.
+        var firstChild = FindFirstReachableItem(childItems);
         if (firstChild is not null)
         {
             await FocusItemElement(firstChild);
@@ -846,6 +878,44 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
                 }
             }
         }
+    }
+
+    // The first item of a list the keyboard can stop on, walked exactly like GetVisibleItems walks the
+    // tree: a separator and a disabled item are no stops, and a disabled item is still stepped through,
+    // since an enabled child of a branch that is already open is reachable on its own.
+    private TItem? FindFirstReachableItem(IList<TItem> items)
+    {
+        foreach (var item in items)
+        {
+            if (GetIsSeparator(item)) continue;
+
+            if (GetIsEnabled(item)) return item;
+
+            var childItems = GetChildItems(item);
+            if (childItems.Count > 0 && GetItemExpanded(item))
+            {
+                var found = FindFirstReachableItem(childItems);
+                if (found is not null) return found;
+            }
+        }
+
+        return null;
+    }
+
+    // An item is on screen when every branch it is nested in is expanded. Its own expansion state says
+    // nothing about it, and neither does the presence of an element it has registered.
+    private bool IsItemOnScreen(TItem item)
+    {
+        var parent = FindParentOf(_items, item);
+
+        while (parent is not null)
+        {
+            if (GetItemExpanded(parent) is false) return false;
+
+            parent = FindParentOf(_items, parent);
+        }
+
+        return true;
     }
 
     private TItem? FindParentOf(IList<TItem> items, TItem item, TItem? parent = null)

@@ -622,6 +622,23 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
+    [TestMethod]
+    public void BitNavShouldInitializeAnItemAppendedToANestedChildItems()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items, p => p.Add(c => c.AllExpanded, true));
+
+        items[0].ChildItems[0].ChildItems.Add(new() { Text = "Granny Smith", ChildItems = [new() { Text = "Pie" }] });
+
+        component.Render();
+
+        // The root list is untouched by a nested append, so only a comparison that reads the whole tree
+        // sees the new item at all, and only then does AllExpanded reach it and its own children.
+        CollectionAssert.AreEqual(
+            new[] { "Fruits", "Apple", "Granny Smith", "Pie", "Banana", "Drinks", "Coffee", "Tea" },
+            component.FindAll(".bit-nav-itx").Select(e => e.TextContent).ToArray());
+    }
+
     #endregion
 
     #region indentation
@@ -1374,6 +1391,50 @@ public class BitNavTests : BunitTestContext
         focused[2].Arguments[0].ShouldBeElementReferenceTo(elements[1]);
     }
 
+    [TestMethod]
+    public async Task BitNavFocusItemShouldFocusAnItemOfACollapsedBranch()
+    {
+        var items = TreeItems();
+        var component = RenderNav(items);
+
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(items[0].ChildItems[1]));
+
+        // The element of an item that was not rendered yet only exists once the child that renders it has
+        // rendered, which happens after the nav's own OnAfterRender: the request has to survive that render
+        // instead of being consumed by it and dropped.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[2]);
+    }
+
+    [TestMethod]
+    public async Task BitNavFocusItemShouldOpenTheBranchOfACollapsedOption()
+    {
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.AddChildContent<BitNavOption>(o =>
+            {
+                o.Add(p => p.Text, "Fruits");
+                o.AddChildContent<BitNavOption>(c => c.Add(p => p.Text, "Apple"));
+            });
+        });
+
+        var apple = component.FindComponents<BitNavOption>()[1].Instance;
+
+        await component.InvokeAsync(async () => await component.Instance.FocusItem(apple));
+
+        // A collapsed option keeps its children rendered (hidden), so there is an element for the item long
+        // before it is on screen: the branch still has to be opened, otherwise the focus would land on an
+        // element inside a display:none list.
+        Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[1]);
+    }
+
     #endregion
 
     #region url matching
@@ -1747,6 +1808,30 @@ public class BitNavTests : BunitTestContext
         PressKey(component, "ArrowRight");
 
         Assert.AreEqual("Granny Smith", component.FindAll(".bit-nav-itx")[2].TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldStepIntoTheFirstReachableChildWithTheForwardArrow()
+    {
+        var items = TreeItems();
+        items[0].IsExpanded = true;
+        items[0].ChildItems[0].IsEnabled = false;
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowRight");
+        PressKey(component, "ArrowDown");
+
+        // The step skips the disabled child, which takes no focus at all, exactly like the arrow keys do:
+        // landing on it would leave the focus where it was while the nav believes it has moved, and the
+        // next arrow key would then jump to the first item of the whole nav.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+        var elements = component.FindAll(".bit-nav-ict");
+
+        Assert.AreEqual(2, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(elements[2]);
+        focused[1].Arguments[0].ShouldBeElementReferenceTo(elements[3]);
     }
 
     [TestMethod]
