@@ -220,8 +220,13 @@ public static partial class BswupSourceCatalog
         var summary = XmlSummaryRegex().Match(content);
         if (summary.Success)
         {
-            // An XML summary is markup: <paramref name="Slug"/> and friends are noise in a listing.
+            // An XML summary is markup, and its tags fall into two kinds. <paramref name="Slug"/>
+            // and <see cref="BswupProgress"/> ARE the word the sentence is built around, so deleting
+            // them leaves "One documentation page: is its route" - they are replaced by what they
+            // name. Everything else (<c>, <para>) only wraps text that is kept anyway.
             var text = summary.Groups["text"].Value.Replace("///", " ", StringComparison.Ordinal);
+
+            text = XmlReferenceRegex().Replace(text, match => LastIdentifier(match.Groups["name"].Value));
 
             return Summarize(XmlTagRegex().Replace(text, string.Empty));
         }
@@ -237,6 +242,23 @@ public static partial class BswupSourceCatalog
         var comment = RazorCommentRegex().Match(content);
 
         return comment.Success ? Summarize(comment.Groups["text"].Value) : null;
+    }
+
+    /// <summary>
+    /// The word a doc-comment reference reads as. A cref is written as "T:Some.Namespace.Type" or
+    /// "M:Type.Method(System.String)"; a paramref name is already just the identifier.
+    /// </summary>
+    private static string LastIdentifier(string name)
+    {
+        var colon = name.IndexOf(':', StringComparison.Ordinal);
+        if (colon >= 0) name = name[(colon + 1)..];
+
+        var parenthesis = name.IndexOf('(', StringComparison.Ordinal);
+        if (parenthesis >= 0) name = name[..parenthesis];
+
+        var dot = name.LastIndexOf('.');
+
+        return dot >= 0 && dot < name.Length - 1 ? name[(dot + 1)..] : name;
     }
 
     private static string? Summarize(string text)
@@ -299,6 +321,10 @@ public static partial class BswupSourceCatalog
 
     [GeneratedRegex(@"<[^>]+>")]
     private static partial Regex XmlTagRegex();
+
+    /// <summary>An XML doc tag whose meaning is the identifier in its attribute, not its body.</summary>
+    [GeneratedRegex(@"<(?:paramref|typeparamref|see|seealso)\s+(?:name|cref)\s*=\s*""(?<name>[^""]*)""\s*/?>")]
+    private static partial Regex XmlReferenceRegex();
 
     [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
     private static partial Regex XmlSummaryRegex();

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Bit.Bswup.Demo.Server.Dtos;
 using System.Text.RegularExpressions;
 
@@ -25,7 +26,25 @@ public static partial class BswupServiceWorkerInspector
     /// service-worker file the caller handed in, so a catastrophically backtracking one is a
     /// request away; bounding the match keeps that a note in the report instead of a hung request.
     /// </summary>
-    private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(25);
+
+    /// <summary>
+    /// The ceiling on ONE analysis, across every pattern and every URL in it.
+    /// <para>
+    /// A per-match timeout alone does not bound the request: the caller supplies both the patterns
+    /// and the URLs, so `n` catastrophic patterns against `m` URLs costs `n * m * MatchTimeout` -
+    /// which a single call can drive into minutes of CPU, and which the rate limiter is far too
+    /// coarse to catch. The whole analysis therefore runs against one deadline, and what did not
+    /// fit is reported as undecided rather than answered wrongly or silently dropped.
+    /// </para>
+    /// </summary>
+    private static readonly TimeSpan AnalysisBudget = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// The most patterns one analysis compiles out of a caller's file. Beyond this the answer is
+    /// no longer about a configuration anyone wrote, and every extra pattern multiplies the work.
+    /// </summary>
+    private const int MaxPatterns = 100;
 
     /// <summary>The URL-matching lists, whose entries carry the string-vs-RegExp semantics worth calling out.</summary>
     private static readonly string[] _urlLists =
@@ -134,30 +153,56 @@ public static partial class BswupServiceWorkerInspector
         var exclude = BuildPatterns("exclude", settings, "assetsExclude", "ignoreDefaultExclude",
                                     BswupScriptCatalog.DefaultAssetsExclude, caseInsensitive, notes);
 
-        var decisions = urls.Select(url =>
+        // One deadline for the whole analysis, not one per match: see AnalysisBudget.
+        var deadline = Stopwatch.GetTimestamp() + (long)(AnalysisBudget.TotalSeconds * Stopwatch.Frequency);
+        var decisions = new List<BswupAssetDecisionDto>();
+        var undecided = 0;
+
+        foreach (var url in urls)
         {
-            var excluded = exclude.FirstOrDefault(pattern => pattern.Matches(url));
+            // The deadline is re-checked between patterns as well as between URLs: a URL whose
+            // scan ran out of time is undecided, never "nothing matched it" - reporting a partial
+            // scan as a completed one is exactly the wrong answer to give about a cache.
+            if (TryMatch(exclude, url, deadline, out var excluded) is false)
+            {
+                undecided++;
+                continue;
+            }
+
             if (excluded is not null)
             {
-                return new BswupAssetDecisionDto
+                decisions.Add(new BswupAssetDecisionDto
                 {
                     Url = url,
                     Cached = false,
                     Reason = $"excluded by {excluded.Description}"
-                };
+                });
+
+                continue;
             }
 
-            var included = include.FirstOrDefault(pattern => pattern.Matches(url));
+            if (TryMatch(include, url, deadline, out var included) is false)
+            {
+                undecided++;
+                continue;
+            }
 
-            return new BswupAssetDecisionDto
+            decisions.Add(new BswupAssetDecisionDto
             {
                 Url = url,
                 Cached = included is not null,
                 Reason = included is not null
                     ? $"included by {included.Description}"
                     : "no include pattern matches it - the worker never caches this asset (it is fetched from the network every time)"
-            };
-        }).ToArray();
+            });
+        }
+
+        // Said out loud rather than left to be inferred from a short list: a caller who reads these
+        // decisions as "all of them" would conclude the missing assets are simply not cached.
+        if (undecided > 0)
+        {
+            notes.Add($"{undecided} of the {decisions.Count + undecided} URLs were NOT analyzed: matching them ran past this analysis's {AnalysisBudget.TotalSeconds:N0}-second budget, which one of the patterns in this file is slow enough to exhaust. Simplify the pattern (a nested quantifier such as `(a+)+` is the usual cause) or ask again with fewer URLs.");
+        }
 
         if (caseInsensitive) notes.Add("caseInsensitiveUrl is on, so every pattern is compiled with the 'i' flag (patterns that already carry it are left alone).");
 
@@ -173,9 +218,32 @@ public static partial class BswupServiceWorkerInspector
         {
             Include = [.. include.Select(pattern => pattern.Description)],
             Exclude = [.. exclude.Select(pattern => pattern.Description)],
-            Assets = decisions,
+            Assets = [.. decisions],
             Notes = [.. notes]
         };
+    }
+
+    /// <summary>
+    /// The first pattern matching <paramref name="url"/>, or false when the scan ran past
+    /// <paramref name="deadline"/> before it could finish - which is not the same answer as
+    /// "no pattern matched", and must not be reported as one.
+    /// </summary>
+    private static bool TryMatch(Pattern[] patterns, string url, long deadline, out Pattern? match)
+    {
+        match = null;
+
+        foreach (var pattern in patterns)
+        {
+            if (Stopwatch.GetTimestamp() > deadline) return false;
+
+            if (pattern.Matches(url))
+            {
+                match = pattern;
+                return true;
+            }
+        }
+
+        return true;
     }
 
     private static void InspectMode(Dictionary<string, string> values, List<string> problems, List<string> notes)
@@ -373,7 +441,14 @@ public static partial class BswupServiceWorkerInspector
                                               .Select(pattern => Compile(pattern, $"{pattern} (self.{listName})", caseInsensitive, notes)));
         }
 
-        return [.. patterns.Where(pattern => pattern.Regex is not null || pattern.Literal is not null)];
+        var usable = patterns.Where(pattern => pattern.Regex is not null || pattern.Literal is not null).ToArray();
+
+        if (usable.Length > MaxPatterns)
+        {
+            notes.Add($"The {kind} list holds {usable.Length} patterns; only the first {MaxPatterns} were applied, so an asset decided by a later one is reported wrongly here.");
+        }
+
+        return [.. usable.Take(MaxPatterns)];
     }
 
     /// <summary>

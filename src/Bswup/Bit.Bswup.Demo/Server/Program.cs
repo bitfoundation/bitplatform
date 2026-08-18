@@ -3,8 +3,10 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Components;
+using Bit.Bswup.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.ResponseCompression;
+using ModelContextProtocol.Protocol;
 
 // The rate-limiting policy the MCP endpoints and their HTTP mirror share.
 const string McpRateLimiterPolicy = "mcp";
@@ -40,7 +42,46 @@ builder.Services.AddRateLimiter(options =>
         }));
 });
 
-builder.Services.AddMcpServer()
+builder.Services.AddMcpServer(options =>
+{
+    // What a client shows in its server list and reports in a bug. Left unset, this is the
+    // assembly's name and its 1.0.0.0 file version, which identifies nothing.
+    options.ServerInfo = new Implementation
+    {
+        Name = "bit-bswup",
+        Title = "bit Bswup",
+        Version = BswupScriptCatalog.Version,
+        WebsiteUrl = SiteMetadata.Origin
+    };
+
+    // The one piece of text a client is expected to put in front of the model before it has called
+    // anything. Deliberately not a summary of the tools - the client already has every tool's
+    // description - but the things an agent gets wrong when nothing tells it otherwise: answering
+    // about Bswup from memory, and configuring only one of the two service-worker files.
+    options.ServerInstructions = @"This server answers about bit Bswup, the service-worker layer for Blazor WebAssembly apps
+(offline support, an install progress bar, controlled updates).
+
+Answer from these tools rather than from memory. Bswup's setting names look like Workbox's and like
+the standard Microsoft Blazor PWA template's but are not the same, and its defaults have changed
+between versions - BswupProgress.AutoReload flipped to false in v-10-6-0. Every tool here reads the
+shipped build, so it is right about the version in front of you where recalled knowledge is not.
+
+Start with SearchBswup unless you already know the setting, slug or event you want; each hit names
+the exact follow-up call.
+
+Two rules decide most Bswup bugs, and neither produces an error anyone sees until a user is offline:
+every self.* setting must be assigned BEFORE the importScripts line in service-worker.js, and
+whatever goes in service-worker.js must go in service-worker.published.js too, because the published
+file is what deployed builds ship. After writing or changing either file, run it through
+InspectBswupServiceWorker and confirm what it caches with AnalyzeBswupAssetCaching before reporting
+the work as done.";
+
+    // Advertised explicitly: the SDK only derives completions from enum-valued schemas, and the
+    // values worth completing here (docs slugs, guide headings, source paths) are catalog entries.
+    options.Capabilities ??= new ServerCapabilities();
+    options.Capabilities.Completions = new CompletionsCapability();
+    options.Handlers.CompleteHandler = BswupCompletions.CompleteAsync;
+})
     .WithHttpTransport()
     .WithToolsFromAssembly()
     .WithResourcesFromAssembly()

@@ -13,20 +13,25 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 /// attach documentation to a conversation up front, or let a person browse and pin it. Both read
 /// the same catalogs, so neither can go stale relative to the other.
 /// </para>
+/// <para>
+/// Each one carries a slug <c>Name</c> and a human <c>Title</c> rather than one string doing both:
+/// the name is what a client stores in a saved conversation and keys its cache on, so it has to
+/// stay put across a rewording, while the title is the only one of the two anyone reads.
+/// </para>
 /// </summary>
 [McpServerResourceType]
 public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logger)
 {
-    [McpServerResource(UriTemplate = "bswup://guide", Name = "bit Bswup reference guide", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://guide", Name = "bswup-guide", Title = "bit Bswup reference guide", MimeType = "text/markdown")]
     [Description("The complete bit Bswup reference guide (the library's README), every section in one document.")]
     public static string Guide() => BswupSourceCatalog.Readme;
 
-    [McpServerResource(UriTemplate = "bswup://guide/{heading}", Name = "Guide section", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://guide/{heading}", Name = "bswup-guide-section", Title = "Guide section", MimeType = "text/markdown")]
     [Description("One section of the bit Bswup reference guide by heading, e.g. bswup://guide/JavaScript%20API.")]
     public static string GuideSection(string heading)
         => BswupSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.";
 
-    [McpServerResource(UriTemplate = "bswup://settings", Name = "Service worker settings", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://settings", Name = "bswup-settings", Title = "Service worker settings", MimeType = "text/markdown")]
     [Description("Every self.* setting of the service-worker file, with its type, default and summary.")]
     public static string Settings()
     {
@@ -52,7 +57,7 @@ public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logge
             """;
     }
 
-    [McpServerResource(UriTemplate = "bswup://options", Name = "Script tag options", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://options", Name = "bswup-options", Title = "Script tag options", MimeType = "text/markdown")]
     [Description("Every attribute of the bit-bswup.js script tag, with its default and summary.")]
     public static string Options()
     {
@@ -63,7 +68,7 @@ public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logge
         return $"# bit Bswup script-tag options\n\n{string.Join('\n', lines)}";
     }
 
-    [McpServerResource(UriTemplate = "bswup://events", Name = "Lifecycle events", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://events", Name = "bswup-events", Title = "Lifecycle events", MimeType = "text/markdown")]
     [Description("The lifecycle messages a Bswup handler receives, with the payload each one carries.")]
     public static string Events()
     {
@@ -75,12 +80,12 @@ public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logge
         return $"# bit Bswup lifecycle events\n\n{string.Join('\n', lines)}";
     }
 
-    [McpServerResource(UriTemplate = "bswup://source/{path}", Name = "Source file", MimeType = "text/plain")]
+    [McpServerResource(UriTemplate = "bswup://source/{path}", Name = "bswup-source-file", Title = "Source file", MimeType = "text/plain")]
     [Description("One source file of the library, the demo or the samples, e.g. bswup://source/Library%2FScripts%2Fbit-bswup.sw.ts.")]
     public static string Source(string path)
         => BswupSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
 
-    [McpServerResource(UriTemplate = "bswup://docs/{slug}", Name = "Documentation page", MimeType = "text/markdown")]
+    [McpServerResource(UriTemplate = "bswup://docs/{slug}", Name = "bswup-docs-page", Title = "Documentation page", MimeType = "text/markdown")]
     [Description("One page of the bit Bswup documentation site, rendered as Markdown, e.g. bswup://docs/service-worker.")]
     public async Task<string> DocsPage(string slug)
     {

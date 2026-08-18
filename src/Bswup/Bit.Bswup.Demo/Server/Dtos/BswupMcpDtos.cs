@@ -72,6 +72,25 @@ public record BswupOptionDto
     public string? Docs { get; init; }
 }
 
+/// <summary>
+/// Everything the service-worker file can configure: the settings themselves, plus the built-in
+/// asset filters the shipped worker applies around them.
+/// </summary>
+public record BswupServiceWorkerSettingsDto
+{
+    /// <summary>Every <c>self.*</c> setting, with its type, default and caveats.</summary>
+    public required BswupOptionDto[] Settings { get; init; }
+
+    /// <summary>The asset include patterns the shipped worker applies before the file's own.</summary>
+    public required string[] DefaultAssetsInclude { get; init; }
+
+    /// <summary>The asset exclude patterns the shipped worker applies before the file's own. An exclude beats an include.</summary>
+    public required string[] DefaultAssetsExclude { get; init; }
+
+    /// <summary>The rules that decide whether a setting takes effect at all.</summary>
+    public required string[] Notes { get; init; }
+}
+
 /// <summary>A preset bundle of service-worker settings selectable with a single <c>self.mode</c> value.</summary>
 public record BswupModeDto
 {

@@ -16,7 +16,7 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 [McpServerPromptType]
 public static class McpPrompts
 {
-    [McpServerPrompt(Name = "add-bswup-to-app")]
+    [McpServerPrompt(Name = "add-bswup-to-app", Title = "Add Bswup to a Blazor app")]
     [Description("Walks through adding bit Bswup to an existing Blazor WebAssembly app, in the right order for its hosting model.")]
     public static string AddBswupToApp(
         [Description("The app's hosting model: standalone-wasm or blazor-web-app. Pass 'unknown' to have it determined from the project first.")] string hostingModel = "unknown")
@@ -50,7 +50,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "configure-bswup-caching")]
+    [McpServerPrompt(Name = "configure-bswup-caching", Title = "Configure what Bswup caches")]
     [Description("Configures what bit Bswup caches and how it updates - external assets, excluded files, passive mode, API bypass, cache versioning - using its real settings rather than guessed ones.")]
     public static string ConfigureBswupCaching(
         [Description("What the caching should do, in your own words - e.g. 'cache the Google Fonts stylesheet too', 'never cache /api', 'do not block the first paint on the full download'.")] string requirement)
@@ -80,7 +80,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "debug-bswup")]
+    [McpServerPrompt(Name = "debug-bswup", Title = "Diagnose a Bswup problem")]
     [Description("Diagnoses a bit Bswup problem - an app that never updates, a splash that never finishes, assets missing offline, a deep link that shows the wrong page.")]
     public static string DebugBswup(
         [Description("What goes wrong, with the URL, the console output and the service-worker settings involved if you know them.")] string symptom)
@@ -111,7 +111,7 @@ public static class McpPrompts
             """;
     }
 
-    [McpServerPrompt(Name = "remove-bswup")]
+    [McpServerPrompt(Name = "remove-bswup", Title = "Remove Bswup / recover stuck clients")]
     [Description("Removes bit Bswup from a deployed app, or recovers clients stuck on a broken service worker or cache, using the self-destructing cleanup worker.")]
     public static string RemoveBswup()
     {

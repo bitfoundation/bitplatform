@@ -550,7 +550,10 @@ public static partial class BswupScriptCatalog
 
     // Greedy on purpose: the assignment chains through window['bit-bswup version'], so the LAST
     // quoted value on the line is the version and the first one is the key it is also published under.
-    [GeneratedRegex(@"BitBswup\.version\s*=[^;]*'(?<version>[^']+)'")]
+    // Both halves are held to the one line the assignment is on. Without that, greedy backtracking
+    // takes the closing quote of the real version as an OPENING quote and captures everything up to
+    // the next quote anywhere in the file - the whole script, reported as the version number.
+    [GeneratedRegex(@"BitBswup\.version\s*=[^;\r\n]*'(?<version>[^'\r\n]+)'")]
     private static partial Regex VersionRegex();
 
     [GeneratedRegex(@"attrs\['(?<name>\w+)'\]")]

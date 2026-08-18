@@ -1631,6 +1631,100 @@ code, kbd, pre, samp {
     color: var(--bit-clr-fg-ter);
 }
 
+/* The live handshake: the server's identity and the instructions it hands the model. */
+
+.mcp-handshake {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem;
+    background: var(--bit-clr-bg-sec);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.mcp-handshake dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin: 0 0 0.75rem;
+}
+
+.mcp-handshake dt {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bit-clr-fg-ter);
+}
+
+.mcp-handshake dd {
+    margin: 0.125rem 0 0;
+    font-size: 0.875rem;
+}
+
+.mcp-instructions {
+    max-height: 22rem;
+    overflow: auto;
+    margin: 0;
+    padding: 0.75rem;
+    background: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: var(--bit-shp-brd-radius);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* Completion suggestions for a resource template's placeholder. */
+
+.mcp-completions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.mcp-completions-hint {
+    font-size: 0.8125rem;
+    color: var(--bit-clr-fg-ter);
+}
+
+.mcp-chip {
+    padding: 0.25rem 0.625rem;
+    background: var(--bit-clr-bg-sec);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    border-radius: 999px;
+    font-family: var(--bit-fnt-fam-mono, monospace);
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-pri);
+    cursor: pointer;
+}
+
+.mcp-chip:hover {
+    border-color: var(--bit-clr-pri-main);
+    color: var(--bit-clr-pri-main);
+}
+
+/* What the server declares about a tool, next to the tool's name. */
+
+.mcp-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.0625rem 0.375rem;
+    border-radius: 999px;
+    background: var(--bit-clr-bg-sec);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-ter);
+    font-size: 0.6875rem;
+    color: var(--bit-clr-fg-ter);
+    white-space: nowrap;
+}
+
+.mcp-badge-title {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--bit-clr-fg-ter);
+}
+
 /* ---------------------------------------------------------------- misc */
 
 .docs-not-found {

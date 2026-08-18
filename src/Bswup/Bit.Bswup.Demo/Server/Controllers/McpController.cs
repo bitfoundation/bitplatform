@@ -45,7 +45,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         ?? "unknown";
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupOverview))]
+    [McpServerTool(Name = nameof(GetBswupOverview), Title = "Bswup: start here",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Start here. Explains what bit Bswup is, how it is wired into a Blazor WebAssembly app, and lists which of the other Bswup tools to call for what.")]
     public string GetBswupOverview()
     {
@@ -69,7 +70,7 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
             """).AppendLine();
 
         // Which build the answers come from: every tool below reflects THIS package, not a remembered version.
-        builder.AppendLine($"_These tools answer from Bit.Bswup {PackageVersion}, whose shipped scripts report version {BswupScriptCatalog.Version}._").AppendLine();
+        builder.AppendLine($"_These tools answer from Bit.Bswup {BswupScriptCatalog.Version} (assembly build {PackageVersion}) - the shipped scripts and assembly in front of you, not a remembered release._").AppendLine();
 
         builder.AppendLine("""
             ---
@@ -120,24 +121,30 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(SearchBswup))]
+    [McpServerTool(Name = nameof(SearchBswup), Title = "Search everything about Bswup",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Searches everything known about bit Bswup at once - the README guide, the documentation pages, every script attribute and service-worker setting, the lifecycle events, the JavaScript API and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which page, setting or event holds the answer. Example queries: 'app never picks up new versions', 'cache an external CDN script', 'offline deep link shows home page', 'show a progress bar while installing'.")]
-    public BswupSearchHitDto[] SearchBswup(string query, int limit = 12)
+    public BswupSearchHitDto[] SearchBswup(
+        [Description("What you are trying to do or what goes wrong, in your own words - e.g. 'cache an external CDN script', 'app never picks up new versions'. Setting, event and attribute names work too.")] string query,
+        [Description("How many hits to return. 1-50; anything outside that is clamped.")] int limit = 12)
     {
         return BswupSearchIndex.Search(query, limit);
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupSetupGuide))]
+    [McpServerTool(Name = nameof(GetBswupSetupGuide), Title = "Setup guide for a hosting model",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets the complete wiring needed to add bit Bswup to a Blazor app for one hosting model, as the real files of a working project: 'standalone-wasm' (wwwroot/index.html is the host document) or 'blazor-web-app' (a Blazor Web App whose server-rendered App.razor hosts an InteractiveWebAssembly client). Call this before writing any setup code - where the splash markup can live, and which assets the client's manifest does NOT list, differ between the two.")]
-    public string GetBswupSetupGuide(string hostingModel)
+    public string GetBswupSetupGuide(
+        [Description("'standalone-wasm' for an app whose wwwroot/index.html is the host document, or 'blazor-web-app' for a Blazor Web App whose server-rendered Components/App.razor hosts an InteractiveWebAssembly client.")] string hostingModel)
     {
         return BswupSetupGuide.Get(hostingModel)
             ?? $"'{hostingModel}' is not a known hosting model. Use one of: {string.Join(", ", BswupSetupGuide.HostingModels)}.";
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupScriptOptions))]
+    [McpServerTool(Name = nameof(GetBswupScriptOptions), Title = "Script tag attributes",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every attribute of the bit-bswup.js script tag - scope, log, sw, handler, blazorScript, updateInterval, updateOnVisibility, stallTimeout, persistStorage, options - with the default value read off the shipped script, what it does and the caveats. Call it before writing the script tag.")]
     public BswupOptionDto[] GetBswupScriptOptions()
     {
@@ -145,28 +152,32 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupServiceWorkerSettings))]
+    [McpServerTool(Name = nameof(GetBswupServiceWorkerSettings), Title = "Service worker settings",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every self.* setting an app can assign in its service-worker.js before importing the Bswup engine - the asset include/exclude lists, externalAssets, defaultUrl, the URL routing lists, passive mode, error tolerance, retries, diagnostics and cache versioning - each with its type, default and caveats, plus the built-in asset include/exclude patterns the shipped worker applies.")]
-    public object GetBswupServiceWorkerSettings()
+    public BswupServiceWorkerSettingsDto GetBswupServiceWorkerSettings()
     {
-        return new
+        // A named record rather than an anonymous type: this is the shape the tool publishes as its
+        // output schema, and an anonymous type has none to publish.
+        return new BswupServiceWorkerSettingsDto
         {
             Settings = BswupScriptCatalog.WorkerSettings,
             DefaultAssetsInclude = BswupScriptCatalog.DefaultAssetsInclude,
             DefaultAssetsExclude = BswupScriptCatalog.DefaultAssetsExclude,
-            Notes = new[]
-            {
+            Notes =
+            [
                 "Every setting must be assigned BEFORE `self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js')` - the engine reads them as it is imported.",
                 "Whatever you set here, set in service-worker.published.js as well: that is the file deployed builds ship.",
                 "The URL-matching lists (assetsInclude, assetsExclude, prohibitedUrls, serverHandledUrls, serverRenderedUrls) accept a RegExp, used as written, or a string, which is regex-escaped and matched as a literal SUBSTRING of the URL.",
                 "An exclude always beats an include. The default excludes keep the service-worker scripts themselves out of the cache; caching those corrupts the update cycle.",
                 "Call InspectBswupServiceWorker with your file to have it checked, and AnalyzeBswupAssetCaching to see which assets it will cache.",
-            }
+            ]
         };
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupServiceWorkerModes))]
+    [McpServerTool(Name = nameof(GetBswupServiceWorkerModes), Title = "Service worker mode presets",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists the self.mode presets ('NoPrerender', 'InitialPrerender', 'AlwaysPrerender', 'FullOffline') and exactly which settings each one fills in, read off the shipped service worker. A preset never overrides a setting the file assigns itself.")]
     public BswupModeDto[] GetBswupServiceWorkerModes()
     {
@@ -174,17 +185,22 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(InspectBswupServiceWorker))]
+    [McpServerTool(Name = nameof(InspectBswupServiceWorker), Title = "Review a service worker file",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Checks a service-worker.js file against the shipped Bswup worker and reports what it will actually do: which self.* settings it assigns, which of those names the worker does not know (a typo that is silently ignored), settings assigned after the importScripts line (where the engine can no longer see them), a missing engine import, a defaultUrl no asset serves, string entries in the URL lists, and what a mode preset adds. Run it on every service-worker file you write or change - none of these failures produce an error anyone sees until a user is offline.")]
-    public BswupServiceWorkerInspectionDto InspectBswupServiceWorker(string script)
+    public BswupServiceWorkerInspectionDto InspectBswupServiceWorker(
+        [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim.")] string script)
     {
         return BswupServiceWorkerInspector.Inspect(script);
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(AnalyzeBswupAssetCaching))]
+    [McpServerTool(Name = nameof(AnalyzeBswupAssetCaching), Title = "Will this asset be cached?",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Answers whether specific assets will be cached under a given service-worker.js, by running their URLs through the include/exclude lists that file produces - the shipped built-in patterns first, then the file's own - exactly as the worker builds them. Pass the service-worker file's content and the asset URLs as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css'), separated by newlines, commas or semicolons. Use it after adding an assetsInclude/assetsExclude pattern, or when an asset is unexpectedly missing offline.")]
-    public BswupAssetAnalysisDto AnalyzeBswupAssetCaching(string script, string assetUrls)
+    public BswupAssetAnalysisDto AnalyzeBswupAssetCaching(
+        [Description("The full content of the service-worker.js file whose include/exclude lists should decide these assets, verbatim.")] string script,
+        [Description("The asset URLs to decide, as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css') - one per line, or separated by commas or semicolons.")] string assetUrls)
     {
         var urls = (assetUrls ?? string.Empty).Split(['\n', '\r', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
@@ -203,7 +219,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupEvents))]
+    [McpServerTool(Name = nameof(GetBswupEvents), Title = "Lifecycle events",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every lifecycle message Bswup hands to the page's handler function - downloadStarted, downloadProgress, downloadFinished, updateReady, updateFound, updateNotFound, updateCheckFailed, stateChanged, activate, error - with the string each constant resolves to and the shape of the data payload that comes with it. Call it before writing a custom handler.")]
     public BswupEventDto[] GetBswupEvents()
     {
@@ -211,7 +228,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupJsApi))]
+    [McpServerTool(Name = nameof(GetBswupJsApi), Title = "JavaScript API (BitBswup)",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Gets the global BitBswup object the page script installs: checkForUpdate, persistStorage, skipWaiting, forceRefresh and version - with what each one resolves with and when to call it. Use it for a 'check for updates' button, a custom poller or a 'reset app' action.")]
     public BswupJsApiDto[] GetBswupJsApi()
     {
@@ -219,7 +237,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupProgressUI))]
+    [McpServerTool(Name = nameof(GetBswupProgressUI), Title = "Built-in progress UI reference",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Gets the built-in progress UI reference: every parameter of the BswupProgress component with the default value read off the shipped assembly, the element ids bit-bswup.progress.js drives (what a custom ChildContent splash has to render), the runtime config call, and the script and stylesheet the page needs.")]
     public BswupProgressUiDto GetBswupProgressUI()
     {
@@ -227,7 +246,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupDocsList))]
+    [McpServerTool(Name = nameof(GetBswupDocsList), Title = "List documentation pages",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists the pages of the bit Bswup documentation site with their descriptions and search keywords. Use it to pick the slug to pass to GetBswupDocsPage.")]
     public BswupDocsPageDto[] GetBswupDocsList()
     {
@@ -243,9 +263,11 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupDocsPage))]
+    [McpServerTool(Name = nameof(GetBswupDocsPage), Title = "Read a documentation page",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one page of the bit Bswup documentation site as Markdown, including its code samples. Pass a slug from GetBswupDocsList, e.g. 'service-worker', 'events' or 'troubleshooting'. Omit it for the introduction.")]
-    public async Task<string> GetBswupDocsPage(string? slug = null)
+    public async Task<string> GetBswupDocsPage(
+        [Description("A slug from GetBswupDocsList, e.g. 'service-worker', 'events', 'troubleshooting'. Omit it for the introduction.")] string? slug = null)
     {
         // The introduction's own slug is the empty string; agents reach for a word instead, and
         // DocsCatalog.FindBySlug maps those words for every caller.
@@ -278,7 +300,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupGuideSections))]
+    [McpServerTool(Name = nameof(GetBswupGuideSections), Title = "List reference guide sections",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists every section of the bit Bswup reference guide (the library's README), with its heading and size. Use it to pick the heading to pass to GetBswupGuideSection.")]
     public BswupGuideSectionDto[] GetBswupGuideSections()
     {
@@ -286,9 +309,11 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupGuideSection))]
+    [McpServerTool(Name = nameof(GetBswupGuideSection), Title = "Read a reference guide section",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one section of the bit Bswup reference guide as Markdown, with its code samples - e.g. 'JavaScript API', 'The built-in progress UI (BswupProgress)', 'Backing out of Bswup (the cleanup worker)', 'Upgrading to v-10-6-0'. Sub-sections are included. Heading matching ignores case and punctuation.")]
-    public string GetBswupGuideSection(string heading)
+    public string GetBswupGuideSection(
+        [Description("A heading from GetBswupGuideSections, e.g. 'JavaScript API'. Matching ignores case and punctuation, and sub-sections come with it.")] string heading)
     {
         var section = BswupSourceCatalog.GetGuideSection(heading);
 
@@ -303,7 +328,8 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupSourceFiles))]
+    [McpServerTool(Name = nameof(GetBswupSourceFiles), Title = "List available source files",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
     [Description("Lists the working Bswup source files this server can hand out: this documentation site's own host document and service-worker files, the minimal samples for both hosting models, and the library's own TypeScript sources (the page script, the service worker, the progress UI and the cleanup worker). Use it to pick the path to pass to GetBswupSourceFile.")]
     public BswupSourceFileDto[] GetBswupSourceFiles()
     {
@@ -311,9 +337,11 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupSourceFile))]
+    [McpServerTool(Name = nameof(GetBswupSourceFile), Title = "Read a source file",
+               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Gets one source file listed by GetBswupSourceFiles, verbatim - e.g. 'Demo/Client/wwwroot/service-worker.published.js' for the configuration of a deployed Blazor Web App, 'Sample/BasicSample/wwwroot/index.html' for a complete hand-written splash and handler, or 'Library/Scripts/bit-bswup.sw.ts' for the engine itself.")]
-    public string GetBswupSourceFile(string path)
+    public string GetBswupSourceFile(
+        [Description("A path from GetBswupSourceFiles, e.g. 'Demo/Client/wwwroot/service-worker.published.js' or 'Library/Scripts/bit-bswup.sw.ts'.")] string path)
     {
         var content = BswupSourceCatalog.GetSourceFile(path);
 

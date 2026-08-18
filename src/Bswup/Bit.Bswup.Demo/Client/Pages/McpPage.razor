@@ -41,6 +41,64 @@
     endpoint, and shows you both.
 </p>
 
+<h2 id="agent-surface">What makes it a good citizen</h2>
+<p>
+    Speaking MCP is the easy half; the half that decides whether an agent uses a server well is what the
+    server declares about itself. Everything here is verifiable from the explorer below - press
+    <b>Send</b> on <code>tools/list</code> and read the JSON.
+</p>
+<ul>
+    <li>
+        <b>Every tool is annotated.</b> All of them carry <code>readOnlyHint</code>,
+        <code>idempotentHint</code> and a closed <code>openWorldHint</code>, so a client can tell that
+        nothing here writes, deletes or reaches out to a third party - and can stop asking you to approve
+        a documentation lookup.
+    </li>
+    <li>
+        <b>Structured results, not just text.</b> The tools that answer with data publish an
+        <code>outputSchema</code> and return <code>structuredContent</code>, so an agent gets typed
+        fields to reason over instead of a JSON string it has to re-parse out of prose.
+    </li>
+    <li>
+        <b>Every argument documents itself.</b> Each parameter carries its own description in the input
+        schema, with the shape of the value it expects - which is what an agent reads before it guesses.
+    </li>
+    <li>
+        <b>The URIs complete.</b> The server answers <code>completion/complete</code> from its own
+        catalogs, so a client filling in <code>bswup://docs/{slug}</code> is offered the slugs that exist
+        rather than left to invent one. Try the <b>Suggest values</b> button under
+        <code>resources/read</code>.
+    </li>
+    <li>
+        <b>Bounded work.</b> The two tools that parse a file you submit run against a time budget and say
+        so in their answer when they hit it, rather than reporting a partial scan as a finished one.
+    </li>
+</ul>
+
+<h2 id="handshake">What an agent is told</h2>
+<p>
+    Before a single tool is called, the server hands the client its identity and a block of
+    <em>instructions</em> - the one part of an MCP server a person normally never sees, because it goes
+    into the model's system prompt rather than into any answer. This is the live handshake with the
+    server running this page:
+</p>
+
+@if (_instructions is null)
+{
+    <p class="mcp-loading">Shaking hands with the server...</p>
+}
+else
+{
+    <div class="mcp-handshake">
+        <dl>
+            <div><dt>Server</dt><dd><code>@(_serverInfo?["title"] ?? _serverInfo?["name"])</code> (<code>@_serverInfo?["name"]</code>)</dd></div>
+            <div><dt>Version</dt><dd><code>@_serverInfo?["version"]</code> - read off the shipped script, not written down here</dd></div>
+            <div><dt>Protocol</dt><dd><code>@_protocolVersion</code></dd></div>
+        </dl>
+        <pre class="mcp-instructions"><code>@_instructions</code></pre>
+    </div>
+}
+
 <h2 id="explorer">Try it live</h2>
 <p>
     This calls the running server from your browser and shows the exact JSON-RPC that goes over the wire.
@@ -80,7 +138,7 @@
                     }
                     @foreach (var tool in _tools)
                     {
-                        <option value="@tool.Name">@tool.Name</option>
+                        <option value="@tool.Name">@tool.Label</option>
                     }
                 </select>
             </label>
@@ -92,7 +150,7 @@
                 <select value="@_selectedPrompt" @onchange="e => SelectPrompt(e.Value?.ToString())">
                     @foreach (var prompt in _prompts)
                     {
-                        <option value="@prompt.Name">@prompt.Name</option>
+                        <option value="@prompt.Name">@prompt.Label</option>
                     }
                 </select>
             </label>
@@ -100,9 +158,28 @@
         else if (_method is "resources/read")
         {
             <label class="mcp-field">
-                <span>Resource URI</span>
-                <input type="text" value="@_resourceUri" @onchange="e => _resourceUri = e.Value?.ToString() ?? string.Empty" />
+                <span>Resource</span>
+                <select value="@_selectedResource" @onchange="e => SelectResource(e.Value?.ToString())">
+                    @foreach (var resource in _resources.Concat(_resourceTemplates))
+                    {
+                        <option value="@resource.Name">@resource.Label - @resource.Name</option>
+                    }
+                </select>
             </label>
+
+            @if (ResourceArgumentName is { } argumentName)
+            {
+                <label class="mcp-field">
+                    <span>
+                        @argumentName
+                        <em>template placeholder</em>
+                    </span>
+                    <input type="text"
+                           spellcheck="false"
+                           value="@_resourceArgument"
+                           @onchange="e => _resourceArgument = e.Value?.ToString() ?? string.Empty" />
+                </label>
+            }
         }
     </div>
 
@@ -136,6 +213,24 @@
                                @onchange="e => argument.Value = e.Value?.ToString() ?? string.Empty" />
                     }
                 </label>
+            }
+        </div>
+    }
+
+    @if (_method is "resources/read" && ResourceArgumentName is not null)
+    {
+        <div class="mcp-completions">
+            <button type="button" class="button-secondary" disabled="@_busy" @onclick="SuggestAsync">
+                Suggest values
+            </button>
+            <span class="mcp-completions-hint">
+                calls <code>completion/complete</code> - what a client offers while you type a URI
+            </span>
+            @foreach (var completion in _completions)
+            {
+                <button type="button"
+                        class="mcp-chip"
+                        @onclick="() => { _resourceArgument = completion; _completions = []; }">@completion</button>
             }
         </div>
     }
@@ -192,7 +287,17 @@ else
                 @foreach (var tool in _tools)
                 {
                     <tr>
-                        <td><code>@tool.Name</code></td>
+                        <td>
+                            <code>@tool.Name</code>
+                            @if (tool.ReadOnly)
+                            {
+                                <span class="mcp-badge" title="Annotated readOnlyHint: it only reads, so a client can call it without asking first.">read-only</span>
+                            }
+                            @if (tool.Title is not null)
+                            {
+                                <span class="mcp-badge-title">@tool.Title</span>
+                            }
+                        </td>
                         <td>@Shorten(tool.Description)</td>
                     </tr>
                 }
@@ -228,7 +333,13 @@ else
                 @foreach (var resource in _resources.Concat(_resourceTemplates))
                 {
                     <tr>
-                        <td><code>@resource.Name</code></td>
+                        <td>
+                            <code>@resource.Name</code>
+                            @if (resource.Title is not null)
+                            {
+                                <span class="mcp-badge-title">@resource.Title</span>
+                            }
+                        </td>
                         <td>@Shorten(resource.Description)</td>
                     </tr>
                 }
@@ -281,9 +392,16 @@ else
 
 @code {
     private static readonly string[] _methods =
-        ["tools/call", "tools/list", "prompts/list", "prompts/get", "resources/list", "resources/read"];
+        ["tools/call", "tools/list", "prompts/list", "prompts/get", "resources/list", "resources/templates/list", "resources/read"];
 
-    private record CatalogEntry(string Name, string Description, JsonNode? Schema);
+    private record CatalogEntry(string Name, string? Title, string Description, JsonNode? Schema, JsonNode? Annotations)
+    {
+        /// <summary>What to show a human: the server's own title when it published one.</summary>
+        public string Label => string.IsNullOrWhiteSpace(Title) ? Name : Title;
+
+        /// <summary>True when the server promises the tool only reads - the annotation clients gate approval on.</summary>
+        public bool ReadOnly => Annotations?["readOnlyHint"]?.GetValue<bool>() == true;
+    }
 
     private sealed class ArgumentField
     {
@@ -305,7 +423,12 @@ else
     private string _method = "tools/call";
     private string? _selectedTool;
     private string? _selectedPrompt;
-    private string _resourceUri = "bswup://guide/JavaScript%20API";
+    private string? _selectedResource;
+    private string _resourceArgument = "JavaScript API";
+    private string[] _completions = [];
+    private JsonNode? _serverInfo;
+    private string? _protocolVersion;
+    private string? _instructions;
     private string? _description;
     private string? _requestText;
     private string? _responseText;
@@ -417,6 +540,20 @@ else
     {
         try
         {
+            // The handshake first, and not only because the protocol asks for it: `instructions` is
+            // the one thing here a person never otherwise sees, because it goes into the model's
+            // system prompt rather than into any tool result.
+            var handshake = await CallAsync("initialize", new JsonObject
+            {
+                ["protocolVersion"] = "2025-06-18",
+                ["capabilities"] = new JsonObject(),
+                ["clientInfo"] = new JsonObject { ["name"] = "bswup-docs-explorer", ["version"] = "1.0" }
+            });
+
+            _serverInfo = handshake?["result"]?["serverInfo"];
+            _protocolVersion = handshake?["result"]?["protocolVersion"]?.GetValue<string>();
+            _instructions = handshake?["result"]?["instructions"]?.GetValue<string>();
+
             var tools = await CallAsync("tools/list", null);
             Fill(_tools, tools?["result"]?["tools"], "name", "description", "inputSchema");
 
@@ -431,6 +568,7 @@ else
 
             _selectedTool ??= _tools.FirstOrDefault(tool => tool.Name == "SearchBswup")?.Name ?? _tools.FirstOrDefault()?.Name;
             _selectedPrompt ??= _prompts.FirstOrDefault()?.Name;
+            _selectedResource ??= _resourceTemplates.FirstOrDefault()?.Name ?? _resources.FirstOrDefault()?.Name;
 
             BuildArguments();
         }
@@ -454,8 +592,10 @@ else
 
             target.Add(new CatalogEntry(
                 item[nameKey]?.GetValue<string>() ?? "(unnamed)",
+                item["title"]?.GetValue<string>(),
                 item[descriptionKey]?.GetValue<string>() ?? string.Empty,
-                schemaKey is null ? null : item[schemaKey]));
+                schemaKey is null ? null : item[schemaKey],
+                item["annotations"]));
         }
     }
 
@@ -476,6 +616,76 @@ else
     {
         _selectedPrompt = name;
         BuildArguments();
+    }
+
+    private void SelectResource(string? uri)
+    {
+        _selectedResource = uri;
+        _completions = [];
+        _mirrorUrl = null;
+    }
+
+    /// <summary>The placeholder of the selected resource template ("slug", "path", ...), if it has one.</summary>
+    private string? ResourceArgumentName
+    {
+        get
+        {
+            var open = _selectedResource?.IndexOf('{') ?? -1;
+            var close = _selectedResource?.IndexOf('}') ?? -1;
+
+            return open >= 0 && close > open ? _selectedResource![(open + 1)..close] : null;
+        }
+    }
+
+    /// <summary>The URI to read: the template with its one placeholder filled in, or the plain URI.</summary>
+    private string ResourceUri
+    {
+        get
+        {
+            var name = ResourceArgumentName;
+            if (name is null || _selectedResource is null) return _selectedResource ?? string.Empty;
+
+            // Escaped, not interpolated raw: a source path is "Library/Scripts/bit-bswup.sw.ts", and
+            // its slashes would otherwise read as extra URI segments the template never declared.
+            return _selectedResource.Replace($"{{{name}}}", Uri.EscapeDataString(_resourceArgument), StringComparison.Ordinal);
+        }
+    }
+
+    /// <summary>
+    /// Asks the server what could go in the template's placeholder. This is the MCP `completion/complete`
+    /// call - the same one a client makes to fill in its own URI box - answered here from the site's
+    /// own catalogs, so the list is every docs page, guide heading or source file that exists today.
+    /// </summary>
+    private async Task SuggestAsync()
+    {
+        var name = ResourceArgumentName;
+        if (name is null || _selectedResource is null) return;
+
+        _busy = true;
+
+        try
+        {
+            var response = await CallAsync("completion/complete", new JsonObject
+            {
+                ["ref"] = new JsonObject { ["type"] = "ref/resource", ["uri"] = _selectedResource },
+                ["argument"] = new JsonObject { ["name"] = name, ["value"] = _resourceArgument }
+            }, capture: true);
+
+            _responseText = response is null ? _responseText : Pretty(response);
+            _completions = [.. (response?["result"]?["completion"]?["values"] as JsonArray ?? [])
+                .Select(value => value?.GetValue<string>() ?? string.Empty)
+                .Where(value => value.Length > 0)
+                .Take(24)];
+        }
+        catch (Exception exception)
+        {
+            _responseText = exception.Message;
+            _responseMeta = "request failed";
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private void ApplyExample(Example example)
@@ -595,7 +805,7 @@ else
         {
             "tools/call" => new JsonObject { ["name"] = _selectedTool, ["arguments"] = arguments },
             "prompts/get" => new JsonObject { ["name"] = _selectedPrompt, ["arguments"] = arguments },
-            "resources/read" => new JsonObject { ["uri"] = _resourceUri },
+            "resources/read" => new JsonObject { ["uri"] = ResourceUri },
             _ => null
         };
     }
