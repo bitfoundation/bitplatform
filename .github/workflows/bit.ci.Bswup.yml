@@ -61,7 +61,7 @@ jobs:
       run: dotnet build src/Bswup/Bit.Bswup.slnx
 
     - name: dotnet test (MCP server)
-      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Mcp.Tests/Bit.Bswup.Mcp.Tests.csproj -f net10.0 --no-build
+      run: cd src/Bswup && dotnet test Tests/Bit.Bswup.Tests.Mcp/Bit.Bswup.Tests.Mcp.csproj -f net10.0 --no-build
 
     # Runs against Bit.Bswup/wwwroot/*.js, which the build above produces, so this also covers
     # the build step itself (e.g. the minifier re-introducing downleveled syntax).
