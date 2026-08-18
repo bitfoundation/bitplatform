@@ -6,7 +6,10 @@
       "Bit.Butil.Demo\\Client\\Bit.Butil.Demo.Client.csproj",
       "Bit.Butil.Demo\\Server\\Bit.Butil.Demo.Server.csproj",
       "Samples\\Bit.Butil.Samples.Core\\Bit.Butil.Samples.Core.csproj",
-      "Samples\\Bit.Butil.Samples.Web\\Bit.Butil.Samples.Web.csproj"
+      "Samples\\Bit.Butil.Samples.Web\\Bit.Butil.Samples.Web.csproj",
+      "tests\\Bit.Butil.Tests.E2E\\Bit.Butil.Tests.E2E.csproj",
+      "tests\\Bit.Butil.Tests.Manual\\Bit.Butil.Tests.Manual.csproj",
+      "tests\\Bit.Butil.Tests.Mcp\\Bit.Butil.Tests.Mcp.csproj"
     ]
   }
 }

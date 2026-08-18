@@ -6,6 +6,11 @@ using static Bit.Butil.LinkerFlags;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// Passkeys: create a public-key credential and verify an assertion with the Web Authentication API.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API">https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API</see>
+/// </summary>
 [ButilService(typeof(WebAuthn))]
 public class WebAuthn(IJSRuntime js, LocalStorage localStorage)
 {

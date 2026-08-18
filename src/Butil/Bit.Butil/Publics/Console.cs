@@ -3,6 +3,11 @@ using Microsoft.JSInterop;
 
 namespace Bit.Butil;
 
+/// <summary>
+/// The browser console, from C#: log, warn, error, table, group, count, time and the rest.
+/// <br/>
+/// More info: <see href="https://developer.mozilla.org/en-US/docs/Web/API/console">https://developer.mozilla.org/en-US/docs/Web/API/console</see>
+/// </summary>
 [ButilService(typeof(Console))]
 public class Console(IJSRuntime js)
 {

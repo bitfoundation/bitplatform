@@ -17,5 +17,10 @@
     <Project Path="Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
     <Project Path="Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
+    <Project Path="tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
+  </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
 </Solution>
