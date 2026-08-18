@@ -62,11 +62,15 @@ jobs:
         dotnet build src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj
         --artifacts-path ${{ runner.temp }}/bit-butil-mcp-tests
 
+    # Run from inside src/ so global.json is in scope: dotnet test resolves it from the working
+    # directory, not from the project path, and without it the Microsoft.Testing.Platform runner
+    # it selects is never applied - dotnet test falls back to VSTest and rejects --report-trx.
     - name: MCP server tests
       env:
         BUTIL_MCP_ARTIFACTS_PATH: ${{ runner.temp }}/bit-butil-mcp-tests
       run: >
-        dotnet test src/Butil/tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj
+        cd src/Butil &&
+        dotnet test tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj
         --no-build
         --report-trx --report-trx-filename butil-mcp.trx
 
