@@ -338,6 +338,120 @@ code, kbd, pre, samp {
     height: 1.25rem;
 }
 
+/* ---------------------------------------------------------------- header search
+   The shape of BitSearchBox: a 2rem field matching the icon buttons beside it, with the
+   magnifier inset at the start and the results hanging off the end as a callout. */
+
+.docs-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    /* Without this the flex item refuses to shrink below the input's own width and pushes the
+       icon buttons off the bar on a narrow screen. */
+    min-width: 0;
+    margin-right: 0.25rem;
+}
+
+.docs-search-icon {
+    position: absolute;
+    left: 0.5rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--bit-clr-fg-ter);
+    /* The magnifier sits on top of the input, so it would otherwise swallow the click that is
+       meant to focus it. */
+    pointer-events: none;
+}
+
+.docs-search-input {
+    width: 11.25rem;
+    height: 2rem;
+    max-width: 100%;
+    font-size: 0.875rem;
+    font-family: inherit;
+    padding: 0 0.625rem 0 1.875rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+    border-radius: var(--bit-shp-brd-radius);
+    transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing),
+                width var(--bit-mot-duration) var(--bit-mot-easing);
+}
+
+.docs-search-input:hover {
+    border-color: var(--bit-clr-brd-pri);
+}
+
+.docs-search-input:focus {
+    outline: none;
+    width: 15rem;
+    border-color: var(--bit-clr-pri);
+    box-shadow: inset 0 0 0 0.0625rem var(--bit-clr-pri);
+}
+
+.docs-search-input::placeholder {
+    color: var(--bit-clr-fg-ter);
+}
+
+/* The one thing on the site that keeps a drop shadow: this really does float over the page, so
+   the elevation is information rather than decoration. */
+.docs-search-results {
+    position: absolute;
+    top: calc(100% + 0.375rem);
+    right: 0;
+    z-index: 1300;
+    width: 20rem;
+    max-width: 84vw;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    background-color: var(--bit-clr-bg-pri);
+    border: var(--bit-shp-brd-width) solid var(--bit-clr-brd-sec);
+    border-radius: var(--bit-shp-brd-radius);
+    box-shadow: var(--bit-shd-cal);
+}
+
+.docs-search-results li {
+    display: flex;
+    gap: 0.75rem;
+    cursor: pointer;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    padding: 0.4375rem 0.625rem;
+    border-radius: var(--bit-shp-brd-radius);
+}
+
+.docs-search-results li:hover,
+.docs-search-results li.docs-search-active {
+    background-color: var(--bit-clr-bg-sec-hover);
+}
+
+.docs-search-result-title {
+    font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--bit-clr-fg-pri);
+}
+
+.docs-search-result-section {
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    letter-spacing: 0.08333em;
+    text-transform: uppercase;
+    color: var(--bit-clr-fg-ter);
+}
+
+.docs-search-empty {
+    cursor: default;
+    color: var(--bit-clr-fg-sec);
+}
+
+.docs-search-results li.docs-search-empty:hover {
+    background-color: transparent;
+}
+
 /* The document's data-theme attribute is the live theme state, so the dark/light swap keys
    off it - and the selector pairs are exact complements, so exactly one of each pair is
    visible in every possible state. */
@@ -1590,6 +1704,16 @@ code, kbd, pre, samp {
         display: inline-flex;
     }
 
+    /* The menu button has just appeared in the bar; the field gives that width back rather
+       than crowding the links. */
+    .docs-search-input {
+        width: 8.75rem;
+    }
+
+    .docs-search-input:focus {
+        width: 11.25rem;
+    }
+
     .nav-panel {
         position: fixed;
         top: var(--demo-header-height);
@@ -1640,6 +1764,25 @@ code, kbd, pre, samp {
     .logo {
         width: 2.5rem;
         height: 2.5rem;
+    }
+
+    /* Phone widths: the field takes whatever the logo, the two remaining links and the two icon
+       buttons leave instead of staying a fixed stub that truncates its own placeholder. There is
+       nothing left to grow into on focus, so the width animation stops too. */
+    .header-group + .header-group {
+        flex: 1;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    .docs-search {
+        flex: 1;
+    }
+
+    .docs-search-input,
+    .docs-search-input:focus {
+        width: 100%;
+        transition: border-color var(--bit-mot-duration-short) var(--bit-mot-easing);
     }
 
     .page-container {

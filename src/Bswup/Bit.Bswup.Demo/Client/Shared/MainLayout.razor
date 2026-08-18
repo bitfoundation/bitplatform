@@ -36,6 +36,10 @@
         </div>
 
         <div class="header-group">
+            @* The exception to the data-demo-action rule above: it searches DocsCatalog, which
+               only exists in C#. See the comment in SearchBox.razor. *@
+            <SearchBox />
+
             <a class="github-btn" href="https://github.com/bitfoundation/bitplatform" target="_blank" rel="noopener noreferrer" aria-label="Github repository"></a>
 
             @* Exact complements: the stylesheet shows the dark-theme button only while
