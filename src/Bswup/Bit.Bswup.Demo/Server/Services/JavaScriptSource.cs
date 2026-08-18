@@ -164,26 +164,42 @@ public static class JavaScriptSource
     /// declaration.
     /// </summary>
     public static string? ReadObjectLiteral(string code, string declaration)
+        => ReadBracketed(code, declaration, '{', '}');
+
+    /// <summary>
+    /// The body of the array literal assigned in <paramref name="declaration"/> (e.g.
+    /// <c>const DEFAULT_ASSETS_EXCLUDE =</c>), without its brackets - or null when the script has
+    /// no such declaration.
+    /// </summary>
+    public static string? ReadArrayLiteral(string code, string declaration)
+        => ReadBracketed(code, declaration, '[', ']');
+
+    /// <summary>
+    /// The body of the bracketed literal opened after <paramref name="declaration"/>. Literals are
+    /// stepped over whole, so a bracket written inside a pattern or a string is content rather than
+    /// nesting and cannot end the list early.
+    /// </summary>
+    private static string? ReadBracketed(string code, string declaration, char open, char close)
     {
         var index = code.IndexOf(declaration, StringComparison.Ordinal);
         if (index < 0) return null;
 
-        var open = code.IndexOf('{', index + declaration.Length);
-        if (open < 0) return null;
+        var start = code.IndexOf(open, index + declaration.Length);
+        if (start < 0) return null;
 
         var depth = 0;
-        for (int i = open; i < code.Length; i++)
+        for (int i = start; i < code.Length; i++)
         {
             var c = code[i];
 
-            if (c is '\'' or '"' or '`' || (c == '/' && i > open && StartsRegex(PreviousSignificant(code, i))))
+            if (c is '\'' or '"' or '`' || (c == '/' && i > start && StartsRegex(PreviousSignificant(code, i))))
             {
                 i = SkipLiteral(code, i) - 1;
                 continue;
             }
 
-            if (c == '{') depth++;
-            else if (c == '}' && --depth == 0) return code[(open + 1)..i];
+            if (c == open) depth++;
+            else if (c == close && --depth == 0) return code[(start + 1)..i];
         }
 
         return null;

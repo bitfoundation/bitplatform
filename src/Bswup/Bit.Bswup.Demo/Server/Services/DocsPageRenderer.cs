@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Bit.Bswup.Demo.Client;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -16,8 +17,35 @@ namespace Bit.Bswup.Demo.Server.Services;
 /// </summary>
 public static class DocsPageRenderer
 {
+    // The Markdown of every page rendered so far, keyed by slug.
+    private static readonly ConcurrentDictionary<string, string> _rendered = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The page as Markdown, rendered once and then served from memory - or a null
+    /// <c>Markdown</c> and the reason it could not be rendered.
+    /// <para>
+    /// Rendering a page and flattening it costs far more than serving it, and the pages are
+    /// static, so the first caller pays for it and everyone after - the tool and the resource
+    /// alike - reads the same Markdown. A failure is deliberately not cached: that is a bug to be
+    /// fixed, not an answer to keep handing out.
+    /// </para>
+    /// </summary>
+    public static async Task<(string? Markdown, string? Error)> GetMarkdownAsync(
+        HtmlRenderer htmlRenderer,
+        DocsPageInfo page,
+        ILogger logger)
+    {
+        if (_rendered.TryGetValue(page.Slug, out var cached)) return (cached, null);
+
+        var (markdown, error) = await TryRenderMarkdownAsync(htmlRenderer, page, logger);
+
+        if (markdown is not null) _rendered[page.Slug] = markdown;
+
+        return (markdown, error);
+    }
+
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
-    public static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
+    private static async Task<(string? Markdown, string? Error)> TryRenderMarkdownAsync(
         HtmlRenderer htmlRenderer,
         DocsPageInfo page,
         ILogger logger)

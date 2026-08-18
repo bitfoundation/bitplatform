@@ -330,23 +330,13 @@ public static partial class BswupScriptCatalog
     {
         var code = JavaScriptSource.StripComments(worker);
 
-        var start = code.IndexOf($"const {name} =", StringComparison.Ordinal);
-        if (start < 0) return [];
+        // Read as a literal rather than by counting brackets: a pattern may write a bracket of its
+        // own (/^\[/, /[a-z]/), and a scan that counted those would end the list in the middle of
+        // one and drop every entry after it.
+        var body = JavaScriptSource.ReadArrayLiteral(code, $"const {name} =");
+        if (body is null) return [];
 
-        var open = code.IndexOf('[', start);
-        if (open < 0) return [];
-
-        var depth = 0;
-        var end = -1;
-        for (int i = open; i < code.Length; i++)
-        {
-            if (code[i] == '[') depth++;
-            else if (code[i] == ']' && --depth == 0) { end = i; break; }
-        }
-
-        if (end < 0) return [];
-
-        return [.. JavaScriptSource.ReadLiterals(code[(open + 1)..end])];
+        return [.. JavaScriptSource.ReadLiterals(body)];
     }
 
     /// <summary>The value of a JavaScript literal without its quotes; anything else verbatim.</summary>

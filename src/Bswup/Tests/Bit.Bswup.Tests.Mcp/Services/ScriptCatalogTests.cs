@@ -349,7 +349,13 @@ public class ScriptCatalogTests
         {
             Assert.IsTrue(pattern.StartsWith('/'), $"'{pattern}' was not parsed as a regex literal");
 
-            var body = pattern[1..pattern.LastIndexOf('/')];
+            var end = pattern.LastIndexOf('/');
+
+            // Checked rather than sliced blind: a literal read without its closing delimiter would
+            // otherwise come back as an index-out-of-range instead of as what it is.
+            Assert.IsTrue(end > 0, $"'{pattern}' has no closing delimiter");
+
+            var body = pattern[1..end];
 
             // A pattern that will not compile here is one the analysis silently drops.
             _ = new Regex(body);

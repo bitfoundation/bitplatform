@@ -117,6 +117,7 @@ public class ShippedConfigurationTests
         foreach (var model in BswupSetupGuide.HostingModels)
         {
             var guide = BswupSetupGuide.Get(model)!;
+            var inspected = 0;
 
             foreach (var file in ServiceWorkerFiles.Select(row => (string)row[0]))
             {
@@ -125,7 +126,13 @@ public class ShippedConfigurationTests
                 var report = BswupServiceWorkerInspector.Inspect(BswupSourceCatalog.GetSourceFile(file));
 
                 Assert.AreEqual(0, report.Problems.Length, $"{model} hands out {file}:\n{string.Join("\n", report.Problems)}");
+
+                inspected++;
             }
+
+            // A guide that stopped shipping worker files - or started heading them differently -
+            // would otherwise pass here having reviewed nothing.
+            Assert.IsTrue(inspected > 0, $"the {model} guide hands out no service-worker file");
         }
     }
 

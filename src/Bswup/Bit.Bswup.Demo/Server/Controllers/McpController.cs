@@ -1,6 +1,5 @@
 using System.Text;
 using System.Reflection;
-using System.Collections.Concurrent;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using Bit.Bswup.Demo.Client;
@@ -36,9 +35,6 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
 
     // The most asset URLs one AnalyzeBswupAssetCaching call will decide on.
     private const int MaxAnalyzedAssetUrls = 200;
-
-    // The rendered Markdown of every docs page served so far, keyed by slug.
-    private static readonly ConcurrentDictionary<string, string> _renderedPages = new(StringComparer.Ordinal);
 
     private static readonly string PackageVersion =
         typeof(BswupProgress).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
@@ -306,23 +302,15 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
             return $"No documentation page has the slug '{slug}'. Available slugs: {slugs}.";
         }
 
-        // Rendering a page and flattening it costs far more than serving it; the pages are static,
-        // so the first caller pays for it and everyone after reads the same Markdown.
-        if (_renderedPages.TryGetValue(page.Slug, out var cached)) return cached;
-
         // The page is rendered by the same component the site serves, so the documentation an agent
         // reads is the documentation a human reads - there is no second copy that could go stale.
-        var (rendered, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page, logger);
+        // The renderer caches it, so this and the bswup://docs resource render each page once between them.
+        var (rendered, error) = await DocsPageRenderer.GetMarkdownAsync(htmlRenderer, page, logger);
 
-        // Not cached: a page that failed to render is a bug to be fixed, not a stale answer to keep.
         if (rendered is null) return DocsPageRenderer.Unavailable(page, error);
 
         // The page renders its own <h1>, so only its source is prepended here.
-        var markdown = Truncate($"bit Bswup documentation page: {page.Url}\n\n{rendered}");
-
-        _renderedPages[page.Slug] = markdown;
-
-        return markdown;
+        return Truncate($"bit Bswup documentation page: {page.Url}\n\n{rendered}");
     }
 
     [HttpGet]

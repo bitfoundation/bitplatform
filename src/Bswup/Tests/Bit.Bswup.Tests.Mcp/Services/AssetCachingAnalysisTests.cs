@@ -190,6 +190,20 @@ public class AssetCachingAnalysisTests
     }
 
     [TestMethod]
+    public void Analyze_UnterminatedRegexLiteral_IsReportedAndLeftOut()
+    {
+        // A file pasted in mid-edit: the pattern opens with a slash and never closes. It is not a
+        // regex .NET can be handed at all, so it has to be reported the same way one that will not
+        // compile is - rather than thrown at the caller.
+        var script = ServiceWorkerFixtures.WithImport(@"self.assetsExclude = [/unterminated];");
+        var analysis = Analyze(script, "css/app.css");
+
+        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("/unterminated", StringComparison.Ordinal)
+                                              && note.Contains("could not be evaluated here", StringComparison.Ordinal)),
+            $"the pattern was dropped without a word. Notes: {string.Join(" | ", analysis.Notes)}");
+    }
+
+    [TestMethod]
     public void Analyze_CatastrophicPattern_ReportsTheUrlsAsUndecidedRatherThanUncached()
     {
         // The patterns come out of a file the caller pasted in, so one of them can be pathological.

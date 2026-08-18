@@ -28,7 +28,9 @@ public static partial class BswupSetupGuide
 
     public static string? Get(string? hostingModel)
     {
-        var model = (hostingModel ?? string.Empty).Trim().ToLowerInvariant().Replace(" ", "-", StringComparison.Ordinal);
+        // Every run of whitespace collapses to the single hyphen the names are written with, so a
+        // tab or a double space between the words still resolves ("blazor  web app").
+        var model = WhitespaceRegex().Replace((hostingModel ?? string.Empty).Trim().ToLowerInvariant(), "-");
 
         model = model switch
         {
@@ -193,6 +195,9 @@ public static partial class BswupSetupGuide
         ".json" => "json",
         _ => string.Empty
     };
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 
     [GeneratedRegex("`+")]
     private static partial Regex BacktickRunRegex();

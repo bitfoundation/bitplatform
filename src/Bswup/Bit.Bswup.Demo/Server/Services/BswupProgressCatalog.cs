@@ -62,7 +62,20 @@ public static class BswupProgressCatalog
     private static BswupOptionDto[] BuildParameters()
     {
         var type = typeof(BswupProgress);
-        var instance = Activator.CreateInstance(type);
+
+        // The parameter list is read by reflection; the instance only supplies the defaults. A
+        // component that cannot be constructed here (a constructor that reaches for a service)
+        // must therefore cost the defaults, not the whole catalog - TryRead already answers
+        // "absent" for a null instance.
+        object? instance;
+        try
+        {
+            instance = Activator.CreateInstance(type);
+        }
+        catch (Exception)
+        {
+            instance = null;
+        }
 
         // Reading order, not declaration order: a parameter with no description recorded here is
         // still listed (reflection is what decides the set) - it simply lands at the end.

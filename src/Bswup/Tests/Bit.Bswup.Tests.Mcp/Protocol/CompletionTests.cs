@@ -67,14 +67,23 @@ public class CompletionTests
     [TestMethod]
     public async Task Matching_PrefersAPrefixButStillOffersWhatContainsTheText()
     {
-        var completion = await CompleteResourceAsync("bswup://docs/{slug}", "slug", "worker");
+        // "s" is typed by half the catalog: some slugs start with it and some only contain it,
+        // which is the only input that can tell the two ranks apart.
+        var completion = await CompleteResourceAsync("bswup://docs/{slug}", "slug", "s");
 
         var values = completion.Completion.Values.ToArray();
 
-        Assert.IsTrue(values.Length > 0);
-        // Someone typing "worker" means the service-worker page; a prefix match still comes first
-        // when there is one, so the ordering is what is asserted rather than the set.
-        Assert.IsTrue(values.Contains("service-worker"));
+        CollectionAssert.Contains(values, "service-worker", string.Join(", ", values));
+        CollectionAssert.Contains(values, "events", string.Join(", ", values));
+
+        var lastPrefix = Array.FindLastIndex(values, value => value.StartsWith("s", StringComparison.OrdinalIgnoreCase));
+        var firstContains = Array.FindIndex(values, value => value.StartsWith("s", StringComparison.OrdinalIgnoreCase) is false);
+
+        Assert.IsTrue(lastPrefix >= 0 && firstContains >= 0, string.Join(", ", values));
+
+        // Every prefix match ranks above every merely-containing one, even the short ones - which
+        // is what the length tie-break would otherwise reverse ("events" is shorter than both).
+        Assert.IsTrue(lastPrefix < firstContains, string.Join(", ", values));
     }
 
     [TestMethod]
@@ -92,7 +101,16 @@ public class CompletionTests
         var values = completion.Completion.Values.ToArray();
 
         Assert.IsTrue(values.Length > 1);
-        Assert.IsTrue(values[0].Length <= values[^1].Length, string.Join(", ", values));
+
+        // Every path starts with its folder, so nothing here is a prefix match and length alone
+        // orders the list - which makes every adjacent pair, not just the ends, assertable.
+        Assert.IsFalse(values.Any(value => value.StartsWith("service-worker", StringComparison.OrdinalIgnoreCase)),
+            string.Join(", ", values));
+
+        for (int i = 1; i < values.Length; i++)
+        {
+            Assert.IsTrue(values[i - 1].Length <= values[i].Length, string.Join(", ", values));
+        }
     }
 
     [TestMethod]

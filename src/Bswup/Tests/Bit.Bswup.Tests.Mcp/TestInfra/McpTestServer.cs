@@ -57,9 +57,22 @@ public sealed class McpTestServer : IAsyncDisposable
             EnableStandaloneGetStream = false
         }, http);
 
-        var mcp = await McpClient.CreateAsync(transport);
+        try
+        {
+            var mcp = await McpClient.CreateAsync(transport);
 
-        return new McpTestServer(app, http, transport, mcp);
+            return new McpTestServer(app, http, transport, mcp);
+        }
+        catch
+        {
+            // Nothing owns the host or the transport until the McpTestServer exists, so a failed
+            // handshake would otherwise leave a running test server behind for every class that
+            // tried to start one - and the next failure would be a port or a timeout, not this.
+            await transport.DisposeAsync();
+            app.Dispose();
+
+            throw;
+        }
     }
 
     /// <summary>Calls a tool and returns its text content - what a client puts in front of a model.</summary>

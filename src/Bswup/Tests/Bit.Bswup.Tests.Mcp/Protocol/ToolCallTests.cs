@@ -395,7 +395,9 @@ public class ToolCallTests
         // off without a word would read as the whole thing.
         var longest = BswupSourceCatalog.SourceFiles
             .OrderByDescending(file => file.Lines)
-            .First(file => BswupSourceCatalog.GetSourceFile(file.Path)!.Length > 40_000);
+            .FirstOrDefault(file => BswupSourceCatalog.GetSourceFile(file.Path)!.Length > 40_000);
+
+        Assert.IsNotNull(longest, "no embedded source file is long enough to be truncated - the cap is untested");
 
         var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path });
 

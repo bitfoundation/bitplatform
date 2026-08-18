@@ -243,6 +243,43 @@ public class JavaScriptSourceTests
         Assert.IsNull(JavaScriptSource.ReadObjectLiteral("const other = {};", "const missing ="));
     }
 
+    // -- ReadArrayLiteral ------------------------------------------------------
+
+    [TestMethod]
+    public void ReadArrayLiteral_ReadsTheBodyOfANamedDeclaration()
+    {
+        var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [/\.dll$/, /\.wasm$/]; const after = 9;", "const DEFAULT =");
+
+        Assert.IsNotNull(body);
+        CollectionAssert.AreEqual(new[] { @"/\.dll$/", @"/\.wasm$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
+    }
+
+    [TestMethod]
+    public void ReadArrayLiteral_IsNotEndedByABracketInsideARegexLiteral()
+    {
+        // A character class and an escaped bracket are pattern text, not the end of the list: a
+        // scan that counted them would drop every entry written after the pattern.
+        var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [/^\[dev\]/, /[a-z]\]$/, /\.css$/];", "const DEFAULT =");
+
+        Assert.IsNotNull(body);
+        CollectionAssert.AreEqual(new[] { @"/^\[dev\]/", @"/[a-z]\]$/", @"/\.css$/" }, JavaScriptSource.ReadLiterals(body).ToArray());
+    }
+
+    [TestMethod]
+    public void ReadArrayLiteral_IsNotEndedByABracketInsideAStringEntry()
+    {
+        var body = JavaScriptSource.ReadArrayLiteral(@"const DEFAULT = [']', 'app.css']; const after = 9;", "const DEFAULT =");
+
+        Assert.IsNotNull(body);
+        CollectionAssert.AreEqual(new[] { "']'", "'app.css'" }, JavaScriptSource.ReadLiterals(body).ToArray());
+    }
+
+    [TestMethod]
+    public void ReadArrayLiteral_ReturnsNullWhenTheDeclarationIsAbsent()
+    {
+        Assert.IsNull(JavaScriptSource.ReadArrayLiteral("const other = [];", "const missing ="));
+    }
+
     [TestMethod]
     public void ReadObjectEntries_ReadsKeysAndValuesInOrder()
     {
@@ -265,7 +302,9 @@ public class JavaScriptSourceTests
         Assert.AreEqual("4", entries[2].Value);
     }
 
-    [TestMethod]
+    // The failure this guards against is a scan that never advances, so it has to time out rather
+    // than hang the whole run.
+    [TestMethod, Timeout(5000)]
     public void ReadObjectEntries_SkipsWhatIsNotAPlainKeyWithoutSpinning()
     {
         // A spread and a quoted key are not `key:` pairs; the scan must step over them and finish.

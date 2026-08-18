@@ -24,9 +24,11 @@ public class CatalogConsistencyTests
     private static readonly string[] _toolNames =
     [
         .. typeof(McpController).GetMethods()
-            .SelectMany(method => method.GetCustomAttributes(typeof(McpServerToolAttribute), inherit: true))
-            .OfType<McpServerToolAttribute>()
-            .Select(attribute => attribute.Name!)
+            .SelectMany(method => method.GetCustomAttributes(typeof(McpServerToolAttribute), inherit: true)
+                                        .OfType<McpServerToolAttribute>()
+                                        // An attribute that names nothing is published under the method's own
+                                        // name, so that is the name this list has to hold.
+                                        .Select(attribute => attribute.Name ?? method.Name))
     ];
 
     /// <summary>Anything written like a Bswup tool call in a piece of prose.</summary>
@@ -83,7 +85,10 @@ public class CatalogConsistencyTests
     {
         var hits = new[] { "cache", "update", "progress", "worker", "install", "handler", "asset", "mode", "source" }
             .SelectMany(term => BswupSearchIndex.Search(term, 50))
-            .DistinctBy(hit => hit.Tool);
+            .DistinctBy(hit => hit.Tool)
+            .ToArray();
+
+        Assert.IsTrue(hits.Length > 0, "the search returned nothing at all, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -97,7 +102,10 @@ public class CatalogConsistencyTests
         var hits = new[] { "cache", "update", "progress", "worker", "install", "handler", "playground", "mcp", "recipe" }
             .SelectMany(term => BswupSearchIndex.Search(term, 50))
             .Where(hit => hit.Tool.StartsWith("GetBswupDocsPage", StringComparison.Ordinal))
-            .DistinctBy(hit => hit.Tool);
+            .DistinctBy(hit => hit.Tool)
+            .ToArray();
+
+        Assert.IsTrue(hits.Length > 0, "no hit pointed at a docs page, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -113,7 +121,10 @@ public class CatalogConsistencyTests
         var hits = new[] { "cache", "update", "progress", "worker", "install", "handler", "cleanup", "upgrade" }
             .SelectMany(term => BswupSearchIndex.Search(term, 50))
             .Where(hit => hit.Tool.StartsWith("GetBswupGuideSection", StringComparison.Ordinal))
-            .DistinctBy(hit => hit.Tool);
+            .DistinctBy(hit => hit.Tool)
+            .ToArray();
+
+        Assert.IsTrue(hits.Length > 0, "no hit pointed at a guide section, so nothing below was checked");
 
         foreach (var hit in hits)
         {
@@ -129,7 +140,10 @@ public class CatalogConsistencyTests
         var hits = new[] { "worker", "progress", "sample", "index", "program", "razor" }
             .SelectMany(term => BswupSearchIndex.Search(term, 50))
             .Where(hit => hit.Tool.StartsWith("GetBswupSourceFile", StringComparison.Ordinal))
-            .DistinctBy(hit => hit.Tool);
+            .DistinctBy(hit => hit.Tool)
+            .ToArray();
+
+        Assert.IsTrue(hits.Length > 0, "no hit pointed at a source file, so nothing below was checked");
 
         foreach (var hit in hits)
         {

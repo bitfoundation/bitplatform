@@ -92,7 +92,7 @@ public class McpResources(HtmlRenderer htmlRenderer, ILogger<McpResources> logge
         var page = DocsCatalog.FindBySlug(slug);
         if (page is null) return $"No documentation page has the slug '{slug}'.";
 
-        var (markdown, error) = await DocsPageRenderer.TryRenderMarkdownAsync(htmlRenderer, page, logger);
+        var (markdown, error) = await DocsPageRenderer.GetMarkdownAsync(htmlRenderer, page, logger);
 
         return markdown ?? DocsPageRenderer.Unavailable(page, error);
     }

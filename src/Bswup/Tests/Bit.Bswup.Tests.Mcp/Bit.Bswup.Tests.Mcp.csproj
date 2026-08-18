@@ -2,6 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
+        <!-- EnableMSTestRunner builds the test host into the assembly itself, and it only generates
+             that entry point for an executable project - as a library the runner never runs. -->
+        <OutputType>Exe</OutputType>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>

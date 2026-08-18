@@ -1,4 +1,4 @@
-@inject NavigationManager NavigationManager
+﻿@inject NavigationManager NavigationManager
 
 @* Client-side docs search over DocsCatalog - no index build and no service call: the catalog's
    titles, descriptions and keywords ARE the corpus, and it is already in the browser.
@@ -102,10 +102,10 @@
             else if (e.Key == "Enter") Go(_results[Math.Clamp(_activeIndex, 0, _results.Length - 1)]);
         }
 
-        if (e.Key == "Escape") Reset();
+        if (e.Key == "Escape") Close();
     }
 
-    private void OnBlur() => _results = null;
+    private void OnBlur() => Close();
 
     private void Go(DocsPageInfo page)
     {
@@ -113,10 +113,17 @@
         NavigationManager.NavigateTo(page.Url);
     }
 
+    // Escape dismisses the dropdown but leaves the text alone: the query is what the person just
+    // typed, and clearing it turns "hide this list" into "start over".
+    private void Close()
+    {
+        _results = null;
+        _activeIndex = 0;
+    }
+
     private void Reset()
     {
         _query = "";
-        _results = null;
-        _activeIndex = 0;
+        Close();
     }
 }
