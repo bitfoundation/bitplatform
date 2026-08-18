@@ -10,7 +10,9 @@ builder.Services.AddRazorComponents()
 builder.Services.AddDemoServices();
 
 // The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it - the
-// same methods, reachable from a browser, which is what the /mcp demo page calls to show them live.
+// same methods, reachable from a browser, which is what the /mcp-server demo page calls to show them
+// live. That page's route has to differ from MapMcp's below: two literal endpoints on /mcp would
+// make a GET of it ambiguous.
 builder.Services.AddControllers();
 builder.Services.AddMcpServer()
     .WithHttpTransport()

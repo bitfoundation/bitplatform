@@ -92,7 +92,11 @@ public class SourceCatalogTests
 
         Assert.IsNotNull(canonical, "The guide no longer has a 'Layout & shared elements' section to test with.");
         Assert.AreEqual(canonical, BmotionSourceCatalog.GetGuideSection("layout shared elements"));
-        Assert.AreEqual(canonical, BmotionSourceCatalog.GetGuideSection("Layout and shared elements".Replace("and ", "", StringComparison.Ordinal)));
+
+        // Normalisation drops everything that is not a letter or a digit, so the "&" disappears
+        // rather than becoming "and". Spelling it out is therefore a different heading, and the
+        // lookup says so instead of quietly matching.
+        Assert.IsNull(BmotionSourceCatalog.GetGuideSection("Layout and shared elements"));
     }
 
     [TestMethod]

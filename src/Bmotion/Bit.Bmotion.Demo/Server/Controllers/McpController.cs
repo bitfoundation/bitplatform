@@ -33,8 +33,10 @@ namespace Bit.Bmotion.Demo.Server.Controllers;
 public class McpController : ControllerBase
 {
     // Long enough for the largest guide section, short enough that a couple of tool calls cannot
-    // crowd out a client's context window.
-    private const int MaxDocumentLength = 40_000;
+    // crowd out a client's context window. McpResources reads the same bound: the resources hand
+    // out the same documents, so a client that pins one instead of calling the tool gets the same
+    // text rather than an unbounded one.
+    internal const int MaxDocumentLength = 40_000;
 
     private static readonly string BmotionVersion =
         typeof(Bm).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
@@ -440,7 +442,7 @@ public class McpController : ControllerBase
                .AppendLine();
     }
 
-    private static string Truncate(string text)
+    internal static string Truncate(string text)
     {
         return text.Length <= MaxDocumentLength
             ? text

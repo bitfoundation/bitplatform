@@ -1,4 +1,4 @@
-@page "/mcp"
+@page "/mcp-server"
 @using System.Net.Http.Json
 @inject HttpClient Http
 
@@ -207,7 +207,11 @@
     @* An unreadable transition comes back as data rather than as a failed call, so the verdict is
        only shown when there is one - a "Snaps on Blazor Server" banner for an animation that was
        never analysed would be a claim about the animation, and a wrong one. *@
-    @if (_playback?.Error is not null)
+    @if (_checkError is not null)
+    {
+        <p class="mcp-error">@_checkError</p>
+    }
+    else if (_playback?.Error is not null)
     {
         <p class="mcp-error">@_playback.Error</p>
     }
@@ -250,7 +254,11 @@
         </button>
     </div>
 
-    @if (_findings is not null)
+    @if (_reviewError is not null)
+    {
+        <p class="mcp-error">@_reviewError</p>
+    }
+    else if (_findings is not null)
     {
         @if (_findings.Findings is null or { Length: 0 })
         {
@@ -295,7 +303,11 @@
         </button>
     </div>
 
-    @if (_hits is { Length: > 0 })
+    @if (_searchError is not null)
+    {
+        <p class="mcp-error">@_searchError</p>
+    }
+    else if (_hits is { Length: > 0 })
     {
         <ul class="mcp-hits">
             @foreach (var hit in _hits)
@@ -493,7 +505,7 @@
         new("Claude Code",
             "One command, from anywhere in your project.",
             """
-            claude mcp add --transport http bmotion https://localhost:5001/mcp
+            claude mcp add --transport http bmotion https://localhost:5071/mcp
             """),
         new("Claude Desktop",
             "Add it to claude_desktop_config.json, then restart the app.",
@@ -502,7 +514,7 @@
               "mcpServers": {
                 "bmotion": {
                   "type": "http",
-                  "url": "https://localhost:5001/mcp"
+                  "url": "https://localhost:5071/mcp"
                 }
               }
             }
@@ -514,7 +526,7 @@
               "servers": {
                 "bmotion": {
                   "type": "http",
-                  "url": "https://localhost:5001/mcp"
+                  "url": "https://localhost:5071/mcp"
                 }
               }
             }
@@ -525,7 +537,7 @@
             {
               "mcpServers": {
                 "bmotion": {
-                  "url": "https://localhost:5001/mcp"
+                  "url": "https://localhost:5071/mcp"
                 }
               }
             }
@@ -583,6 +595,12 @@
     /// <summary>The tab buttons by client name, so arrow-key navigation can move focus with the selection.</summary>
     private readonly Dictionary<string, ElementReference> _tabs = [];
 
+    /// <summary>What every panel says when a call to the demo's own API comes back with nothing.</summary>
+    private const string Unreachable = "The demo's own API did not answer. Is the server still running?";
+
+    /// <summary>The longest request line the review panel will build; Kestrel refuses 8,192 bytes.</summary>
+    private const int MaxReviewUrlLength = 6_000;
+
     private bool _busy;
     private int _replay;
     private string? _error;
@@ -592,6 +610,7 @@
     private string _properties = "x, opacity";
     private string _checkSpec = "spring(stiffness: 200, damping: 20)";
     private bool _checking;
+    private string? _checkError;
     private Playback? _playback;
 
     private string _review = """
@@ -606,10 +625,12 @@
         """;
 
     private bool _reviewing;
+    private string? _reviewError;
     private Review? _findings;
 
     private string _query = "make a list appear one item at a time";
     private bool _searching;
+    private string? _searchError;
     private Hit[]? _hits;
 
     private Catalog? _catalog;
@@ -668,6 +689,8 @@
     // The four handlers below each reset their own flag in a finally: the flag disables the panel's
     // controls while a call is out, so losing it - to a body that did not deserialise into the shape
     // these records describe, say - would leave the panel disabled with no way back but a reload.
+    // Each also clears its own error first and sets it on a null answer, so a panel never shows a
+    // stale result under a fresh question.
 
     private async Task RunSimulationAsync(string spec)
     {
@@ -681,7 +704,7 @@
 
             if (result is null)
             {
-                _error = "The demo's own API did not answer. Is the server still running?";
+                _error = Unreachable;
                 _simulation = null;
             }
             else if (result.Error is not null)
@@ -713,12 +736,16 @@
         _properties = properties;
         _checkSpec = transition;
         _checking = true;
+        _checkError = null;
 
         try
         {
-            _playback = await GetAsync<Playback>(
+            var result = await GetAsync<Playback>(
                 $"api/mcp/AnalyzeBmotionAnimation?properties={Uri.EscapeDataString(properties)}" +
                 $"&transition={Uri.EscapeDataString(transition)}");
+
+            _checkError = result is null ? Unreachable : null;
+            _playback = result;
         }
         finally
         {
@@ -728,11 +755,31 @@
 
     private async Task RunReviewAsync()
     {
+        _reviewError = null;
+
+        var url = $"api/mcp/ReviewBmotionCode?code={Uri.EscapeDataString(_review)}";
+
+        // The tool itself reviews up to 40,000 characters, but this page hands the code over in the
+        // query string, and a request line that long is refused by the server before the tool sees
+        // it. Saying which is happening beats a 414 the panel cannot explain.
+        if (url.Length > MaxReviewUrlLength)
+        {
+            _reviewError = $"That is {_review.Length} characters, which is more than this page can put " +
+                           "in a URL. Paste the component - or just the <Bmotion> element in question - " +
+                           "rather than a whole file. The MCP tool itself takes far more.";
+            _findings = null;
+
+            return;
+        }
+
         _reviewing = true;
 
         try
         {
-            _findings = await GetAsync<Review>($"api/mcp/ReviewBmotionCode?code={Uri.EscapeDataString(_review)}");
+            var result = await GetAsync<Review>(url);
+
+            _reviewError = result is null ? Unreachable : null;
+            _findings = result;
         }
         finally
         {
@@ -743,10 +790,14 @@
     private async Task RunSearchAsync()
     {
         _searching = true;
+        _searchError = null;
 
         try
         {
-            _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmotion?query={Uri.EscapeDataString(_query)}&limit=8") ?? [];
+            var result = await GetAsync<Hit[]>($"api/mcp/SearchBmotion?query={Uri.EscapeDataString(_query)}&limit=8");
+
+            _searchError = result is null ? Unreachable : null;
+            _hits = result;
         }
         finally
         {
@@ -755,9 +806,9 @@
     }
 
     /// <summary>
-    /// Calls one of the demo's own MCP endpoints. A failure leaves the panel showing what it showed
-    /// before rather than taking the page down - these are demonstrations, and the page around them
-    /// is documentation that still reads perfectly well without a live answer.
+    /// Calls one of the demo's own MCP endpoints, answering null when it cannot be reached or did
+    /// not come back in the expected shape. Every caller turns that into its own panel saying so:
+    /// leaving the last answer on screen would read as the answer to the question just asked.
     /// </summary>
     private async Task<T?> GetAsync<T>(string url)
     {

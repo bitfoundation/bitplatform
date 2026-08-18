@@ -378,7 +378,7 @@ public static class BmotionRecipeCatalog
         },
     ];
 
-    /// <summary>The recipes without their code, for the listing.</summary>
+    /// <summary>The recipes without their code or notes, for the listing.</summary>
     public static BmotionRecipeDto[] Summaries =>
         [.. All.Select(recipe => recipe with { Code = null, Notes = null })];
 

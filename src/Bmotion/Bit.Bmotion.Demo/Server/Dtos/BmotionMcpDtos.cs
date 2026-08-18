@@ -26,7 +26,7 @@ public record BmotionApiTypeDto
 {
     public required string Name { get; init; }
 
-    /// <summary>Component, Interface, Enum, Delegate, Static class, Class, Struct or Record.</summary>
+    /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>
     public required string Kind { get; init; }
 
     public string? Summary { get; init; }
@@ -293,7 +293,10 @@ public record BmotionRecipeDto
     /// <summary>The Razor markup. Present on GetBmotionRecipe, omitted from the listing.</summary>
     public string? Code { get; init; }
 
-    /// <summary>What to know before using it - the caveat that is not visible in the code.</summary>
+    /// <summary>
+    /// What to know before using it - the caveat that is not visible in the code. Present on
+    /// GetBmotionRecipe, omitted from the listing.
+    /// </summary>
     public string? Notes { get; init; }
 
     /// <summary>The demo page that shows it running, e.g. "/scroll".</summary>

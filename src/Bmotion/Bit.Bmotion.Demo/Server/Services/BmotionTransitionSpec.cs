@@ -119,7 +119,19 @@ public static partial class BmotionTransitionSpec
             // A positional argument only has meaning while the signature still has a slot for it.
             if (index < positional.Length)
             {
-                named[positional[index++]] = argument.Trim();
+                var slot = positional[index++];
+                var text = argument.Trim();
+
+                // Bm.Tween takes the duration first, but "tween(BackOut)" is how an easing-only tween
+                // is written, and reading that as a duration would reject the one thing it says. The
+                // number test comes first: Enum.TryParse reads a bare number as a BmEase.
+                if (slot is "duration" && TryParseNumber(text, out _) is false && TryEase(text, out _))
+                {
+                    slot = "ease";
+                    index = Array.IndexOf(positional, "ease") + 1;
+                }
+
+                named[slot] = text;
                 continue;
             }
 
@@ -378,14 +390,30 @@ public static partial class BmotionTransitionSpec
 
     private static bool TryNumber(string name, string value, List<string> warnings, out double number)
     {
-        // Units are how a person writes seconds; the library takes plain numbers.
-        var text = value.Trim().TrimEnd('s', 'S').Trim();
-
-        if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number)) return true;
+        if (TryParseNumber(value, out number)) return true;
 
         warnings.Add($"'{value}' is not a number, so '{name}' was ignored.");
 
         return false;
+    }
+
+    /// <summary>
+    /// Units are how a person writes a time; the library takes plain seconds. The "ms" has to be read
+    /// before it is dropped: trimming the trailing s off "300ms" leaves "300m", and dropping the unit
+    /// without converting leaves 300 seconds - a thousand times the motion that was asked for.
+    /// </summary>
+    private static bool TryParseNumber(string value, out double number)
+    {
+        var text = value.Trim();
+        var milliseconds = text.EndsWith("ms", StringComparison.OrdinalIgnoreCase);
+
+        text = (milliseconds ? text[..^2] : text.TrimEnd('s', 'S')).Trim();
+
+        if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number) is false) return false;
+
+        if (milliseconds) number /= 1000;
+
+        return true;
     }
 
     private static double[] Numbers(string value)

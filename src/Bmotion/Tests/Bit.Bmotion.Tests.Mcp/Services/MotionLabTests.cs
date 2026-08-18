@@ -218,6 +218,24 @@ public class MotionLabTests
         Assert.AreEqual(21, (await BmotionMotionLab.SampleEaseAsync(BmEase.Out, 21)).Length);
     }
 
+    /// <summary>
+    /// A curve needs two points to be read at all, and the sampling fraction divides by points - 1.
+    /// A caller asking for fewer gets the smallest readable curve rather than an empty array or a
+    /// division by zero.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(-3)]
+    public async Task SampleEase_FewerThanTwoPoints_StillSamplesTheEnds(int points)
+    {
+        var curve = await BmotionMotionLab.SampleEaseAsync(BmEase.Linear, points);
+
+        Assert.AreEqual(2, curve.Length);
+        Assert.AreEqual(0, curve[0], 0.02);
+        Assert.AreEqual(1, curve[1], 0.02);
+    }
+
     [TestMethod]
     public async Task AnalyzePlayback_TransformsAndOpacity_GoToTheCompositor()
     {

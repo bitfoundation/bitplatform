@@ -167,6 +167,17 @@ public class CodeReviewTests
                 </Bmotion>
                 """,
 
+            ["animate-without-initial"] = """
+                <Bmotion Animate="_open ? Bm.To(opacity: 1) : Bm.To(opacity: 0)">
+                    <div class="card">Content</div>
+                </Bmotion>
+                """,
+
+            ["empty-bmotion"] = """
+                <Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)">
+                    <div class="card">Content</div>
+                </Bmotion>
+                """,
             ["missing-key-in-loop"] = """
                 @foreach (var item in Items)
                 {
@@ -221,6 +232,10 @@ public class CodeReviewTests
                 """,
         };
 
+        CollectionAssert.AreEquivalent(Offenders.Keys.ToArray(), clean.Keys.ToArray(),
+                                       "Every rule needs a correct form here as well as an offender: a rule with " +
+                                       "no false-positive case is a rule nothing keeps honest.");
+
         foreach (var (rule, code) in clean)
         {
             var review = BmotionCodeReview.Review(code);
@@ -228,6 +243,24 @@ public class CodeReviewTests
             Assert.IsFalse(review.Findings.Any(finding => finding.Rule == rule),
                            $"'{rule}' fired on markup that gets it right:\n{code}");
         }
+    }
+
+    /// <summary>
+    /// Only the bound Animate value tells an entrance apart from a state change. An underscore
+    /// anywhere else on the tag - a BEM class, an id, some unrelated attribute - is not state, and a
+    /// rule that reads it as state goes quiet on exactly the markup it exists to catch.
+    /// </summary>
+    [TestMethod]
+    public void Review_AnimateWithoutInitial_IsStillReportedWhenTheUnderscoreIsNotInAnimate()
+    {
+        var code = """
+            <Bmotion Animate="Bm.To(opacity: 1)" class="card_body" id="hero_panel">
+                <div class="card">Content</div>
+            </Bmotion>
+            """;
+
+        Assert.IsTrue(BmotionCodeReview.Review(code).Findings.Any(finding => finding.Rule == "animate-without-initial"),
+                      "An underscore outside the Animate value silenced the rule.");
     }
 
     [TestMethod]

@@ -166,8 +166,13 @@ public static partial class BmotionCodeReview
             if (tag.Contains("Animate=", StringComparison.Ordinal) is false) continue;
             if (tag.Contains("Initial=", StringComparison.Ordinal)) continue;
             // An element whose Animate is bound to state animates when that state changes, which is
-            // a different (and correct) pattern from an entrance.
-            if (tag.Contains("@(", StringComparison.Ordinal) || tag.Contains("_", StringComparison.Ordinal)) continue;
+            // a different (and correct) pattern from an entrance. Only the bound Animate value says
+            // so: an underscore in a CSS class or in an unrelated attribute is not state.
+            if (tag.Contains("@(", StringComparison.Ordinal)) continue;
+
+            var animate = AnimateValueRegex().Match(tag);
+
+            if (animate.Success && PrivateFieldRegex().IsMatch(animate.Groups["value"].Value)) continue;
 
             findings.Add(new BmotionReviewFindingDto
             {
@@ -514,6 +519,13 @@ public static partial class BmotionCodeReview
 
     [GeneratedRegex(@"^\s*<(?<tag>[A-Za-z][\w.]*)")]
     private static partial Regex FirstChildTagRegex();
+
+    [GeneratedRegex(@"\bAnimate\s*=\s*""(?<value>[^""]*)""")]
+    private static partial Regex AnimateValueRegex();
+
+    /// <summary>A reference to a private field - the convention Blazor component state is written in.</summary>
+    [GeneratedRegex(@"(?<!\w)_\w")]
+    private static partial Regex PrivateFieldRegex();
 
     // The two runs of non-parenthesis text around the optional nested call are ambiguous, so a
     // Bm.To( that is never closed - which is exactly what half-written code under review looks like -

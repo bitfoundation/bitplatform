@@ -109,6 +109,10 @@ public static class BmotionMotionLab
 
         if (frames.Count == 0) return [];
 
+        // Two is the fewest points a curve can be read from, and the fraction below divides by
+        // points - 1: asking for one or fewer would sample nothing, or divide by zero.
+        points = Math.Max(2, points);
+
         var curve = new double[points];
 
         for (int i = 0; i < points; i++)
@@ -186,8 +190,13 @@ public static class BmotionMotionLab
             Reason = reasons.Reason + (unknown.Length > 0
                 ? $" Ignored, because Bm.To has no such argument: {string.Join(", ", unknown)}."
                 : string.Empty),
-            CompositorDurationMs = timing is not null && timing.TryGetValue("duration", out var duration)
-                ? Convert.ToDouble(duration, CultureInfo.InvariantCulture)
+            // The timing is whatever the engine handed the interop layer, so the duration is read
+            // defensively: a value of an unexpected shape leaves it unreported rather than throwing
+            // out of a tool whose whole answer is the path, not the milliseconds.
+            CompositorDurationMs = timing is not null
+                                && timing.TryGetValue("duration", out var duration)
+                                && double.TryParse(duration?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var durationMs)
+                ? durationMs
                 : null,
             CompositorEasing = timing is not null && timing.TryGetValue("easing", out var easing)
                 ? easing?.ToString()
@@ -290,8 +299,11 @@ public static class BmotionMotionLab
 
             return true;
         }
-        catch (TimeoutException)
+        catch
         {
+            // Timed out, or the animation faulted. Either is the same answer to the only question
+            // being asked - did it finish - and the caller reports the recording as unreadable
+            // rather than letting a headless run throw out of a tool call.
             return false;
         }
     }

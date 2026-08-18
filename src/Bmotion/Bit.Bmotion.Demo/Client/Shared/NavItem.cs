@@ -100,7 +100,7 @@ public sealed record NavItem(string Title, string Href, string Description, stri
             "prefers-reduced-motion policies, what reduced motion keeps animating, global speed control, and the live engine inspector.",
             "accessibility a11y reduced motion prefers-reduced-motion diagnostics inspector speed reducemotion policy",
             "Accessibility.razor"),
-        new("MCP Server", "mcp",
+        new("MCP Server", "mcp-server",
             "The demo's Model Context Protocol server: the tools, prompts and resources that let an AI agent write correct Bmotion code.",
             "mcp model context protocol ai agent llm tools prompts resources claude cursor copilot server integration",
             "McpServerPage.razor"),

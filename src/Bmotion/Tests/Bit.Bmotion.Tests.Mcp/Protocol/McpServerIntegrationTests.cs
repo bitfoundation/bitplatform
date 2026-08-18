@@ -390,14 +390,14 @@ public class McpServerIntegrationTests
     }
 
     /// <summary>
-    /// The tools are also plain HTTP GETs, which is what the demo's own /mcp page calls to show them
-    /// working. That route is separate wiring from the MCP transport and fails separately.
+    /// The tools are also plain HTTP GETs, which is what the demo's own /mcp-server page calls to
+    /// show them working. That route is separate wiring from the MCP transport and fails separately -
+    /// but it is the same host, so it is reached through the fixture rather than a second startup.
     /// </summary>
     [TestMethod]
     public async Task Server_TheSameToolsAreAlsoReachableOverPlainHttp()
     {
-        using var factory = new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>();
-        using var http = factory.CreateClient();
+        var http = _server.Http;
 
         var catalog = await http.GetFromJsonAsync<BmotionMcpCatalogDto>("/api/Mcp/GetMcpCatalog");
 

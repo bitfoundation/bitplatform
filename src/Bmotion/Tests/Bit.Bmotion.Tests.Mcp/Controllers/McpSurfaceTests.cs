@@ -169,7 +169,8 @@ public class McpSurfaceTests
 
         foreach (var file in BmotionSourceCatalog.SourceFiles)
         {
-            Assert.AreEqual(BmotionSourceCatalog.GetSourceFile(file.Path), McpResources.Source(file.Path));
+            Assert.AreEqual(controller.GetBmotionSourceFile(file.Path), McpResources.Source(file.Path),
+                            $"The source file '{file.Path}' reads differently through the resource.");
         }
     }
 

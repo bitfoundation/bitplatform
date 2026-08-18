@@ -31,6 +31,9 @@ internal sealed class BmotionMcpServerFixture : IAsyncDisposable
     /// <summary>An MCP client talking to the server the way a coding agent does.</summary>
     public McpClient Client { get; }
 
+    /// <summary>The same in-memory host over plain HTTP, for the tools that are also GET endpoints.</summary>
+    public HttpClient Http => _httpClient;
+
     public static async Task<BmotionMcpServerFixture> StartAsync()
     {
         var factory = new WebApplicationFactory<Program>()
@@ -53,7 +56,21 @@ internal sealed class BmotionMcpServerFixture : IAsyncDisposable
             httpClient,
             ownsHttpClient: false);
 
-        var client = await McpClient.CreateAsync(transport);
+        McpClient client;
+
+        try
+        {
+            client = await McpClient.CreateAsync(transport);
+        }
+        catch
+        {
+            // Nothing is returned to dispose, so the host and its client would outlive the failure
+            // and hold the in-memory server open for the rest of the run.
+            httpClient.Dispose();
+            await factory.DisposeAsync();
+
+            throw;
+        }
 
         return new BmotionMcpServerFixture(factory, httpClient, client);
     }

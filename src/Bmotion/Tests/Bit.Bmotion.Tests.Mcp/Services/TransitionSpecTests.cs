@@ -151,6 +151,52 @@ public class TransitionSpecTests
         Assert.AreEqual(0.4, tween.Duration);
     }
 
+    /// <summary>
+    /// Bm.Tween takes the duration first, so "tween(BackOut)" - the way an easing-only tween is
+    /// written - lands in the duration slot. Reading it as a bad duration would throw away the one
+    /// thing the spec says.
+    /// </summary>
+    [TestMethod]
+    [DataRow("tween(BackOut)", BmEase.BackOut)]
+    [DataRow("tween(Linear)", BmEase.Linear)]
+    [DataRow("tween(BmEase.InOut)", BmEase.InOut)]
+    public void Parse_AnEasingInThePositionalDurationSlot_IsReadAsTheEasing(string spec, BmEase expected)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.AreEqual(expected, ((BmTween)result.Transition!).Ease);
+        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+                       $"The easing was reported as a bad duration. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
+    /// <summary>A first argument that is neither a number nor an easing is still a bad duration.</summary>
+    [TestMethod]
+    public void Parse_ANonsenseFirstArgument_IsStillReportedAsABadDuration()
+    {
+        var result = BmotionTransitionSpec.Parse("tween(swoosh)");
+
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+                      $"Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
+    /// <summary>
+    /// Milliseconds are how the CSS and Web Animations worlds write a duration, so an agent copying
+    /// one across writes it that way. Trimming the trailing "s" off it would leave "300m"; dropping
+    /// the unit without converting would leave a five-minute tween.
+    /// </summary>
+    [TestMethod]
+    [DataRow("tween(duration: 300ms)", 0.3)]
+    [DataRow("tween(duration: 300MS)", 0.3)]
+    [DataRow("tween(400ms)", 0.4)]
+    public void Parse_ADurationInMilliseconds_IsConvertedToSeconds(string spec, double expected)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.AreEqual(expected, ((BmTween)result.Transition!).Duration, 1e-9);
+        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+                       $"Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
     [TestMethod]
     public void Parse_ABezier_KeepsItsOwnCommasTogether()
     {

@@ -32,7 +32,13 @@ public static class McpResources
     [McpServerResource(UriTemplate = "bmotion://guide/{heading}", Name = "Guide section", MimeType = "text/markdown")]
     [Description("One section of the Bit.Bmotion guide by heading, e.g. bmotion://guide/Variants.")]
     public static string GuideSection(string heading)
-        => BmotionSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.";
+    {
+        var section = BmotionSourceCatalog.GetGuideSection(heading);
+
+        return section is null
+            ? $"The guide has no section called '{heading}'."
+            : McpController.Truncate(section);
+    }
 
     [McpServerResource(UriTemplate = "bmotion://api", Name = "Bit.Bmotion public API", MimeType = "text/markdown")]
     [Description("Every public Bit.Bmotion type with its kind and summary.")]
@@ -142,7 +148,13 @@ public static class McpResources
     [McpServerResource(UriTemplate = "bmotion://source/{path}", Name = "Demo source file", MimeType = "text/plain")]
     [Description("One source file of the demo site, e.g. bmotion://source/Demo%2FClient%2FPages%2FSprings.razor.")]
     public static string Source(string path)
-        => BmotionSourceCatalog.GetSourceFile(path) ?? $"No source file at '{path}'.";
+    {
+        var content = BmotionSourceCatalog.GetSourceFile(path);
+
+        return content is null
+            ? $"No source file at '{path}'."
+            : McpController.Truncate(content);
+    }
 
     [McpServerResource(UriTemplate = "bmotion://setup/{renderMode}", Name = "Setup guide", MimeType = "text/markdown")]
     [Description("The complete wiring for one Blazor render mode, e.g. bmotion://setup/wasm or bmotion://setup/server.")]

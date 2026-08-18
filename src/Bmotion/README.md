@@ -912,8 +912,8 @@ drag, variants & stagger, keyframes, enter/exit transitions, presence switching,
 
 The demo hosts an **MCP server** at `/mcp`, so an AI agent can write Bmotion code from what the
 library actually is rather than from what it remembers. Point an MCP client at
-`https://localhost:5001/mcp`; every tool is also a plain HTTP GET under `/api/mcp/...` if you just
-want to look, and the demo's own `/mcp` page documents and exercises all of them.
+`https://localhost:5071/mcp`; every tool is also a plain HTTP GET under `/api/mcp/...` if you just
+want to look, and the demo's own `/mcp-server` page documents and exercises all of them.
 
 What sets it apart from a documentation server is that half of its tools **answer by running the
 real animation engine off-screen** - a headless `IBmotionInterop` lets it construct a genuine
