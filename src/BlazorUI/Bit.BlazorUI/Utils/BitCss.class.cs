@@ -496,6 +496,9 @@ public static partial class BitCss
                 public const string Surface = "bit-css-shp-radius-surface";
                 public const string Popup = "bit-css-shp-radius-popup";
                 public const string Dialog = "bit-css-shp-radius-dialog";
+                public const string Button = "bit-css-shp-radius-button";
+                public const string Chip = "bit-css-shp-radius-chip";
+                public const string Selection = "bit-css-shp-radius-selection";
             }
         }
     }

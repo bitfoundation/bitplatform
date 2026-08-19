@@ -58,6 +58,25 @@
     //border width; a preset can thin it (Cupertino's 0.5px hairline) without touching control borders.
     --bit-siz-divider: var(--bit-shp-brd-width);
 
+    //the switch (BitToggle) geometry per size class: the width and height of the track and the size
+    //of the knob. Density-aware like the control heights. The inset that holds the knob off the
+    //track edge is not a token: it is (track height - knob) / 2 less the border, which is what keeps
+    //the knob the same distance from the stroke on every side whatever geometry a preset sets.
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.5); //52px
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+
+    //the draggable handle of a BitSlider per size class.
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+
     //the thickness of a linear track (BitProgress bar) per size class.
     --bit-siz-track-sm: 0.125rem; //2px
     --bit-siz-track-md: 0.25rem; //4px

@@ -358,6 +358,9 @@ $layout-density-scale: var(--bit-layout-density-scale, 1);
 //Material; column + center under Cupertino).
 $layout-dialog-actions-direction: var(--bit-layout-dialog-actions-direction);
 $layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
+//how those buttons are aligned across the footer: centered under Fluent and Material, stretched
+//under Cupertino - which is what runs the stacked alert actions full width.
+$layout-dialog-actions-align: var(--bit-layout-dialog-actions-align);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -401,6 +404,18 @@ $shp-radius-surface: var(--bit-shp-radius-surface);
 $shp-radius-popup: var(--bit-shp-radius-popup);
 $shp-radius-dialog: var(--bit-shp-radius-dialog);
 
+//shape - per control sub-family radius. A button, a chip and a selection box are controls too, so
+//all three fall back to $shp-radius-control; a design system that shapes them apart from a plain
+//field (Material: pill button, 8dp chip, 2dp checkbox box; Cupertino: capsules) retunes one token
+//instead of restyling the components.
+//  button    - BitButton, BitActionButton, BitMenuButton, BitToggleButton and the dialog actions.
+//              BitButtonGroup stays on the control radius: it publishes its own Rounded parameter.
+//  chip      - BitTag and the chips a BitTagsInput or a multi-select BitDropdown draws in its field
+//  selection - the checkbox box (the radio ring is a circle under every design system)
+$shp-radius-button: var(--bit-shp-radius-button);
+$shp-radius-chip: var(--bit-shp-radius-chip);
+$shp-radius-selection: var(--bit-shp-radius-selection);
+
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
 //icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
@@ -431,6 +446,23 @@ $siz-icon-lg: var(--bit-siz-icon-lg);
 $siz-sel-sm: var(--bit-siz-sel-sm);
 $siz-sel-md: var(--bit-siz-sel-md);
 $siz-sel-lg: var(--bit-siz-sel-lg);
+//the switch (BitToggle) geometry per size class: the track it slides in and the knob that slides.
+//Every design system draws its own switch - Fluent's 40x20 pill with a 12px knob, Material's 52x32
+//with a 24dp handle, the 51x31 UISwitch with its 27pt thumb - and the inset that keeps the knob
+//off the track edge is derived from the two, so a preset only sets these three per size.
+$siz-switch-w-sm: var(--bit-siz-switch-w-sm);
+$siz-switch-w-md: var(--bit-siz-switch-w-md);
+$siz-switch-w-lg: var(--bit-siz-switch-w-lg);
+$siz-switch-h-sm: var(--bit-siz-switch-h-sm);
+$siz-switch-h-md: var(--bit-siz-switch-h-md);
+$siz-switch-h-lg: var(--bit-siz-switch-h-lg);
+$siz-switch-thumb-sm: var(--bit-siz-switch-thumb-sm);
+$siz-switch-thumb-md: var(--bit-siz-switch-thumb-md);
+$siz-switch-thumb-lg: var(--bit-siz-switch-thumb-lg);
+//the draggable handle of a slider per size class (Material's 20dp handle, the 28pt UISlider knob).
+$siz-slider-thumb-sm: var(--bit-siz-slider-thumb-sm);
+$siz-slider-thumb-md: var(--bit-siz-slider-thumb-md);
+$siz-slider-thumb-lg: var(--bit-siz-slider-thumb-lg);
 $siz-spinner-stroke: var(--bit-siz-spinner-stroke);
 $siz-popup-max-height: var(--bit-siz-popup-max-height);
 

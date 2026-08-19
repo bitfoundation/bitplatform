@@ -8,9 +8,10 @@
  * elements instead of three sets of vendor pseudo-elements that only ever agreed by accident.
  */
 .bit-sld {
-    --bit-sld-thumb: #{spacing(2)};
-    // The rail thickness follows the theme's medium track token (Material 4px, Cupertino 2px);
-    // the thumb and length stay this component's own knobs.
+    // The thumb and the rail follow the theme (Material's 20dp handle on a 4dp track, the 28pt
+    // UISlider knob on a 2pt one); the length stays this component's own knob. The size classes
+    // below step the thumb, so this is the medium one a slider carrying no size class draws.
+    --bit-sld-thumb: #{$siz-slider-thumb-md};
     --bit-sld-rail: #{$siz-track-md};
     --bit-sld-length: #{spacing(24)};
     --bit-sld-font-size: #{$tg-fs-sm};
@@ -590,21 +591,21 @@
  * Sizes
  * --------------------------------------------------------------------------------------------------- */
 .bit-sld-sm {
-    --bit-sld-thumb: #{spacing(1.5)};
+    --bit-sld-thumb: #{$siz-slider-thumb-sm};
     --bit-sld-rail: #{spacing(0.375)};
     --bit-sld-font-size: #{$tg-fs-xs};
     --bit-sld-length: #{spacing(18)};
 }
 
 .bit-sld-md {
-    --bit-sld-thumb: #{spacing(2)};
+    --bit-sld-thumb: #{$siz-slider-thumb-md};
     --bit-sld-rail: #{spacing(0.5)};
     --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-length: #{spacing(24)};
 }
 
 .bit-sld-lg {
-    --bit-sld-thumb: #{spacing(3)};
+    --bit-sld-thumb: #{$siz-slider-thumb-lg};
     --bit-sld-rail: #{spacing(0.75)};
     --bit-sld-font-size: #{$tg-fs-md};
     --bit-sld-length: #{spacing(30)};

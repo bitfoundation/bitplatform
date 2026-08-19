@@ -110,7 +110,7 @@
     height: var(--bit-chb-box-size);
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-selection;
     min-width: var(--bit-chb-box-size);
     border-color: var(--bit-chb-box-clr-brd);
     background-color: var(--bit-chb-box-clr-bg);
@@ -196,7 +196,7 @@
     .bit-chb-idi {
         width: var(--bit-ch-ind-size);
         height: var(--bit-ch-ind-size);
-        border-radius: $shp-radius-control;
+        border-radius: $shp-radius-selection;
         background-color: var(--bit-chb-ico-clr-bg);
 
         &::before {

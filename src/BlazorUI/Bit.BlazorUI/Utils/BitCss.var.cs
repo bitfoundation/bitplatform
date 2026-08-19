@@ -551,6 +551,9 @@ public static partial class BitCss
                 public const string Surface = "--bit-shp-radius-surface";
                 public const string Popup = "--bit-shp-radius-popup";
                 public const string Dialog = "--bit-shp-radius-dialog";
+                public const string Button = "--bit-shp-radius-button";
+                public const string Chip = "--bit-shp-radius-chip";
+                public const string Selection = "--bit-shp-radius-selection";
             }
         }
 
@@ -578,6 +581,7 @@ public static partial class BitCss
             public const string DensityScale = "--bit-layout-density-scale";
             public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
             public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
+            public const string DialogActionsAlign = "--bit-layout-dialog-actions-align";
 
             public static class Breakpoints
             {
@@ -645,6 +649,34 @@ public static partial class BitCss
                 public const string Sm = "--bit-siz-sel-sm";
                 public const string Md = "--bit-siz-sel-md";
                 public const string Lg = "--bit-siz-sel-lg";
+            }
+
+            public static class SwitchWidth
+            {
+                public const string Sm = "--bit-siz-switch-w-sm";
+                public const string Md = "--bit-siz-switch-w-md";
+                public const string Lg = "--bit-siz-switch-w-lg";
+            }
+
+            public static class SwitchHeight
+            {
+                public const string Sm = "--bit-siz-switch-h-sm";
+                public const string Md = "--bit-siz-switch-h-md";
+                public const string Lg = "--bit-siz-switch-h-lg";
+            }
+
+            public static class SwitchThumb
+            {
+                public const string Sm = "--bit-siz-switch-thumb-sm";
+                public const string Md = "--bit-siz-switch-thumb-md";
+                public const string Lg = "--bit-siz-switch-thumb-lg";
+            }
+
+            public static class SliderThumb
+            {
+                public const string Sm = "--bit-siz-slider-thumb-sm";
+                public const string Md = "--bit-siz-slider-thumb-md";
+                public const string Lg = "--bit-siz-slider-thumb-lg";
             }
 
             public const string SpinnerStroke = "--bit-siz-spinner-stroke";

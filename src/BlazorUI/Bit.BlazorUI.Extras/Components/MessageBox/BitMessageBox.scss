@@ -51,10 +51,11 @@
     width: 100%;
     display: flex;
     gap: spacing(2);
-    align-items: center;
     box-sizing: border-box;
     // Follows the same theme decision as BitDialog's footer, so all dialog-like footers across the
-    // library lay out their actions identically for the active design system.
+    // library lay out their actions identically for the active design system - including the
+    // stretch that runs a Cupertino alert's stacked actions full width.
+    align-items: $layout-dialog-actions-align;
     flex-direction: $layout-dialog-actions-direction;
     justify-content: $layout-dialog-actions-justify;
 }

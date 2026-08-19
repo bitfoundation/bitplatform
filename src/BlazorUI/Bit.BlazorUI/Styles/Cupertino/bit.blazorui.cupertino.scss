@@ -3,12 +3,10 @@
 // Override-only bundle: link it AFTER the main bit.blazorui.css (which carries the components and
 // the Fluent defaults) and activate it with bit-theme="cupertino" (follows the light palette),
 // "cupertino-light" or "cupertino-dark" - on <html> for the whole app or on any element for a
-// scoped region. Every rule here only declares --bit-* tokens (plus a handful of per-component
-// retunes), so the file stays small and the attribute is the only switch.
+// scoped region. Every rule here declares nothing but --bit-* tokens - a preset never restyles a
+// component class - so the file stays small and the attribute is the only switch.
 @import "colors.cupertino-light.scss";
 
 @import "colors.cupertino-dark.scss";
 
 @import "tokens.cupertino.scss";
-
-@import "components.cupertino.scss";

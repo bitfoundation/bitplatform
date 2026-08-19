@@ -46,6 +46,60 @@ internal static class BitThemeMapper
         }
     }
 
+    /// <summary>
+    /// The family alias tier's default targets, mirroring <c>Styles/family-tokens.scss</c> (pinned
+    /// to it by a contract test). ORDERED so that a chained alias resolves in a single pass: an
+    /// entry may only point at a primitive or at an alias declared ABOVE it (the control radius is
+    /// re-declared before the button/chip/selection radii that fall back to it).
+    /// </summary>
+    /// <remarks>
+    /// The app-bar shadows and the snackbar elevation are deliberately absent: they are not plain
+    /// <c>var()</c> aliases of a primitive (a tinted expression and a literal <c>none</c>), so there
+    /// is nothing to re-substitute for them.
+    /// </remarks>
+    internal static readonly IReadOnlyList<KeyValuePair<string, string>> FamilyAliasTargets =
+    [
+        new(BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.BorderRadius),
+        new(BitCss.Var.Shape.Radius.Surface, BitCss.Var.Shape.BorderRadius),
+        new(BitCss.Var.Shape.Radius.Popup, BitCss.Var.Shape.BorderRadius),
+        new(BitCss.Var.Shape.Radius.Dialog, BitCss.Var.Shape.BorderRadius),
+        new(BitCss.Var.Shape.Radius.Button, BitCss.Var.Shape.Radius.Control),
+        new(BitCss.Var.Shape.Radius.Chip, BitCss.Var.Shape.Radius.Control),
+        new(BitCss.Var.Shape.Radius.Selection, BitCss.Var.Shape.Radius.Control),
+        new(BitCss.Var.Shadow.Card, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.Popup, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
+        new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
+    ];
+
+    /// <summary>
+    /// Re-declares a family alias (as its default <c>var()</c> reference) next to any token the
+    /// mapped theme overrides it from, so the components - which read the family tier - track an
+    /// inline override for the styled subtree.
+    /// </summary>
+    /// <remarks>
+    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>, one tier
+    /// lower: <c>family-tokens.scss</c> declares the family aliases on <c>:root</c>, so a theme
+    /// applied further down the tree (a <see cref="BitThemeProvider"/> wrapper, or
+    /// <see cref="BitThemeManager.ApplyBitThemeAsync"/> on an element) that re-values
+    /// <c>--bit-shp-brd-radius</c> or <c>--bit-shd-cal</c> would otherwise leave every component
+    /// reading the document's already-substituted family value. The table is walked in order, so an
+    /// alias re-declared here becomes a touched target for the aliases that fall back to IT - which
+    /// is what carries a <c>Radius.Control</c> override through to buttons, chips and checkboxes.
+    /// An alias the theme sets explicitly always wins.
+    /// </remarks>
+    internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
+    {
+        foreach (var (alias, target) in FamilyAliasTargets)
+        {
+            if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
+            if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
+
+            cssVariables[alias] = $"var({target})";
+        }
+    }
+
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
         var result = new Dictionary<string, string>();
@@ -389,6 +443,9 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shape.Radius.Xxl, bitTheme.Shape.Radius.Xxl);
         addCssVar(BitCss.Var.Shape.Radius.Full, bitTheme.Shape.Radius.Full);
         addCssVar(BitCss.Var.Shape.Radius.Control, bitTheme.Shape.Radius.Control);
+        addCssVar(BitCss.Var.Shape.Radius.Button, bitTheme.Shape.Radius.Button);
+        addCssVar(BitCss.Var.Shape.Radius.Chip, bitTheme.Shape.Radius.Chip);
+        addCssVar(BitCss.Var.Shape.Radius.Selection, bitTheme.Shape.Radius.Selection);
         addCssVar(BitCss.Var.Shape.Radius.Surface, bitTheme.Shape.Radius.Surface);
         addCssVar(BitCss.Var.Shape.Radius.Popup, bitTheme.Shape.Radius.Popup);
         addCssVar(BitCss.Var.Shape.Radius.Dialog, bitTheme.Shape.Radius.Dialog);
@@ -527,6 +584,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Layout.DensityScale, bitTheme.Layout.DensityScale);
         addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);
         addCssVar(BitCss.Var.Layout.DialogActionsJustify, bitTheme.Layout.DialogActionsJustify);
+        addCssVar(BitCss.Var.Layout.DialogActionsAlign, bitTheme.Layout.DialogActionsAlign);
 
         addCssVar(BitCss.Var.Layout.Breakpoints.Xs, bitTheme.Layout.Breakpoints.Xs);
         addCssVar(BitCss.Var.Layout.Breakpoints.Sm, bitTheme.Layout.Breakpoints.Sm);
@@ -560,6 +618,18 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.Track.Sm, bitTheme.Size.Track.Sm);
         addCssVar(BitCss.Var.Size.Track.Md, bitTheme.Size.Track.Md);
         addCssVar(BitCss.Var.Size.Track.Lg, bitTheme.Size.Track.Lg);
+        addCssVar(BitCss.Var.Size.SwitchWidth.Sm, bitTheme.Size.Switch.Width.Sm);
+        addCssVar(BitCss.Var.Size.SwitchWidth.Md, bitTheme.Size.Switch.Width.Md);
+        addCssVar(BitCss.Var.Size.SwitchWidth.Lg, bitTheme.Size.Switch.Width.Lg);
+        addCssVar(BitCss.Var.Size.SwitchHeight.Sm, bitTheme.Size.Switch.Height.Sm);
+        addCssVar(BitCss.Var.Size.SwitchHeight.Md, bitTheme.Size.Switch.Height.Md);
+        addCssVar(BitCss.Var.Size.SwitchHeight.Lg, bitTheme.Size.Switch.Height.Lg);
+        addCssVar(BitCss.Var.Size.SwitchThumb.Sm, bitTheme.Size.Switch.Thumb.Sm);
+        addCssVar(BitCss.Var.Size.SwitchThumb.Md, bitTheme.Size.Switch.Thumb.Md);
+        addCssVar(BitCss.Var.Size.SwitchThumb.Lg, bitTheme.Size.Switch.Thumb.Lg);
+        addCssVar(BitCss.Var.Size.SliderThumb.Sm, bitTheme.Size.SliderThumb.Sm);
+        addCssVar(BitCss.Var.Size.SliderThumb.Md, bitTheme.Size.SliderThumb.Md);
+        addCssVar(BitCss.Var.Size.SliderThumb.Lg, bitTheme.Size.SliderThumb.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
 
@@ -764,8 +834,22 @@ internal static class BitThemeMapper
             TabIndicator = src.TabIndicator,
             Divider = src.Divider,
             Track = src.Track ?? new(),
+            Switch = NormalizeSwitchSize(src.Switch),
+            SliderThumb = src.SliderThumb ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
+        };
+    }
+
+    private static BitThemeSwitchSizes NormalizeSwitchSize(BitThemeSwitchSizes? src)
+    {
+        src ??= new BitThemeSwitchSizes();
+
+        return new BitThemeSwitchSizes
+        {
+            Width = src.Width ?? new(),
+            Height = src.Height ?? new(),
+            Thumb = src.Thumb ?? new(),
         };
     }
 
@@ -778,6 +862,7 @@ internal static class BitThemeMapper
             DensityScale = src.DensityScale,
             DialogActionsDirection = src.DialogActionsDirection,
             DialogActionsJustify = src.DialogActionsJustify,
+            DialogActionsAlign = src.DialogActionsAlign,
             Breakpoints = src.Breakpoints ?? new(),
         };
     }
@@ -1124,6 +1209,9 @@ internal static class BitThemeMapper
         result.Shape.Radius.Xxl = bitTheme.Shape.Radius.Xxl ?? other.Shape.Radius.Xxl;
         result.Shape.Radius.Full = bitTheme.Shape.Radius.Full ?? other.Shape.Radius.Full;
         result.Shape.Radius.Control = bitTheme.Shape.Radius.Control ?? other.Shape.Radius.Control;
+        result.Shape.Radius.Button = bitTheme.Shape.Radius.Button ?? other.Shape.Radius.Button;
+        result.Shape.Radius.Chip = bitTheme.Shape.Radius.Chip ?? other.Shape.Radius.Chip;
+        result.Shape.Radius.Selection = bitTheme.Shape.Radius.Selection ?? other.Shape.Radius.Selection;
         result.Shape.Radius.Surface = bitTheme.Shape.Radius.Surface ?? other.Shape.Radius.Surface;
         result.Shape.Radius.Popup = bitTheme.Shape.Radius.Popup ?? other.Shape.Radius.Popup;
         result.Shape.Radius.Dialog = bitTheme.Shape.Radius.Dialog ?? other.Shape.Radius.Dialog;
@@ -1262,6 +1350,7 @@ internal static class BitThemeMapper
         result.Layout.DensityScale = bitTheme.Layout.DensityScale ?? other.Layout.DensityScale;
         result.Layout.DialogActionsDirection = bitTheme.Layout.DialogActionsDirection ?? other.Layout.DialogActionsDirection;
         result.Layout.DialogActionsJustify = bitTheme.Layout.DialogActionsJustify ?? other.Layout.DialogActionsJustify;
+        result.Layout.DialogActionsAlign = bitTheme.Layout.DialogActionsAlign ?? other.Layout.DialogActionsAlign;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;
@@ -1294,6 +1383,18 @@ internal static class BitThemeMapper
         result.Size.Track.Sm = bitTheme.Size.Track.Sm ?? other.Size.Track.Sm;
         result.Size.Track.Md = bitTheme.Size.Track.Md ?? other.Size.Track.Md;
         result.Size.Track.Lg = bitTheme.Size.Track.Lg ?? other.Size.Track.Lg;
+        result.Size.Switch.Width.Sm = bitTheme.Size.Switch.Width.Sm ?? other.Size.Switch.Width.Sm;
+        result.Size.Switch.Width.Md = bitTheme.Size.Switch.Width.Md ?? other.Size.Switch.Width.Md;
+        result.Size.Switch.Width.Lg = bitTheme.Size.Switch.Width.Lg ?? other.Size.Switch.Width.Lg;
+        result.Size.Switch.Height.Sm = bitTheme.Size.Switch.Height.Sm ?? other.Size.Switch.Height.Sm;
+        result.Size.Switch.Height.Md = bitTheme.Size.Switch.Height.Md ?? other.Size.Switch.Height.Md;
+        result.Size.Switch.Height.Lg = bitTheme.Size.Switch.Height.Lg ?? other.Size.Switch.Height.Lg;
+        result.Size.Switch.Thumb.Sm = bitTheme.Size.Switch.Thumb.Sm ?? other.Size.Switch.Thumb.Sm;
+        result.Size.Switch.Thumb.Md = bitTheme.Size.Switch.Thumb.Md ?? other.Size.Switch.Thumb.Md;
+        result.Size.Switch.Thumb.Lg = bitTheme.Size.Switch.Thumb.Lg ?? other.Size.Switch.Thumb.Lg;
+        result.Size.SliderThumb.Sm = bitTheme.Size.SliderThumb.Sm ?? other.Size.SliderThumb.Sm;
+        result.Size.SliderThumb.Md = bitTheme.Size.SliderThumb.Md ?? other.Size.SliderThumb.Md;
+        result.Size.SliderThumb.Lg = bitTheme.Size.SliderThumb.Lg ?? other.Size.SliderThumb.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
 

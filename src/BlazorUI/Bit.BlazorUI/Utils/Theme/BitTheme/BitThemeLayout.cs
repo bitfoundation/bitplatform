@@ -23,6 +23,14 @@ public class BitThemeLayout
     /// </summary>
     public string? DialogActionsJustify { get; set; }
 
+    /// <summary>
+    /// The <c>align-items</c> of a dialog/message-box footer's action buttons (<c>center</c> under
+    /// Fluent and Material, <c>stretch</c> for Cupertino - which is what runs its stacked alert
+    /// actions the full width of the alert).
+    /// Maps to <c>--bit-layout-dialog-actions-align</c>.
+    /// </summary>
+    public string? DialogActionsAlign { get; set; }
+
     /// <summary>Responsive breakpoint tokens driving the predefined <see cref="BitScreenQuery"/> values. Map to the <c>--bit-bp-*</c> custom properties.</summary>
     public BitThemeBreakpoints Breakpoints { get; set; } = new();
 }

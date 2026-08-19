@@ -102,9 +102,10 @@
     z-index: 1;
     display: flex;
     position: sticky;
-    align-items: center;
-    // Both come from the theme so a Cupertino preset can stack the actions full-width and centred
-    // (column + center) while Fluent and Material keep the trailing row (row + flex-end).
+    // All three come from the theme so a Cupertino preset can stack the actions full-width and
+    // centred (column + center + stretch) while Fluent and Material keep the trailing row of
+    // buttons hugging their own content (row + flex-end + center).
+    align-items: $layout-dialog-actions-align;
     flex-direction: $layout-dialog-actions-direction;
     justify-content: $layout-dialog-actions-justify;
     padding: 0 $spa-dialog $spa-dialog;
@@ -125,7 +126,9 @@
         padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-md;
         border-width: $shp-border-width;
         border-style: $shp-border-style;
-        border-radius: $shp-radius-control;
+        // The actions are buttons, so they take the corner of the button family rather than the
+        // plain control one - a preset that pills its buttons pills these along with them.
+        border-radius: $shp-radius-button;
         font-family: $tg-font-family;
         font-weight: $tg-font-weight;
         letter-spacing: $tg-ctrl-letter-spacing;

@@ -169,9 +169,9 @@
                 <br />
                 <b>Shadow</b> &mdash; <BitTag>--bit-shd-*</BitTag> (callouts, sizes <BitTag>sm</BitTag>&hellip;<BitTag>2xl</BitTag>, <BitTag>focus-ring</BitTag>, plus <BitTag>1</BitTag>&hellip;<BitTag>24</BitTag> elevation steps) and the per-surface elevations <BitTag>--bit-shd-{card,popup,dialog,sheet,tooltip,snackbar,appbar-top,appbar-bottom}</BitTag> that components actually consume (see <i>Family tokens</i> below)
                 <br />
-                <b>Shape</b> &mdash; <BitTag>--bit-shp-brd-radius</BitTag>, <BitTag>--bit-shp-brd-width</BitTag>, <BitTag>--bit-shp-brd-width-thick</BitTag>, <BitTag>--bit-shp-brd-style</BitTag>, <BitTag>--bit-shp-focus-ring-width</BitTag>, <BitTag>--bit-shp-focus-ring-offset</BitTag>, the radius scale <BitTag>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</BitTag> and the per-family radii <BitTag>--bit-shp-radius-{control,surface,popup,dialog}</BitTag>
+                <b>Shape</b> &mdash; <BitTag>--bit-shp-brd-radius</BitTag>, <BitTag>--bit-shp-brd-width</BitTag>, <BitTag>--bit-shp-brd-width-thick</BitTag>, <BitTag>--bit-shp-brd-style</BitTag>, <BitTag>--bit-shp-focus-ring-width</BitTag>, <BitTag>--bit-shp-focus-ring-offset</BitTag>, the radius scale <BitTag>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</BitTag> and the per-family radii <BitTag>--bit-shp-radius-{control,surface,popup,dialog}</BitTag> with the three control sub-families <BitTag>--bit-shp-radius-{button,chip,selection}</BitTag> (buttons, tags/chips, the checkbox box &mdash; each falling back to <BitTag>control</BitTag>)
                 <br />
-                <b>Size</b> &mdash; <BitTag>--bit-siz-ctrl-{sm,md,lg}</BitTag> (control heights: 26/32/40px), <BitTag>--bit-siz-ctrl-pad-x-{sm,md,lg}</BitTag> / <BitTag>--bit-siz-ctrl-pad-y-{sm,md,lg}</BitTag> (control padding: 12/16/20px horizontal, 4/6/8px vertical), <BitTag>--bit-siz-ctrl-min-width</BitTag> (<BitTag>auto</BitTag> under Fluent; Material sets 64px), <BitTag>--bit-siz-icon-{sm,md,lg}</BitTag> (glyphs inside controls: 12/16/20px), <BitTag>--bit-siz-sel-{sm,md,lg}</BitTag> (checkbox box / radio ring: 14/20/26px), <BitTag>--bit-siz-item-{sm,md,lg}</BitTag> (popup list row heights: 30/36/44px), <BitTag>--bit-siz-tab</BitTag> / <BitTag>--bit-siz-tab-indicator</BitTag> (pivot header height and selection-indicator stroke: 44px / 2px), <BitTag>--bit-siz-divider</BitTag> (separator thickness; follows <BitTag>--bit-shp-brd-width</BitTag> until a preset thins it &mdash; Cupertino's 0.5px hairline), <BitTag>--bit-siz-track-{sm,md,lg}</BitTag> (linear progress track thickness: 2/4/8px), <BitTag>--bit-siz-spinner-stroke</BitTag>, <BitTag>--bit-siz-popup-max-height</BitTag>
+                <b>Size</b> &mdash; <BitTag>--bit-siz-ctrl-{sm,md,lg}</BitTag> (control heights: 26/32/40px), <BitTag>--bit-siz-ctrl-pad-x-{sm,md,lg}</BitTag> / <BitTag>--bit-siz-ctrl-pad-y-{sm,md,lg}</BitTag> (control padding: 12/16/20px horizontal, 4/6/8px vertical), <BitTag>--bit-siz-ctrl-min-width</BitTag> (<BitTag>auto</BitTag> under Fluent; Material sets 64px), <BitTag>--bit-siz-icon-{sm,md,lg}</BitTag> (glyphs inside controls: 12/16/20px), <BitTag>--bit-siz-sel-{sm,md,lg}</BitTag> (checkbox box / radio ring: 14/20/26px), <BitTag>--bit-siz-item-{sm,md,lg}</BitTag> (popup list row heights: 30/36/44px), <BitTag>--bit-siz-tab</BitTag> / <BitTag>--bit-siz-tab-indicator</BitTag> (pivot header height and selection-indicator stroke: 44px / 2px), <BitTag>--bit-siz-divider</BitTag> (separator thickness; follows <BitTag>--bit-shp-brd-width</BitTag> until a preset thins it &mdash; Cupertino's 0.5px hairline), <BitTag>--bit-siz-track-{sm,md,lg}</BitTag> (linear progress track thickness: 2/4/8px), the switch geometry <BitTag>--bit-siz-switch-{w,h,thumb}-{sm,md,lg}</BitTag> (BitToggle's track and knob: 40x20 with a 12px knob at md; Material 52x32/24, Cupertino 51x31/27), <BitTag>--bit-siz-slider-thumb-{sm,md,lg}</BitTag> (BitSlider's handle: 12/16/24px), <BitTag>--bit-siz-spinner-stroke</BitTag>, <BitTag>--bit-siz-popup-max-height</BitTag>
                 <br />
                 <b>Spacing</b> &mdash; <BitTag>--bit-spa-scaling-factor</BitTag>, <BitTag>--bit-spa-dialog</BitTag> (the inset padding of dialogs and message boxes: 24px)
                 <br />
@@ -183,7 +183,7 @@
                 <br />
                 <b>Opacity</b> &mdash; <BitTag>--bit-opa-dis</BitTag> (the alpha of a disabled element that keeps its own colors, e.g. an image)
                 <br />
-                <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, <BitTag>--bit-layout-dialog-actions-direction</BitTag> / <BitTag>--bit-layout-dialog-actions-justify</BitTag> (how dialog and message-box footers lay out their action buttons: <BitTag>row</BitTag> / <BitTag>flex-end</BitTag> under Fluent; Cupertino stacks them <BitTag>column</BitTag> / <BitTag>center</BitTag>), breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
+                <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, <BitTag>--bit-layout-dialog-actions-direction</BitTag> / <BitTag>--bit-layout-dialog-actions-justify</BitTag> / <BitTag>--bit-layout-dialog-actions-align</BitTag> (how dialog and message-box footers lay out their action buttons: <BitTag>row</BitTag> / <BitTag>flex-end</BitTag> / <BitTag>center</BitTag> under Fluent; Cupertino stacks them full width with <BitTag>column</BitTag> / <BitTag>center</BitTag> / <BitTag>stretch</BitTag>), breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
                 <br />
                 <b>Semantic aliases</b> &mdash; <BitTag>--bit-sem-*</BitTag> (intent-named pointers to the primitives)
                 <br />
@@ -305,7 +305,7 @@
             <br />
 
             <BitText>
-                The two tiers have deliberately different override semantics. <b>Components consume primitives</b> (and their per-role/per-component variables), never the aliases &mdash; so overriding a primitive retunes components <i>and</i> the aliases that point at it, while overriding a semantic token retunes only the app styling that opted into that intent. This holds for every override path: CSS custom properties substitute <BitTag>var()</BitTag> references at the element that <i>defines</i> them, so for inline overrides (<BitTag>BitThemeProvider</BitTag> / <BitTag>ApplyBitThemeAsync</BitTag>) the theme system automatically re-declares any alias whose target primitive the theme touches on the same element &mdash; keeping the alias in lock-step with the override for that subtree, while untouched intents (and explicitly-set alias values) are left alone. Semantic tokens are themable from C# via <BitTag>BitTheme.Color.Semantic</BitTag>:
+                The two tiers have deliberately different override semantics. <b>Components consume primitives</b> (and their per-role/per-component variables), never the aliases &mdash; so overriding a primitive retunes components <i>and</i> the aliases that point at it, while overriding a semantic token retunes only the app styling that opted into that intent. This holds for every override path: CSS custom properties substitute <BitTag>var()</BitTag> references at the element that <i>defines</i> them, so for inline overrides (<BitTag>BitThemeProvider</BitTag> / <BitTag>ApplyBitThemeAsync</BitTag>) the theme system automatically re-declares any alias whose target the theme touches on the same element &mdash; the semantic tier here, and the family tier below (a <BitTag>Shape.Radius.Control</BitTag> override carries the button, chip and selection radii that fall back to it) &mdash; keeping the alias in lock-step with the override for that subtree, while untouched intents (and explicitly-set alias values) are left alone. Semantic tokens are themable from C# via <BitTag>BitTheme.Color.Semantic</BitTag>:
             </BitText>
 
             <br />
@@ -340,11 +340,16 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <br />
 
-            <CodeBox Language="css">/* radius per family - buttons, inputs, tags, badges, checkboxes, pagination ... */
+            <CodeBox Language="css">/* radius per family - inputs, pickers, dropdown triggers, badges, pagination ... */
 --bit-shp-radius-control   /* &rarr; var(--bit-shp-brd-radius) */
 --bit-shp-radius-surface   /* &rarr; var(--bit-shp-brd-radius)  cards, accordions, messages, images */
 --bit-shp-radius-popup     /* &rarr; var(--bit-shp-brd-radius)  callouts, menus, dropdown lists, tooltips, snackbars */
 --bit-shp-radius-dialog    /* &rarr; var(--bit-shp-brd-radius)  dialogs, modals */
+
+/* radius per control sub-family - all three fall back to the control radius */
+--bit-shp-radius-button    /* &rarr; var(--bit-shp-radius-control)  buttons and dialog actions */
+--bit-shp-radius-chip      /* &rarr; var(--bit-shp-radius-control)  tags and the chips inside fields */
+--bit-shp-radius-selection /* &rarr; var(--bit-shp-radius-control)  the checkbox box */
 
 /* elevation per surface family */
 --bit-shd-card             /* &rarr; var(--bit-shd-cal) */
@@ -359,7 +364,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <BitText>
-                Under Fluent every family points at the same primitive, so overriding <BitTag>--bit-shp-brd-radius</BitTag> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS &mdash; exactly what the packaged Material and Cupertino presets do; see <i>Themes for other design systems</i> below. Themable from C# via <BitTag>BitTheme.Shape.Radius.*</BitTag> and <BitTag>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</BitTag>.
+                Under Fluent every family points at the same primitive, so overriding <BitTag>--bit-shp-brd-radius</BitTag> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS &mdash; exactly what the packaged Material and Cupertino presets do; see <i>Themes for other design systems</i> below. Themable from C# via <BitTag>BitTheme.Shape.Radius.*</BitTag> and <BitTag>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</BitTag>.
             </BitText>
 
             <br />
@@ -543,16 +548,21 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-tpg-ctrl-letter-spacing: 0.00625rem;
     --bit-tpg-ctrl-text-transform: none;        /* Material 2 would say uppercase */
 
-    /* shape: pill buttons, 4px fields/menus, 12px cards, 28px dialogs */
-    --bit-shp-radius-control: 1.25rem;
+    /* shape: 4px fields/menus, 12px cards, 28px dialogs, pill buttons, 8px chips, 2px checkbox */
+    --bit-shp-radius-control: 0.25rem;
     --bit-shp-radius-popup: 0.25rem;
     --bit-shp-radius-surface: 0.75rem;
     --bit-shp-radius-dialog: 1.75rem;
+    --bit-shp-radius-button: var(--bit-shp-radius-full);
+    --bit-shp-radius-chip: 0.5rem;
+    --bit-shp-radius-selection: 0.125rem;
 
-    /* size: 40px controls, 18px checkboxes, 24px icons */
+    /* size: 40px controls, 18px checkboxes, 24px icons, the 52x32 switch, the 20dp slider handle */
     --bit-siz-ctrl-sm: 2rem;  --bit-siz-ctrl-md: 2.5rem;  --bit-siz-ctrl-lg: 3rem;
     --bit-siz-sel-sm: 1rem;   --bit-siz-sel-md: 1.125rem; --bit-siz-sel-lg: 1.25rem;
     --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem;
+    --bit-siz-switch-w-md: 3.25rem; --bit-siz-switch-h-md: 2rem; --bit-siz-switch-thumb-md: 1.5rem;
+    --bit-siz-slider-thumb-md: 1.25rem;
 
     /* elevation: level 1 cards, level 2 menus, level 3 dialogs, level 6 snackbars, flat tooltips */
     --bit-shd-card: var(--bit-shd-1);
@@ -577,7 +587,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
             <br />
 
             <BitText>
-                A Cupertino-flavoured preset is the same file with different numbers: SF Pro at 17px (<BitTag>--bit-tpg-fs-sm: 1.0625rem</BitTag>), 590 semibold, 44px controls, 10px control corners, 14px dialog corners, hairline separators (<BitTag>--bit-shp-brd-width: 0.5px</BitTag>) with <BitTag>--bit-shd-popup: none</BitTag> &mdash; the numbers the packaged <BitTag>cupertino-*</BitTag> presets carry. Load your own file as an extra stylesheet (or with <BitTag>BitExternalThemeLoader</BitTag>) and activate it with <BitTag>BitThemeManager.SetThemeAsync(BitThemeName.Custom("acme-material"))</BitTag>; the <BitTag>:root [bit-theme]</BitTag> twin selector makes it work as a scoped preset too.
+                A Cupertino-flavoured preset is the same file with different numbers: SF Pro at 17px (<BitTag>--bit-tpg-fs-sm: 1.0625rem</BitTag>), 590 semibold, 44px controls, 8px field corners with capsule buttons and chips (<BitTag>--bit-shp-radius-button: var(--bit-shp-radius-full)</BitTag>), 14px dialog corners, the 51x31 UISwitch, hairline separators (<BitTag>--bit-shp-brd-width: 0.5px</BitTag>) with <BitTag>--bit-shd-popup: none</BitTag> &mdash; the numbers the packaged <BitTag>cupertino-*</BitTag> presets carry. Load your own file as an extra stylesheet (or with <BitTag>BitExternalThemeLoader</BitTag>) and activate it with <BitTag>BitThemeManager.SetThemeAsync(BitThemeName.Custom("acme-material"))</BitTag>; the <BitTag>:root [bit-theme]</BitTag> twin selector makes it work as a scoped preset too.
             </BitText>
 
             <br />
@@ -598,12 +608,15 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     },
     Shape =
     {
-        Radius = { Control = "1.25rem", Popup = "0.25rem", Surface = "0.75rem", Dialog = "1.75rem" },
+        Radius = { Control = "0.25rem", Popup = "0.25rem", Surface = "0.75rem", Dialog = "1.75rem",
+                   Button = "var(--bit-shp-radius-full)", Chip = "0.5rem", Selection = "0.125rem" },
     },
     Size =
     {
         Control = { Sm = "2rem", Md = "2.5rem", Lg = "3rem" },
         Selection = { Sm = "1rem", Md = "1.125rem", Lg = "1.25rem" },
+        Switch = { Width = { Md = "3.25rem" }, Height = { Md = "2rem" }, Thumb = { Md = "1.5rem" } },
+        SliderThumb = { Md = "1.25rem" },
     },
     BoxShadow = { Card = "var(--bit-shd-1)", Popup = "var(--bit-shd-2)", Dialog = "var(--bit-shd-3)", Snackbar = "var(--bit-shd-6)" },
     Motion = { EasingDecelerate = "cubic-bezier(0.05, 0.7, 0.1, 1)" },
@@ -615,7 +628,7 @@ await BitThemeManager.ApplyBitThemeAsync(BitThemeUtilities.Merge(material, brand
             <br />
 
             <BitText>
-                <b>What stays per-component.</b> Geometry that is the identity of one control (a slider's thumb, a toggle's track, a clock dial, an avatar coin ladder, the loader shapes) is deliberately not global &mdash; it is exposed as that component's own <BitTag>--bit-&lt;cmp&gt;-*</BitTag> variables (see <i>Per-component variables</i>) and a preset retunes it there when it wants to &mdash; the packaged Material and Cupertino bundles do exactly that for their switch and slider geometry and pill button corners.
+                <b>What stays per-component.</b> A preset re-values tokens and nothing else: it never selects a component class, because anything a design system decides differently has to be a token the components already read &mdash; the packaged Material and Cupertino bundles are pure <BitTag>:root[bit-theme="&hellip;"]</BitTag> token blocks, down to their pill button corners, their switch geometry and their slider handles. What stays per-component is geometry no design system has an opinion about (a clock dial, an avatar coin ladder, the loader shapes, the length of a slider): it is exposed as that component's own <BitTag>--bit-&lt;cmp&gt;-*</BitTag> variables (see <i>Per-component variables</i>) for an application to retune on the instances it wants, not for a theme to fork the library from.
             </BitText>
         </BitCard>
 

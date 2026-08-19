@@ -102,7 +102,7 @@
     gap: spacing(0.375);
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-chip;
     //the rule is drawn in every tag variant, transparent where it is not painted, so that switching from
     //a filled chip to an outlined one never moves the text in it by the width of a border.
     //The three colors are read out of custom properties the tag variant sets rather than being painted by
@@ -198,7 +198,7 @@
     font: inherit;
     line-height: spacing(2.25);
     padding: spacing(0.125) spacing(0.5);
-    border-radius: $shp-radius-control;
+    border-radius: $shp-radius-chip;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-color: var(--bit-tgi-tag-brd);

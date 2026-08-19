@@ -19,6 +19,7 @@
     //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
+    --bit-layout-dialog-actions-align: center;
     //zindex - the layering contract, top to bottom:
     //  snackbar (1400) - notifications, above everything.
     //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).

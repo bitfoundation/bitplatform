@@ -46,11 +46,36 @@ public class BitThemeSizes
     /// <summary>The thickness of a linear track (progress bar) per size class (<c>--bit-siz-track-{sm,md,lg}</c>).</summary>
     public BitThemeSizeScale Track { get; set; } = new();
 
+    /// <summary>The geometry of a switch (<c>BitToggle</c>) per size class - the track and the knob (<c>--bit-siz-switch-*</c>).</summary>
+    public BitThemeSwitchSizes Switch { get; set; } = new();
+
+    /// <summary>The draggable handle of a <c>BitSlider</c> per size class (<c>--bit-siz-slider-thumb-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale SliderThumb { get; set; } = new();
+
     /// <summary>The stroke of every inline circular spinner (<c>--bit-siz-spinner-stroke</c>).</summary>
     public string? SpinnerStroke { get; set; }
 
     /// <summary>The tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls (<c>--bit-siz-popup-max-height</c>).</summary>
     public string? PopupMaxHeight { get; set; }
+}
+
+/// <summary>
+/// The geometry of a switch (<c>BitToggle</c>): the track it slides in and the knob that slides
+/// (Fluent's 40x20 pill with its 12px knob, Material's 52x32 with a 24dp handle, the 51x31 UISwitch
+/// with its 27pt thumb). The inset that holds the knob off the track edge is not a token: the
+/// component derives it as (height - knob) / 2 less the border width, so the knob keeps the same
+/// distance from the stroke on every side of whatever geometry a theme sets.
+/// </summary>
+public class BitThemeSwitchSizes
+{
+    /// <summary>The width of the track per size class (<c>--bit-siz-switch-w-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale Width { get; set; } = new();
+
+    /// <summary>The height of the track per size class (<c>--bit-siz-switch-h-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale Height { get; set; } = new();
+
+    /// <summary>The size of the knob per size class (<c>--bit-siz-switch-thumb-{sm,md,lg}</c>).</summary>
+    public BitThemeSizeScale Thumb { get; set; } = new();
 }
 
 /// <summary>A small / medium / large triple of CSS lengths.</summary>

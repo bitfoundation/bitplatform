@@ -169,5 +169,10 @@ public static class BitThemeSerialization
         theme.Size.Selection ??= new BitThemeSizeScale();
         theme.Size.Item ??= new BitThemeSizeScale();
         theme.Size.Track ??= new BitThemeSizeScale();
+        theme.Size.SliderThumb ??= new BitThemeSizeScale();
+        theme.Size.Switch ??= new BitThemeSwitchSizes();
+        theme.Size.Switch.Width ??= new BitThemeSizeScale();
+        theme.Size.Switch.Height ??= new BitThemeSizeScale();
+        theme.Size.Switch.Thumb ??= new BitThemeSizeScale();
     }
 }

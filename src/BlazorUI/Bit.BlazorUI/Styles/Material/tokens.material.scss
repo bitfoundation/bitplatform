@@ -2,9 +2,12 @@
 // elevation and the dialog-footer layout. Values follow the Material 3 baseline spec (m3.material.io
 // and material-web v0_192 tokens); the palette lives in colors.material-*.scss.
 //
-// This bundle is override-only: it declares tokens under [bit-theme="material*"] selectors and wins
-// over the Fluent defaults on source order, so it must be linked AFTER bit.blazorui.css and never
-// duplicates component CSS.
+// This bundle is override-only and TOKENS ONLY: every rule below declares --bit-* custom properties
+// under [bit-theme="material*"] selectors and wins over the Fluent defaults on source order, so it
+// must be linked AFTER bit.blazorui.css. It never selects a component class - anything M3 shapes
+// differently is a global token the components already read (the pill button radius, the chip corner,
+// the switch geometry, the slider handle), so re-skinning the library stays a matter of retuning
+// tokens rather than of restyling components.
 :root[bit-theme="material"],
 :root [bit-theme="material"],
 :root[bit-theme="material-light"],
@@ -22,13 +25,21 @@
     --bit-shp-radius-xl: 1.75rem; //28px
     --bit-shp-radius-2xl: 1.75rem; //28px
     --bit-shp-radius-full: 9999px;
-    // Per family: text fields/menus 4, cards 12, dialogs 28. Buttons round to full via the
-    // component retunes in components.material.scss (one control radius cannot serve both a pill
-    // button and a 4dp text field).
+    // Per family: text fields/menus 4, cards 12, dialogs 28.
     --bit-shp-radius-control: 0.25rem; //4px
     --bit-shp-radius-surface: 0.75rem; //12px
     --bit-shp-radius-popup: 0.25rem; //4px
     --bit-shp-radius-dialog: 1.75rem; //28px
+    // M3 buttons are full-round pills while the control radius stays 4px for fields and menus - a
+    // menu button is a button in M3, and so are the actions of a dialog. BitButtonGroup keeps the
+    // control radius: it publishes its own Rounded parameter, and a preset that pilled it
+    // unconditionally would leave that parameter with nothing to switch.
+    --bit-shp-radius-button: var(--bit-shp-radius-full);
+    // M3 chips: an 8dp corner. The chips a TagsInput and a Dropdown draw inside a field are the same
+    // chip as the standalone one, so they take it too instead of the field radius.
+    --bit-shp-radius-chip: 0.5rem; //8px
+    // M3 checkbox: a 2dp corner on the 18dp box.
+    --bit-shp-radius-selection: 0.125rem; //2px
     // M3 focus indicator: 3dp ring offset 2dp.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
     --bit-shp-focus-ring-offset: 0.125rem; //2px
@@ -61,11 +72,28 @@
     --bit-siz-track-md: 0.25rem; //4px
     --bit-siz-track-lg: 0.5rem; //8px
     --bit-siz-spinner-stroke: 0.25rem; //4px - M3 circular indicator stroke
+    // M3 switch: a 52x32 track with a 24dp selected handle at the medium anchor; sm and lg scale
+    // around it. The knob's inset from the track edge is derived from the two, so it stays 3px -
+    // (32 - 24) / 2 less the 1px stroke - at every size.
+    --bit-siz-switch-w-sm: 2.75rem; //44px
+    --bit-siz-switch-w-md: 3.25rem; //52px
+    --bit-siz-switch-w-lg: 3.75rem; //60px
+    --bit-siz-switch-h-sm: 1.75rem; //28px
+    --bit-siz-switch-h-md: 2rem; //32px
+    --bit-siz-switch-h-lg: 2.25rem; //36px
+    --bit-siz-switch-thumb-sm: 1.25rem; //20px
+    --bit-siz-switch-thumb-md: 1.5rem; //24px
+    --bit-siz-switch-thumb-lg: 1.75rem; //28px
+    // M3 slider: the 20dp handle at the medium anchor, on the 4dp track above.
+    --bit-siz-slider-thumb-sm: 1rem; //16px
+    --bit-siz-slider-thumb-md: 1.25rem; //20px
+    --bit-siz-slider-thumb-lg: 1.5rem; //24px
 
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: 1.5rem; //24px - M3 dialog inset
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
+    --bit-layout-dialog-actions-align: center;
 
     /*---- Typography ----*/
     // Roboto is only installed on Android / ChromeOS; the Bit.BlazorUI.Assets stylesheet ships a

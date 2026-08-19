@@ -2,9 +2,12 @@
 // elevation and the dialog-footer layout. Values follow Apple's HIG and the measured UIKit /
 // Flutter-Cupertino constants; the palette lives in colors.cupertino-*.scss.
 //
-// This bundle is override-only: it declares tokens under [bit-theme="cupertino*"] selectors and
-// wins over the Fluent defaults on source order, so it must be linked AFTER bit.blazorui.css and
-// never duplicates component CSS.
+// This bundle is override-only and TOKENS ONLY: every rule below declares --bit-* custom properties
+// under [bit-theme="cupertino*"] selectors and wins over the Fluent defaults on source order, so it
+// must be linked AFTER bit.blazorui.css. It never selects a component class - anything iOS shapes
+// differently is a global token the components already read (the capsule button and chip radii, the
+// UISwitch geometry, the slider knob, the stacked alert actions), so re-skinning the library stays a
+// matter of retuning tokens rather than of restyling components.
 :root[bit-theme="cupertino"],
 :root [bit-theme="cupertino"],
 :root[bit-theme="cupertino-light"],
@@ -12,20 +15,30 @@
 :root[bit-theme="cupertino-dark"],
 :root [bit-theme="cupertino-dark"] {
     /*---- Shape ----*/
-    // iOS corners: buttons 12 (large filled), grouped-list cards 10, menus 13, alerts 14.
+    // iOS corners: fields 8, grouped-list cards 10, menus 13, alerts 14, buttons and chips capsules.
     --bit-shp-brd-radius: 0.625rem; //10px
     --bit-shp-radius-none: 0;
-    --bit-shp-radius-xs: 0.3125rem; //5px - text-field corner
+    --bit-shp-radius-xs: 0.3125rem; //5px - the corner iOS gives a small box
     --bit-shp-radius-sm: 0.5rem; //8px
     --bit-shp-radius-md: 0.625rem; //10px
     --bit-shp-radius-lg: 0.75rem; //12px
     --bit-shp-radius-xl: 0.875rem; //14px
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
-    --bit-shp-radius-control: 0.75rem; //12px - the iOS 15 large filled button
+    // The control radius is the corner of a FIELD - a text field, a one-time-code cell, a picker -
+    // which iOS rounds far less than it rounds a button; the buttons take the capsule below.
+    --bit-shp-radius-control: 0.5rem; //8px
     --bit-shp-radius-surface: 0.625rem; //10px - inset-grouped section
     --bit-shp-radius-popup: 0.8125rem; //13px - context menus / popovers
     --bit-shp-radius-dialog: 0.875rem; //14px - alerts
+    // iOS buttons are capsules, and a menu button and a dialog action are buttons there as well.
+    // BitButtonGroup is left on the control radius: it publishes its own Rounded parameter, and the
+    // iOS segmented control is a rounded rectangle rather than a capsule anyway.
+    --bit-shp-radius-button: var(--bit-shp-radius-full);
+    // Tags read as the iOS gray capsule chip, inside a field as much as standing on their own.
+    --bit-shp-radius-chip: var(--bit-shp-radius-full);
+    // A checkbox is not an iOS control; it takes the corner iOS gives a small box, not a button's.
+    --bit-shp-radius-selection: 0.3125rem; //5px
     // The platform look is hairline separators and mostly borderless controls.
     --bit-shp-brd-width: 0.5px;
     // macOS/iPadOS keyboard focus ring is a thick halo.
@@ -57,12 +70,30 @@
     --bit-siz-track-sm: 0.125rem; //2px - the iOS slider/progress track
     --bit-siz-track-md: 0.125rem; //2px
     --bit-siz-track-lg: 0.25rem; //4px
+    // UISwitch: a 51x31 track with a 27pt thumb at the medium anchor; sm and lg scale around it.
+    // The knob's inset from the track edge is derived from the two, so it stays the 2pt inset less
+    // the hairline stroke - which is what centers the knob - at every size.
+    --bit-siz-switch-w-sm: 2.5625rem; //41px
+    --bit-siz-switch-w-md: 3.1875rem; //51px
+    --bit-siz-switch-w-lg: 3.8125rem; //61px
+    --bit-siz-switch-h-sm: 1.5625rem; //25px
+    --bit-siz-switch-h-md: 1.9375rem; //31px
+    --bit-siz-switch-h-lg: 2.3125rem; //37px
+    --bit-siz-switch-thumb-sm: 1.3125rem; //21px
+    --bit-siz-switch-thumb-md: 1.6875rem; //27px
+    --bit-siz-switch-thumb-lg: 2.0625rem; //33px
+    // UISlider: the 28pt knob at the medium anchor, on the 2pt track above.
+    --bit-siz-slider-thumb-sm: 1.5rem; //24px
+    --bit-siz-slider-thumb-md: 1.75rem; //28px
+    --bit-siz-slider-thumb-lg: 2rem; //32px
 
     /*---- Spacing / layout ----*/
     --bit-spa-dialog: 1.25rem; //20px - alert edge inset
-    // iOS alerts stack their actions full-width and centred.
+    // iOS alerts stack their actions full-width and centred; the stretch is what runs them the
+    // whole width of the alert, separated by the margins the actions already carry.
     --bit-layout-dialog-actions-direction: column;
     --bit-layout-dialog-actions-justify: center;
+    --bit-layout-dialog-actions-align: stretch;
 
     /*---- Typography ----*/
     // The San Francisco stack Apple's own sites use. SF is not redistributable, so off Apple

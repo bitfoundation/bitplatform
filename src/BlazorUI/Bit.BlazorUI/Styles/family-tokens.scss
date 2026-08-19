@@ -33,6 +33,13 @@
     --bit-shp-radius-popup: var(--bit-shp-brd-radius);
     --bit-shp-radius-dialog: var(--bit-shp-brd-radius);
 
+    // radius per control sub-family - a button, a chip and a selection box are all controls, so all
+    // three default to the control radius and only a design system that shapes them apart from a
+    // plain field retunes them (Material: pill button, 8dp chip, 2dp checkbox; Cupertino: capsules).
+    --bit-shp-radius-button: var(--bit-shp-radius-control);
+    --bit-shp-radius-chip: var(--bit-shp-radius-control);
+    --bit-shp-radius-selection: var(--bit-shp-radius-control);
+
     // elevation per surface family - Fluent lifts every floating surface with the callout shadow and
     // leaves toasts flat; app bars cast a foreground-tinted shadow towards the content they cover so
     // it stays visible on a dark surface, downwards for the header and upwards for the footer.

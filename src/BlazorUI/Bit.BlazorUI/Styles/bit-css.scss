@@ -270,6 +270,9 @@ $bit-radius-scale: (
     surface: $shp-radius-surface,
     popup: $shp-radius-popup,
     dialog: $shp-radius-dialog,
+    button: $shp-radius-button,
+    chip: $shp-radius-chip,
+    selection: $shp-radius-selection,
 );
 
 @each $name, $value in $bit-radius-scale {
