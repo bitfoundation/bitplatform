@@ -35,14 +35,17 @@ public class Middlewares
             context.Response.Headers["Cross-Origin-Embedder-Policy"] = IsWebKit(context.Request) ? "require-corp" : "credentialless";
             context.Response.OnStarting(() =>
             {
-                // COEP is only read from the top-level document response, so the UA-dependent value
-                // only matters for HTML; "Vary: User-Agent" keeps a shared cache/CDN from serving one
-                // browser's document to another. Static assets (the only publicly cached responses)
-                // deliberately get no Vary so their cache is not fragmented per User-Agent.
-                if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true)
-                {
-                    context.Response.Headers.Append("Vary", "User-Agent");
-                }
+                // The COEP value above is User-Agent dependent, and COEP is read from every response
+                // that establishes an embedder policy: the top-level document *and* the worker scripts
+                // the threaded runtime spawns from _framework (a worker whose script response declares
+                // a policy incompatible with its owner document is rejected). So "Vary: User-Agent" is
+                // appended to every response, not only to HTML: without it a shared cache/CDN could
+                // hand a Safari client a response cached from a Chromium request, whose 'credentialless'
+                // WebKit parses as 'unsafe-none', making the worker incompatible with the document's
+                // 'require-corp' and the threaded runtime fail to boot - the exact failure this
+                // middleware exists to prevent. The cost is a per-User-Agent cache fragmentation of the
+                // static assets, which is preferred over serving one browser the other's COEP value.
+                context.Response.Headers.Append("Vary", "User-Agent");
                 return Task.CompletedTask;
             });
             await next.Invoke(context);

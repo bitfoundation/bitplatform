@@ -5,19 +5,6 @@ namespace BitBlazorUI {
      * Mirrors the public surface used by every BitMap provider.
      */
     export class BitMapOpenLayers {
-        /**
-         * crossOrigin value applied to every tile layer.
-         *
-         * When the host page is cross-origin isolated (COOP/COEP headers, required for the
-         * multi-threaded WebAssembly runtime) and the browser only supports
-         * COEP: require-corp (Safari/WebKit), plain no-cors tile requests to a server that
-         * does not send a Cross-Origin-Resource-Policy header are blocked, so tiles are
-         * requested in CORS mode instead (public tile servers such as OSM, Carto and
-         * OpenTopoMap all send Access-Control-Allow-Origin: *). On a non-isolated page the
-         * default no-cors mode is kept so tile servers without CORS headers keep working.
-         */
-        private static readonly _tileCrossOrigin: string | undefined = self.crossOriginIsolated ? 'anonymous' : undefined;
-
         private static _olLoadPromise: Promise<any> | null = null;
 
         private static _maps: { [id: string]: {
@@ -36,6 +23,29 @@ namespace BitBlazorUI {
 
         private static readonly _defaultTileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
         private static readonly _osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+        /**
+         * Builds the XYZ source of a tile layer and assigns it, wiring the no-cors then CORS
+         * retry of BitMapHelpers: when every tile of a cross-origin layer fails on a cross-origin
+         * isolated page (COEP: require-corp blocks no-cors subresources that carry no CORP
+         * header), the source is rebuilt in CORS mode. OpenLayers reads crossOrigin when the
+         * source is constructed, so the retry has to create a new one - it runs only after the
+         * shared crossOrigin flipped, so the rebuilt source never retries again.
+         */
+        private static _setTileSource(ol: any, layer: any, params: { url: string, maxZoom: number, attributions: string }) {
+            const source = new ol.XYZ({
+                crossOrigin: BitMapHelpers.tileCrossOrigin,
+                url: params.url,
+                maxZoom: params.maxZoom,
+                attributions: params.attributions,
+            });
+            const fallback = BitMapHelpers.createTileCorsFallback(params.url, () => {
+                BitMapOpenLayers._setTileSource(ol, layer, params);
+            });
+            source.on('tileloadend', fallback.onTileLoad);
+            source.on('tileloaderror', fallback.onTileError);
+            layer.setSource(source);
+        }
 
         private static _resolveTileUrl(o: any): string {
             return (o.tileUrl || BitMapOpenLayers._defaultTileUrl).replace('{s}', 'a');
@@ -64,14 +74,11 @@ namespace BitBlazorUI {
             const tileAttribution = BitMapOpenLayers._resolveTileAttribution(tileUrl, o.tileAttribution);
             const tileOpacity = o.tileOpacity ?? 1;
 
-            const baseTile = new ol.TileLayer({
-                source: new ol.XYZ({
-                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
-                    url: tileUrl,
-                    maxZoom: tileMaxZoom,
-                    attributions: tileAttribution,
-                }),
-                opacity: tileOpacity,
+            const baseTile = new ol.TileLayer({ opacity: tileOpacity });
+            BitMapOpenLayers._setTileSource(ol, baseTile, {
+                url: tileUrl,
+                maxZoom: tileMaxZoom,
+                attributions: tileAttribution,
             });
 
             const map = new ol.Map({
@@ -223,12 +230,11 @@ namespace BitBlazorUI {
             if (nextTileUrl !== s.tileUrl ||
                 nextTileMaxZoom !== s.tileMaxZoom ||
                 nextTileAttribution !== s.tileAttribution) {
-                s.baseTileLayer.setSource(new ol.XYZ({
-                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
+                BitMapOpenLayers._setTileSource(ol, s.baseTileLayer, {
                     url: nextTileUrl,
                     maxZoom: nextTileMaxZoom,
                     attributions: nextTileAttribution,
-                }));
+                });
                 s.tileUrl = nextTileUrl;
                 s.tileMaxZoom = nextTileMaxZoom;
                 s.tileAttribution = nextTileAttribution;
@@ -475,14 +481,13 @@ namespace BitBlazorUI {
                 delete s.tileOverlays[opts.id];
             }
             const tl = new ol.TileLayer({
-                source: new ol.XYZ({
-                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
-                    url: (opts.urlTemplate || '').replace('{s}', 'a'),
-                    maxZoom: opts.maxZoom ?? 19,
-                    attributions: opts.attribution || '',
-                }),
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
+            });
+            BitMapOpenLayers._setTileSource(ol, tl, {
+                url: (opts.urlTemplate || '').replace('{s}', 'a'),
+                maxZoom: opts.maxZoom ?? 19,
+                attributions: opts.attribution || '',
             });
             s.tileOverlays[opts.id] = tl;
             s.map.addLayer(tl);
