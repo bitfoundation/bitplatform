@@ -1,0 +1,65 @@
+﻿@* Host for ReloadTests: a transient route, a keep-alive route (the case a same-URL navigation can
+   never refresh), a lifecycle probe, and a parent/child chain with a guard plus cached loaders -
+   so a reload can be observed to rebuild instances, re-run guards/loaders and bypass the loader
+   cache that a plain re-navigation would hit. *@
+
+@using Bit.Brouter
+
+<Brouter>
+    <Broute Path="/plain">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/ka" KeepAlive="true">
+        <Content><StatefulCounter /></Content>
+    </Broute>
+
+    <Broute Path="/lifecycle">
+        <Content><LifecycleProbe Log="ProbeLog" /></Content>
+    </Broute>
+
+    <Broute Path="/data" Guard="CountGuard" Loader="ParentLoader" StaleTime="@TimeSpan.FromMinutes(5)">
+        <Content>
+            <div data-testid="layout">
+                <StatefulCounter />
+                <BrouterOutlet />
+            </div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/view" Loader="ChildLoader" StaleTime="@TimeSpan.FromMinutes(5)">
+                <Content><ChildDataView /></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    <Broute Path="/other">
+        <Content><div data-testid="other">other</div></Content>
+    </Broute>
+</Brouter>
+
+@code {
+    public List<string> ProbeLog { get; } = [];
+    public int GuardRuns { get; private set; }
+    public int ParentLoaderRuns { get; private set; }
+    public int ChildLoaderRuns { get; private set; }
+    public bool? LastLoadWasReload { get; private set; }
+
+    private ValueTask CountGuard(BrouterNavigationContext ctx)
+    {
+        GuardRuns++;
+        return ValueTask.CompletedTask;
+    }
+
+    private ValueTask<object?> ParentLoader(BrouterNavigationContext ctx)
+    {
+        ParentLoaderRuns++;
+        return ValueTask.FromResult<object?>($"parent-{ParentLoaderRuns}");
+    }
+
+    private ValueTask<object?> ChildLoader(BrouterNavigationContext ctx)
+    {
+        ChildLoaderRuns++;
+        LastLoadWasReload = ctx.IsReload;
+        return ValueTask.FromResult<object?>($"child-{ChildLoaderRuns}");
+    }
+}

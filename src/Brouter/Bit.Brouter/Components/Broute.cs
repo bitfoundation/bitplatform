@@ -427,9 +427,17 @@ public class Broute : ComponentBase, IDisposable
     // is a kept-but-hidden top-level/inline route, or hidden per-parameter siblings of the active
     // instance) and any kept children held by the outlets it hosts. The currently active instance is
     // left untouched. Backs IBrouter.ClearKeepAlive.
-    internal void ClearKeepAlive()
+    //
+    // With includeActive the live content goes too, so this route contributes nothing to the screen
+    // until the caller re-mounts the chain (Brouter.ClearKeepAlive does that once every route has
+    // dropped). Transient routes that aren't on screen are skipped: they hold no instance to drop.
+    internal void ClearKeepAlive(bool includeActive = false)
     {
-        if (_renderer is not null && KeepAlive && HasEverMatched)
+        if (includeActive && (KeepAlive || Matched))
+        {
+            DropAllContent();
+        }
+        else if (_renderer is not null && KeepAlive && HasEverMatched)
         {
             _renderer.DropKeptContent(Matched);
             StateHasChanged();
@@ -437,8 +445,42 @@ public class Broute : ComponentBase, IDisposable
 
         foreach (var outlet in Outlets.Values)
         {
-            outlet.ClearKeepAlive();
+            outlet.ClearKeepAlive(includeActive);
         }
+    }
+
+    /// <summary>
+    /// Reload teardown for this route (see <see cref="IBrouter.ReloadAsync"/>): deactivates every
+    /// live instance of its content - the visible one and any keep-alive retained ones - unmatches
+    /// the route and re-renders, which disposes those subtrees. The route itself stays registered,
+    /// so the reload's re-match rebuilds its content from scratch. The content owner is resolved
+    /// with the same walk the render path uses, and the inline renderer is notified either way
+    /// (it holds nothing for outlet-hosted content, so that call is a no-op there).
+    /// </summary>
+    internal void DropAllContent()
+    {
+        // Never matched: there is no instance, no retained entry and no rendered content to drop,
+        // so skip the renders entirely (ClearKeepAlive sweeps every registered route through here).
+        if (_disposed || _renderer is null || HasEverMatched is false || Brouter is not { } brouter) return;
+
+        var location = brouter.CurrentLocation;
+        _renderer.DropAllContent(location, ex => brouter.ReportLifecycleError(location, ex));
+
+        var outletHost = FindOutletHost();
+        if (outletHost is not null)
+        {
+            // Snapshot: DropChild runs deactivation handlers synchronously, which can re-enter and
+            // mutate the host's outlet registrations mid-iteration (see Dispose).
+            foreach (var outlet in outletHost.Outlets.Values.ToArray())
+            {
+                outlet.DropChild(this);
+            }
+        }
+
+        // Unmatching before the render is what actually takes the content off the screen: both the
+        // inline renderer and the outlets treat Matched as the authoritative "still selected" flag.
+        Matched = false;
+        Refresh();
     }
 
     /// <summary>

@@ -49,6 +49,14 @@ public sealed class BrouterNavigationContext
     /// </summary>
     public bool IsPreload { get; internal set; }
 
+    /// <summary>
+    /// True when this context belongs to a reload (<see cref="IBrouter.ReloadAsync"/>) rather than a
+    /// navigation: the URL did not change and no guards ran, but - unlike a revalidation - the
+    /// matched chain's components were disposed and are being recreated from scratch. Lets a loader
+    /// tell "the user navigated here" from "the app threw the current page away and rebuilt it".
+    /// </summary>
+    public bool IsReload { get; internal set; }
+
     /// <summary>The matched route once matching has happened. Null in OnNavigating hooks.</summary>
     public Broute? Route { get; internal set; }
 

@@ -126,12 +126,26 @@ public class BrouterOutlet : ComponentBase, IDisposable
     }
 
     /// <summary>
+    /// Reload teardown for one child route (see <see cref="IBrouter.ReloadAsync"/>): deactivates and
+    /// forgets every entry of that route - the visible one included, unlike
+    /// <see cref="ClearKeepAlive"/> - and re-renders so their subtrees are disposed. The route stays
+    /// registered, so the reload's re-match materializes a brand-new entry (and lifecycle session).
+    /// </summary>
+    internal void DropChild(Broute route)
+    {
+        ForgetChild(route);
+        StateHasChanged();
+    }
+
+    /// <summary>
     /// Releases every retained (hidden) keep-alive child, keeping only the currently active one.
     /// Backs <see cref="IBrouter.ClearKeepAlive"/>; re-renders so the dropped subtrees are disposed.
     /// </summary>
-    internal void ClearKeepAlive()
+    internal void ClearKeepAlive(bool includeActive = false)
     {
-        var active = _current is not null && _current.Route.Matched ? _current : null;
+        // includeActive drops the visible entry as well: nothing survives, so the caller's re-mount
+        // pass gets a brand-new entry (and lifecycle session) for whichever child matches.
+        var active = includeActive is false && _current is not null && _current.Route.Matched ? _current : null;
 
         // Teardown parity with ForgetChild/Dispose: any still-active dropped entry gets its
         // Disposing deactivation before the re-render unmounts its subtree (a no-op for hidden
@@ -154,7 +168,7 @@ public class BrouterOutlet : ComponentBase, IDisposable
             _current = null;
         }
 
-        if (removed > 0) StateHasChanged();
+        if (removed > 0 || (includeActive && _current is null)) StateHasChanged();
     }
 
     // Fires the Disposing deactivation for an entry whose content is being torn down outside a

@@ -172,6 +172,24 @@ internal class BrouterRouteRenderer
     }
 
     /// <summary>
+    /// Reload teardown for this route's inline content (see <see cref="IBrouter.ReloadAsync"/>):
+    /// deactivates every live context - the visible one included, unlike
+    /// <see cref="DropKeptContent"/> - and stops rendering the content until the route matches
+    /// again, so the caller's re-render disposes the component instances and the next match
+    /// rebuilds them from scratch with a fresh session.
+    /// </summary>
+    public void DropAllContent(BrouterLocation location, Action<Exception> onError)
+    {
+        // Same Disposing notification an unmounting route gets: the components are alive while the
+        // callbacks run, and the render the caller triggers next is what actually disposes them.
+        NotifyTeardown(location, onError);
+        _keptEntries.Clear();
+        // Blocks the keep-alive "render while unmatched" branch in BuildRenderTree; a later match
+        // resets it (and RenderRoute then creates the fresh context).
+        _keptDropped = true;
+    }
+
+    /// <summary>
     /// Fires a Disposing deactivation on any still-active inline content when this route itself is
     /// being torn down outside a navigation (conditionally-removed route, hosting layout unmount) -
     /// so active content never dies without its deactivation callback. Already-hidden retained

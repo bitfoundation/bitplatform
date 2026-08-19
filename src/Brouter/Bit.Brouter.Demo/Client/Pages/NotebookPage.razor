@@ -56,6 +56,27 @@
     </p>
 </div>
 
+<div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Rebuild the visible page</h3>
+    <button class="btn btn-primary" @onclick="@(() => brouter.ClearKeepAlive(includeActive: true))">
+        brouter.ClearKeepAlive(includeActive: true)
+    </button>
+    <button class="btn btn-primary" @onclick="@(() => brouter.ReloadAsync().AsTask())">
+        brouter.ReloadAsync()
+    </button>
+    <p class="bb-card-desc">
+        The one thing plain <code>ClearKeepAlive()</code> deliberately won't do: both of these bring the
+        note on screen back with a new instance stamp, an empty draft and zero clicks.
+        <code>includeActive: true</code> only throws the instances away (no navigation, no guards or
+        loaders); <code>ReloadAsync()</code> additionally re-runs the whole pipeline, so route loaders
+        fetch again. Either way the URL never moves - and clicking
+        <BrouterLink Href="@($"/notes/{Id}")">this same link</BrouterLink> instead changes nothing:
+        Blazor keeps a component whose route and parameters didn't change, so a same-URL navigation can
+        never rebuild it. Use them after switching tenant/user or anything else that invalidates what
+        the page read once in <code>OnInitialized</code>.
+    </p>
+</div>
+
 @code {
     [Parameter] public int Id { get; set; }
 
