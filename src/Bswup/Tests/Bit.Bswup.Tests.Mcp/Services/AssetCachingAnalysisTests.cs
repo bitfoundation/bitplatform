@@ -6,7 +6,7 @@ using Bit.Bswup.Tests.Mcp.TestInfra;
 namespace Bit.Bswup.Tests.Mcp.Services;
 
 /// <summary>
-/// What <c>AnalyzeBswupAssetCaching</c> answers about concrete assets. This is the tool that says
+/// What <c>InspectBswupServiceWorker</c> answers about concrete assets. This is the answer that says
 /// "yes, that file will be there offline", so a wrong answer is worse than no answer - which is
 /// why the interesting cases here are the ones where it must refuse to decide rather than guess:
 /// a pattern it cannot compile, and a pattern slow enough to run past the analysis budget.

@@ -1,5 +1,3 @@
-using System.Text;
-using System.Reflection;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using Bit.Bswup.Demo.Client;
@@ -14,14 +12,24 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 /// controlled updates to a Blazor app without guessing at the API.
 /// <para>
 /// Every tool answers from the shipped library or from this site's own content - the TypeScript
-/// sources compiled into Bit.Bswup's JavaScript bundles, the README, the docs pages rendered by
-/// the very site that documents them, and the demo's and samples' source files - so an agent gets
-/// what the current version actually does rather than a snapshot someone wrote down. Two of them
-/// go further and run an app's own service-worker file through the same rules the shipped worker
-/// applies, which is the only way to answer "will this configuration cache that asset?" without
-/// deploying it. The same methods are exposed as plain HTTP GET endpoints under /api/mcp/...,
-/// which makes each of them inspectable from a browser - and those two, whose input is a whole
-/// file, take a POST with a JSON body at the same URL, because a query string cannot carry one.
+/// sources compiled into Bit.Bswup's JavaScript bundles, the docs pages rendered by the very site
+/// that documents them, and this site's and the samples' service-worker files - so an agent gets
+/// what the current version actually does rather than a snapshot someone wrote down.
+/// <see cref="InspectBswupServiceWorker"/> goes further and runs an app's own service-worker file
+/// through the same rules the shipped worker applies, which is the only way to answer "will this
+/// configuration cache that asset?" without deploying it. The same methods are exposed as plain
+/// HTTP GET endpoints under /api/mcp/..., which makes each of them inspectable from a browser -
+/// and that one, whose input is a whole file, takes a POST with a JSON body at the same URL,
+/// because a query string cannot carry one.
+/// </para>
+/// <para>
+/// The surface is kept deliberately small, and every answer as narrow as the question allows. A
+/// tool list is spent from every client's context window before a single question is asked, and
+/// every character a tool returns is spent again on each call - so a tool whose answer another
+/// tool already contains is not a convenience here, it is a tax. That is why there is no overview
+/// tool restating this list, no second copy of the documentation behind a second pair of tools,
+/// and why the reference tools take a <c>name</c>: an agent after one setting should not be made
+/// to pay for twenty-four.
 /// </para>
 /// </summary>
 [ApiController]
@@ -29,100 +37,24 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 [Route("api/[controller]/[action]")]
 public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> logger) : ControllerBase
 {
-    // The docs pages are rich enough that a couple of them would otherwise dominate a client's
-    // context window; the ones on this site land far below the cap.
-    private const int MaxDocumentLength = 40_000;
+    /// <summary>
+    /// The most text one call hands back. The docs pages land below it; the library's TypeScript
+    /// sources - the service worker alone runs past 120,000 characters - do not, which is what
+    /// <c>startLine</c> on <see cref="GetBswupSourceFile"/> is for. Roughly four thousand tokens:
+    /// enough for any answer worth reading in one piece, and well short of the point where a
+    /// single call crowds out the conversation it was meant to inform.
+    /// </summary>
+    private const int MaxDocumentLength = 16_000;
 
-    // The most asset URLs one AnalyzeBswupAssetCaching call will decide on.
+    // The most asset URLs one inspection will decide on.
     private const int MaxAnalyzedAssetUrls = 200;
-
-    private static readonly string PackageVersion =
-        typeof(BswupProgress).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? typeof(BswupProgress).Assembly.GetName().Version?.ToString()
-        ?? "unknown";
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupOverview), Title = "Bswup: start here",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Start here. Explains what bit Bswup is, how it is wired into a Blazor WebAssembly app, and lists which of the other Bswup tools to call for what.")]
-    public string GetBswupOverview()
-    {
-        var builder = new StringBuilder();
-
-        builder.AppendLine("""
-            # bit Bswup
-
-            Bswup is a service-worker layer for Blazor WebAssembly apps. It takes over the app's startup so the
-            user watches a real progress bar instead of a blank page, precaches the app's assets so it works
-            offline, and stages new versions in the background so an update is a button the user accepts rather
-            than a reload that discards their work.
-
-            It is configured in three places, and every tool below maps to one of them:
-
-            - the `<script src="_content/Bit.Bswup/bit-bswup.js" ...>` tag in the host document (page behavior);
-            - `wwwroot/service-worker.js` and `service-worker.published.js`, which assign `self.*` settings and
-              then import the engine (caching behavior);
-            - a handler function on the page - either your own, or the built-in `BswupProgress` component plus
-              `bit-bswup.progress.js` (what the user sees).
-            """).AppendLine();
-
-        // Which build the answers come from: every tool below reflects THIS package, not a remembered version.
-        builder.AppendLine($"_These tools answer from Bit.Bswup {BswupScriptCatalog.Version} (assembly build {PackageVersion}) - the shipped scripts and assembly in front of you, not a remembered release._").AppendLine();
-
-        builder.AppendLine("""
-            ---
-
-            ## Which tool to call
-
-            - `SearchBswup` - **the default entry point.** One query across the guide, the docs pages, every
-              script attribute and service-worker setting, the lifecycle events, the JavaScript API and the demo's
-              sources; each hit carries the exact follow-up call. Reach for it whenever you do not already know
-              the section, slug or option name you want.
-            - `GetBswupSetupGuide` - the complete wiring for one hosting model ('standalone-wasm' or
-              'blazor-web-app'), as the real files of a working project. Start here when adding Bswup to an app.
-            - `GetBswupScriptOptions` - every attribute of the `bit-bswup.js` script tag with its real default,
-              read off the shipped script.
-            - `GetBswupServiceWorkerSettings` / `GetBswupServiceWorkerModes` - every `self.*` setting of the
-              service-worker file, and what each `mode` preset expands to.
-            - `InspectBswupServiceWorker` - **run this on the service-worker file you write.** It checks the file
-              against the settings the shipped worker actually reads: unknown names, settings assigned after the
-              `importScripts` line (where they are silently ignored), a `defaultUrl` nothing serves, and more.
-            - `AnalyzeBswupAssetCaching` - answers "will this file be cached?" by running concrete asset URLs
-              through the include/exclude lists that file produces, built-in patterns included.
-            - `GetBswupEvents` - the lifecycle messages a handler receives, with the payload each one carries.
-            - `GetBswupJsApi` - the global `BitBswup` object: update checks, storage persistence, skip-waiting and
-              the last-resort reset.
-            - `GetBswupProgressUI` - the built-in splash: the `BswupProgress` parameters (read off the shipped
-              assembly) and the element ids a custom splash has to use.
-            - `GetBswupDocsList` / `GetBswupDocsPage` - the documentation site's pages, as Markdown.
-            - `GetBswupGuideSections` / `GetBswupGuideSection` - the library's README, one section at a time.
-            - `GetBswupSourceFiles` / `GetBswupSourceFile` - real, working source: this site's own service-worker
-              and host document, the minimal samples for both hosting models, and the library's TypeScript.
-
-            ## Rules of thumb when configuring Bswup
-
-            - Whatever you put in `service-worker.js`, put in `service-worker.published.js` too. The published
-              file is what deployed builds ship; a setting added to only one of them works in development and
-              fails in production.
-            - Every `self.*` setting must be assigned BEFORE `self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js')`.
-              The engine reads them while it is being imported.
-            - The Blazor entry script needs `autostart="false"`: Bswup starts Blazor itself, once the install has
-              finished.
-            - Keep the API out of the worker (`self.serverHandledUrls`), and keep the worker scripts out of the
-              cache (they are excluded by default - do not undo that with `ignoreDefaultExclude`).
-            - Never cache `service-worker.js` at the HTTP layer. `Cache-Control: no-cache` on it and on
-              `bit-bswup.sw.js` is what keeps clients from getting stuck on an old version.
-            """);
-
-        return builder.ToString();
-    }
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBswup), Title = "Search everything about Bswup",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Searches everything known about bit Bswup at once - the README guide, the documentation pages, every script attribute and service-worker setting, the lifecycle events, the JavaScript API and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which page, setting or event holds the answer. Example queries: 'app never picks up new versions', 'cache an external CDN script', 'offline deep link shows home page', 'show a progress bar while installing'.")]
+    [Description("Searches everything this server knows at once - the documentation pages, every script attribute and service-worker setting, the mode presets, the lifecycle events, the JavaScript API, the progress UI and the sample sources - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first unless you already know the page, setting or event you want, then call the hit's tool verbatim: those calls are narrowed to the hit, so following one costs a fraction of the same tool called bare. Example queries: 'app never picks up new versions', 'cache an external CDN script', 'offline deep link shows home page'.")]
     public BswupSearchHitDto[] SearchBswup(
-        [Description("What you are trying to do or what goes wrong, in your own words - e.g. 'cache an external CDN script', 'app never picks up new versions'. Setting, event and attribute names work too.")] string query,
+        [Description("What you are trying to do or what goes wrong, in your own words - e.g. 'cache an external CDN script'. Setting, event and attribute names work too.")] string query,
         [Description("How many hits to return. 1-50; anything outside that is clamped.")] int limit = 12)
     {
         return BswupSearchIndex.Search(query, limit);
@@ -131,9 +63,9 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupSetupGuide), Title = "Setup guide for a hosting model",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets the complete wiring needed to add bit Bswup to a Blazor app for one hosting model, as the real files of a working project: 'standalone-wasm' (wwwroot/index.html is the host document) or 'blazor-web-app' (a Blazor Web App whose server-rendered App.razor hosts an InteractiveWebAssembly client). Call this before writing any setup code - where the splash markup can live, and which assets the client's manifest does NOT list, differ between the two.")]
+    [Description("Gets the complete wiring for adding bit Bswup to a Blazor app under one hosting model, as the real files of a working project: 'standalone-wasm' (wwwroot/index.html is the host document) or 'blazor-web-app' (a server-rendered App.razor hosting an InteractiveWebAssembly client). Call it before writing any setup code - where the splash markup can live, and which assets the client's manifest does NOT list, differ between the two. It is a long answer standing in for several shorter ones: do not also fetch the getting-started page for the same task.")]
     public string GetBswupSetupGuide(
-        [Description("'standalone-wasm' for an app whose wwwroot/index.html is the host document, or 'blazor-web-app' for a Blazor Web App whose server-rendered Components/App.razor hosts an InteractiveWebAssembly client.")] string hostingModel)
+        [Description("'standalone-wasm' for an app whose wwwroot/index.html is the host document, or 'blazor-web-app' for one whose server-rendered Components/App.razor hosts an InteractiveWebAssembly client.")] string hostingModel)
     {
         return BswupSetupGuide.Get(hostingModel)
             ?? $"'{hostingModel}' is not a known hosting model. Use one of: {string.Join(", ", BswupSetupGuide.HostingModels)}.";
@@ -142,53 +74,76 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupScriptOptions), Title = "Script tag attributes",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every attribute of the bit-bswup.js script tag - scope, log, sw, handler, blazorScript, updateInterval, updateOnVisibility, stallTimeout, persistStorage, options - with the default value read off the shipped script, what it does and the caveats. Call it before writing the script tag.")]
-    public BswupOptionDto[] GetBswupScriptOptions()
+    [Description("Lists the attributes of the bit-bswup.js script tag - scope, log, sw, handler, blazorScript, updateInterval, updateOnVisibility, stallTimeout, persistStorage, options - each with the default read off the shipped script, what it does and the caveats. Every one is written as an attribute of that tag, or as a property of the global object its 'options' attribute names; the 'script-options' documentation page has the prose. Call it before writing the script tag; pass 'name' when only one is in question.")]
+    public BswupOptionDto[] GetBswupScriptOptions(
+        [Description("One attribute name, e.g. 'updateInterval'. Omit for all ten; a name matching none of them returns all of them.")] string? name = null)
     {
-        return BswupScriptCatalog.ScriptOptions;
+        return Narrow(BswupScriptCatalog.ScriptOptions, name, option => option.Name);
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupServiceWorkerSettings), Title = "Service worker settings",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every self.* setting an app can assign in its service-worker.js before importing the Bswup engine - the asset include/exclude lists, externalAssets, defaultUrl, the URL routing lists, passive mode, error tolerance, retries, diagnostics and cache versioning - each with its type, default and caveats, plus the built-in asset include/exclude patterns the shipped worker applies.")]
-    public BswupServiceWorkerSettingsDto GetBswupServiceWorkerSettings()
+    [Description("Lists the self.* settings an app assigns in service-worker.js before importing the Bswup engine - the asset include/exclude lists, externalAssets, defaultUrl, the URL routing lists, passive mode, error tolerance, retries, diagnostics, cache versioning, mode - each with its type, default and caveats. Every one of them is assigned on self, ABOVE the importScripts line; the 'service-worker' documentation page has the prose. The built-in asset patterns and the self.mode presets ('NoPrerender', 'InitialPrerender', 'AlwaysPrerender', 'FullOffline') come with the settings they explain. Pass 'name' when only one setting is in question: the whole list is long.")]
+    public BswupServiceWorkerSettingsDto GetBswupServiceWorkerSettings(
+        [Description("One setting name, with or without the 'self.' prefix, e.g. 'assetsExclude'. Omit for all of them; a name matching none of them returns all of them.")] string? name = null)
     {
+        var settings = Narrow(BswupScriptCatalog.WorkerSettings, StripSelf(name), setting => setting.Name);
+
+        // The two bulky extras ride along only when the settings they explain are in the answer.
+        // Asked about `errorTolerance`, nobody wants eighteen asset-matching patterns with it.
+        var wantsPatterns = settings.Any(setting => setting.Name is "assetsInclude" or "assetsExclude" or "ignoreDefaultInclude" or "ignoreDefaultExclude");
+        var wantsModes = settings.Any(setting => setting.Name is "mode");
+
         // A named record rather than an anonymous type: this is the shape the tool publishes as its
         // output schema, and an anonymous type has none to publish.
         return new BswupServiceWorkerSettingsDto
         {
-            Settings = BswupScriptCatalog.WorkerSettings,
-            DefaultAssetsInclude = BswupScriptCatalog.DefaultAssetsInclude,
-            DefaultAssetsExclude = BswupScriptCatalog.DefaultAssetsExclude,
+            Settings = settings,
+            DefaultAssetsInclude = wantsPatterns ? BswupScriptCatalog.DefaultAssetsInclude : null,
+            DefaultAssetsExclude = wantsPatterns ? BswupScriptCatalog.DefaultAssetsExclude : null,
+            Modes = wantsModes ? BswupScriptCatalog.Modes : null,
             Notes =
             [
                 "Every setting must be assigned BEFORE `self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js')` - the engine reads them as it is imported.",
                 "Whatever you set here, set in service-worker.published.js as well: that is the file deployed builds ship.",
                 "The URL-matching lists (assetsInclude, assetsExclude, prohibitedUrls, serverHandledUrls, serverRenderedUrls) accept a RegExp, used as written, or a string, which is regex-escaped and matched as a literal SUBSTRING of the URL.",
                 "An exclude always beats an include. The default excludes keep the service-worker scripts themselves out of the cache; caching those corrupts the update cycle.",
-                "Call InspectBswupServiceWorker with your file to have it checked, and AnalyzeBswupAssetCaching to see which assets it will cache.",
+                "A self.mode preset only fills in settings the file has not assigned itself, so an explicit assignment always wins - including an explicitly falsy one.",
+                "Call InspectBswupServiceWorker with your file to have it checked, and pass it the asset URLs you care about to see which of them it will cache.",
             ]
         };
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupServiceWorkerModes), Title = "Service worker mode presets",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists the self.mode presets ('NoPrerender', 'InitialPrerender', 'AlwaysPrerender', 'FullOffline') and exactly which settings each one fills in, read off the shipped service worker. A preset never overrides a setting the file assigns itself.")]
-    public BswupModeDto[] GetBswupServiceWorkerModes()
-    {
-        return BswupScriptCatalog.Modes;
-    }
-
-    [HttpGet]
     [McpServerTool(Name = nameof(InspectBswupServiceWorker), Title = "Review a service worker file",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Checks a service-worker.js file against the shipped Bswup worker and reports what it will actually do: which self.* settings it assigns, which of those names the worker does not know (a typo that is silently ignored), settings assigned after the importScripts line (where the engine can no longer see them), a missing engine import, a defaultUrl no asset serves, string entries in the URL lists, and what a mode preset adds. Run it on every service-worker file you write or change - none of these failures produce an error anyone sees until a user is offline.")]
+    [Description("Checks a service-worker.js file against the shipped Bswup worker and reports what it will actually do: which self.* settings it assigns, which of those names the worker does not know (a typo it silently ignores), settings assigned after the importScripts line (where the engine can no longer see them), a missing engine import, a defaultUrl no asset serves, string entries in the URL lists, and what a mode preset adds. Pass 'assetUrls' and the same call also decides those assets, running them through the include/exclude lists this file produces, built-in patterns first - which answers 'will this be cached?' without deploying. Run it on every service-worker file you write or change: none of these failures produce an error anyone sees until a user is offline.")]
     public BswupServiceWorkerInspectionDto InspectBswupServiceWorker(
-        [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim.")] string script)
+        [Description("The full content of the service-worker.js (or service-worker.published.js) file to check, verbatim.")] string script,
+        [Description("Optional asset URLs to decide under this file, written as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css') - one per line, or comma- or semicolon-separated. Pass the handful the question is about, including one that must NOT be cached; do not paste a whole manifest.")] string? assetUrls = null)
     {
-        return BswupServiceWorkerInspector.Inspect(script);
+        var inspection = BswupServiceWorkerInspector.Inspect(script);
+
+        if (string.IsNullOrWhiteSpace(assetUrls)) return inspection;
+
+        var urls = assetUrls.Split(['\n', '\r', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // Every URL is run against every pattern, so an agent that pastes a whole manifest in
+        // turns one call into a lot of matching. The cap sits far above the handful of assets a
+        // real question is about, and the answer says out loud when it was applied - a silently
+        // truncated list would read as 'these are all of them'.
+        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls.Take(MaxAnalyzedAssetUrls));
+
+        if (urls.Length > MaxAnalyzedAssetUrls)
+        {
+            analysis = analysis with
+            {
+                Notes = [.. analysis.Notes, $"Only the first {MaxAnalyzedAssetUrls} of the {urls.Length} URLs passed were analyzed; ask again with the rest to cover them."]
+            };
+        }
+
+        return inspection with { Assets = analysis };
     }
 
     /// <summary>
@@ -201,95 +156,44 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     [ActionName(nameof(InspectBswupServiceWorker))]
     public BswupServiceWorkerInspectionDto InspectBswupServiceWorkerFromBody([FromBody] BswupInspectRequestDto request)
     {
-        return InspectBswupServiceWorker(request.Script);
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(AnalyzeBswupAssetCaching), Title = "Will this asset be cached?",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Answers whether specific assets will be cached under a given service-worker.js, by running their URLs through the include/exclude lists that file produces - the shipped built-in patterns first, then the file's own - exactly as the worker builds them. Pass the service-worker file's content and the asset URLs as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css'), separated by newlines, commas or semicolons. Use it after adding an assetsInclude/assetsExclude pattern, or when an asset is unexpectedly missing offline.")]
-    public BswupAssetAnalysisDto AnalyzeBswupAssetCaching(
-        [Description("The full content of the service-worker.js file whose include/exclude lists should decide these assets, verbatim.")] string script,
-        [Description("The asset URLs to decide, as they appear in service-worker-assets.js (e.g. '_framework/blazor.boot.json', 'css/app.css') - one per line, or separated by commas or semicolons.")] string assetUrls)
-    {
-        var urls = (assetUrls ?? string.Empty).Split(['\n', '\r', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        // Every URL is run against every pattern, so an agent that pastes a whole manifest in
-        // turns one call into a lot of matching. The cap sits far above the handful of assets a
-        // real question is about, and the answer says out loud when it was applied - a silently
-        // truncated list would read as 'these are all of them'.
-        var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls.Take(MaxAnalyzedAssetUrls));
-
-        if (urls.Length <= MaxAnalyzedAssetUrls) return analysis;
-
-        return analysis with
-        {
-            Notes = [.. analysis.Notes, $"Only the first {MaxAnalyzedAssetUrls} of the {urls.Length} URLs passed were analyzed; ask again with the rest to cover them."]
-        };
-    }
-
-    /// <summary>
-    /// The POST form of <see cref="AnalyzeBswupAssetCaching"/>, for the same reason: it takes the
-    /// service-worker file and the URL list in the body instead of the query string. It delegates,
-    /// so the same URL cap and the note that says when it was applied hold here too.
-    /// </summary>
-    [HttpPost]
-    [ActionName(nameof(AnalyzeBswupAssetCaching))]
-    public BswupAssetAnalysisDto AnalyzeBswupAssetCachingFromBody([FromBody] BswupAssetAnalysisRequestDto request)
-    {
-        return AnalyzeBswupAssetCaching(request.Script, request.AssetUrls);
+        return InspectBswupServiceWorker(request.Script, request.AssetUrls);
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupEvents), Title = "Lifecycle events",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every lifecycle message Bswup hands to the page's handler function - downloadStarted, downloadProgress, downloadFinished, updateReady, updateFound, updateNotFound, updateCheckFailed, stateChanged, activate, error - with the string each constant resolves to and the shape of the data payload that comes with it. Call it before writing a custom handler.")]
-    public BswupEventDto[] GetBswupEvents()
+    [Description("Lists the lifecycle messages Bswup hands to the page's handler function - downloadStarted, downloadProgress, downloadFinished, activate, firstInstallClaimed, updateReady, updateFound, updateNotFound, updateCheckFailed, stateChanged, error, updateInstalled - each with the string the constant resolves to and the shape of its data payload. Call it before writing a custom handler; pass 'name' when only one is in question.")]
+    public BswupEventDto[] GetBswupEvents(
+        [Description("One event name, e.g. 'updateReady'. Omit for all of them; a name matching none of them returns all of them.")] string? name = null)
     {
-        return BswupScriptCatalog.Events;
+        return Narrow(BswupScriptCatalog.Events, name, message => message.Name);
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupJsApi), Title = "JavaScript API (BitBswup)",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Gets the global BitBswup object the page script installs: checkForUpdate, persistStorage, skipWaiting, forceRefresh and version - with what each one resolves with and when to call it. Use it for a 'check for updates' button, a custom poller or a 'reset app' action.")]
-    public BswupJsApiDto[] GetBswupJsApi()
+    [Description("Gets the global BitBswup object the page script installs: checkForUpdate, persistStorage, skipWaiting, forceRefresh and version - what each resolves with and when to call it. Use it for a 'check for updates' button, a custom poller or a 'reset app' action; pass 'name' when only one member is in question.")]
+    public BswupJsApiDto[] GetBswupJsApi(
+        [Description("One member name, e.g. 'forceRefresh'. Omit for all five; a name matching none of them returns all of them.")] string? name = null)
     {
-        return BswupScriptCatalog.JsApi;
+        return Narrow(BswupScriptCatalog.JsApi, name, member => member.Name);
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupProgressUI), Title = "Built-in progress UI reference",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Gets the built-in progress UI reference: every parameter of the BswupProgress component with the default value read off the shipped assembly, the element ids bit-bswup.progress.js drives (what a custom ChildContent splash has to render), the runtime config call, and the script and stylesheet the page needs.")]
+    [Description("Gets the built-in progress UI reference: every parameter of the BswupProgress component with the default read off the shipped assembly, the element ids bit-bswup.progress.js drives (what a custom ChildContent splash has to render), the runtime config call, and the script and stylesheet the page needs. The parameters are set on the <BswupProgress /> tag in the host document; the 'progress-ui' documentation page has the prose.")]
     public BswupProgressUiDto GetBswupProgressUI()
     {
         return BswupProgressCatalog.ProgressUi;
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupDocsList), Title = "List documentation pages",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists the pages of the bit Bswup documentation site with their descriptions and search keywords. Use it to pick the slug to pass to GetBswupDocsPage.")]
-    public BswupDocsPageDto[] GetBswupDocsList()
-    {
-        return [.. DocsCatalog.Sections.SelectMany(section => section.Pages.Select(page => new BswupDocsPageDto
-        {
-            Section = section.Title,
-            Slug = page.Slug,
-            Url = page.Url,
-            Title = page.Title,
-            Description = page.Description,
-            Keywords = page.Keywords
-        }))];
-    }
-
-    [HttpGet]
     [McpServerTool(Name = nameof(GetBswupDocsPage), Title = "Read a documentation page",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets one page of the bit Bswup documentation site as Markdown, including its code samples. Pass a slug from GetBswupDocsList, e.g. 'service-worker', 'events' or 'troubleshooting'. Omit it for the introduction.")]
+    [Description("Gets one page of the bit Bswup documentation site as Markdown, code samples included - the prose behind the reference tools, for when a name and a default are not enough. A whole page costs several times what a named reference call does, so reach for it second. The slugs: 'introduction', 'getting-started', 'how-it-works' (who starts Blazor, how an update is staged), 'script-options', 'service-worker', 'events', 'progress-ui', 'javascript-api', 'playground', 'mcp-server', 'recipes' (hosting headers, sub-paths, cache versions, update banners, API bypass), 'troubleshooting' (symptoms mapped to causes), 'cleanup', 'migration' (v-10-6-0).")]
     public async Task<string> GetBswupDocsPage(
-        [Description("A slug from GetBswupDocsList, e.g. 'service-worker', 'events', 'troubleshooting'. Omit it for the introduction.")] string? slug = null)
+        [Description("One of the slugs listed in this tool's description, e.g. 'service-worker'. Omit for the introduction.")] string? slug = null)
     {
         // The introduction's own slug is the empty string; agents reach for a word instead, and
         // DocsCatalog.FindBySlug maps those words for every caller.
@@ -297,7 +201,7 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
 
         if (page is null)
         {
-            var slugs = string.Join(", ", DocsCatalog.AllPages.Select(p => p.Slug.Length == 0 ? "(empty)" : p.Slug));
+            var slugs = string.Join(", ", DocsCatalog.AllPages.Select(p => p.Slug.Length == 0 ? "introduction" : p.Slug));
 
             return $"No documentation page has the slug '{slug}'. Available slugs: {slugs}.";
         }
@@ -314,37 +218,9 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupGuideSections), Title = "List reference guide sections",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists every section of the bit Bswup reference guide (the library's README), with its heading and size. Use it to pick the heading to pass to GetBswupGuideSection.")]
-    public BswupGuideSectionDto[] GetBswupGuideSections()
-    {
-        return BswupSourceCatalog.GuideSections;
-    }
-
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBswupGuideSection), Title = "Read a reference guide section",
-               ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets one section of the bit Bswup reference guide as Markdown, with its code samples - e.g. 'JavaScript API', 'The built-in progress UI (BswupProgress)', 'Backing out of Bswup (the cleanup worker)', 'Upgrading to v-10-6-0'. Sub-sections are included. Heading matching ignores case and punctuation.")]
-    public string GetBswupGuideSection(
-        [Description("A heading from GetBswupGuideSections, e.g. 'JavaScript API'. Matching ignores case and punctuation, and sub-sections come with it.")] string heading)
-    {
-        var section = BswupSourceCatalog.GetGuideSection(heading);
-
-        if (section is null)
-        {
-            var headings = string.Join(", ", BswupSourceCatalog.GuideSections.Select(s => $"'{s.Heading}'"));
-
-            return $"The guide has no section called '{heading}'. Available sections: {headings}.";
-        }
-
-        return Truncate(section);
-    }
-
-    [HttpGet]
     [McpServerTool(Name = nameof(GetBswupSourceFiles), Title = "List available source files",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Lists the working Bswup source files this server can hand out: this documentation site's own host document and service-worker files, the minimal samples for both hosting models, and the library's own TypeScript sources (the page script, the service worker, the progress UI and the cleanup worker). Use it to pick the path to pass to GetBswupSourceFile.")]
+    [Description("Lists the working Bswup source files this server can hand out: this documentation site's own host document and service-worker files, the minimal samples for both hosting models, and the library's own TypeScript (the page script, the service worker, the progress UI, the cleanup worker). Use it to pick a path for GetBswupSourceFile. These are worked examples and the shipped implementation - for what an option means, the reference tools answer in a fraction of the characters.")]
     public BswupSourceFileDto[] GetBswupSourceFiles()
     {
         return BswupSourceCatalog.SourceFiles;
@@ -353,9 +229,10 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     [HttpGet]
     [McpServerTool(Name = nameof(GetBswupSourceFile), Title = "Read a source file",
                ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
-    [Description("Gets one source file listed by GetBswupSourceFiles, verbatim - e.g. 'Demo/Client/wwwroot/service-worker.published.js' for the configuration of a deployed Blazor Web App, 'Sample/BasicSample/wwwroot/index.html' for a complete hand-written splash and handler, or 'Library/Scripts/bit-bswup.sw.ts' for the engine itself.")]
+    [Description("Gets one source file listed by GetBswupSourceFiles, verbatim - e.g. 'Demo/Client/wwwroot/service-worker.published.js' for a deployed Blazor Web App's configuration, 'Sample/BasicSample/wwwroot/index.html' for a complete hand-written splash and handler, or 'Library/Scripts/bit-bswup.sw.ts' for the engine itself. The library's TypeScript runs to tens of thousands of characters, so a long file comes back one window at a time and names the line to continue from - read a window, not a whole file, unless you truly need all of it.")]
     public string GetBswupSourceFile(
-        [Description("A path from GetBswupSourceFiles, e.g. 'Demo/Client/wwwroot/service-worker.published.js' or 'Library/Scripts/bit-bswup.sw.ts'.")] string path)
+        [Description("A path from GetBswupSourceFiles, e.g. 'Demo/Client/wwwroot/service-worker.published.js' or 'Library/Scripts/bit-bswup.sw.ts'.")] string path,
+        [Description("The 1-based line to start reading at. Defaults to the start of the file; a windowed answer names the line to pass here to continue.")] int startLine = 1)
     {
         var content = BswupSourceCatalog.GetSourceFile(path);
 
@@ -372,7 +249,30 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
                 : $"No source file at '{path}'. Call GetBswupSourceFiles for the full list.";
         }
 
-        return Truncate(content);
+        return Window(content, startLine, path);
+    }
+
+    /// <summary>A setting name with the <c>self.</c> callers habitually write in front of it removed.</summary>
+    private static string? StripSelf(string? name)
+    {
+        var trimmed = name?.Trim();
+
+        return trimmed?.StartsWith("self.", StringComparison.OrdinalIgnoreCase) is true ? trimmed["self.".Length..] : trimmed;
+    }
+
+    /// <summary>
+    /// The entries whose name is <paramref name="name"/>, or all of them when nothing was asked for
+    /// - or when what was asked for is not among them. An empty answer to a misspelled name would
+    /// read as "this library has no such thing", which is the one conclusion that must not be drawn
+    /// from a typo; the full list lets the caller see the name it meant.
+    /// </summary>
+    private static T[] Narrow<T>(T[] entries, string? name, Func<T, string> nameOf)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return entries;
+
+        var wanted = entries.Where(entry => string.Equals(nameOf(entry), name.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+
+        return wanted.Length > 0 ? wanted : entries;
     }
 
     private static string Truncate(string text)
@@ -380,5 +280,43 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         return text.Length <= MaxDocumentLength
             ? text
             : $"{text[..MaxDocumentLength]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
+    }
+
+    /// <summary>
+    /// At most <see cref="MaxDocumentLength"/> characters of <paramref name="content"/>, starting
+    /// at <paramref name="startLine"/> and cut at a line boundary. A window that does not reach the
+    /// end says where it stopped and how to go on, because a caller who cannot tell a partial
+    /// answer from a complete one reads the missing half as "not there".
+    /// </summary>
+    private static string Window(string content, int startLine, string path)
+    {
+        if (startLine <= 1 && content.Length <= MaxDocumentLength) return content;
+
+        var lines = content.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+        var first = Math.Clamp(startLine, 1, lines.Length);
+
+        var taken = new List<string>();
+        var length = 0;
+
+        for (var i = first - 1; i < lines.Length; i++)
+        {
+            // The first line is always taken, however long it is: a minified file is one line, and
+            // a window that could hold none of it would answer every call with an empty string.
+            if (taken.Count > 0 && length + lines[i].Length + 1 > MaxDocumentLength) break;
+
+            taken.Add(lines[i]);
+            length += lines[i].Length + 1;
+        }
+
+        var last = first + taken.Count - 1;
+        var body = string.Join('\n', taken);
+
+        if (first == 1 && last == lines.Length) return body;
+
+        var more = last < lines.Length
+            ? $"continue with GetBswupSourceFile(path: \"{path}\", startLine: {last + 1})"
+            : "this is the end of the file";
+
+        return $"[lines {first}-{last} of {lines.Length} - {more}]\n\n{body}";
     }
 }

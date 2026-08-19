@@ -4,14 +4,20 @@ using Bit.Bswup.Demo.Server.Dtos;
 namespace Bit.Bswup.Demo.Server.Services;
 
 /// <summary>
-/// One searchable index over everything this MCP server knows: the reference guide, the docs
-/// pages, every script attribute and service-worker setting, the lifecycle messages, the
-/// JavaScript API and the source files.
+/// One searchable index over everything this MCP server knows: the docs pages, every script
+/// attribute and service-worker setting, the mode presets, the lifecycle messages, the JavaScript
+/// API, the progress UI and the source files.
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there -
 /// "the app never picks up new versions" is a script attribute, a JavaScript API call, a docs page
 /// and a hosting-header recipe all at once. Each hit therefore carries the exact follow-up tool
 /// call that returns the full text, so one search is enough to know what to ask for next.
+/// </para>
+/// <para>
+/// Those calls are narrowed to the hit - <c>GetBswupServiceWorkerSettings(name: "assetsExclude")</c>
+/// rather than the bare tool - because an agent follows them verbatim, and the bare call would
+/// hand back twenty-four settings to answer a question about one. The saving is the point: a
+/// search that costs a page of context to answer with another page of context has not helped.
 /// </para>
 /// </summary>
 public static class BswupSearchIndex
@@ -40,16 +46,6 @@ public static class BswupSearchIndex
     private const int ExampleWeight = 4;
 
     /// <summary>
-    /// The weight of a guide section that is most of the guide. The README's first heading covers
-    /// two thirds of the file, so it matches nearly every query and answers none of them with more
-    /// than "read the guide". It stays findable; anything precise outranks it.
-    /// </summary>
-    private const int BroadSectionWeight = 4;
-
-    /// <summary>A section holding more than this fraction of the guide counts as one of those.</summary>
-    private const int BroadSectionFraction = 4;
-
-    /// <summary>
     /// The most an entry can earn from prose, however much of it there is. A long section mentions
     /// everything, so without a ceiling the biggest document in the corpus is the top hit for
     /// every query - and a name match, which is the far stronger signal, never gets ahead of it.
@@ -63,7 +59,12 @@ public static class BswupSearchIndex
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
+        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
+        // Every entry in this index is about Bswup in a Blazor app, so these three separate
+        // nothing - and they do worse than nothing, because a term that matches an entry counts
+        // towards the "how many terms matched" multiplier. Left in, the longest documents won
+        // every query on the strength of a word that is in all of them.
+        "bswup", "bit", "blazor"
     };
 
     public static BswupSearchHitDto[] Search(string query, int limit)
@@ -228,19 +229,7 @@ public static class BswupSearchIndex
 
     private static Entry[] Build()
     {
-        var entries = new List<Entry>(256);
-
-        var guideLines = Math.Max(1, BswupSourceCatalog.Readme.Count(c => c == '\n'));
-
-        foreach (var section in BswupSourceCatalog.GuideSections)
-        {
-            var body = BswupSourceCatalog.GetGuideSection(section.Heading) ?? string.Empty;
-
-            var weight = section.Lines * BroadSectionFraction > guideLines ? BroadSectionWeight : ReferenceWeight;
-
-            entries.Add(new Entry("Guide section", section.Heading, section.Parent,
-                $"GetBswupGuideSection(heading: \"{section.Heading}\")", body, string.Empty, weight));
-        }
+        var entries = new List<Entry>(128);
 
         foreach (var page in DocsCatalog.Sections.SelectMany(s => s.Pages.Select(p => (Section: s.Title, Page: p))))
         {
@@ -251,32 +240,34 @@ public static class BswupSearchIndex
         foreach (var option in BswupScriptCatalog.ScriptOptions)
         {
             entries.Add(new Entry("Script attribute", option.Name, "bit-bswup.js script tag",
-                "GetBswupScriptOptions()", $"{option.Summary} {option.Remarks}".Trim(), $"{option.Type} {option.Default}".Trim()));
+                $"GetBswupScriptOptions(name: \"{option.Name}\")", $"{option.Summary} {option.Remarks}".Trim(), $"{option.Type} {option.Default}".Trim()));
         }
 
         foreach (var setting in BswupScriptCatalog.WorkerSettings)
         {
             entries.Add(new Entry("Service worker setting", $"self.{setting.Name}", "service-worker.js",
-                "GetBswupServiceWorkerSettings()", $"{setting.Summary} {setting.Remarks}".Trim(), $"{setting.Type} {setting.Default}".Trim()));
+                $"GetBswupServiceWorkerSettings(name: \"{setting.Name}\")", $"{setting.Summary} {setting.Remarks}".Trim(), $"{setting.Type} {setting.Default}".Trim()));
         }
 
         foreach (var mode in BswupScriptCatalog.Modes)
         {
+            // Every preset is reached through the `mode` setting it is a value of, so all four
+            // hits name the same call - and that call is the one that carries the presets.
             entries.Add(new Entry("Service worker mode", $"self.mode = '{mode.Name}'", "preset",
-                "GetBswupServiceWorkerModes()",
+                "GetBswupServiceWorkerSettings(name: \"mode\")",
                 string.Join(", ", mode.Settings.Select(setting => $"{setting.Key} = {setting.Value}")), mode.Name));
         }
 
         foreach (var message in BswupScriptCatalog.Events)
         {
             entries.Add(new Entry("Event", message.Name, message.Message,
-                "GetBswupEvents()", $"{message.Summary} {message.Deprecated}".Trim(), $"{message.Message} {message.Payload}".Trim()));
+                $"GetBswupEvents(name: \"{message.Name}\")", $"{message.Summary} {message.Deprecated}".Trim(), $"{message.Message} {message.Payload}".Trim()));
         }
 
         foreach (var member in BswupScriptCatalog.JsApi)
         {
             entries.Add(new Entry("JavaScript API", $"BitBswup.{member.Name}", "page script",
-                "GetBswupJsApi()", member.Summary ?? string.Empty, member.Signature));
+                $"GetBswupJsApi(name: \"{member.Name}\")", member.Summary ?? string.Empty, member.Signature));
         }
 
         foreach (var parameter in BswupProgressCatalog.Parameters)

@@ -24,9 +24,9 @@ public class ToolCallTests
     /// <summary>The tools declared with UseStructuredContent, which a typed client reads as JSON.</summary>
     private static readonly string[] _structuredTools =
     [
-        "SearchBswup", "GetBswupScriptOptions", "GetBswupServiceWorkerSettings", "GetBswupServiceWorkerModes",
-        "InspectBswupServiceWorker", "AnalyzeBswupAssetCaching", "GetBswupEvents", "GetBswupJsApi",
-        "GetBswupProgressUI", "GetBswupDocsList", "GetBswupGuideSections", "GetBswupSourceFiles",
+        "SearchBswup", "GetBswupScriptOptions", "GetBswupServiceWorkerSettings",
+        "InspectBswupServiceWorker", "GetBswupEvents", "GetBswupJsApi",
+        "GetBswupProgressUI", "GetBswupSourceFiles",
     ];
 
     [ClassInitialize]
@@ -50,7 +50,7 @@ public class ToolCallTests
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Description), tool.Name);
 
             // A one-liner is a name restated; the description is the only thing a model uses to
-            // decide between seventeen tools.
+            // decide between the eleven tools here.
             Assert.IsTrue(tool.Description!.Length > 80, $"{tool.Name}: description is {tool.Description.Length} characters");
         }
     }
@@ -110,29 +110,19 @@ public class ToolCallTests
     // -- Calling them ----------------------------------------------------------
 
     [TestMethod]
-    public async Task GetBswupOverview_ExplainsTheThreePlacesBswupIsConfigured_AndNamesTheOtherTools()
+    public void NoToolRestatesTheToolList()
     {
-        var text = await _server.CallTextAsync("GetBswupOverview");
+        // There used to be a "start here" tool whose 4,000-character answer was the list of tools
+        // the client already holds, plus the rules the server instructions already carry. A client
+        // paid for it twice and an agent paid a call to be told to make another one.
+        Assert.IsFalse(_tools.Any(tool => tool.Name.Contains("Overview", StringComparison.OrdinalIgnoreCase)),
+            string.Join(", ", _tools.Select(tool => tool.Name)));
 
-        StringAssert.Contains(text, "bit-bswup.js");
-        StringAssert.Contains(text, "service-worker.published.js");
-        StringAssert.Contains(text, "BswupProgress");
-        StringAssert.Contains(text, BswupScriptCatalog.Version, "the overview says which build the answers come from");
-        StringAssert.Contains(text, "SearchBswup");
-    }
+        var instructions = _server.Mcp.ServerInstructions!;
 
-    [TestMethod]
-    public async Task GetBswupOverview_NamesOnlyToolsThatExist()
-    {
-        var text = await _server.CallTextAsync("GetBswupOverview");
-        var names = _tools.Select(tool => tool.Name).ToArray();
-
-        foreach (var mentioned in System.Text.RegularExpressions.Regex.Matches(text, @"`(?<name>(?:Get|Search|Inspect|Analyze)Bswup\w*)`")
-                                                                     .Select(match => match.Groups["name"].Value)
-                                                                     .Distinct())
-        {
-            CollectionAssert.Contains(names, mentioned, $"the overview points at '{mentioned}', which is not a tool");
-        }
+        StringAssert.Contains(instructions, "autostart");
+        StringAssert.Contains(instructions, "service-worker.published.js");
+        StringAssert.Contains(instructions, "never be cached at the HTTP");
     }
 
     [TestMethod]
@@ -210,14 +200,51 @@ public class ToolCallTests
     }
 
     [TestMethod]
-    public async Task GetBswupServiceWorkerModes_ReturnsTheFourPresetsWithTheirSettings()
+    public async Task GetBswupServiceWorkerSettings_CarriesTheModePresetsWithTheSettingTheyAreValuesOf()
     {
-        var result = await _server.CallAsync("GetBswupServiceWorkerModes");
-        var modes = McpTestServer.StructuredOf(result, "GetBswupServiceWorkerModes");
+        // A preset is a bundle of the settings this tool already returns, so it was a second tool
+        // for the same subject - and one an agent writing a worker had to know to call.
+        var result = await _server.CallAsync("GetBswupServiceWorkerSettings", new { name = "mode" });
+        var payload = McpTestServer.StructuredOf(result, "GetBswupServiceWorkerSettings");
 
-        var names = modes.EnumerateArray().Select(mode => mode.GetProperty("name").GetString()).ToArray();
+        Assert.AreEqual(1, payload.GetProperty("settings").GetArrayLength());
+
+        var names = payload.GetProperty("modes").EnumerateArray().Select(mode => mode.GetProperty("name").GetString()).ToArray();
 
         CollectionAssert.AreEquivalent(new[] { "NoPrerender", "InitialPrerender", "AlwaysPrerender", "FullOffline" }, names);
+    }
+
+    [TestMethod]
+    public async Task ReferenceTools_AnswerWithOneEntryWhenOneIsAskedFor()
+    {
+        // The search index hands agents these narrowed calls, and following one has to cost a
+        // fraction of the bare call - that is the whole reason the argument exists.
+        var whole = await _server.CallTextAsync("GetBswupServiceWorkerSettings");
+        var one = await _server.CallTextAsync("GetBswupServiceWorkerSettings", new { name = "self.assetsExclude" });
+
+        Assert.IsTrue(one.Length * 4 < whole.Length, $"narrowing saved nothing: {one.Length} of {whole.Length} characters");
+
+        var payload = JsonSerializer.Deserialize<JsonElement>(one);
+
+        Assert.AreEqual(1, payload.GetProperty("settings").GetArrayLength());
+        Assert.AreEqual("assetsExclude", payload.GetProperty("settings")[0].GetProperty("name").GetString());
+
+        // The asset patterns explain exactly this setting, so they come with it - and the presets,
+        // which explain a different one, are not merely null but absent from the wire.
+        Assert.IsTrue(payload.TryGetProperty("defaultAssetsExclude", out _));
+        Assert.IsFalse(payload.TryGetProperty("modes", out _));
+    }
+
+    [TestMethod]
+    public async Task ReferenceTools_AnswerWithEverythingWhenTheNameIsNotOneOfThem()
+    {
+        // An empty answer to a typo reads as "this library has no such thing", which is the one
+        // conclusion that must not be drawn from a misspelling.
+        var result = await _server.CallAsync("GetBswupEvents", new { name = "updateRead" });
+        var events = McpTestServer.StructuredOf(result, "GetBswupEvents");
+
+        Assert.IsTrue(events.GetArrayLength() > 1);
+        Assert.IsTrue(events.EnumerateArray().Any(message => message.GetProperty("name").GetString() == "updateReady"));
     }
 
     [TestMethod]
@@ -234,15 +261,15 @@ public class ToolCallTests
     }
 
     [TestMethod]
-    public async Task AnalyzeBswupAssetCaching_DecidesTheUrlsItIsGiven()
+    public async Task InspectBswupServiceWorker_DecidesTheUrlsItIsGiven()
     {
-        var result = await _server.CallAsync("AnalyzeBswupAssetCaching", new
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new
         {
             script = ServiceWorkerFixtures.Clean,
             assetUrls = "_framework/dotnet.native.wasm\ncss/app.css, service-worker.js; downloads/report.pdf"
         });
 
-        var analysis = McpTestServer.StructuredOf(result, "AnalyzeBswupAssetCaching");
+        var analysis = McpTestServer.StructuredOf(result, "InspectBswupServiceWorker").GetProperty("assets");
         var assets = analysis.GetProperty("assets").EnumerateArray()
             .ToDictionary(asset => asset.GetProperty("url").GetString()!, asset => asset.GetProperty("cached").GetBoolean());
 
@@ -254,13 +281,23 @@ public class ToolCallTests
     }
 
     [TestMethod]
-    public async Task AnalyzeBswupAssetCaching_SaysSoWhenItAnsweredForOnlyPartOfAPastedManifest()
+    public async Task InspectBswupServiceWorker_LeavesTheAssetsOutWhenNoneWereAskedAbout()
+    {
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean });
+        var report = McpTestServer.StructuredOf(result, "InspectBswupServiceWorker");
+
+        Assert.IsFalse(report.TryGetProperty("assets", out _),
+            "a review that was not asked about any asset must not pay for an empty analysis");
+    }
+
+    [TestMethod]
+    public async Task InspectBswupServiceWorker_SaysSoWhenItAnsweredForOnlyPartOfAPastedManifest()
     {
         // A silently truncated list reads as "these are all of them".
         var urls = string.Join("\n", Enumerable.Range(0, 260).Select(index => $"_framework/asset{index}.dll"));
 
-        var result = await _server.CallAsync("AnalyzeBswupAssetCaching", new { script = ServiceWorkerFixtures.Clean, assetUrls = urls });
-        var analysis = McpTestServer.StructuredOf(result, "AnalyzeBswupAssetCaching");
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean, assetUrls = urls });
+        var analysis = McpTestServer.StructuredOf(result, "InspectBswupServiceWorker").GetProperty("assets");
 
         Assert.AreEqual(200, analysis.GetProperty("assets").GetArrayLength());
 
@@ -312,44 +349,33 @@ public class ToolCallTests
     }
 
     [TestMethod]
-    public async Task GetBswupDocsList_ListsEveryPageOfTheSite()
+    public void GetBswupDocsPage_NamesEverySlugInItsOwnDescription()
     {
-        var result = await _server.CallAsync("GetBswupDocsList");
-        var pages = McpTestServer.StructuredOf(result, "GetBswupDocsList");
+        // There was a listing tool for this, whose 4,900-character answer was fourteen slugs with
+        // their descriptions and the site's search keywords. Fourteen slugs fit in a sentence, and
+        // a description is read once per session rather than fetched.
+        var description = _tools.Single(tool => tool.Name == "GetBswupDocsPage").Description!;
 
-        Assert.AreEqual(Bit.Bswup.Demo.Client.DocsCatalog.AllPages.Count(), pages.GetArrayLength());
-
-        foreach (var page in pages.EnumerateArray())
+        foreach (var page in Bit.Bswup.Demo.Client.DocsCatalog.AllPages)
         {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.GetProperty("title").GetString()));
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.GetProperty("description").GetString()));
-            Assert.IsFalse(string.IsNullOrWhiteSpace(page.GetProperty("keywords").GetString()));
-            StringAssert.StartsWith(page.GetProperty("url").GetString(), "/");
+            var slug = page.Slug.Length == 0 ? "introduction" : page.Slug;
+
+            StringAssert.Contains(description, $"'{slug}'", $"the '{slug}' page is not reachable from the description");
         }
     }
 
     [TestMethod]
-    public async Task GetBswupGuideSections_And_GetBswupGuideSection_AgreeWithEachOther()
+    public async Task TheReadmeIsAResourceRatherThanAPairOfTools()
     {
-        var result = await _server.CallAsync("GetBswupGuideSections");
-        var sections = McpTestServer.StructuredOf(result, "GetBswupGuideSections");
+        // Its one 30,000-character section said what the documentation pages say, so an agent
+        // could pay three times over for the same material. It stays readable for a person who
+        // wants to pin it; it is no longer something a search can spend a context window on.
+        Assert.IsFalse(_tools.Any(tool => tool.Name.Contains("GuideSection", StringComparison.OrdinalIgnoreCase)),
+            string.Join(", ", _tools.Select(tool => tool.Name)));
 
-        foreach (var heading in sections.EnumerateArray().Select(section => section.GetProperty("heading").GetString()!))
-        {
-            var text = await _server.CallTextAsync("GetBswupGuideSection", new { heading });
+        var guide = await _server.ReadResourceTextAsync("bswup://guide");
 
-            Assert.IsFalse(text.StartsWith("The guide has no section", StringComparison.Ordinal),
-                $"'{heading}' is listed but cannot be fetched");
-        }
-    }
-
-    [TestMethod]
-    public async Task GetBswupGuideSection_ForAnUnknownHeading_AnswersWithTheHeadingsItHas()
-    {
-        var text = await _server.CallTextAsync("GetBswupGuideSection", new { heading = "Quantum Tunnelling" });
-
-        StringAssert.Contains(text, "has no section called");
-        StringAssert.Contains(text, "'JavaScript API'");
+        Assert.IsTrue(guide.Length > 1000);
     }
 
     [TestMethod]
@@ -358,7 +384,7 @@ public class ToolCallTests
         var result = await _server.CallAsync("GetBswupSourceFiles");
         var files = McpTestServer.StructuredOf(result, "GetBswupSourceFiles");
 
-        Assert.IsTrue(files.GetArrayLength() > 20);
+        Assert.IsTrue(files.GetArrayLength() > 15);
 
         // Fetching all of them would be a slow way of re-testing the catalog; the point here is
         // that a path off the listing really is fetchable through the protocol.
@@ -389,19 +415,35 @@ public class ToolCallTests
     }
 
     [TestMethod]
-    public async Task LongDocuments_AreTruncatedWithTheTruncationSaidOutLoud()
+    public async Task LongSourceFiles_ComeBackOneWindowAtATimeAndSayHowToGoOn()
     {
-        // The cap exists so one document cannot dominate a client's context window; a document cut
-        // off without a word would read as the whole thing.
+        // The service worker runs past 120,000 characters. It used to come back cut off at 40,000
+        // with no way to reach the rest: 10,000 tokens spent on a third of a file. A window that
+        // does not reach the end has to say where it stopped, or the missing part reads as absent.
         var longest = BswupSourceCatalog.SourceFiles
-            .OrderByDescending(file => file.Lines)
-            .FirstOrDefault(file => BswupSourceCatalog.GetSourceFile(file.Path)!.Length > 40_000);
+            .OrderByDescending(file => BswupSourceCatalog.GetSourceFile(file.Path)!.Length)
+            .First();
 
-        Assert.IsNotNull(longest, "no embedded source file is long enough to be truncated - the cap is untested");
+        Assert.IsTrue(BswupSourceCatalog.GetSourceFile(longest.Path)!.Length > 16_000,
+            "no embedded source file is long enough to be windowed - the cap is untested");
 
-        var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path });
+        var first = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path });
 
-        StringAssert.Contains(text, "[truncated");
-        Assert.IsTrue(text.Length < 41_000, $"{longest.Path} came back as {text.Length} characters");
+        StringAssert.StartsWith(first, "[lines 1-");
+        StringAssert.Contains(first, $"startLine: ");
+        Assert.IsTrue(first.Length < 17_000, $"{longest.Path} came back as {first.Length} characters");
+
+        var next = int.Parse(System.Text.RegularExpressions.Regex.Match(first, @"startLine: (?<line>\d+)").Groups["line"].Value);
+        var second = await _server.CallTextAsync("GetBswupSourceFile", new { path = longest.Path, startLine = next });
+
+        StringAssert.StartsWith(second, $"[lines {next}-");
+    }
+
+    [TestMethod]
+    public async Task ShortSourceFiles_ComeBackVerbatimWithNoWindowHeader()
+    {
+        var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = "Demo/Client/wwwroot/service-worker.published.js" });
+
+        Assert.AreEqual(BswupSourceCatalog.GetSourceFile("Demo/Client/wwwroot/service-worker.published.js"), text);
     }
 }

@@ -132,7 +132,6 @@ public class SourceCatalogTests
     [DataRow("Demo/Client/wwwroot/service-worker.js")]
     [DataRow("Demo/Client/wwwroot/service-worker.published.js")]
     [DataRow("Demo/Server/Components/App.razor")]
-    [DataRow("Demo/Server/Program.cs")]
     [DataRow("Sample/BasicSample/wwwroot/index.html")]
     [DataRow("Sample/BasicSample/wwwroot/service-worker.js")]
     [DataRow("Sample/FullSample/Client/wwwroot/service-worker.published.js")]
@@ -195,15 +194,47 @@ public class SourceCatalogTests
     }
 
     [TestMethod]
-    public void SourceFiles_DescriptionsComeFromWhatTheFileItselfSays()
+    public void SourceFiles_AreAllDescribed()
     {
-        // A doc-comment reference IS the word the sentence is built around, so it is replaced by
-        // what it names rather than deleted - otherwise this reads "One documentation page: is its route".
-        var catalog = BswupSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/DocsCatalog.cs");
+        // The descriptions used to be guessed from whatever comment came first in the file, which
+        // on this set produced commented-out markup, an aside about screen readers, and a version
+        // stamp. A caller picks the file to spend its next call on from this line, so every entry
+        // has to carry one and none of it may be a fragment of the file's own code.
+        foreach (var file in BswupSourceCatalog.SourceFiles)
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(file.Description), $"{file.Path} has no description");
+            Assert.IsFalse(file.Description!.Contains('<') && file.Description.Contains("/>"), $"{file.Path}: markup, not a description");
+        }
+    }
 
-        Assert.IsNotNull(catalog.Description);
-        StringAssert.Contains(catalog.Description, "One documentation page: Slug is its route");
-        Assert.IsFalse(catalog.Description.Contains('<'), "no markup survives into a description");
+    [TestMethod]
+    public void SourceFiles_DescriptionsSayWhichProjectAFileBelongsTo()
+    {
+        // The Blazor Web App sample has a Program.cs and a .csproj on each side and only one of
+        // them carries the Bswup wiring, so naming the sample alone would not say which is which.
+        var client = BswupSourceCatalog.SourceFiles.Single(file => file.Path == "Sample/FullSample/Client/Program.cs");
+        var host = BswupSourceCatalog.SourceFiles.Single(file => file.Path == "Sample/FullSample/Server/Program.cs");
+
+        StringAssert.Contains(client.Description!, "client project");
+        StringAssert.Contains(host.Description!, "host project");
+    }
+
+    [TestMethod]
+    public void SourceFiles_DoNotIncludeThisSitesOwnChrome()
+    {
+        // A blanket glob over the demo client used to embed every page, layout, stylesheet and
+        // script of this site: sixty-four files, of which the reference answers none. They cost a
+        // caller a listing to read and, if followed, tens of thousands of characters to no end.
+        foreach (var file in BswupSourceCatalog.SourceFiles)
+        {
+            Assert.IsFalse(file.Path.StartsWith("Demo/Client/Pages/", StringComparison.Ordinal), file.Path);
+            Assert.IsFalse(file.Path.StartsWith("Demo/Client/Shared/", StringComparison.Ordinal), file.Path);
+            Assert.IsFalse(file.Path.EndsWith(".css", StringComparison.OrdinalIgnoreCase), file.Path);
+            Assert.IsFalse(file.Path.EndsWith("_Imports.razor", StringComparison.OrdinalIgnoreCase), file.Path);
+        }
+
+        Assert.IsTrue(BswupSourceCatalog.SourceFiles.Length < 30,
+            $"the listing is back to a directory dump: {BswupSourceCatalog.SourceFiles.Length} files");
     }
 
     [TestMethod]

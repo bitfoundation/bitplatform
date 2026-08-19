@@ -62,15 +62,17 @@ public static class McpPrompts
 
             1. Call `SearchBswup` with the request above. It searches the guide, the docs pages, every setting and
                the demo's own service-worker files at once, and every hit tells you the exact follow-up call.
-            2. Call `GetBswupServiceWorkerSettings` and match the setting names, types and defaults exactly. Do not
-               infer a setting from Workbox or from the standard Microsoft template - the names differ.
-            3. If a `self.mode` preset covers the intent, call `GetBswupServiceWorkerModes` first: a preset is a
-               bundle of settings, and it only fills in what the file has not assigned itself.
+            2. Call `GetBswupServiceWorkerSettings` for the settings the search named - pass `name` when it is one
+               of them - and match names, types and defaults exactly. Do not infer a setting from Workbox or from
+               the standard Microsoft template: the names differ.
+            3. If a `self.mode` preset covers the intent, `GetBswupServiceWorkerSettings(name: "mode")` lists what
+               each preset fills in. A preset is a bundle of settings, and it only fills in what the file has not
+               assigned itself.
             4. Write the settings ABOVE the `self.importScripts('_content/Bit.Bswup/bit-bswup.sw.js')` line, in
                BOTH `service-worker.js` and `service-worker.published.js`.
-            5. Call `InspectBswupServiceWorker` with the resulting file, then `AnalyzeBswupAssetCaching` with the
-               same file and the concrete asset URLs this change is about - including one URL that must NOT be
-               cached. Do not report the work as done until the analysis shows the intended answer for each.
+            5. Call `InspectBswupServiceWorker` with the resulting file, passing `assetUrls` with the concrete
+               asset URLs this change is about - including one URL that must NOT be cached. Do not report the work
+               as done until the decisions it comes back with are the intended ones.
             6. Prefer the framework's own mechanism over hand-rolling one: `serverHandledUrls` over a fetch
                listener of your own, `externalAssets` over a manual `caches.put`, `cacheVersion` over deleting
                buckets by hand.
@@ -96,12 +98,14 @@ public static class McpPrompts
                `InspectBswupServiceWorker`. Two failures dominate real reports and neither produces any visible
                error: a setting assigned after the `importScripts` line, and a setting present in only one of the
                two files (so it is missing in production).
-            3. If an asset is missing offline, call `AnalyzeBswupAssetCaching` with that file and the asset's URL
-               as it appears in `service-worker-assets.js`. It reports which pattern decided the outcome.
+            3. If an asset is missing offline, pass that asset's URL - as it appears in
+               `service-worker-assets.js` - to the same `InspectBswupServiceWorker` call as `assetUrls`. It
+               reports which pattern decided the outcome.
             4. If the app will not pick up new versions, check the HTTP layer before the configuration: a
                `service-worker.js` served with a long `Cache-Control` keeps clients on the old worker no matter
-               what the app does. Then look at `updateInterval` / `updateOnVisibility` (`GetBswupScriptOptions`)
-               and `BitBswup.checkForUpdate()` (`GetBswupJsApi`).
+               what the app does. Then look at `GetBswupScriptOptions(name: "updateInterval")`,
+               `GetBswupScriptOptions(name: "updateOnVisibility")` and
+               `GetBswupJsApi(name: "checkForUpdate")`.
             5. Confirm the API you are relying on with `GetBswupEvents` or `GetBswupProgressUI` before concluding
                it is a bug - check the actual default of the parameter involved. `AutoReload` defaults to `false`
                since v-10-6-0, which is the cause behind most "updates no longer apply themselves" reports.
@@ -120,8 +124,7 @@ public static class McpPrompts
 
             Work in this order:
 
-            1. Call `GetBswupDocsPage(slug: "cleanup")` and `GetBswupGuideSection(heading: "Backing out of Bswup (the cleanup worker)")`
-               and follow them.
+            1. Call `GetBswupDocsPage(slug: "cleanup")` and follow it.
             2. Replace the CONTENT of both `wwwroot/service-worker.js` and `wwwroot/service-worker.published.js`
                with the single cleanup import. Deleting the files instead is the classic mistake: a client that
                already has the old worker never learns it should stop, because a 404 on the worker script leaves
@@ -132,7 +135,8 @@ public static class McpPrompts
             4. Verify with `InspectBswupServiceWorker` on the new file: it should report the cleanup worker, not
                the engine.
             5. If you only need to reset ONE client rather than back the whole app out, that is
-               `BitBswup.forceRefresh()` instead - call `GetBswupJsApi` for what it clears by default.
+               `BitBswup.forceRefresh()` instead - call `GetBswupJsApi(name: "forceRefresh")` for what it clears
+               by default.
 
             Show me the diff for each file you change.
             """;
