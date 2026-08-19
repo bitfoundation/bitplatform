@@ -66,7 +66,10 @@ public sealed class TrimButilScripts : Task
             {
                 // Not an error: the JavaScript this package ships simply has no such module, so the C# call
                 // would fail regardless of trimming. Worth a warning because it means the two halves drifted.
-                Log.LogWarning($"Bit.Butil: the trimmed app calls 'BitButil.{module}.*' but no such JavaScript module exists in this version of Bit.Butil.");
+                // Carries a code so a consumer can silence it the usual way ($(NoWarn), or a warning-as-error
+                // policy) without having to turn the whole trimming off.
+                Log.LogWarning(null, "BUTIL001", null, null, 0, 0, 0, 0,
+                    $"Bit.Butil: the trimmed app calls 'BitButil.{module}.*' but no such JavaScript module exists in this version of Bit.Butil.");
             }
 
             ButilScriptBundler.WriteBundle(ChunksDirectory, included, OutputPath);
@@ -78,7 +81,7 @@ public sealed class TrimButilScripts : Task
                 $"Bit.Butil: bit-butil.js trimmed to {included.Count} of {manifest.Order.Count} modules ({new FileInfo(OutputPath).Length:N0} bytes): {string.Join(", ", included)}");
             return true;
         }
-        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or BadImageFormatException)
+        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or BadImageFormatException or ArgumentException)
         {
             Log.LogError($"Bit.Butil: could not assemble the trimmed bit-butil.js - {exception.Message} Set <BitButilTrimScripts>false</BitButilTrimScripts> to publish the full bundle instead.");
             return false;

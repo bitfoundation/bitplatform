@@ -28,6 +28,20 @@
             <_BitButilTrimmedBundleEndpoint>
                 <EndpointProperties>$([System.String]::Copy('%(EndpointProperties)').Replace('"Name":"label","Value":"bit-butil.js"', '"Name":"label","Value":"$(_BitButilBundleBasePath)/bit-butil.js"'))</EndpointProperties>
             </_BitButilTrimmedBundleEndpoint>
+
+            <!-- Should an SDK ever write that label differently, the replacement above is a no-op and the
+                 lookups would quietly stop resolving to the trimmed bundle. Catch a leftover bare label
+                 here rather than at runtime. (An unfingerprinted route carries no label at all, which is
+                 fine: nothing needs restoring then.) -->
+            <_BitButilUnresolvedEndpoint Include="@(_BitButilTrimmedBundleEndpoint)"
+                Condition="$([System.String]::Copy('%(EndpointProperties)').Contains('&quot;Name&quot;:&quot;label&quot;,&quot;Value&quot;:&quot;bit-butil.js&quot;'))" />
+        </ItemGroup>
+
+        <Error Condition="'@(_BitButilUnresolvedEndpoint)' != ''"
+               Text="Bit.Butil: the trimmed bit-butil.js endpoint kept an unresolved 'bit-butil.js' label, so '$(_BitButilBundleBasePath)/bit-butil.js' would no longer resolve to it. Set &lt;BitButilTrimScripts&gt;false&lt;/BitButilTrimScripts&gt; to publish the full bundle instead." />
+
+        <ItemGroup>
+            <_BitButilUnresolvedEndpoint Remove="@(_BitButilUnresolvedEndpoint)" />
         </ItemGroup>
     </Target>
 

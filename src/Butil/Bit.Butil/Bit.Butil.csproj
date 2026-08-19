@@ -47,7 +47,7 @@
 
     <Target Name="IncludeButilBuildAssetsInPackage"
             DependsOnTargets="BuildButilJavaScript"
-            Condition="$([System.String]::Copy('$(TargetFrameworks)').StartsWith('$(TargetFramework)'))">
+            Condition="'$(TargetFrameworks)' == '$(TargetFramework)' or $([System.String]::Copy('$(TargetFrameworks)').StartsWith('$(TargetFramework);'))">
         <MSBuild Projects="..\Bit.Butil.Build\Bit.Butil.Build.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">
             <Output TaskParameter="TargetOutputs" ItemName="_ButilBuildTaskAssembly" />
         </MSBuild>

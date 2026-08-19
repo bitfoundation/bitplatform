@@ -109,10 +109,17 @@
             <_BitButilAsset Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceId)' == 'Bit.Butil'" />
             <_BitButilAsset>
                 <_Path>$([MSBuild]::NormalizePath('%(FullPath)'))</_Path>
+                <_MatchPath>$([MSBuild]::NormalizePath('%(FullPath)'))</_MatchPath>
+            </_BitButilAsset>
+            <!-- A derived asset - a pre-compressed .gz/.br variant the package ships - is classified by the
+                 asset it was derived from, so that it leaves together with it instead of staying behind with
+                 a RelatedAsset pointing at a file that is no longer part of the app. -->
+            <_BitButilAsset Condition="'%(_BitButilAsset.RelatedAsset)' != ''">
+                <_MatchPath>$([MSBuild]::NormalizePath('%(_BitButilAsset.RelatedAsset)'))</_MatchPath>
             </_BitButilAsset>
             <_BitButilAsset>
-                <_IsBundle>$([System.String]::Copy('%(_Path)').EndsWith('bit-butil.js', System.StringComparison.OrdinalIgnoreCase))</_IsBundle>
-                <_IsModule>$([System.String]::Copy('%(_Path)').Replace('\', '/').Contains('/modules/'))</_IsModule>
+                <_IsBundle>$([System.String]::Copy('%(_MatchPath)').EndsWith('bit-butil.js', System.StringComparison.OrdinalIgnoreCase))</_IsBundle>
+                <_IsModule>$([System.String]::Copy('%(_MatchPath)').Replace('\', '/').Contains('/modules/'))</_IsModule>
             </_BitButilAsset>
 
             <_BitButilRemovedAsset Include="@(_BitButilAsset)" Condition="'$(BitButilIncludeScriptBundle)' != 'true' and '%(_BitButilAsset._IsBundle)' == 'True'" />
@@ -169,6 +176,12 @@
         </ItemGroup>
 
         <Message Importance="normal" Condition="'@(_BitButilBundleAsset)' == ''" Text="Bit.Butil: no bit-butil.js static web asset to trim (Bit.Butil is not referenced as a package here); skipping." />
+
+        <!-- There is exactly one of them in every layout this supports. More would make both steps below
+             ambiguous - the candidate copies its metadata from "the" package asset, and the stale-derived
+             matching compares against a single path - so say so instead of picking one at random. -->
+        <Error Condition="'@(_BitButilBundleAsset->Count())' &gt; '1'"
+               Text="Bit.Butil: expected a single primary bit-butil.js static web asset but found @(_BitButilBundleAsset->Count()): @(_BitButilBundleAsset->'%(FullPath)', ', '). Set &lt;BitButilTrimScripts&gt;false&lt;/BitButilTrimScripts&gt; to publish the full bundle instead." />
 
         <TrimButilScripts Condition="'@(_BitButilBundleAsset)' != ''"
                           TrimmedAssembly="$(_BitButilTrimmedAssembly)"

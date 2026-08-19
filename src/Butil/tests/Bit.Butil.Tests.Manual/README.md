@@ -86,7 +86,9 @@ app would download for the same modules - which is the benchmark for the whole f
 **Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
 `BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
 that one - before invoking it; later calls, and other services on the same runtime, must not import again;
-a failed import must be retried on the next call; a custom modules path must be honoured; the
+callers that arrive while an import is in flight must share it rather than issue their own; an import that
+fails - or that the runtime refuses to issue at all - must be retried on the next call; a custom modules
+path must be honoured; the
 `AddBitButilServices(options)` overload must flip the same switches (true, false, and null = leave alone); and with lazy
 scripts off nothing may be imported. Runs in both modes of the harness, so the loader is also proven to
 survive trimming through the runtime override alone (this project never sets the `BitButilLazyScripts`
@@ -135,7 +137,7 @@ read only partly would report `PASS` having verified less of it than the output 
 | JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
 | `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
 | lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
-| lazy-loader checks | 11 / 11 | 11 / 11 |
+| lazy-loader checks | 14 / 14 | 14 / 14 |
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.

@@ -311,10 +311,19 @@ builder.Services.AddBitButilServices(options =>
 ```
 
 That is equivalent to `BitButil.UseLazyScripts()` / `BitButil.UseBundledScripts()` (process-wide, last
-call wins) and needs no script tag either. What it cannot do is change the published output: without the
-MSBuild property both the bundle and the module files are published (harmless - only what is called is
-downloaded - but a PWA precaches both), and publish-time bundle trimming has no runtime counterpart at all,
-since it happens inside `dotnet publish`.
+call wins) and needs no script tag either. What it cannot do is change the published output - which is why
+`BitButilLazyScripts` is the better switch wherever the csproj is an option. The default (bundle mode)
+publishes the bundle and drops the module files, so the C# switch on its own leaves the `import()`s with
+nothing to fetch; keep them with
+
+```xml
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+```
+
+and the bundle, still published, is simply never loaded (harmless - but a PWA precaches it). Publish-time
+bundle trimming has no runtime counterpart at all, since it happens inside `dotnet publish`.
 
 Trade-offs: lazy scripts cost one extra request the first time each module is used, and the modules'
 first call is necessarily asynchronous (every Butil API already is). The trimmed bundle is one request

@@ -69,7 +69,7 @@ var secure = await window.IsSecureContext();
 
 <DemoSection Title="Optional: ship only the JavaScript you use"
              Api="BitButil.UseLazyScripts"
-             Description="The bundle behind step 2 covers every API on this site, and a published, trimmed app can shed the parts it never calls - the JavaScript equivalent of the trimming the C# side already gets. There are two ways to have that, both set in the app's csproj. Publish-time trimming (on by default in a Blazor WebAssembly project: nothing to do) keeps the script tag and, when the app is published trimmed - a WebAssembly publish is - rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls. It only makes sense where the assembly being trimmed is the one calling the served JavaScript, so it is a standalone WebAssembly app or PWA feature; a server that hosts a WebAssembly client keeps its own full copy. Lazy scripts (BitButilLazyScripts) drop the script tag altogether: the first call into an API import()s that API's module (_content/Bit.Butil/modules/clipboard.js for Clipboard, and so on), so only the JavaScript for the APIs actually called is ever downloaded - in every hosting model, trimmed or not, and with no attention to who references what. Set the property in every project that uses Butil (a Blazor Web App's server and client both), and drop the script tag from the host page. The same switch is available in C# - AddBitButilServices(options => options.LazyScripts = true), or BitButil.UseLazyScripts() - which decides how scripts load but, unlike the property, leaves both the bundle and the module files in the published output; publish-time trimming has no C# counterpart at all, since it happens inside dotnet publish."
+             Description="The bundle behind step 2 covers every API on this site, and a published, trimmed app can shed the parts it never calls - the JavaScript equivalent of the trimming the C# side already gets. There are two ways to have that, both set in the app's csproj. Publish-time trimming (on by default in a Blazor WebAssembly project: nothing to do) keeps the script tag and, when the app is published trimmed - a WebAssembly publish is - rebuilds bit-butil.js from only the modules the trimmed Bit.Butil.dll still calls. It only makes sense where the assembly being trimmed is the one calling the served JavaScript, so it is a standalone WebAssembly app or PWA feature; a server that hosts a WebAssembly client keeps its own full copy. Lazy scripts (BitButilLazyScripts) drop the script tag altogether: the first call into an API import()s that API's module (_content/Bit.Butil/modules/clipboard.js for Clipboard, and so on), so only the JavaScript for the APIs actually called is ever downloaded - in every hosting model, trimmed or not, and with no attention to who references what. Set the property in every project that uses Butil (a Blazor Web App's server and client both), and drop the script tag from the host page. The same switch is available in C# - AddBitButilServices(options => options.LazyScripts = true), or BitButil.UseLazyScripts() - but it only decides how scripts load, not what is published: the default publishes the bundle and drops the per-module files, so a C#-only switch needs BitButilIncludeScriptModules=true as well or the import()s have nothing to fetch. Prefer the property wherever the csproj is an option. Publish-time trimming has no C# counterpart at all, since it happens inside dotnet publish."
              Code=@("""
 <!-- Publish-time bundle trimming: nothing to add. Opt out with -->
 <PropertyGroup>
@@ -81,7 +81,12 @@ var secure = await window.IsSecureContext();
   <BitButilLazyScripts>true</BitButilLazyScripts>
 </PropertyGroup>
 
-<!-- ...or the same from C#, if you would rather not touch the csproj: -->
+<!-- ...or the same from C#, which switches how scripts load but not what is
+     published, so the module files have to be kept explicitly: -->
+<PropertyGroup>
+  <BitButilIncludeScriptModules>true</BitButilIncludeScriptModules>
+</PropertyGroup>
+
 builder.Services.AddBitButilServices(options => options.LazyScripts = true);
 """)
              Language="xml" />

@@ -139,11 +139,22 @@ public static class BitButil
     internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
 
     /// <summary>
+    /// <see cref="LazyScriptsFeature"/>, read once. <see cref="AppContext.TryGetSwitch"/> takes a lock on the
+    /// process's switch table, and <see cref="LazyScriptsEnabled"/> is consulted on every single interop call -
+    /// including in the default bundle mode, which must not pay for a feature it does not use. Reading it once
+    /// is safe because the switch comes from the host's runtime configuration, which is in place before any of
+    /// this assembly's code runs; a decision made in code goes through <see cref="UseLazyScripts"/> /
+    /// <see cref="UseBundledScripts"/> instead (an <see cref="AppContext.SetSwitch"/> call made after Bit.Butil
+    /// is first touched is not picked up).
+    /// </summary>
+    private static readonly bool LazyScriptsFeatureValue = LazyScriptsFeature;
+
+    /// <summary>
     /// True when Bit.Butil loads its JavaScript per module, on first use, instead of expecting the whole
     /// <c>bit-butil.js</c> bundle to have been loaded by a <c>&lt;script&gt;</c> tag. Decided by the build-time
     /// switch unless <see cref="UseLazyScripts"/> / <see cref="UseBundledScripts"/> overrode it at runtime.
     /// </summary>
-    internal static bool LazyScriptsEnabled => _lazyScriptsOverride is bool overridden ? overridden : LazyScriptsFeature;
+    internal static bool LazyScriptsEnabled => _lazyScriptsOverride is bool overridden ? overridden : LazyScriptsFeatureValue;
 
     /// <summary>Where the per-module scripts are served from; see <see cref="UseLazyScripts"/>.</summary>
     internal static string ScriptModulesPath => _scriptModulesPath;

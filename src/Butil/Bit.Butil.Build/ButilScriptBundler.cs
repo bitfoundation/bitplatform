@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace Bit.Butil.Build;
@@ -39,19 +36,11 @@ public static class ButilScriptBundler
     /// </summary>
     public static SortedSet<string> ReadReferencedModules(string assemblyPath)
     {
-        using var stream = File.OpenRead(assemblyPath);
-        using var pe = new PEReader(stream);
-        var metadata = pe.GetMetadataReader();
-
         var modules = new SortedSet<string>(StringComparer.Ordinal);
-        // An empty #US heap is a single padding byte; the first real string sits at offset 1.
-        if (metadata.GetHeapSize(HeapIndex.UserString) <= 1) return modules;
 
-        var handle = MetadataTokens.UserStringHandle(1);
-        while (handle.IsNil is false)
+        foreach (var literal in UserStringHeap.Read(assemblyPath))
         {
-            if (TryGetModule(metadata.GetUserString(handle), out var module)) modules.Add(module);
-            handle = metadata.GetNextHandle(handle);
+            if (TryGetModule(literal, out var module)) modules.Add(module);
         }
 
         return modules;
@@ -153,10 +142,12 @@ public static class ButilScriptBundler
     /// </summary>
     public static void WriteBundle(string chunksDirectory, IEnumerable<string> modules, string outputPath)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
+        var destination = Path.GetFullPath(outputPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
 
-        // Assemble in memory and write once, so an interrupted publish cannot leave a half-written bundle
-        // that a later incremental step would take for a finished one.
+        // Assemble in memory, write it beside the destination and only then move it into place, so an
+        // interrupted publish cannot leave a half-written bundle that a later incremental step would take
+        // for a finished one.
         var bundle = new StringBuilder();
         foreach (var module in modules)
         {
@@ -165,7 +156,17 @@ public static class ButilScriptBundler
             bundle.Append(File.ReadAllText(chunk));
         }
 
-        File.WriteAllText(outputPath, bundle.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        var temporary = destination + ".tmp";
+        try
+        {
+            File.WriteAllText(temporary, bundle.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            if (File.Exists(destination)) File.Delete(destination);
+            File.Move(temporary, destination);
+        }
+        finally
+        {
+            if (File.Exists(temporary)) File.Delete(temporary);
+        }
     }
 }
 

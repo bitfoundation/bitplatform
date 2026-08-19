@@ -15,9 +15,11 @@
         navigator.serviceWorker.register('/sw.js');
     </script>
     <!-- Bundle mode by default; the E2E suite appends ?lazy=1 to run the same app with lazy scripts, in which
-         case the bundle must not be on the page at all (see Program.cs). -->
+         case the bundle must not be on the page at all. The test is for that exact value, and not merely for
+         the parameter being present, so that it agrees with Program.cs - any other value (?lazy=0 included)
+         is bundle mode on both sides rather than an app with neither the bundle nor lazy loading. -->
     <script>
-        if (!new URLSearchParams(location.search).has('lazy')) {
+        if (new URLSearchParams(location.search).get('lazy') !== '1') {
             document.write('<script src="_content/Bit.Butil/bit-butil.js"><\/script>');
         }
     </script>

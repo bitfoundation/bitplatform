@@ -14,8 +14,10 @@
         <IsPackable>false</IsPackable>
         <SignAssembly>False</SignAssembly>
         <RootNamespace>Bit.Butil.Build</RootNamespace>
-        <!-- The task assembly is loaded by MSBuild, which already carries System.Reflection.Metadata and
-             System.Collections.Immutable; those are compile-time references only and are not shipped. -->
+        <!-- Nothing but Microsoft.Build.Utilities.Core (the task base class), which MSBuild itself provides,
+             so the package's tasks/ folder holds this one assembly and there is no dependency whose version
+             could disagree with the copy MSBuild already loaded. Reading the trimmed assembly's metadata is
+             done by hand (see UserStringHeap.cs) for exactly that reason. -->
         <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <IsTrimmable>false</IsTrimmable>
@@ -23,7 +25,6 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.7.2" PrivateAssets="all" ExcludeAssets="runtime" />
-        <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" PrivateAssets="all" ExcludeAssets="runtime" />
     </ItemGroup>
 
 </Project>

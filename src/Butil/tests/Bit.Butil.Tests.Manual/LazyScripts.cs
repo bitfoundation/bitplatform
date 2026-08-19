@@ -63,6 +63,29 @@ internal static class LazyScripts
             Expect(failing, ["import " + ModulesPath + "clipboard.js", "import " + ModulesPath + "clipboard.js", "BitButil.clipboard.isSupported"],
                 "a failed import is retried on the next call", failures, ref passed);
 
+            // Concurrent first calls into a module share one import: the callers that arrive while it is in
+            // flight wait for it instead of issuing one of their own.
+            var shared = new RecordingJSRuntime { HoldImports = new TaskCompletionSource() };
+            var (contended, _) = Resolve(shared);
+            var concurrent = Enumerable.Range(0, 8).Select(_ => contended.IsSupported().AsTask()).ToArray();
+            shared.HoldImports.SetResult();
+            await Task.WhenAll(concurrent);
+            Expect(shared, ["import " + ModulesPath + "clipboard.js", .. Enumerable.Repeat("BitButil.clipboard.isSupported", concurrent.Length)],
+                "concurrent first calls into a module share one import", failures, ref passed);
+
+            // A runtime that refuses the import call outright - throwing instead of handing back a task, as a
+            // disposed one does - is the same transient failure as an import that fails later: surfaced to
+            // the caller, forgotten, retried.
+            var refusing = new RecordingJSRuntime { ThrowOnNextImport = true };
+            var (brittle, _) = Resolve(refusing);
+            var threwSynchronously = false;
+            try { await brittle.IsSupported(); } catch (JSException) { threwSynchronously = true; }
+            if (threwSynchronously is false) failures.Add("lazy scripts: an import() the runtime refused to issue did not surface as an exception to the caller.");
+            else passed++;
+            await brittle.IsSupported();
+            Expect(refusing, ["import " + ModulesPath + "clipboard.js", "import " + ModulesPath + "clipboard.js", "BitButil.clipboard.isSupported"],
+                "an import the runtime refused to issue is retried on the next call", failures, ref passed);
+
             // A custom modules path is honoured.
             BitButil.UseLazyScripts("/cdn/butil");
             var relocated = new RecordingJSRuntime();
@@ -144,13 +167,21 @@ internal static class LazyScripts
 
     /// <summary>
     /// Records every identifier invoked (an <c>import</c> together with the URL it was asked to load), answers
-    /// with <c>default</c>, and can be told to fail its next import to exercise the retry path.
+    /// with <c>default</c>, and can be told to fail, refuse or hold up its next import to exercise the retry
+    /// and the shared-import paths.
     /// </summary>
     private sealed class RecordingJSRuntime : IJSRuntime
     {
         public List<string> Calls { get; } = [];
 
+        /// <summary>Makes the next import hand back a failed task.</summary>
         public bool FailNextImport { get; set; }
+
+        /// <summary>Makes the next import throw where it is issued, instead of handing back a task at all.</summary>
+        public bool ThrowOnNextImport { get; set; }
+
+        /// <summary>When set, imports complete only once it does - so that several callers line up behind one.</summary>
+        public TaskCompletionSource? HoldImports { get; set; }
 
         public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, object?[]? args)
             => InvokeAsync<TValue>(identifier, CancellationToken.None, args);
@@ -160,11 +191,17 @@ internal static class LazyScripts
             if (identifier == "import")
             {
                 Calls.Add($"import {args?[0]}");
+                if (ThrowOnNextImport)
+                {
+                    ThrowOnNextImport = false;
+                    throw new JSException("simulated import that could not be issued at all");
+                }
                 if (FailNextImport)
                 {
                     FailNextImport = false;
                     return ValueTask.FromException<TValue>(new JSException("simulated failed import"));
                 }
+                if (HoldImports is { } gate) return Held<TValue>(gate.Task);
             }
             else
             {
@@ -172,6 +209,12 @@ internal static class LazyScripts
             }
 
             return new ValueTask<TValue>(default(TValue)!);
+        }
+
+        private static async ValueTask<TValue> Held<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(Task gate)
+        {
+            await gate;
+            return default!;
         }
     }
 }
