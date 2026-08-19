@@ -3,12 +3,15 @@
 
 // The size of the control and of its callout is driven by these variables so a single size class,
 // applied to the root element and repeated on the callout, resizes every part consistently.
+// The trigger text is a line box stretched over the control, so its line-height is derived from the
+// control height minus the two borders instead of being a fixed length: a preset that raises the
+// control height (Material 40px, Cupertino 36px) then keeps the text centered next to the chevron.
 @mixin drp-size-medium {
     --bit-drp-fs: #{$tg-fs-sm};
     --bit-drp-h: #{$siz-ctrl-md};
-    --bit-drp-lh: #{spacing(3.75)};
+    --bit-drp-lh: calc(#{$siz-ctrl-md} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(2.75)};
-    --bit-drp-itm-h: #{spacing(4.5)};
+    --bit-drp-itm-h: #{$siz-item-md};
     --bit-drp-itm-fs: #{$tg-fs-sm};
 }
 
@@ -897,7 +900,7 @@
 
 .bit-drp-sep {
     width: 100%;
-    height: $shp-border-width;
+    height: $siz-divider;
     background-color: $clr-bg-sec;
 }
 
@@ -912,7 +915,7 @@
     box-sizing: border-box;
     overflow-wrap: break-word;
     padding: spacing(1) spacing(1.5);
-    font-size: calc(var(--bit-drp-fs) - #{spacing(0.25)});
+    font-size: calc(var(--bit-drp-fs) * 0.85);
 }
 
 .bit-drp-emp {
@@ -1123,9 +1126,9 @@
 .bit-drp-sm {
     --bit-drp-fs: #{$tg-fs-xs};
     --bit-drp-h: #{$siz-ctrl-sm};
-    --bit-drp-lh: #{spacing(3)};
+    --bit-drp-lh: calc(#{$siz-ctrl-sm} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(2.5)};
-    --bit-drp-itm-h: #{spacing(3.75)};
+    --bit-drp-itm-h: #{$siz-item-sm};
     --bit-drp-itm-fs: #{$tg-fs-xs};
 }
 
@@ -1136,9 +1139,9 @@
 .bit-drp-lg {
     --bit-drp-fs: #{$tg-fs-md};
     --bit-drp-h: #{$siz-ctrl-lg};
-    --bit-drp-lh: #{spacing(4.75)};
+    --bit-drp-lh: calc(#{$siz-ctrl-lg} - 2 * #{$shp-border-width});
     --bit-drp-lbl-lh: #{spacing(3)};
-    --bit-drp-itm-h: #{spacing(5.5)};
+    --bit-drp-itm-h: #{$siz-item-lg};
     --bit-drp-itm-fs: #{$tg-fs-md};
 }
 

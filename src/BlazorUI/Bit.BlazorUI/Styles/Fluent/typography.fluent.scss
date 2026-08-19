@@ -2,10 +2,15 @@
 
 :root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
 :root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
     // main
     --bit-tpg-font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
     --bit-tpg-font-weight: 500;
@@ -32,42 +37,46 @@
     // control typography - tracking and case of button/tag/tab labels. Fluent leaves both alone.
     --bit-tpg-ctrl-letter-spacing: normal;
     --bit-tpg-ctrl-text-transform: none;
+    // h1..h6 - the Fluent 2 title ramp (Large Title 40/52, Title 1 32/40, Title 2 28/36, Title 3
+    // 24/32, Subtitle 1 20/28, Subtitle 2 16/22), all semibold like every Fluent title, so that the
+    // six heading levels cover the range an application page actually uses: H1 is a page title, not
+    // a marketing display size. Segoe UI is not tracked at any size.
     // h1
     --bit-tpg-h1-margin: 0;
-    --bit-tpg-h1-font-weight: 300;
-    --bit-tpg-h1-font-size: 6rem;
-    --bit-tpg-h1-line-height: 1.167;
-    --bit-tpg-h1-letter-spacing: -0.01562em;
+    --bit-tpg-h1-font-weight: 600;
+    --bit-tpg-h1-font-size: 2.5rem; //40px
+    --bit-tpg-h1-line-height: 1.3;
+    --bit-tpg-h1-letter-spacing: 0;
     // h2
     --bit-tpg-h2-margin: 0;
-    --bit-tpg-h2-font-weight: 300;
-    --bit-tpg-h2-font-size: 3.75rem;
-    --bit-tpg-h2-line-height: 1.2;
-    --bit-tpg-h2-letter-spacing: -0.00833em;
+    --bit-tpg-h2-font-weight: 600;
+    --bit-tpg-h2-font-size: 2rem; //32px
+    --bit-tpg-h2-line-height: 1.25;
+    --bit-tpg-h2-letter-spacing: 0;
     // h3
     --bit-tpg-h3-margin: 0;
-    --bit-tpg-h3-font-weight: 400;
-    --bit-tpg-h3-font-size: 3rem;
-    --bit-tpg-h3-line-height: 1.333;
+    --bit-tpg-h3-font-weight: 600;
+    --bit-tpg-h3-font-size: 1.75rem; //28px
+    --bit-tpg-h3-line-height: 1.286;
     --bit-tpg-h3-letter-spacing: 0;
     // h4
     --bit-tpg-h4-margin: 0;
-    --bit-tpg-h4-font-weight: 400;
-    --bit-tpg-h4-font-size: 2.125rem;
-    --bit-tpg-h4-line-height: 1.412;
-    --bit-tpg-h4-letter-spacing: 0.00735em;
+    --bit-tpg-h4-font-weight: 600;
+    --bit-tpg-h4-font-size: 1.5rem; //24px
+    --bit-tpg-h4-line-height: 1.333;
+    --bit-tpg-h4-letter-spacing: 0;
     // h5
     --bit-tpg-h5-margin: 0;
-    --bit-tpg-h5-font-weight: 400;
-    --bit-tpg-h5-font-size: 1.5rem;
-    --bit-tpg-h5-line-height: 1.333;
+    --bit-tpg-h5-font-weight: 600;
+    --bit-tpg-h5-font-size: 1.25rem; //20px
+    --bit-tpg-h5-line-height: 1.4;
     --bit-tpg-h5-letter-spacing: 0;
     // h6
     --bit-tpg-h6-margin: 0;
-    --bit-tpg-h6-font-weight: 500;
-    --bit-tpg-h6-font-size: 1.25rem;
-    --bit-tpg-h6-line-height: 1.4;
-    --bit-tpg-h6-letter-spacing: 0.0075em;
+    --bit-tpg-h6-font-weight: 600;
+    --bit-tpg-h6-font-size: 1rem; //16px
+    --bit-tpg-h6-line-height: 1.375;
+    --bit-tpg-h6-letter-spacing: 0;
     // subtitle1
     --bit-tpg-subtitle1-margin: 0;
     --bit-tpg-subtitle1-font-weight: 400;
@@ -129,43 +138,25 @@
     --bit-tpg-inherit-letter-spacing: inherit;
     --bit-tpg-inherit-text-transform: inherit;
     --bit-tpg-inherit-display: inherit;
-    // media
+    // media - one step down the same ramp on phones, where a 40px title eats the viewport.
     @include lt-sm {
         // h1
-        --bit-tpg-h1-margin: 0;
-        --bit-tpg-h1-font-weight: 300;
-        --bit-tpg-h1-font-size: 3.75rem;
-        --bit-tpg-h1-line-height: 1.2;
-        --bit-tpg-h1-letter-spacing: -0.00833em;
+        --bit-tpg-h1-font-size: 2rem; //32px
+        --bit-tpg-h1-line-height: 1.25;
         // h2
-        --bit-tpg-h2-margin: 0;
-        --bit-tpg-h2-font-weight: 400;
-        --bit-tpg-h2-font-size: 3rem;
-        --bit-tpg-h2-line-height: 1.333;
-        --bit-tpg-h2-letter-spacing: 0;
+        --bit-tpg-h2-font-size: 1.75rem; //28px
+        --bit-tpg-h2-line-height: 1.286;
         // h3
-        --bit-tpg-h3-margin: 0;
-        --bit-tpg-h3-font-weight: 400;
-        --bit-tpg-h3-font-size: 2.125rem;
-        --bit-tpg-h3-line-height: 1.412;
-        --bit-tpg-h3-letter-spacing: 0.00735em;
+        --bit-tpg-h3-font-size: 1.5rem; //24px
+        --bit-tpg-h3-line-height: 1.333;
         // h4
-        --bit-tpg-h4-margin: 0;
-        --bit-tpg-h4-font-weight: 400;
-        --bit-tpg-h4-font-size: 1.5rem;
-        --bit-tpg-h4-line-height: 1.333;
-        --bit-tpg-h4-letter-spacing: 0;
+        --bit-tpg-h4-font-size: 1.25rem; //20px
+        --bit-tpg-h4-line-height: 1.4;
         // h5
-        --bit-tpg-h5-margin: 0;
-        --bit-tpg-h5-font-weight: 500;
-        --bit-tpg-h5-font-size: 1.25rem;
-        --bit-tpg-h5-line-height: 1.4;
-        --bit-tpg-h5-letter-spacing: 0.0075em;
+        --bit-tpg-h5-font-size: 1.125rem; //18px
+        --bit-tpg-h5-line-height: 1.444;
         // h6
-        --bit-tpg-h6-margin: 0;
-        --bit-tpg-h6-font-weight: 500;
-        --bit-tpg-h6-font-size: 1.125rem;
-        --bit-tpg-h6-line-height: 1.556;
-        --bit-tpg-h6-letter-spacing: 0.0075em;
+        --bit-tpg-h6-font-size: 1rem; //16px
+        --bit-tpg-h6-line-height: 1.375;
     }
 }

@@ -24,11 +24,15 @@ public sealed class BitThemePaletteContrastTests
     private const double UiContrastFloor = 4.5;
 
     [DataTestMethod]
-    [DataRow("colors.fluent-light.scss")]
-    [DataRow("colors.fluent-dark.scss")]
-    public void RoleOnColorsMeetTheUiContrastFloor(string paletteFile)
+    [DataRow("Fluent", "colors.fluent-light.scss")]
+    [DataRow("Fluent", "colors.fluent-dark.scss")]
+    [DataRow("Material", "colors.material-light.scss")]
+    [DataRow("Material", "colors.material-dark.scss")]
+    [DataRow("Cupertino", "colors.cupertino-light.scss")]
+    [DataRow("Cupertino", "colors.cupertino-dark.scss")]
+    public void RoleOnColorsMeetTheUiContrastFloor(string paletteFolder, string paletteFile)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", paletteFile);
+        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
         Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
 
         var scss = File.ReadAllText(path);

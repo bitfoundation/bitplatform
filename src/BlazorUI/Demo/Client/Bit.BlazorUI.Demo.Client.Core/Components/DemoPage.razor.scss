@@ -19,7 +19,10 @@
         margin-bottom: 2rem;
         padding: 0.5rem 1rem;
         background-color: $bit-color-background-primary;
-        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+        // Drawn as one more surface in the column of cards under it - same corner family, stroked
+        // all round - so it does not read as a stray rule across the page.
+        border: rem2(1px) solid $bit-color-border-secondary;
+        border-radius: $bit-shape-radius-surface;
         top: calc(rem2(66px) + #{$bit-env-inset-top});
 
         .bit-ios & {

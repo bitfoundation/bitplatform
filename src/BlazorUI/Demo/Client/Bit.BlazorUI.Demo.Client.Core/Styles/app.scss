@@ -6,7 +6,12 @@
 // run, and how strongly a surface is separated from the page. They live here as custom properties
 // because the global stylesheet and every scoped .razor.scss have to agree on them.
 :root {
-    --demo-font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    // The library's own type token rather than a stack of this file's: the `*` rule below puts this
+    // face on every element, which beats inheritance - so a fixed Segoe UI stack here would dress
+    // the inside of every component in Segoe UI no matter which preset is active, hiding exactly
+    // the Roboto / San Francisco ramps the Material and Cupertino presets switch to. Read at :root,
+    // where every preset declares the token, so the chrome follows the preset along with the components.
+    --demo-font-sans: var(--bit-tpg-font-family);
     --demo-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     // Surfaces are separated by a hairline border rather than a drop shadow: on a documentation
     // page the same card repeats dozens of times, and stacked shadows read as noise long before

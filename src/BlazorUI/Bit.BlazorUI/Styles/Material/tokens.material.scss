@@ -1,0 +1,161 @@
+// Material preset - the scheme-independent tokens: shape, size, spacing, typography, motion,
+// elevation and the dialog-footer layout. Values follow the Material 3 baseline spec (m3.material.io
+// and material-web v0_192 tokens); the palette lives in colors.material-*.scss.
+//
+// This bundle is override-only: it declares tokens under [bit-theme="material*"] selectors and wins
+// over the Fluent defaults on source order, so it must be linked AFTER bit.blazorui.css and never
+// duplicates component CSS.
+:root[bit-theme="material"],
+:root [bit-theme="material"],
+:root[bit-theme="material-light"],
+:root [bit-theme="material-light"],
+:root[bit-theme="material-dark"],
+:root [bit-theme="material-dark"] {
+    /*---- Shape ----*/
+    // The corner scale: none 0 / xs 4 / sm 8 / md 12 / lg 16 / xl+2xl 28 / full pill.
+    --bit-shp-brd-radius: 0.25rem; //4px - the M3 "extra-small" corner (menus, text fields)
+    --bit-shp-radius-none: 0;
+    --bit-shp-radius-xs: 0.25rem; //4px
+    --bit-shp-radius-sm: 0.5rem; //8px
+    --bit-shp-radius-md: 0.75rem; //12px
+    --bit-shp-radius-lg: 1rem; //16px
+    --bit-shp-radius-xl: 1.75rem; //28px
+    --bit-shp-radius-2xl: 1.75rem; //28px
+    --bit-shp-radius-full: 9999px;
+    // Per family: text fields/menus 4, cards 12, dialogs 28. Buttons round to full via the
+    // component retunes in components.material.scss (one control radius cannot serve both a pill
+    // button and a 4dp text field).
+    --bit-shp-radius-control: 0.25rem; //4px
+    --bit-shp-radius-surface: 0.75rem; //12px
+    --bit-shp-radius-popup: 0.25rem; //4px
+    --bit-shp-radius-dialog: 1.75rem; //28px
+    // M3 focus indicator: 3dp ring offset 2dp.
+    --bit-shp-focus-ring-width: 0.1875rem; //3px
+    --bit-shp-focus-ring-offset: 0.125rem; //2px
+
+    /*---- Size ----*/
+    // Absolute lengths (Material fixes them in dp); the density multiplier still reaches every
+    // spacing()-driven measurement, just not these anchors.
+    --bit-siz-ctrl-sm: 2rem; //32px - chip height
+    --bit-siz-ctrl-md: 2.5rem; //40px - button / dense field height
+    --bit-siz-ctrl-lg: 3.5rem; //56px - the full M3 text-field height
+    --bit-siz-ctrl-pad-x-sm: 1rem; //16px
+    --bit-siz-ctrl-pad-x-md: 1.5rem; //24px - M3 button horizontal padding
+    --bit-siz-ctrl-pad-x-lg: 1.5rem; //24px
+    --bit-siz-ctrl-pad-y-sm: 0.4375rem; //7px -> 32px with the 16px small label
+    --bit-siz-ctrl-pad-y-md: 0.5625rem; //9px -> 40px with the 20px label-large line
+    --bit-siz-ctrl-pad-y-lg: 0.8125rem; //13px -> 48px with the 20px line
+    --bit-siz-ctrl-min-width: 4rem; //64px - M3 mandates it for buttons
+    --bit-siz-icon-sm: 1rem; //16px
+    --bit-siz-icon-md: 1.125rem; //18px - the icon-in-button/chip size
+    --bit-siz-icon-lg: 1.5rem; //24px - the standard M3 icon
+    --bit-siz-sel-sm: 1rem; //16px
+    --bit-siz-sel-md: 1.125rem; //18px - M3 checkbox box
+    --bit-siz-sel-lg: 1.25rem; //20px - M3 radio diameter
+    --bit-siz-item-sm: 2.5rem; //40px
+    --bit-siz-item-md: 3rem; //48px - M3 menu item
+    --bit-siz-item-lg: 3.5rem; //56px - one-line list item
+    --bit-siz-tab: 3rem; //48px
+    --bit-siz-tab-indicator: 0.1875rem; //3px
+    --bit-siz-track-sm: 0.25rem; //4px - M3 linear progress
+    --bit-siz-track-md: 0.25rem; //4px
+    --bit-siz-track-lg: 0.5rem; //8px
+    --bit-siz-spinner-stroke: 0.25rem; //4px - M3 circular indicator stroke
+
+    /*---- Spacing / layout ----*/
+    --bit-spa-dialog: 1.5rem; //24px - M3 dialog inset
+    --bit-layout-dialog-actions-direction: row;
+    --bit-layout-dialog-actions-justify: flex-end;
+
+    /*---- Typography ----*/
+    // Roboto is only installed on Android / ChromeOS; the Bit.BlazorUI.Assets stylesheet ships a
+    // Roboto @font-face (Latin subset, local() first), so link it to get this ramp on every device.
+    --bit-tpg-font-family: Roboto, "Helvetica Neue", Arial, -apple-system, BlinkMacSystemFont, sans-serif;
+    // Roboto ships 400/500/700; M3 uses medium (500) where Fluent used semibold.
+    --bit-tpg-fw-semibold: 500;
+    // Control labels: M3 label-large tracks at 0.1px; no uppercase in M3.
+    --bit-tpg-ctrl-letter-spacing: 0.00625rem;
+    --bit-tpg-ctrl-text-transform: none;
+    // BitText variants mapped onto the M3 type scale. The headings take the display-small ->
+    // headline -> title-large/medium run (36 / 32 / 28 / 24 / 22 / 16) rather than starting at
+    // display-large: the six levels then span what an application page needs, with H1 at the size
+    // M3 gives a page headline, and they sit beside the Fluent and Cupertino H1..H6 (40..16 and
+    // 34..15) instead of towering over them. Body and label variants follow below.
+    --bit-tpg-h1-font-size: 2.25rem; //display-small 36px
+    --bit-tpg-h1-font-weight: 400;
+    --bit-tpg-h1-line-height: 1.222;
+    --bit-tpg-h1-letter-spacing: 0;
+    --bit-tpg-h2-font-size: 2rem; //headline-large 32px
+    --bit-tpg-h2-font-weight: 400;
+    --bit-tpg-h2-line-height: 1.25;
+    --bit-tpg-h2-letter-spacing: 0;
+    --bit-tpg-h3-font-size: 1.75rem; //headline-medium 28px
+    --bit-tpg-h3-font-weight: 400;
+    --bit-tpg-h3-line-height: 1.286;
+    --bit-tpg-h3-letter-spacing: 0;
+    --bit-tpg-h4-font-size: 1.5rem; //headline-small 24px
+    --bit-tpg-h4-font-weight: 400;
+    --bit-tpg-h4-line-height: 1.333;
+    --bit-tpg-h4-letter-spacing: 0;
+    --bit-tpg-h5-font-size: 1.375rem; //title-large 22px
+    --bit-tpg-h5-font-weight: 400;
+    --bit-tpg-h5-line-height: 1.273;
+    --bit-tpg-h5-letter-spacing: 0;
+    --bit-tpg-h6-font-size: 1rem; //title-medium 16px
+    --bit-tpg-h6-font-weight: 500;
+    --bit-tpg-h6-line-height: 1.5;
+    --bit-tpg-h6-letter-spacing: 0.009375rem;
+    --bit-tpg-subtitle1-font-size: 1rem; //title-medium 16px
+    --bit-tpg-subtitle1-font-weight: 500;
+    --bit-tpg-subtitle1-line-height: 1.5;
+    --bit-tpg-subtitle1-letter-spacing: 0.009375rem;
+    --bit-tpg-subtitle2-font-size: 0.875rem; //title-small 14px
+    --bit-tpg-subtitle2-font-weight: 500;
+    --bit-tpg-subtitle2-line-height: 1.429;
+    --bit-tpg-subtitle2-letter-spacing: 0.00625rem;
+    --bit-tpg-body1-font-size: 1rem; //body-large 16px
+    --bit-tpg-body1-line-height: 1.5;
+    --bit-tpg-body1-letter-spacing: 0.03125rem;
+    --bit-tpg-body2-font-size: 0.875rem; //body-medium 14px
+    --bit-tpg-body2-line-height: 1.429;
+    --bit-tpg-body2-letter-spacing: 0.015625rem;
+    --bit-tpg-button-font-size: 0.875rem; //label-large 14px
+    --bit-tpg-button-font-weight: 500;
+    --bit-tpg-button-line-height: 1.429;
+    --bit-tpg-button-letter-spacing: 0.00625rem;
+    --bit-tpg-button-text-transform: none; //M3 dropped the M2 uppercase
+    --bit-tpg-caption1-font-size: 0.75rem; //body-small 12px
+    --bit-tpg-caption1-line-height: 1.333;
+    --bit-tpg-caption1-letter-spacing: 0.025rem;
+    --bit-tpg-caption2-font-size: 0.6875rem; //label-small 11px
+    --bit-tpg-caption2-font-weight: 500;
+    --bit-tpg-caption2-line-height: 1.455;
+    --bit-tpg-caption2-letter-spacing: 0.03125rem;
+    --bit-tpg-overline-font-size: 0.6875rem; //label-small 11px
+    --bit-tpg-overline-font-weight: 500;
+    --bit-tpg-overline-line-height: 1.455;
+    --bit-tpg-overline-letter-spacing: 0.03125rem;
+
+    /*---- Motion ----*/
+    // M3 duration ramp: short3 150 / medium1 250 / medium4 400; standard + emphasized curves.
+    --bit-mot-duration-short-full: 150ms;
+    --bit-mot-duration-full: 250ms;
+    --bit-mot-duration-long-full: 400ms;
+    --bit-mot-easing: cubic-bezier(0.2, 0, 0, 1);
+    --bit-mot-easing-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+
+    /*---- Elevation ----*/
+    // The M3 levels (material-web's canonical key + ambient shadow pairs):
+    //   L1 card, L2 menu, L3 dialog / snackbar.
+    --bit-shd-cal: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2
+    --bit-shd-cal2: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15); //L3
+    --bit-shd-card: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); //L1
+    --bit-shd-popup: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2
+    --bit-shd-dialog: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15); //L3
+    --bit-shd-sheet: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15); //L1
+    --bit-shd-tooltip: none; //plain tooltips sit at L0
+    --bit-shd-snackbar: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15); //L3
+    --bit-shd-appbar-top: 0 1px 2px 0 rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15); //L2
+    --bit-shd-appbar-bottom: 0 -1px 2px 0 rgba(0, 0, 0, 0.3), 0 -2px 6px 2px rgba(0, 0, 0, 0.15);
+}

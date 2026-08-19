@@ -103,9 +103,9 @@
     position: absolute;
     border-radius: 50%;
     align-items: center;
-    right: spacing(-0.25);
     bottom: spacing(-0.25);
-    font-size: spacing(0.5);
+    inset-inline-end: spacing(-0.25);
+    font-size: rem2(4px);
     box-sizing: content-box;
     justify-content: center;
     forced-color-adjust: none;
@@ -115,8 +115,8 @@
 
 .bit-prs-rvs {
     .bit-prs-pre {
-        right: unset;
-        left: spacing(-0.25);
+        inset-inline-end: unset;
+        inset-inline-start: spacing(-0.25);
     }
 }
 
@@ -220,7 +220,7 @@
     }
 
     .bit-prs-pic {
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
@@ -278,7 +278,7 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: rem2(6.8px);
     }
 
     .bit-prs-ptx {
@@ -327,7 +327,7 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: rem2(6.8px);
     }
 
     .bit-prs-ptx {
@@ -375,7 +375,7 @@
     .bit-prs-pre {
         width: spacing(2);
         height: spacing(2);
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
@@ -423,7 +423,7 @@
     .bit-prs-pre {
         width: spacing(2.5);
         height: spacing(2.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ptx {
@@ -467,13 +467,13 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(12.5);
-        font-size: spacing(5.25);
+        font-size: rem2(42px);
     }
 
     .bit-prs-pre {
         width: spacing(3.5);
         height: spacing(3.5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-ptx {
@@ -519,13 +519,13 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);
-        font-size: spacing(5.25);
+        font-size: rem2(42px);
     }
 
     .bit-prs-pre {
         width: spacing(4);
         height: spacing(4);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-ptx {

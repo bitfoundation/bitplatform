@@ -29,6 +29,16 @@
                 <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.Header" />
             }
 
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string"
+                         FitWidth
+                         NoBorder
+                         Transparent
+                         Class="design-system-dd"
+                         Items="_designSystems"
+                         @bind-Value="_designSystem"
+                         OnSelectItem="WrapHandled<BitDropdownItem<string>>(OnDesignSystemChanged)"
+                         Title="Design system" />
+
             <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
 
             <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">

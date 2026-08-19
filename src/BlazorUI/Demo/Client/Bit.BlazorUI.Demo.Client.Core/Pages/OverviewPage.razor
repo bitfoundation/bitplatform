@@ -22,14 +22,14 @@
     }
 }
 
-<section class="page-container">
+<section class="page-container bit-fam">
     <BitParams Parameters="_cascadingParams">
         <header class="page-header">
-            <BitText Element="h1" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">bit BlazorUI</BitText>
+            <BitText Element="h1" Typography="BitTypography.H1" Color="BitColor.PrimaryForeground">bit BlazorUI</BitText>
         </header>
 
         <div class="page-lead">
-            <BitText Element="p" Typography="BitTypography.H6" Color="BitColor.SecondaryForeground">
+            <BitText Element="p" Typography="BitTypography.Subtitle1" Color="BitColor.SecondaryForeground">
                 Production-ready and Fluent-inspired components for Blazor that stay native, flexible,
                 and fast across all interactive Blazor modes (WASM, Server, Hybrid, and pre-rendering).
             </BitText>
@@ -62,7 +62,7 @@
                                  Color="BitColor.PrimaryForeground" />
                     </div>
                     <BitText Style="font-weight:bold"
-                             Element="div" Typography="BitTypography.H2">
+                             Element="div" Typography="BitTypography.H1">
                         80+
                     </BitText>
                     <BitText Color="BitColor.SecondaryForeground">
@@ -79,7 +79,7 @@
                                  Color="BitColor.PrimaryForeground" />
                     </div>
                     <BitText Style="font-weight:bold"
-                             Element="div" Typography="BitTypography.H2">
+                             Element="div" Typography="BitTypography.H1">
                         ~400KB
                     </BitText>
                     <BitText Color="BitColor.SecondaryForeground">
@@ -96,7 +96,7 @@
                                  Color="BitColor.PrimaryForeground" />
                     </div>
                     <BitText Style="font-weight: 600;"
-                             Element="div" Typography="BitTypography.H2">
+                             Element="div" Typography="BitTypography.H1">
                         .NET 8.0+
                     </BitText>
                     <BitText Color="BitColor.SecondaryForeground">
@@ -109,13 +109,13 @@
         <br /><br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Why choose bit BlazorUI?</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Why choose bit BlazorUI?</BitText>
             <br />
             <BitStack Gap="1.5rem">
                 <BitStack Horizontal Gap="1rem">
                     <BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Large" Color="BitColor.Success" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             Native Blazor Performance
                         </BitText>
                         <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
@@ -127,7 +127,7 @@
                 <BitStack Horizontal Gap="1rem">
                     <BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Large" Color="BitColor.Success" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             Comprehensive Documentation
                         </BitText>
                         <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
@@ -139,7 +139,7 @@
                 <BitStack Horizontal Gap="1rem">
                     <BitIcon IconName="@BitIconName.CheckMark" Size="BitSize.Large" Color="BitColor.Success" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             Production Ready
                         </BitText>
                         <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
@@ -153,7 +153,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Explore components</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Explore components</BitText>
             <br />
             <BitText Color="BitColor.SecondaryForeground" Gutter>
                 Choose a category to jump into usage guidance, props, and live examples.
@@ -166,7 +166,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/buttons-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Buttons</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Buttons</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Interactive buttons for actions, menus, and toggles
                                 </BitText>
@@ -178,7 +178,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/input-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Inputs</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Inputs</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Form inputs including text fields, checkboxes, and dropdowns
                                 </BitText>
@@ -190,7 +190,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/pickers-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Pickers</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Pickers</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Date, time, and color pickers for data selection
                                 </BitText>
@@ -202,7 +202,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/layouts-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Layouts</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Layouts</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Layout components for structuring your application
                                 </BitText>
@@ -214,7 +214,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/lists-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Lists</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Lists</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Lists, carousels, and data display components
                                 </BitText>
@@ -226,7 +226,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/navs-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Navs</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Navs</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Navigation components including breadcrumbs, menus, and tabs
                                 </BitText>
@@ -238,7 +238,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/notifications-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Notifications</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Notifications</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Badges, messages, and notification components
                                 </BitText>
@@ -250,7 +250,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/progrss-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Progress</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Progress</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Loading indicators and progress bars
                                 </BitText>
@@ -262,7 +262,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/surfaces-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Surfaces</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Surfaces</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Cards, dialogs, modals, and surface containers
                                 </BitText>
@@ -274,7 +274,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/utilities-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Utilities</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Utilities</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Helper components and utilities for common tasks
                                 </BitText>
@@ -286,7 +286,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/extras-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Extras</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Extras</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Advanced components including charts, data grids, and editors
                                 </BitText>
@@ -298,7 +298,7 @@
                         <BitCard>
                             <BitStack Alignment="BitAlignment.Center" Gap="0.75rem">
                                 <BitImage Alt="" Src="_content/Bit.BlazorUI.Demo.Client.Core/images/icon/icons-icon.svg" Style="height: 48px;" />
-                                <BitText Element="h3" Typography="BitTypography.H6">Icons</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Icons</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground" Align="BitTextAlign.Center">
                                     Comprehensive icon library with Fabric icons
                                 </BitText>
@@ -312,20 +312,20 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Quick start example</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Quick start example</BitText>
             <br />
             <BitText Gutter Color="BitColor.SecondaryForeground">
                 Get started in minutes with a simple example. Install the package and start building immediately.
             </BitText>
             <br />
-            <BitText Element="h3" Typography="BitTypography.H6" Gutter>1. Install the package</BitText>
+            <BitText Element="h3" Typography="BitTypography.H5" Gutter>1. Install the package</BitText>
             <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
             <br />
-            <BitText Element="h3" Typography="BitTypography.H6" Gutter>2. Add styles and scripts</BitText>
+            <BitText Element="h3" Typography="BitTypography.H5" Gutter>2. Add styles and scripts</BitText>
             <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI/styles/bit.blazorui.css" rel="stylesheet" />
 &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script></CodeBox>
             <br />
-            <BitText Element="h3" Typography="BitTypography.H6" Gutter>3. Add to your Blazor components</BitText>
+            <BitText Element="h3" Typography="BitTypography.H5" Gutter>3. Add to your Blazor components</BitText>
             <CodeBox Language="cshtml">@@using Bit.BlazorUI
 
 &lt;BitButton Size="BitSize.Large" IconName="@BitIconName.Add">
@@ -345,7 +345,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Start with the project template</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Start with the project template</BitText>
             <br />
             <BitText Gutter Color="BitColor.SecondaryForeground">
                 Spin up a clean bit BlazorUI solution aligned with the .NET 8.0+ hosting model, preconfigured for theming, SSR, and responsive layouts.
@@ -353,7 +353,7 @@
 
             <br />
 
-            <BitText Element="h3" Typography="BitTypography.H6" Gutter>
+            <BitText Element="h3" Typography="BitTypography.H5" Gutter>
                 Install the template once:
             </BitText>
 
@@ -361,7 +361,7 @@
 
             <br />
 
-            <BitText Element="h3" Typography="BitTypography.H6" Gutter>
+            <BitText Element="h3" Typography="BitTypography.H5" Gutter>
                 Create your app with the default setup:
             </BitText>
 
@@ -371,7 +371,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Supported browsers</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Supported browsers</BitText>
             <br />
             <BitText Gutter>
                 Verified on current releases for desktop and mobile:
@@ -389,7 +389,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Supported platforms</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Supported platforms</BitText>
             <br />
             <BitText Gutter>
                 Blazor Hybrid apps require:
@@ -407,7 +407,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Play on the GitHub Codespaces</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Play on the GitHub Codespaces</BitText>
             <br />
             <BitText Gutter>
                 Launch a ready-to-use playground in the browser with SDKs and tooling preinstalled, no local setup needed.
@@ -425,7 +425,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Quick links</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Quick links</BitText>
             <br />
             <BitStack Gap="1rem" Horizontal Wrap>
                 <BitLink Href="/getting-started" Class="quick-link" NoUnderline>
@@ -433,7 +433,7 @@
                         <BitStack Horizontal Gap="0.75rem" Alignment="BitAlignment.Center">
                             <BitIcon IconName="@BitIconName.Play" Style="font-size: 1.25rem;" />
                             <BitStack Gap="0.25rem">
-                                <BitText Element="h3" Typography="BitTypography.H6">Getting Started</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Getting Started</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
                                     Installation & setup
                                 </BitText>
@@ -446,7 +446,7 @@
                         <BitStack Horizontal Gap="0.75rem" Alignment="BitAlignment.Center">
                             <BitIcon IconName="@BitIconName.Color" Style="font-size: 1.25rem;" />
                             <BitStack Gap="0.25rem">
-                                <BitText Element="h3" Typography="BitTypography.H6">Theming</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Theming</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
                                     Customize themes
                                 </BitText>
@@ -459,7 +459,7 @@
                         <BitStack Horizontal Gap="0.75rem" Alignment="BitAlignment.Center">
                             <BitIcon IconName="@BitIconName.FileImage" Style="font-size: 1.25rem;" />
                             <BitStack Gap="0.25rem">
-                                <BitText Element="h3" Typography="BitTypography.H6">Iconography</BitText>
+                                <BitText Element="h3" Typography="BitTypography.H5">Iconography</BitText>
                                 <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
                                     Icon library
                                 </BitText>
@@ -473,13 +473,13 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Resources & support</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Resources & support</BitText>
             <br />
             <BitStack Gap="1.5rem">
                 <BitStack Horizontal Gap="1rem" VerticalAlign="BitAlignment.Center">
                     <BitIcon IconName="@BitIconName.Bookmarks" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             <BitLink Target="_blank" Href="https://blazorui.bitplatform.dev" NoUnderline>
                                 Component Documentation
                             </BitLink>
@@ -492,7 +492,7 @@
                 <BitStack Horizontal Gap="1rem" VerticalAlign="BitAlignment.Center">
                     <BitIcon IconName="@BitIconName.Code" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             <BitLink Target="_blank" Href="https://github.com/bitfoundation/bitplatform" NoUnderline>
                                 GitHub Repository
                             </BitLink>
@@ -505,7 +505,7 @@
                 <BitStack Horizontal Gap="1rem" VerticalAlign="BitAlignment.Center">
                     <BitIcon IconName="@BitIconName.Info" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
                     <BitStack Gap="0.25rem">
-                        <BitText Element="h3" Typography="BitTypography.H6">
+                        <BitText Element="h3" Typography="BitTypography.H5">
                             <BitLink Target="_blank" Href="https://wiki.bitplatform.dev" NoUnderline>
                                 DeepWiki
                             </BitLink>

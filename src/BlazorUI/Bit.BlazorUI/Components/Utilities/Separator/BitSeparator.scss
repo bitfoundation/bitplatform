@@ -23,7 +23,7 @@
         display: block;
         inset: 50% 0 0;
         position: absolute;
-        height: $shp-border-width;
+        height: $siz-divider;
         background-color: var(--bit-spr-brd);
     }
 
@@ -56,7 +56,7 @@
         display: block;
         inset: 0 0 0 50%;
         position: absolute;
-        width: $shp-border-width;
+        width: $siz-divider;
         background-color: var(--bit-spr-brd);
     }
 

@@ -24,6 +24,12 @@
     .hero-title {
         max-width: rem2(560px);
 
+        // A marketing hero wants more than the 40px the H1 token gives an application page title, and
+        // no token describes that size - so this is the one heading the page sizes itself, fluidly
+        // between the H1 it inherits on phones and a display size on wide screens.
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        line-height: 1.15;
+
         @include lt-lg {
             text-align: center;
         }

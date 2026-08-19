@@ -9,7 +9,9 @@
  */
 .bit-sld {
     --bit-sld-thumb: #{spacing(2)};
-    --bit-sld-rail: #{spacing(0.5)};
+    // The rail thickness follows the theme's medium track token (Material 4px, Cupertino 2px);
+    // the thumb and length stay this component's own knobs.
+    --bit-sld-rail: #{$siz-track-md};
     --bit-sld-length: #{spacing(24)};
     --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-clr-rail: #{$clr-bg-sec};

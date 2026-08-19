@@ -53,6 +53,8 @@
     gap: spacing(2);
     align-items: center;
     box-sizing: border-box;
-    flex-direction: column;
-    justify-content: center;
+    // Follows the same theme decision as BitDialog's footer, so all dialog-like footers across the
+    // library lay out their actions identically for the active design system.
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
 }

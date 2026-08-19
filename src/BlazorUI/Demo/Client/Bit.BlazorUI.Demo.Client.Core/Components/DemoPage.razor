@@ -126,7 +126,7 @@ else
                       Gap="1rem"
                       Class="page-header"
                       VerticalAlign="BitAlignment.Baseline">
-                <BitText Element="h1" Typography="BitTypography.H4" Color="BitColor.PrimaryForeground">
+                <BitText Element="h1" Typography="BitTypography.H1" Color="BitColor.PrimaryForeground">
                     @Name
                 </BitText>
 
@@ -167,7 +167,7 @@ else
                          Background="BitColorKind.Primary"
                          Class="page-section">
                     <div class="section-heading">
-                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Notes</BitText>
+                        <BitText Element="h2" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">Notes</BitText>
                     </div>
                     @if (NotesTemplate is not null)
                     {
@@ -190,7 +190,7 @@ else
                          Background="BitColorKind.Primary"
                          Class="page-section">
                     <div class="section-heading">
-                        <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Introduction</BitText>
+                        <BitText Element="h2" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">Introduction</BitText>
                         <BitSeparator />
                     </div>
                     @if (IntroductionVideoUrl.HasValue())
@@ -221,7 +221,7 @@ else
                      Background="BitColorKind.Primary"
                      Class="page-section">
                 <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Usage</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">Usage</BitText>
                     <br />
                 </div>
                 @(ChildContent ?? Examples)
@@ -231,7 +231,7 @@ else
                      Background="BitColorKind.Primary"
                      Class="page-section">
                 <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">API</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">API</BitText>
                 </div>
 
                 <DemoParametersTable Name="@($"Bit{Name}")" Parameters="Parameters" />
@@ -276,7 +276,7 @@ else
                      Border="BitColorKind.Secondary"
                      Class="page-section">
                 <div class="section-heading">
-                    <BitText Element="h2" Typography="BitTypography.H5" Color="BitColor.PrimaryForeground">Feedback</BitText>
+                    <BitText Element="h2" Typography="BitTypography.H3" Color="BitColor.PrimaryForeground">Feedback</BitText>
                     <BitSeparator />
                 </div>
                 <BitText Element="p">

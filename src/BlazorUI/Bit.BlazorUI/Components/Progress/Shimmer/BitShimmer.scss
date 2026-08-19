@@ -85,7 +85,9 @@
 // rather than on these elements, so the opt-out is matched on an ancestor as well.
 .bit-smr-wav {
     transform: translateX(-100%);
-    animation: bit-smr-anim-wave 1.6s linear 0.5s infinite;
+    // Literal durations multiplied by the loop factor per the looping-animation contract, so a
+    // theme can still retune the pace even though reduced motion stops (not slows) the shimmer.
+    animation: bit-smr-anim-wave calc(1.6s * $mot-loop-factor) linear calc(0.5s * $mot-loop-factor) infinite;
     background: linear-gradient(90deg, transparent, var(--bit-smr-bg-clr), transparent);
 
     @media (prefers-reduced-motion: reduce) {
@@ -96,7 +98,7 @@
 }
 
 .bit-smr-pul {
-    animation: bit-smr-anim-pulse 1.6s ease-in-out 0.5s infinite;
+    animation: bit-smr-anim-pulse calc(1.6s * $mot-loop-factor) ease-in-out calc(0.5s * $mot-loop-factor) infinite;
 
     @media (prefers-reduced-motion: reduce) {
         &:not(.bit-fam):not(.bit-fam *) {

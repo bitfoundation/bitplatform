@@ -366,6 +366,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Shadow.AppBarBottom, bitTheme.BoxShadow.AppBarBottom);
 
         addCssVar(BitCss.Var.Spacing.ScalingFactor, bitTheme.Spacing.ScalingFactor);
+        addCssVar(BitCss.Var.Spacing.Dialog, bitTheme.Spacing.Dialog);
 
         addCssVar(BitCss.Var.ZIndex.Snackbar, bitTheme.ZIndex.Snackbar);
         addCssVar(BitCss.Var.ZIndex.Modal, bitTheme.ZIndex.Modal);
@@ -524,6 +525,8 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Motion.LoopFactor, bitTheme.Motion.LoopFactor);
 
         addCssVar(BitCss.Var.Layout.DensityScale, bitTheme.Layout.DensityScale);
+        addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);
+        addCssVar(BitCss.Var.Layout.DialogActionsJustify, bitTheme.Layout.DialogActionsJustify);
 
         addCssVar(BitCss.Var.Layout.Breakpoints.Xs, bitTheme.Layout.Breakpoints.Xs);
         addCssVar(BitCss.Var.Layout.Breakpoints.Sm, bitTheme.Layout.Breakpoints.Sm);
@@ -535,12 +538,28 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.Control.Sm, bitTheme.Size.Control.Sm);
         addCssVar(BitCss.Var.Size.Control.Md, bitTheme.Size.Control.Md);
         addCssVar(BitCss.Var.Size.Control.Lg, bitTheme.Size.Control.Lg);
+        addCssVar(BitCss.Var.Size.ControlPaddingX.Sm, bitTheme.Size.ControlPaddingX.Sm);
+        addCssVar(BitCss.Var.Size.ControlPaddingX.Md, bitTheme.Size.ControlPaddingX.Md);
+        addCssVar(BitCss.Var.Size.ControlPaddingX.Lg, bitTheme.Size.ControlPaddingX.Lg);
+        addCssVar(BitCss.Var.Size.ControlPaddingY.Sm, bitTheme.Size.ControlPaddingY.Sm);
+        addCssVar(BitCss.Var.Size.ControlPaddingY.Md, bitTheme.Size.ControlPaddingY.Md);
+        addCssVar(BitCss.Var.Size.ControlPaddingY.Lg, bitTheme.Size.ControlPaddingY.Lg);
+        addCssVar(BitCss.Var.Size.ControlMinWidth, bitTheme.Size.ControlMinWidth);
         addCssVar(BitCss.Var.Size.Icon.Sm, bitTheme.Size.Icon.Sm);
         addCssVar(BitCss.Var.Size.Icon.Md, bitTheme.Size.Icon.Md);
         addCssVar(BitCss.Var.Size.Icon.Lg, bitTheme.Size.Icon.Lg);
         addCssVar(BitCss.Var.Size.Selection.Sm, bitTheme.Size.Selection.Sm);
         addCssVar(BitCss.Var.Size.Selection.Md, bitTheme.Size.Selection.Md);
         addCssVar(BitCss.Var.Size.Selection.Lg, bitTheme.Size.Selection.Lg);
+        addCssVar(BitCss.Var.Size.Item.Sm, bitTheme.Size.Item.Sm);
+        addCssVar(BitCss.Var.Size.Item.Md, bitTheme.Size.Item.Md);
+        addCssVar(BitCss.Var.Size.Item.Lg, bitTheme.Size.Item.Lg);
+        addCssVar(BitCss.Var.Size.Tab, bitTheme.Size.Tab);
+        addCssVar(BitCss.Var.Size.TabIndicator, bitTheme.Size.TabIndicator);
+        addCssVar(BitCss.Var.Size.Divider, bitTheme.Size.Divider);
+        addCssVar(BitCss.Var.Size.Track.Sm, bitTheme.Size.Track.Sm);
+        addCssVar(BitCss.Var.Size.Track.Md, bitTheme.Size.Track.Md);
+        addCssVar(BitCss.Var.Size.Track.Lg, bitTheme.Size.Track.Lg);
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
 
@@ -735,8 +754,16 @@ internal static class BitThemeMapper
         return new BitThemeSizes
         {
             Control = src.Control ?? new(),
+            ControlPaddingX = src.ControlPaddingX ?? new(),
+            ControlPaddingY = src.ControlPaddingY ?? new(),
+            ControlMinWidth = src.ControlMinWidth,
             Icon = src.Icon ?? new(),
             Selection = src.Selection ?? new(),
+            Item = src.Item ?? new(),
+            Tab = src.Tab,
+            TabIndicator = src.TabIndicator,
+            Divider = src.Divider,
+            Track = src.Track ?? new(),
             SpinnerStroke = src.SpinnerStroke,
             PopupMaxHeight = src.PopupMaxHeight,
         };
@@ -749,6 +776,8 @@ internal static class BitThemeMapper
         return new BitThemeLayout
         {
             DensityScale = src.DensityScale,
+            DialogActionsDirection = src.DialogActionsDirection,
+            DialogActionsJustify = src.DialogActionsJustify,
             Breakpoints = src.Breakpoints ?? new(),
         };
     }
@@ -1072,6 +1101,7 @@ internal static class BitThemeMapper
         result.BoxShadow.AppBarBottom = bitTheme.BoxShadow.AppBarBottom ?? other.BoxShadow.AppBarBottom;
 
         result.Spacing.ScalingFactor = bitTheme.Spacing.ScalingFactor ?? other.Spacing.ScalingFactor;
+        result.Spacing.Dialog = bitTheme.Spacing.Dialog ?? other.Spacing.Dialog;
 
         result.ZIndex.Snackbar = bitTheme.ZIndex.Snackbar ?? other.ZIndex.Snackbar;
         result.ZIndex.Modal = bitTheme.ZIndex.Modal ?? other.ZIndex.Modal;
@@ -1230,6 +1260,8 @@ internal static class BitThemeMapper
         result.Motion.LoopFactor = bitTheme.Motion.LoopFactor ?? other.Motion.LoopFactor;
 
         result.Layout.DensityScale = bitTheme.Layout.DensityScale ?? other.Layout.DensityScale;
+        result.Layout.DialogActionsDirection = bitTheme.Layout.DialogActionsDirection ?? other.Layout.DialogActionsDirection;
+        result.Layout.DialogActionsJustify = bitTheme.Layout.DialogActionsJustify ?? other.Layout.DialogActionsJustify;
         result.Layout.Breakpoints.Xs = bitTheme.Layout.Breakpoints.Xs ?? other.Layout.Breakpoints.Xs;
         result.Layout.Breakpoints.Sm = bitTheme.Layout.Breakpoints.Sm ?? other.Layout.Breakpoints.Sm;
         result.Layout.Breakpoints.Md = bitTheme.Layout.Breakpoints.Md ?? other.Layout.Breakpoints.Md;
@@ -1240,12 +1272,28 @@ internal static class BitThemeMapper
         result.Size.Control.Sm = bitTheme.Size.Control.Sm ?? other.Size.Control.Sm;
         result.Size.Control.Md = bitTheme.Size.Control.Md ?? other.Size.Control.Md;
         result.Size.Control.Lg = bitTheme.Size.Control.Lg ?? other.Size.Control.Lg;
+        result.Size.ControlPaddingX.Sm = bitTheme.Size.ControlPaddingX.Sm ?? other.Size.ControlPaddingX.Sm;
+        result.Size.ControlPaddingX.Md = bitTheme.Size.ControlPaddingX.Md ?? other.Size.ControlPaddingX.Md;
+        result.Size.ControlPaddingX.Lg = bitTheme.Size.ControlPaddingX.Lg ?? other.Size.ControlPaddingX.Lg;
+        result.Size.ControlPaddingY.Sm = bitTheme.Size.ControlPaddingY.Sm ?? other.Size.ControlPaddingY.Sm;
+        result.Size.ControlPaddingY.Md = bitTheme.Size.ControlPaddingY.Md ?? other.Size.ControlPaddingY.Md;
+        result.Size.ControlPaddingY.Lg = bitTheme.Size.ControlPaddingY.Lg ?? other.Size.ControlPaddingY.Lg;
+        result.Size.ControlMinWidth = bitTheme.Size.ControlMinWidth ?? other.Size.ControlMinWidth;
         result.Size.Icon.Sm = bitTheme.Size.Icon.Sm ?? other.Size.Icon.Sm;
         result.Size.Icon.Md = bitTheme.Size.Icon.Md ?? other.Size.Icon.Md;
         result.Size.Icon.Lg = bitTheme.Size.Icon.Lg ?? other.Size.Icon.Lg;
         result.Size.Selection.Sm = bitTheme.Size.Selection.Sm ?? other.Size.Selection.Sm;
         result.Size.Selection.Md = bitTheme.Size.Selection.Md ?? other.Size.Selection.Md;
         result.Size.Selection.Lg = bitTheme.Size.Selection.Lg ?? other.Size.Selection.Lg;
+        result.Size.Item.Sm = bitTheme.Size.Item.Sm ?? other.Size.Item.Sm;
+        result.Size.Item.Md = bitTheme.Size.Item.Md ?? other.Size.Item.Md;
+        result.Size.Item.Lg = bitTheme.Size.Item.Lg ?? other.Size.Item.Lg;
+        result.Size.Tab = bitTheme.Size.Tab ?? other.Size.Tab;
+        result.Size.TabIndicator = bitTheme.Size.TabIndicator ?? other.Size.TabIndicator;
+        result.Size.Divider = bitTheme.Size.Divider ?? other.Size.Divider;
+        result.Size.Track.Sm = bitTheme.Size.Track.Sm ?? other.Size.Track.Sm;
+        result.Size.Track.Md = bitTheme.Size.Track.Md ?? other.Size.Track.Md;
+        result.Size.Track.Lg = bitTheme.Size.Track.Lg ?? other.Size.Track.Lg;
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
 

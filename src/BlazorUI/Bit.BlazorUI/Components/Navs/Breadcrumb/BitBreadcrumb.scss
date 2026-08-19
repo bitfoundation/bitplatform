@@ -274,7 +274,7 @@
     --bit-brc-line-height: #{spacing(3.5)};
     --bit-brc-of-font-size: #{$tg-fs-xs};
     --bit-brc-of-line-height: #{spacing(2)};
-    --bit-brc-of-height: #{spacing(3.5)};
+    --bit-brc-of-height: #{$siz-item-sm};
 }
 
 .bit-brc-md {
@@ -282,7 +282,7 @@
     --bit-brc-line-height: #{spacing(4.5)};
     --bit-brc-of-font-size: #{$tg-fs-sm};
     --bit-brc-of-line-height: #{spacing(2.5)};
-    --bit-brc-of-height: #{spacing(4.5)};
+    --bit-brc-of-height: #{$siz-item-md};
 }
 
 .bit-brc-lg {
@@ -290,5 +290,5 @@
     --bit-brc-line-height: #{spacing(5.5)};
     --bit-brc-of-font-size: #{$tg-fs-lg};
     --bit-brc-of-line-height: #{spacing(3)};
-    --bit-brc-of-height: #{spacing(5.5)};
+    --bit-brc-of-height: #{$siz-item-lg};
 }

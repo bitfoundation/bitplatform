@@ -557,6 +557,7 @@ public static partial class BitCss
         public static class Spacing
         {
             public const string ScalingFactor = "--bit-spa-scaling-factor";
+            public const string Dialog = "--bit-spa-dialog";
         }
 
         public static class Motion
@@ -575,6 +576,8 @@ public static partial class BitCss
         public static class Layout
         {
             public const string DensityScale = "--bit-layout-density-scale";
+            public const string DialogActionsDirection = "--bit-layout-dialog-actions-direction";
+            public const string DialogActionsJustify = "--bit-layout-dialog-actions-justify";
 
             public static class Breakpoints
             {
@@ -594,6 +597,40 @@ public static partial class BitCss
                 public const string Sm = "--bit-siz-ctrl-sm";
                 public const string Md = "--bit-siz-ctrl-md";
                 public const string Lg = "--bit-siz-ctrl-lg";
+            }
+
+            public static class ControlPaddingX
+            {
+                public const string Sm = "--bit-siz-ctrl-pad-x-sm";
+                public const string Md = "--bit-siz-ctrl-pad-x-md";
+                public const string Lg = "--bit-siz-ctrl-pad-x-lg";
+            }
+
+            public static class ControlPaddingY
+            {
+                public const string Sm = "--bit-siz-ctrl-pad-y-sm";
+                public const string Md = "--bit-siz-ctrl-pad-y-md";
+                public const string Lg = "--bit-siz-ctrl-pad-y-lg";
+            }
+
+            public const string ControlMinWidth = "--bit-siz-ctrl-min-width";
+
+            public static class Item
+            {
+                public const string Sm = "--bit-siz-item-sm";
+                public const string Md = "--bit-siz-item-md";
+                public const string Lg = "--bit-siz-item-lg";
+            }
+
+            public const string Tab = "--bit-siz-tab";
+            public const string TabIndicator = "--bit-siz-tab-indicator";
+            public const string Divider = "--bit-siz-divider";
+
+            public static class Track
+            {
+                public const string Sm = "--bit-siz-track-sm";
+                public const string Md = "--bit-siz-track-md";
+                public const string Lg = "--bit-siz-track-lg";
             }
 
             public static class Icon

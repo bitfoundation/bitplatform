@@ -219,14 +219,14 @@
     user-select: none;
     position: relative;
     text-align: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     outline: transparent;
     display: inline-block;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    margin-right: spacing(1);
-    line-height: spacing(5.5);
+    margin-inline-end: spacing(1);
+    line-height: $siz-tab;
     background-color: transparent;
     color: $clr-fg-pri;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -244,7 +244,7 @@
         content: "";
         position: absolute;
         transform: scaleX(0);
-        height: $shp-border-width-thick;
+        height: $siz-tab-indicator;
         inset-inline-end: spacing(1);
         inset-inline-start: spacing(1);
         background-color: transparent;
@@ -280,14 +280,14 @@
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     outline: transparent;
     display: inline-block;
     padding: 0 spacing(1);
     text-decoration: none;
     box-sizing: border-box;
-    margin-right: spacing(1);
-    line-height: spacing(5.5);
+    margin-inline-end: spacing(1);
+    line-height: $siz-tab;
     background-color: transparent;
     letter-spacing: $tg-ctrl-letter-spacing;
 
@@ -314,7 +314,7 @@
     .bit-pvti::before {
         bottom: auto;
         top: spacing(1);
-        width: $shp-border-width-thick;
+        width: $siz-tab-indicator;
         transform: scaleY(0);
         inset-inline-start: 0;
         height: calc(100% - spacing(2));
@@ -373,7 +373,7 @@
     color: $clr-fg-pri;
     width: spacing(4);
     align-items: center;
-    height: spacing(5.5);
+    height: $siz-tab;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
@@ -405,7 +405,7 @@
 
 .bit-pvt-mor {
     flex-shrink: 0;
-    margin-right: 0;
+    margin-inline-end: 0;
 }
 
 .bit-pvt-ovl {

@@ -307,9 +307,12 @@
     position: absolute;
     box-sizing: border-box;
     justify-content: center;
-    inset-block-start: 50%;
+    // Centered on the cross axis by auto margins against a zero block inset rather than by a 50% offset
+    // pulled back with translate: the layout centering resolves to a whole device pixel, where the transform
+    // left the knob half a pixel off (and blurred) at fractional zoom levels.
+    inset-block: 0;
+    margin-block: auto;
     inset-inline-start: var(--bit-tgl-pad);
-    translate: 0 -50%;
     width: var(--bit-tgl-thb-size);
     height: var(--bit-tgl-thb-size);
     background-color: var(--bit-tgl-thb-clr);

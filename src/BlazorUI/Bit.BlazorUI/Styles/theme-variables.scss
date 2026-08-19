@@ -347,11 +347,17 @@ $box-shadow-24: var(--bit-shd-24);
 
 //spacing
 $spacing-scaling-factor: var(--bit-spa-scaling-factor);
+//the base inset of a dialog surface (header/body/footer padding).
+$spa-dialog: var(--bit-spa-dialog);
 
 //layout
 //density is a unitless multiplier over the spacing unit; the fallback of 1 keeps the base rhythm
 //for consumer-defined themes that never set the token.
 $layout-density-scale: var(--bit-layout-density-scale, 1);
+//how a dialog/message-box footer lays out its action buttons (row + flex-end under Fluent and
+//Material; column + center under Cupertino).
+$layout-dialog-actions-direction: var(--bit-layout-dialog-actions-direction);
+$layout-dialog-actions-justify: var(--bit-layout-dialog-actions-justify);
 
 //z-index
 $zindex-snackbar: var(--bit-zin-snackbar);
@@ -403,6 +409,22 @@ $shp-radius-dialog: var(--bit-shp-radius-dialog);
 $siz-ctrl-sm: var(--bit-siz-ctrl-sm);
 $siz-ctrl-md: var(--bit-siz-ctrl-md);
 $siz-ctrl-lg: var(--bit-siz-ctrl-lg);
+$siz-ctrl-pad-x-sm: var(--bit-siz-ctrl-pad-x-sm);
+$siz-ctrl-pad-x-md: var(--bit-siz-ctrl-pad-x-md);
+$siz-ctrl-pad-x-lg: var(--bit-siz-ctrl-pad-x-lg);
+$siz-ctrl-pad-y-sm: var(--bit-siz-ctrl-pad-y-sm);
+$siz-ctrl-pad-y-md: var(--bit-siz-ctrl-pad-y-md);
+$siz-ctrl-pad-y-lg: var(--bit-siz-ctrl-pad-y-lg);
+$siz-ctrl-min-width: var(--bit-siz-ctrl-min-width);
+$siz-item-sm: var(--bit-siz-item-sm);
+$siz-item-md: var(--bit-siz-item-md);
+$siz-item-lg: var(--bit-siz-item-lg);
+$siz-tab: var(--bit-siz-tab);
+$siz-tab-indicator: var(--bit-siz-tab-indicator);
+$siz-divider: var(--bit-siz-divider);
+$siz-track-sm: var(--bit-siz-track-sm);
+$siz-track-md: var(--bit-siz-track-md);
+$siz-track-lg: var(--bit-siz-track-lg);
 $siz-icon-sm: var(--bit-siz-icon-sm);
 $siz-icon-md: var(--bit-siz-icon-md);
 $siz-icon-lg: var(--bit-siz-icon-lg);

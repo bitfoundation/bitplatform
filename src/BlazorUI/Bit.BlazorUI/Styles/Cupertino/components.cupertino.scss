@@ -1,0 +1,58 @@
+// Cupertino preset - per-component retunes for geometry that is one component's own knob
+// (--bit-<cmp>-* variables) rather than a global token: the UISwitch geometry, the 28pt slider
+// thumb, capsule small buttons, and the stacked alert buttons' full width. The [bit-theme=…]
+// selectors match the attribute on :root and on any scoped element.
+[bit-theme="cupertino"],
+[bit-theme="cupertino-light"],
+[bit-theme="cupertino-dark"] {
+    // iOS 15 buttons: small and medium are capsules; large keeps the 12pt corner from the control
+    // radius token.
+    .bit-btn-sm,
+    .bit-btn-md,
+    .bit-tgb-sm,
+    .bit-tgb-md,
+    .bit-acb-sm,
+    .bit-acb-md {
+        border-radius: var(--bit-shp-radius-full);
+    }
+
+    // Tags read as the iOS gray capsule chip.
+    .bit-tag {
+        border-radius: var(--bit-shp-radius-full);
+    }
+
+    // UISwitch: 51x31 track with a 27pt thumb riding a 2pt inset, at the md anchor. The pad is the
+    // knob's inset from the track's padding edge: the 2pt inset less the hairline stroke, which is
+    // also exactly (track height - knob) / 2 less that stroke - so the knob sits centered.
+    .bit-tgl-sm {
+        --bit-tgl-trk-w: 2.5625rem; //41px
+        --bit-tgl-trk-h: 1.5625rem; //25px
+        --bit-tgl-thb-size: 1.3125rem; //21px
+        --bit-tgl-pad: 0.09375rem; //1.5px
+    }
+
+    .bit-tgl-md {
+        --bit-tgl-trk-w: 3.1875rem; //51px
+        --bit-tgl-trk-h: 1.9375rem; //31px
+        --bit-tgl-thb-size: 1.6875rem; //27px
+        --bit-tgl-pad: 0.09375rem; //1.5px
+    }
+
+    .bit-tgl-lg {
+        --bit-tgl-trk-w: 3.8125rem; //61px
+        --bit-tgl-trk-h: 2.3125rem; //37px
+        --bit-tgl-thb-size: 2.0625rem; //33px
+        --bit-tgl-pad: 0.09375rem; //1.5px
+    }
+
+    // UISlider: 28pt thumb on the 2pt track (the track follows --bit-siz-track-md).
+    .bit-sld {
+        --bit-sld-thumb: 1.75rem; //28px
+    }
+
+    // The stacked alert actions run full width, separated by their vertical margins.
+    .bit-dlg-bct button,
+    .bit-msb-ftr .bit-btn {
+        width: 100%;
+    }
+}

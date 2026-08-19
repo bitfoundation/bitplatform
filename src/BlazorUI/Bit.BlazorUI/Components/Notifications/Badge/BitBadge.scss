@@ -350,7 +350,7 @@
 
 .bit-bdg-dot {
     --bit-bdg-padding: 0;
-    --bit-bdg-boradius: 50%;
+    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-width: #{spacing(1.125)};
     --bit-bdg-height: #{spacing(1.125)};
 }

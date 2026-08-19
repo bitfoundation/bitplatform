@@ -604,9 +604,13 @@ public sealed class BitThemeColorDerivationTests
     // ── Calibration against the packaged palettes ─────────────────────────────
 
     [DataTestMethod]
-    [DataRow("colors.fluent-light.scss", BitThemeColorScheme.Light)]
-    [DataRow("colors.fluent-dark.scss", BitThemeColorScheme.Dark)]
-    public void DerivedDisabledPairMatchesThePackagedPalettes(string paletteFile, BitThemeColorScheme scheme)
+    [DataRow("Fluent", "colors.fluent-light.scss", BitThemeColorScheme.Light)]
+    [DataRow("Fluent", "colors.fluent-dark.scss", BitThemeColorScheme.Dark)]
+    [DataRow("Material", "colors.material-light.scss", BitThemeColorScheme.Light)]
+    [DataRow("Material", "colors.material-dark.scss", BitThemeColorScheme.Dark)]
+    [DataRow("Cupertino", "colors.cupertino-light.scss", BitThemeColorScheme.Light)]
+    [DataRow("Cupertino", "colors.cupertino-dark.scss", BitThemeColorScheme.Dark)]
+    public void DerivedDisabledPairMatchesThePackagedPalettes(string paletteFolder, string paletteFile, BitThemeColorScheme scheme)
     {
         // The disabled pair is the one family generated from an absolute recipe rather than a
         // relative step off main, and the derivation constants ARE the packaged palettes' targets.
@@ -614,7 +618,7 @@ public sealed class BitThemeColorDerivationTests
         // -dis / -dis-text values byte for byte - which is what makes the class's promise that "a
         // derived role behaves like a packaged one" true for the disabled state, and what catches a
         // palette retune that forgets to bring the derivation along (or vice versa).
-        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", "Fluent", paletteFile);
+        var path = Path.Combine(AppContext.BaseDirectory, "theme-styles", paletteFolder, paletteFile);
         Assert.IsTrue(File.Exists(path), $"Missing {path}; ensure the library Styles folder is copied to output.");
 
         var scss = File.ReadAllText(path);

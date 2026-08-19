@@ -1,12 +1,24 @@
 ﻿:root,
 :root[bit-theme="light"],
+:root [bit-theme="light"],
 :root[bit-theme="fluent"],
+:root [bit-theme="fluent"],
 :root[bit-theme="fluent-light"],
+:root [bit-theme="fluent-light"],
 :root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
+:root [bit-theme="dark"],
+:root[bit-theme="fluent-dark"],
+:root [bit-theme="fluent-dark"] {
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
+    //the base inset of a dialog surface - the one padding a design system decides for dialog
+    //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
+    //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
+    --bit-layout-dialog-actions-direction: row;
+    --bit-layout-dialog-actions-justify: flex-end;
     //zindex - the layering contract, top to bottom:
     //  snackbar (1400) - notifications, above everything.
     //  callout  (1300) - floating popup surfaces (dropdown/date-picker callouts, panel content).

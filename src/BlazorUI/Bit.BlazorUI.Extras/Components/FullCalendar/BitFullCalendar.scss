@@ -39,7 +39,7 @@
     font-family: #{$tg-font-family};
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius);
     overflow: hidden;
     display: flex;
@@ -56,11 +56,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    padding: spacing(1.5) spacing(2);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     background: var(--bit-bfc-bg);
     flex-wrap: wrap;
-    gap: 8px;
+    gap: spacing(1);
 }
 
 .bit-bfc-header-left,
@@ -68,7 +68,7 @@
 .bit-bfc-header-right {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: spacing(1);
 }
 
 .bit-bfc-header-left {
@@ -85,16 +85,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid var(--bit-bfc-border);
+    gap: spacing(0.75);
+    padding: spacing(0.75) spacing(1.5);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-medium;
     cursor: pointer;
-    transition: all $mot-duration-short ease;
+    transition: all $mot-duration-short $mot-easing;
     white-space: nowrap;
     line-height: 1.817;
 }
@@ -124,19 +124,19 @@
 }
 
 .bit-bfc-btn-icon {
-    padding: 6px;
-    width: 32px;
-    height: 32px;
+    padding: spacing(0.75);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
 }
 
 .bit-bfc-btn-sm {
-    padding: 4px 8px;
-    font-size: 12px;
+    padding: spacing(0.5) spacing(1);
+    font-size: $tg-fs-xs;
 }
 
 .bit-bfc-btn-group {
     display: inline-flex;
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     overflow: hidden;
 }
@@ -144,7 +144,7 @@
 .bit-bfc-btn-group .bit-bfc-btn {
     border: none;
     border-radius: 0;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-btn-group .bit-bfc-btn:last-child {
@@ -161,20 +161,20 @@
     display: inline-flex;
     background: var(--bit-bfc-bg-secondary);
     border-radius: var(--bit-bfc-radius-sm);
-    padding: 2px;
-    gap: 2px;
+    padding: spacing(0.25);
+    gap: spacing(0.25);
 }
 
 .bit-bfc-view-tab {
-    padding: 5px 12px;
+    padding: spacing(0.625) spacing(1.5);
     border: none;
     border-radius: $shp-radius-control;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-medium;
     cursor: pointer;
-    transition: all $mot-duration-short ease;
+    transition: all $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-view-tab:hover {
@@ -194,7 +194,7 @@
     min-height: 0;
     overflow: hidden;
     position: relative;
-    animation: bit-bfc-fade-in $mot-duration ease;
+    animation: bit-bfc-fade-in $mot-duration $mot-easing-decelerate;
 }
 
 @keyframes bit-bfc-fade-in {
@@ -219,14 +219,14 @@
 .bit-bfc-month-header {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     flex-shrink: 0;
 }
 
 .bit-bfc-month-header-cell {
-    padding: 8px;
+    padding: spacing(1);
     text-align: center;
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
@@ -241,10 +241,10 @@
 }
 
 .bit-bfc-month-cell {
-    border-right: 1px solid var(--bit-bfc-border);
-    border-bottom: 1px solid var(--bit-bfc-border);
-    padding: 4px;
-    min-height: 100px;
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    padding: spacing(0.5);
+    min-height: rem2(100px);
     min-width: 0;
     position: relative;
     cursor: pointer;
@@ -269,12 +269,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: rem2(28px);
+    height: rem2(28px);
     border-radius: 50%;
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-medium;
-    margin-bottom: 2px;
+    margin-bottom: spacing(0.25);
 }
 
 .bit-bfc-month-cell-day.today {
@@ -291,15 +291,15 @@
 }
 
 .bit-bfc-month-event-slot {
-    height: 22px;
+    height: rem2(22px);
     min-width: 0;
     overflow: hidden;
 }
 
 .bit-bfc-month-more {
-    font-size: 11px;
+    font-size: rem2(11px);
     color: var(--bit-bfc-text-secondary);
-    padding: 2px 4px;
+    padding: spacing(0.25) spacing(0.5);
     cursor: pointer;
     font-weight: $tg-fw-medium;
     /* Rendered as a real <button> for native keyboard activation (Enter/Space without page scroll)
@@ -321,17 +321,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 4px;
-    height: 22px;
+    gap: spacing(0.5);
+    height: rem2(22px);
     max-width: 100%;
     min-width: 0;
-    padding: 0 6px;
+    padding: 0 spacing(0.75);
     border-radius: $shp-radius-control;
-    font-size: 11px;
+    font-size: rem2(11px);
     font-weight: $tg-fw-medium;
     cursor: grab;
     overflow: hidden;
-    border: 1px solid transparent;
+    border: $shp-border-width $shp-border-style transparent;
     transition: filter $mot-duration-short;
     user-select: none;
 }
@@ -339,7 +339,7 @@
 .bit-bfc-event-badge-content {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: spacing(0.5);
     min-width: 0;
     flex: 1;
     overflow: hidden;
@@ -377,7 +377,7 @@
 }
 
 .bit-bfc-event-badge-time {
-    font-size: 10px;
+    font-size: $tg-fs-2xs;
     opacity: 0.8;
     flex-shrink: 0;
     white-space: nowrap;
@@ -386,8 +386,8 @@
 /* ===== Event Bullet ===== */
 .bit-bfc-bullet {
     display: inline-block;
-    width: 7px;
-    height: 7px;
+    width: rem2(7px);
+    height: rem2(7px);
     border-radius: 50%;
     flex-shrink: 0;
     background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
@@ -426,8 +426,8 @@
 
 .bit-bfc-time-column {
     flex-shrink: 0;
-    width: 60px;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    width: rem2(60px);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-time-slot-label {
@@ -436,7 +436,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 0;
-    font-size: 11px;
+    font-size: rem2(11px);
     color: var(--bit-bfc-text-muted);
     font-weight: $tg-fw-medium;
     position: relative;
@@ -463,7 +463,7 @@
 
 .bit-bfc-hour-row {
     height: var(--bit-bfc-hour-height);
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     position: relative;
 }
 
@@ -487,7 +487,7 @@
     bottom: 0;
     left: 0;
     z-index: 1;
-    border-top: 1px dashed var(--bit-bfc-border);
+    border-top: $shp-border-width dashed var(--bit-bfc-border);
     opacity: 0.5;
 }
 
@@ -495,9 +495,9 @@
 .bit-bfc-event-block {
     position: relative;
     z-index: 2;
-    padding: 4px 8px;
+    padding: spacing(0.5) spacing(1);
     border-radius: var(--bit-bfc-radius-sm);
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     cursor: grab;
     width: 100%;
     height: 100%;
@@ -505,7 +505,7 @@
     min-width: 0;
     pointer-events: auto;
     overflow: hidden;
-    border: 1px solid transparent;
+    border: $shp-border-width $shp-border-style transparent;
     user-select: none;
     transition: box-shadow $mot-duration-short, filter $mot-duration-short;
 }
@@ -539,7 +539,7 @@
 /* Side-by-side stacked layout: equal-width lanes placed next to each other. A small right gap and
    a flat left edge (no diagonal separator shadow) keep the cards close together yet distinct. */
 .bit-bfc-event-stack-item-side-by-side {
-    padding-right: 2px;
+    padding-right: spacing(0.25);
     box-sizing: border-box;
 }
 
@@ -562,7 +562,7 @@
         0 0 0 5px var(--bit-bfc-resize-glow),
         0 12px 28px rgba(15, 23, 42, 0.18),
         var(--bit-bfc-shadow);
-    transition: box-shadow $mot-duration ease, filter $mot-duration ease, border-color $mot-duration ease;
+    transition: box-shadow $mot-duration $mot-easing, filter $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
 }
 
 .bit-bfc-event-block-title {
@@ -573,7 +573,7 @@
 }
 
 .bit-bfc-event-block-time {
-    font-size: 11px;
+    font-size: rem2(11px);
     opacity: 0.8;
     white-space: nowrap;
 }
@@ -583,12 +583,12 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 10px;
+    height: rem2(10px);
     cursor: ns-resize;
     z-index: 3;
     touch-action: none;
     border-radius: $shp-radius-sm;
-    transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
+    transition: background $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-resize-handle::after {
@@ -596,12 +596,12 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 28px;
-    height: 3px;
+    width: rem2(28px);
+    height: rem2(3px);
     border-radius: $shp-radius-full;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
-    transition: opacity $mot-duration-short ease, width $mot-duration-short ease, box-shadow $mot-duration-short ease;
+    transition: opacity $mot-duration-short $mot-easing, width $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
@@ -627,7 +627,7 @@
 
 .bit-bfc-resize-handle:hover::after {
     opacity: 0.85;
-    width: 36px;
+    width: rem2(36px);
 }
 
 .bit-bfc-event-block-resizing .bit-bfc-resize-handle-top {
@@ -640,14 +640,14 @@
 
 .bit-bfc-event-block-resizing .bit-bfc-resize-handle::after {
     opacity: 1;
-    width: 40px;
+    width: rem2(40px);
     box-shadow: 0 0 0 2px var(--bit-bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bit-bfc-primary) 35%, transparent);
 }
 
 .bit-bfc-event-block-resizing.bit-bfc-resize-dir-top .bit-bfc-resize-handle-top::after,
 .bit-bfc-event-block-resizing.bit-bfc-resize-dir-bottom .bit-bfc-resize-handle-bottom::after {
-    height: 4px;
-    width: 44px;
+    height: rem2(4px);
+    width: rem2(44px);
     box-shadow: 0 0 0 3px var(--bit-bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
 }
 
@@ -659,15 +659,15 @@
     top: auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 10px 6px 8px;
-    font-size: 12px;
+    gap: spacing(0.75);
+    padding: spacing(0.75) spacing(1.25) spacing(0.75) spacing(1);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
     color: var(--bit-bfc-primary);
     background: var(--bit-bfc-resize-preview-bg);
-    border: 1px solid var(--bit-bfc-resize-preview-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-resize-preview-border);
     border-radius: var(--bit-bfc-radius-sm);
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.5) inset,
@@ -714,8 +714,8 @@
 }
 
 .bit-bfc-timeline-dot {
-    width: 10px;
-    height: 10px;
+    width: rem2(10px);
+    height: rem2(10px);
     border-radius: 50%;
     background: var(--bit-bfc-timeline-color);
     /* Logical offset so the dot stays centered on the leading edge of the timeline in both
@@ -726,14 +726,14 @@
 
 .bit-bfc-timeline-line {
     flex: 1;
-    height: 2px;
+    height: $shp-border-width-thick;
     background: var(--bit-bfc-timeline-color);
 }
 
 .bit-bfc-timeline-label {
     position: absolute;
     left: -54px;
-    font-size: 10px;
+    font-size: $tg-fs-2xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-timeline-color);
     white-space: nowrap;
@@ -753,13 +753,13 @@
 }
 
 .bit-bfc-day-sidebar {
-    width: 280px;
-    border-inline-start: 1px solid var(--bit-bfc-border);
-    padding: 16px;
+    width: rem2(280px);
+    border-inline-start: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    padding: spacing(2);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: spacing(2);
     background: var(--bit-bfc-bg-secondary);
 }
 
@@ -768,24 +768,24 @@
     align-items: center;
     gap: 0;
     padding: 0;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     font-weight: $tg-fw-semibold;
 }
 
 /* Aligns with .bit-bfc-time-column (60px) so the time-axis border continues through the header in LTR and RTL */
 .bit-bfc-day-header-time-gutter {
-    width: 60px;
+    width: rem2(60px);
     flex-shrink: 0;
     box-sizing: border-box;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-day-header-titles {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 0;
+    gap: spacing(1);
+    padding: spacing(1.5) 0;
     min-width: 0;
 }
 
@@ -793,10 +793,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: rem2(32px);
+    height: rem2(32px);
     border-radius: 50%;
-    font-size: 18px;
+    font-size: $tg-fs-lg;
     font-weight: $tg-fw-bold;
 }
 
@@ -807,13 +807,13 @@
 
 /* Multi-day row above time grid */
 .bit-bfc-multiday-row {
-    padding: 4px 0;
-    padding-inline-start: 60px;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    padding: spacing(0.5) 0;
+    padding-inline-start: rem2(60px);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    min-height: 28px;
+    gap: spacing(0.25);
+    min-height: rem2(28px);
     min-width: 0;
     overflow: hidden;
 }
@@ -836,7 +836,7 @@
 
 .bit-bfc-week-header {
     display: flex;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     position: sticky;
     top: 0;
     z-index: 5;
@@ -850,17 +850,17 @@
 }
 
 .bit-bfc-week-header-time {
-    width: 60px;
+    width: rem2(60px);
     flex-shrink: 0;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-week-header-day {
     flex: 1;
     text-align: center;
-    padding: 8px 4px;
-    border-right: 1px solid var(--bit-bfc-border);
-    font-size: 13px;
+    padding: spacing(1) spacing(0.5);
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    font-size: rem2(13px);
 }
 
 .bit-bfc-week-header-day:last-child {
@@ -876,11 +876,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: rem2(28px);
+    height: rem2(28px);
     border-radius: 50%;
     font-weight: $tg-fw-bold;
-    font-size: 15px;
+    font-size: rem2(15px);
 }
 
 .bit-bfc-week-header-day-num.today {
@@ -891,7 +891,7 @@
 .bit-bfc-week-day-col {
     flex: 1;
     position: relative;
-    border-right: 1px solid var(--bit-bfc-border);
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
     min-height: calc(24 * var(--bit-bfc-hour-height));
     overflow: hidden;
 }
@@ -904,16 +904,16 @@
 .bit-bfc-year {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-    gap: 16px;
-    padding: 16px;
+    gap: spacing(2);
+    padding: spacing(2);
     overflow-y: auto;
     height: 100%;
 }
 
 .bit-bfc-year-month {
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius);
-    padding: 12px;
+    padding: spacing(1.5);
     min-width: 0;
 }
 
@@ -929,8 +929,8 @@
     font-family: inherit;
     text-align: start;
     font-weight: $tg-fw-semibold;
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: $tg-fs-sm;
+    margin-bottom: spacing(1);
     cursor: pointer;
     transition: color $mot-duration-short;
 }
@@ -942,12 +942,12 @@
 .bit-bfc-year-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    margin-bottom: 4px;
+    margin-bottom: spacing(0.5);
 }
 
 .bit-bfc-year-weekday {
     text-align: center;
-    font-size: 10px;
+    font-size: $tg-fs-2xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
     text-transform: uppercase;
@@ -961,8 +961,8 @@
 
 .bit-bfc-year-day {
     text-align: center;
-    padding: 3px 0;
-    font-size: 11px;
+    padding: spacing(0.375) 0;
+    font-size: rem2(11px);
     border-radius: $shp-radius-control;
     cursor: default;
     position: relative;
@@ -973,8 +973,8 @@
 }
 
 .bit-bfc-year-day-number {
-    width: 26px;
-    height: 26px;
+    width: rem2(26px);
+    height: rem2(26px);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -999,7 +999,7 @@
 
 .bit-bfc-year-day-bullets {
     display: flex;
-    gap: 2px;
+    gap: spacing(0.25);
     justify-content: center;
     margin-top: 1px;
 }
@@ -1013,33 +1013,33 @@
 }
 
 .bit-bfc-agenda-search {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    padding: spacing(1.5) spacing(2);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-agenda-search input {
     width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--bit-bfc-border);
+    padding: spacing(1) spacing(1.5);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: 13px;
+    font-size: rem2(13px);
     outline: none;
 }
 
 .bit-bfc-agenda-search input:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 .bit-bfc-agenda-group {
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-agenda-group-title {
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: spacing(1) spacing(2);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
@@ -1053,8 +1053,8 @@
 .bit-bfc-agenda-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: spacing(1.5);
+    padding: spacing(1.25) spacing(2);
     cursor: pointer;
     transition: background $mot-duration-short;
 }
@@ -1064,13 +1064,13 @@
 }
 
 .bit-bfc-agenda-avatar {
-    width: 36px;
-    height: 36px;
+    width: rem2(36px);
+    height: rem2(36px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-bold;
     color: #fff;
     flex-shrink: 0;
@@ -1083,14 +1083,14 @@
 
 .bit-bfc-agenda-title {
     font-weight: $tg-fw-semibold;
-    font-size: 13px;
+    font-size: rem2(13px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .bit-bfc-agenda-desc {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-secondary);
     white-space: nowrap;
     overflow: hidden;
@@ -1098,29 +1098,29 @@
 }
 
 .bit-bfc-agenda-time {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .bit-bfc-agenda-empty {
-    padding: 40px 16px;
+    padding: spacing(5) spacing(2);
     text-align: center;
     color: var(--bit-bfc-text-muted);
-    font-size: 14px;
+    font-size: $tg-fs-sm;
 }
 
 /* ===== Dialogs / Modals ===== */
 .bit-bfc-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: $clr-bg-overlay;
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: bit-bfc-fade-in $mot-duration-short ease;
+    animation: bit-bfc-fade-in $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-bfc-dialog {
@@ -1128,10 +1128,10 @@
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
     width: 100%;
-    max-width: 480px;
+    max-width: rem2(480px);
     max-height: 90vh;
     overflow-y: auto;
-    animation: bit-bfc-slide-up $mot-duration ease;
+    animation: bit-bfc-slide-up $mot-duration $mot-easing-decelerate;
 }
 
 @keyframes bit-bfc-slide-up {
@@ -1147,19 +1147,19 @@
 }
 
 .bit-bfc-dialog-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    padding: spacing(2) spacing(2.5);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-dialog-header h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: $tg-fs-md;
     font-weight: $tg-fw-semibold;
 }
 
 .bit-bfc-dialog-header p {
-    margin: 4px 0 0;
-    font-size: 13px;
+    margin: spacing(0.5) 0 0;
+    font-size: rem2(13px);
     color: var(--bit-bfc-text-secondary);
 }
 
@@ -1167,7 +1167,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 8px;
+    gap: spacing(1);
 }
 
 .bit-bfc-dialog-header-row h3 {
@@ -1179,8 +1179,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: rem2(28px);
+    height: rem2(28px);
     padding: 0;
     border: none;
     background: none;
@@ -1197,27 +1197,27 @@
 }
 
 .bit-bfc-dialog-body {
-    padding: 16px 20px;
+    padding: spacing(2) spacing(2.5);
 }
 
 .bit-bfc-dialog-footer {
-    padding: 12px 20px;
-    border-top: 1px solid var(--bit-bfc-border);
+    padding: spacing(1.5) spacing(2.5);
+    border-top: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
-    justify-content: flex-end;
-    gap: 8px;
+    justify-content: $layout-dialog-actions-justify;
+    gap: spacing(1);
 }
 
 /* ===== Form fields ===== */
 .bit-bfc-field {
-    margin-bottom: 14px;
+    margin-bottom: spacing(1.75);
 }
 
 .bit-bfc-field label {
     display: block;
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-medium;
-    margin-bottom: 4px;
+    margin-bottom: spacing(0.5);
     color: var(--bit-bfc-text);
 }
 
@@ -1225,12 +1225,12 @@
 .bit-bfc-field select,
 .bit-bfc-field textarea {
     width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--bit-bfc-border);
+    padding: spacing(1) spacing(1.25);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: 13px;
+    font-size: rem2(13px);
     outline: none;
     box-sizing: border-box;
 }
@@ -1239,18 +1239,18 @@
 .bit-bfc-field select:focus,
 .bit-bfc-field textarea:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 .bit-bfc-field textarea {
     resize: vertical;
-    min-height: 60px;
+    min-height: rem2(60px);
 }
 
 .bit-bfc-field .bit-bfc-field-error {
     color: var(--bit-bfc-danger);
-    font-size: 12px;
-    margin-top: 2px;
+    font-size: $tg-fs-xs;
+    margin-top: spacing(0.25);
 }
 
 /* ===== Custom Date-Time Picker ===== */
@@ -1260,18 +1260,18 @@
 
 .bit-bfc-dtp-trigger {
     width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--bit-bfc-border);
+    padding: spacing(1) spacing(1.25);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: 13px;
+    font-size: rem2(13px);
     text-align: start;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: spacing(1);
 }
 
 .bit-bfc-dtp-trigger:hover {
@@ -1280,7 +1280,7 @@
 
 .bit-bfc-dtp-trigger-icon {
     color: var(--bit-bfc-text-muted);
-    font-size: 10px;
+    font-size: $tg-fs-2xs;
 }
 
 .bit-bfc-dtp-panel {
@@ -1289,10 +1289,10 @@
     left: 0;
     right: 0;
     z-index: 20;
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
-    padding: 8px;
+    padding: spacing(1);
     box-shadow: var(--bit-bfc-shadow-lg);
 }
 
@@ -1300,21 +1300,21 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: spacing(1);
 }
 
 .bit-bfc-dtp-month-label {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
 }
 
 .bit-bfc-dtp-nav-btn {
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    width: 24px;
-    height: 24px;
+    width: rem2(24px);
+    height: rem2(24px);
     border-radius: var(--bit-bfc-radius-sm);
     line-height: 1;
     cursor: pointer;
@@ -1327,29 +1327,29 @@
 .bit-bfc-dtp-weekdays {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: spacing(0.5);
+    margin-bottom: spacing(0.5);
 }
 
 .bit-bfc-dtp-weekdays span {
     text-align: center;
-    font-size: 11px;
+    font-size: rem2(11px);
     color: var(--bit-bfc-text-muted);
 }
 
 .bit-bfc-dtp-days {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 4px;
+    gap: spacing(0.5);
 }
 
 .bit-bfc-dtp-day {
-    border: 1px solid transparent;
+    border: $shp-border-width $shp-border-style transparent;
     background: transparent;
     color: var(--bit-bfc-text);
     border-radius: $shp-radius-control;
-    height: 28px;
-    font-size: 12px;
+    height: rem2(28px);
+    font-size: $tg-fs-xs;
     cursor: pointer;
 }
 
@@ -1371,29 +1371,29 @@
 }
 
 .bit-bfc-dtp-time {
-    margin-top: 8px;
+    margin-top: spacing(1);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: spacing(0.75);
 }
 
 .bit-bfc-dtp-time select {
     width: auto;
-    min-width: 64px;
+    min-width: rem2(64px);
 }
 
 /* Color picker in form */
 .bit-bfc-color-picker {
     display: flex;
-    gap: 6px;
+    gap: spacing(0.75);
     flex-wrap: wrap;
 }
 
 .bit-bfc-color-swatch {
-    width: 28px;
-    height: 28px;
+    width: rem2(28px);
+    height: rem2(28px);
     border-radius: 50%;
-    border: 2px solid transparent;
+    border: $shp-border-width-thick $shp-border-style transparent;
     cursor: pointer;
     transition: transform $mot-duration-short, border-color $mot-duration-short;
     background: var(--bit-bfc-evt-color, var(--bit-bfc-primary));
@@ -1412,34 +1412,34 @@
 .bit-bfc-attendees-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
+    gap: spacing(0.75);
+    margin-bottom: spacing(1);
 }
 
 .bit-bfc-attendee-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 3px 8px 3px 4px;
+    gap: spacing(0.75);
+    padding: spacing(0.375) spacing(1) spacing(0.375) spacing(0.5);
     background: var(--bit-bfc-bg-hover);
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: $shp-radius-full;
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text);
 }
 
 .bit-bfc-attendee-chip-readonly {
-    padding: 3px 10px 3px 4px;
+    padding: spacing(0.375) spacing(1.25) spacing(0.375) spacing(0.5);
 }
 
 .bit-bfc-attendee-chip-avatar {
-    width: 22px;
-    height: 22px;
+    width: rem2(22px);
+    height: rem2(22px);
     border-radius: 50%;
     background: var(--bit-bfc-primary);
     color: #fff;
-    font-size: 10px;
+    font-size: $tg-fs-2xs;
     font-weight: $tg-fw-bold;
     display: flex;
     align-items: center;
@@ -1454,12 +1454,12 @@
     background: none;
     border: none;
     padding: 0;
-    margin-left: 2px;
+    margin-left: spacing(0.25);
     cursor: pointer;
     color: var(--bit-bfc-text-muted);
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
+    width: rem2(16px);
+    height: rem2(16px);
     transition: background $mot-duration-short, color $mot-duration-short;
 }
 
@@ -1471,70 +1471,70 @@
 /* Attendee add row */
 .bit-bfc-attendee-add-row {
     display: flex;
-    gap: 6px;
+    gap: spacing(0.75);
     flex-wrap: wrap;
 }
 
 .bit-bfc-attendee-add-row input {
     flex: 1;
-    min-width: 80px;
-    padding: 6px 8px;
-    border: 1px solid var(--bit-bfc-border);
+    min-width: rem2(80px);
+    padding: spacing(0.75) spacing(1);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     outline: none;
     box-sizing: border-box;
 }
 
 .bit-bfc-attendee-add-row input:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 /* ===== Event Details Dialog ===== */
 .bit-bfc-event-detail-row {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: spacing(1.25);
+    margin-bottom: spacing(1.5);
 }
 
 .bit-bfc-event-detail-icon {
-    width: 18px;
-    height: 18px;
+    width: rem2(18px);
+    height: rem2(18px);
     color: var(--bit-bfc-text-muted);
     flex-shrink: 0;
     margin-top: 1px;
 }
 
 .bit-bfc-event-detail-label {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
-    margin-bottom: 2px;
+    margin-bottom: spacing(0.25);
 }
 
 .bit-bfc-event-detail-value {
-    font-size: 13px;
+    font-size: rem2(13px);
 }
 
 .bit-bfc-event-detail-swatch {
-    width: 18px;
-    height: 18px;
+    width: rem2(18px);
+    height: rem2(18px);
     border-radius: 50%;
     flex-shrink: 0;
     margin-top: 1px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: $shp-border-width $shp-border-style rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
 }
 
 .bit-bfc-event-detail-color {
     display: inline-block;
-    margin-top: 4px;
-    padding: 4px 10px;
+    margin-top: spacing(0.5);
+    padding: spacing(0.5) spacing(1.25);
     border-radius: var(--bit-bfc-radius-sm);
-    border: 1px solid transparent;
+    border: $shp-border-width $shp-border-style transparent;
     font-weight: $tg-fw-medium;
 }
 
@@ -1549,49 +1549,49 @@
     right: 0;
     top: calc(100% + 4px);
     background: var(--bit-bfc-bg);
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
-    min-width: 240px;
+    min-width: rem2(240px);
     z-index: 50;
-    padding: 6px;
-    animation: bit-bfc-slide-up $mot-duration-short ease;
+    padding: spacing(0.75);
+    animation: bit-bfc-slide-up $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-bfc-dropdown-label {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
-    padding: 6px 10px 4px;
+    padding: spacing(0.75) spacing(1.25) spacing(0.5);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 .bit-bfc-dropdown-item {
-    gap: 8px;
+    gap: spacing(1);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: spacing(1) spacing(1.25);
     border-radius: $shp-radius-sm;
-    font-size: 13px;
+    font-size: rem2(13px);
     cursor: pointer;
     transition: background $mot-duration-short;
     background: transparent;
 }
 
 .bit-bfc-dropdown-sep {
-    height: 1px;
+    height: $siz-divider;
     background: var(--bit-bfc-border);
-    margin: 4px 0;
+    margin: spacing(0.5) 0;
 }
 
 /* ===== Toggle Switch ===== */
 .bit-bfc-toggle {
     position: relative;
     display: inline-flex;
-    width: 36px;
-    height: 20px;
+    width: rem2(36px);
+    height: rem2(20px);
     cursor: pointer;
 }
 
@@ -1611,8 +1611,8 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    width: 16px;
-    height: 16px;
+    width: rem2(16px);
+    height: rem2(16px);
     border-radius: 50%;
     background: #fff;
     transition: transform $mot-duration;
@@ -1620,38 +1620,38 @@
 }
 
 .bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
-    transform: translateX(16px);
+    transform: translateX(rem2(16px));
 }
 
 /* ===== Filter row ===== */
 .bit-bfc-filter-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: spacing(1);
     flex-wrap: nowrap;
 }
 
 /* ===== Filter Select ===== */
 .bit-bfc-filter-select {
-    padding: 6px 10px;
-    border: 1px solid var(--bit-bfc-border);
+    padding: spacing(0.75) spacing(1.25);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text-secondary);
     outline: none;
-    min-width: 120px;
+    min-width: rem2(120px);
 }
 
 .bit-bfc-filter-select-person {
-    min-width: 140px;
-    max-width: 200px;
+    min-width: rem2(140px);
+    max-width: rem2(200px);
 }
 
 .bit-bfc-filter-select:focus {
     border-color: var(--bit-bfc-primary);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
+    box-shadow: 0 0 0 $shp-focus-ring-width color-mix(in srgb, var(--bit-bfc-primary) 15%, transparent);
 }
 
 /* ===== User Select ===== */
@@ -1664,22 +1664,22 @@
     right: 0;
     top: calc(100% + 4px);
     background: var(--bit-bfc-bg);
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
-    min-width: 200px;
+    min-width: rem2(200px);
     z-index: 50;
-    padding: 4px;
-    animation: bit-bfc-slide-up $mot-duration-short ease;
+    padding: spacing(0.5);
+    animation: bit-bfc-slide-up $mot-duration-short $mot-easing-decelerate;
 }
 
 .bit-bfc-user-option {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: spacing(1);
+    padding: spacing(1) spacing(1.25);
     border-radius: $shp-radius-sm;
-    font-size: 13px;
+    font-size: rem2(13px);
     cursor: pointer;
     transition: background $mot-duration-short;
 }
@@ -1713,26 +1713,26 @@
 }
 
 .bit-bfc-mini-calendar th {
-    font-size: 11px;
+    font-size: rem2(11px);
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
-    padding: 4px;
+    padding: spacing(0.5);
     text-align: center;
 }
 
 .bit-bfc-mini-calendar td {
     text-align: center;
-    padding: 2px;
+    padding: spacing(0.25);
 }
 
 .bit-bfc-mini-calendar-day {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: rem2(28px);
+    height: rem2(28px);
     border-radius: 50%;
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     cursor: pointer;
     transition: background $mot-duration-short;
     background: transparent;
@@ -1761,32 +1761,32 @@
 .bit-bfc-happening-now {
     background: var(--bit-bfc-bg);
     border-radius: var(--bit-bfc-radius);
-    padding: 12px;
-    border: 1px solid var(--bit-bfc-border);
+    padding: spacing(1.5);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 .bit-bfc-happening-now-title {
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-primary);
-    margin-bottom: 8px;
+    margin-bottom: spacing(1);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: spacing(0.75);
 }
 
 .bit-bfc-happening-now-empty {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-muted);
 }
 
 .bit-bfc-happening-event {
     display: block;
     width: 100%;
-    padding: 8px;
+    padding: spacing(1);
     border-radius: var(--bit-bfc-radius-sm);
-    margin-bottom: 6px;
-    border: 1px solid var(--bit-bfc-border);
+    margin-bottom: spacing(0.75);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     background: var(--bit-bfc-bg);
     color: inherit;
     font: inherit;
@@ -1800,8 +1800,7 @@
 }
 
 .bit-bfc-happening-event:focus-visible {
-    outline: 2px solid var(--bit-bfc-primary);
-    outline-offset: 2px;
+    @include focus-ring;
 }
 
 [dir="rtl"] .bit-bfc-happening-event {
@@ -1810,16 +1809,16 @@
 
 .bit-bfc-happening-event-title {
     font-weight: $tg-fw-semibold;
-    font-size: 13px;
-    margin-bottom: 4px;
+    font-size: rem2(13px);
+    margin-bottom: spacing(0.5);
 }
 
 .bit-bfc-happening-event-meta {
-    font-size: 12px;
+    font-size: $tg-fs-xs;
     color: var(--bit-bfc-text-secondary);
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: spacing(0.5);
 }
 
 /* ===== Toast ===== */
@@ -1830,35 +1829,35 @@
     z-index: 200;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: spacing(1);
 }
 
 .bit-bfc-toast {
-    padding: 12px 16px;
+    padding: spacing(1.5) spacing(2);
     background: var(--bit-bfc-bg);
-    border: 1px solid var(--bit-bfc-border);
+    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius);
     box-shadow: var(--bit-bfc-shadow-lg);
-    font-size: 13px;
-    animation: bit-bfc-slide-up $mot-duration ease;
+    font-size: rem2(13px);
+    animation: bit-bfc-slide-up $mot-duration $mot-easing-decelerate;
     display: flex;
     align-items: center;
-    gap: 8px;
-    max-width: 320px;
+    gap: spacing(1);
+    max-width: rem2(320px);
 }
 
 .bit-bfc-toast.success {
-    border-inline-start: 3px solid #22c55e;
+    border-inline-start: rem2(3px) $shp-border-style $clr-suc;
 }
 
 .bit-bfc-toast.error {
-    border-inline-start: 3px solid #ef4444;
+    border-inline-start: rem2(3px) $shp-border-style $clr-err;
 }
 
 /* ===== SVG Icon sizes ===== */
 .bit-bfc-icon {
-    width: 16px;
-    height: 16px;
+    width: $siz-icon-md;
+    height: $siz-icon-md;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1888,8 +1887,8 @@
 
     .bit-bfc-year {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-        padding: 8px;
+        gap: spacing(1);
+        padding: spacing(1);
     }
 
     .bit-bfc-week-mobile-warning {
@@ -1910,12 +1909,12 @@
 }
 
 .bit-bfc-week-mobile-warning {
-    padding: 12px 16px;
+    padding: spacing(1.5) spacing(2);
     background: color-mix(in srgb, #{$clr-wrn} 18%, var(--bit-bfc-bg));
     color: #{$clr-wrn-dark};
-    font-size: 13px;
+    font-size: rem2(13px);
     text-align: center;
-    border-bottom: 1px solid color-mix(in srgb, #{$clr-wrn} 35%, var(--bit-bfc-bg));
+    border-bottom: $shp-border-width $shp-border-style color-mix(in srgb, #{$clr-wrn} 35%, var(--bit-bfc-bg));
 }
 
 /* ===== Droppable area hover states ===== */
@@ -1933,14 +1932,14 @@
             color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent) 50%,
             transparent 50%,
             transparent 100%);
-    outline: 1px solid color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+    outline: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 6;
 }
 
 .bit-bfc-droppable.bit-bfc-drop-preview-half {
     background: color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent);
-    outline: 1px solid color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
+    outline: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 7;
     opacity: 1;
@@ -1962,9 +1961,9 @@
     pointer-events: none;
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: spacing(0.375);
     color: var(--bit-bfc-text-muted);
-    font-size: 11px;
+    font-size: rem2(11px);
     font-weight: $tg-fw-medium;
     user-select: none;
 }
@@ -2040,7 +2039,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 /* ===== Scrollbar styling ===== */
 .bit-bfc-body ::-webkit-scrollbar,
 .bit-bfc-week-scroll::-webkit-scrollbar {
-    width: 8px;
+    width: rem2(8px);
 }
 
 .bit-bfc-body ::-webkit-scrollbar-track,
@@ -2101,18 +2100,18 @@ button.bit-bfc-cell-add-hint:focus-visible {
 [dir="rtl"] .bit-bfc-event-badge.position-first {
     border-radius: 0 $shp-radius-control $shp-radius-control 0;
     border-left: none;
-    border-right: 1px solid transparent;
+    border-right: $shp-border-width $shp-border-style transparent;
 }
 
 [dir="rtl"] .bit-bfc-event-badge.position-last {
     border-radius: $shp-radius-control 0 0 $shp-radius-control;
     border-right: none;
-    border-left: 1px solid transparent;
+    border-left: $shp-border-width $shp-border-style transparent;
 }
 
 /* Visual last-column borders in RTL are on the first DOM child */
 [dir="rtl"] .bit-bfc-month-cell:nth-child(7n) {
-    border-right: 1px solid var(--bit-bfc-border);
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 [dir="rtl"] .bit-bfc-month-cell:nth-child(7n + 1) {
@@ -2120,7 +2119,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 [dir="rtl"] .bit-bfc-week-header-day:last-child {
-    border-right: 1px solid var(--bit-bfc-border);
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 [dir="rtl"] .bit-bfc-week-header-day:first-child {
@@ -2128,7 +2127,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 [dir="rtl"] .bit-bfc-week-day-col:last-child {
-    border-right: 1px solid var(--bit-bfc-border);
+    border-right: $shp-border-width $shp-border-style var(--bit-bfc-border);
 }
 
 [dir="rtl"] .bit-bfc-week-day-col:first-child {
@@ -2217,21 +2216,21 @@ button.bit-bfc-cell-add-hint:focus-visible {
     display: inline-flex;
     background: var(--bit-bfc-bg-secondary);
     border-radius: var(--bit-bfc-radius-sm);
-    padding: 2px;
-    gap: 2px;
-    margin-inline-end: 8px;
+    padding: spacing(0.25);
+    gap: spacing(0.25);
+    margin-inline-end: spacing(1);
 }
 
 .bit-bfc-mode-tab {
-    padding: 5px 12px;
+    padding: spacing(0.625) spacing(1.5);
     border: none;
     border-radius: $shp-radius-control;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-medium;
     cursor: pointer;
-    transition: all $mot-duration-short ease;
+    transition: all $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-mode-tab:hover {
@@ -2255,10 +2254,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-empty {
-    padding: 40px 16px;
+    padding: spacing(5) spacing(2);
     text-align: center;
     color: var(--bit-bfc-text-muted);
-    font-size: 14px;
+    font-size: $tg-fs-sm;
 }
 
 .bit-bfc-tl-scroll {
@@ -2296,10 +2295,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
     left: 0;
     z-index: 6;
     background: var(--bit-bfc-bg-secondary);
-    border-bottom: 1px solid var(--bit-bfc-border);
-    border-inline-end: 1px solid var(--bit-bfc-border);
-    padding: 10px 12px;
-    font-size: 12px;
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    padding: spacing(1.25) spacing(1.5);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
@@ -2315,7 +2314,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
        gutter can stay pinned on top of it during horizontal scroll. */
     z-index: 4;
     background: var(--bit-bfc-bg-secondary);
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     box-sizing: border-box;
     flex-shrink: 0;
     display: flex;
@@ -2328,27 +2327,27 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-time-row-days {
-    border-bottom: 1px solid var(--bit-bfc-border);
-    height: 32px;
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    height: rem2(32px);
 }
 
 .bit-bfc-tl-time-row-slots {
-    height: 36px;
+    height: rem2(36px);
 }
 
 .bit-bfc-tl-day-header {
     flex-shrink: 0;
     box-sizing: border-box;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: spacing(0.75);
+    font-size: $tg-fs-xs;
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
     background: var(--bit-bfc-bg-secondary);
-    padding: 0 8px;
+    padding: 0 spacing(1);
 }
 
 .bit-bfc-tl-day-header.today {
@@ -2367,11 +2366,11 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-tl-time-cell {
     flex-shrink: 0;
     box-sizing: border-box;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding-inline-start: 6px;
+    padding-inline-start: spacing(0.75);
 }
 
 .bit-bfc-tl-time-cell.today {
@@ -2379,7 +2378,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-time-cell-label {
-    font-size: 11px;
+    font-size: rem2(11px);
     font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
@@ -2390,15 +2389,15 @@ button.bit-bfc-cell-add-hint:focus-visible {
     left: 0;
     z-index: 4;
     background: var(--bit-bfc-bg);
-    border-bottom: 1px solid var(--bit-bfc-border);
-    border-inline-end: 1px solid var(--bit-bfc-border);
-    padding: 8px 12px;
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    padding: spacing(1) spacing(1.5);
     box-sizing: border-box;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 2px;
+    gap: spacing(0.25);
     min-width: 0;
 }
 
@@ -2407,7 +2406,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-resource-title {
-    font-size: 13px;
+    font-size: rem2(13px);
     font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
     white-space: nowrap;
@@ -2416,7 +2415,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-resource-subtitle {
-    font-size: 11px;
+    font-size: rem2(11px);
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -2425,7 +2424,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-tl-row {
     position: relative;
-    border-bottom: 1px solid var(--bit-bfc-border);
+    border-bottom: $shp-border-width $shp-border-style var(--bit-bfc-border);
     box-sizing: border-box;
     background: var(--bit-bfc-bg);
     flex-shrink: 0;
@@ -2436,7 +2435,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     top: 0;
     bottom: 0;
     box-sizing: border-box;
-    border-inline-end: 1px solid var(--bit-bfc-border);
+    border-inline-end: $shp-border-width $shp-border-style var(--bit-bfc-border);
     cursor: pointer;
     transition: background $mot-duration-short;
 }
@@ -2455,7 +2454,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     bottom: 0;
     inset-inline-end: 0;
     width: 50%;
-    border-inline-start: 1px dashed var(--bit-bfc-border);
+    border-inline-start: $shp-border-width dashed var(--bit-bfc-border);
     opacity: 0.5;
 }
 
@@ -2477,17 +2476,17 @@ button.bit-bfc-cell-add-hint:focus-visible {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 4px 8px;
+    padding: spacing(0.5) spacing(1);
     border-radius: $shp-radius-control;
-    border: 1px solid transparent;
-    font-size: 12px;
+    border: $shp-border-width $shp-border-style transparent;
+    font-size: $tg-fs-xs;
     cursor: grab;
     overflow: hidden;
     user-select: none;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 2px;
+    gap: spacing(0.25);
     line-height: 1.2;
     transition: filter $mot-duration-short, box-shadow $mot-duration-short;
 }
@@ -2508,12 +2507,12 @@ button.bit-bfc-cell-add-hint:focus-visible {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 10px;
+    width: rem2(10px);
     cursor: ew-resize;
     z-index: 3;
     touch-action: none;
     border-radius: $shp-radius-sm;
-    transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
+    transition: background $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-resize-handle-h::after {
@@ -2521,12 +2520,12 @@ button.bit-bfc-cell-add-hint:focus-visible {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    height: 28px;
-    width: 3px;
+    height: rem2(28px);
+    width: rem2(3px);
     border-radius: $shp-radius-full;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
-    transition: opacity $mot-duration-short ease, height $mot-duration-short ease, box-shadow $mot-duration-short ease;
+    transition: opacity $mot-duration-short $mot-easing, height $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
@@ -2552,7 +2551,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-resize-handle-h:hover::after {
     opacity: 0.85;
-    height: 36px;
+    height: rem2(36px);
 }
 
 .bit-bfc-timeline-event-resizing {
@@ -2566,7 +2565,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
         0 0 0 5px var(--bit-bfc-resize-glow),
         0 12px 28px rgba(15, 23, 42, 0.18),
         var(--bit-bfc-shadow);
-    transition: box-shadow $mot-duration ease, filter $mot-duration ease, border-color $mot-duration ease;
+    transition: box-shadow $mot-duration $mot-easing, filter $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
 }
 
 .bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-start {
@@ -2579,21 +2578,21 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-timeline-event-resizing .bit-bfc-resize-handle-h::after {
     opacity: 1;
-    height: 40px;
+    height: rem2(40px);
     box-shadow: 0 0 0 2px var(--bit-bfc-resize-glow), 0 2px 6px color-mix(in srgb, var(--bit-bfc-primary) 35%, transparent);
 }
 
 .bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-start .bit-bfc-resize-handle-start::after,
 .bit-bfc-timeline-event-resizing.bit-bfc-resize-dir-end .bit-bfc-resize-handle-end::after {
-    width: 4px;
-    height: 44px;
+    width: rem2(4px);
+    height: rem2(44px);
     box-shadow: 0 0 0 3px var(--bit-bfc-resize-glow), 0 2px 10px color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
 }
 
 .bit-bfc-timeline-event-row {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: spacing(0.5);
     min-width: 0;
 }
 
@@ -2607,7 +2606,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-timeline-event-time {
-    font-size: 11px;
+    font-size: rem2(11px);
     opacity: 0.85;
     white-space: nowrap;
     overflow: hidden;
@@ -2650,10 +2649,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
     .bit-bfc-tl-corner,
     .bit-bfc-tl-resource-cell {
-        padding-inline: 8px;
+        padding-inline: spacing(1);
     }
 
     .bit-bfc-tl-resource-title {
-        font-size: 12px;
+        font-size: $tg-fs-xs;
     }
 }

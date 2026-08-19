@@ -9,6 +9,20 @@ public class BitThemeLayout
     /// </summary>
     public string? DensityScale { get; set; }
 
+    /// <summary>
+    /// The <c>flex-direction</c> of a dialog/message-box footer's action buttons (<c>row</c> under
+    /// Fluent and Material, <c>column</c> for Cupertino's stacked alert buttons).
+    /// Maps to <c>--bit-layout-dialog-actions-direction</c>.
+    /// </summary>
+    public string? DialogActionsDirection { get; set; }
+
+    /// <summary>
+    /// The <c>justify-content</c> of a dialog/message-box footer's action buttons (<c>flex-end</c>
+    /// under Fluent and Material, <c>center</c> for Cupertino).
+    /// Maps to <c>--bit-layout-dialog-actions-justify</c>.
+    /// </summary>
+    public string? DialogActionsJustify { get; set; }
+
     /// <summary>Responsive breakpoint tokens driving the predefined <see cref="BitScreenQuery"/> values. Map to the <c>--bit-bp-*</c> custom properties.</summary>
     public BitThemeBreakpoints Breakpoints { get; set; } = new();
 }

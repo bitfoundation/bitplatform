@@ -1,0 +1,14 @@
+// Material design-system preset for bit BlazorUI.
+//
+// Override-only bundle: link it AFTER the main bit.blazorui.css (which carries the components and
+// the Fluent defaults) and activate it with bit-theme="material" (follows the light palette),
+// "material-light" or "material-dark" - on <html> for the whole app or on any element for a scoped
+// region. Every rule here only declares --bit-* tokens (plus a handful of per-component retunes),
+// so the file stays small and the attribute is the only switch.
+@import "colors.material-light.scss";
+
+@import "colors.material-dark.scss";
+
+@import "tokens.material.scss";
+
+@import "components.material.scss";

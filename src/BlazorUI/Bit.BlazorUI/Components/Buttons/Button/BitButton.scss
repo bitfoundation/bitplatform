@@ -14,6 +14,7 @@
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
     padding: var(--bit-btn-padding);
+    min-width: $siz-ctrl-min-width;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     border-radius: $shp-radius-control;
@@ -242,8 +243,8 @@
     --bit-btn-sct-fontsize: #{$tg-fs-2xs};
     --bit-btn-icn-fontsize: #{$siz-icon-sm};
     --bit-btn-icn-margintop: #{spacing(0.2)};
-    --bit-btn-pad-ntx: #{spacing(0.5)};
-    --bit-btn-padding: #{spacing(0.5)} #{spacing(1.5)};
+    --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-sm};
+    --bit-btn-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
     --bit-btn-icn-size: #{$siz-icon-sm};
 }
 
@@ -254,8 +255,8 @@
     --bit-btn-sct-fontsize: #{$tg-fs-xs};
     --bit-btn-icn-fontsize: #{$siz-icon-md};
     --bit-btn-icn-margintop: #{spacing(0.25)};
-    --bit-btn-pad-ntx: #{spacing(0.75)};
-    --bit-btn-padding: #{spacing(0.75)} #{spacing(2.0)};
+    --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-md};
+    --bit-btn-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md};
     --bit-btn-icn-size: #{$siz-icon-md};
 }
 
@@ -266,8 +267,8 @@
     --bit-btn-sct-fontsize: #{$tg-fs-md};
     --bit-btn-icn-fontsize: #{$siz-icon-lg};
     --bit-btn-icn-margintop: #{spacing(0.5)};
-    --bit-btn-pad-ntx: #{spacing(1.0)};
-    --bit-btn-padding: #{spacing(1.0)} #{spacing(2.5)};
+    --bit-btn-pad-ntx: #{$siz-ctrl-pad-y-lg};
+    --bit-btn-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-lg};
     --bit-btn-icn-size: #{$siz-icon-lg};
 }
 
@@ -375,6 +376,8 @@
 }
 
 .bit-btn-ntx {
+    // Icon-only buttons stay square whatever the design system's labeled-button minimum is.
+    min-width: auto;
     padding: var(--bit-btn-pad-ntx);
     --bit-btn-icn-margintop: 0;
     --bit-btn-icn-fontsize: var(--bit-btn-spn-size);

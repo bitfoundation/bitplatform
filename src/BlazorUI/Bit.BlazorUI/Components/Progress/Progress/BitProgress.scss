@@ -6,6 +6,8 @@
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     --bit-prb-bar-color: #{$clr-pri};
+    // Matches the sizeless default thickness (2px) the C# side uses for the circular variant.
+    --bit-prb-thickness: #{$siz-track-sm};
 
     @keyframes bit-prb-animation {
         0% {
@@ -135,14 +137,17 @@
 
 .bit-prb-sm {
     font-size: $tg-fs-xs;
+    --bit-prb-thickness: #{$siz-track-sm};
 }
 
 .bit-prb-md {
     font-size: $tg-fs-sm;
+    --bit-prb-thickness: #{$siz-track-md};
 }
 
 .bit-prb-lg {
     font-size: $tg-fs-md;
+    --bit-prb-thickness: #{$siz-track-lg};
 }
 
 

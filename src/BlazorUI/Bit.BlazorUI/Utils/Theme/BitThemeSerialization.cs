@@ -163,7 +163,11 @@ public static class BitThemeSerialization
 
         // Size branch.
         theme.Size.Control ??= new BitThemeSizeScale();
+        theme.Size.ControlPaddingX ??= new BitThemeSizeScale();
+        theme.Size.ControlPaddingY ??= new BitThemeSizeScale();
         theme.Size.Icon ??= new BitThemeSizeScale();
         theme.Size.Selection ??= new BitThemeSizeScale();
+        theme.Size.Item ??= new BitThemeSizeScale();
+        theme.Size.Track ??= new BitThemeSizeScale();
     }
 }

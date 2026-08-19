@@ -1,7 +1,7 @@
 @foreach (var subClass in Classes)
 {
     <div id="@subClass.Id" class="sec-con">
-        <BitText Element="h3" Typography="BitTypography.H6" Gutter Class="subclass-title"><b>@subClass.Title</b> properties</BitText>
+        <BitText Element="h3" Typography="BitTypography.H5" Gutter Class="subclass-title"><b>@subClass.Title</b> properties</BitText>
         <BitText Element="p" Typography="BitTypography.Subtitle2" Gutter>@subClass.Description</BitText>
         <table class="table-view params-table">
             <tr class="th-row">

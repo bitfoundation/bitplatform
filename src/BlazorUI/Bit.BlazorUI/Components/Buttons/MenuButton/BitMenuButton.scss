@@ -103,7 +103,7 @@
 .bit-mnb-spb {
     margin: auto 0;
     height: spacing(2);
-    width: $shp-border-width;
+    width: $siz-divider;
     background-color: var(--bit-mnb-clr-spb);
 }
 
@@ -195,7 +195,7 @@
 
 .bit-mnb-isp {
     list-style: none;
-    height: $shp-border-width;
+    height: $siz-divider;
     margin: spacing(0.5) 0;
     background-color: $clr-brd-sec;
 }
@@ -210,6 +210,7 @@
     color: $clr-fg-pri;
     font-size: inherit;
     padding: spacing(1);
+    min-height: $siz-item-md;
     align-items: center;
     line-height: inherit;
     box-sizing: border-box;
@@ -313,19 +314,21 @@
 }
 
 
+// The x padding sits one ramp step below the standalone button's (a split button is a compact
+// control), so the token still drives it and a preset that widens the ramp widens these too.
 .bit-mnb-sm {
     font-size: $tg-fs-xs;
-    --bit-mnb-padding: #{spacing(0.5)} #{spacing(1.0)};
+    --bit-mnb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-mnb-md {
     font-size: $tg-fs-sm;
-    --bit-mnb-padding: #{spacing(0.75)} #{spacing(1.5)};
+    --bit-mnb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-mnb-lg {
     font-size: $tg-fs-md;
-    --bit-mnb-padding: #{spacing(1.0)} #{spacing(2.0)};
+    --bit-mnb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
 }
 
 

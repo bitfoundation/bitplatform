@@ -67,7 +67,7 @@
     align-items: center;
     overflow-wrap: anywhere;
     background-color: $clr-bg-pri;
-    padding: spacing(2) spacing(3) spacing(2.5);
+    padding: spacing(2) $spa-dialog spacing(2.5);
 }
 
 .bit-dlg-ttl {
@@ -93,7 +93,7 @@
     line-height: 1.5;
     font-size: $tg-fs-sm;
     overflow-wrap: break-word;
-    margin: 0 spacing(3) spacing(3);
+    margin: 0 $spa-dialog $spa-dialog;
     color: $clr-fg-sec;
 }
 
@@ -103,26 +103,33 @@
     display: flex;
     position: sticky;
     align-items: center;
-    justify-content: flex-end;
-    padding: 0 spacing(3) spacing(3);
+    // Both come from the theme so a Cupertino preset can stack the actions full-width and centred
+    // (column + center) while Fluent and Material keep the trailing row (row + flex-end).
+    flex-direction: $layout-dialog-actions-direction;
+    justify-content: $layout-dialog-actions-justify;
+    padding: 0 $spa-dialog $spa-dialog;
     background-color: $clr-bg-pri;
 
     button {
         display: flex;
         cursor: pointer;
         text-decoration: none;
+        // A fixed 64px floor rather than $siz-ctrl-min-width: the token's Fluent value is `auto`,
+        // which is invalid inside max(), and 64px already equals Material's button minimum.
         min-width: spacing(8);
         min-height: $siz-ctrl-md;
         box-sizing: border-box;
-        margin: 0 spacing(0.5);
+        margin: spacing(0.25) spacing(0.5);
         justify-content: center;
         font-size: $tg-fs-sm;
-        padding: spacing(0.5) spacing(2);
+        padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-md;
         border-width: $shp-border-width;
         border-style: $shp-border-style;
         border-radius: $shp-radius-control;
         font-family: $tg-font-family;
         font-weight: $tg-font-weight;
+        letter-spacing: $tg-ctrl-letter-spacing;
+        text-transform: $tg-ctrl-text-transform;
     }
 }
 

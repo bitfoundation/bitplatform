@@ -63,7 +63,7 @@
     color: $clr-fg-sec;
     box-sizing: border-box;
     overflow-wrap: break-word;
-    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-cnt {
@@ -238,7 +238,7 @@
 .bit-chg-dsc {
     display: block;
     color: $clr-fg-sec;
-    font-size: calc(var(--bit-chg-fontsize) - #{spacing(0.25)});
+    font-size: calc(var(--bit-chg-fontsize) * 0.85);
 }
 
 .bit-chg-ili {

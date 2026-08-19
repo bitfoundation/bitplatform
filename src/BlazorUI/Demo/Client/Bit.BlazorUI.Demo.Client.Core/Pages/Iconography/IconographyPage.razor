@@ -15,11 +15,11 @@
 
 <section class="page-container">
     <BitParams Parameters="_cascadingParams">
-        <BitText Element="h1" Typography="BitTypography.H3">Iconography</BitText>
+        <BitText Element="h1" Typography="BitTypography.H1">Iconography</BitText>
 
         <br />
 
-        <BitText Element="p" Typography="BitTypography.H6">
+        <BitText Element="p" Typography="BitTypography.Subtitle1">
             bit BlazorUI is using a custom font for icons of its components.
             This font is part of the MDL2 design system (Office UI fabric icons) and contains glyphs that you can scale, color, and style in any way.
         </BitText>
@@ -36,7 +36,7 @@
         <br />
 
         <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Icon list</BitText>
+            <BitText Element="h2" Typography="BitTypography.H2" Gutter>Icon list</BitText>
 
             <br />
 
@@ -58,7 +58,7 @@
                 <BitStack Horizontal Wrap FitHeight Gap="1rem">
                     @if (filteredIcons.Count == 0)
                     {
-                        <BitText Element="p" Typography="BitTypography.H6">No result</BitText>
+                        <BitText Element="p" Typography="BitTypography.Subtitle1">No result</BitText>
                     }
                     else
                     {
@@ -107,7 +107,7 @@
                             <BitIcon IconName="@selectedIcon.Value"
                                      Style="font-size: 3rem;"
                                      Color="BitColor.PrimaryForeground" />
-                            <BitText Gutter ForceBreak Typography="BitTypography.H5">
+                            <BitText Gutter ForceBreak Typography="BitTypography.H4">
                                 @selectedIcon.Value
                             </BitText>
 
