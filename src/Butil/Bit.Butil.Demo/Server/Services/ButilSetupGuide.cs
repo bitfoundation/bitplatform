@@ -231,7 +231,12 @@ public static partial class ButilSetupGuide
         1. `dotnet add package Bit.Butil`.
         2. Add `<script src="_content/Bit.Butil/bit-butil.js"></script>` to the host page, BEFORE the Blazor script.
            The app boots as soon as the Blazor script runs, so `window.BitButil` has to exist by then. It is a static
-           web asset of the package - there is nothing to copy into your own wwwroot.
+           web asset of the package - there is nothing to copy into your own wwwroot. Two optional csproj switches
+           decide how much of that script a published app ships: by default a trimmed publish (standalone
+           WebAssembly) rebuilds `bit-butil.js` from only the modules the trimmed `Bit.Butil.dll` still calls
+           (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out); `<BitButilLazyScripts>true</BitButilLazyScripts>`
+           drops the script tag altogether and has each API `import()` its own module on first use, in every
+           hosting model - set it in every project that uses Butil.
         3. Call `AddBitButilServices()` in EVERY DI container that renders your components. A Blazor Web App with an
            interactive WebAssembly client has two of them (the host prerenders, the browser hydrates), and a missing
            registration in either one surfaces at runtime rather than at compile time.

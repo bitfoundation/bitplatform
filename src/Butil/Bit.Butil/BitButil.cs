@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -47,6 +48,43 @@ public static class BitButil
         return services;
     }
 
+    /// <summary>
+    /// Registers every Butil service (see <see cref="AddBitButilServices(IServiceCollection)"/>) and applies the
+    /// library's runtime options in the same call - lazy scripts, the modules path, fast invoke - so an app can
+    /// configure everything in <c>Program.cs</c> without an MSBuild property.
+    /// </summary>
+    /// <remarks>
+    /// The options set the same process-wide toggles as <see cref="UseLazyScripts"/> / <see cref="UseFastInvoke"/>
+    /// and friends; see <see cref="BitButilOptions"/> for what that does and does not cover compared with the
+    /// <c>BitButilLazyScripts</c> and <c>BitButilTrimScripts</c> MSBuild properties.
+    /// </remarks>
+    public static IServiceCollection AddBitButilServices(this IServiceCollection services, Action<BitButilOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var options = new BitButilOptions();
+        configure(options);
+
+        switch (options.LazyScripts)
+        {
+            case true: UseLazyScripts(options.ScriptModulesPath); break;
+            case false: UseBundledScripts(); break;
+            default:
+                // Mode left alone; a modules path on its own still applies, for an app that turned lazy
+                // scripts on through the MSBuild property but serves the package's assets from elsewhere.
+                if (string.IsNullOrWhiteSpace(options.ScriptModulesPath) is false) SetScriptModulesPath(options.ScriptModulesPath);
+                break;
+        }
+
+        switch (options.FastInvoke)
+        {
+            case true: UseFastInvoke(); break;
+            case false: UseNormalInvoke(); break;
+        }
+
+        return AddBitButilServices(services);
+    }
+
     private static volatile bool _fastInvokeEnabled;
 
     internal static bool FastInvokeEnabled => _fastInvokeEnabled;
@@ -76,5 +114,75 @@ public static class BitButil
     public static void UseNormalInvoke()
     {
         _fastInvokeEnabled = false;
+    }
+
+
+    /// <summary>The AppContext switch the <c>BitButilLazyScripts</c> MSBuild property sets.</summary>
+    internal const string LazyScriptsSwitchName = "Bit.Butil.LazyScripts";
+
+    /// <summary>The default location of the per-module scripts, relative to the app's base href.</summary>
+    internal const string DefaultScriptModulesPath = "./_content/Bit.Butil/modules/";
+
+    // null = not overridden at runtime, so the build-time switch decides.
+    private static volatile object? _lazyScriptsOverride;
+    private static volatile string _scriptModulesPath = DefaultScriptModulesPath;
+
+    /// <summary>
+    /// The build-time half of the lazy-scripts switch: <c>&lt;BitButilLazyScripts&gt;true&lt;/BitButilLazyScripts&gt;</c>
+    /// in the consumer's project ends up here as an <see cref="AppContext"/> switch. Marked as a feature
+    /// switch so the trimmer can treat it as a constant in a trimmed publish (the runtime override below is
+    /// what keeps <see cref="UseLazyScripts"/> working there regardless).
+    /// </summary>
+#if NET9_0_OR_GREATER
+    [FeatureSwitchDefinition(LazyScriptsSwitchName)]
+#endif
+    internal static bool LazyScriptsFeature => AppContext.TryGetSwitch(LazyScriptsSwitchName, out var enabled) && enabled;
+
+    /// <summary>
+    /// True when Bit.Butil loads its JavaScript per module, on first use, instead of expecting the whole
+    /// <c>bit-butil.js</c> bundle to have been loaded by a <c>&lt;script&gt;</c> tag. Decided by the build-time
+    /// switch unless <see cref="UseLazyScripts"/> / <see cref="UseBundledScripts"/> overrode it at runtime.
+    /// </summary>
+    internal static bool LazyScriptsEnabled => _lazyScriptsOverride is bool overridden ? overridden : LazyScriptsFeature;
+
+    /// <summary>Where the per-module scripts are served from; see <see cref="UseLazyScripts"/>.</summary>
+    internal static string ScriptModulesPath => _scriptModulesPath;
+
+    /// <summary>
+    /// Loads Bit.Butil's JavaScript per module, on first use, instead of from the single <c>bit-butil.js</c>
+    /// bundle: the first call into a Butil API <c>import()</c>s just that API's module
+    /// (<c>_content/Bit.Butil/modules/clipboard.js</c> for <see cref="Clipboard"/>, and so on), so an app
+    /// downloads only the JavaScript for the APIs it actually calls and needs no <c>&lt;script&gt;</c> tag at all.
+    /// <br/>
+    /// The preferred way to turn this on is the <c>&lt;BitButilLazyScripts&gt;true&lt;/BitButilLazyScripts&gt;</c>
+    /// MSBuild property in the app's project, which also keeps the bundle out of the published output; this
+    /// method exists for hosts where the build-time switch cannot be applied. Process-wide static toggle
+    /// intended to be set once at startup, before any Butil call - see <see cref="UseFastInvoke"/> for the
+    /// reasoning.
+    /// </summary>
+    /// <param name="modulesPath">
+    /// Where the module files are served from, relative to the app's base href, when it is not the default
+    /// <c>./_content/Bit.Butil/modules/</c>.
+    /// </param>
+    public static void UseLazyScripts(string? modulesPath = null)
+    {
+        _lazyScriptsOverride = true;
+
+        if (string.IsNullOrWhiteSpace(modulesPath) is false) SetScriptModulesPath(modulesPath);
+    }
+
+    private static void SetScriptModulesPath(string modulesPath)
+    {
+        _scriptModulesPath = modulesPath.EndsWith('/') ? modulesPath : modulesPath + "/";
+    }
+
+    /// <summary>
+    /// Expects the whole <c>bit-butil.js</c> bundle to be loaded by the app (a <c>&lt;script&gt;</c> tag) and
+    /// never loads modules on demand - the default. Overrides the build-time switch; process-wide static toggle,
+    /// see <see cref="UseLazyScripts"/>.
+    /// </summary>
+    public static void UseBundledScripts()
+    {
+        _lazyScriptsOverride = false;
     }
 }

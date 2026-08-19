@@ -1,9 +1,11 @@
 ﻿# Bit.Butil.Tests.Manual
 
-A hand-run harness that answers two questions about a trimmed consumer of `Bit.Butil`:
+A hand-run harness that answers three questions about a trimmed consumer of `Bit.Butil`:
 
 1. Does it only pay for the Butil classes it actually uses?
 2. Do the pieces the library reaches **by name at runtime** survive that trimming?
+3. Does the JavaScript follow suit - is the bundle a trimmed publish would ship exactly the modules the
+   trimmed assembly still calls, and does the lazy per-module loader behave?
 
 It is a console app rather than a test project on purpose. Trimming is a *publish* step, so the thing
 under test is the produced output, and the same executable is both the report and the check - it exits
@@ -23,7 +25,7 @@ Its calls deliberately cross the interop boundary in both directions: DTO-return
 (`Window.SubscribeEvent`), which drags in the internal `DomEventsInterop` and its `[JSInvokable]`
 callbacks. Everything else in Bit.Butil is untouched, so a trimmed publish should drop it.
 
-## The two checks
+## The checks
 
 **Registration.** Every `[ButilService]` class that survives must be registered and must still have a
 public constructor; the services nothing references must be gone.
@@ -58,6 +60,37 @@ its `[JSInvokable]` does not counts as a defect - `JSInterop` resolves the attri
 not callable from JS. The manifest ends with an `@count|N` record giving the number of type contracts
 written; a file that fails to parse, or that reads back short of what it declares, is rejected outright
 rather than read partially, since the contracts that went missing are exactly the ones worth checking.
+
+**JavaScript modules** ([`ScriptTrimming.cs`](ScriptTrimming.cs)). Every interop call goes through a
+literal `"BitButil.<module>.<function>"` identifier, and the trimmer rewrites the assembly's user-string heap
+to hold only the strings that surviving method bodies still reference. So the set of `BitButil.<module>.`
+prefixes left in the trimmed `Bit.Butil.dll` is exactly the set of JavaScript modules the app can still reach.
+That is what the consumer-side publish step in the NuGet package (`Bit.Butil.Build`, wired up by
+`buildTransitive/Bit.Butil.targets`) reads to assemble a smaller `bit-butil.js`, and this harness runs the very same
+code against the very same trimmed assembly:
+
+- untrimmed, every module the library ships must answer to some `BitButil.<module>.*` call site (except
+  `butil` and `utils`, which exist only as dependencies) - an orphan module is JavaScript for a C# API that
+  no longer exists - and every call site must name a module that exists;
+- trimmed, the modules still called must be exactly `MustSurviveModules` (the JavaScript behind the
+  services `ConsumerComponent` uses, plus `events`, reached through `Window.SubscribeEvent`) - a module
+  nothing in this project calls surviving is the same regression as a service surviving;
+- Bit.Butil's own JavaScript build outputs have to agree with each other and with the sources: a chunk and
+  a lazy-loadable file per module in the manifest, and the manifest's dependencies equal to what the
+  TypeScript sources reference (the same rule `build.mjs` uses), so a stale build is caught here rather
+  than by a consumer whose trimmed bundle lacks a module.
+
+It also reports the size story - full bundle, trimmed bundle (raw / gzip / brotli), and the total a lazy
+app would download for the same modules - which is the benchmark for the whole feature.
+
+**Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
+`BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
+that one - before invoking it; later calls, and other services on the same runtime, must not import again;
+a failed import must be retried on the next call; a custom modules path must be honoured; the
+`AddBitButilServices(options)` overload must flip the same switches (true, false, and null = leave alone); and with lazy
+scripts off nothing may be imported. Runs in both modes of the harness, so the loader is also proven to
+survive trimming through the runtime override alone (this project never sets the `BitButilLazyScripts`
+switch).
 
 ## How it knows which run it is
 
@@ -95,10 +128,14 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 612,352 bytes | 109,056 bytes |
-| types in assembly | 784 | 140 |
+| `Bit.Butil.dll` | 620,544 bytes | 116,224 bytes |
+| types in assembly | 791 | 147 |
 | `[ButilService]` discovered / registered | 57 / 57 | 5 / 5 |
 | interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
+| JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |
+| `bit-butil.js` a publish would ship | 112,422 bytes, all 65 modules | 9,134 bytes, 8 modules (3,046 gzip / 2,695 brotli) - 8.1% |
+| lazy scripts would download | 147,730 bytes over 63 files | 11,940 bytes over 6 files |
+| lazy-loader checks | 11 / 11 | 11 / 11 |
 
 The trimmed run keeps `DomEventsInterop` with all 11 `[JSInvokable]` methods and
 `GeolocationCoordinates` with all 7 properties - neither is named anywhere in this project's code.
@@ -135,3 +172,19 @@ assembly comes out at 30,720 bytes and 36 types.
   That is the regression this harness is guarding against.
 - **`X is used by ConsumerComponent but did not survive trimming`** - a used service is being dropped,
   which would break consumers outright.
+- **`JavaScript modules nothing in this project calls survived trimming`** - a `BitButil.<module>.*`
+  identifier outside `MustSurviveModules` is still in the trimmed assembly's strings, so a consumer's
+  trimmed bundle would carry that module too. Same causes as the service check above; otherwise a service
+  gained a call into a new namespace and `MustSurviveModules` was not updated.
+- **`module 'X' is behind an API ConsumerComponent uses but its identifiers did not survive trimming`** -
+  the trimmed bundle would lack JavaScript the app calls. Usually an identifier stopped being a plain
+  string literal (built with interpolation or concatenation): the bundler can only see literals.
+- **`the C# side invokes 'BitButil.X.*' but Bit.Butil ships no JavaScript module called 'X'`** - a
+  namespace with no `Scripts/X.ts` behind it; the call fails in the browser and lazy scripts would
+  import a file that does not exist.
+- **`JavaScript module 'X' is not called by any 'BitButil.X.*' identifier`** - dead script, or a helper
+  module that should be listed as dependency-only in `ScriptTrimming.DependencyOnlyModules`.
+- **`the manifest ... Bit.Butil's JavaScript build is stale`** - `Bit.Butil/obj/butil-js` does not match
+  the TypeScript sources; rebuild Bit.Butil.
+- **`lazy scripts: ...`** - the lazy loader imported the wrong module, imported twice, did not retry a
+  failed import, or imported with lazy scripts off. See `LazyScripts.cs` for the exact expectation.

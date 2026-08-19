@@ -1,0 +1,34 @@
+﻿<Project>
+
+    <!-- The .NET 9+ SDK half of the publish-time bundle trimming (see Bit.Butil.targets): defines the trimmed
+         bundle asset with content fingerprinting and gives it endpoints. Kept in its own file, imported only
+         on those SDKs, because the tasks and parameters used here do not exist on the .NET 8 SDK and MSBuild
+         rejects them even under a false condition. -->
+
+    <Target Name="_BitButilDefineTrimmedBundleWithEndpoints" AfterTargets="_BitButilAssembleTrimmedBundle"
+            Condition="'$(_BitButilTrimEnabled)' == 'true' and '@(_BitButilTrimmedBundleCandidate)' != ''">
+
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilTrimmedBundleCandidate)"
+                               FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+                               FingerprintPatterns="@(StaticWebAssetFingerprintPattern)">
+            <Output TaskParameter="Assets" ItemName="_BitButilTrimmedBundleAsset" />
+        </DefineStaticWebAssets>
+
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitButilTrimmedBundleAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitButilTrimmedBundleEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+
+        <!-- The endpoints task labels a fingerprinted route with the asset's bare relative path
+             ("bit-butil.js"), whereas the package's own endpoints - the ones a consumer's
+             @Assets["_content/Bit.Butil/bit-butil.js"] and <ImportMap> resolve through - carry the base path
+             in the label. Restore that form so those lookups keep resolving to the fingerprinted route. -->
+        <ItemGroup>
+            <_BitButilTrimmedBundleEndpoint>
+                <EndpointProperties>$([System.String]::Copy('%(EndpointProperties)').Replace('"Name":"label","Value":"bit-butil.js"', '"Name":"label","Value":"$(_BitButilBundleBasePath)/bit-butil.js"'))</EndpointProperties>
+            </_BitButilTrimmedBundleEndpoint>
+        </ItemGroup>
+    </Target>
+
+</Project>

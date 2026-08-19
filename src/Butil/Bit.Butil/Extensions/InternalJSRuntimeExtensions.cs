@@ -44,6 +44,8 @@ internal static class InternalJSRuntimeExtensions
         // for JS functions that are synchronous; using it for a Promise-returning function
         // either throws on deserialization or silently fires-and-forgets. Callers that know
         // their JS function is synchronous opt in via InvokeVoidFast.
+        if (BitButil.LazyScriptsEnabled) return InvokeVoidLazy(jsRuntime, identifier, cancellationToken, args);
+
         return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
     }
 
@@ -65,6 +67,7 @@ internal static class InternalJSRuntimeExtensions
     internal static ValueTask InvokeVoidFast(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return default;
+        if (BitButil.LazyScriptsEnabled) return InvokeVoidFastLazy(jsRuntime, identifier, cancellationToken, args);
 
         return BitButil.FastInvokeEnabled
             ? jsRuntime.FastInvokeVoidAsync(identifier, cancellationToken, args)
@@ -113,6 +116,8 @@ internal static class InternalJSRuntimeExtensions
 
         // Always the safe async path - see the note on InvokeVoid. Callers whose JS function is
         // synchronous opt in via InvokeFast.
+        if (BitButil.LazyScriptsEnabled) return InvokeLazy<TValue>(jsRuntime, identifier, cancellationToken, args);
+
         return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
 
@@ -163,10 +168,48 @@ internal static class InternalJSRuntimeExtensions
     internal static ValueTask<TValue> InvokeFast<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsJsRuntimeInvalid()) return SafeDefault<TValue>();
+        if (BitButil.LazyScriptsEnabled) return InvokeFastLazy<TValue>(jsRuntime, identifier, cancellationToken, args);
 
         return BitButil.FastInvokeEnabled
             ? jsRuntime.FastInvokeAsync<TValue>(identifier, cancellationToken, args)
             : jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+
+
+    // The lazy-scripts variants of the four entry points above: the same calls, preceded by making sure the
+    // module behind the identifier has been imported (see ButilScriptLoader). Separate async methods so the
+    // default path stays free of a state machine and lazy mode pays for it only until the module is loaded
+    // (EnsureLoaded completes synchronously from then on).
+
+    private static async ValueTask InvokeVoidLazy(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Same forwarding as InvokeVoidFast: only trim-safe primitives from the opted-in synchronous APIs reach the fast path.")]
+    private static async ValueTask InvokeVoidFastLazy(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+
+        if (BitButil.FastInvokeEnabled) await jsRuntime.FastInvokeVoidAsync(identifier, cancellationToken, args);
+        else await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+    }
+
+    private static async ValueTask<TValue> InvokeLazy<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        return await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Same forwarding as InvokeFast: only trim-safe primitives from the opted-in synchronous APIs reach the fast path.")]
+    private static async ValueTask<TValue> InvokeFastLazy<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        await ButilScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+
+        return BitButil.FastInvokeEnabled
+            ? await jsRuntime.FastInvokeAsync<TValue>(identifier, cancellationToken, args)
+            : await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
     }
 
 

@@ -14,7 +14,13 @@
     <script>
         navigator.serviceWorker.register('/sw.js');
     </script>
-    <script src="_content/Bit.Butil/bit-butil.js"></script>
+    <!-- Bundle mode by default; the E2E suite appends ?lazy=1 to run the same app with lazy scripts, in which
+         case the bundle must not be on the page at all (see Program.cs). -->
+    <script>
+        if (!new URLSearchParams(location.search).has('lazy')) {
+            document.write('<script src="_content/Bit.Butil/bit-butil.js"><\/script>');
+        }
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

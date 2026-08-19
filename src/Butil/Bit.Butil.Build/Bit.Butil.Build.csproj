@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- MSBuild task that ships inside the Bit.Butil NuGet package (tasks/Bit.Butil.Build.dll) and runs in
+         a consumer's publish: it reads the trimmed Bit.Butil.dll and assembles a bit-butil.js holding only
+         the JavaScript modules that assembly still calls. See buildTransitive/Bit.Butil.targets in Bit.Butil.
+
+         netstandard2.0 so the same dll loads in both MSBuild flavours (dotnet CLI and Visual Studio's
+         msbuild.exe). Not signed and not packable on its own - it is a build-time helper of Bit.Butil, and
+         the shared Bit.Build.props is deliberately not imported so this never becomes a package. -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <SignAssembly>False</SignAssembly>
+        <RootNamespace>Bit.Butil.Build</RootNamespace>
+        <!-- The task assembly is loaded by MSBuild, which already carries System.Reflection.Metadata and
+             System.Collections.Immutable; those are compile-time references only and are not shipped. -->
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <IsTrimmable>false</IsTrimmable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.7.2" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="System.Reflection.Metadata" Version="8.0.0" PrivateAssets="all" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+</Project>

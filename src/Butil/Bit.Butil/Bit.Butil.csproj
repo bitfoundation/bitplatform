@@ -5,6 +5,8 @@
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
+        <!-- NU5100: tasks/Bit.Butil.Build.dll is an MSBuild task, meant to be loaded by the targets rather than referenced. -->
+        <NoWarn>$(NoWarn);NU5100</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,9 +20,42 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="tsconfig.json" />
-        <None Include="tsconfig.json" />
+        <Content Remove="tsconfig.json;build.mjs" />
+        <None Include="tsconfig.json;build.mjs" />
+        <!-- The same two targets files under buildTransitive/ (what NuGet imports for direct and transitive
+             references alike) and build/ (older tooling that only looks there). -->
+        <None Include="buildTransitive\Bit.Butil.targets;buildTransitive\Bit.Butil.Endpoints.targets" Pack="true" PackagePath="buildTransitive\;build\" />
     </ItemGroup>
+
+    <!-- The publish-time bundler (an MSBuild task) ships inside this package under tasks/. Built here as a
+         plain build-order dependency; nothing from it is referenced by Bit.Butil.dll itself. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Butil.Build\Bit.Butil.Build.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    </ItemGroup>
+
+    <!-- What the package carries besides the library and its static web assets:
+           buildTransitive/*.targets (+ build/)         consumer-side logic (script loading mode, publish-time trimming)
+           buildTransitive/chunks/*.js + manifest.txt   the per-module chunks the trimmed bundle is assembled from
+           tasks/Bit.Butil.Build.dll                    the MSBuild task that does the assembling
+         Added from a target rather than static items: the chunks are generated during the build (they do not
+         exist when the project is evaluated on a clean checkout), and the task's output path is asked from its
+         project instead of being hard-coded. Once, from the first target framework, so a multi-targeted pack
+         does not add the same files three times. -->
+    <PropertyGroup>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeButilBuildAssetsInPackage</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
+    <Target Name="IncludeButilBuildAssetsInPackage"
+            DependsOnTargets="BuildButilJavaScript"
+            Condition="$([System.String]::Copy('$(TargetFrameworks)').StartsWith('$(TargetFramework)'))">
+        <MSBuild Projects="..\Bit.Butil.Build\Bit.Butil.Build.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">
+            <Output TaskParameter="TargetOutputs" ItemName="_ButilBuildTaskAssembly" />
+        </MSBuild>
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(BaseIntermediateOutputPath)butil-js\chunks\*.js;$(BaseIntermediateOutputPath)butil-js\chunks\manifest.txt" PackagePath="buildTransitive\chunks\" />
+            <TfmSpecificPackageFile Include="@(_ButilBuildTaskAssembly)" PackagePath="tasks\" />
+        </ItemGroup>
+    </Target>
 
     <ItemGroup>
         <TypeScriptFiles Include="Scripts\**\*.ts" />
@@ -30,10 +65,11 @@
          via their Inputs/Outputs, so this is a no-op when nothing changed. -->
     <Target Name="BuildButilJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
 
-    <!-- The bundle (wwwroot/bit-butil.js) is a generated, git-ignored file. On a clean build it does
-         not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
-         discovery in ResolveProjectStaticWebAssets would miss it and consumers get a 404 for
-         _content/Bit.Butil/bit-butil.js (this is what breaks the demo on a fresh checkout).
+    <!-- The bundle (wwwroot/bit-butil.js) and the lazy-loadable modules (wwwroot/modules/*.js) are
+         generated, git-ignored files. On a clean build they do not exist when the default "wwwroot/**"
+         Content glob is evaluated, so the static web asset discovery in ResolveProjectStaticWebAssets
+         would miss them and consumers get a 404 for _content/Bit.Butil/bit-butil.js (this is what breaks
+         the demo on a fresh checkout).
 
          ResolveProjectStaticWebAssets runs BeforeTargets="AssignTargetPaths" and does NOT depend on
          ResolveStaticWebAssetsInputs, so the old ResolveStaticWebAssetsInputsDependsOn hook never ran
@@ -45,8 +81,8 @@
             BeforeTargets="ResolveProjectStaticWebAssets"
             DependsOnTargets="BuildButilJavaScript">
         <ItemGroup>
-            <Content Remove="wwwroot\bit-butil.js" />
-            <Content Include="wwwroot\bit-butil.js" />
+            <Content Remove="wwwroot\bit-butil.js;wwwroot\modules\*.js" />
+            <Content Include="wwwroot\bit-butil.js;wwwroot\modules\*.js" />
         </ItemGroup>
     </Target>
 
@@ -65,19 +101,23 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
+    <!-- tsc emits one JavaScript file per Scripts/*.ts into obj/scripts; build.mjs then assembles the
+         bundle (wwwroot/bit-butil.js), the self-contained lazy-loadable modules (wwwroot/modules/*.js) and
+         the chunks + dependency manifest the NuGet package carries for publish-time bundle trimming
+         (obj/butil-js). See build.mjs for the shape of each output and why. Release minifies; build.mjs
+         writes each output whole, so an interrupted run cannot leave a half-written file that the Outputs
+         check above would then take for an up-to-date one. -->
     <Target Name="BuildJavaScript"
-            Inputs="@(TypeScriptFiles);tsconfig.json"
-            Outputs="wwwroot/bit-butil.js;$(BaseIntermediateOutputPath)bit-butil.$(Configuration).stamp">
-        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place.
-             An interrupted in-place minify could leave a half-written bundle that the Outputs check
-             above then treats as up-to-date, requiring a clean to recover. The Move is atomic enough
-             to avoid that. -->
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-butil.js --minify --outfile=wwwroot/bit-butil.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-butil.min.js" DestinationFiles="wwwroot/bit-butil.js" OverwriteReadOnlyFiles="true" />
+            Inputs="@(TypeScriptFiles);tsconfig.json;build.mjs"
+            Outputs="wwwroot/bit-butil.js;wwwroot/modules/butil.js;$(BaseIntermediateOutputPath)butil-js/chunks/manifest.txt;$(BaseIntermediateOutputPath)bit-butil.$(Configuration).stamp">
+        <PropertyGroup>
+            <_ButilBuildScriptArgs Condition=" '$(Configuration)' == 'Release' ">--minify</_ButilBuildScriptArgs>
+        </PropertyGroup>
+        <Exec Command="node_modules/.bin/tsc --outDir &quot;$(BaseIntermediateOutputPath)scripts&quot;" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Command="node build.mjs $(_ButilBuildScriptArgs) --intermediate &quot;$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)').TrimEnd('\'))&quot;" StandardOutputImportance="high" StandardErrorImportance="high" />
 
         <!-- Configuration-aware incremental marker. The bundle (wwwroot/bit-butil.js) is a single shared
-             file with a config-independent path, but only Release runs esbuild to minify it. Without a
+             file with a config-independent path, but only Release minifies it. Without a
              per-config marker, MSBuild's Inputs/Outputs check treats a Debug-built (unminified) bundle as
              up-to-date for a subsequent Release build - silently skipping tsc/esbuild and shipping an
              unminified bundle (and vice-versa). Stamp the current configuration and clear every other

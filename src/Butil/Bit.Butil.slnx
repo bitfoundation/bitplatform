@@ -23,4 +23,5 @@
     <Project Path="tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
   </Folder>
   <Project Path="Bit.Butil/Bit.Butil.csproj" />
+  <Project Path="Bit.Butil.Build/Bit.Butil.Build.csproj" />
 </Solution>

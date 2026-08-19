@@ -5,7 +5,8 @@ namespace Bit.Butil.Tests.E2E;
 
 /// <summary>
 /// Checks that every <c>BitButil.x.y</c> identifier the C# side invokes exists on the compiled
-/// JavaScript bundle.
+/// JavaScript bundle, and on the one lazy-loadable module file that identifier maps to when it is
+/// evaluated on its own (what a lazy-scripts app does).
 /// </summary>
 /// <remarks>
 /// A renamed or misspelled JS function compiles cleanly on both sides of the interop boundary and
@@ -20,23 +21,26 @@ namespace Bit.Butil.Tests.E2E;
 public class InteropContractTests
 {
     [Test]
-    public void Every_csharp_interop_call_resolves_against_the_bundle()
+    public void Every_csharp_interop_call_resolves_against_the_bundle_and_its_lazy_module()
     {
         var root = LocateButilRoot();
         var script = Path.Combine(root, "tests", "Bit.Butil.Tests.E2E", "Infrastructure", "verify-interop-contract.mjs");
         var bundle = Path.Combine(root, "Bit.Butil", "wwwroot", "bit-butil.js");
         var sources = Path.Combine(root, "Bit.Butil");
+        var modules = Path.Combine(root, "Bit.Butil", "wwwroot", "modules");
 
         Assert.That(File.Exists(script), $"The verification script is missing: {script}");
         Assert.That(File.Exists(bundle),
             $"The bundle is missing: {bundle}. Build Bit.Butil first - the bundle is generated, not checked in.");
+        Assert.That(Directory.Exists(modules),
+            $"The lazy-loadable modules are missing: {modules}. Build Bit.Butil first - they are generated alongside the bundle.");
 
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "node",
-                ArgumentList = { script, bundle, sources },
+                ArgumentList = { script, bundle, sources, modules },
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,

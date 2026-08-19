@@ -45,6 +45,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Bit.Butil/Bit.Butil.csproj" />
+    <!-- The publish-time bundler, for running the exact same module computation the consumer targets run. -->
+    <ProjectReference Include="../../Bit.Butil.Build/Bit.Butil.Build.csproj" />
   </ItemGroup>
 
 </Project>
