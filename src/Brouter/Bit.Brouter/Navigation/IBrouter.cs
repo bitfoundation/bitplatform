@@ -136,10 +136,18 @@ public interface IBrouter
     /// run - the chain is being matched from nothing -
     /// and can tell a reload apart via <see cref="BrouterNavigationContext.IsReload"/>. Retained
     /// instances of routes that are NOT in the current chain are untouched; pair it with
-    /// <see cref="ClearKeepAlive"/> to drop those too. Completes once the rebuilt chain is
+    /// <see cref="ClearKeepAlive()"/> to drop those too. Completes once the rebuilt chain is
     /// committed (or the reload was superseded by a navigation). Prefer
     /// <see cref="RevalidateAsync"/> when only loader data is stale: it keeps component state and
     /// avoids the remount.
+    /// <br/>
+    /// If a route guard <em>cancels</em> the re-match, the page is put back rather than left blank -
+    /// a cancelled reload leaves the user where they were, just as a cancelled navigation does,
+    /// though with new component instances since the old ones are already gone. A guard that means
+    /// to send the user elsewhere should redirect instead. A reload requested while a navigation is
+    /// already in flight does nothing: that navigation is already rebuilding the page the user is
+    /// actually heading to. Nor does a reload with no route committed - a not-found fallback or an
+    /// error boundary on screen - do anything: there is no chain to rebuild.
     /// </summary>
     /// <remarks>
     /// Default implementation throws <see cref="NotSupportedException"/>; the shipped
@@ -234,6 +242,10 @@ public interface IBrouter
     /// the data it already loaded. Reach for <see cref="ReloadAsync"/> instead when the page's *data*
     /// is stale too and the whole pipeline (guards, loaders, redirects) should run again. Content that
     /// isn't on screen and isn't retained is unaffected either way.
+    /// <br/>
+    /// While a navigation is in flight this degrades to the plain overload - retained content is still
+    /// released, but the visible chain is left to the navigation, which is about to replace it with
+    /// fresh instances anyway. Rebuilding it underneath a running pipeline would corrupt the commit.
     /// </summary>
     /// <remarks>
     /// Default implementation throws <see cref="NotSupportedException"/>; the shipped

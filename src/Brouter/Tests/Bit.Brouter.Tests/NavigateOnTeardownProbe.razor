@@ -1,4 +1,4 @@
-@* Route content that starts a navigation from its own teardown: when the route is being torn down
+﻿@* Route content that starts a navigation from its own teardown: when the route is being torn down
    (ReloadAsync / ClearKeepAlive(includeActive)) its Disposing deactivation navigates elsewhere. Lets
    the tests assert the teardown-started navigation wins over the reset that triggered it. The target
    has an async loader, so the navigation is still in flight when the reset resumes. *@

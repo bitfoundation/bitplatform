@@ -51,11 +51,16 @@ public sealed class BrouterNavigationContext
 
     /// <summary>
     /// True when this context belongs to a reload (<see cref="IBrouter.ReloadAsync"/>) rather than a
-    /// navigation: the URL did not change, no navigation hooks or leave guards ran, but - unlike a
+    /// navigation: the URL did not change, <see cref="IBrouter.OnNavigating"/>/
+    /// <see cref="IBrouter.OnNavigated"/> did not fire and no leave guard ran, but - unlike a
     /// revalidation - the matched chain's components were disposed and are being recreated from
     /// scratch, so route (enter) guards and loaders DO run again, exactly as for a chain matched from
     /// nothing. Lets a loader tell "the user navigated here" from "the app threw the current page
     /// away and rebuilt it".
+    /// <br/>
+    /// Note this covers the navigation EVENTS only: <c>Brouter.OnNavigateAsync</c> - the
+    /// lazy-assembly-loading hook that runs before matching - does still fire, because the chain is
+    /// being matched from nothing and the assemblies it supplies may be needed to match it.
     /// </summary>
     public bool IsReload { get; internal set; }
 

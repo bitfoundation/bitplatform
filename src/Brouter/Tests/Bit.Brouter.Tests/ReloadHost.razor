@@ -4,6 +4,13 @@
    cache that a plain re-navigation would hit. *@
 
 @using Bit.Brouter
+@inject IBrouter Router
+
+@* Outside <Brouter> so it survives the reset and can be clicked again. Driving the reset from a
+   real @onclick is the point: inside a UI event handler Blazor batches renders, so the unmatch and
+   the re-mount collapse into one - the path app code actually takes (the docs' sign-out /
+   switch-tenant buttons), and the one cut.InvokeAsync cannot reproduce. *@
+<button data-testid="clear-active" @onclick="() => Router.ClearKeepAlive(includeActive: true)">clear-active</button>
 
 <Brouter>
     <Broute Path="/plain">
@@ -28,6 +35,22 @@
         <ChildContent>
             <Broute Path="/view" Loader="ChildLoader" StaleTime="@TimeSpan.FromMinutes(5)">
                 <Content><ChildDataView /></Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    @* Nested chain with a probe at each level sharing one log, so the ORDER of their teardown
+       callbacks is assertable (a child must flush before its parent's content goes). *@
+    <Broute Path="/nested">
+        <Content>
+            <div data-testid="nested-layout">
+                <LifecycleProbe Log="ProbeLog" Name="parent" />
+                <BrouterOutlet />
+            </div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/child">
+                <Content><LifecycleProbe Log="ProbeLog" Name="child" /></Content>
             </Broute>
         </ChildContent>
     </Broute>
@@ -60,9 +83,15 @@
         return null;
     }
 
+    // Set by the tests to make the guard deny the NEXT pass, standing in for an authorization that
+    // was valid when the user arrived but is not any more (expired session, revoked permission) -
+    // the case where a reload's re-match is refused after its teardown already ran.
+    public bool CancelGuard { get; set; }
+
     private ValueTask CountGuard(BrouterNavigationContext ctx)
     {
         GuardRuns++;
+        if (CancelGuard) ctx.Cancel();
         return ValueTask.CompletedTask;
     }
 

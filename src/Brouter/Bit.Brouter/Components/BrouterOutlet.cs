@@ -105,8 +105,12 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// <summary>Re-renders the outlet (named-view fragments changed on a host re-render).</summary>
     internal void Refresh() => StateHasChanged();
 
-    /// <summary>Drops any retained entry for a disposed route (see <see cref="Broute.Dispose"/>).</summary>
-    internal void ForgetChild(Broute route)
+    /// <summary>
+    /// Drops any retained entry for a disposed route (see <see cref="Broute.Dispose"/>).
+    /// Returns whether this outlet actually held anything for that route, so callers that need a
+    /// re-render can skip requesting one they don't need (see <see cref="DropChild"/>).
+    /// </summary>
+    internal bool ForgetChild(Broute route)
     {
         // The route is being torn down outside a navigation: any still-active content gets its
         // Disposing deactivation before the subtree unmounts (idempotent for hidden entries, which
@@ -116,13 +120,16 @@ public class BrouterOutlet : ComponentBase, IDisposable
         {
             if (ReferenceEquals(k.Route, route)) NotifyEntryTeardown(k);
         }
+
+        var droppedCurrent = false;
         if (_current is not null && ReferenceEquals(_current.Route, route))
         {
             NotifyEntryTeardown(_current);
             _current = null;
+            droppedCurrent = true;
         }
 
-        _kept.RemoveAll(k => ReferenceEquals(k.Route, route));
+        return _kept.RemoveAll(k => ReferenceEquals(k.Route, route)) > 0 || droppedCurrent;
     }
 
     /// <summary>
@@ -133,13 +140,17 @@ public class BrouterOutlet : ComponentBase, IDisposable
     /// </summary>
     internal void DropChild(Broute route)
     {
-        ForgetChild(route);
-        StateHasChanged();
+        // Only re-render when this outlet actually held something for the route. A route's content
+        // lives in at most a couple of its host's outlets, but DropAllContent calls this on ALL of
+        // them (and during a ClearKeepAlive(includeActive) sweep the host's own recursion may have
+        // cleared them already), so an unconditional request would queue a wasted diff pass per
+        // unaffected outlet.
+        if (ForgetChild(route)) StateHasChanged();
     }
 
     /// <summary>
     /// Releases every retained (hidden) keep-alive child, keeping only the currently active one.
-    /// Backs <see cref="IBrouter.ClearKeepAlive"/>; re-renders so the dropped subtrees are disposed.
+    /// Backs <see cref="IBrouter.ClearKeepAlive()"/>; re-renders so the dropped subtrees are disposed.
     /// </summary>
     internal void ClearKeepAlive(bool includeActive = false)
     {
@@ -162,13 +173,19 @@ public class BrouterOutlet : ComponentBase, IDisposable
         // reusing it on the next visit would recycle its lifecycle context - and any handlers of
         // the disposed subtree - for a brand-new component instance, corrupting IsFirstActivation.
         // Mirrors the inline renderer's DropKeptContent nulling its _context.
+        var droppedCurrent = false;
         if (_current is not null && ReferenceEquals(_current, active) is false)
         {
             NotifyEntryTeardown(_current);
             _current = null;
+            droppedCurrent = true;
         }
 
-        if (removed > 0 || (includeActive && _current is null)) StateHasChanged();
+        // Track what was actually dropped rather than testing `_current is null`: with includeActive
+        // the block above always leaves it null, so that test can never fail and would also fire for
+        // an outlet that held nothing to begin with - a wasted diff pass on every empty named outlet
+        // the sweep recurses into.
+        if (removed > 0 || droppedCurrent) StateHasChanged();
     }
 
     // Fires the Disposing deactivation for an entry whose content is being torn down outside a

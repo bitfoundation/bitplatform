@@ -178,4 +178,107 @@ public class ClearKeepAliveActiveTests : BunitTestContext
             Assert.AreEqual(1, log.FindAll(e => e == "activated").Count);
         });
     }
+
+    [TestMethod]
+    public void IncludeActive_rebuilds_the_page_when_called_from_a_ui_event_handler()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent));
+
+        // The sibling tests all drive the API through InvokeAsync, where each render request
+        // flushes on its own. Inside a UI event handler Blazor is mid-batch, so the unmatch and the
+        // re-mount collapse into a SINGLE render - and a render that sees the route matched both
+        // before and after has nothing to tell the diff unless the content is keyed by its session.
+        // Without that key the subtree diffs as unchanged and the instance the caller asked to
+        // throw away silently survives. This is the path the documented use cases actually take.
+        cut.Find("[data-testid=clear-active]").Click();
+
+        cut.WaitForAssertion(() => Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent));
+    }
+
+    [TestMethod]
+    public void IncludeActive_from_a_ui_event_handler_rebuilds_keep_alive_content_too()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/ka");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent));
+
+        cut.Find("[data-testid=clear-active]").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
+            // Rebuilt visible, not stranded in the hidden keep-alive wrapper.
+            Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+        });
+    }
+
+    [TestMethod]
+    public void IncludeActive_from_a_ui_event_handler_gives_the_rebuilt_instance_a_live_lifecycle()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/lifecycle");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated:first=True"));
+        log.Clear();
+
+        cut.Find("[data-testid=clear-active]").Click();
+
+        // The old instance is disposed and its replacement gets a fresh activation. A survivor that
+        // merely LOOKS rebuilt is the real hazard: it would keep a registration bound to the dead
+        // session and never receive another lifecycle callback - silently disabling its
+        // OnDeactivating navigation lock / unsaved-changes guard for the rest of its life.
+        cut.WaitForAssertion(() =>
+        {
+            CollectionAssert.Contains(log, "deactivated:Disposing");
+            CollectionAssert.Contains(log, "activated:first=True");
+        });
+    }
+
+    [TestMethod]
+    public void IncludeActive_tears_a_nested_chain_down_child_first()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/nested/child");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "child:activated:first=True"));
+        log.Clear();
+
+        cut.Find("[data-testid=clear-active]").Click();
+
+        // Child before parent, matching ReloadAsync, a real navigation's departures and disposal
+        // itself. Sweeping registered routes instead would invert it - registration is
+        // parent-before-child - and a page whose Disposing handler flushes through context its
+        // layout provides would run after that layout was already torn down.
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "parent:deactivated:Disposing"));
+        var child = log.IndexOf("child:deactivated:Disposing");
+        var parent = log.IndexOf("parent:deactivated:Disposing");
+        Assert.IsTrue(child >= 0, $"no child deactivation; log: {string.Join(" | ", log)}");
+        Assert.IsTrue(child < parent, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
+    }
+
+    [TestMethod]
+    public async Task IncludeActive_leaves_an_already_in_flight_navigation_alone()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        // Start a navigation whose async loader keeps it in flight, then reset while it runs. The
+        // pipeline has already cleared every route's Matched flag and owns the screen until it
+        // commits; re-mounting the committed chain here would mark the departing routes matched
+        // again, so at commit they would be re-rendered instead of unmounted and the old page would
+        // stay on screen beside the new one, subscriptions and all.
+        await cut.InvokeAsync(() => brouter.Navigate("/teardown-nav-target"));
+        await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
+            // The page the navigation is leaving must be gone, not resurrected next to its successor.
+            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+        });
+    }
 }

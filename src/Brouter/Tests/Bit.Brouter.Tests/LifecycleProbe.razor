@@ -9,12 +9,19 @@
 @code {
     [Parameter] public List<string>? Log { get; set; }
 
+    // Optional identity, so a nested chain can log two probes into ONE list and the relative order
+    // of their callbacks is assertable. Unset (the default) keeps the entries verbatim for the
+    // single-probe tests.
+    [Parameter] public string? Name { get; set; }
+
+    private string Tag(string entry) => string.IsNullOrEmpty(Name) ? entry : $"{Name}:{entry}";
+
     protected override void OnActivated(BrouterRouteActivation activation)
-        => Log?.Add($"activated:first={activation.IsFirstActivation}");
+        => Log?.Add(Tag($"activated:first={activation.IsFirstActivation}"));
 
     protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
-        => Log?.Add($"deactivated:{deactivation.Reason}");
+        => Log?.Add(Tag($"deactivated:{deactivation.Reason}"));
 
     protected override void OnRenavigated(BrouterRouteRenavigation renavigation)
-        => Log?.Add($"renavigated:{renavigation.PreviousLocation.Path}->{renavigation.Location.Path}");
+        => Log?.Add(Tag($"renavigated:{renavigation.PreviousLocation.Path}->{renavigation.Location.Path}"));
 }

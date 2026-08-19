@@ -208,4 +208,128 @@ public class ReloadTests : BunitTestContext
             Assert.AreEqual(1, log.FindAll(e => e == "activated").Count);
         });
     }
+
+    [TestMethod]
+    public async Task Reload_tears_a_nested_chain_down_child_first()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/nested/child");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "child:activated:first=True"));
+        log.Clear();
+
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        // The reference order the ClearKeepAlive(includeActive) sibling has to match.
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "parent:deactivated:Disposing"));
+        var child = log.IndexOf("child:deactivated:Disposing");
+        var parent = log.IndexOf("parent:deactivated:Disposing");
+        Assert.IsTrue(child >= 0, $"no child deactivation; log: {string.Join(" | ", log)}");
+        Assert.IsTrue(child < parent, $"child must deactivate before parent; log: {string.Join(" | ", log)}");
+    }
+
+    [TestMethod]
+    public async Task Reload_cancelled_by_a_guard_restores_the_page_instead_of_blanking_it()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=layout]"));
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        // The reload tears the chain down BEFORE the pipeline runs, so a guard that then cancels
+        // would otherwise leave nothing on screen: for a navigation "cancel" means the current page
+        // stays, but here that page has already been destroyed, and HandleSideEffects does not even
+        // restore the url (from == to). No error UI and no NotFound fallback would render either -
+        // a guard is not an error and a winner WAS matched.
+        cut.Instance.CancelGuard = true;
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=layout]").Count);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=child-data]").Count);
+            Assert.IsTrue(nav.Uri.EndsWith("/data/view"), nav.Uri);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_with_nothing_committed_does_not_re_run_the_not_found_path()
+    {
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/missing");
+        var cut = RenderComponent<NotFoundInteropHost>();
+        var brouter = Services.GetRequiredService<IBrouter>();
+        cut.WaitForAssertion(() => cut.Find("[data-testid=nf-inline]"));
+        Assert.AreEqual(1, cut.Instance.NotFoundHookCount);
+
+        // Nothing matched, so nothing is committed and there is no chain to rebuild. Running the
+        // pipeline anyway would re-match a url the router never rendered a page for, firing the
+        // not-found path a second time for a reload the caller expects to be a no-op.
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.Instance.NotFoundHookCount);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=nf-inline]").Count);
+            Assert.IsTrue(nav.Uri.EndsWith("/missing", StringComparison.Ordinal), nav.Uri);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_with_nothing_committed_leaves_a_configured_NotFoundUrl_alone()
+    {
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        nav.NavigateTo("http://localhost/missing");
+        // NotFoundUrl deliberately points at a path with no route of its own: the redirect lands
+        // there, nothing matches, and the router sits on the inline fallback with an empty chain -
+        // the state a reload must not disturb.
+        var cut = RenderComponent<NotFoundInteropHost>(p => p.Add(x => x.NotFoundUrl, "/nowhere"));
+        var brouter = Services.GetRequiredService<IBrouter>();
+        cut.WaitForAssertion(() =>
+        {
+            cut.Find("[data-testid=nf-inline]");
+            Assert.IsTrue(nav.Uri.EndsWith("/nowhere", StringComparison.Ordinal), nav.Uri);
+        });
+        var hooks = cut.Instance.NotFoundHookCount;
+
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(hooks, cut.Instance.NotFoundHookCount);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=nf-inline]").Count);
+            Assert.IsTrue(nav.Uri.EndsWith("/nowhere", StringComparison.Ordinal), nav.Uri);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_stands_down_while_a_navigation_is_already_in_flight()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        var navigated = 0;
+        brouter.OnNavigated += _ => { navigated++; return ValueTask.CompletedTask; };
+
+        // Mid-pipeline the router's state is half-committed: CurrentLocation is already the
+        // destination while the committed chain is still the old page. A reload on that pair would
+        // supersede the user's real navigation with a reload pipeline for the same url. Asserting
+        // the destination alone would NOT catch that - the user still lands on the right page. What
+        // breaks is the navigation's semantics: the reload commits with isReload set, so OnNavigated
+        // never fires (its OnNavigating already did, in the changing phase) and the awaited outcome
+        // resolves Superseded even though the navigation visibly arrived.
+        Task<BrouterNavigationOutcome> pending = null!;
+        await cut.InvokeAsync(() => { pending = brouter.NavigateAsync("/teardown-nav-target").AsTask(); });
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        var outcome = await pending;
+
+        Assert.AreEqual(BrouterNavigationStatus.Succeeded, outcome.Status);
+        Assert.AreEqual(1, navigated);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
+            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+        });
+    }
 }

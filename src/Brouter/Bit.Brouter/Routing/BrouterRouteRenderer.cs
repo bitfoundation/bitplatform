@@ -183,10 +183,13 @@ internal class BrouterRouteRenderer
         // Same Disposing notification an unmounting route gets: the components are alive while the
         // callbacks run, and the render the caller triggers next is what actually disposes them.
         NotifyTeardown(location, onError);
-        _keptEntries.Clear();
-        // Blocks the keep-alive "render while unmatched" branch in BuildRenderTree; a later match
-        // resets it (and RenderRoute then creates the fresh context).
-        _keptDropped = true;
+
+        // The state half is exactly "drop the kept content of an unmatched route": clears the
+        // per-parameter entries and sets _keptDropped (blocking the keep-alive "render while
+        // unmatched" branch in BuildRenderTree until a later match resets it). Delegated rather
+        // than restated so the definition of what dropping kept content means lives in one place.
+        // Its third effect, nulling _context, NotifyTeardown has already done.
+        DropKeptContent(routeIsMatched: false);
     }
 
     /// <summary>
@@ -433,6 +436,19 @@ internal class BrouterRouteRenderer
     private void EmitContextCascade(RenderTreeBuilder builder, BrouterRouteContext context, BrouterRouteParameters routeParams)
     {
         builder.OpenComponent<CascadingValue<BrouterRouteContext>>(0);
+        // Key the subtree by the session context, so "this content session ended" is expressed to
+        // the diff as a changed key rather than as an unmatched render that happens to run first.
+        // Dropping content (NotifyTeardown / DropKeptContent / DropAllContent) nulls _context, and
+        // the next matched pass creates a fresh one - a new key, so the old subtree is disposed and
+        // a brand-new instance mounts. Without the key, a caller that unmatches and re-matches
+        // inside ONE render batch (ClearKeepAlive(includeActive) from a UI event handler, where
+        // ComponentBase collapses both render requests into a single render) would diff the subtree
+        // as unchanged and silently keep the very instance it was asked to throw away. The two
+        // sibling content paths already key by their per-session entry object for the same reason
+        // (RenderKeptEntries here, BrouterOutlet's kept-children region). The context is stable for
+        // a session's whole life, so a renavigation (same route, new parameters) keeps the same key
+        // and re-binds the existing component instead of remounting it.
+        builder.SetKey(context);
         builder.AddAttribute(1, "Value", context);
         builder.AddAttribute(2, "IsFixed", true);
         builder.AddAttribute(3, "ChildContent", (RenderFragment)(bk => EmitContent(bk, routeParams, context)));
