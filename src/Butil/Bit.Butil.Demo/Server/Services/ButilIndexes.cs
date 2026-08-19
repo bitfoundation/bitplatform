@@ -23,9 +23,20 @@ namespace Bit.Butil.Demo.Server.Services;
 public static class ButilIndexes
 {
     /// <summary>
-    /// Every documentation page with the API it covers, the services behind it, the engines that
+    /// Every documentation page with what it covers, the services behind it, the engines that
     /// implement it and what it demands of the page - the browser-support matrix and the page index
     /// are the same table, because they were always the same rows read two ways.
+    /// <para>
+    /// The summary is a column rather than something a caller fetches a page to discover: a listing
+    /// exists to be chosen from, and a slug on its own does not separate <c>indexed-db</c> from
+    /// <c>cache-storage</c> from <c>storage-manager</c>. One sentence per row costs a fraction of
+    /// the pages an agent would otherwise fetch to tell them apart.
+    /// </para>
+    /// <para>
+    /// The guide pages are in the table too - they are pages, and whoever asked for the page index
+    /// is as likely to want <c>getting-started</c> as <c>clipboard</c> - so it says outright which
+    /// rows are guides rather than leaving that to be inferred from an engines cell.
+    /// </para>
     /// </summary>
     public static string DocsPages()
     {
@@ -34,18 +45,21 @@ public static class ButilIndexes
         builder.AppendLine("# Bit.Butil documentation pages").AppendLine();
         builder.AppendLine("Pass a slug to `GetButilDocsPage`. \"Requires\" is what the page has to arrange before the")
                .AppendLine("API works at all; `PlanButilFeature` spells out any of it in full.").AppendLine();
+        builder.AppendLine($"{DocsNav.ApiLinks.Count()} of these pages document a browser API, and their rows are the")
+               .AppendLine("browser-support matrix. The \"Overview\" pages are guides to the library rather than APIs,")
+               .AppendLine("and carry `Guide` where the others name their engines.").AppendLine();
 
         foreach (var group in DocsNav.Groups)
         {
             builder.AppendLine($"## {group.Title}").AppendLine();
-            builder.AppendLine("| Slug | Title | Services | Engines | Requires |");
-            builder.AppendLine("| --- | --- | --- | --- | --- |");
+            builder.AppendLine("| Slug | Title | Summary | Services | Engines | Requires |");
+            builder.AppendLine("| --- | --- | --- | --- | --- | --- |");
 
             foreach (var link in group.Links)
             {
                 var services = link.TypeNames();
 
-                builder.AppendLine($"| `{link.Url}` | {link.Title} | {Join(services)} | {link.Support.Label()} | {Requires(link)} |");
+                builder.AppendLine($"| `{link.Url}` | {link.Title} | {link.Summary} | {Join(services)} | {link.Support.Label()} | {Requires(link)} |");
             }
 
             builder.AppendLine();

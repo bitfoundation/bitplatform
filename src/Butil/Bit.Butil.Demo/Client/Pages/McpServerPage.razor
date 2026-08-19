@@ -169,7 +169,7 @@ Accept: application/json, text/event-stream
 
     <DemoSection Title="4. Prompts and resources"
                  Api="prompts/list, prompts/get, resources/list, resources/templates/list, resources/read"
-                 Description="Tools are for an agent that has decided what it needs. Prompts are ready-made workflows a person picks from a menu - 'add Butil to an app', 'debug a call that does nothing' - and resources are documents a client can attach to a conversation up front or let someone browse. This server exposes four prompts and seven resources: three fixed ones, which is what resources/list returns, and four URI templates, which come back from resources/templates/list. Resources are addressed by URI, so butil://support is the whole browser-support matrix in one read. prompts/list only names a prompt; prompts/get is where the workflow itself comes back, with the argument you passed already written into it."
+                 Description="Tools are for an agent that has decided what it needs. Prompts are ready-made workflows a person picks from a menu - 'add Butil to an app', 'debug a call that does nothing' - and resources are documents a client can attach to a conversation up front or let someone browse. This server exposes four prompts and seven resources: three fixed ones, which is what resources/list returns, and four URI templates, which come back from resources/templates/list. Resources are addressed by URI, so butil://support is the whole page index - which is also the browser-support matrix - in one read. prompts/list only names a prompt; prompts/get is where the workflow itself comes back, with the argument you passed already written into it."
                  Code=@("""
 { "jsonrpc": "2.0", "id": 4, "method": "resources/read",
   "params": { "uri": "butil://support" } }
@@ -277,7 +277,9 @@ Accept: application/json, text/event-stream
             </div>
             <div class="field">
                 <label class="field-label" for="mcp-http-query">Query string</label>
-                <input id="mcp-http-query" spellcheck="false" @bind="_httpQuery" placeholder="name=WakeLock" />
+                @* The default tool's own parameter: PlanButilFeature takes apis, and it is required,
+                   so a placeholder naming another tool's parameter reads as a suggestion that 400s. *@
+                <input id="mcp-http-query" spellcheck="false" @bind="_httpQuery" placeholder="apis=WakeLock" />
             </div>
         </div>
         <div class="controls">

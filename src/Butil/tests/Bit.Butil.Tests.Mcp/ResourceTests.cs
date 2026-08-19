@@ -118,7 +118,7 @@ public class ResourceTests : McpTestBase
             // The matrix and the page index are one table now: the same rows answer "which engines
             // run this" and "where is it written up", so the resource is the index.
             Assert.That(text, Does.StartWith("# Bit.Butil documentation pages"));
-            Assert.That(text, Does.Contain("| Slug | Title | Services | Engines | Requires |"));
+            Assert.That(text, Does.Contain("| Slug | Title | Summary | Services | Engines | Requires |"));
 
             var rows = DocsIndexRow.ParseAll(text);
 

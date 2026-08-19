@@ -106,7 +106,7 @@ public static class ButilMcp
 /// which also holds the table's columns to a shape.
 /// </para>
 /// </summary>
-public sealed partial record DocsIndexRow(string Group, string Slug, string Title, string[] Services, string Engines, string[] Requires)
+public sealed partial record DocsIndexRow(string Group, string Slug, string Title, string Summary, string[] Services, string Engines, string[] Requires)
 {
     /// <summary>Every row of the index, with the group heading each one sat under.</summary>
     public static DocsIndexRow[] ParseAll(string markdown)
@@ -125,12 +125,12 @@ public sealed partial record DocsIndexRow(string Group, string Slug, string Titl
             var match = RowRegex().Match(line);
             if (match.Success is false) continue;
 
-            // Split on the pipes rather than on the pattern: the row is five cells, and a cell that
+            // Split on the pipes rather than on the pattern: the row is six cells, and a cell that
             // went missing should read as a short row here rather than as a row that did not match.
             var cells = line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray();
-            if (cells.Length != 5) continue;
+            if (cells.Length != 6) continue;
 
-            rows.Add(new DocsIndexRow(group, match.Groups["slug"].Value, cells[1], Cell(cells[2]), cells[3], Cell(cells[4])));
+            rows.Add(new DocsIndexRow(group, match.Groups["slug"].Value, cells[1], cells[2], Cell(cells[3]), cells[4], Cell(cells[5])));
         }
 
         return [.. rows];

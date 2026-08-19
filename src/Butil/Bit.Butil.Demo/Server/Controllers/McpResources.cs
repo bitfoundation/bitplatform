@@ -100,10 +100,12 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
     /// The same table <c>GetButilDocsPage</c> answers with when it is asked for no page in
     /// particular. A support matrix and a page index are one set of rows read two ways - which
     /// engines run this, and where is it written up - so they are built once and served twice
-    /// rather than drifting apart as two renderings of the same nav.
+    /// rather than drifting apart as two renderings of the same nav. The name and the description
+    /// say both halves, because a reader who attached this expecting only the matrix would read the
+    /// handful of guide rows as APIs that no engine implements.
     /// </summary>
-    [McpServerResource(UriTemplate = "butil://support", Name = "butil-support", Title = "Browser support matrix", MimeType = "text/markdown")]
-    [Description("Every browser API Bit.Butil wraps, with the services behind it, the engines that implement it, what it needs from the page, and the slug of its documentation page.")]
+    [McpServerResource(UriTemplate = "butil://support", Name = "butil-support", Title = "Documentation index and browser support matrix", MimeType = "text/markdown")]
+    [Description("Every page of the Bit.Butil documentation site in one table: its slug, what it covers, the services behind it, the engines that implement it and what it needs from the page. Every browser API Bit.Butil wraps has a row - that is the support matrix - and the \"Overview\" rows are guides to the library rather than APIs, marked Guide in place of an engine list.")]
     public static string Support() => ButilIndexes.DocsPages();
 
     [McpServerResource(UriTemplate = "butil://source/{path}", Name = "butil-source", Title = "Demo source file", MimeType = "text/plain")]

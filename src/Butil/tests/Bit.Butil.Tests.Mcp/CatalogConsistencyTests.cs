@@ -93,6 +93,16 @@ public class CatalogConsistencyTests : McpTestBase
             // page has to arrange first. A row with an empty engines cell is a matrix that lost the
             // column it exists for.
             Assert.That(_pages.Where(page => string.IsNullOrWhiteSpace(page.Engines)), Is.Empty);
+
+            // And what it covers, which is the only cell that separates indexed-db from
+            // cache-storage from storage-manager without fetching all three pages to find out.
+            Assert.That(_pages.Where(page => string.IsNullOrWhiteSpace(page.Summary)), Is.Empty,
+                "Nothing in the index would say what a page covers.");
+
+            // The guide pages are in the table, so it has to say so: they are the rows an agent
+            // would otherwise read as browser APIs that no engine implements.
+            Assert.That(_pages.Where(page => page.Group == "Overview").Select(page => page.Engines).Distinct(),
+                Is.EqualTo(new[] { "Guide" }).AsCollection);
         });
     }
 
