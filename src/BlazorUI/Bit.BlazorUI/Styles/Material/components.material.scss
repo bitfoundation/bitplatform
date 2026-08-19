@@ -5,15 +5,23 @@
 [bit-theme="material"],
 [bit-theme="material-light"],
 [bit-theme="material-dark"] {
-    // M3 buttons are full-round pills; the control radius stays 4px for fields and menus.
+    // M3 buttons are full-round pills; the control radius stays 4px for fields and menus. A menu
+    // button is a button in M3 - there is no separate shape for one that opens a menu - so it is
+    // pilled here too. BitButtonGroup is deliberately left out: it publishes its own Rounded
+    // parameter, and a preset that pilled it unconditionally would leave that parameter with
+    // nothing to switch.
     .bit-btn,
     .bit-tgb,
-    .bit-acb {
+    .bit-acb,
+    .bit-mnb {
         border-radius: var(--bit-shp-radius-full);
     }
 
-    // M3 chips: 8dp corner, 32dp height.
-    .bit-tag {
+    // M3 chips: 8dp corner, 32dp height. The chips a TagsInput and a Dropdown draw inside a field are
+    // the same chip as the standalone one, so they take the same corner instead of the field radius.
+    .bit-tag,
+    .bit-tgi-tag,
+    .bit-drp-chp {
         border-radius: var(--bit-shp-radius-sm);
     }
 

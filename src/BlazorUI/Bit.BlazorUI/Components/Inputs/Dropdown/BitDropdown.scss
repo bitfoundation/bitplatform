@@ -307,6 +307,10 @@
     background-color: var(--bit-drp-clr);
 }
 
+// The glyph a chip can be removed by is far smaller than the 24 CSS pixels WCAG 2.2 asks of a pointer
+// target. The chip is tall enough to carry that on its own, so the button stretches to the chip height
+// and is floored at the target width - the drawn glyph keeps its size, only what answers the pointer
+// around it grows, and it grows inside the chip rather than over the one standing next to it.
 .bit-drp-crb {
     padding: 0;
     border: none;
@@ -314,6 +318,9 @@
     cursor: pointer;
     color: inherit;
     align-items: center;
+    align-self: stretch;
+    justify-content: center;
+    min-width: spacing(3);
     outline: transparent;
     border-radius: $shp-radius-control;
     background-color: transparent;

@@ -12,6 +12,16 @@
     justify-content: center;
     font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+    // The type ramp cannot express either end of this component. The presence dot at the two smallest
+    // sizes is 8px and 12px across, and the glyph inside it has to stay smaller than the dot - under
+    // $tg-fs-2xs, the bottom of the ramp, which would already overflow it. The initials at the two
+    // largest sizes are the mirror of that: they are sized off the avatar rather than off the text and
+    // run past $tg-fs-4xl, the top of the ramp. Both are published as this component's own knobs, the
+    // way the switch and the slider handle publish their geometry, so a preset can still retune them
+    // instead of finding a literal it cannot reach.
+    --bit-prs-presence-glyph-sm: #{rem2(4px)};
+    --bit-prs-presence-glyph-md: #{rem2(6.8px)};
+    --bit-prs-initials-lg: #{rem2(42px)};
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
@@ -105,7 +115,7 @@
     align-items: center;
     bottom: spacing(-0.25);
     inset-inline-end: spacing(-0.25);
-    font-size: rem2(4px);
+    font-size: var(--bit-prs-presence-glyph-sm);
     box-sizing: content-box;
     justify-content: center;
     forced-color-adjust: none;
@@ -278,7 +288,7 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: rem2(6.8px);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
@@ -327,7 +337,7 @@
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: rem2(6.8px);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
@@ -467,7 +477,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(12.5);
-        font-size: rem2(42px);
+        font-size: var(--bit-prs-initials-lg);
     }
 
     .bit-prs-pre {
@@ -519,7 +529,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);
-        font-size: rem2(42px);
+        font-size: var(--bit-prs-initials-lg);
     }
 
     .bit-prs-pre {

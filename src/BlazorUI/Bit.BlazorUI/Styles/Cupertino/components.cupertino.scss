@@ -6,18 +6,26 @@
 [bit-theme="cupertino-light"],
 [bit-theme="cupertino-dark"] {
     // iOS 15 buttons: small and medium are capsules; large keeps the 12pt corner from the control
-    // radius token.
+    // radius token. A menu button is a button on iOS as well, so it follows the same split.
+    // BitButtonGroup is deliberately left out: it publishes its own Rounded parameter, and a preset
+    // that capsuled it unconditionally would leave that parameter with nothing to switch - the iOS
+    // segmented control is a rounded rectangle rather than a capsule anyway.
     .bit-btn-sm,
     .bit-btn-md,
     .bit-tgb-sm,
     .bit-tgb-md,
     .bit-acb-sm,
-    .bit-acb-md {
+    .bit-acb-md,
+    .bit-mnb-sm,
+    .bit-mnb-md {
         border-radius: var(--bit-shp-radius-full);
     }
 
-    // Tags read as the iOS gray capsule chip.
-    .bit-tag {
+    // Tags read as the iOS gray capsule chip. The chips a TagsInput and a Dropdown draw inside a field
+    // are the same chip as the standalone one, so they take the capsule too instead of the field radius.
+    .bit-tag,
+    .bit-tgi-tag,
+    .bit-drp-chp {
         border-radius: var(--bit-shp-radius-full);
     }
 

@@ -236,7 +236,9 @@
     outline: transparent;
     display: inline-block;
     text-overflow: ellipsis;
-    padding: 0 spacing(1.25);
+    // Tightened from the 1.25 step so the longest month name clears the navigation buttons next to it
+    // without the row having to run past the wrapper - see the header floor at the end of this file.
+    padding: 0 spacing(0.75);
     font-size: $tg-fs-sm;
     line-height: spacing(3.5);
     animation-fill-mode: both;
@@ -740,4 +742,17 @@
     --bit-cal-clr-txt: #{$clr-fg-pri};
     --bit-cal-clr-hover: #{$clr-brd-ter-hover};
     --bit-cal-clr-active: #{$clr-brd-ter-active};
+}
+
+// --- month header floor ---
+// The header of the day view names the month in full, and the day wrapper it sits in is floored by a
+// spacing based min-width - a rhythm value, which does not grow when a design system types larger. The
+// longest month name already overruns that floor at the Fluent 14px base ("September 2024" wants 125px
+// of the 124px the arrows leave it) and overruns it further under a preset that sets a larger one, so
+// the label was silently ellipsised. The button therefore carries its own floor in em: it is read
+// against the button's own font, so it tracks whatever step the active ramp puts here, and the day
+// rows distribute the few extra pixels evenly (space-evenly) rather than leaving a gap at one end.
+// Only the day view takes it - the month view's header is a bare year and needs none of the room.
+.bit-cal-dwp .bit-cal-ptb {
+    min-width: 8.75em;
 }

@@ -240,6 +240,13 @@
 //pointer by fading rather than by taking a foreground color of its own, which would be the one color the
 //chip is not wearing.
 .bit-tgi-dbt {
+    //the glyph is well under the 24 CSS pixels WCAG 2.2 asks of a pointer target, and the chip it sits
+    //in is too short to carry that height. It takes what the chip can give instead: the full height of
+    //the chip and a pad on either side of the glyph, which multiplies the target without spilling out
+    //of the chip onto the one next to it.
+    align-self: stretch;
+    padding-inline: spacing(0.375);
+
     @media (hover: hover) {
         &:hover {
             opacity: 0.75;
