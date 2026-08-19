@@ -297,6 +297,19 @@ $clr-ntr-gray220: var(--bit-clr-ntr-gray220);
 $box-shadow-callout: var(--bit-shd-cal);
 $box-shadow-callout2: var(--bit-shd-cal2);
 
+//shadows-surface - the elevation of each surface family, aliased in family-tokens.scss so a design
+//system that separates "card", "menu", "dialog", "sheet", "tooltip" and "toast" elevations (Material)
+//or wants hairlines instead of shadows (Cupertino) retunes one token per family. Components consume
+//these instead of the callout primitive.
+$box-shadow-card: var(--bit-shd-card);
+$box-shadow-popup: var(--bit-shd-popup);
+$box-shadow-dialog: var(--bit-shd-dialog);
+$box-shadow-sheet: var(--bit-shd-sheet);
+$box-shadow-tooltip: var(--bit-shd-tooltip);
+$box-shadow-snackbar: var(--bit-shd-snackbar);
+$box-shadow-appbar-top: var(--bit-shd-appbar-top);
+$box-shadow-appbar-bottom: var(--bit-shd-appbar-bottom);
+
 //shadow sizes
 $box-shadow-sm: var(--bit-shd-sm);
 $box-shadow-nm: var(--bit-shd-nm);
@@ -354,6 +367,56 @@ $shp-border-style: var(--bit-shp-brd-style);
 $shp-focus-ring-width: var(--bit-shp-focus-ring-width);
 $shp-focus-ring-offset: var(--bit-shp-focus-ring-offset);
 
+//shape - the second border width of the library: underline focus rules, selection indicators, the
+//slider thumb ring and every other stroke that has to read as heavier than the hairline border.
+$shp-border-width-thick: var(--bit-shp-brd-width-thick);
+
+//shape - radius scale. A fixed ramp for anything that needs a corner that is not the component
+//default: small sub-element chips, scrollbar thumbs, pills. `full` is the pill/circle radius.
+$shp-radius-none: var(--bit-shp-radius-none);
+$shp-radius-xs: var(--bit-shp-radius-xs);
+$shp-radius-sm: var(--bit-shp-radius-sm);
+$shp-radius-md: var(--bit-shp-radius-md);
+$shp-radius-lg: var(--bit-shp-radius-lg);
+$shp-radius-xl: var(--bit-shp-radius-xl);
+$shp-radius-2xl: var(--bit-shp-radius-2xl);
+$shp-radius-full: var(--bit-shp-radius-full);
+
+//shape - per-family radius. Every component takes its outer corner from the family it belongs to,
+//so a design system that rounds buttons differently from cards, menus and dialogs (Material: pill /
+//12px / 4px / 28px) is one token per family. All four default to $shp-border-radius (see
+//family-tokens.scss), so overriding the legacy --bit-shp-brd-radius still re-rounds everything.
+//  control - buttons, inputs, pickers, dropdown triggers, tags, badges, checkboxes, pagination, icon chips
+//  surface - cards, accordions, messages, images, list rows
+//  popup   - callouts, menus, dropdown lists, tooltips, snackbars
+//  dialog  - dialogs and modals
+$shp-radius-control: var(--bit-shp-radius-control);
+$shp-radius-surface: var(--bit-shp-radius-surface);
+$shp-radius-popup: var(--bit-shp-radius-popup);
+$shp-radius-dialog: var(--bit-shp-radius-dialog);
+
+/*---- Size ----*/
+//The dimensions every design system decides once and every component repeats: control heights,
+//icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
+//the maximum height of a popup list. The heights and indicator sizes are density-aware by default
+//(multiples of the spacing unit); a preset may set absolute lengths instead.
+$siz-ctrl-sm: var(--bit-siz-ctrl-sm);
+$siz-ctrl-md: var(--bit-siz-ctrl-md);
+$siz-ctrl-lg: var(--bit-siz-ctrl-lg);
+$siz-icon-sm: var(--bit-siz-icon-sm);
+$siz-icon-md: var(--bit-siz-icon-md);
+$siz-icon-lg: var(--bit-siz-icon-lg);
+$siz-sel-sm: var(--bit-siz-sel-sm);
+$siz-sel-md: var(--bit-siz-sel-md);
+$siz-sel-lg: var(--bit-siz-sel-lg);
+$siz-spinner-stroke: var(--bit-siz-spinner-stroke);
+$siz-popup-max-height: var(--bit-siz-popup-max-height);
+
+/*---- Opacity ----*/
+//The alpha of an element that is disabled but must keep its own colors (an image, a color swatch).
+//Text-bearing controls express disabled through the $clr-*-dis tokens instead, never through alpha.
+$opa-dis: var(--bit-opa-dis);
+
 //shadows-focus
 $box-shadow-focus-ring: var(--bit-shd-focus-ring);
 
@@ -364,6 +427,10 @@ $mot-duration: var(--bit-mot-duration);
 $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
 $mot-easing: var(--bit-mot-easing);
+//Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
+//is for state transitions on an element that stays; these are for elements arriving and leaving.
+$mot-easing-decelerate: var(--bit-mot-easing-decelerate);
+$mot-easing-accelerate: var(--bit-mot-easing-accelerate);
 
 //Infinite/looping animations cannot use the durations above, since a near-zero looping duration
 //renders as flicker. They use these instead, which slow down under reduced motion rather than
@@ -390,6 +457,32 @@ $tg-font-family: var(--bit-tpg-font-family);
 $tg-font-weight: var(--bit-tpg-font-weight);
 $tg-line-height: var(--bit-tpg-line-height);
 $tg-gutter-size: var(--bit-tpg-gutter-size);
+
+// font-size scale - the type ramp components read their sizes from (BitText variants have their own
+// tokens below). Values are rem: type follows the root font size, not the spacing unit or density.
+// Size classes map sm -> xs (12px), md -> sm (14px), lg -> md (16px) at the Fluent defaults.
+$tg-fs-2xs: var(--bit-tpg-fs-2xs);
+$tg-fs-xs: var(--bit-tpg-fs-xs);
+$tg-fs-sm: var(--bit-tpg-fs-sm);
+$tg-fs-md: var(--bit-tpg-fs-md);
+$tg-fs-lg: var(--bit-tpg-fs-lg);
+$tg-fs-xl: var(--bit-tpg-fs-xl);
+$tg-fs-2xl: var(--bit-tpg-fs-2xl);
+$tg-fs-3xl: var(--bit-tpg-fs-3xl);
+$tg-fs-4xl: var(--bit-tpg-fs-4xl);
+
+// font-weight scale - components never write a literal weight; a design system that ships a
+// different face (Roboto's 500 medium, SF's 590 semibold) retunes the ramp here.
+$tg-fw-light: var(--bit-tpg-fw-light);
+$tg-fw-regular: var(--bit-tpg-fw-regular);
+$tg-fw-medium: var(--bit-tpg-fw-medium);
+$tg-fw-semibold: var(--bit-tpg-fw-semibold);
+$tg-fw-bold: var(--bit-tpg-fw-bold);
+
+// control typography - tracking and case of the label of an interactive control (button, tag, tab,
+// nav item). Fluent leaves both alone; Material 2 upper-cases buttons and tracks labels at 0.1px.
+$tg-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
+$tg-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 
 // h1
 $tg-h1-margin: var(--bit-tpg-h1-margin);

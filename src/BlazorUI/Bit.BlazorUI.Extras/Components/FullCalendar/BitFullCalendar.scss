@@ -20,8 +20,8 @@
     --bit-bfc-primary-text: #{$clr-pri-text};
     --bit-bfc-danger: #{$clr-err};
     --bit-bfc-danger-hover: #{$clr-err-hover};
-    --bit-bfc-radius: #{$shp-border-radius};
-    --bit-bfc-radius-sm: #{$shp-border-radius};
+    --bit-bfc-radius: #{$shp-radius-surface};
+    --bit-bfc-radius-sm: #{$shp-radius-control};
     --bit-bfc-shadow: #{$box-shadow-sm};
     --bit-bfc-shadow-lg: #{$box-shadow-md};
     --bit-bfc-hour-height: 96px;
@@ -92,7 +92,7 @@
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     cursor: pointer;
     transition: all $mot-duration-short ease;
     white-space: nowrap;
@@ -168,11 +168,11 @@
 .bit-bfc-view-tab {
     padding: 5px 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: $shp-radius-control;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     cursor: pointer;
     transition: all $mot-duration-short ease;
 }
@@ -227,7 +227,7 @@
     padding: 8px;
     text-align: center;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -273,7 +273,7 @@
     height: 28px;
     border-radius: 50%;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     margin-bottom: 2px;
 }
 
@@ -301,7 +301,7 @@
     color: var(--bit-bfc-text-secondary);
     padding: 2px 4px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     /* Rendered as a real <button> for native keyboard activation (Enter/Space without page scroll)
        and focusability; strip the default button chrome so it keeps the plain inline-text look. */
     display: block;
@@ -326,9 +326,9 @@
     max-width: 100%;
     min-width: 0;
     padding: 0 6px;
-    border-radius: 4px;
+    border-radius: $shp-radius-control;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     cursor: grab;
     overflow: hidden;
     border: 1px solid transparent;
@@ -350,7 +350,7 @@
 }
 
 .bit-bfc-event-badge.position-first {
-    border-radius: 4px 0 0 4px;
+    border-radius: $shp-radius-control 0 0 $shp-radius-control;
     margin-right: 0;
     border-right: none;
 }
@@ -363,7 +363,7 @@
 }
 
 .bit-bfc-event-badge.position-last {
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 $shp-radius-control $shp-radius-control 0;
     margin-left: 0;
     border-left: none;
 }
@@ -438,7 +438,7 @@
     padding-top: 0;
     font-size: 11px;
     color: var(--bit-bfc-text-muted);
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     position: relative;
     top: -7px;
 }
@@ -566,7 +566,7 @@
 }
 
 .bit-bfc-event-block-title {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -587,7 +587,7 @@
     cursor: ns-resize;
     z-index: 3;
     touch-action: none;
-    border-radius: 4px;
+    border-radius: $shp-radius-sm;
     transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
 }
 
@@ -598,7 +598,7 @@
     transform: translateX(-50%);
     width: 28px;
     height: 3px;
-    border-radius: 999px;
+    border-radius: $shp-radius-full;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
     transition: opacity $mot-duration-short ease, width $mot-duration-short ease, box-shadow $mot-duration-short ease;
@@ -662,7 +662,7 @@
     gap: 6px;
     padding: 6px 10px 6px 8px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.01em;
     color: var(--bit-bfc-primary);
@@ -692,7 +692,7 @@
 
 .bit-bfc-resize-preview-time {
     color: var(--bit-bfc-text);
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
 }
 
 /* When resizing a timeline event from the start edge, anchor the floating preview to the
@@ -734,7 +734,7 @@
     position: absolute;
     left: -54px;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-timeline-color);
     white-space: nowrap;
 }
@@ -769,7 +769,7 @@
     gap: 0;
     padding: 0;
     border-bottom: 1px solid var(--bit-bfc-border);
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 /* Aligns with .bit-bfc-time-column (60px) so the time-axis border continues through the header in LTR and RTL */
@@ -797,7 +797,7 @@
     height: 32px;
     border-radius: 50%;
     font-size: 18px;
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
 }
 
 .bit-bfc-day-header-date.today {
@@ -869,7 +869,7 @@
 
 .bit-bfc-week-header-day-name {
     color: var(--bit-bfc-text-secondary);
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
 }
 
 .bit-bfc-week-header-day-num {
@@ -879,7 +879,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
     font-size: 15px;
 }
 
@@ -928,7 +928,7 @@
     color: inherit;
     font-family: inherit;
     text-align: start;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     font-size: 14px;
     margin-bottom: 8px;
     cursor: pointer;
@@ -948,7 +948,7 @@
 .bit-bfc-year-weekday {
     text-align: center;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
     text-transform: uppercase;
 }
@@ -963,7 +963,7 @@
     text-align: center;
     padding: 3px 0;
     font-size: 11px;
-    border-radius: 4px;
+    border-radius: $shp-radius-control;
     cursor: default;
     position: relative;
 }
@@ -985,12 +985,12 @@
 .bit-bfc-year-day-number.today {
     background: var(--bit-bfc-primary);
     color: var(--bit-bfc-primary-text);
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
 }
 
 .bit-bfc-year-day.has-events {
     cursor: pointer;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-bfc-year-day.has-events:hover {
@@ -1040,7 +1040,7 @@
 .bit-bfc-agenda-group-title {
     padding: 8px 16px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1071,7 +1071,7 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
     color: #fff;
     flex-shrink: 0;
 }
@@ -1082,7 +1082,7 @@
 }
 
 .bit-bfc-agenda-title {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     font-size: 13px;
     white-space: nowrap;
     overflow: hidden;
@@ -1154,7 +1154,7 @@
 .bit-bfc-dialog-header h3 {
     margin: 0;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-bfc-dialog-header p {
@@ -1216,7 +1216,7 @@
 .bit-bfc-field label {
     display: block;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     margin-bottom: 4px;
     color: var(--bit-bfc-text);
 }
@@ -1305,7 +1305,7 @@
 
 .bit-bfc-dtp-month-label {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
 }
 
@@ -1347,7 +1347,7 @@
     border: 1px solid transparent;
     background: transparent;
     color: var(--bit-bfc-text);
-    border-radius: 6px;
+    border-radius: $shp-radius-control;
     height: 28px;
     font-size: 12px;
     cursor: pointer;
@@ -1423,9 +1423,9 @@
     padding: 3px 8px 3px 4px;
     background: var(--bit-bfc-bg-hover);
     border: 1px solid var(--bit-bfc-border);
-    border-radius: 20px;
+    border-radius: $shp-radius-full;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text);
 }
 
@@ -1440,7 +1440,7 @@
     background: var(--bit-bfc-primary);
     color: #fff;
     font-size: 10px;
-    font-weight: 700;
+    font-weight: $tg-fw-bold;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1535,7 +1535,7 @@
     padding: 4px 10px;
     border-radius: var(--bit-bfc-radius-sm);
     border: 1px solid transparent;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
 }
 
 /* ===== Settings Dropdown ===== */
@@ -1560,7 +1560,7 @@
 
 .bit-bfc-dropdown-label {
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     padding: 6px 10px 4px;
     text-transform: uppercase;
@@ -1573,7 +1573,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 10px;
-    border-radius: 4px;
+    border-radius: $shp-radius-sm;
     font-size: 13px;
     cursor: pointer;
     transition: background $mot-duration-short;
@@ -1598,7 +1598,7 @@
 .bit-bfc-toggle-track {
     width: 100%;
     height: 100%;
-    border-radius: 10px;
+    border-radius: $shp-radius-full;
     background: var(--bit-bfc-border);
     transition: background $mot-duration;
 }
@@ -1637,7 +1637,7 @@
     border: 1px solid var(--bit-bfc-border);
     border-radius: var(--bit-bfc-radius-sm);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text-secondary);
     outline: none;
@@ -1678,7 +1678,7 @@
     align-items: center;
     gap: 8px;
     padding: 8px 10px;
-    border-radius: 4px;
+    border-radius: $shp-radius-sm;
     font-size: 13px;
     cursor: pointer;
     transition: background $mot-duration-short;
@@ -1714,7 +1714,7 @@
 
 .bit-bfc-mini-calendar th {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-muted);
     padding: 4px;
     text-align: center;
@@ -1767,7 +1767,7 @@
 
 .bit-bfc-happening-now-title {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-primary);
     margin-bottom: 8px;
     display: flex;
@@ -1809,7 +1809,7 @@
 }
 
 .bit-bfc-happening-event-title {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     font-size: 13px;
     margin-bottom: 4px;
 }
@@ -1965,7 +1965,7 @@
     gap: 3px;
     color: var(--bit-bfc-text-muted);
     font-size: 11px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     user-select: none;
 }
 
@@ -2051,7 +2051,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-body ::-webkit-scrollbar-thumb,
 .bit-bfc-week-scroll::-webkit-scrollbar-thumb {
     background: var(--bit-bfc-border);
-    border-radius: 4px;
+    border-radius: $shp-radius-full;
 }
 
 .bit-bfc-body ::-webkit-scrollbar-thumb:hover,
@@ -2099,13 +2099,13 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* Multi-day badge joins need mirrored corners/borders in RTL */
 [dir="rtl"] .bit-bfc-event-badge.position-first {
-    border-radius: 0 4px 4px 0;
+    border-radius: 0 $shp-radius-control $shp-radius-control 0;
     border-left: none;
     border-right: 1px solid transparent;
 }
 
 [dir="rtl"] .bit-bfc-event-badge.position-last {
-    border-radius: 4px 0 0 4px;
+    border-radius: $shp-radius-control 0 0 $shp-radius-control;
     border-right: none;
     border-left: 1px solid transparent;
 }
@@ -2225,11 +2225,11 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-mode-tab {
     padding: 5px 12px;
     border: none;
-    border-radius: 4px;
+    border-radius: $shp-radius-control;
     background: transparent;
     color: var(--bit-bfc-text-secondary);
     font-size: 13px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     cursor: pointer;
     transition: all $mot-duration-short ease;
 }
@@ -2300,7 +2300,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     border-inline-end: 1px solid var(--bit-bfc-border);
     padding: 10px 12px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -2345,7 +2345,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     justify-content: center;
     gap: 6px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
     background: var(--bit-bfc-bg-secondary);
     padding: 0 8px;
@@ -2356,12 +2356,12 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-day-header-name {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 .bit-bfc-tl-day-header-date {
     color: var(--bit-bfc-text-muted);
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
 }
 
 .bit-bfc-tl-time-cell {
@@ -2380,7 +2380,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-tl-time-cell-label {
     font-size: 11px;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     color: var(--bit-bfc-text-muted);
     white-space: nowrap;
 }
@@ -2408,7 +2408,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 .bit-bfc-tl-resource-title {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-bfc-text);
     white-space: nowrap;
     overflow: hidden;
@@ -2478,7 +2478,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     height: 100%;
     box-sizing: border-box;
     padding: 4px 8px;
-    border-radius: 3px;
+    border-radius: $shp-radius-control;
     border: 1px solid transparent;
     font-size: 12px;
     cursor: grab;
@@ -2512,7 +2512,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     cursor: ew-resize;
     z-index: 3;
     touch-action: none;
-    border-radius: 3px;
+    border-radius: $shp-radius-sm;
     transition: background $mot-duration-short ease, box-shadow $mot-duration-short ease;
 }
 
@@ -2523,7 +2523,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     transform: translateY(-50%);
     height: 28px;
     width: 3px;
-    border-radius: 999px;
+    border-radius: $shp-radius-full;
     background: var(--bit-bfc-resize-handle-line);
     opacity: 0;
     transition: opacity $mot-duration-short ease, height $mot-duration-short ease, box-shadow $mot-duration-short ease;
@@ -2598,7 +2598,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-timeline-event-title {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

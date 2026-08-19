@@ -1,0 +1,47 @@
+/*
+ * Family tokens - the per-family shape and elevation alias tier
+ * --------------------------------------------------
+ * Purpose-named aliases that give every component FAMILY its own radius and its own elevation:
+ *   radius    - control (buttons, inputs, tags, ...), surface (cards, ...), popup (callouts, menus,
+ *               tooltips, ...), dialog (dialogs, modals)
+ *   elevation - card, popup, dialog, sheet, tooltip, snackbar, appbar-top, appbar-bottom
+ *
+ * Components consume THESE (via $shp-radius-control, $box-shadow-popup, ... in theme-variables.scss)
+ * instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives, so a design system that
+ * rounds a button, a card, a menu and a dialog differently, or elevates a menu differently from a
+ * dialog, retunes one token per family. Under Fluent every family points at the same primitive, so
+ * overriding the legacy --bit-shp-brd-radius or --bit-shd-cal still flows through to every component
+ * exactly as before.
+ *
+ * Positioning: the tier is palette-agnostic (pure var() references and foreground-tinted
+ * expressions), so it lives in the shared bundle and tracks whatever preset or custom palette is
+ * active. A preset for another design system overrides the family tokens in its own
+ * :root[bit-theme="..."] block; that block is loaded after this file and wins on source order.
+ *
+ * Themable from C# via BitTheme.Shape.Radius.* and BitTheme.BoxShadow.* (the mapper emits the same
+ * names). The mapper contract tests pin this file, theme-variables.scss and the model to each other.
+ */
+// The `:root [bit-theme]` twin re-declares the aliases on scoped-preset elements (any descendant
+// carrying a bit-theme attribute) for the same reason semantic-tokens.scss does: a custom property's
+// var() references are substituted at the element that DEFINES it, so an alias defined only on :root
+// would freeze the document's primitives and ignore a scoped region's re-themed radius or shadow.
+:root,
+:root [bit-theme] {
+    // radius per family - all four default to the legacy global radius.
+    --bit-shp-radius-control: var(--bit-shp-brd-radius);
+    --bit-shp-radius-surface: var(--bit-shp-brd-radius);
+    --bit-shp-radius-popup: var(--bit-shp-brd-radius);
+    --bit-shp-radius-dialog: var(--bit-shp-brd-radius);
+
+    // elevation per surface family - Fluent lifts every floating surface with the callout shadow and
+    // leaves toasts flat; app bars cast a foreground-tinted shadow towards the content they cover so
+    // it stays visible on a dark surface, downwards for the header and upwards for the footer.
+    --bit-shd-card: var(--bit-shd-cal);
+    --bit-shd-popup: var(--bit-shd-cal);
+    --bit-shd-dialog: var(--bit-shd-cal);
+    --bit-shd-sheet: var(--bit-shd-cal);
+    --bit-shd-tooltip: var(--bit-shd-cal);
+    --bit-shd-snackbar: none;
+    --bit-shd-appbar-top: 0 #{rem2(2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
+    --bit-shd-appbar-bottom: 0 #{rem2(-2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(-4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
+}

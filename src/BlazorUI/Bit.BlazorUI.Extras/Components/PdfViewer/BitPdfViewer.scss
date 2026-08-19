@@ -13,7 +13,7 @@
     height: min(#{rem2(780px)}, 85dvh);
     background: $clr-bg-sec-dark;
     font-family: $tg-font-family;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
@@ -93,7 +93,7 @@
     flex-wrap: wrap;
     color: $clr-fg-pri;
     align-items: center;
-    font-size: rem2(13.5px);
+    font-size: $tg-fs-sm;
     background: $clr-bg-sec;
     padding: spacing(0.8) spacing(1.2);
     border-bottom: $shp-border-width $shp-border-style $clr-brd-sec;
@@ -114,7 +114,7 @@
     min-width: 0;
     opacity: 0.9;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     text-align: center;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -131,7 +131,7 @@
     display: inline-flex;
     background: transparent;
     justify-content: center;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     &:hover:not(:disabled) {
         background: $clr-bg-sec-hover;
@@ -170,12 +170,12 @@
 
 .bit-pdv-search-input {
     width: spacing(19);
-    height: spacing(3.25);
+    height: $siz-ctrl-sm;
     color: $clr-fg-pri;
-    font-size: rem2(13px);
+    font-size: $tg-fs-xs;
     background: $clr-bg-pri;
     padding: 0 spacing(0.8);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -183,7 +183,7 @@
     text-align: center;
     color: $clr-fg-sec;
     min-width: spacing(5);
-    font-size: rem2(12.5px);
+    font-size: $tg-fs-xs;
     font-variant-numeric: tabular-nums;
 }
 
@@ -195,12 +195,12 @@
 
 .bit-pdv-page-input {
     width: spacing(5.25);
-    height: spacing(3.25);
+    height: $siz-ctrl-sm;
     color: $clr-fg-pri;
     text-align: center;
-    font-size: rem2(13px);
+    font-size: $tg-fs-xs;
     background: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -222,10 +222,10 @@
 .bit-pdv-select {
     height: spacing(3.5);
     color: $clr-fg-pri;
-    font-size: rem2(13px);
+    font-size: $tg-fs-xs;
     background: $clr-bg-pri;
     padding: 0 spacing(0.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
@@ -253,8 +253,8 @@
     cursor: pointer;
     background: #fff;
     position: relative;
-    border-radius: $shp-border-radius;
-    border: 2px $shp-border-style transparent;
+    border-radius: $shp-radius-surface;
+    border: $shp-border-width-thick $shp-border-style transparent;
 
     &.bit-pdv-act {
         border-color: $clr-pri;
@@ -273,9 +273,9 @@
     position: absolute;
     padding: 0 spacing(0.5);
     color: $clr-ntr-white;
-    font-size: rem2(11px);
+    font-size: $tg-fs-xs;
     background: $clr-bg-overlay;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
 .bit-pdv-surface {
@@ -292,7 +292,7 @@
     width: spacing(29);
     color: $clr-fg-pri;
     background: $clr-bg-sec;
-    font-size: rem2(13.5px);
+    font-size: $tg-fs-sm;
     padding: spacing(1) spacing(0.5) spacing(1) spacing(1);
     border-right: $shp-border-width $shp-border-style $clr-brd-sec;
 
@@ -312,7 +312,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     padding: spacing(0.4) spacing(0.7);
 
     &:hover {

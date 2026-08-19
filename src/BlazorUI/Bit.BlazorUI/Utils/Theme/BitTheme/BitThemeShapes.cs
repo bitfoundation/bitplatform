@@ -2,9 +2,59 @@
 
 public class BitThemeShapes
 {
+    /// <summary>The default corner radius of the library (<c>--bit-shp-brd-radius</c>); every per-family radius in <see cref="Radius"/> falls back to it.</summary>
     public string? BorderRadius { get; set; }
+
+    /// <summary>The hairline border width (<c>--bit-shp-brd-width</c>).</summary>
     public string? BorderWidth { get; set; }
+
     public string? BorderStyle { get; set; }
+
+    /// <summary>
+    /// The heavier stroke of the library (<c>--bit-shp-brd-width-thick</c>): underline focus rules,
+    /// selection indicators, the slider thumb ring and every other border that must read as heavier
+    /// than <see cref="BorderWidth"/>.
+    /// </summary>
+    public string? BorderWidthThick { get; set; }
+
     public string? FocusRingWidth { get; set; }
     public string? FocusRingOffset { get; set; }
+
+    /// <summary>The radius scale and the per-family radii (<c>--bit-shp-radius-*</c>).</summary>
+    public BitThemeShapeRadii Radius { get; set; } = new();
+}
+
+/// <summary>
+/// The radius scale (<c>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</c>) and the per-family radii
+/// (<c>--bit-shp-radius-{control,surface,popup,dialog}</c>) every component takes its corners from.
+/// </summary>
+/// <remarks>
+/// The four family radii default to <see cref="BitThemeShapes.BorderRadius"/> in the shipped
+/// stylesheets, so a design system that rounds buttons, cards, menus and dialogs differently sets
+/// them individually while a single-radius theme keeps setting <see cref="BitThemeShapes.BorderRadius"/>.
+/// </remarks>
+public class BitThemeShapeRadii
+{
+    public string? None { get; set; }
+    public string? Xs { get; set; }
+    public string? Sm { get; set; }
+    public string? Md { get; set; }
+    public string? Lg { get; set; }
+    public string? Xl { get; set; }
+    public string? Xxl { get; set; }
+
+    /// <summary>The pill / circle radius (<c>9999px</c> by default).</summary>
+    public string? Full { get; set; }
+
+    /// <summary>Buttons, inputs, pickers, dropdown triggers, tags, badges, checkboxes, pagination, icon chips.</summary>
+    public string? Control { get; set; }
+
+    /// <summary>Cards, accordions, messages, images, list rows.</summary>
+    public string? Surface { get; set; }
+
+    /// <summary>Callouts, menus, dropdown lists, tooltips, snackbars.</summary>
+    public string? Popup { get; set; }
+
+    /// <summary>Dialogs and modals.</summary>
+    public string? Dialog { get; set; }
 }

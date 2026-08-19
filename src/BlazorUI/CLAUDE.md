@@ -54,3 +54,36 @@ difference, never a difference in what is being demonstrated.
 
 `RazorCode` / `CsharpCode` are what a reader copies out of the page, so they have to reflect the
 markup actually rendered in that section, including any parameter that was added or renamed.
+
+## Theme tokens in component SCSS
+
+Component stylesheets never hard-code a design-system decision; they read it from the global tokens
+declared in `Bit.BlazorUI/Styles/theme-variables.scss` (defaults in `Styles/Fluent/*.scss`, family
+aliases in `Styles/family-tokens.scss`). This is what lets a Material or Cupertino preset re-skin the
+whole library from one `:root[bit-theme="..."]` block.
+
+- **Type**: `font-size` comes from the ramp `$tg-fs-2xs..4xl` (never `spacing(n)`, which is for
+  rhythm only); size classes map sm -> `$tg-fs-xs`, md -> `$tg-fs-sm`, lg -> `$tg-fs-md`.
+  `font-weight` comes from `$tg-fw-light/regular/medium/semibold/bold` (never a literal number).
+  Labels of interactive controls also set `letter-spacing: $tg-ctrl-letter-spacing` (buttons and
+  tags add `text-transform: $tg-ctrl-text-transform`).
+- **Shape**: the outer corner comes from the family alias - `$shp-radius-control` (buttons, inputs,
+  tags, checkboxes, ...), `$shp-radius-surface` (cards, accordions, messages), `$shp-radius-popup`
+  (callouts, menus, tooltips, snackbars), `$shp-radius-dialog` (dialogs, modals); sub-elements use
+  the scale `$shp-radius-none/xs/sm/md/lg/xl/2xl/full`. Heavier strokes (underline focus, selection
+  indicators, thumb rings) use `$shp-border-width-thick`; inline spinners use `$siz-spinner-stroke`.
+- **Size**: control heights per size class are `$siz-ctrl-sm/md/lg` (also for 32px icon-button
+  squares), glyphs inside controls `$siz-icon-sm/md/lg`, checkbox box / radio ring `$siz-sel-sm/md/lg`,
+  scrolling popup lists `$siz-popup-max-height`.
+- **Elevation**: `$box-shadow-card/popup/dialog/sheet/tooltip/snackbar/appbar-top/appbar-bottom` per
+  surface family, never `$box-shadow-callout` directly.
+- **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for
+  popup entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+- **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
+  controls use the `$clr-*-dis` color tokens instead.
+
+Adding a global token means touching all of: `theme-variables.scss` (the `$` alias), a
+`Styles/Fluent/*.scss` default (or `family-tokens.scss` for an alias), the `BitTheme` model class,
+`BitCss.var.cs`, `BitThemeMapper` (`MapToCssVariables`, `Merge`, `Normalize*`),
+`BitThemeSerialization.EnsureNestedObjects` for a new branch, and the ThemingPage docs; the theme
+contract tests in `Tests/Bit.BlazorUI.Tests/Utils/Theme` fail on any drift between them.

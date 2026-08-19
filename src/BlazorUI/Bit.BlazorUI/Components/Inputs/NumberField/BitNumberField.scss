@@ -2,9 +2,9 @@
 
 .bit-nfl {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     align-items: center;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     column-gap: spacing(1.25);
     font-family: $tg-font-family;
 
@@ -88,7 +88,7 @@
 }
 
 .bit-nfl-lct {
-    height: spacing(4);
+    height: $siz-ctrl-md;
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
@@ -96,16 +96,16 @@
 }
 
 .bit-nfl-lic {
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
     padding: 0 spacing(0.625);
 }
 
 .bit-nfl-lbl {
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
     color: $clr-fg-pri;
@@ -114,11 +114,11 @@
 .bit-nfl-cnt {
     width: 100%;
     display: flex;
-    height: spacing(4);
+    height: $siz-ctrl-md;
     position: relative;
     align-items: center;
     box-sizing: border-box;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: var(--bit-nfl-clr-bg);
     border: $shp-border-width $shp-border-style var(--bit-nfl-clr-brd);
 }
@@ -143,12 +143,12 @@
     font-family: inherit;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background: none transparent;
     color: $clr-fg-pri;
     padding: 0 spacing(1) 0 spacing(1.125);
-    border-start-start-radius: $shp-border-radius;
-    border-end-start-radius: $shp-border-radius;
+    border-start-start-radius: $shp-radius-control;
+    border-end-start-radius: $shp-radius-control;
     border-start-end-radius: 0;
     border-end-end-radius: 0;
 }
@@ -157,8 +157,8 @@
     height: auto;
     border: none;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
+    font-weight: $tg-fw-regular;
+    width: $siz-ctrl-md;
     user-select: none;
     color: $clr-fg-sec;
     position: relative;
@@ -168,13 +168,13 @@
     display: inline-block;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
     border-start-start-radius: 0;
     border-end-start-radius: 0;
-    border-start-end-radius: spacing(0.125);
-    border-end-end-radius: spacing(0.125);
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
 
     i {
         width: unset;
@@ -182,7 +182,7 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         line-height: spacing(2);
     }
 
@@ -220,7 +220,7 @@
     box-sizing: border-box;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -262,18 +262,18 @@
 .bit-nfl-aup {
     height: 50%;
     border-radius: 0;
-    border-start-end-radius: $shp-border-radius;
+    border-start-end-radius: $shp-radius-control;
 }
 
 .bit-nfl-adn {
     height: 50%;
     border-radius: 0;
-    border-end-end-radius: $shp-border-radius;
+    border-end-end-radius: $shp-radius-control;
 }
 
 .bit-nfl-sbn {
     height: 100%;
-    width: spacing(4);
+    width: $siz-ctrl-md;
 }
 
 .bit-nfl-aic {
@@ -294,7 +294,7 @@
 }
 
 .bit-nfl-sbi {
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-nfl-fcs {
@@ -331,7 +331,7 @@
     background: $clr-bg-sec;
 
     span {
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
         padding-bottom: spacing(0.125);
     }
 }
@@ -361,7 +361,7 @@
         content: "*";
         position: absolute;
         top: spacing(-0.625);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
         color: $clr-req;
         inset-inline-end: spacing(-1.25);
     }
@@ -389,7 +389,7 @@
 
     span {
         color: $clr-fg-pri;
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 }
 

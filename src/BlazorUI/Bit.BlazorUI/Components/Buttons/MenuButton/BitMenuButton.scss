@@ -11,7 +11,9 @@
     font-weight: $tg-font-weight;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     // The variants below repaint all three on hover/active, so they animate together from here.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
@@ -52,7 +54,7 @@
     box-sizing: border-box;
     border-color: $clr-brd-sec;
     border-top-color: currentColor;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     animation: bit-mnb-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
@@ -92,8 +94,8 @@
 }
 
 .bit-mnb-chb {
-    width: spacing(4);
-    font-size: spacing(1.5);
+    width: $siz-ctrl-md;
+    font-size: $siz-icon-sm;
     color: var(--bit-mnb-clr-chb-txt);
     background-color: var(--bit-mnb-clr-chb-bg);
 }
@@ -101,7 +103,7 @@
 .bit-mnb-spb {
     margin: auto 0;
     height: spacing(2);
-    width: spacing(0.125);
+    width: $shp-border-width;
     background-color: var(--bit-mnb-clr-spb);
 }
 
@@ -157,10 +159,10 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     opacity: var(--bit-mnb-cal-opa);
-    box-shadow: $box-shadow-callout;
+    box-shadow: $box-shadow-popup;
     transform: var(--bit-mnb-cal-tra);
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
+    border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
     background-color: var(--bit-mnb-cal-bg, #{$clr-bg-pri});
 
     &[data-bit-cal-pos="above"] {
@@ -193,7 +195,7 @@
 
 .bit-mnb-isp {
     list-style: none;
-    height: spacing(0.125);
+    height: $shp-border-width;
     margin: spacing(0.5) 0;
     background-color: $clr-brd-sec;
 }
@@ -312,17 +314,17 @@
 
 
 .bit-mnb-sm {
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     --bit-mnb-padding: #{spacing(0.5)} #{spacing(1.0)};
 }
 
 .bit-mnb-md {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     --bit-mnb-padding: #{spacing(0.75)} #{spacing(1.5)};
 }
 
 .bit-mnb-lg {
-    font-size: spacing(2.0);
+    font-size: $tg-fs-md;
     --bit-mnb-padding: #{spacing(1.0)} #{spacing(2.0)};
 }
 

@@ -508,6 +508,15 @@ public static partial class BitCss
             public const string S24 = "--bit-shd-24";
 
             public const string FocusRing = "--bit-shd-focus-ring";
+
+            public const string Card = "--bit-shd-card";
+            public const string Popup = "--bit-shd-popup";
+            public const string Dialog = "--bit-shd-dialog";
+            public const string Sheet = "--bit-shd-sheet";
+            public const string Tooltip = "--bit-shd-tooltip";
+            public const string Snackbar = "--bit-shd-snackbar";
+            public const string AppBarTop = "--bit-shd-appbar-top";
+            public const string AppBarBottom = "--bit-shd-appbar-bottom";
         }
 
         public static class ZIndex
@@ -526,6 +535,23 @@ public static partial class BitCss
             public const string BorderStyle = "--bit-shp-brd-style";
             public const string FocusRingWidth = "--bit-shp-focus-ring-width";
             public const string FocusRingOffset = "--bit-shp-focus-ring-offset";
+            public const string BorderWidthThick = "--bit-shp-brd-width-thick";
+
+            public static class Radius
+            {
+                public const string None = "--bit-shp-radius-none";
+                public const string Xs = "--bit-shp-radius-xs";
+                public const string Sm = "--bit-shp-radius-sm";
+                public const string Md = "--bit-shp-radius-md";
+                public const string Lg = "--bit-shp-radius-lg";
+                public const string Xl = "--bit-shp-radius-xl";
+                public const string Xxl = "--bit-shp-radius-2xl";
+                public const string Full = "--bit-shp-radius-full";
+                public const string Control = "--bit-shp-radius-control";
+                public const string Surface = "--bit-shp-radius-surface";
+                public const string Popup = "--bit-shp-radius-popup";
+                public const string Dialog = "--bit-shp-radius-dialog";
+            }
         }
 
         public static class Spacing
@@ -539,6 +565,8 @@ public static partial class BitCss
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
             public const string Easing = "--bit-mot-easing";
+            public const string EasingDecelerate = "--bit-mot-easing-decelerate";
+            public const string EasingAccelerate = "--bit-mot-easing-accelerate";
             public const string DurationSpinner = "--bit-mot-duration-spinner";
             public const string EasingSpinner = "--bit-mot-easing-spinner";
             public const string LoopFactor = "--bit-mot-loop-factor";
@@ -557,6 +585,38 @@ public static partial class BitCss
                 public const string Xl = "--bit-bp-xl";
                 public const string Xxl = "--bit-bp-xxl";
             }
+        }
+
+        public static class Size
+        {
+            public static class Control
+            {
+                public const string Sm = "--bit-siz-ctrl-sm";
+                public const string Md = "--bit-siz-ctrl-md";
+                public const string Lg = "--bit-siz-ctrl-lg";
+            }
+
+            public static class Icon
+            {
+                public const string Sm = "--bit-siz-icon-sm";
+                public const string Md = "--bit-siz-icon-md";
+                public const string Lg = "--bit-siz-icon-lg";
+            }
+
+            public static class Selection
+            {
+                public const string Sm = "--bit-siz-sel-sm";
+                public const string Md = "--bit-siz-sel-md";
+                public const string Lg = "--bit-siz-sel-lg";
+            }
+
+            public const string SpinnerStroke = "--bit-siz-spinner-stroke";
+            public const string PopupMaxHeight = "--bit-siz-popup-max-height";
+        }
+
+        public static class Opacity
+        {
+            public const string Disabled = "--bit-opa-dis";
         }
 
         public static class Semantic
@@ -578,6 +638,34 @@ public static partial class BitCss
             public const string FontWeight = "--bit-tpg-font-weight";
             public const string LineHeight = "--bit-tpg-line-height";
             public const string GutterSize = "--bit-tpg-gutter-size";
+
+            public static class FontSize
+            {
+                public const string Xxs = "--bit-tpg-fs-2xs";
+                public const string Xs = "--bit-tpg-fs-xs";
+                public const string Sm = "--bit-tpg-fs-sm";
+                public const string Md = "--bit-tpg-fs-md";
+                public const string Lg = "--bit-tpg-fs-lg";
+                public const string Xl = "--bit-tpg-fs-xl";
+                public const string Xxl = "--bit-tpg-fs-2xl";
+                public const string Xxxl = "--bit-tpg-fs-3xl";
+                public const string Xxxxl = "--bit-tpg-fs-4xl";
+            }
+
+            public static class FontWeights
+            {
+                public const string Light = "--bit-tpg-fw-light";
+                public const string Regular = "--bit-tpg-fw-regular";
+                public const string Medium = "--bit-tpg-fw-medium";
+                public const string SemiBold = "--bit-tpg-fw-semibold";
+                public const string Bold = "--bit-tpg-fw-bold";
+            }
+
+            public static class Control
+            {
+                public const string LetterSpacing = "--bit-tpg-ctrl-letter-spacing";
+                public const string TextTransform = "--bit-tpg-ctrl-text-transform";
+            }
 
             public static class H1
             {

@@ -44,11 +44,11 @@
     outline: 0;
     display: flex;
     cursor: pointer;
-    font-weight: 300;
+    font-weight: $tg-fw-light;
     user-select: none;
     align-items: center;
     justify-content: center;
-    border-radius: spacing(0.5);
+    border-radius: $shp-radius-control;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     min-height: var(--bit-upl-lbl-height);
@@ -166,11 +166,11 @@
 .bit-upl-itm {
     display: flex;
     overflow: hidden;
-    font-weight: 100;
+    font-weight: $tg-fw-light;
     align-items: center;
     flex-flow: row nowrap;
     margin-top: spacing(0.375);
-    border-radius: spacing(0.625);
+    border-radius: $shp-radius-surface;
     justify-content: space-between;
     color: $clr-fg-pri;
     font-size: var(--bit-upl-itm-fontsize);
@@ -211,7 +211,7 @@
 .bit-upl-prv {
     flex-shrink: 0;
     object-fit: cover;
-    border-radius: spacing(0.5);
+    border-radius: $shp-radius-control;
     width: var(--bit-upl-prv-size);
     height: var(--bit-upl-prv-size);
     margin-inline-start: spacing(0.5);
@@ -278,7 +278,7 @@
 // named -pgb rather than -pbr so that it cannot collide with the generated PrimaryBorder role class.
 .bit-upl-pgb {
     height: spacing(0.25);
-    transition: width $mot-duration linear 0s;
+    transition: width $mot-duration $mot-easing 0s;
     background-color: var(--bit-upl-clr);
 }
 
@@ -337,7 +337,7 @@
     border-radius: 50%;
     width: spacing(2);
     height: spacing(2);
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     border-color: $clr-brd-sec;
     border-top-color: var(--bit-upl-clr);
@@ -356,33 +356,33 @@
 
 .bit-upl-sm {
     --bit-upl-lbl-height: #{spacing(3.5)};
-    --bit-upl-lbl-fontsize: #{spacing(1.5)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-xs};
     --bit-upl-lbl-padding: #{spacing(0.25)} #{spacing(1.5)};
-    --bit-upl-itm-fontsize: #{spacing(1.5)};
-    --bit-upl-fs-fontsize: #{spacing(1.375)};
+    --bit-upl-itm-fontsize: #{$tg-fs-xs};
+    --bit-upl-fs-fontsize: #{$tg-fs-xs};
     --bit-upl-prv-size: #{spacing(4)};
     --bit-upl-btn-size: #{spacing(3.5)};
-    --bit-upl-ico-fontsize: #{spacing(1.5)};
+    --bit-upl-ico-fontsize: #{$siz-icon-sm};
 }
 
 .bit-upl-md {
     --bit-upl-lbl-height: #{spacing(4.5)};
-    --bit-upl-lbl-fontsize: #{spacing(2)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-md};
     --bit-upl-lbl-padding: #{spacing(0.5)} #{spacing(2)};
-    --bit-upl-itm-fontsize: #{spacing(1.75)};
-    --bit-upl-fs-fontsize: #{spacing(1.625)};
+    --bit-upl-itm-fontsize: #{$tg-fs-sm};
+    --bit-upl-fs-fontsize: #{$tg-fs-xs};
     --bit-upl-prv-size: #{spacing(5)};
     --bit-upl-btn-size: #{spacing(4)};
-    --bit-upl-ico-fontsize: #{spacing(2)};
+    --bit-upl-ico-fontsize: #{$siz-icon-md};
 }
 
 .bit-upl-lg {
     --bit-upl-lbl-height: #{spacing(5.5)};
-    --bit-upl-lbl-fontsize: #{spacing(2.25)};
+    --bit-upl-lbl-fontsize: #{$tg-fs-lg};
     --bit-upl-lbl-padding: #{spacing(0.75)} #{spacing(2.5)};
-    --bit-upl-itm-fontsize: #{spacing(2)};
-    --bit-upl-fs-fontsize: #{spacing(1.75)};
+    --bit-upl-itm-fontsize: #{$tg-fs-md};
+    --bit-upl-fs-fontsize: #{$tg-fs-sm};
     --bit-upl-prv-size: #{spacing(6.5)};
     --bit-upl-btn-size: #{spacing(5)};
-    --bit-upl-ico-fontsize: #{spacing(2.5)};
+    --bit-upl-ico-fontsize: #{$siz-icon-lg};
 }

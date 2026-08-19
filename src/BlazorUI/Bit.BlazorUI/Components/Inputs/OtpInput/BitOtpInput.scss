@@ -12,7 +12,7 @@
 .bit-otp-lbl {
     margin: 0;
     display: block;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     font-size: inherit;
     box-sizing: border-box;
@@ -59,7 +59,7 @@
     box-sizing: border-box;
     height: spacing(0.375);
     margin-top: spacing(0.625);
-    border-radius: spacing(0.375);
+    border-radius: $shp-radius-sm;
     background-color: $clr-bg-sec;
 
     &::after {
@@ -72,7 +72,7 @@
         background-color: var(--bit-otp-clr);
         //the sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
         //taking the spinner tokens: stretched under reduced motion, restored inside a ForceAnimation subtree.
-        animation: calc(1.5s * #{$mot-loop-factor}) ease 0s infinite normal none running bit-otp-ldr-anm;
+        animation: calc(1.5s * #{$mot-loop-factor}) $mot-easing 0s infinite normal none running bit-otp-ldr-anm;
     }
 }
 
@@ -102,7 +102,7 @@
     -moz-appearance: textfield;
     width: var(--bit-otp-size);
     height: var(--bit-otp-size);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
@@ -226,13 +226,13 @@
     }
 
     .bit-otp-gst {
-        border-start-start-radius: $shp-border-radius;
-        border-end-start-radius: $shp-border-radius;
+        border-start-start-radius: $shp-radius-control;
+        border-end-start-radius: $shp-radius-control;
     }
 
     .bit-otp-gnd {
-        border-start-end-radius: $shp-border-radius;
-        border-end-end-radius: $shp-border-radius;
+        border-start-end-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
     }
 }
 
@@ -242,13 +242,13 @@
     }
 
     .bit-otp-gnd {
-        border-start-start-radius: $shp-border-radius;
-        border-end-start-radius: $shp-border-radius;
+        border-start-start-radius: $shp-radius-control;
+        border-end-start-radius: $shp-radius-control;
     }
 
     .bit-otp-gst {
-        border-start-end-radius: $shp-border-radius;
-        border-end-end-radius: $shp-border-radius;
+        border-start-end-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
     }
 }
 
@@ -258,13 +258,13 @@
     }
 
     .bit-otp-gst {
-        border-start-start-radius: $shp-border-radius;
-        border-start-end-radius: $shp-border-radius;
+        border-start-start-radius: $shp-radius-control;
+        border-start-end-radius: $shp-radius-control;
     }
 
     .bit-otp-gnd {
-        border-end-start-radius: $shp-border-radius;
-        border-end-end-radius: $shp-border-radius;
+        border-end-start-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
     }
 }
 
@@ -274,13 +274,13 @@
     }
 
     .bit-otp-gnd {
-        border-start-start-radius: $shp-border-radius;
-        border-start-end-radius: $shp-border-radius;
+        border-start-start-radius: $shp-radius-control;
+        border-start-end-radius: $shp-radius-control;
     }
 
     .bit-otp-gst {
-        border-end-start-radius: $shp-border-radius;
-        border-end-end-radius: $shp-border-radius;
+        border-end-start-radius: $shp-radius-control;
+        border-end-end-radius: $shp-radius-control;
     }
 }
 
@@ -414,15 +414,15 @@
 
 .bit-otp-sm {
     --bit-otp-size: #{spacing(3.0)};
-    --bit-otp-fontsize: #{spacing(1.5)};
+    --bit-otp-fontsize: #{$tg-fs-xs};
 }
 
 .bit-otp-md {
     --bit-otp-size: #{spacing(3.75)};
-    --bit-otp-fontsize: #{spacing(1.75)};
+    --bit-otp-fontsize: #{$tg-fs-sm};
 }
 
 .bit-otp-lg {
     --bit-otp-size: #{spacing(4.5)};
-    --bit-otp-fontsize: #{spacing(2.0)};
+    --bit-otp-fontsize: #{$tg-fs-md};
 }

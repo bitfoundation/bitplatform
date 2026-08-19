@@ -234,7 +234,7 @@
 
 .bit-tgl-lbl {
     cursor: pointer;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     font-size: var(--bit-tgl-lbl-fontsize);
 }
@@ -404,7 +404,7 @@
 .bit-tgl-stx {
     padding: 0;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     font-size: var(--bit-tgl-stx-fontsize);
 }
@@ -449,12 +449,12 @@
     --bit-tgl-trk-h-ico: #{spacing(2.5)};
     --bit-tgl-thb-size-ico: #{spacing(1.75)};
     --bit-tgl-ico-fontsize: #{spacing(1)};
-    --bit-tgl-spn-width: #{spacing(0.1875)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.125)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-2xs};
     --bit-tgl-cnn-pad: #{spacing(0.25)};
-    --bit-tgl-lbl-fontsize: #{spacing(1.5)};
-    --bit-tgl-stx-fontsize: #{spacing(1.5)};
-    --bit-tgl-des-fontsize: #{spacing(1.25)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-xs};
+    --bit-tgl-stx-fontsize: #{$tg-fs-xs};
+    --bit-tgl-des-fontsize: #{$tg-fs-2xs};
 }
 
 .bit-tgl-md {
@@ -467,12 +467,12 @@
     --bit-tgl-trk-h-ico: #{spacing(3.5)};
     --bit-tgl-thb-size-ico: #{spacing(2.5)};
     --bit-tgl-ico-fontsize: #{spacing(1.5)};
-    --bit-tgl-spn-width: #{spacing(0.25)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.5)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-xs};
     --bit-tgl-cnn-pad: #{spacing(0.375)};
-    --bit-tgl-lbl-fontsize: #{spacing(1.75)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-sm};
     --bit-tgl-stx-fontsize: inherit;
-    --bit-tgl-des-fontsize: #{spacing(1.5)};
+    --bit-tgl-des-fontsize: #{$tg-fs-xs};
 }
 
 .bit-tgl-lg {
@@ -485,12 +485,12 @@
     --bit-tgl-trk-h-ico: #{spacing(4.25)};
     --bit-tgl-thb-size-ico: #{spacing(3.25)};
     --bit-tgl-ico-fontsize: #{spacing(2)};
-    --bit-tgl-spn-width: #{spacing(0.3125)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.75)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-sm};
     --bit-tgl-cnn-pad: #{spacing(0.5)};
-    --bit-tgl-lbl-fontsize: #{spacing(2)};
-    --bit-tgl-stx-fontsize: #{spacing(2)};
-    --bit-tgl-des-fontsize: #{spacing(1.75)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-md};
+    --bit-tgl-stx-fontsize: #{$tg-fs-md};
+    --bit-tgl-des-fontsize: #{$tg-fs-sm};
 }
 
 // A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size

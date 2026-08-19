@@ -11,7 +11,7 @@
     --bit-sld-thumb: #{spacing(2)};
     --bit-sld-rail: #{spacing(0.5)};
     --bit-sld-length: #{spacing(24)};
-    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-clr-rail: #{$clr-bg-sec};
 
     // The focus ring is drawn by a single rule further down, so which color it takes is carried here rather
@@ -149,7 +149,7 @@
     background-color: $clr-bg-pri;
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
-    border: spacing(0.25) $shp-border-style var(--bit-sld-clr);
+    border: $shp-border-width-thick $shp-border-style var(--bit-sld-clr);
     transition: border-color $mot-duration-short $mot-easing,
                 box-shadow $mot-duration-short $mot-easing,
                 inset-inline-start $mot-duration-short $mot-easing,
@@ -344,7 +344,7 @@
     padding: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
     overflow-wrap: break-word;
@@ -354,7 +354,7 @@
 .bit-sld-vlb {
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     color: $clr-fg-pri;
     box-sizing: border-box;
@@ -412,7 +412,7 @@
     justify-content: center;
     color: var(--bit-sld-clr-on);
     background-color: var(--bit-sld-clr);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     padding: spacing(0.25) spacing(0.75);
     font-size: calc(var(--bit-sld-font-size) * 0.9);
     transition: opacity $mot-duration-short $mot-easing;
@@ -590,21 +590,21 @@
 .bit-sld-sm {
     --bit-sld-thumb: #{spacing(1.5)};
     --bit-sld-rail: #{spacing(0.375)};
-    --bit-sld-font-size: #{spacing(1.5)};
+    --bit-sld-font-size: #{$tg-fs-xs};
     --bit-sld-length: #{spacing(18)};
 }
 
 .bit-sld-md {
     --bit-sld-thumb: #{spacing(2)};
     --bit-sld-rail: #{spacing(0.5)};
-    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-length: #{spacing(24)};
 }
 
 .bit-sld-lg {
     --bit-sld-thumb: #{spacing(3)};
     --bit-sld-rail: #{spacing(0.75)};
-    --bit-sld-font-size: #{spacing(2)};
+    --bit-sld-font-size: #{$tg-fs-md};
     --bit-sld-length: #{spacing(30)};
 }
 

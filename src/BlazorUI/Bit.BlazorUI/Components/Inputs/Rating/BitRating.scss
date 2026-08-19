@@ -1,9 +1,9 @@
 @import "../../../Styles/functions.scss";
 
 .bit-rtg {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     width: fit-content;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
@@ -22,7 +22,6 @@
 
     &.bit-dis {
         .bit-rtg-btn {
-            opacity: 0.65;
             cursor: not-allowed;
             pointer-events: none;
         }
@@ -57,7 +56,7 @@
     font-size: var(--bit-rtg-size);
     line-height: var(--bit-rtg-size);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     padding: spacing(1) spacing(0.25);
 
     &:focus-visible {
@@ -122,7 +121,7 @@
 .bit-rtg-iem {
     width: 100%;
     font-style: normal;
-    font-weight: normal;
+    font-weight: $tg-fw-regular;
     display: inline-block;
     color: var(--bit-rtg-clr-uns);
     transition: color $mot-duration-short $mot-easing;
@@ -138,7 +137,7 @@
     position: absolute;
     font-style: normal;
     text-align: start;
-    font-weight: normal;
+    font-weight: $tg-fw-regular;
     display: inline-block;
     vertical-align: middle;
     color: var(--bit-rtg-clr);

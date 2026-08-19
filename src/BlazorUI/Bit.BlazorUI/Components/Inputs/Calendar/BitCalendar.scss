@@ -4,11 +4,11 @@
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     max-width: fit-content;
     box-sizing: border-box;
-    font-size: spacing(2.25);
+    font-size: $tg-fs-lg;
     font-family: $tg-font-family;
 
     &.bit-dis {
@@ -38,13 +38,13 @@
 
 .bit-cal-cnt {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     top: spacing(4.25);
     outline: transparent;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
 .bit-cal-sdt {
@@ -93,18 +93,18 @@
     margin: 0;
     padding: 0;
     border: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
     width: spacing(3.5);
     height: spacing(3.5);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     animation-name: bit-fade-in;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+    animation-timing-function: $mot-easing;
 }
 
 .bit-cal-dbt {
@@ -121,11 +121,11 @@
     outline: transparent;
     font-weight: inherit;
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(3);
     justify-content: center;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -155,7 +155,7 @@
 }
 
 .bit-cal-dhl {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-ter;
 }
 
@@ -171,12 +171,12 @@
 }
 
 .bit-cal-dbo {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-sec;
 }
 
 .bit-cal-dtd {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     border-radius: 50%;
     color: var(--bit-cal-clr-txt);
     background-color: var(--bit-cal-clr);
@@ -195,13 +195,13 @@
 .bit-cal-wnm {
     margin: 0;
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-sec;
     width: spacing(3.5);
     align-items: center;
     height: spacing(3.5);
     box-sizing: border-box;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     justify-content: center;
     padding: spacing(0.375) 0 0 0;
     background-color: $clr-bg-sec;
@@ -227,7 +227,7 @@
     flex-grow: 1;
     cursor: text;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     text-align: start;
     color: $clr-fg-pri;
     position: relative;
@@ -237,14 +237,14 @@
     display: inline-block;
     text-overflow: ellipsis;
     padding: 0 spacing(1.25);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     line-height: spacing(3.5);
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     animation-name: bit-fade-show;
     background-color: transparent;
-    border-radius: $shp-border-radius;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+    border-radius: $shp-radius-control;
+    animation-timing-function: $mot-easing;
 }
 
 .bit-cal-ptb {
@@ -277,12 +277,12 @@
     width: spacing(3.5);
     height: spacing(3.5);
     outline: transparent;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     min-width: spacing(3.5);
     min-height: spacing(3.5);
     line-height: spacing(3.5);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -313,9 +313,9 @@
     width: spacing(3.75);
     outline: transparent;
     line-height: spacing(3.75);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -382,11 +382,11 @@
     white-space: nowrap;
     outline: transparent;
     max-width: spacing(7);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     text-overflow: ellipsis;
     line-height: spacing(5.17);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -402,7 +402,7 @@
 }
 
 .bit-cal-psm {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-sec;
 
     @media (hover: hover) {
@@ -449,7 +449,7 @@
 .bit-cal-tdv {
     display: flex;
     align-items: center;
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
     justify-content: center;
     font-weight: $tg-font-weight;
 }
@@ -474,7 +474,7 @@
     width: spacing(3.75);
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(2.28);
+    font-size: $tg-fs-lg;
     -moz-appearance: textfield; // Firefox
     font-weight: $tg-font-weight;
     background-color: $clr-bg-pri;
@@ -498,7 +498,7 @@
 
 .bit-cal-bam,
 .bit-cal-bpm {
-    font-size: spacing(1.8);
+    font-size: $tg-fs-sm;
     font-weight: $tg-font-weight;
 }
 
@@ -540,19 +540,19 @@
     bottom: spacing(0.125);
     background-color: var(--bit-cal-clr);
     transform: translateX(-50%);
-    transition: transform $mot-duration ease;
+    transition: transform $mot-duration $mot-easing;
 }
 
 .bit-cal-eov {
     inset: 0;
-    z-index: 100;
+    z-index: $zindex-overlay;
     display: flex;
     cursor: pointer;
     position: absolute;
     align-items: center;
     justify-content: center;
-    border-radius: $shp-border-radius;
-    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: $shp-radius-control;
+    background-color: $clr-bg-overlay;
 }
 
 .bit-cal-emc {
@@ -564,16 +564,16 @@
     min-width: spacing(20);
     max-width: spacing(30);
     background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
-    box-shadow: 0 spacing(0.25) spacing(1) rgba(0, 0, 0, 0.2);
+    box-shadow: $box-shadow-md;
 }
 
 .bit-cal-emh {
     display: flex;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     align-items: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     margin-bottom: spacing(1);
     justify-content: space-between;
 }
@@ -582,9 +582,9 @@
     border: none;
     cursor: pointer;
     color: $clr-fg-sec;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     padding: spacing(0.25) spacing(1);
 
     @media (hover: hover) {
@@ -605,19 +605,19 @@
 }
 
 .bit-cal-eit {
-    font-weight: 600;
-    font-size: spacing(1.75);
+    font-weight: $tg-fw-semibold;
+    font-size: $tg-fs-sm;
     margin-bottom: spacing(0.25);
 }
 
 .bit-cal-eis {
     color: $clr-fg-sec;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     margin-bottom: spacing(0.25);
 }
 
 .bit-cal-eib {
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     color: $clr-fg-pri;
     white-space: pre-wrap;
 }

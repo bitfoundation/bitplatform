@@ -8,7 +8,7 @@
     box-sizing: border-box;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     --bit-btg-itm-brd-wid: #{$shp-border-width};
     --bit-btg-itm-brd-wid-ver: 0;
     // Only the border is painted on the group itself: the filled and outline variants repaint it
@@ -43,10 +43,10 @@
 }
 
 .bit-btg-rnd {
-    border-radius: 9999px;
+    border-radius: $shp-radius-full;
 
     &.bit-btg-vrt {
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 }
 
@@ -104,6 +104,8 @@
     color: var(--bit-btg-itm-clr-txt);
     padding: var(--bit-btg-itm-padding);
     font-size: var(--bit-btg-itm-fontsize);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     border-color: var(--bit-btg-itm-clr-brd);
     background-color: var(--bit-btg-itm-clr-bg);
     border-inline-end-width: var(--bit-btg-itm-brd-wid);
@@ -162,14 +164,14 @@
 
     .bit-btg-itm {
         border-width: $shp-border-width;
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 
     &.bit-btg-rnd {
         border-radius: 0;
 
         .bit-btg-itm {
-            border-radius: 9999px;
+            border-radius: $shp-radius-full;
         }
     }
 }
@@ -234,7 +236,7 @@
     align-items: center;
     justify-content: center;
     padding: spacing(0.25) spacing(0.75);
-    border-radius: 9999px;
+    border-radius: $shp-radius-full;
     font-size: calc(var(--bit-btg-itm-fontsize) * 0.8);
 
     // Tinting the current foreground keeps the badge legible on every variant,
@@ -247,7 +249,7 @@
 .bit-btg-spn {
     flex: none;
     border-radius: 50%;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     width: var(--bit-btg-itm-fontsize);
     height: var(--bit-btg-itm-fontsize);
@@ -280,7 +282,7 @@
         inset-inline-start: 32%;
         transform: rotate(45deg);
         border-style: $shp-border-style;
-        border-width: 0 spacing(0.25) spacing(0.25) 0;
+        border-width: 0 $shp-border-width-thick $shp-border-width-thick 0;
         border-color: currentcolor;
     }
 }
@@ -518,17 +520,17 @@
 
 
 .bit-btg-sm {
-    --bit-btg-itm-fontsize: #{spacing(1.5)};
+    --bit-btg-itm-fontsize: #{$tg-fs-xs};
     --bit-btg-itm-padding: #{spacing(0.5)} #{spacing(1.5)};
 }
 
 .bit-btg-md {
-    --bit-btg-itm-fontsize: #{spacing(1.75)};
+    --bit-btg-itm-fontsize: #{$tg-fs-sm};
     --bit-btg-itm-padding: #{spacing(0.7)} #{spacing(2.0)};
 }
 
 .bit-btg-lg {
-    --bit-btg-itm-fontsize: #{spacing(2.0)};
+    --bit-btg-itm-fontsize: #{$tg-fs-md};
     --bit-btg-itm-padding: #{spacing(0.9)} #{spacing(2.5)};
 }
 

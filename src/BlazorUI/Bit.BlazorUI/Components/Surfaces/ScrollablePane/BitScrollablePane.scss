@@ -17,7 +17,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        border-radius: spacing(0.5);
+        border-radius: $shp-radius-full;
         background-color: $clr-fg-ter;
 
         &:hover {

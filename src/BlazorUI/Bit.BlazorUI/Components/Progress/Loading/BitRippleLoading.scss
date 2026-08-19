@@ -12,7 +12,7 @@
     opacity: 1;
     position: absolute;
     border-radius: 50%;
-    border: var(--bit-ldn-rpl-4) solid var(--bit-ldn-color);
+    border: var(--bit-ldn-rpl-4) $shp-border-style var(--bit-ldn-color);
     animation: bit-ldn-rpl-anm calc(1s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 

@@ -1,9 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-prb {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     --bit-prb-bar-color: #{$clr-pri};
 
@@ -71,7 +71,7 @@
 
 .bit-prb-des {
     color: $clr-fg-sec;
-    font-size: spacing(1.25);
+    font-size: $tg-fs-2xs;
     line-height: spacing(2.25);
 }
 
@@ -79,7 +79,7 @@
     width: 0;
     min-width: 33%;
     position: absolute;
-    transition: width $mot-duration-long ease 0s;
+    transition: width $mot-duration-long $mot-easing 0s;
     // The sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
     // taking the spinner tokens: 3s normally, stretched under reduced motion, restored inside a
     // ForceAnimation subtree.
@@ -107,7 +107,7 @@
     color: $clr-fg-sec;
     position: absolute;
     white-space: nowrap;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-prb-crt, 
@@ -121,28 +121,28 @@
 
 .bit-prb-cbr {
     stroke: var(--bit-prb-bar-color);
-    transition: stroke-dasharray $mot-duration-short ease-in-out;
+    transition: stroke-dasharray $mot-duration-short $mot-easing;
     stroke-dasharray: calc(3.141 * var(--bit-prb-percent, 0%) * 0.8), 500%;
 }
 
 .bit-prb-cri {
     stroke: var(--bit-prb-bar-color);
-    transition: stroke-dasharray $mot-duration-short ease-in-out;
+    transition: stroke-dasharray $mot-duration-short $mot-easing;
     stroke-dasharray: calc(3.141 * 25% * 0.8), 500%;
     animation: bit-prb-cir-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
 
 
 .bit-prb-sm {
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-prb-md {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
 }
 
 .bit-prb-lg {
-    font-size: spacing(2);
+    font-size: $tg-fs-md;
 }
 
 

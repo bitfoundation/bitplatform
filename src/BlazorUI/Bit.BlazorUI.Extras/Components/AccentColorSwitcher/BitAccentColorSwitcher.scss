@@ -19,7 +19,7 @@
     width: var(--bit-acs-size);
     height: var(--bit-acs-size);
     background-color: var(--bit-acs-clr);
-    border: rem2(1px) solid $clr-brd-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
     transition: transform $mot-duration $mot-easing;
 
     &:hover {
@@ -32,14 +32,14 @@
 }
 
 .bit-acs-act {
-    outline: rem2(2px) solid var(--bit-acs-clr);
+    outline: $shp-border-width-thick $shp-border-style var(--bit-acs-clr);
     outline-offset: rem2(2px);
 }
 
 .bit-acs.bit-dis {
     .bit-acs-swt {
         cursor: default;
-        opacity: 0.5;
+        opacity: $opa-dis;
 
         &:hover {
             transform: none;

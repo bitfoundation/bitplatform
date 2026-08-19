@@ -2,7 +2,7 @@
 
 .bit-prs {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     box-shadow: none;
     color: $clr-fg-pri;
     width: fit-content;
@@ -10,7 +10,7 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
@@ -27,15 +27,15 @@
 }
 
 .bit-prs-cin {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
 }
 
 .bit-prs-imc {
     display: grid;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     position: relative;
     border-radius: 50%;
     place-items: center;
@@ -63,7 +63,7 @@
 
 .bit-prs-sqr {
     .bit-prs-imc {
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 }
 
@@ -72,11 +72,11 @@
     width: 100%;
     height: 100%;
     display: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: absolute;
     align-items: center;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     transition: all $mot-duration-short linear;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
@@ -110,7 +110,7 @@
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.125) $shp-border-style $clr-brd-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-prs-rvs {
@@ -144,7 +144,7 @@
     border: none;
     display: flex;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     width: spacing(4);
     background: unset;
     color: transparent;
@@ -155,7 +155,7 @@
     text-decoration: none;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     transform: translateX(-50%);
     font-family: $tg-font-family;
     background-color: transparent;
@@ -188,7 +188,7 @@
 
 .bit-prs-off {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-ntr-gray110;
+    border: $shp-border-width-thick $shp-border-style $clr-ntr-gray110;
 }
 
 .bit-prs-onl {
@@ -205,7 +205,7 @@
 
 .bit-prs-blk {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-err;
+    border: $shp-border-width-thick $shp-border-style $clr-err;
 }
 
 .bit-prs-bsy {
@@ -224,7 +224,7 @@
     }
 
     .bit-prs-ptx {
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-stx,
@@ -240,7 +240,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(3);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -256,7 +256,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(4);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -272,7 +272,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
@@ -282,13 +282,13 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -321,7 +321,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(6);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
@@ -331,13 +331,13 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -369,7 +369,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(7);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-pre {
@@ -379,13 +379,13 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
@@ -417,7 +417,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(9);
-        font-size: spacing(3.5);
+        font-size: $tg-fs-3xl;
     }
 
     .bit-prs-pre {
@@ -427,19 +427,19 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
@@ -477,25 +477,25 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {
@@ -529,25 +529,25 @@
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {

@@ -10,10 +10,12 @@
     font-weight: $tg-font-weight;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     padding: var(--bit-tag-padding);
     font-size: var(--bit-tag-fontsize);
     min-height: var(--bit-tag-minheight);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     &.bit-dis {
         cursor: default;
@@ -86,19 +88,19 @@
 
 
 .bit-tag-sm {
-    --bit-tag-fontsize: #{spacing(1.5)};
+    --bit-tag-fontsize: #{$tg-fs-xs};
     --bit-tag-padding: #{spacing(0.250)};
     --bit-tag-minheight: #{spacing(2.25)};
 }
 
 .bit-tag-md {
-    --bit-tag-fontsize: #{spacing(1.75)};
+    --bit-tag-fontsize: #{$tg-fs-sm};
     --bit-tag-padding: #{spacing(0.375)};
     --bit-tag-minheight: #{spacing(2.75)};
 }
 
 .bit-tag-lg {
-    --bit-tag-fontsize: #{spacing(2.25)};
+    --bit-tag-fontsize: #{$tg-fs-lg};
     --bit-tag-padding: #{spacing(0.500)};
     --bit-tag-minheight: #{spacing(3.5)};
 }

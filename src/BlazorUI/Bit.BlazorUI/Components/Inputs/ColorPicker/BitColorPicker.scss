@@ -18,12 +18,12 @@
 
 .bit-clp {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     max-width: 100%;
     flex-direction: column;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     width: var(--bit-clp-width, #{spacing(33.5)});
 
@@ -33,7 +33,7 @@
 
     &.bit-dis {
         .bit-clp-rec, .bit-clp-sld, .bit-clp-eyd, .bit-clp-fin, .bit-clp-prt, .bit-clp-swb {
-            opacity: 0.65;
+            opacity: $opa-dis;
             cursor: not-allowed;
             pointer-events: none;
         }
@@ -87,8 +87,8 @@
 
 .bit-clp-lbl {
     color: $clr-fg-pri;
-    font-weight: 600;
-    font-size: spacing(1.75);
+    font-weight: $tg-fw-semibold;
+    font-size: $tg-fs-sm;
 }
 
 // The contrast readout sits under the controls rather than beside them: it is the answer to a question
@@ -100,12 +100,12 @@
     gap: spacing(0.5);
     align-items: center;
     margin-top: spacing(1);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-clp-cnv {
     color: $clr-fg-pri;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
 }
 
 // Never the color alone: a pass marked only in green and a failure only in red would be exactly the
@@ -115,7 +115,7 @@
     align-items: center;
     gap: spacing(0.25);
     box-sizing: border-box;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     padding: spacing(0.125) spacing(0.5);
     border: $shp-border-width $shp-border-style currentColor;
 
@@ -150,7 +150,7 @@
     box-sizing: border-box;
     margin-bottom: spacing(1);
     min-height: spacing(6);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     height: var(--bit-clp-sat-height);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
@@ -188,7 +188,7 @@
     transform: translate(-50%, -50%);
     background: $clr-bg-sec;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
-    box-shadow: rgb(0 0 0 / 13%) 0 spacing(0.375) spacing(0.875) 0, rgb(0 0 0 / 11%) 0 spacing(0.125) spacing(0.25) 0;
+    box-shadow: $box-shadow-nm;
 
     &::before {
         inset: 0;
@@ -224,7 +224,7 @@
     box-sizing: border-box;
     margin-bottom: spacing(1);
     forced-color-adjust: none;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     height: var(--bit-clp-track-height);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -257,7 +257,7 @@
 
     &:focus-visible {
         @include focus-ring;
-        border-radius: spacing(0.25);
+        border-radius: $shp-radius-control;
     }
 
     &::-webkit-slider-thumb {
@@ -308,7 +308,7 @@
     background-color: transparent;
     width: var(--bit-clp-target-size);
     height: var(--bit-clp-target-size);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:hover {
@@ -325,7 +325,7 @@
 }
 
 .bit-clp-eyi {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     line-height: 1;
 }
 
@@ -334,7 +334,7 @@
     flex-shrink: 0;
     position: relative;
     box-sizing: border-box;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     width: var(--bit-clp-preview-size);
     height: var(--bit-clp-preview-size);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -388,7 +388,7 @@
     background-color: transparent;
     width: var(--bit-clp-target-size);
     height: var(--bit-clp-target-size);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:hover {
@@ -405,7 +405,7 @@
 }
 
 .bit-clp-swi {
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     line-height: 1;
 }
 
@@ -420,7 +420,7 @@
     // fields are text: the value in them has to stay selectable and copyable.
     user-select: text;
     padding: spacing(0.5);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
@@ -447,7 +447,7 @@
     text-align: center;
     color: $clr-fg-sec;
     padding-top: spacing(0.25);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
 }
 
 .bit-clp-prs {
@@ -476,7 +476,7 @@
     box-sizing: border-box;
     width: var(--bit-clp-target-size);
     height: var(--bit-clp-target-size);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-sm;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     // The swatch color rides on top of the checkerboard, so a semi-transparent preset advertises itself
@@ -510,8 +510,8 @@
     // Inherited rather than declared, so the ring keeps the shape of the swatch it marks: a consumer who
     // rounds the swatches into circles gets a round ring instead of a square one sitting inside a circle.
     border-radius: inherit;
-    border: spacing(0.25) $shp-border-style var(--bit-clp-prt-sel-clr, #{$clr-ntr-white});
-    box-shadow: 0 0 0 spacing(0.125) var(--bit-clp-prt-sel-shd, #{$clr-ntr-black});
+    border: $shp-border-width-thick $shp-border-style var(--bit-clp-prt-sel-clr, #{$clr-ntr-white});
+    box-shadow: 0 0 0 $shp-border-width var(--bit-clp-prt-sel-shd, #{$clr-ntr-black});
 }
 
 

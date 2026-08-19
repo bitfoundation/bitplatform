@@ -40,7 +40,7 @@
     height: spacing(4);
 
     .bit-smr-wrp {
-        border-radius: spacing(0.5);
+        border-radius: $shp-radius-sm;
     }
 }
 
@@ -54,7 +54,7 @@
 .bit-smr-cnt {
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
-    animation-timing-function: ease;
+    animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
 }
 
@@ -65,7 +65,7 @@
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     background-color: $clr-bg-sec;
-    animation-timing-function: ease;
+    animation-timing-function: $mot-easing;
     animation-name: bit-smr-anim-opacity;
 }
 

@@ -24,7 +24,7 @@ namespace Bit.BlazorUI;
 /// <para>
 /// <b>Type annotations.</b> <see cref="Export"/> marks the uniformly-typed top-level groups with a
 /// DTCG <c>$type</c> that descendants inherit (<c>color</c> → <c>color</c>, <c>boxShadow</c> →
-/// <c>shadow</c>, <c>spacing</c> → <c>dimension</c>, <c>zIndex</c> → <c>number</c>), with the one
+/// <c>shadow</c>, <c>spacing</c> and <c>size</c> → <c>dimension</c>, <c>zIndex</c> and <c>opacity</c> → <c>number</c>), with the one
 /// shadow-valued token inside the color group (<c>color.semantic.focusRing</c>) overriding to
 /// <c>shadow</c>. Mixed groups (typography, shape, motion, layout) are emitted untyped, which is
 /// valid DTCG.
@@ -191,6 +191,8 @@ public static partial class BitThemeDtcg
         "boxShadow" => "shadow",
         "spacing" => "dimension",
         "zIndex" => "number",
+        "size" => "dimension",
+        "opacity" => "number",
         _ => null,
     };
 

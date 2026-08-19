@@ -11,6 +11,27 @@
     --bit-tpg-font-weight: 500;
     --bit-tpg-line-height: 1.75rem;
     --bit-tpg-gutter-size: 0.35em;
+    // font-size scale - the ramp every component reads its text and glyph sizes from. Fluent's
+    // control text is 14px (sm) at md size, 12px (xs) at sm and 16px (md) at lg. Values are rem on
+    // purpose: type follows the root font size, not the spacing unit or the density multiplier.
+    --bit-tpg-fs-2xs: 0.625rem; //10px
+    --bit-tpg-fs-xs: 0.75rem; //12px
+    --bit-tpg-fs-sm: 0.875rem; //14px
+    --bit-tpg-fs-md: 1rem; //16px
+    --bit-tpg-fs-lg: 1.125rem; //18px
+    --bit-tpg-fs-xl: 1.25rem; //20px
+    --bit-tpg-fs-2xl: 1.5rem; //24px
+    --bit-tpg-fs-3xl: 1.75rem; //28px
+    --bit-tpg-fs-4xl: 2rem; //32px
+    // font-weight scale - Fluent (Segoe UI) uses regular body text and semibold labels/titles.
+    --bit-tpg-fw-light: 300;
+    --bit-tpg-fw-regular: 400;
+    --bit-tpg-fw-medium: 500;
+    --bit-tpg-fw-semibold: 600;
+    --bit-tpg-fw-bold: 700;
+    // control typography - tracking and case of button/tag/tab labels. Fluent leaves both alone.
+    --bit-tpg-ctrl-letter-spacing: normal;
+    --bit-tpg-ctrl-text-transform: none;
     // h1
     --bit-tpg-h1-margin: 0;
     --bit-tpg-h1-font-weight: 300;

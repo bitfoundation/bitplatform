@@ -270,6 +270,16 @@ $bit-color-neutrals-gray220: var(--bit-clr-ntr-gray220);
 $bit-box-shadow-callout: var(--bit-shd-cal);
 $bit-box-shadow-callout2: var(--bit-shd-cal2);
 
+//shadows-surface (per surface family)
+$bit-box-shadow-card: var(--bit-shd-card);
+$bit-box-shadow-popup: var(--bit-shd-popup);
+$bit-box-shadow-dialog: var(--bit-shd-dialog);
+$bit-box-shadow-sheet: var(--bit-shd-sheet);
+$bit-box-shadow-tooltip: var(--bit-shd-tooltip);
+$bit-box-shadow-snackbar: var(--bit-shd-snackbar);
+$bit-box-shadow-appbar-top: var(--bit-shd-appbar-top);
+$bit-box-shadow-appbar-bottom: var(--bit-shd-appbar-bottom);
+
 //shadow sizes
 $bit-box-shadow-sm: var(--bit-shd-sm);
 $bit-box-shadow-nm: var(--bit-shd-nm);
@@ -322,6 +332,35 @@ $bit-shape-border-width: var(--bit-shp-brd-width);
 $bit-shape-border-style: var(--bit-shp-brd-style);
 $bit-shape-focus-ring-width: var(--bit-shp-focus-ring-width);
 $bit-shape-focus-ring-offset: var(--bit-shp-focus-ring-offset);
+$bit-shape-border-width-thick: var(--bit-shp-brd-width-thick);
+$bit-shape-radius-none: var(--bit-shp-radius-none);
+$bit-shape-radius-xs: var(--bit-shp-radius-xs);
+$bit-shape-radius-sm: var(--bit-shp-radius-sm);
+$bit-shape-radius-md: var(--bit-shp-radius-md);
+$bit-shape-radius-lg: var(--bit-shp-radius-lg);
+$bit-shape-radius-xl: var(--bit-shp-radius-xl);
+$bit-shape-radius-2xl: var(--bit-shp-radius-2xl);
+$bit-shape-radius-full: var(--bit-shp-radius-full);
+$bit-shape-radius-control: var(--bit-shp-radius-control);
+$bit-shape-radius-surface: var(--bit-shp-radius-surface);
+$bit-shape-radius-popup: var(--bit-shp-radius-popup);
+$bit-shape-radius-dialog: var(--bit-shp-radius-dialog);
+
+//size
+$bit-size-control-sm: var(--bit-siz-ctrl-sm);
+$bit-size-control-md: var(--bit-siz-ctrl-md);
+$bit-size-control-lg: var(--bit-siz-ctrl-lg);
+$bit-size-icon-sm: var(--bit-siz-icon-sm);
+$bit-size-icon-md: var(--bit-siz-icon-md);
+$bit-size-icon-lg: var(--bit-siz-icon-lg);
+$bit-size-selection-sm: var(--bit-siz-sel-sm);
+$bit-size-selection-md: var(--bit-siz-sel-md);
+$bit-size-selection-lg: var(--bit-siz-sel-lg);
+$bit-size-spinner-stroke: var(--bit-siz-spinner-stroke);
+$bit-size-popup-max-height: var(--bit-siz-popup-max-height);
+
+//opacity
+$bit-opacity-disabled: var(--bit-opa-dis);
 
 //semantic aliases (intent tier)
 $bit-semantic-surface-page: var(--bit-sem-surface-page);
@@ -339,6 +378,8 @@ $bit-motion-duration: var(--bit-mot-duration);
 $bit-motion-duration-short: var(--bit-mot-duration-short);
 $bit-motion-duration-long: var(--bit-mot-duration-long);
 $bit-motion-easing: var(--bit-mot-easing);
+$bit-motion-easing-decelerate: var(--bit-mot-easing-decelerate);
+$bit-motion-easing-accelerate: var(--bit-mot-easing-accelerate);
 //looping animations: these slow down under reduced motion instead of collapsing, since a near-zero
 //looping duration renders as flicker
 $bit-motion-duration-spinner: var(--bit-mot-duration-spinner);
@@ -361,6 +402,28 @@ $bit-typography-font-family: var(--bit-tpg-font-family);
 $bit-typography-font-weight: var(--bit-tpg-font-weight);
 $bit-typography-line-height: var(--bit-tpg-line-height);
 $bit-typography-gutter-size: var(--bit-tpg-gutter-size);
+
+// font-size scale
+$bit-typography-fs-2xs: var(--bit-tpg-fs-2xs);
+$bit-typography-fs-xs: var(--bit-tpg-fs-xs);
+$bit-typography-fs-sm: var(--bit-tpg-fs-sm);
+$bit-typography-fs-md: var(--bit-tpg-fs-md);
+$bit-typography-fs-lg: var(--bit-tpg-fs-lg);
+$bit-typography-fs-xl: var(--bit-tpg-fs-xl);
+$bit-typography-fs-2xl: var(--bit-tpg-fs-2xl);
+$bit-typography-fs-3xl: var(--bit-tpg-fs-3xl);
+$bit-typography-fs-4xl: var(--bit-tpg-fs-4xl);
+
+// font-weight scale
+$bit-typography-fw-light: var(--bit-tpg-fw-light);
+$bit-typography-fw-regular: var(--bit-tpg-fw-regular);
+$bit-typography-fw-medium: var(--bit-tpg-fw-medium);
+$bit-typography-fw-semibold: var(--bit-tpg-fw-semibold);
+$bit-typography-fw-bold: var(--bit-tpg-fw-bold);
+
+// control typography
+$bit-typography-ctrl-letter-spacing: var(--bit-tpg-ctrl-letter-spacing);
+$bit-typography-ctrl-text-transform: var(--bit-tpg-ctrl-text-transform);
 
 // h1
 $bit-typography-h1-margin: var(--bit-tpg-h1-margin);

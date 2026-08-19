@@ -4,12 +4,12 @@
 // The size of the control and of its callout is driven by these variables so a single size class,
 // applied to the root element and repeated on the callout, resizes every part consistently.
 @mixin drp-size-medium {
-    --bit-drp-fs: #{spacing(1.75)};
-    --bit-drp-h: #{spacing(4)};
+    --bit-drp-fs: #{$tg-fs-sm};
+    --bit-drp-h: #{$siz-ctrl-md};
     --bit-drp-lh: #{spacing(3.75)};
     --bit-drp-lbl-lh: #{spacing(2.75)};
     --bit-drp-itm-h: #{spacing(4.5)};
-    --bit-drp-itm-fs: #{spacing(1.875)};
+    --bit-drp-itm-fs: #{$tg-fs-sm};
 }
 
 .bit-drp {
@@ -181,12 +181,12 @@
 // every span under the container would reach into markup the component knows nothing about.
 .bit-drp-dtx {
     color: $clr-fg-pri;
-    font-size: spacing(1.25);
+    font-size: $tg-fs-2xs;
 }
 
 .bit-drp-lbl {
     margin: 0;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
     font-size: var(--bit-drp-fs);
@@ -214,7 +214,7 @@
     min-height: var(--bit-drp-h);
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     @media (hover: hover) {
@@ -257,7 +257,7 @@
     outline: none;
     display: block;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     align-self: stretch;
     white-space: nowrap;
@@ -265,7 +265,7 @@
     text-overflow: ellipsis;
     font-size: var(--bit-drp-fs);
     line-height: var(--bit-drp-lh);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     padding-inline-start: spacing(1);
 }
 
@@ -290,7 +290,7 @@
     gap: spacing(0.5);
     align-items: center;
     padding: 0 spacing(0.5);
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-sec;
     border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
@@ -298,7 +298,7 @@
 // Stands for the selected items that did not fit in the chips display.
 .bit-drp-ovf {
     cursor: default;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: var(--bit-drp-clr-text);
     border-color: var(--bit-drp-clr);
     background-color: var(--bit-drp-clr);
@@ -312,15 +312,15 @@
     color: inherit;
     align-items: center;
     outline: transparent;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     background-color: transparent;
 
     i {
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     &:focus-visible {
-        outline: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+        outline: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
     }
 
     @media (hover: hover) {
@@ -342,7 +342,7 @@
         width: unset;
         pointer-events: none;
         display: inline-block;
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         color: $clr-fg-sec;
     }
 }
@@ -454,7 +454,7 @@
     background: $clr-bg-sec;
 
     span {
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
         padding-bottom: spacing(0.125);
     }
 }
@@ -465,7 +465,7 @@
     display: flex;
     gap: spacing(1);
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     align-items: center;
@@ -477,14 +477,14 @@
     display: flex;
     overflow: hidden;
     position: relative;
-    width: spacing(2.5);
-    min-width: spacing(2.5);
+    width: $siz-sel-md;
+    min-width: $siz-sel-md;
     align-items: center;
-    height: spacing(2.5);
+    height: $siz-sel-md;
     box-sizing: border-box;
     justify-content: center;
     transition-duration: $mot-duration;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     transition-property: background, border, border-color;
     transition-timing-function: $mot-easing;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
@@ -497,7 +497,7 @@
         transition: $mot-duration-short;
         align-items: center;
         justify-content: center;
-        font-size: spacing(1.375);
+        font-size: $tg-fs-xs;
     }
 }
 
@@ -510,7 +510,7 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     height: var(--bit-drp-h);
     align-items: stretch;
@@ -546,7 +546,7 @@
     margin: 0;
     display: flex;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     height: var(--bit-drp-h);
     align-items: stretch;
@@ -590,7 +590,7 @@
     }
 
     &.bit-drp-shf {
-        border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+        border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
 
         .bit-drp-sic {
             width: spacing(0.5);
@@ -603,7 +603,7 @@
         @media (hover: hover) {
             &:hover {
                 border-width: 0 0 $shp-border-width;
-                border-bottom: spacing(0.25) $shp-border-style var(--bit-drp-clr);
+                border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
             }
         }
     }
@@ -615,11 +615,11 @@
     flex-shrink: 0;
     width: spacing(4);
     text-align: center;
-    font-size: spacing(2);
+    font-size: $tg-fs-md;
     flex-direction: column;
     justify-content: center;
     color: var(--bit-drp-clr);
-    transition: width $mot-duration ease 0s;
+    transition: width $mot-duration $mot-easing 0s;
 
     i {
         opacity: 1;
@@ -628,7 +628,7 @@
         height: unset;
         display: inline-block;
         color: var(--bit-drp-clr);
-        transition: opacity $mot-duration ease 0s;
+        transition: opacity $mot-duration $mot-easing 0s;
     }
 }
 
@@ -657,7 +657,7 @@
     cursor: pointer;
     flex-direction: row;
     align-items: stretch;
-    flex-basis: spacing(4);
+    flex-basis: $siz-ctrl-md;
     margin: spacing(-0.125) 0;
 
     @media (hover: hover) {
@@ -677,8 +677,8 @@
     height: auto;
     border: none;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
+    font-weight: $tg-fw-regular;
+    width: $siz-ctrl-md;
     user-select: none;
     position: relative;
     text-align: center;
@@ -687,15 +687,15 @@
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     color: var(--bit-drp-clr);
     background-color: transparent;
     font-family: $tg-font-family;
 
     // Only the corners at the end of the search box are rounded, so they are named logically: in an
     // RTL callout the button sits at the other end and it is the other two corners that are its own.
-    border-start-end-radius: spacing(0.125);
-    border-end-end-radius: spacing(0.125);
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
 
     span {
         height: 100%;
@@ -711,7 +711,7 @@
         height: spacing(2);
         text-align: center;
         margin: 0 spacing(0.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         line-height: spacing(2);
         color: $clr-fg-pri;
     }
@@ -749,7 +749,7 @@
 .bit-drp-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     overflow: hidden;
     box-sizing: border-box;
     z-index: $zindex-callout;
@@ -757,16 +757,16 @@
     animation-fill-mode: both;
     @include drp-size-medium;
     animation-duration: $mot-duration-long;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-drp-scn {
     overflow: hidden auto;
-    max-height: spacing(88.875);
+    max-height: $siz-popup-max-height;
 }
 
 // The wrapper is the direct child of the scroll container, so it is the element that can stick; the
@@ -783,7 +783,7 @@
     width: 100%;
     color: var(--bit-drp-clr);
     cursor: default;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     user-select: none;
     height: var(--bit-drp-itm-h);
     padding: 0 spacing(1);
@@ -802,7 +802,7 @@
     gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     text-align: start;
     user-select: none;
     position: relative;
@@ -850,7 +850,7 @@
 .bit-drp-dyn.bit-drp-ctg,
 .bit-drp-iwr.bit-drp-ctg {
     background-color: $clr-bg-pri-hover;
-    box-shadow: inset spacing(0.25) 0 0 0 var(--bit-drp-clr);
+    box-shadow: inset $shp-border-width-thick 0 0 0 var(--bit-drp-clr);
 }
 
 // A box-shadow has no logical form, so the bar marking the commit target has to be moved to the
@@ -859,14 +859,14 @@
     .bit-drp-itm.bit-drp-ctg,
     .bit-drp-dyn.bit-drp-ctg,
     .bit-drp-iwr.bit-drp-ctg {
-        box-shadow: inset spacing(-0.25) 0 0 0 var(--bit-drp-clr);
+        box-shadow: inset calc(-1 * $shp-border-width-thick) 0 0 0 var(--bit-drp-clr);
     }
 }
 
 // The matched part of an item text while a search is active.
 .bit-drp-hlt {
-    font-weight: 600;
-    border-radius: spacing(0.25);
+    font-weight: $tg-fw-semibold;
+    border-radius: $shp-radius-popup;
     color: var(--bit-drp-clr-text);
     background-color: var(--bit-drp-clr);
 }
@@ -897,7 +897,7 @@
 
 .bit-drp-sep {
     width: 100%;
-    height: spacing(0.125);
+    height: $shp-border-width;
     background-color: $clr-bg-sec;
 }
 
@@ -951,7 +951,7 @@
     border-radius: 50%;
     box-sizing: border-box;
     border-color: $clr-brd-sec;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     border-top-color: var(--bit-drp-clr);
     animation: bit-drp-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
@@ -1019,7 +1019,7 @@
             position: absolute;
             width: spacing(1.25);
             height: spacing(1.25);
-            border-radius: spacing(0.125);
+            border-radius: $shp-radius-control;
             background-color: var(--bit-drp-clr);
         }
     }
@@ -1044,17 +1044,17 @@
 .bit-drp-cls {
     border: none;
     cursor: pointer;
-    font-weight: 400;
-    width: spacing(4);
-    height: spacing(4);
+    font-weight: $tg-fw-regular;
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
     text-align: center;
     display: inline-block;
     text-decoration: none;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     margin-inline-start: auto;
-    border-radius: spacing(0.25);
+    border-radius: $shp-radius-control;
     background-color: transparent;
     color: $clr-fg-pri;
 
@@ -1100,9 +1100,9 @@
         width: spacing(34);
         animation-name: unset;
         transform: translateX(100%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-sheet;
         padding: spacing(3) spacing(2.5);
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-drp-rlc {
             display: flex;
@@ -1121,12 +1121,12 @@
 
 
 .bit-drp-sm {
-    --bit-drp-fs: #{spacing(1.5)};
-    --bit-drp-h: #{spacing(3.25)};
+    --bit-drp-fs: #{$tg-fs-xs};
+    --bit-drp-h: #{$siz-ctrl-sm};
     --bit-drp-lh: #{spacing(3)};
     --bit-drp-lbl-lh: #{spacing(2.5)};
     --bit-drp-itm-h: #{spacing(3.75)};
-    --bit-drp-itm-fs: #{spacing(1.625)};
+    --bit-drp-itm-fs: #{$tg-fs-xs};
 }
 
 .bit-drp-md {
@@ -1134,12 +1134,12 @@
 }
 
 .bit-drp-lg {
-    --bit-drp-fs: #{spacing(2)};
-    --bit-drp-h: #{spacing(5)};
+    --bit-drp-fs: #{$tg-fs-md};
+    --bit-drp-h: #{$siz-ctrl-lg};
     --bit-drp-lh: #{spacing(4.75)};
     --bit-drp-lbl-lh: #{spacing(3)};
     --bit-drp-itm-h: #{spacing(5.5)};
-    --bit-drp-itm-fs: #{spacing(2.125)};
+    --bit-drp-itm-fs: #{$tg-fs-md};
 }
 
 

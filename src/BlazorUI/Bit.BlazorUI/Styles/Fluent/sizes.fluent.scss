@@ -1,0 +1,35 @@
+// Size and opacity tokens - the dimensions a design system decides once and every component repeats.
+// The control heights and selection sizes are density-aware (multiples of the spacing unit times the
+// density multiplier, exactly what spacing() computes) so the compact/spacious presets keep working;
+// a preset built for another design system may set absolute lengths instead (Material: 40px
+// buttons / 56px fields; Cupertino: 44px).
+:root,
+:root[bit-theme="light"],
+:root[bit-theme="fluent"],
+:root[bit-theme="fluent-light"],
+:root[bit-theme="dark"],
+:root[bit-theme="fluent-dark"] {
+    //control heights (text fields, dropdowns, pickers, search boxes, icon-only buttons) per size class.
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+
+    //icon glyph sizes inside controls per size class - rem, like type, so density does not shrink glyphs.
+    --bit-siz-icon-sm: 0.75rem; //12px
+    --bit-siz-icon-md: 1rem; //16px
+    --bit-siz-icon-lg: 1.25rem; //20px
+
+    //selection indicators - the checkbox box and the radio ring - per size class.
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+
+    //the stroke of every inline circular spinner (buttons, dropdown, dialog, file upload).
+    --bit-siz-spinner-stroke: 0.125rem; //2px
+
+    //the tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls.
+    --bit-siz-popup-max-height: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 88.875);
+
+    //opacity of an element that is disabled but keeps its own colors (an image, a color swatch).
+    --bit-opa-dis: 0.5;
+}

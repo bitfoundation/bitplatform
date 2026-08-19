@@ -3,14 +3,14 @@
 .bit-acd {
     width: 100%;
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     flex-flow: column nowrap;
     font-family: $tg-font-family;
     background-color: $clr-bg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-surface;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &.bit-dis {
@@ -106,8 +106,8 @@
 }
 
 .bit-acd-ttl {
-    font-weight: 600;
-    font-size: spacing(2);
+    font-weight: $tg-fw-semibold;
+    font-size: $tg-fs-md;
 }
 
 .bit-acd-des {

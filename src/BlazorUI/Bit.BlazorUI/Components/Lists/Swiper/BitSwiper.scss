@@ -154,7 +154,7 @@
     justify-content: center;
     color: var(--bit-swp-btn);
     font-size: var(--bit-swp-btn-size);
-    transition: opacity $mot-duration ease;
+    transition: opacity $mot-duration $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -255,7 +255,7 @@
     width: var(--bit-swp-dot-size);
     height: var(--bit-swp-dot-size);
     background-color: var(--bit-swp-dot);
-    transition: background-color $mot-duration-long ease;
+    transition: background-color $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
@@ -285,7 +285,7 @@
     justify-content: center;
     color: var(--bit-swp-btn);
     background-color: transparent;
-    transition: color $mot-duration-long ease;
+    transition: color $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {

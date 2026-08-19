@@ -67,7 +67,7 @@
     // falls outside of it, which would leave the focused button with no visible indicator at all.
     &:focus-visible {
         outline: $shp-focus-ring-width solid $clr-pri-focus;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width} - 2px);
+        outline-offset: calc(-1 * #{$shp-focus-ring-width} - #{$shp-focus-ring-offset});
     }
 }
 

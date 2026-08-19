@@ -167,17 +167,21 @@
                 <br />
                 <b>Background, foreground, border</b> &mdash; <BitTag>--bit-clr-bg-*</BitTag>, <BitTag>--bit-clr-fg-*</BitTag>, <BitTag>--bit-clr-brd-*</BitTag> (the same nine-tone shape, in primary/secondary/tertiary tiers), plus <BitTag>--bit-clr-bg-overlay</BitTag> (modal scrim) and <BitTag>--bit-clr-req</BitTag> (required-field marker)
                 <br />
-                <b>Shadow</b> &mdash; <BitTag>--bit-shd-*</BitTag> (callouts, sizes <BitTag>sm</BitTag>&hellip;<BitTag>2xl</BitTag>, <BitTag>focus-ring</BitTag>, plus <BitTag>1</BitTag>&hellip;<BitTag>24</BitTag> elevation steps)
+                <b>Shadow</b> &mdash; <BitTag>--bit-shd-*</BitTag> (callouts, sizes <BitTag>sm</BitTag>&hellip;<BitTag>2xl</BitTag>, <BitTag>focus-ring</BitTag>, plus <BitTag>1</BitTag>&hellip;<BitTag>24</BitTag> elevation steps) and the per-surface elevations <BitTag>--bit-shd-{card,popup,dialog,sheet,tooltip,snackbar,appbar-top,appbar-bottom}</BitTag> that components actually consume (see <i>Family tokens</i> below)
                 <br />
-                <b>Shape</b> &mdash; <BitTag>--bit-shp-brd-radius</BitTag>, <BitTag>--bit-shp-brd-width</BitTag>, <BitTag>--bit-shp-brd-style</BitTag>, <BitTag>--bit-shp-focus-ring-width</BitTag>, <BitTag>--bit-shp-focus-ring-offset</BitTag>
+                <b>Shape</b> &mdash; <BitTag>--bit-shp-brd-radius</BitTag>, <BitTag>--bit-shp-brd-width</BitTag>, <BitTag>--bit-shp-brd-width-thick</BitTag>, <BitTag>--bit-shp-brd-style</BitTag>, <BitTag>--bit-shp-focus-ring-width</BitTag>, <BitTag>--bit-shp-focus-ring-offset</BitTag>, the radius scale <BitTag>--bit-shp-radius-{none,xs,sm,md,lg,xl,2xl,full}</BitTag> and the per-family radii <BitTag>--bit-shp-radius-{control,surface,popup,dialog}</BitTag>
+                <br />
+                <b>Size</b> &mdash; <BitTag>--bit-siz-ctrl-{sm,md,lg}</BitTag> (control heights: 26/32/40px), <BitTag>--bit-siz-icon-{sm,md,lg}</BitTag> (glyphs inside controls: 12/16/20px), <BitTag>--bit-siz-sel-{sm,md,lg}</BitTag> (checkbox box / radio ring: 14/20/26px), <BitTag>--bit-siz-spinner-stroke</BitTag>, <BitTag>--bit-siz-popup-max-height</BitTag>
                 <br />
                 <b>Spacing</b> &mdash; <BitTag>--bit-spa-scaling-factor</BitTag>
                 <br />
                 <b>Z-index</b> &mdash; <BitTag>--bit-zin-{snackbar,callout,overlay,modal,base}</BitTag> (stacking order, highest first &mdash; <BitTag>overlay</BitTag> is the click-away layer of callouts and intentionally sits above <BitTag>modal</BitTag>)
                 <br />
-                <b>Typography</b> &mdash; <BitTag>--bit-tpg-*</BitTag> (font family/weight/line-height plus per-variant <BitTag>h1..h6</BitTag>, <BitTag>body1/2</BitTag>, <BitTag>subtitle1/2</BitTag>, <BitTag>caption1/2</BitTag>, <BitTag>button</BitTag>, <BitTag>overline</BitTag>, <BitTag>inherit</BitTag>)
+                <b>Typography</b> &mdash; <BitTag>--bit-tpg-*</BitTag>: font family/weight/line-height, the font-size scale <BitTag>--bit-tpg-fs-{2xs,xs,sm,md,lg,xl,2xl,3xl,4xl}</BitTag> (10&hellip;32px; component size classes read <BitTag>sm&rarr;xs</BitTag>, <BitTag>md&rarr;sm</BitTag>, <BitTag>lg&rarr;md</BitTag>), the weight scale <BitTag>--bit-tpg-fw-{light,regular,medium,semibold,bold}</BitTag>, the control-label pair <BitTag>--bit-tpg-ctrl-letter-spacing</BitTag> / <BitTag>--bit-tpg-ctrl-text-transform</BitTag>, plus the <BitTag>BitText</BitTag> variants <BitTag>h1..h6</BitTag>, <BitTag>body1/2</BitTag>, <BitTag>subtitle1/2</BitTag>, <BitTag>caption1/2</BitTag>, <BitTag>button</BitTag>, <BitTag>overline</BitTag>, <BitTag>inherit</BitTag>
                 <br />
-                <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>, the looping set <BitTag>--bit-mot-duration-spinner</BitTag>, <BitTag>--bit-mot-easing-spinner</BitTag>, <BitTag>--bit-mot-loop-factor</BitTag>, plus the unreduced <BitTag>*-full</BitTag> sources of both (see <i>Motion &amp; accessibility</i>)
+                <b>Motion</b> &mdash; <BitTag>--bit-mot-duration</BitTag>, <BitTag>--bit-mot-duration-short</BitTag>, <BitTag>--bit-mot-duration-long</BitTag>, <BitTag>--bit-mot-easing</BitTag>, the entry/exit curves <BitTag>--bit-mot-easing-decelerate</BitTag> / <BitTag>--bit-mot-easing-accelerate</BitTag>, the looping set <BitTag>--bit-mot-duration-spinner</BitTag>, <BitTag>--bit-mot-easing-spinner</BitTag>, <BitTag>--bit-mot-loop-factor</BitTag>, plus the unreduced <BitTag>*-full</BitTag> sources of both (see <i>Motion &amp; accessibility</i>)
+                <br />
+                <b>Opacity</b> &mdash; <BitTag>--bit-opa-dis</BitTag> (the alpha of a disabled element that keeps its own colors, e.g. an image)
                 <br />
                 <b>Layout</b> &mdash; <BitTag>--bit-layout-density-scale</BitTag>, breakpoints <BitTag>--bit-bp-{xs,sm,md,lg,xl,xxl}</BitTag>
                 <br />
@@ -324,6 +328,42 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <br />
 
+            <BitText Element="h4" Typography="BitTypography.H6">Family tokens (shape &amp; elevation per component family)</BitText>
+
+            <br />
+
+            <BitText>
+                Between the primitives and the components sits a second alias tier, shipped in every bundle in
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/main/src/BlazorUI/Bit.BlazorUI/Styles/family-tokens.scss" Target="_blank">family-tokens.scss</BitLink>.
+                Every component takes its outer corner radius and its elevation from the <i>family</i> it belongs to, instead of from the single <BitTag>--bit-shp-brd-radius</BitTag> / <BitTag>--bit-shd-cal</BitTag> primitives:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="css">/* radius per family - buttons, inputs, tags, badges, checkboxes, pagination ... */
+--bit-shp-radius-control   /* &rarr; var(--bit-shp-brd-radius) */
+--bit-shp-radius-surface   /* &rarr; var(--bit-shp-brd-radius)  cards, accordions, messages, images */
+--bit-shp-radius-popup     /* &rarr; var(--bit-shp-brd-radius)  callouts, menus, dropdown lists, tooltips, snackbars */
+--bit-shp-radius-dialog    /* &rarr; var(--bit-shp-brd-radius)  dialogs, modals */
+
+/* elevation per surface family */
+--bit-shd-card             /* &rarr; var(--bit-shd-cal) */
+--bit-shd-popup            /* &rarr; var(--bit-shd-cal) */
+--bit-shd-dialog           /* &rarr; var(--bit-shd-cal) */
+--bit-shd-sheet            /* &rarr; var(--bit-shd-cal)  panels and the responsive sheet form of menus/pickers */
+--bit-shd-tooltip          /* &rarr; var(--bit-shd-cal) */
+--bit-shd-snackbar         /* &rarr; none */
+--bit-shd-appbar-top       /* header, cast downwards, foreground-tinted so it survives dark palettes */
+--bit-shd-appbar-bottom    /* footer, cast upwards */</CodeBox>
+
+            <br />
+
+            <BitText>
+                Under Fluent every family points at the same primitive, so overriding <BitTag>--bit-shp-brd-radius</BitTag> still re-rounds everything exactly as before. The families exist for the design systems that disagree: Material rounds a button (pill), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS &mdash; see <i>Themes for other design systems</i> below. Themable from C# via <BitTag>BitTheme.Shape.Radius.*</BitTag> and <BitTag>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</BitTag>.
+            </BitText>
+
+            <br />
+
             <BitText Element="h4" Typography="BitTypography.H6">Per-component variables</BitText>
 
             <br />
@@ -439,6 +479,111 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 Feeding <BitTag>Blue</BitTag> to <BitTag>BitThemeFactory</BitTag> reproduces the packaged primary, which makes it a useful baseline when you want to see how much a candidate brand color diverges from the default.
             </BitText>
 
+        </BitCard>
+
+        <br />
+
+        <BitCard>
+            <BitText Element="h2" Typography="BitTypography.H4">Themes for other design systems</BitText>
+
+            <br />
+
+            <BitText>
+                Every value that a design system decides once &mdash; the type ramp and weights, the corner radius of each component family, the elevation of each surface family, control heights, icon and checkbox sizes, the spinner stroke, entry/exit motion curves, the disabled alpha &mdash; is a global token that the component CSS reads and never hard-codes. That is what makes a Material or a Cupertino look a <i>stylesheet</i> rather than a fork: a preset is one <BitTag>:root[bit-theme="&hellip;"]</BitTag> block that re-values the tokens, and every component follows in step.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                The tokens you will typically retune, with the Fluent defaults they replace:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="css">/* my-material.css - a Material-3-flavoured preset over the packaged bundle */
+:root[bit-theme="material-light"],
+:root [bit-theme="material-light"] {
+    /* type: Roboto ramp; medium labels; 0.1px tracking on control labels */
+    --bit-tpg-font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bit-tpg-fs-xs: 0.75rem;   --bit-tpg-fs-sm: 0.875rem;   --bit-tpg-fs-md: 1rem;
+    --bit-tpg-fw-semibold: 500;                 /* Roboto has no 600 - labels/titles fall to medium */
+    --bit-tpg-ctrl-letter-spacing: 0.00625rem;
+    --bit-tpg-ctrl-text-transform: none;        /* Material 2 would say uppercase */
+
+    /* shape: pill buttons, 4px fields/menus, 12px cards, 28px dialogs */
+    --bit-shp-radius-control: 1.25rem;
+    --bit-shp-radius-popup: 0.25rem;
+    --bit-shp-radius-surface: 0.75rem;
+    --bit-shp-radius-dialog: 1.75rem;
+
+    /* size: 40px controls, 18px checkboxes, 24px icons */
+    --bit-siz-ctrl-sm: 2rem;  --bit-siz-ctrl-md: 2.5rem;  --bit-siz-ctrl-lg: 3rem;
+    --bit-siz-sel-sm: 1rem;   --bit-siz-sel-md: 1.125rem; --bit-siz-sel-lg: 1.25rem;
+    --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem;
+
+    /* elevation: level 1 cards, level 2 menus, level 3 dialogs, level 6 snackbars, flat tooltips */
+    --bit-shd-card: var(--bit-shd-1);
+    --bit-shd-popup: var(--bit-shd-2);
+    --bit-shd-dialog: var(--bit-shd-3);
+    --bit-shd-sheet: var(--bit-shd-3);
+    --bit-shd-tooltip: none;
+    --bit-shd-snackbar: var(--bit-shd-6);
+
+    /* motion: emphasized decelerate / accelerate */
+    --bit-mot-easing-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+
+    /* state: 38% disabled alpha */
+    --bit-opa-dis: 0.38;
+
+    /* colors: the eight roles + fg/bg/brd families, exactly like the packaged palettes */
+    --bit-clr-pri: #6750A4;
+    /* ... */
+}</CodeBox>
+
+            <br />
+
+            <BitText>
+                A Cupertino preset is the same file with different numbers: SF Pro at 17px (<BitTag>--bit-tpg-fs-sm: 1.0625rem</BitTag>), 590 semibold, 44px controls, 10px control corners, 14px dialog corners, hairline separators (<BitTag>--bit-shp-brd-width: 0.5px</BitTag>) with <BitTag>--bit-shd-popup: none</BitTag>. Load it as an extra stylesheet (or with <BitTag>BitExternalThemeLoader</BitTag>) and activate it with <BitTag>BitThemeManager.SetThemeAsync(BitThemeName.Custom("material-light"))</BitTag>; the <BitTag>:root [bit-theme]</BitTag> twin selector makes it work as a scoped preset too.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                The same knobs are reachable from C# for runtime composition, so a tenant can pick a design system the way it picks a brand color:
+            </BitText>
+
+            <br />
+
+            <CodeBox Language="csharp">var material = new BitTheme
+{
+    Typography =
+    {
+        FontFamily = "Roboto, sans-serif",
+        FontWeights = { SemiBold = "500" },
+        Control = { LetterSpacing = "0.00625rem" },
+    },
+    Shape =
+    {
+        Radius = { Control = "1.25rem", Popup = "0.25rem", Surface = "0.75rem", Dialog = "1.75rem" },
+    },
+    Size =
+    {
+        Control = { Sm = "2rem", Md = "2.5rem", Lg = "3rem" },
+        Selection = { Sm = "1rem", Md = "1.125rem", Lg = "1.25rem" },
+    },
+    BoxShadow = { Card = "var(--bit-shd-1)", Popup = "var(--bit-shd-2)", Dialog = "var(--bit-shd-3)", Snackbar = "var(--bit-shd-6)" },
+    Motion = { EasingDecelerate = "cubic-bezier(0.05, 0.7, 0.1, 1)" },
+    Opacity = { Disabled = "0.38" },
+};
+
+await BitThemeManager.ApplyBitThemeAsync(BitThemeUtilities.Merge(material, brandTheme));</CodeBox>
+
+            <br />
+
+            <BitText>
+                <b>What stays per-component.</b> Geometry that is the identity of one control (a slider's thumb, a toggle's track, a clock dial, an avatar coin ladder, the loader shapes) is deliberately not global &mdash; it is exposed as that component's own <BitTag>--bit-&lt;cmp&gt;-*</BitTag> variables (see <i>Per-component variables</i>) and a preset retunes it there when it wants to.
+            </BitText>
         </BitCard>
 
         <br />
@@ -1086,6 +1231,12 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
 
             <br />
 
+            <BitText>
+                Density scales <i>rhythm</i>, not <i>type</i>: paddings, gaps, control heights (<BitTag>--bit-siz-ctrl-*</BitTag>) and selection sizes (<BitTag>--bit-siz-sel-*</BitTag>) follow the spacing unit times the density multiplier, while font sizes (<BitTag>--bit-tpg-fs-*</BitTag>) and glyph sizes (<BitTag>--bit-siz-icon-*</BitTag>) are <BitTag>rem</BitTag> values that follow the root font size only &mdash; the same split Material and Fluent make, so a compact UI keeps legible text.
+            </BitText>
+
+            <br />
+
             <CodeBox Language="csharp">var theme = new BitTheme
 {
     Layout =
@@ -1258,7 +1409,7 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
             <br />
 
             <BitText>
-                <b>Coverage.</b> <BitTag>BitCss.Var</BitTag> wraps every theme token family: color (including the per-role <BitTag>Focus</BitTag>/<BitTag>Disabled</BitTag>/<BitTag>DisabledText</BitTag> slots), shadow (with <BitTag>Shadow.FocusRing</BitTag>), z-index, shape (with the focus-ring width/offset), spacing, typography, motion (<BitTag>BitCss.Var.Motion</BitTag>), layout &amp; breakpoints (<BitTag>BitCss.Var.Layout</BitTag>), and the semantic aliases (<BitTag>BitCss.Var.Semantic</BitTag>).
+                <b>Coverage.</b> <BitTag>BitCss.Var</BitTag> wraps every theme token family: color (including the per-role <BitTag>Focus</BitTag>/<BitTag>Disabled</BitTag>/<BitTag>DisabledText</BitTag> slots), shadow (with <BitTag>Shadow.FocusRing</BitTag> and the per-surface <BitTag>Shadow.Card</BitTag>/<BitTag>Popup</BitTag>/<BitTag>Dialog</BitTag>/&hellip;), z-index, shape (with the focus-ring width/offset and <BitTag>Shape.Radius.*</BitTag>), size (<BitTag>BitCss.Var.Size</BitTag>), opacity (<BitTag>BitCss.Var.Opacity</BitTag>), spacing, typography (with <BitTag>Typography.FontSize.*</BitTag>, <BitTag>Typography.FontWeights.*</BitTag>, <BitTag>Typography.Control.*</BitTag>), motion (<BitTag>BitCss.Var.Motion</BitTag>), layout &amp; breakpoints (<BitTag>BitCss.Var.Layout</BitTag>), and the semantic aliases (<BitTag>BitCss.Var.Semantic</BitTag>).
             </BitText>
         </BitCard>
 
@@ -1555,7 +1706,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
             <BitText>
                 <b>Authoring helpers in C#</b>
                 <br />
-                <BitTag>BitCss.Class</BitTag> &mdash; <BitTag>bit-css-*</BitTag> utility class names
+                <BitTag>BitCss.Class</BitTag> &mdash; <BitTag>bit-css-*</BitTag> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <BitTag>bit-css-shp-radius-*</BitTag>, focus ring)
                 <br />
                 <BitTag>BitCss.Var</BitTag> &mdash; <BitTag>--bit-*</BitTag> custom property names
             </BitText>

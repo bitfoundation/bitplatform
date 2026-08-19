@@ -5,21 +5,21 @@
 // The default size, declared as a mixin so both the root element and the callout - which is rendered
 // outside of it and therefore inherits nothing from it - can fall back to it.
 @mixin dtp-size-medium {
-    --bit-dtp-inp-h: #{spacing(4)};
-    --bit-dtp-inp-fs: #{spacing(1.75)};
+    --bit-dtp-inp-h: #{$siz-ctrl-md};
+    --bit-dtp-inp-fs: #{$tg-fs-sm};
     --bit-dtp-cell-size: #{spacing(3.5)};
-    --bit-dtp-cell-fs: #{spacing(1.5)};
-    --bit-dtp-lbl-fs: #{spacing(1.75)};
+    --bit-dtp-cell-fs: #{$tg-fs-xs};
+    --bit-dtp-lbl-fs: #{$tg-fs-sm};
 }
 
 .bit-dtp {
     margin: 0;
     padding: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
-    font-size: spacing(2.25);
+    font-size: $tg-fs-lg;
     font-family: $tg-font-family;
 
     @include dtp-size-medium;
@@ -98,7 +98,7 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
     padding: spacing(0.5) 0;
     font-size: var(--bit-dtp-lbl-fs);
@@ -122,7 +122,7 @@
     padding: 0 spacing(1);
     flex-flow: row nowrap;
     box-sizing: border-box;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -147,7 +147,7 @@
         width: unset;
         pointer-events: none;
         display: inline-block;
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
         color: $clr-fg-sec;
     }
 
@@ -168,7 +168,7 @@
     border: none;
     cursor: pointer;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     border-radius: 0;
     box-sizing: border-box;
     text-overflow: ellipsis;
@@ -215,18 +215,18 @@
 .bit-dtp-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 
     @include dtp-size-medium;
 }
@@ -236,7 +236,7 @@
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
 }
 
@@ -289,7 +289,7 @@
     width: 100%;
     border: none;
     aspect-ratio: 1;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-pri;
     position: relative;
     text-align: center;
@@ -300,7 +300,7 @@
     // container rather than with it.
     animation-duration: $mot-duration;
     animation-name: bit-fade-show;
-    animation-timing-function: cubic-bezier(0.1, 0.25, 0.75, 0.9);
+    animation-timing-function: $mot-easing;
 }
 
 .bit-dtp-dbt {
@@ -321,7 +321,7 @@
     justify-content: center;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -355,7 +355,7 @@
 }
 
 .bit-dtp-dhl {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-ter;
 }
 
@@ -371,12 +371,12 @@
 }
 
 .bit-dtp-dbo {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     color: $clr-fg-sec;
 }
 
 .bit-dtp-dtd {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     border-radius: 50%;
     color: var(--bit-dtp-clr-txt);
     background-color: var(--bit-dtp-clr);
@@ -394,7 +394,7 @@
 
 .bit-dtp-wnm {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     align-items: center;
     box-sizing: border-box;
     width: var(--bit-dtp-cell-size);
@@ -426,7 +426,7 @@
     flex-grow: 1;
     cursor: text;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     text-align: start;
     color: $clr-fg-pri;
     position: relative;
@@ -436,10 +436,10 @@
     display: inline-block;
     text-overflow: ellipsis;
     padding: 0 spacing(1.25);
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     line-height: var(--bit-dtp-cell-size);
     background-color: transparent;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
 .bit-dtp-ptb {
@@ -486,7 +486,7 @@
     font-size: var(--bit-dtp-cell-fs);
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -519,10 +519,10 @@
     width: spacing(3.75);
     outline: transparent;
     line-height: spacing(3.75);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     aspect-ratio: 1;
 
     @media (hover: hover) {
@@ -606,12 +606,12 @@
     white-space: nowrap;
     outline: transparent;
     max-width: spacing(7);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     line-height: spacing(5);
     text-overflow: ellipsis;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -627,7 +627,7 @@
 }
 
 .bit-dtp-psm {
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     background-color: $clr-bg-sec;
 
     @media (hover: hover) {
@@ -674,7 +674,7 @@
 .bit-dtp-tdv {
     display: flex;
     align-items: center;
-    font-size: spacing(2.5);
+    font-size: $tg-fs-xl;
     justify-content: center;
     font-weight: $tg-font-weight;
 }
@@ -699,7 +699,7 @@
     justify-content: center;
     -moz-appearance: textfield; // Firefox
     background-color: $clr-bg-pri;
-    font-size: spacing(2.28);
+    font-size: $tg-fs-lg;
     font-weight: $tg-font-weight;
     overflow: hidden;
     aspect-ratio: 1;
@@ -723,7 +723,7 @@
 
 .bit-dtp-bam,
 .bit-dtp-bpm {
-    font-size: spacing(1.8);
+    font-size: $tg-fs-sm;
     font-weight: $tg-font-weight;
 }
 
@@ -827,8 +827,8 @@
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);
-        box-shadow: $box-shadow-callout;
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-dtp-dwp,
         .bit-dtp-mwp,
@@ -914,11 +914,11 @@
 
 
 .bit-dtp-sm {
-    --bit-dtp-inp-h: #{spacing(3.25)};
-    --bit-dtp-inp-fs: #{spacing(1.5)};
+    --bit-dtp-inp-h: #{$siz-ctrl-sm};
+    --bit-dtp-inp-fs: #{$tg-fs-xs};
     --bit-dtp-cell-size: #{spacing(3)};
-    --bit-dtp-cell-fs: #{spacing(1.375)};
-    --bit-dtp-lbl-fs: #{spacing(1.5)};
+    --bit-dtp-cell-fs: #{$tg-fs-xs};
+    --bit-dtp-lbl-fs: #{$tg-fs-xs};
 }
 
 .bit-dtp-md {
@@ -926,9 +926,9 @@
 }
 
 .bit-dtp-lg {
-    --bit-dtp-inp-h: #{spacing(5)};
-    --bit-dtp-inp-fs: #{spacing(2)};
+    --bit-dtp-inp-h: #{$siz-ctrl-lg};
+    --bit-dtp-inp-fs: #{$tg-fs-md};
     --bit-dtp-cell-size: #{spacing(4.25)};
-    --bit-dtp-cell-fs: #{spacing(1.75)};
-    --bit-dtp-lbl-fs: #{spacing(2)};
+    --bit-dtp-cell-fs: #{$tg-fs-sm};
+    --bit-dtp-lbl-fs: #{$tg-fs-md};
 }

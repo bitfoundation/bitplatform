@@ -252,6 +252,65 @@ $-bit-css-shadows: (
     border-style: $shp-border-style;
 }
 
+.bit-css-shp-brd-width-thick {
+    border-width: $shp-border-width-thick;
+}
+
+//shape - radius scale and per-family radii
+$bit-radius-scale: (
+    none: $shp-radius-none,
+    xs: $shp-radius-xs,
+    sm: $shp-radius-sm,
+    md: $shp-radius-md,
+    lg: $shp-radius-lg,
+    xl: $shp-radius-xl,
+    2xl: $shp-radius-2xl,
+    full: $shp-radius-full,
+    control: $shp-radius-control,
+    surface: $shp-radius-surface,
+    popup: $shp-radius-popup,
+    dialog: $shp-radius-dialog,
+);
+
+@each $name, $value in $bit-radius-scale {
+    .bit-css-shp-radius-#{$name} {
+        border-radius: $value;
+    }
+}
+
+//shadow - per surface family
+.bit-css-shd-card {
+    box-shadow: $box-shadow-card;
+}
+
+.bit-css-shd-popup {
+    box-shadow: $box-shadow-popup;
+}
+
+.bit-css-shd-dialog {
+    box-shadow: $box-shadow-dialog;
+}
+
+.bit-css-shd-sheet {
+    box-shadow: $box-shadow-sheet;
+}
+
+.bit-css-shd-tooltip {
+    box-shadow: $box-shadow-tooltip;
+}
+
+.bit-css-shd-snackbar {
+    box-shadow: $box-shadow-snackbar;
+}
+
+.bit-css-shd-appbar-top {
+    box-shadow: $box-shadow-appbar-top;
+}
+
+.bit-css-shd-appbar-bottom {
+    box-shadow: $box-shadow-appbar-bottom;
+}
+
 //focus (a11y) - color tokens applied on :focus-visible.
 @each $role, $tokens in $bit-semantic-color-roles {
     .bit-css-clr-#{$role}-focus:focus-visible {

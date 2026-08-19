@@ -8,15 +8,15 @@
     outline: none;
     display: flex;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     align-items: center;
     pointer-events: none;
     z-index: $zindex-modal;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     background-color: transparent;
-    transition: opacity $mot-duration-long ease 0s;
+    transition: opacity $mot-duration-long $mot-easing 0s;
 }
 
 .bit-mdl-nta {
@@ -41,8 +41,8 @@
     pointer-events: all;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-dialog;
+    border-radius: $shp-radius-dialog;
 }
 
 .bit-mdl-fhe {
