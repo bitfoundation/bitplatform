@@ -98,7 +98,7 @@ public static class ButilCapabilityCatalog
                 IsKnown = false,
                 Message = candidates.Length > 0
                     ? $"Bit.Butil has nothing called '{query}'. Did you mean: {string.Join(", ", candidates)}?"
-                    : $"Bit.Butil has nothing called '{query}'. Call GetButilBrowserSupport for every documented API, or SearchButil(query: \"{query}\")."
+                    : $"Bit.Butil has nothing called '{query}'. Call GetButilDocsPage with no slug for every documented API, or SearchButil(query: \"{query}\")."
             };
         }
 

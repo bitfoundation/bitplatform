@@ -34,7 +34,6 @@ public class HttpSurfaceTests : McpTestBase
             ["SearchButil"] = "?query=clipboard",
             ["GetButilSetupGuide"] = "?hostingModel=wasm",
             ["GetButilApiDetails"] = "?typeName=Clipboard",
-            ["InspectButilApi"] = "?name=Clipboard",
             ["PlanButilFeature"] = "?apis=Clipboard",
             ["GetButilDocsPage"] = "?slug=clipboard",
             ["GetButilGuideSection"] = "?heading=Getting%20started",
@@ -63,17 +62,17 @@ public class HttpSurfaceTests : McpTestBase
         // something the other is not - a filter, a cache, a different origin. Held against the tool
         // itself rather than against a hand-written expectation, which is the only way the two can
         // be shown not to have drifted.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilBrowserSupport"));
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilApiDetails?typeName=Clipboard"));
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-        var overHttp = JsonSerializer.Deserialize<Capability[]>(await response.Content.ReadAsStringAsync(), JsonOptions);
-        var overMcp = await CallStructuredAsync<Capability[]>("GetButilBrowserSupport");
+        var overHttp = JsonSerializer.Deserialize<ApiDetailsResult>(await response.Content.ReadAsStringAsync(), JsonOptions);
+        var overMcp = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Clipboard" });
 
         Assert.Multiple(() =>
         {
-            Assert.That(overHttp, Is.Not.Null.And.Not.Empty);
-            Assert.That(overHttp!.Select(capability => capability.Api), Does.Contain("Clipboard"));
+            Assert.That(overHttp, Is.Not.Null);
+            Assert.That(overHttp!.Details?.Name, Is.EqualTo("Clipboard"));
 
             // Re-serialized rather than compared as records: the payload carries arrays, and record
             // equality on those is by reference.
@@ -140,7 +139,7 @@ public class HttpSurfaceTests : McpTestBase
     [Test]
     public async Task The_api_mirror_is_reachable_from_another_origin_too()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url("api/mcp/GetButilApiList"));
+        using var request = new HttpRequestMessage(HttpMethod.Get, McpServerFixture.Url("api/mcp/GetButilApiDetails"));
         request.Headers.Add("Origin", "https://example.test");
 
         using var response = await Http.SendAsync(request);
@@ -157,7 +156,7 @@ public class HttpSurfaceTests : McpTestBase
     {
         // Everything behind these routes is public read-only documentation. A 401 here would mean
         // an MCP client is being asked to authenticate to read a library's docs.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilOverview"));
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilSetupGuide?hostingModel=wasm"));
 
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
     }
@@ -197,8 +196,8 @@ public class HttpSurfaceTests : McpTestBase
         // All three are generated from DocsNav rather than written by hand, so a page added to the
         // nav is a page that appears here. A checked-in copy would silently rot, and the way that
         // shows up is a slug the tools know about and the sitemap does not.
-        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsList"));
-        var pages = JsonSerializer.Deserialize<DocsPage[]>(await response.Content.ReadAsStringAsync(), McpTestBase.JsonOptions)!;
+        using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsPage"));
+        var pages = DocsIndexRow.ParseAll(await response.Content.ReadAsStringAsync());
 
         var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"))).Content.ReadAsStringAsync();
         var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();
@@ -246,7 +245,7 @@ public class HttpSurfaceTests : McpTestBase
         {
             Assert.That((int)response.StatusCode, Is.LessThan(500), $"POST /mcp answered {(int)response.StatusCode}.");
             Assert.That(body, Does.Contain("\"jsonrpc\""), $"POST /mcp did not answer with JSON-RPC: {body[..Math.Min(300, body.Length)]}");
-            Assert.That(body, Does.Contain("GetButilOverview"), "POST /mcp did not list this server's tools.");
+            Assert.That(body, Does.Contain("SearchButil"), "POST /mcp did not list this server's tools.");
         });
     }
 }

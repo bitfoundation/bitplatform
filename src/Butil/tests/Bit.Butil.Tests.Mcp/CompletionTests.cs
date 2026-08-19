@@ -59,8 +59,7 @@ public class CompletionTests : McpTestBase
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://docs/{slug}" }, "slug", "");
 
-        var pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
-        var slugs = pages.Select(page => page.Slug).ToArray();
+        var slugs = (await DocsIndexAsync()).Select(page => page.Slug).ToArray();
 
         Assert.Multiple(() =>
         {
@@ -109,8 +108,7 @@ public class CompletionTests : McpTestBase
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://guide/{heading}" }, "heading", "");
 
-        var sections = await CallStructuredAsync<GuideSection[]>("GetButilGuideSections");
-        var headings = sections.Select(section => section.Heading).ToArray();
+        var headings = await ListAsync("GetButilGuideSection");
 
         Assert.Multiple(() =>
         {
@@ -126,7 +124,7 @@ public class CompletionTests : McpTestBase
     {
         var completion = await CompleteAsync(new ResourceTemplateReference { Uri = "butil://source/{path}" }, "path", "");
 
-        var files = await CallStructuredAsync<SourceFile[]>("GetButilSourceFiles");
+        var files = await ListAsync("GetButilSourceFile");
 
         Assert.Multiple(() =>
         {

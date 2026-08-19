@@ -6,10 +6,16 @@ namespace Bit.Butil.Demo.Server.Services;
 /// <para>
 /// It is the only place this server gets to speak before it is asked anything, and it is paid for
 /// on every request of every session, so it carries exactly two things a per-tool description
-/// cannot: which tool to reach for first out of fourteen, and the handful of facts about this
-/// library that decide whether code that compiles also runs. Everything else - what a member is
-/// called, what an API needs from the page - is a tool call away and belongs there instead, where
-/// it is only paid for when it is wanted.
+/// cannot: which of the seven tools to reach for first, and the handful of facts about this library
+/// that decide whether code that compiles also runs. Everything else - what a member is called,
+/// what an API needs from the page - is a tool call away and belongs there instead, where it is
+/// only paid for when it is wanted.
+/// </para>
+/// <para>
+/// Because this text is always present, nothing else on the server restates it. There is no
+/// "overview" tool re-sending the four rules below to a model that already has them, and the
+/// prompts point at these rules rather than repeating them - a fact stated twice in one context
+/// window costs twice and is believed no harder.
 /// </para>
 /// <para>
 /// The counts are interpolated from the catalogs rather than written down, for the same reason
@@ -37,10 +43,14 @@ public static class ButilMcpInstructions
         Then, before writing any code:
         - GetButilApiDetails for every type you are about to call. The wrappers follow the browser API's own
           naming, so a plausible member name is usually not the real one.
-        - InspectButilApi for one API, or PlanButilFeature for the set a feature needs, to learn what the page
-          has to arrange first. This is where the bugs that compile come from.
+        - PlanButilFeature with the APIs involved - one name or the whole set - to learn what the page has to
+          arrange first. This is where the bugs that compile come from.
         - GetButilSetupGuide once per app, for its hosting model - the wiring differs per model and getting it
           wrong is silent.
+
+        The remaining tools read one thing each: GetButilDocsPage, GetButilGuideSection, GetButilSourceFile.
+        Call any of them with no argument to get the list of what it can return - the docs index doubles as the
+        browser-support matrix - rather than looking for a separate tool that lists them.
 
         Four things hold for every Butil call. Apply them without being asked:
         1. Touch the browser from OnAfterRenderAsync or an event handler, never OnInitializedAsync. While the

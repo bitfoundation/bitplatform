@@ -123,7 +123,7 @@ Accept: application/json, text/event-stream
     <div @ref="_callSection">
     <DemoSection Title="3. Call a tool"
                  Api="tools/call"
-                 Description="The one that does the work. Pick a tool, edit its arguments, and send - the response pane shows the JSON-RPC envelope the client receives, and the pane under it shows the text inside it, which is what an agent would actually put in front of the model. Try SearchButil with a task described in your own words, or InspectButilApi with an API you are considering."
+                 Description="The one that does the work. Pick a tool, edit its arguments, and send - the response pane shows the JSON-RPC envelope the client receives, and the pane under it shows the text inside it, which is what an agent would actually put in front of the model. Try SearchButil with a task described in your own words, or PlanButilFeature with the APIs a feature would need. The retrieval tools take no required argument: send GetButilDocsPage with an empty object and the index of every page comes back instead of one page."
                  Code=@("""
 {
   "jsonrpc": "2.0",
@@ -257,7 +257,7 @@ Accept: application/json, text/event-stream
     <DemoSection Title="6. The same tools over plain HTTP"
                  Api="/api/mcp/{tool}"
                  Description="Every tool is also an ordinary GET endpoint returning ordinary JSON - no handshake, no session, no JSON-RPC envelope. That is not a second implementation: it is the same method on the same controller, attributed twice. It exists so a tool can be checked in a browser tab, curl or a test, which is a much shorter loop than wiring up an MCP client to find out what one returns."
-                 Code=@($"curl \"{HttpEndpoint}InspectButilApi?name=WakeLock\"")
+                 Code=@($"curl \"{HttpEndpoint}PlanButilFeature?apis=WakeLock\"")
                  Language="shell">
         <div class="field-row">
             <div class="field">
@@ -298,12 +298,12 @@ Accept: application/json, text/event-stream
 
 <Callout Type="warning" Title="Responses are clipped here, not on the wire">
     A real client gets the whole payload; this page shows the first few thousand characters of each pane so
-    one <code>GetButilOverview</code> does not fill the screen. The byte count above each exchange is what
+    one <code>GetButilSetupGuide</code> does not fill the screen. The byte count above each exchange is what
     actually arrived.
 </Callout>
 
 <ApiTable Title="What the server exposes">
-    <ApiMember Name="Tools" Signature="@ToolsSignature" Description="Search, the exact API of every service, what each one needs from the page, the setup per hosting model, the docs pages, the guide, the browser-support matrix and the demo's own source files." />
+    <ApiMember Name="Tools" Signature="@ToolsSignature" Description="Search, the exact API of every service, what an API or a whole feature needs from the page, the setup per hosting model, the docs pages, the guide and the demo's own source files. Seven of them: a listing is not a tool here, it is what a retrieval tool answers when called with no argument, and the docs index doubles as the browser-support matrix." />
     <ApiMember Name="Tool annotations" Signature="readOnlyHint, idempotentHint, destructiveHint, openWorldHint" Description="Every tool here reads, reads only from this process, and answers the same way twice. A client that is told so can consult the documentation without stopping to ask permission first." />
     <ApiMember Name="Output schemas" Signature="@OutputSchemasSignature" Description="The ones that answer with data publish an outputSchema and return structuredContent alongside the text, so a client can consume the object instead of re-parsing JSON out of prose." />
     <ApiMember Name="Instructions" Signature="returned by initialize" Description="The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the four rules that separate Butil code that compiles from Butil code that works." />
@@ -326,7 +326,6 @@ Accept: application/json, text/event-stream
         ["SearchButil"] = """{ "query": "copy text to the clipboard", "limit": 5 }""",
         ["GetButilSetupGuide"] = """{ "hostingModel": "web-app" }""",
         ["GetButilApiDetails"] = """{ "typeName": "Clipboard" }""",
-        ["InspectButilApi"] = """{ "name": "WakeLock" }""",
         ["PlanButilFeature"] = """{ "apis": "MediaDevices, MediaRecorder, FileSystem" }""",
         ["GetButilDocsPage"] = """{ "slug": "clipboard" }""",
         ["GetButilGuideSection"] = """{ "heading": "Subscriptions are disposable" }""",
@@ -399,8 +398,8 @@ Accept: application/json, text/event-stream
     private string _arguments = "{}";
     private string _resourceUri = "butil://support";
     private string? _selectedPrompt;
-    private string _httpTool = "InspectButilApi";
-    private string _httpQuery = "name=WakeLock";
+    private string _httpTool = "PlanButilFeature";
+    private string _httpQuery = "apis=WakeLock";
 
     private string _completionTarget = _completionTargets[0].Label;
     private string _completionValue = "stor";

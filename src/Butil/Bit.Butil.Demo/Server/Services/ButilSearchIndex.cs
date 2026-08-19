@@ -288,7 +288,7 @@ public static class ButilSearchIndex
         foreach (var capability in ButilCapabilityCatalog.Capabilities)
         {
             entries.Add(new Entry("Browser support", capability.Api, capability.BrowserSupport,
-                $"InspectButilApi(name: \"{capability.Services.FirstOrDefault() ?? capability.Api}\")",
+                $"PlanButilFeature(apis: \"{capability.Services.FirstOrDefault() ?? capability.Api}\")",
                 string.Join(' ', capability.Requires), string.Join(' ', capability.Services)));
         }
 

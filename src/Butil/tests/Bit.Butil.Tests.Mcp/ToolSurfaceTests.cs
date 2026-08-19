@@ -172,15 +172,17 @@ public class ToolSurfaceTests : McpTestBase
                         break;
 
                     case "GetButilSetupGuide": Assert.That(required, Does.Contain("hostingModel")); break;
-                    case "GetButilApiDetails": Assert.That(required, Does.Contain("typeName")); break;
-                    case "InspectButilApi": Assert.That(required, Does.Contain("name")); break;
                     case "PlanButilFeature": Assert.That(required, Does.Contain("apis")); break;
-                    case "GetButilDocsPage": Assert.That(required, Does.Contain("slug")); break;
-                    case "GetButilGuideSection": Assert.That(required, Does.Contain("heading")); break;
-                    case "GetButilSourceFile": Assert.That(required, Does.Contain("path")); break;
 
+                    // The retrieval tools are the other half of the fold that removed the listing
+                    // tools: calling one with nothing is how a client asks what it can return.
+                    // Marking the argument required would put those four listings back out of reach
+                    // and leave nothing in their place.
                     default:
-                        Assert.That(required, Is.Empty, $"{tool.Name} takes no arguments, so nothing can be required.");
+                        Assert.That(tool.Name, Is.AnyOf([.. ButilMcp.ListingTools]),
+                            $"{tool.Name} requires none of its arguments but is not one of the tools that lists on an empty call.");
+                        Assert.That(required, Is.Empty,
+                            $"{tool.Name} lists what it can return when called with no argument, so its argument cannot be required.");
                         break;
                 }
             }
@@ -191,15 +193,15 @@ public class ToolSurfaceTests : McpTestBase
     public void The_tool_list_itself_fits_in_a_context_window()
     {
         // tools/list is put in front of the model on every session this server is connected to, so
-        // its total size is a standing cost. Fourteen richly described tools should be a few
-        // thousand tokens, not tens of thousands.
+        // its total size is a standing cost - and the reason the surface is seven tools rather than
+        // the fourteen it started as. Richly described, they should be a couple of thousand tokens.
         var size = _tools.Sum(tool => tool.Name.Length
                                     + (tool.Title?.Length ?? 0)
                                     + (tool.Description?.Length ?? 0)
                                     + tool.JsonSchema.GetRawText().Length
                                     + (tool.ReturnJsonSchema?.GetRawText().Length ?? 0));
 
-        Assert.That(size, Is.LessThan(80_000),
+        Assert.That(size, Is.LessThan(12_000),
             $"The advertised tool surface is {size} characters, which every session pays for up front.");
     }
 

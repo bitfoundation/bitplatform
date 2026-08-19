@@ -1,31 +1,5 @@
 namespace Bit.Butil.Demo.Server.Dtos;
 
-/// <summary>One page of the documentation site (mirrors an entry of the client's DocsNav).</summary>
-public record ButilDocsPageDto
-{
-    /// <summary>The sidebar group the page belongs to, e.g. "Storage".</summary>
-    public required string Group { get; init; }
-
-    /// <summary>The value to pass to GetButilDocsPage, e.g. "clipboard".</summary>
-    public required string Slug { get; init; }
-
-    /// <summary>The page's path on the live documentation site.</summary>
-    public required string Url { get; init; }
-
-    public required string Title { get; init; }
-
-    public required string Summary { get; init; }
-
-    /// <summary>The Bit.Butil public types the page documents - empty for a guide page.</summary>
-    public required string[] Services { get; init; }
-
-    /// <summary>How widely the underlying browser API is implemented, e.g. "Chromium only".</summary>
-    public required string BrowserSupport { get; init; }
-
-    /// <summary>The preconditions the API imposes: HTTPS, a permission prompt, a user gesture.</summary>
-    public required string[] Requires { get; init; }
-}
-
 /// <summary>One heading of the library's README, which doubles as its reference guide.</summary>
 public record ButilGuideSectionDto
 {
@@ -103,11 +77,18 @@ public record ButilApiTypeDetailsDto
     public required ButilApiMemberDto[] Members { get; init; }
 }
 
-/// <summary>What GetButilApiDetails answers: the type's reference, or why there is none.</summary>
+/// <summary>What GetButilApiDetails answers: the type's reference, the list to pick one from, or why there is none.</summary>
 public record ButilApiDetailsResultDto
 {
     /// <summary>The full reference of the type, when a public type goes by the requested name.</summary>
     public ButilApiTypeDetailsDto? Details { get; init; }
+
+    /// <summary>
+    /// Every public type, set instead of Details when the call named none. A listing does not earn
+    /// a tool of its own - it is what the retrieval tool answers when asked for nothing in
+    /// particular, which is the one moment a caller wants it.
+    /// </summary>
+    public ButilApiTypeDto[]? Types { get; init; }
 
     /// <summary>Set instead of Details when nothing matched - it names the closest candidates.</summary>
     public string? Message { get; init; }

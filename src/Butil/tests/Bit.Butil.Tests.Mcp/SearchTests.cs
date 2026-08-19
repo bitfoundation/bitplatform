@@ -175,7 +175,7 @@ public class SearchTests : McpTestBase
             ("GetButilSourceFile", new { path = "Demo/Client/Pages/NoSuchPage.razor" }),
             ("GetButilGuideSection", new { heading = "No such section" }),
             ("GetButilApiDetails", new { typeName = "NoSuchType" }),
-            ("InspectButilApi", new { name = "NoSuchApi" }),
+            ("PlanButilFeature", new { apis = "NoSuchApi" }),
         };
 
         var undetected = new List<string>();

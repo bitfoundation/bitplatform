@@ -61,7 +61,11 @@ suite runs the app the way the app runs.
 ## What a failure here usually means
 
 * **A tool, resource or prompt name changed** — that is a breaking change for every client that
-  already holds the old name, and `WireContracts.cs` is where you accept it deliberately.
+  already holds the old name, and `WireContracts.cs` is where you accept it deliberately. The count
+  is part of that contract: the surface is deliberately **seven** tools, because a description is
+  paid for in every request of every session. A listing is not a tool here — it is what a retrieval
+  tool answers when called with no argument — and `PlanButilFeature` answers for one API as well as
+  for a set, so an eighth tool appearing is a question to answer rather than a test to update.
 * **A documentation page stopped rendering** — it reads something from its surroundings that is not
   there when it renders outside the router. The tool answers with an apology instead of the page.
 * **A service reports no members or no summary** — the reflection walk or the XML documentation is

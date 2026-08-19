@@ -96,36 +96,15 @@ public class McpResources(HtmlRenderer htmlRenderer, NavigationManager navigatio
         return builder.ToString();
     }
 
+    /// <summary>
+    /// The same table <c>GetButilDocsPage</c> answers with when it is asked for no page in
+    /// particular. A support matrix and a page index are one set of rows read two ways - which
+    /// engines run this, and where is it written up - so they are built once and served twice
+    /// rather than drifting apart as two renderings of the same nav.
+    /// </summary>
     [McpServerResource(UriTemplate = "butil://support", Name = "butil-support", Title = "Browser support matrix", MimeType = "text/markdown")]
-    [Description("Every browser API Bit.Butil wraps, with the engines that implement it and what it needs from the page.")]
-    public static string Support()
-    {
-        var builder = new StringBuilder("# Bit.Butil browser support\n\n");
-
-        builder.AppendLine("| API | Services | Engines | Requires |");
-        builder.AppendLine("| --- | --- | --- | --- |");
-
-        foreach (var capability in ButilCapabilityCatalog.Capabilities)
-        {
-            var requires = capability.Requires.Length == 0
-                ? "-"
-                // Only the name of each precondition: the table is a map, and the sentence that
-                // explains it is one InspectButilApi call away.
-                : string.Join(", ", capability.Requires.Select(Name));
-
-            builder.AppendLine($"| [{capability.Api}]({capability.DocsUrl}) | {string.Join(", ", capability.Services)} | {capability.BrowserSupport} | {requires} |");
-        }
-
-        return builder.ToString();
-
-        // "Secure context: only available over HTTPS or on localhost." -> "Secure context".
-        static string Name(string label)
-        {
-            var colon = label.IndexOf(':', StringComparison.Ordinal);
-
-            return colon > 0 ? label[..colon] : label;
-        }
-    }
+    [Description("Every browser API Bit.Butil wraps, with the services behind it, the engines that implement it, what it needs from the page, and the slug of its documentation page.")]
+    public static string Support() => ButilIndexes.DocsPages();
 
     [McpServerResource(UriTemplate = "butil://source/{path}", Name = "butil-source", Title = "Demo source file", MimeType = "text/plain")]
     [Description("One source file of the demo or of the hosting samples, e.g. butil://source/Demo%2FClient%2FPages%2FClipboardPage.razor.")]

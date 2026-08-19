@@ -40,24 +40,36 @@ public class ToolFailureTests : McpTestBase
         Assert.Multiple(() =>
         {
             Assert.That(result.Details, Is.Null);
-            Assert.That(result.Message, Does.Contain("GetButilApiList"));
+            Assert.That(result.Message, Does.Contain("GetButilApiDetails with no type name"));
             Assert.That(result.Message, Does.Contain("SearchButil"));
         });
     }
 
     [Test]
-    public async Task An_empty_type_name_does_not_answer_with_the_whole_library()
+    public async Task An_empty_argument_is_the_listing_rather_than_a_failed_lookup()
     {
         // Contains("") matches every type, so a naive "did you mean" here would spend a client's
-        // context window listing the entire public surface back at it.
-        var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "" });
+        // context window listing the entire public surface back at it as a refusal. An empty string
+        // is not a miss - it is the same request as omitting the argument, which is the listing.
+        var blank = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "   " });
+        var omitted = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails");
 
         Assert.Multiple(() =>
         {
-            Assert.That(result.Details, Is.Null);
-            Assert.That(result.Message, Does.Not.Contain("Did you mean"));
-            Assert.That(result.Message!.Length, Is.LessThan(400), $"An empty argument was answered with {result.Message.Length} characters.");
+            Assert.That(blank.Details, Is.Null);
+            Assert.That(blank.Message, Is.Null, "An empty type name is a request for the list, so there is nothing to refuse.");
+            Assert.That(blank.Types, Is.Not.Null.And.Not.Empty);
+            Assert.That(blank.Types!.Length, Is.EqualTo(omitted.Types!.Length));
         });
+
+        // The same for the three that answer with a document.
+        foreach (var (tool, argument) in new[] { ("GetButilDocsPage", "slug"), ("GetButilGuideSection", "heading"), ("GetButilSourceFile", "path") })
+        {
+            var text = Text(await CallAsync(tool, new Dictionary<string, object?>(StringComparer.Ordinal) { [argument] = "  " }));
+
+            Assert.That(text, Does.Not.Contain("Did you mean").And.Not.Contain("No documentation page"),
+                $"{tool} read a blank {argument} as a miss rather than as a request for its listing.");
+        }
     }
 
     [Test]
@@ -117,7 +129,7 @@ public class ToolFailureTests : McpTestBase
     {
         var text = Text(await CallAsync("GetButilSourceFile", new { path = "somewhere/else.txt" }));
 
-        Assert.That(text, Does.Contain("Call GetButilSourceFiles"));
+        Assert.That(text, Does.Contain("Call GetButilSourceFile with no path"));
     }
 
     [Test]
@@ -146,7 +158,7 @@ public class ToolFailureTests : McpTestBase
     [Test]
     public async Task An_unknown_api_name_is_answered_with_candidates()
     {
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "Clipbo" });
+        var inspection = await InspectAsync("Clipbo");
 
         Assert.Multiple(() =>
         {
@@ -158,7 +170,7 @@ public class ToolFailureTests : McpTestBase
     [Test]
     public async Task An_empty_api_name_says_what_the_argument_wants()
     {
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "   " });
+        var inspection = await InspectAsync("   ");
 
         Assert.Multiple(() =>
         {
@@ -179,7 +191,7 @@ public class ToolFailureTests : McpTestBase
         {
             Assert.That(unmatched.Hits, Is.Empty);
             Assert.That(unmatched.Message, Does.Contain("Nothing in Bit.Butil matches"));
-            Assert.That(unmatched.Message, Does.Contain("GetButilBrowserSupport"));
+            Assert.That(unmatched.Message, Does.Contain("GetButilDocsPage with no"));
         });
 
         var unsearchable = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "how do I get the browser" });
@@ -236,14 +248,20 @@ public class ToolFailureTests : McpTestBase
     }
 
     [Test]
-    public async Task An_empty_plan_still_answers_with_the_rules_that_always_apply()
+    public async Task An_empty_plan_says_what_the_argument_wants_and_still_answers_with_the_rules()
     {
+        // This is the only tool here whose argument is genuinely required - an empty one is not a
+        // request for a listing, it is a call with nothing to plan - so it is the only one that has
+        // to say what a name looks like. An empty Apis array would be a checklist with no reason
+        // attached, which reads as an answer and teaches nothing.
         var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "" });
 
         Assert.Multiple(() =>
         {
-            Assert.That(plan.Apis, Is.Empty);
-            Assert.That(plan.Unknown, Is.Empty);
+            Assert.That(plan.Apis, Has.Length.EqualTo(1));
+            Assert.That(plan.Apis[0].IsKnown, Is.False);
+            Assert.That(plan.Apis[0].Message, Does.Contain("Clipboard").And.Contain("web-authn"),
+                "The refusal shows the three shapes of name the argument accepts.");
 
             // Registration and prerendering hold for every Butil call, whatever the feature is.
             Assert.That(plan.Checklist, Is.Not.Empty);
@@ -263,7 +281,7 @@ public class ToolFailureTests : McpTestBase
             Text(await CallRawAsync("GetButilSetupGuide", new { hostingModel = "nope" })),
             Text(await CallRawAsync("GetButilGuideSection", new { heading = "nope" })),
             Text(await CallRawAsync("GetButilApiDetails", new { typeName = "nope" })),
-            Text(await CallRawAsync("InspectButilApi", new { name = "nope" })),
+            Text(await CallRawAsync("PlanButilFeature", new { apis = "nope" })),
         };
 
         Assert.Multiple(() =>
