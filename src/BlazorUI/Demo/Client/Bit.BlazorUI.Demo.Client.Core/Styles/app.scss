@@ -119,3 +119,24 @@ p {
 #components-reconnect-modal {
     color: black;
 }
+
+// The Color sections of the Slider, Toggle, NavBar and Pivot demos put the *Background roles on a
+// panel that flips the page surface, which is what makes a component painted with one of those roles
+// legible. A control's own label is not part of that paint: it stays page text, so on the flipped
+// surface it lands foreground-on-foreground and disappears - unreadable in the light schemes and
+// invisible in the dark ones. Inside this panel those labels inherit the panel's own foreground
+// instead. Scoped to the panel so the components keep their normal label color everywhere else.
+.inverted-panel {
+    color: $bit-color-background-secondary;
+
+    .bit-sld-lbl,
+    .bit-sld-vlb,
+    .bit-sld-mlb,
+    .bit-tgl-lbl,
+    .bit-tgl-stx,
+    .bit-nbr-txt,
+    .bit-pvt-lnk,
+    .bit-pvt-cct {
+        color: inherit;
+    }
+}

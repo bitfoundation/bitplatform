@@ -204,9 +204,9 @@ private bool isAutoDismissed;";
         begins here, in this quiet moment where everything is possible.
     </Content>
     <Actions>
-        <BitButton Variant=""BitVariant.Outline"">Yes</BitButton>
+        <BitButton Color=""BitColor.PrimaryBackground"">Yes</BitButton>
         &nbsp;
-        <BitButton Variant=""BitVariant.Outline"">No</BitButton>
+        <BitButton Color=""BitColor.PrimaryBackground"">No</BitButton>
     </Actions>
 </BitMessage>";
     private readonly string example12CsharpCode = @"

@@ -367,6 +367,11 @@
 // the room of two of them rather than an equal share that would truncate it.
 .bit-clp-fhx {
     flex: 2 1 0;
+    // The share alone is tied to the panel width, which is spacing based and so does not grow with the
+    // type: a design system on a larger base font (Cupertino sets 15px where Fluent sets 14) pushes the
+    // eight digit value out of it. The floor is therefore expressed in em, so the field always keeps the
+    // room its own longest value needs.
+    min-width: 6em;
 }
 
 // The switch is a button rather than a field, so it takes the width it needs instead of an equal share of

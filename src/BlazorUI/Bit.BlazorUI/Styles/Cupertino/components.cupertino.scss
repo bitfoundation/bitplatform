@@ -55,4 +55,11 @@
     .bit-msb-ftr .bit-btn {
         width: 100%;
     }
+
+    // The one-time-code cells are small squares - 30px at the medium size - where the 12pt control
+    // corner rounds them almost into circles. iOS rounds a code field far less than it rounds a
+    // button, so the cells take the small corner from the shape scale instead of the control alias.
+    .bit-otp-inp {
+        border-radius: var(--bit-shp-radius-sm);
+    }
 }
