@@ -1,0 +1,27 @@
+@* Route content that starts a navigation from its own teardown: when the route is being torn down
+   (ReloadAsync / ClearKeepAlive(includeActive)) its Disposing deactivation navigates elsewhere. Lets
+   the tests assert the teardown-started navigation wins over the reset that triggered it. The target
+   has an async loader, so the navigation is still in flight when the reset resumes. *@
+
+@using Bit.Brouter
+@using Microsoft.AspNetCore.Components
+@inherits BrouterRouteBase
+@inject NavigationManager NavigationManager
+
+<div data-testid="teardown-nav">teardown-nav</div>
+
+@code {
+    [Parameter] public List<string>? Log { get; set; }
+
+    protected override void OnActivated(BrouterRouteActivation activation)
+        => Log?.Add("activated");
+
+    protected override void OnDeactivated(BrouterRouteDeactivation deactivation)
+    {
+        Log?.Add($"deactivated:{deactivation.Reason}");
+        if (deactivation.Reason == BrouterRouteDeactivationReason.Disposing)
+        {
+            NavigationManager.NavigateTo("/teardown-nav-target");
+        }
+    }
+}

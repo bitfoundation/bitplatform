@@ -662,7 +662,18 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // replacement mounts (the ordering UnrenderDepartedRoutes depends on).
     internal void ClearKeepAlive(bool includeActive = false)
     {
-        foreach (var route in GetRoutesSnapshot()) route.ClearKeepAlive(includeActive);
+        // Dropping content runs user code (Dispose, OnDeactivated) that can start a navigation. That
+        // navigation supersedes this reset and owns the screen from then on, so the sweep stops and
+        // the re-mount below is skipped: re-mounting the old chain would stage arrivals the new
+        // pipeline has already invalidated and put back content it is about to depart. Watched via
+        // _lifecycleNavGeneration, which a navigation bumps the moment its pipeline starts (long
+        // before it commits) and which a revalidation never touches.
+        var generation = _lifecycleNavGeneration;
+        foreach (var route in GetRoutesSnapshot())
+        {
+            route.ClearKeepAlive(includeActive);
+            if (includeActive && (_disposed || generation != _lifecycleNavGeneration)) return;
+        }
 
         if (includeActive is false) return;
 
@@ -3103,6 +3114,12 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
 
         var to = CurrentLocation;
         var chain = _committedChain;
+        // A navigation started by the teardown's user code (Dispose, OnDeactivated) supersedes this
+        // reload and owns the screen from that point on. It bumps _lifecycleNavGeneration the moment
+        // its pipeline starts - long before it commits and swaps _committedChain - so that is what
+        // the checks below watch: re-matching `to` after it would supersede the user's navigation
+        // with the reload's own pipeline and put the page back at the URL they just left.
+        var generation = _lifecycleNavGeneration;
 
         if (chain.Length > 0)
         {
@@ -3123,9 +3140,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             for (var i = chain.Length - 1; i >= 0; i--)
             {
                 chain[i].DropAllContent();
-                // A Dispose can run user code that starts a navigation, which supersedes this
-                // reload and owns the screen from that point on.
-                if (_disposed || ReferenceEquals(_committedChain, chain) is false) return;
+                if (_disposed || generation != _lifecycleNavGeneration) return;
             }
 
             // Nothing of the old chain is on screen any more, so the pipeline below has no

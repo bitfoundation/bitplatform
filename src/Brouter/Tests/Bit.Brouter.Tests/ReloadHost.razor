@@ -32,6 +32,14 @@
         </ChildContent>
     </Broute>
 
+    <Broute Path="/teardown-nav">
+        <Content><NavigateOnTeardownProbe Log="ProbeLog" /></Content>
+    </Broute>
+
+    <Broute Path="/teardown-nav-target" Loader="SlowLoader">
+        <Content><div data-testid="teardown-nav-target">target</div></Content>
+    </Broute>
+
     <Broute Path="/other">
         <Content><div data-testid="other">other</div></Content>
     </Broute>
@@ -43,6 +51,14 @@
     public int ParentLoaderRuns { get; private set; }
     public int ChildLoaderRuns { get; private set; }
     public bool? LastLoadWasReload { get; private set; }
+
+    // Async on purpose: the navigation the teardown probe starts must still be in flight (started,
+    // not committed) when the reset that triggered it resumes - the window the reset must respect.
+    private async ValueTask<object?> SlowLoader(BrouterNavigationContext ctx)
+    {
+        await Task.Delay(50, ctx.CancellationToken);
+        return null;
+    }
 
     private ValueTask CountGuard(BrouterNavigationContext ctx)
     {

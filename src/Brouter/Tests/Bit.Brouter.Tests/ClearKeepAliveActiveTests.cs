@@ -155,4 +155,27 @@ public class ClearKeepAliveActiveTests : BunitTestContext
 
         Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
     }
+
+    [TestMethod]
+    public async Task IncludeActive_yields_to_a_navigation_started_from_the_torn_down_routes_teardown()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/teardown-nav");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => CollectionAssert.Contains(log, "activated"));
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        // The probe's Disposing deactivation navigates to /teardown-nav-target, whose async loader
+        // keeps that navigation in flight (started, not yet committed). It owns the screen
+        // from then on: the reset must not re-mount /teardown-nav behind it (a fresh instance the
+        // navigation would immediately depart, and a stale staged activation for it).
+        await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(nav.Uri.EndsWith("/teardown-nav-target"), nav.Uri);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count);
+            Assert.AreEqual(0, cut.FindAll("[data-testid=teardown-nav]").Count);
+            Assert.AreEqual(1, log.FindAll(e => e == "activated").Count);
+        });
+    }
 }
