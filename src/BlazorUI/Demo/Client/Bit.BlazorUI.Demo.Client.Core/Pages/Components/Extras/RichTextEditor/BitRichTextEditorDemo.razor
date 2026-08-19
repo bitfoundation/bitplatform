@@ -216,6 +216,13 @@
                     The <b>Media</b> group embeds a direct audio/video URL as a native video/audio element. The <b>Rule</b>
                     group inserts a horizontal divider. Note: iframe embeds (e.g. YouTube/Vimeo) are not kept by the default
                     sanitization policy, so supply a custom policy that allows the iframe tag if you need such embeds.
+                    <br /><br />
+                    <b>Note:</b> this demo site is served cross-origin isolated (COOP/COEP headers) to enable the
+                    multi-threaded WebAssembly runtime. Under COEP a cross-origin iframe (YouTube/Vimeo) is blocked unless
+                    the embedded page opts in, and in Safari (which only supports <code>require-corp</code>) a cross-origin
+                    audio/video URL is also blocked unless its server sends a <code>Cross-Origin-Resource-Policy</code> or
+                    CORS header. Media from your own origin, or from hosts that send those headers, is unaffected; so is any
+                    app that does not send COEP.
                 </div>
                 <br />
                 <BitRichTextEditor @bind-Value="mediaHtml" Height="14rem"

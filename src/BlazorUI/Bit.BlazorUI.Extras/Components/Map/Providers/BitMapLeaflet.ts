@@ -38,6 +38,19 @@ namespace BitBlazorUI {
     }
 
     export class BitMapLeaflet {
+        /**
+         * crossOrigin value applied to every tile layer.
+         *
+         * When the host page is cross-origin isolated (COOP/COEP headers, required for the
+         * multi-threaded WebAssembly runtime) and the browser only supports
+         * COEP: require-corp (Safari/WebKit), plain no-cors tile requests to a server that
+         * does not send a Cross-Origin-Resource-Policy header are blocked, so tiles are
+         * requested in CORS mode instead (public tile servers such as OSM, Carto and
+         * OpenTopoMap all send Access-Control-Allow-Origin: *). On a non-isolated page the
+         * default no-cors mode is kept so tile servers without CORS headers keep working.
+         */
+        private static readonly _tileCrossOrigin: string | undefined = self.crossOriginIsolated ? 'anonymous' : undefined;
+
         private static _maps: { [id: string]: LeafletState } = {};
 
         public static async init(id: string, canvasId: string, element: HTMLElement, dotnetObj: DotNetObject | null | undefined, options: any) {
@@ -84,6 +97,7 @@ namespace BitBlazorUI {
                 tileOpacity: o.tileOpacity ?? 1,
             };
             const baseTileLayer = L.tileLayer(tileOptions.tileUrl, {
+                crossOrigin: BitMapLeaflet._tileCrossOrigin,
                 maxZoom: tileOptions.tileMaxZoom,
                 attribution: tileOptions.tileAttribution,
                 opacity: tileOptions.tileOpacity,
@@ -163,6 +177,7 @@ namespace BitBlazorUI {
             if (tileChanged) {
                 if (s.baseTileLayer) s.map.removeLayer(s.baseTileLayer);
                 s.baseTileLayer = L.tileLayer(next.tileUrl, {
+                    crossOrigin: BitMapLeaflet._tileCrossOrigin,
                     maxZoom: next.tileMaxZoom,
                     attribution: next.tileAttribution,
                     opacity: next.tileOpacity,
@@ -427,6 +442,7 @@ namespace BitBlazorUI {
                 delete s.tileOverlays[opts.id];
             }
             const tl = L.tileLayer(opts.urlTemplate, {
+                crossOrigin: BitMapLeaflet._tileCrossOrigin,
                 opacity: opts.opacity ?? 1,
                 zIndex: opts.zIndex ?? 100,
                 maxZoom: opts.maxZoom ?? 19,

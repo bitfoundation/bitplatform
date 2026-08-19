@@ -19,14 +19,32 @@ public class Middlewares
         // Cross-origin isolation, required for the multi-threaded WebAssembly runtime
         // (WasmEnableThreads in Bit.BlazorUI.Demo.Client.Web) to use SharedArrayBuffer.
         // Without these headers on the top-level document, crossOriginIsolated stays
-        // false and the runtime silently falls back to a single thread. COEP
-        // 'credentialless' is used instead of 'require-corp' so cross-origin
-        // subresources (fonts, images) keep loading without their own CORP/CORS headers;
-        // it enables isolation on Chromium and Firefox (Safari needs 'require-corp').
+        // false and the threaded runtime refuses to start ("SharedArrayBuffer is not
+        // enabled on this page"). COEP 'credentialless' is preferred over 'require-corp'
+        // because it lets cross-origin subresources (fonts, images, scripts) load without
+        // their own CORP/CORS headers. Safari (WebKit, i.e. every browser on iOS) does not
+        // understand 'credentialless' and treats it as 'unsafe-none', so it never becomes
+        // cross-origin isolated and the runtime fails to boot; for WebKit the stricter
+        // 'require-corp' is sent instead. Under 'require-corp' every cross-origin
+        // subresource must either carry a Cross-Origin-Resource-Policy header or be
+        // loaded in CORS mode (crossorigin="anonymous"), which is why the demo pages use
+        // local images and the Extras/Legacy script loaders request CORS mode.
         app.Use(async (context, next) =>
         {
             context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
-            context.Response.Headers["Cross-Origin-Embedder-Policy"] = "credentialless";
+            context.Response.Headers["Cross-Origin-Embedder-Policy"] = IsWebKit(context.Request) ? "require-corp" : "credentialless";
+            context.Response.OnStarting(() =>
+            {
+                // COEP is only read from the top-level document response, so the UA-dependent value
+                // only matters for HTML; "Vary: User-Agent" keeps a shared cache/CDN from serving one
+                // browser's document to another. Static assets (the only publicly cached responses)
+                // deliberately get no Vary so their cache is not fragmented per User-Agent.
+                if (context.Response.ContentType?.StartsWith("text/html", StringComparison.OrdinalIgnoreCase) is true)
+                {
+                    context.Response.Headers.Append("Vary", "User-Agent");
+                }
+                return Task.CompletedTask;
+            });
             await next.Invoke(context);
         });
 
@@ -113,6 +131,24 @@ public class Middlewares
             .AddInteractiveWebAssemblyRenderMode()
 #endif
             .AddAdditionalAssemblies(AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Bit.BlazorUI.Demo") is true).Except([Assembly.GetExecutingAssembly()]).ToArray());
+    }
+
+    /// <summary>
+    /// Detects WebKit-based browsers: Safari on macOS and iOS/iPadOS, in-app WKWebViews (whose UA lacks the
+    /// "Safari" token) and every third-party browser on iOS (Chrome, Firefox, Edge... all report
+    /// "CriOS"/"FxiOS"/"EdgiOS" on top of AppleWebKit). Chromium-based browsers also carry "AppleWebKit" in
+    /// their UA, so they are excluded by the "Chrome"/"Chromium" token (desktop Edge/Opera/Brave/Samsung all
+    /// include "Chrome"); desktop Firefox does not contain "AppleWebKit" at all.
+    /// </summary>
+    private static bool IsWebKit(HttpRequest request)
+    {
+        var ua = request.Headers.UserAgent.ToString();
+
+        if (ua.Contains("AppleWebKit", StringComparison.OrdinalIgnoreCase) is false) return false;
+
+        return ua.Contains("Chrome", StringComparison.OrdinalIgnoreCase) is false
+            && ua.Contains("Chromium", StringComparison.OrdinalIgnoreCase) is false
+            && ua.Contains("Firefox", StringComparison.OrdinalIgnoreCase) is false;
     }
 
     /// <summary>

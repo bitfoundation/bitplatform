@@ -137,7 +137,7 @@ public class Person
               Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
         <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img width=""100"" height=""100"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <img width=""100"" height=""100"" src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-@(person.Id % 2 == 0 ? ""male"" : ""female"").png"">
             <div style=""margin-left:3%; display: inline-block;"">
                 <p>Id: <strong>@person.Id</strong></p>
                 <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>
@@ -171,7 +171,7 @@ public class Person
               Style=""border: 1px #a19f9d solid; border-radius: 4px;"">
     <RowTemplate Context=""person"">
         <div @key=""person.Id"" style=""border-bottom: 1px #8a8886 solid; padding: 5px 20px; margin: 10px;"">
-            <img width=""100"" height=""100"" src=""https://picsum.photos/100/100?random=@(person.Id)"">
+            <img width=""100"" height=""100"" src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-@(person.Id % 2 == 0 ? ""male"" : ""female"").png"">
             <div style=""margin-left:3%; display: inline-block;"">
                 <p>Id: <strong>@person.Id</strong></p>
                 <p>Full Name: <strong>@person.FirstName @person.LastName</strong></p>

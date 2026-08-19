@@ -247,6 +247,13 @@
                 <BitLink Href="https://ion.cesium.com/tokens" Target="_blank">Cesium ion dashboard</BitLink>,
                 grant only the asset access it needs, and add your production domains to the token's allowed URLs list
                 so a copied token cannot be used from other origins.
+                <br /><br />
+                <b>Note (Safari):</b> this demo site is served cross-origin isolated (COOP/COEP headers) to enable the
+                multi-threaded WebAssembly runtime. Safari only supports <code>Cross-Origin-Embedder-Policy: require-corp</code>,
+                under which cross-origin scripts must be sent with a <code>Cross-Origin-Resource-Policy</code> or CORS header.
+                The CesiumJS script on <code>cesium.com</code> sends neither, so the browser blocks it and this example does
+                not render in Safari (macOS/iOS). It works on Chromium and Firefox, and in your own app as long as you do not
+                send COEP <code>require-corp</code>, or self-host CesiumJS.
             </div>
             <br />
             <div style="height:420px">

@@ -215,7 +215,7 @@ public partial class _BitTimelineOptionDemo
             <BitPersona PrimaryText=""Xafan Salina""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
-                        ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-female.png"" />
+                        ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">
@@ -252,7 +252,7 @@ public partial class _BitTimelineOptionDemo
             <BitPersona PrimaryText=""Ted Randall""
                         Size=""@BitPersonaSize.Size32""
                         Presence=""@BitPersonaPresence.Online""
-                        ImageUrl=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/persona-male.png"" />
+                        ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-male.png"" />
         </PrimaryContent>
         <DotTemplate>
             <div class=""dot-template"">

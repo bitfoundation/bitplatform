@@ -45,14 +45,14 @@ public partial class _BitChoiceGroupOptionDemo
                           Value=""@(""Bar"")""
                           ImageAlt=""Alt for Bar image""
                           ImageSize=""@(new BitImageSize(32, 32))""
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"" />
     <BitChoiceGroupOption Text=""Pie""
                           Value=""@(""Pie"")""
                           ImageAlt=""Alt for Pie image""
                           ImageSize=""@(new BitImageSize(32, 32))""
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon Options""
@@ -72,14 +72,14 @@ public partial class _BitChoiceGroupOptionDemo
                           Value=""@(""Bar"")""
                           ImageAlt=""Alt for Bar image""
                           ImageSize=""@(new BitImageSize(20, 20))""
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"" />
     <BitChoiceGroupOption Text=""Pie""
                           Value=""@(""Pie"")""
                           ImageAlt=""Alt for Pie image""
                           ImageSize=""@(new BitImageSize(20, 20))""
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon Options""
@@ -111,14 +111,14 @@ public partial class _BitChoiceGroupOptionDemo
                           Value=""@(""Bar"")""
                           ImageAlt=""Alt for Bar image""
                           ImageSize=""@(new BitImageSize(32, 32))"" 
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-bar-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-bar-selected.png"" />
     <BitChoiceGroupOption Text=""Pie""
                           Value=""@(""Pie"")""
                           ImageAlt=""Alt for Pie image""
                           ImageSize=""@(new BitImageSize(32, 32))"" 
-                          ImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-unselected.png""
-                          SelectedImageSrc=""https://static2.sharepointonline.com/files/fabric/office-ui-fabric-react-assets/choicegroup-pie-selected.png"" />
+                          ImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-unselected.png""
+                          SelectedImageSrc=""/_content/Bit.BlazorUI.Demo.Client.Core/images/choicegroup/choicegroup-pie-selected.png"" />
 </BitChoiceGroup>
 
 <BitChoiceGroup Label=""Icon"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""Day"")"" Horizontal>

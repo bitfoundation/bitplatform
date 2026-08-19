@@ -5,6 +5,19 @@ namespace BitBlazorUI {
      * Mirrors the public surface used by every BitMap provider.
      */
     export class BitMapOpenLayers {
+        /**
+         * crossOrigin value applied to every tile layer.
+         *
+         * When the host page is cross-origin isolated (COOP/COEP headers, required for the
+         * multi-threaded WebAssembly runtime) and the browser only supports
+         * COEP: require-corp (Safari/WebKit), plain no-cors tile requests to a server that
+         * does not send a Cross-Origin-Resource-Policy header are blocked, so tiles are
+         * requested in CORS mode instead (public tile servers such as OSM, Carto and
+         * OpenTopoMap all send Access-Control-Allow-Origin: *). On a non-isolated page the
+         * default no-cors mode is kept so tile servers without CORS headers keep working.
+         */
+        private static readonly _tileCrossOrigin: string | undefined = self.crossOriginIsolated ? 'anonymous' : undefined;
+
         private static _olLoadPromise: Promise<any> | null = null;
 
         private static _maps: { [id: string]: {
@@ -53,6 +66,7 @@ namespace BitBlazorUI {
 
             const baseTile = new ol.TileLayer({
                 source: new ol.XYZ({
+                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
                     url: tileUrl,
                     maxZoom: tileMaxZoom,
                     attributions: tileAttribution,
@@ -210,6 +224,7 @@ namespace BitBlazorUI {
                 nextTileMaxZoom !== s.tileMaxZoom ||
                 nextTileAttribution !== s.tileAttribution) {
                 s.baseTileLayer.setSource(new ol.XYZ({
+                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
                     url: nextTileUrl,
                     maxZoom: nextTileMaxZoom,
                     attributions: nextTileAttribution,
@@ -461,6 +476,7 @@ namespace BitBlazorUI {
             }
             const tl = new ol.TileLayer({
                 source: new ol.XYZ({
+                    crossOrigin: BitMapOpenLayers._tileCrossOrigin,
                     url: (opts.urlTemplate || '').replace('{s}', 'a'),
                     maxZoom: opts.maxZoom ?? 19,
                     attributions: opts.attribution || '',
