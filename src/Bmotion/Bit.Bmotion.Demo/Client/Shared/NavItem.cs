@@ -5,10 +5,10 @@
 /// it and the search box filters it, so both the drawer and the sticky rail always show the same
 /// set of pages in the same order.
 /// <para>
-/// It is also what the demo's MCP server answers <c>GetBmotionDemoPages</c> with, which is why
-/// each entry carries a description, search keywords and the file it is implemented in. A page
-/// therefore describes itself once, and the site's search box, the nav panel and an AI agent
-/// looking for a worked example all read the same words.
+/// It is also where the demo's MCP server gets the description, keywords and route it reports for
+/// a demo page in <c>GetBmotionSourceFiles</c>, which is why each entry carries them alongside the
+/// file it is implemented in. A page therefore describes itself once, and the site's search box,
+/// the nav panel and an AI agent looking for a worked example all read the same words.
 /// </para>
 /// </summary>
 /// <param name="Title">The label shown in the nav panel.</param>

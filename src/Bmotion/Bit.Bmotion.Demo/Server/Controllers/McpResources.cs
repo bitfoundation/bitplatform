@@ -44,7 +44,9 @@ public static class McpResources
     [Description("Every public Bit.Bmotion type with its kind and summary.")]
     public static string ApiList()
     {
-        var lines = BmotionApiCatalog.Types.Select(type => $"- **{type.Name}** ({type.Kind}) - {type.Summary}");
+        // The one-line summaries, as GetBmotionApiList uses: a pinned index of 66 types is read to
+        // find a name, and the full prose behind each one is what bmotion://api/{typeName} is for.
+        var lines = BmotionApiCatalog.TypeSummaries.Select(type => $"- **{type.Name}** ({type.Kind}) - {type.Summary}");
 
         return $"# Bit.Bmotion public API\n\n{string.Join('\n', lines)}";
     }
@@ -153,7 +155,7 @@ public static class McpResources
 
         return content is null
             ? $"No source file at '{path}'."
-            : McpController.Truncate(content);
+            : McpController.Truncate(content, path);
     }
 
     [McpServerResource(UriTemplate = "bmotion://setup/{renderMode}", Name = "Setup guide", MimeType = "text/markdown")]

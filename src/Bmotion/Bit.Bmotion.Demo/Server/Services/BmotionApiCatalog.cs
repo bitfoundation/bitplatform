@@ -40,8 +40,51 @@ public static class BmotionApiCatalog
             Summary = BmotionXmlDocs.GetSummary(DocumentationId(type))
         })]);
 
-    /// <summary>Every public type of Bit.Bmotion, with its summary.</summary>
+    private static readonly Lazy<BmotionApiTypeDto[]> _typeSummaries = new(() =>
+        [.. _types.Value.Select(type => type with { Summary = FirstSentence(type.Summary) })]);
+
+    /// <summary>Every public type of Bit.Bmotion, with its full summary.</summary>
     public static BmotionApiTypeDto[] Types => _types.Value;
+
+    /// <summary>
+    /// Every public type with its summary cut to the first sentence.
+    /// <para>
+    /// The full summaries are what <see cref="GetTypeDetails"/> is for. Several of them run to a
+    /// paragraph and a worked code sample - which is the right answer to "how do I use BmVariants"
+    /// and the wrong one to "which type do I ask about next", the only question a list of 66 types
+    /// is called with. Handing over all of them cost more than reading the type itself afterwards.
+    /// </para>
+    /// </summary>
+    public static BmotionApiTypeDto[] TypeSummaries => _typeSummaries.Value;
+
+    /// <summary>
+    /// The first sentence of a summary, for a listing. A summary that opens with a code sample has
+    /// no sentence to take - the text before the sample is kept whole rather than cut at the first
+    /// '.' inside the code, which would end the description mid-expression.
+    /// </summary>
+    internal static string? FirstSentence(string? summary)
+    {
+        if (string.IsNullOrWhiteSpace(summary)) return summary;
+
+        var text = summary.Trim();
+
+        // A summary is normalised to '\n\n' between paragraphs by BmotionXmlDocs, and the sample or
+        // caveat after the opening paragraph is never needed to pick a type out of a list.
+        var paragraph = text.IndexOf("\n\n", StringComparison.Ordinal);
+        if (paragraph > 0) text = text[..paragraph].TrimEnd();
+
+        for (var index = text.IndexOf(". ", StringComparison.Ordinal); index > 0;
+             index = text.IndexOf(". ", index + 1, StringComparison.Ordinal))
+        {
+            // "e.g." and "motion.dev" end in a '.' followed by a space without ending a sentence.
+            // A sentence that would be cut to almost nothing is not the one the writer meant.
+            if (index < 24) continue;
+
+            return text[..(index + 1)];
+        }
+
+        return text.EndsWith('.') || text.Length <= 240 ? text : $"{text[..237]}...";
+    }
 
     /// <summary>
     /// The full reference of one type - its Blazor parameters, properties, methods, events or enum

@@ -36,7 +36,13 @@ public class McpController : ControllerBase
     // crowd out a client's context window. McpResources reads the same bound: the resources hand
     // out the same documents, so a client that pins one instead of calling the tool gets the same
     // text rather than an unbounded one.
-    internal const int MaxDocumentLength = 40_000;
+    //
+    // 40,000 was one bound too far: it is around ten thousand tokens for a single answer, and the
+    // longest demo pages are long enough to spend all of it. 15,000 still clears the largest guide
+    // section (13,148 characters, "Components") whole, and what it does cut - the half-dozen demo
+    // pages above it - GetBmotionSourceFile can now be asked for a line range of instead, which is
+    // a better answer than a page and a half of markup nobody asked for.
+    public const int MaxDocumentLength = 15_000;
 
     private static readonly string BmotionVersion =
         typeof(Bm).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
@@ -45,7 +51,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionOverview))]
-    [Description("Start here. Explains what Bit.Bmotion is, how to install and register it, the one thing that decides whether an animation works on Blazor Server, and which of the other Bmotion tools to call for what.")]
+    [Description("Explains what Bit.Bmotion is, how to install and register it, the one thing that decides whether an animation works on Blazor Server, and the rules that are not visible in any signature. Worth reading once per session; for a specific question, call SearchBmotion instead.")]
     public string GetBmotionOverview()
     {
         var builder = new StringBuilder();
@@ -62,43 +68,25 @@ public class McpController : ControllerBase
         AppendGuideSection(builder, "Installation");
         AppendGuideSection(builder, "Quick Start");
 
+        // Deliberately no tool directory here. The client already holds every tool's description
+        // from tools/list, and restating them was the largest single block of this answer - paid on
+        // every call, to say what the caller could already read. What is left is the part that is
+        // nowhere else: the order to work in, and the rules that are not visible in any signature.
         builder.AppendLine("""
             ---
 
-            ## Which tool to call
+            ## How to work
 
-            - `SearchBmotion` - **the default entry point.** One query across the guide, every public type and
-              member, the animatable properties, the easing presets, the recipes and the demo's sources; each hit
-              carries the exact follow-up call. Reach for it whenever you do not already know the name of what you
-              want.
-            - `GetBmotionRecipes` / `GetBmotionRecipe` - complete, copy-pasteable patterns for the things people
-              actually ask for: a staggered list, a modal, an exit animation, a scroll reveal, a shared-element
-              transition. **Start here when writing an animation** - each recipe carries the caveat that is not
-              visible in the code.
-            - `SimulateBmotionTransition` - runs a transition on the real engine and reports how long it takes to
-              settle, how far it overshoots and what the curve looks like. A spring has no duration argument, so
-              this is the only way to know what one does before shipping it. `CompareBmotionTransitions` does
-              several at once, which is how to choose between them.
-            - `AnalyzeBmotionAnimation` - **call this before finishing any animation for an app that is not
-              WebAssembly-only.** It starts the animation on the real engine and reports which playback path the
-              engine chose, which is exactly what decides whether the animation plays or silently snaps on Blazor
-              Server.
-            - `ReviewBmotionCode` - checks written markup for the Bmotion mistakes that compile cleanly and then do
-              nothing: an `Exit` with no presence component, a `@foreach` with no `@key`, a spring whose duration
-              is ignored. Run it on what you wrote before you call the work done.
-            - `GetBmotionSetupGuide` - the complete wiring for one Blazor render mode ('wasm', 'server', 'auto',
-              'standalone-wasm'), as the real files of a working project.
-            - `GetBmotionApiList` / `GetBmotionApiDetails` - the exact public API: every component parameter with
-              its type and default value, straight out of the shipped assembly. Call this before using a member you
-              are not sure about - in an animation library the defaults *are* the behaviour.
-            - `GetBmotionAnimatableProperties` - every property that can be animated, and for each one whether the
-              browser compositor can own it.
-            - `GetBmotionEasings` - every `BmEase` preset with its curve sampled from the library, so a name like
-              "BackOut" becomes numbers instead of a guess.
-            - `GetBmotionGuideSections` / `GetBmotionGuideSection` - the library's own reference guide, one topic
-              at a time, with copy-pasteable code.
-            - `GetBmotionDemoPages` / `GetBmotionSourceFiles` / `GetBmotionSourceFile` - the demo site's pages as
-              real, working source. Every feature has one.
+            1. `SearchBmotion` with the request in the words it arrived in. Every hit carries the exact
+               follow-up call, so it is the one tool worth calling before you know any names.
+            2. `GetBmotionRecipe` if the search turned up a recipe: they are complete and carry the caveat
+               that is not visible in the code.
+            3. `GetBmotionApiDetails` for every type you are about to use. In an animation library the
+               default values *are* the behaviour.
+            4. `SimulateBmotionTransition` to choose the transition on measurements rather than adjectives.
+            5. `AnalyzeBmotionAnimation` before finishing, on anything that is not WebAssembly-only - it is
+               what decides whether the animation plays or silently snaps on Blazor Server.
+            6. `ReviewBmotionCode` on what you wrote.
 
             ## Rules of thumb when writing Bmotion code
 
@@ -116,8 +104,9 @@ public class McpController : ControllerBase
               state into them.
             - Orchestration - `staggerChildren`, `delayChildren`, `when`, `childStagger` - belongs on the
               **container's** transition, not on the children.
-            - `Bm.Spring(duration: ...)` does nothing on its own. Duration only shapes the spring when `bounce` is
-              given too.
+            - A spring takes either form, never both. `Bm.Spring(bounce:, duration:)` describes the feel and
+              derives the physics from it - either argument alone is enough, the other one defaults. Passing
+              `stiffness`/`damping` as well does not add to it: those values are then never used.
             - Register the services in every DI container the components run in - in a Blazor Web App that means
               both the server and the client project - and add `@using Bit.Bmotion` to `_Imports.razor`.
             """);
@@ -127,7 +116,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBmotion))]
-    [Description("Searches everything known about Bit.Bmotion at once - the guide, every public type and member, the animatable properties, the easing presets, the ready-made recipes and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which section, type or recipe holds the answer. Example queries: 'make a list appear one item at a time', 'animate something out before it is removed', 'drag within bounds', 'why does my animation not run on the server'.")]
+    [Description("Start here. Searches everything known about Bit.Bmotion at once - the guide, every public type and member, the animatable properties, the easing presets, the ready-made recipes and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which section, type or recipe holds the answer. Example queries: 'make a list appear one item at a time', 'animate something out before it is removed', 'drag within bounds', 'why does my animation not run on the server'.")]
     public Task<BmotionSearchHitDto[]> SearchBmotion(string query, int limit = 12)
     {
         return BmotionSearchIndex.SearchAsync(query, limit);
@@ -144,7 +133,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionRecipes))]
-    [Description("Lists the ready-made Bit.Bmotion patterns this server can hand out complete - a staggered list, an exit animation, a modal, hover feedback, a scroll reveal, a layout animation, a shared-element transition, drag, a spinner, split text, programmatic animation, reduced motion. Use it to pick the id to pass to GetBmotionRecipe. This is usually the fastest route from a request to correct code.")]
+    [Description("Lists every ready-made Bit.Bmotion pattern this server can hand out complete, with its id, its intent and the terms it covers - entrances, exits, gestures, scroll, layout, drag, text and more. Use it to pick the id to pass to GetBmotionRecipe. A recipe is usually the fastest route from a request to correct code, so this is worth a call before writing an animation by hand.")]
     public BmotionRecipeDto[] GetBmotionRecipes()
     {
         return BmotionRecipeCatalog.Summaries;
@@ -168,35 +157,36 @@ public class McpController : ControllerBase
         };
     }
 
-    [HttpGet]
-    [McpServerTool(Name = nameof(SimulateBmotionTransition))]
-    [Description("Runs a transition on the real Bit.Bmotion engine, off-screen, and reports what the motion actually does: how long it takes to come to rest, how far it overshoots its target, how many times it wobbles, and the shape of the curve. Springs have no duration argument - their length falls out of the physics - so this is the only way to know what one feels like without opening a browser. Accepts 'spring(stiffness: 260, damping: 12)', 'spring(bounce: 0.4, duration: 0.6)', 'tween(0.4, InOut)' or 'inertia(velocity: 500)'.")]
-    public Task<BmotionSimulationDto> SimulateBmotionTransition(
-        [Description("The transition, e.g. 'spring(stiffness: 260, damping: 12)'. A Bm.Spring(...) call copied out of Razor works verbatim.")] string transition,
-        [Description("The value the animation starts at. The default of 0 to 100 reads as a percentage of the distance travelled.")] double from = 0,
-        [Description("The value the animation targets.")] double to = 100)
-    {
-        return BmotionMotionLab.SimulateAsync(transition, from, to);
-    }
+    // Comparing used to be a second tool. It was the same call with a plural argument - simulating
+    // one transition is comparing one - and an agent that had read only one of the two descriptions
+    // either ran three separate simulations or never learned it could ask for three at once.
+    public const int MaxSimulatedTransitions = 8;
 
     [HttpGet]
-    [McpServerTool(Name = nameof(CompareBmotionTransitions))]
-    [Description("Runs several transitions through the real engine and returns their measurements side by side, so the one that matches the intended feel can be chosen on evidence rather than on the names of the arguments. Pass the transitions separated by semicolons or newlines, e.g. 'spring(stiffness: 260, damping: 12); spring(bounce: 0.2, duration: 0.4); tween(0.3, BackOut)'.")]
-    public async Task<BmotionSimulationDto[]> CompareBmotionTransitions(
-        [Description("The transitions to compare, separated by semicolons or newlines.")] string transitions,
-        double from = 0,
-        double to = 100)
+    [McpServerTool(Name = nameof(SimulateBmotionTransition))]
+    [Description("Runs one or more transitions on the real Bit.Bmotion engine, off-screen, and reports what the motion actually does: how long it takes to come to rest, how far it overshoots its target, how many times it wobbles, and the shape of the curve. No transition states its own settle time - a spring's falls out of the physics, and a tween's duration says nothing about how the value gets there - so this is the only way to know what one feels like without opening a browser. Pass several, separated by semicolons or newlines, to measure them side by side and choose between them on evidence rather than on the names of the arguments. Accepts 'spring(stiffness: 260, damping: 12)', 'spring(bounce: 0.4, duration: 0.6)', 'tween(0.4, InOut)' or 'inertia(velocity: 500)'.")]
+    public async Task<BmotionSimulationDto[]> SimulateBmotionTransition(
+        [Description("The transition, e.g. 'spring(stiffness: 260, damping: 12)'. A Bm.Spring(...) call copied out of Razor works verbatim. Several transitions separated by semicolons or newlines are measured side by side, e.g. 'spring(stiffness: 260, damping: 12); spring(bounce: 0.2, duration: 0.4); tween(0.3, BackOut)'.")] string transition,
+        [Description("The value the animation starts at. The default of 0 to 100 reads as a percentage of the distance travelled.")] double from = 0,
+        [Description("The value the animation targets.")] double to = 100,
+        [Description("Also return the sampled (seconds, value) points of the curve. Off by default: the sparkline and the measurements answer 'what does this feel like', and the raw samples are only worth their size when the curve is being plotted or differentiated.")] bool includeSamples = false)
     {
-        var specs = (transitions ?? string.Empty)
+        var specs = (transition ?? string.Empty)
             .Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             // Simulating dozens at once would spend more of the client's context than any comparison
             // is read with; the interesting comparisons are between two and four candidates.
-            .Take(8)
+            .Take(MaxSimulatedTransitions)
             .ToArray();
+
+        // An empty argument is still a question - the lab answers it with the default tween, and
+        // saying nothing at all would read as a server that failed rather than a spec that was blank.
+        if (specs.Length == 0) specs = [string.Empty];
 
         // Every run owns its engine and its frame clock (see BmotionMotionLab), so the comparison
         // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for.
-        return await Task.WhenAll(specs.Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
+        var results = await Task.WhenAll(specs.Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
+
+        return includeSamples ? results : [.. results.Select(result => result with { Samples = [] })];
     }
 
     [HttpGet]
@@ -215,7 +205,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(ReviewBmotionCode))]
-    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose duration the engine ignores, a nested-quote attribute that does not parse as intended, properties that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
+    [Description("Reviews Razor or C# that uses Bit.Bmotion and reports the mistakes that compile cleanly and then do nothing: an Exit with no presence component around it, an animated element in a loop with no @key, a spring whose stiffness the engine discards, a nested-quote attribute that does not parse as intended, properties that will snap rather than animate on Blazor Server. Every finding names the line and the correction. Run this on animation code before calling it done - none of these produce a compiler warning, an exception or a console message.")]
     public BmotionReviewDto ReviewBmotionCode(
         [Description("The Razor markup or C# to review. A component, a fragment, or just the <Bmotion> element in question.")] string code)
     {
@@ -249,18 +239,53 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionAnimatableProperties))]
-    [Description("Lists every property Bit.Bmotion can animate, with the CSS it writes, an example value, and - measured by running each one through the real engine - whether the browser compositor can own it and therefore whether it animates or jumps on Blazor Server. Use it when choosing what to animate, or to find the compositor-friendly equivalent of a property that is not.")]
-    public Task<BmotionPropertyDto[]> GetBmotionAnimatableProperties()
+    [Description("Lists the properties Bit.Bmotion can animate, with the CSS each one writes, an example value, and - measured by running it through the real engine - whether the browser compositor can own it and therefore whether it animates or jumps on Blazor Server. Use it when choosing what to animate, or to find the compositor-friendly equivalent of a property that is not. Narrow it with 'filter' rather than reading all 48: most questions are about one category, one name, or only about what survives Blazor Server.")]
+    public async Task<BmotionPropertyDto[]> GetBmotionAnimatableProperties(
+        [Description("Optional. A category ('Transform', 'Visual', 'Layout', 'Typography', 'SVG', 'Motion path', 'Custom'), 'compositor' for only the properties the compositor can own, 'frame-loop' for only the ones that jump on Blazor Server, or any substring of a property name. Omitted, every property is returned.")] string? filter = null)
     {
-        return BmotionPropertyCatalog.GetAsync();
+        var properties = await BmotionPropertyCatalog.GetAsync();
+
+        if (string.IsNullOrWhiteSpace(filter)) return properties;
+
+        var term = filter.Trim();
+
+        var matches = term switch
+        {
+            _ when term.Equals("compositor", StringComparison.OrdinalIgnoreCase)
+                => properties.Where(property => property.CompositorEligible),
+            _ when term.Equals("frame-loop", StringComparison.OrdinalIgnoreCase)
+                 || term.Equals("frameloop", StringComparison.OrdinalIgnoreCase)
+                => properties.Where(property => property.CompositorEligible is false),
+            _ => properties.Where(property => property.Category.Contains(term, StringComparison.OrdinalIgnoreCase)
+                                           || property.Name.Contains(term, StringComparison.OrdinalIgnoreCase))
+        };
+
+        // A filter that matched nothing must not read as "Bmotion cannot animate that". Falling back
+        // to the whole list would hide the miss; the caller is told what the filter does instead.
+        return [.. matches];
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionEasings))]
-    [Description("Lists every BmEase preset with its curve sampled from the library's own easing implementation - eleven points, a text sparkline, and whether the curve leaves the 0-1 range and so makes the element overshoot. Call it when choosing an easing: the names alone do not say how BackOut differs from ExpoOut, or which presets are unusable on an element with a hard edge.")]
-    public Task<BmotionEasingDto[]> GetBmotionEasings()
+    [Description("Lists BmEase presets with each curve sampled from the library's own easing implementation - eleven points, a text sparkline, and whether the curve leaves the 0-1 range and so makes the element overshoot. Call it when choosing an easing: the names alone do not say how BackOut differs from ExpoOut, or which presets are unusable on an element with a hard edge. Narrow it with 'filter' rather than reading all 32.")]
+    public async Task<BmotionEasingDto[]> GetBmotionEasings(
+        [Description("Optional. A family ('Back', 'Expo', 'Elastic', 'Bounce', 'Circ', 'Sine', 'Quad', 'Quart', 'Quint', 'Cubic', 'Linear', 'Anticipate'), a direction ('In', 'Out', 'InOut'), 'overshoots' for only the presets that travel past the target, or any substring of a preset name. Omitted, every preset is returned.")] string? filter = null)
     {
-        return BmotionEasingCatalog.GetAsync();
+        var easings = await BmotionEasingCatalog.GetAsync();
+
+        if (string.IsNullOrWhiteSpace(filter)) return easings;
+
+        var term = filter.Trim();
+
+        var matches = term.Equals("overshoots", StringComparison.OrdinalIgnoreCase)
+            ? easings.Where(easing => easing.Overshoots)
+            // Direction is matched exactly: "In" is a direction shared by a third of the presets,
+            // and as a substring it would also pull in every "InOut" and every "Linear".
+            : easings.Where(easing => easing.Direction.Equals(term, StringComparison.OrdinalIgnoreCase)
+                                   || easing.Family.Equals(term, StringComparison.OrdinalIgnoreCase)
+                                   || easing.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
+
+        return [.. matches];
     }
 
     [HttpGet]
@@ -290,10 +315,10 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionApiList))]
-    [Description("Lists every public type of the Bit.Bmotion library - components, services, transitions, targets, options and enums - with its kind and summary. Use it to pick the type to pass to GetBmotionApiDetails.")]
+    [Description("Lists every public type of the Bit.Bmotion library - components, services, transitions, targets, options and enums - with its kind and a one-line summary. Use it to pick the type to pass to GetBmotionApiDetails, which returns that type's full documentation and every member.")]
     public BmotionApiTypeDto[] GetBmotionApiList()
     {
-        return BmotionApiCatalog.Types;
+        return BmotionApiCatalog.TypeSummaries;
     }
 
     [HttpGet]
@@ -318,33 +343,34 @@ public class McpController : ControllerBase
         };
     }
 
-    [HttpGet]
-    [McpServerTool(Name = nameof(GetBmotionDemoPages))]
-    [Description("Lists the pages of the Bit.Bmotion demo site - one per feature area - with what each demonstrates and the source file behind it. Every page is a working example of the feature it covers, so this is the way to find real code for a feature rather than a fragment.")]
-    public BmotionDemoPageDto[] GetBmotionDemoPages()
-    {
-        return [.. NavItem.All.Select(page => new BmotionDemoPageDto
-        {
-            Slug = page.Href,
-            Title = page.Title,
-            Description = page.Description,
-            Keywords = page.Keywords,
-            SourcePath = page.SourcePath
-        })];
-    }
-
+    // The demo pages used to be a tool of their own. Every one of them was already in the source
+    // file listing under the same path, so the two answers overlapped by twenty entries and differed
+    // only in that one of them knew what the page was about. That knowledge moved here instead.
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionSourceFiles))]
-    [Description("Lists the working Bit.Bmotion source files this server can hand out: every page of the demo site, its layout and shared components, and the host wiring. Use it to pick the path to pass to GetBmotionSourceFile.")]
-    public BmotionSourceFileDto[] GetBmotionSourceFiles()
+    [Description("Lists the working Bit.Bmotion source files this server can hand out: every page of the demo site - one per feature area, each a complete working example of the feature it covers - plus the layout, the shared components and the host wiring. Demo pages carry the route they are served at and the terms they cover. Use it to pick the path to pass to GetBmotionSourceFile.")]
+    public BmotionSourceFileDto[] GetBmotionSourceFiles(
+        [Description("Optional. 'Demo page' for only the feature pages, 'Host' for the server wiring, 'Demo' for the layout and shared components, or any substring of a path, a title or a page's keywords. Omitted, every file is returned.")] string? filter = null)
     {
-        return BmotionSourceCatalog.SourceFiles;
+        var files = BmotionSourceCatalog.SourceFiles;
+
+        if (string.IsNullOrWhiteSpace(filter)) return files;
+
+        var term = filter.Trim();
+
+        return [.. files.Where(file => file.Kind.Equals(term, StringComparison.OrdinalIgnoreCase)
+                                    || file.Path.Contains(term, StringComparison.OrdinalIgnoreCase)
+                                    || (file.Title?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                                    || (file.Keywords?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false))];
     }
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmotionSourceFile))]
-    [Description("Gets one source file listed by GetBmotionSourceFiles or GetBmotionDemoPages, verbatim - e.g. 'Demo/Client/Pages/Springs.razor' for a complete, working page that exercises every form of spring.")]
-    public string GetBmotionSourceFile(string path)
+    [Description("Gets one source file listed by GetBmotionSourceFiles, verbatim - e.g. 'Demo/Client/Pages/Springs.razor' for a complete, working page that exercises every form of spring. The longest demo pages run past what one answer carries; pass fromLine and toLine to read such a file a part at a time, using the line count GetBmotionSourceFiles reports for it.")]
+    public string GetBmotionSourceFile(
+        [Description("The path from GetBmotionSourceFiles, e.g. 'Demo/Client/Pages/Springs.razor'.")] string path,
+        [Description("Optional 1-based first line to return. Omitted, the file is read from its start.")] int? fromLine = null,
+        [Description("Optional 1-based last line to return, inclusive. Omitted, the file is read to its end.")] int? toLine = null)
     {
         var content = BmotionSourceCatalog.GetSourceFile(path);
 
@@ -361,7 +387,21 @@ public class McpController : ControllerBase
                 : $"No source file at '{path}'. Call GetBmotionSourceFiles for the full list.";
         }
 
-        return Truncate(content);
+        if (fromLine is null && toLine is null) return Truncate(content, path!);
+
+        var lines = content.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
+
+        // Both ends are clamped rather than rejected. An agent asking for lines 400-600 of a 380-line
+        // file has made an off-by-something, not a request worth refusing; the header below says what
+        // it actually got, which is what it needs to correct itself.
+        var first = Math.Clamp(fromLine ?? 1, 1, lines.Length);
+        var last = Math.Clamp(toLine ?? lines.Length, first, lines.Length);
+
+        // The slice is bounded before the header goes on, so the line the truncation notice names is
+        // a line of the file rather than a line of this answer.
+        var slice = Truncate(string.Join('\n', lines[(first - 1)..last]), path!, first);
+
+        return $"// {path}, lines {first}-{last} of {lines.Length}\n\n{slice}";
     }
 
     /// <summary>
@@ -442,10 +482,25 @@ public class McpController : ControllerBase
                .AppendLine();
     }
 
-    internal static string Truncate(string text)
+    /// <summary>
+    /// Bounds one document. A cut that says only that it happened leaves the caller to guess whether
+    /// the rest matters and how to reach it, so when the text came from a named source file the
+    /// notice carries the call that reads on from where this answer stopped.
+    /// </summary>
+    internal static string Truncate(string text, string? sourcePath = null, int firstLine = 1)
     {
-        return text.Length <= MaxDocumentLength
-            ? text
-            : $"{text[..MaxDocumentLength]}\n\n[truncated - the full text is longer than {MaxDocumentLength} characters]";
+        if (text.Length <= MaxDocumentLength) return text;
+
+        var kept = text[..MaxDocumentLength];
+
+        // Where the reader got to, in the units the follow-up call is written in.
+        var line = firstLine + kept.Count(character => character == '\n');
+
+        var howToContinue = sourcePath is null
+            ? "Call GetBmotionGuideSection for one section at a time."
+            : $"Call GetBmotionSourceFile(path: \"{sourcePath}\", fromLine: {line}) to read on from there.";
+
+        return $"{kept}\n\n[truncated at line {line} - the full text is longer than " +
+               $"{MaxDocumentLength} characters. {howToContinue}]";
     }
 }

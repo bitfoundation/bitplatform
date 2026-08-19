@@ -174,11 +174,11 @@ public class SourceCatalogTests
     }
 
     /// <summary>
-    /// GetBmotionDemoPages hands out a SourcePath per page and tells the agent to pass it to
+    /// GetBmotionSourceFiles reports every demo page under the path an agent is told to pass to
     /// GetBmotionSourceFile. Every one of them has to be a path that resolves.
     /// </summary>
     [TestMethod]
-    public void SourceFiles_CoverEveryPageTheDemoPageListingPointsAt()
+    public void SourceFiles_CoverEveryPageTheNavigationPointsAt()
     {
         var missing = NavItem.All
             .Where(page => BmotionSourceCatalog.GetSourceFile(page.SourcePath) is null)

@@ -171,9 +171,12 @@ public static partial class BmotionXmlDocs
         var arguments = target.IndexOf('(', StringComparison.Ordinal);
         if (arguments > 0) target = target[..arguments];
 
-        // Drop the arity marker of a generic type ("BmValue`1").
-        var arity = target.IndexOf('`', StringComparison.Ordinal);
-        if (arity > 0) target = target[..arity];
+        // Drop the arity marker of a generic type ("BmValue`1" -> "BmValue"). Only the marker: the
+        // cref of a member on a generic type carries it in the middle, as
+        // "P:Bit.Bmotion.BmotionPresenceGroup`1.ItemTemplate", and truncating there dropped the
+        // member the reference was about - leaving "Renders BmotionPresenceGroup once per item of
+        // BmotionPresenceGroup" where the summary named two different parameters.
+        target = ArityRegex().Replace(target, string.Empty);
 
         var parts = target.Split('.');
 
@@ -188,6 +191,10 @@ public static partial class BmotionXmlDocs
 
     [GeneratedRegex(@"[ \t]*\n[ \t\n]*")]
     private static partial Regex ParagraphBreakRegex();
+
+    /// <summary>The arity marker of a generic type in a documentation id: the "`1" of "BmValue`1".</summary>
+    [GeneratedRegex(@"`\d+")]
+    private static partial Regex ArityRegex();
 
     [GeneratedRegex(@"[ \t]{2,}")]
     private static partial Regex RepeatedSpaceRegex();

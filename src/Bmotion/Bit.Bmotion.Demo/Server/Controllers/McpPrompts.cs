@@ -8,7 +8,7 @@ namespace Bit.Bmotion.Demo.Server.Controllers;
 /// animation, add the library to an app, tune how something feels, and work out why nothing moves.
 /// <para>
 /// Each prompt spends its words on the order to call the tools in, because the failure mode of an
-/// agent holding eighteen tools is not ignorance - it is calling them in a sequence that skips the
+/// agent holding a shelf of them is not ignorance - it is calling them in a sequence that skips the
 /// check which would have caught the bug. For Bmotion that check is nearly always the same one:
 /// nothing here fails loudly. An animation that will not play on Blazor Server compiles, deploys
 /// and renders; it just does not move. So every workflow below ends by running the code back
@@ -40,9 +40,10 @@ public static class McpPrompts
             3. Call `GetBmotionApiDetails` for every Bmotion type you are about to use and match the parameter
                names, types and defaults exactly. Do not carry over parameter names from Framer Motion or from
                another animation library - several are close enough to look right and behave differently.
-            4. Choose the transition with evidence, not adjectives: call `SimulateBmotionTransition` on the one you
-               intend to use, or `CompareBmotionTransitions` on two or three candidates, and pick by settle time and
-               overshoot. A spring has no duration argument, so this is the only way to know how long it takes.
+            4. Choose the transition with evidence, not adjectives: call `SimulateBmotionTransition`, passing two or
+               three candidates separated by semicolons, and pick by settle time and overshoot. Nothing in a
+               transition states how long it takes to settle - a spring's falls out of the physics - so this is the
+               only way to know.
             5. Write the code.
             6. Call `AnalyzeBmotionAnimation` with the properties and transition you settled on. If it reports the
                C# frame loop and this app is not WebAssembly-only, either switch to the compositor-friendly
@@ -103,7 +104,7 @@ public static class McpPrompts
                corresponds to the complaint - "too slow" is usually a long tail after a fast start, which is the gap
                between TimeTo90Percent and SettleSeconds, not the duration anyone configured.
             2. Propose three candidates that move that specific number in the right direction, and call
-               `CompareBmotionTransitions` on all three at once.
+               `SimulateBmotionTransition` on all three at once, separated by semicolons.
             3. Recommend one, citing its measurements against the current transition's.
             4. If the complaint is about feel rather than timing, consider the form as well as the numbers:
                `Bm.Spring(bounce:, duration:)` expresses intent directly and cannot be configured into a spring that
@@ -130,8 +131,8 @@ public static class McpPrompts
 
             1. Call `ReviewBmotionCode` on the markup involved. It checks the mistakes that compile cleanly and then
                do nothing - an `Exit` with no presence component, a `@foreach` with no `@key`, a spring whose
-               duration is ignored, a nested-quote attribute that does not parse as intended. The cause is often
-               there verbatim.
+               stiffness is discarded, a nested-quote attribute that does not parse as intended. The cause is
+               often there verbatim.
             2. If nothing animates at all, establish the render mode, then call `AnalyzeBmotionAnimation` with the
                properties and transition. An animation the engine keeps on the C# frame loop becomes an instant
                state change on Blazor Server - which is exactly the "works on my machine, not in production" shape,

@@ -57,6 +57,47 @@ public class TransitionSpecTests
         Assert.AreEqual(0.8, inertia.Power);
     }
 
+    /// <summary>
+    /// One named argument, written the way anyone writes it.
+    /// <para>
+    /// This is the shape that used to be read as something else entirely. An argument list with no
+    /// comma in it was split on whitespace, so "damping: 30" became the two tokens "damping:" and
+    /// "30" - the first a name with no value, the second a bare number that fell into the first
+    /// positional slot. "spring(damping: 30)" therefore came back measured as a spring of stiffness
+    /// 30, and "spring(bounce: 0.4)" as one of stiffness 0.4, which does not settle at all. The
+    /// answer was a confident measurement of a transition nobody asked about, which is the one
+    /// failure mode a measuring tool must not have.
+    /// </para>
+    /// </summary>
+    [TestMethod]
+    [DataRow("spring(damping: 30)", 30)]
+    [DataRow("spring(damping:30)", 30)]
+    [DataRow("spring(damping = 30)", 30)]
+    [DataRow("spring damping: 30", 30)]
+    public void Parse_ASingleNamedArgument_LandsInTheArgumentItNames(string spec, double damping)
+    {
+        var spring = BmotionTransitionSpec.Parse(spec).Transition as BmSpring;
+
+        Assert.IsNotNull(spring, $"'{spec}' did not parse as a spring.");
+        Assert.AreEqual(damping, spring.Damping, $"'{spec}' did not set damping.");
+
+        // And nothing leaked into the slot a positional argument would have taken.
+        Assert.AreEqual(new BmSpring().Stiffness, spring.Stiffness, $"'{spec}' also wrote to stiffness.");
+    }
+
+    [TestMethod]
+    [DataRow("spring(bounce: 0.4)")]
+    [DataRow("spring(mass: 2)")]
+    [DataRow("spring(duration: 1.2)")]
+    public void Parse_ASingleNamedArgument_IsNotReportedAsUnreadable(string spec)
+    {
+        var result = BmotionTransitionSpec.Parse(spec);
+
+        Assert.IsNull(result.Error);
+        Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
+                       $"'{spec}' lost its value. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
     [TestMethod]
     public void Parse_EmptySpec_IsTheLibrarysOwnDefaultTween()
     {
@@ -130,8 +171,22 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(bounce: 0.4, duration: 0.6, stiffness: 260, damping: 12)");
 
-        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("Bounce wins", StringComparison.OrdinalIgnoreCase)),
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
                       $"Nothing said the physics arguments are ignored. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
+    /// <summary>
+    /// A duration alone switches the spring to the derived model just as bounce does - the engine's
+    /// test is "Duration.HasValue || Bounce.HasValue" - so the stiffness beside it is just as unused,
+    /// and used to go unmentioned because only bounce was looked for.
+    /// </summary>
+    [TestMethod]
+    public void Parse_DurationWithStiffness_WarnsThatTheStiffnessIsUnused()
+    {
+        var result = BmotionTransitionSpec.Parse("spring(duration: 0.6, stiffness: 260)");
+
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
+                      $"Nothing said the stiffness is ignored. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
     [TestMethod]

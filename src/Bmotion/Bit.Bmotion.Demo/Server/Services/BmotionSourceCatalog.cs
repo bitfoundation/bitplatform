@@ -2,6 +2,7 @@ using System.Text;
 using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Bmotion.Demo.Server.Dtos;
+using Bit.Bmotion.Demo.Client.Shared;
 using System.Text.RegularExpressions;
 
 namespace Bit.Bmotion.Demo.Server.Services;
@@ -184,15 +185,31 @@ public static partial class BmotionSourceCatalog
 
     private static BmotionSourceFileDto[] BuildSourceFileList()
     {
+        // A demo page describes itself in the navigation, in a sentence written to say what the page
+        // demonstrates. Scraping the file for a description instead - which is all DescribeSource can
+        // do for the files that have no nav entry - reached whatever comment came first, and for a
+        // page that is usually a nested record's doc comment or the <PageTitle>. "Drag - Bit.Bmotion"
+        // and "A shuffled tile: its label and which of the palette's five tones it uses" are not
+        // descriptions of a file anyone would choose to open.
+        var pages = NavItem.All.ToDictionary(page => Normalize(page.SourcePath), StringComparer.OrdinalIgnoreCase);
+
         return [.. _sourceFiles.Value
-            .Select(file => new BmotionSourceFileDto
+            .Select(file =>
             {
-                Path = file.Key,
-                Kind = file.Key.Contains("/Pages/", StringComparison.OrdinalIgnoreCase) ? "Demo page"
-                     : file.Key.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ? "Host"
-                     : "Demo",
-                Description = DescribeSource(file.Value),
-                Lines = CountLines(file.Value)
+                var page = pages.GetValueOrDefault(file.Key);
+
+                return new BmotionSourceFileDto
+                {
+                    Path = file.Key,
+                    Kind = file.Key.Contains("/Pages/", StringComparison.OrdinalIgnoreCase) ? "Demo page"
+                         : file.Key.StartsWith("Demo/Server/", StringComparison.OrdinalIgnoreCase) ? "Host"
+                         : "Demo",
+                    Description = page?.Description ?? DescribeSource(file.Value),
+                    Lines = CountLines(file.Value),
+                    Title = page?.Title,
+                    Slug = page?.Href,
+                    Keywords = page?.Keywords
+                };
             })
             .OrderBy(file => file.Kind, StringComparer.Ordinal)
             .ThenBy(file => file.Path, StringComparer.OrdinalIgnoreCase)];
