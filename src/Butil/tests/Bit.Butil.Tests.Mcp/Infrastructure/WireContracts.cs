@@ -127,8 +127,10 @@ public sealed partial record DocsIndexRow(string Group, string Slug, string Titl
 
             // Split on the pipes rather than on the pattern: the row is six cells, and a cell that
             // went missing should read as a short row here rather than as a row that did not match.
+            // Such a row is thrown on rather than dropped - a table that quietly lost a column would
+            // otherwise shrink every listing the suite compares against it, on both sides at once.
             var cells = line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray();
-            if (cells.Length != 6) continue;
+            if (cells.Length != 6) throw new FormatException($"The index has a row of {cells.Length} cells rather than six: {line.Trim()}");
 
             rows.Add(new DocsIndexRow(group, match.Groups["slug"].Value, cells[1], cells[2], Cell(cells[3]), cells[4], Cell(cells[5])));
         }

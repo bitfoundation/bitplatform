@@ -196,8 +196,13 @@ public class HttpSurfaceTests : McpTestBase
         // All three are generated from DocsNav rather than written by hand, so a page added to the
         // nav is a page that appears here. A checked-in copy would silently rot, and the way that
         // shows up is a slug the tools know about and the sitemap does not.
+        // Both comparisons below are "no page is missing", which an index of no pages satisfies -
+        // so the index having arrived at all is asserted before anything is held against it.
         using var response = await Http.GetAsync(McpServerFixture.Url("api/mcp/GetButilDocsPage"));
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), "The docs index did not answer over HTTP.");
+
         var pages = DocsIndexRow.ParseAll(await response.Content.ReadAsStringAsync());
+        Assert.That(pages, Is.Not.Empty, "The docs index answered with no rows, so there is nothing to hold the discovery files to.");
 
         var sitemap = await (await Http.GetAsync(McpServerFixture.Url("sitemap.xml"))).Content.ReadAsStringAsync();
         var llms = await (await Http.GetAsync(McpServerFixture.Url("llms.txt"))).Content.ReadAsStringAsync();

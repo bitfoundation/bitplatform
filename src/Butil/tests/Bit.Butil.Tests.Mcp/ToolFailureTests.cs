@@ -59,16 +59,22 @@ public class ToolFailureTests : McpTestBase
             Assert.That(blank.Details, Is.Null);
             Assert.That(blank.Message, Is.Null, "An empty type name is a request for the list, so there is nothing to refuse.");
             Assert.That(blank.Types, Is.Not.Null.And.Not.Empty);
-            Assert.That(blank.Types!.Length, Is.EqualTo(omitted.Types!.Length));
+
+            // The same listing, not merely one of the same size: a blank argument that took some
+            // other path through the tool could answer with as many types and the wrong ones.
+            Assert.That(blank.Types!.Select(type => type.Name),
+                Is.EqualTo(omitted.Types!.Select(type => type.Name)).AsCollection,
+                "A blank type name answered with a different list than omitting it.");
         });
 
         // The same for the three that answer with a document.
         foreach (var (tool, argument) in new[] { ("GetButilDocsPage", "slug"), ("GetButilGuideSection", "heading"), ("GetButilSourceFile", "path") })
         {
             var text = Text(await CallAsync(tool, new Dictionary<string, object?>(StringComparer.Ordinal) { [argument] = "  " }));
+            var listing = Text(await CallAsync(tool));
 
-            Assert.That(text, Does.Not.Contain("Did you mean").And.Not.Contain("No documentation page"),
-                $"{tool} read a blank {argument} as a miss rather than as a request for its listing.");
+            Assert.That(text, Is.EqualTo(listing),
+                $"{tool} read a blank {argument} as something other than a request for its listing.");
         }
     }
 

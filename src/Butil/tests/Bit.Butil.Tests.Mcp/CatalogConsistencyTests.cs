@@ -34,8 +34,11 @@ public class CatalogConsistencyTests : McpTestBase
         // Both listings come from the tool that also retrieves the single item, called with no
         // argument - which is the whole of what replaced the four listing tools this suite used to
         // call, so exercising them here is exercising that fold.
-        _types = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails")).Types
-                 ?? throw new InvalidOperationException("GetButilApiDetails with no type name did not answer with the type list.");
+        // An empty list is the same failure as a missing one: every test below walks _types, and a
+        // reflection walk that found nothing would let all of them pass by having nothing to check.
+        _types = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails")).Types is { Length: > 0 } types
+            ? types
+            : throw new InvalidOperationException("GetButilApiDetails with no type name did not answer with the type list.");
 
         _pages = await DocsIndexAsync();
 
@@ -83,10 +86,17 @@ public class CatalogConsistencyTests : McpTestBase
             .OfType<ModelContextProtocol.Protocol.TextResourceContents>()
             .Select(content => content.Text));
 
+        // Records hold their list cells as arrays, which compare by reference - so the rows are
+        // flattened to their text to be compared by what they say.
+        static string Row(DocsIndexRow row) => string.Join(" | ",
+            row.Group, row.Slug, row.Title, row.Summary, string.Join(",", row.Services), row.Engines, string.Join(",", row.Requires));
+
         Assert.Multiple(() =>
         {
-            Assert.That(DocsIndexRow.ParseAll(matrix).Select(row => row.Slug),
-                Is.EqualTo(_pages.Select(page => page.Slug)).AsCollection,
+            // Every cell, not just the slug: the same rows carrying a different summary, a
+            // different engines column or a different service list is the drift this asserts away.
+            Assert.That(DocsIndexRow.ParseAll(matrix).Select(Row),
+                Is.EqualTo(_pages.Select(Row)).AsCollection,
                 "butil://support and GetButilDocsPage with no slug are meant to be the same table.");
 
             // Every row carries what an agent chooses an API on: which engines run it, and what the
