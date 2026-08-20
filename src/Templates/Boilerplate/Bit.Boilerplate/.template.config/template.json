@@ -573,6 +573,7 @@
                         "src/Tests/Features/Identity/TestAccountUtils.cs",
                         "src/Tests/Features/Identity/RoleAdministrationGuardTests.cs",
                         "src/Tests/Features/Identity/ConfirmPageTwoFactorTests.cs",
+                        "src/Tests/Features/Identity/SignInPanelCredentialStateTests.cs",
                         "src/Tests/Features/Identity/UserGroupFeatureManagementUITests.cs",
                         "src/Tests/Features/Seo/**",
                         "src/Tests/Features/Tenants/TenantInvitationUITests.cs",
@@ -644,8 +645,8 @@
                         "src/Tests/Features/Chatbot/SystemPromptContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatMessageWireContractTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelThemeUITests.cs",
-                        "src/Tests/Features/Chatbot/AiChatPanelReadAloudUITests.cs",
-                        "src/Tests/Features/Chatbot/AiChatPanelDictationUITests.cs",
+                        "src/Tests/Features/Chatbot/ChatbotSpeechEndpointTests.cs",
+                        "src/Tests/Features/Chatbot/SpeakableTextTests.cs",
                         "src/Tests/Features/Chatbot/AiChatPanelTestBase.cs",
                         "src/Tests/Features/Chatbot/AppChatbotHistoryTests.cs",
                         "src/Tests/Features/Chatbot/TestChatClient.cs"

@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Boilerplate.Client.Core.Components.Layout;
 
-// Speech in and speech out live in AppAiChatPanel.razor.SpeechRecognition.cs and
-// AppAiChatPanel.razor.SpeechSynthesis.cs. What is left here is the conversation itself.
+// Speech in, speech out and the image a message can carry live in AppAiChatPanel.razor.Dictation.cs,
+// AppAiChatPanel.razor.ReadAloud.cs and AppAiChatPanel.razor.Attachment.cs. What is left here is the conversation itself.
 public partial class AppAiChatPanel
 {
     [CascadingParameter] public BitDir? CurrentDir { get; set; }
@@ -18,16 +18,37 @@ public partial class AppAiChatPanel
 
     [AutoInject] private Clipboard clipboard = default!;
     [AutoInject] private HubConnection hubConnection = default!;
+    [AutoInject] private SignInModalService signInModalService = default!;
 
 
     private bool isOpen;
     private bool isLoading;
     private string? userInput;
+
+    /// <summary>
+    /// The message is on its way out - an image goes up before the message that carries it does, and the send button
+    /// is the only thing on screen that can say so.
+    /// </summary>
+    private bool isSending;
+
     private bool isSmallScreen;
+
+    /// <summary>
+    /// The panel is widened to the whole viewport, for a long answer or a wide code block. It outlives a close and
+    /// a reopen, the way a maximized window does.
+    /// </summary>
+    private bool isMaximized;
+
     private int responseCounter;
-    private Channel<string>? channel;
-    private AiChatMessage? lastAssistantMessage;
-    private List<AiChatMessage> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
+    private Channel<AiChatMessageRequest>? channel;
+    private AiChatMessageResponse? lastAssistantMessage;
+
+    /// <summary>
+    /// The line the panel opens on - the one assistant message the assistant did not write, which is why read aloud
+    /// is not offered on it: the backend only speaks answers it has a record of writing.
+    /// </summary>
+    private AiChatMessageResponse? greetingMessage;
+    private List<AiChatMessageResponse> chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
     private List<string> followUpSuggestions = [];
     //#if(module == "Sales")
     private Action unsubSearchProducts = default!;
@@ -82,7 +103,12 @@ public partial class AppAiChatPanel
     protected override async Task OnAfterFirstRenderAsync()
     {
         SetDefaultValues();
-        (isDictationSupported, isReadAloudSupported) = (await speechRecognition.IsSupported(), await speechSynthesis.IsSupported());
+        // Recording is the one half of speech that is still a browser capability: read aloud only needs an audio
+        // element to play what the backend synthesised, and every engine has one of those.
+        //
+        // Both are asked about because they are separate globals that go missing separately: only
+        // navigator.mediaDevices needs a secure context, so over plain http MediaRecorder is there and it is not.
+        isDictationSupported = await mediaRecorder.IsSupported() && await mediaDevices.IsSupported();
         StateHasChanged();
         hubConnection.Reconnected += HubConnection_Reconnected;
 
@@ -96,46 +122,122 @@ public partial class AppAiChatPanel
         await RestartChannel();
     }
 
-    private async Task SendPromptMessage(string message)
+    private async Task SendPromptMessage(string prompt)
     {
+        // The prompt replaces whatever is in the box, so a recording still open would write over it a moment later.
+        // Its audio is dropped rather than transcribed: the user picked a suggestion instead of saying something.
+        await StopDictation();
+
         followUpSuggestions = [];
-        userInput = message;
+        userInput = prompt;
         StateHasChanged();
         await SendMessage();
     }
 
     private async Task SendMessage()
     {
-        // Dictation rebuilds userInput from dictationPrefix plus the whole transcript on every result, so a recognizer
-        // still running across a send would refill the emptied box with the text that was just sent. Stopping first
-        // also lets a final transcript still in flight land before the message is taken.
-        await StopDictation();
+        // The enter key and the suggestions arrive here without going through the send button the loading state is
+        // holding shut, so a second send can otherwise start on top of one still uploading.
+        if (isSending) return;
 
-        if (channel is null)
-        {
-            _ = StartChannel();
-        }
-
-        isLoading = true;
-
-        var input = userInput;
-        userInput = string.Empty;
-
-        chatMessages.Add(new() { Content = input, Role = AiChatMessageRole.User });
-        lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
-        chatMessages.Add(lastAssistantMessage);
-
-        if (readAloudEnabled)
-        {
-            // The answer to this prompt is what read aloud follows from here on, and what is left of the previous
-            // answer is dropped the moment this one has enough to say - not now, which would leave the user in
-            // silence for as long as the model takes to reply.
-            FollowReadAloud(lastAssistantMessage);
-        }
-
+        // Rendered before anything is awaited, so the button is already saying so by the time the upload starts.
+        isSending = true;
         StateHasChanged();
 
-        await channel!.Writer.WriteAsync(input!, CurrentCancellationToken);
+        try
+        {
+            // A recording that is still open is part of the message the user means to send, so it is stopped and
+            // transcribed here - what it heard lands in the box before the box is read below.
+            await StopDictation(transcribe: true);
+
+            if (string.IsNullOrEmpty(userInput) && pendingAttachment is null) return;
+
+            // The image goes up first: the message carries the path it was stored under, and there is none until the
+            // upload answers with one. A failure sends nothing and leaves both in place, so send again is a retry.
+            if (await UploadPendingAttachment() is false) return;
+
+            if (channel is null)
+            {
+                _ = StartChannel();
+            }
+
+            isLoading = true;
+
+            var message = new AiChatMessageRequest
+            {
+                Content = userInput,
+                AttachmentId = pendingAttachmentId
+            };
+
+            userInput = string.Empty;
+
+            chatMessages.Add(new()
+            {
+                Role = AiChatMessageRole.User,
+                Content = message.Content,
+                AttachmentId = message.AttachmentId
+            });
+
+            if (pendingAttachment is not null)
+            {
+                pendingAttachment = null;
+                pendingAttachmentId = null;
+                await attachmentUploadRef.Reset(); // So the same file can be picked again for the next message.
+            }
+
+            lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
+            chatMessages.Add(lastAssistantMessage);
+
+            if (readAloudEnabled)
+            {
+                // The answer to this prompt is what read aloud follows from here on. What is left of the previous answer
+                // plays on until this one is ready to take over, rather than the user being dropped into silence for as
+                // long as the model takes to reply.
+                FollowReadAloud(lastAssistantMessage);
+            }
+
+            StateHasChanged();
+
+            await channel!.Writer.WriteAsync(message, CurrentCancellationToken);
+        }
+        finally
+        {
+            isSending = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// The conversation is open to anyone, but dictation, read aloud and attaching an image each reach an endpoint
+    /// that requires a signed-in user. The modal turns a request that would come back 401 into one the user can
+    /// complete without leaving the conversation, and the snack bar says why it appeared - landing on top of a
+    /// conversation, the modal explains nothing on its own.
+    /// </summary>
+    private async Task<bool> EnsureSignedIn(string title, string message)
+    {
+        if ((await AuthenticationStateTask).User.IsAuthenticated()) return true;
+
+        SnackBarService.Info(title, message);
+
+        isOpen = false; // Focus on the modal, not the conversation, so the panel is closed to avoid a focus trap.
+        StateHasChanged();
+
+        var result = await signInModalService.SignIn();
+
+        isOpen = true;
+        StateHasChanged();
+
+        return result;
+    }
+
+    /// <summary>
+    /// What both halves of speech say when they need an account. To the user they are one thing - talking to the chat
+    /// and being talked back to - so they ask for it in one set of words rather than two.
+    /// </summary>
+    private Task<bool> EnsureSignedInForSpeech()
+    {
+        return EnsureSignedIn(Localizer[nameof(AppStrings.AiChatPanelSpeechSignInTitle)],
+                              Localizer[nameof(AppStrings.AiChatPanelSpeechSignInMessage)]);
     }
 
     private async Task ClearChat()
@@ -154,13 +256,12 @@ public partial class AppAiChatPanel
         responseCounter = 0;
         followUpSuggestions = [];
         lastAssistantMessage = new() { Role = AiChatMessageRole.Assistant };
-        chatMessages = [
-            new()
-            {
-                Role = AiChatMessageRole.Assistant,
-                Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrEmpty(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
-            }
-        ];
+        greetingMessage = new()
+        {
+            Role = AiChatMessageRole.Assistant,
+            Content = Localizer[nameof(AppStrings.AiChatPanelInitialResponse), string.IsNullOrEmpty(CurrentUser?.DisplayName) ? string.Empty : $" {CurrentUser.DisplayName}"],
+        };
+        chatMessages = [greetingMessage];
     }
 
     private async Task HandleOnDismissPanel()
@@ -173,7 +274,7 @@ public partial class AppAiChatPanel
     }
 
 
-    private async Task CopyMessage(AiChatMessage message)
+    private async Task CopyMessage(AiChatMessageResponse message)
     {
         if (message.Content is not { Length: > 0 } content) return;
 
@@ -191,7 +292,7 @@ public partial class AppAiChatPanel
 
     private async Task StartChannel()
     {
-        channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
+        channel = Channel.CreateUnbounded<AiChatMessageRequest>(new() { SingleReader = true, SingleWriter = true });
 
         // The following code streams user's input messages to the server and processes the streamed responses.
         // It keeps the chat ongoing until CurrentCancellationToken is cancelled.
@@ -218,7 +319,7 @@ public partial class AppAiChatPanel
                 {
                     responseCounter++;
                     isLoading = false;
-                    await ReadAloudArrivedContent(final: true); // Nothing more is coming, so the tail goes out short.
+                    await ReadAloudCompletedAnswer(); // The answer is whole, so there is something worth reading out.
                 }
                 else if (response is SharedAppMessages.MESSAGE_PROCESS_ERROR)
                 {
@@ -234,7 +335,6 @@ public partial class AppAiChatPanel
                     if ((responseCounter + 1) == expectedResponsesCount)
                     {
                         lastAssistantMessage!.Content += response;
-                        await ReadAloudArrivedContent(final: false);
                     }
                 }
             }

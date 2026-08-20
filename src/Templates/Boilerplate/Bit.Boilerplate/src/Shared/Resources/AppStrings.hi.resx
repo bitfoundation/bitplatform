@@ -411,6 +411,22 @@
   <data name="Ok" xml:space="preserve">
     <value>ठीक है</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>बंद करें</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>पासकी से साइन इन करें</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail खोलें</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook खोलें</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>साइन अप करके, आप इनसे सहमत होते हैं:</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>सिस्टम प्रॉम्प्ट्स</value>
@@ -1322,6 +1338,36 @@
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>पढ़ना रोकें</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>आपने जो कहा उसे लिखा जा रहा है</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>बोलकर लिखना बंद होने में शेष समय</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>आवाज़ के लिए खाता आवश्यक है</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>बोलकर लिखना और ज़ोर से पढ़ना दोनों सर्वर पर चलते हैं। एक बार साइन इन करें और आप चैट से बोलकर बात कर सकते हैं और उसका जवाब सुन सकते हैं।</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>छवि संलग्न करें</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>छवि 10 MB से बड़ी है।</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>केवल छवियाँ ही संलग्न की जा सकती हैं।</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>छवि संलग्न नहीं की जा सकी।</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>छवियों के लिए खाता आवश्यक है</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>अपने संदेश के साथ छवि भेजने के लिए साइन इन करें।</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>नमस्ते{0}! मैं यहां आपके ऐप अनुभव को शानदार बनाने के लिए हूं! कोई प्रश्न है या मदद चाहिए?</value>

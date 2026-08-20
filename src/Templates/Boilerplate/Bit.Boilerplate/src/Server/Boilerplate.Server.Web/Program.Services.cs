@@ -212,9 +212,11 @@ public static partial class Program
             return httpClient;
         });
 
-        services.AddRazorComponents()
-            .AddInteractiveServerComponents()
-            .AddInteractiveWebAssemblyComponents();
+        var razorComponentsBuilder = services.AddRazorComponents();
+        // The circuit has hub options of its own, separate from the AddSignalR ones in Boilerplate.Server.Api.
+        razorComponentsBuilder.AddInteractiveServerComponents()
+                              .AddHubOptions(options => configuration.GetRequiredSection("HubOptions").Bind(options));
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
     }
 
     /// <summary>

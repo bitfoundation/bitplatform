@@ -411,6 +411,22 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Ok" xml:space="preserve">
     <value>Oké</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Sluiten</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Inloggen met een passkey</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail openen</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook openen</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Door u te registreren, gaat u akkoord met onze</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systeem prompts</value>
@@ -1322,6 +1338,36 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Voorlezen stoppen</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Bezig met uitschrijven wat u zei</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Resterende tijd voordat het dicteren stopt</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Spraak vereist een account</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Dicteren en voorlezen draaien allebei op de server. Meld u één keer aan en u kunt tegen de chat praten en de antwoorden laten voorlezen.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Een afbeelding bijvoegen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>De afbeelding is groter dan 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Alleen afbeeldingen kunnen worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>De afbeelding kon niet worden bijgevoegd.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Afbeeldingen vereisen een account</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Meld u aan om een afbeelding met uw bericht mee te sturen.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ik ben hier om je app-ervaring geweldig te maken! Heb je een vraag of heb je hulp nodig?</value>

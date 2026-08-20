@@ -411,6 +411,22 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Stäng</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Logga in med en lösenordsnyckel</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Öppna Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Öppna Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Genom att registrera dig godkänner du våra</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systemprompts</value>
@@ -1322,6 +1338,36 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Sluta läsa upp</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Skriver ner det du sa</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Tid kvar innan dikteringen stoppas</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Rösten kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Diktering och uppläsning körs båda på servern. Logga in en gång så kan du diktera dina meddelanden och lyssna på svaren.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Bifoga en bild</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>Bilden är större än 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Endast bilder kan bifogas.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>Bilden kunde inte bifogas.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Bilder kräver ett konto</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Logga in för att skicka en bild tillsammans med ditt meddelande.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hej{0}! Jag är här för att göra din app-upplevelse fantastisk! Har du en fråga eller behöver du hjälp?</value>

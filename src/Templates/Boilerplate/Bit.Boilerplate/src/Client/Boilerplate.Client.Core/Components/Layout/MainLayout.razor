@@ -3,35 +3,36 @@
 
 @*#if (multitenant == true)*@
 <CascadingValue Value="currentTenant">
-@*#endif*@
-<CascadingValue Value="currentDir">
-    <CascadingValue Value="currentUser">
-        <CascadingValue Value="currentTheme">
-            <CascadingValue Value="currentRouteData">
-                <CascadingValue Name="@Parameters.IsOnline" Value="IsOnline">
+    @*#endif*@
+    <CascadingValue Value="currentDir">
+        <CascadingValue Value="currentUser">
+            <CascadingValue Value="currentTheme">
+                <CascadingValue Value="currentRouteData">
+                    <CascadingValue Name="@Parameters.IsOnline" Value="IsOnline">
 
-                    <AppHeadContents />
+                        <AppHeadContents />
 
-                    <AppShell NavPanelItems="navPanelItems" IsIdentityPage="isIdentityPage">
-                        @Body
-                    </AppShell>
+                        <AppShell NavPanelItems="navPanelItems" IsIdentityPage="isIdentityPage">
+                            @Body
+                        </AppShell>
 
-                    <ForceUpdateSnackBar />
-                    @*#if (signalR == true)*@
-                    <AppAiChatPanel />
-                    @*#endif*@
-                    <AppSnackBar />
-                    <AppDiagnosticModal />
-                    <JobProgress />
-                    <BitModalContainer ModalParameters="ModalParameters" />
-                    <BitProModalContainer ModalParameters="ProModalParameters" />
-                    <AppJsBridge />
+                        <ForceUpdateSnackBar />
+                        <AppSnackBar />
+                        <AppDiagnosticModal />
+                        <JobProgress />
+                        <BitModalContainer ModalParameters="ModalParameters" />
+                        <BitProModalContainer ModalParameters="ProModalParameters" />
+                        <AppJsBridge />
 
+                        @*#if (signalR == true)*@
+                        <AppAiChatPanel />
+                        @*#endif*@
+
+                    </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
     </CascadingValue>
-</CascadingValue>
-@*#if (multitenant == true)*@
+    @*#if (multitenant == true)*@
 </CascadingValue>
 @*#endif*@

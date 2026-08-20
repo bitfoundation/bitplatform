@@ -15,6 +15,7 @@ public partial class AppAiChatPanel
     private bool isLoading;
     private string? userInput;
     private bool isSmallScreen;
+    private bool isMaximized; // Widened to the whole viewport, and it outlives a close and a reopen the way a maximized window does.
     private int responseCounter;
     private Channel<string>? channel;
     private AiChatMessage? lastAssistantMessage;

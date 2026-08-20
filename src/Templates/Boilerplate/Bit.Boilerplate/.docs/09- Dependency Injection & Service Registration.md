@@ -301,7 +301,6 @@ protected override async ValueTask DisposeAsync(bool disposing)
 ---
 
 ### AI Wiki: Answered Questions
-* [How is the HttpClient created across different platforms and Blazor hosting modes?](https://deepwiki.com/search/how-is-the-httpclient-created_0f4353a6-bf0e-47cc-afbc-bf96aaf97469)
 
 Ask your own question [here](https://wiki.bitplatform.dev)
 

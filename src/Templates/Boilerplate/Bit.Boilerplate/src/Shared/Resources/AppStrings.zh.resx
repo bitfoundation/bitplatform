@@ -411,6 +411,22 @@
   <data name="Ok" xml:space="preserve">
     <value>确定</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>使用通行密钥登录</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>打开 Gmail</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>打开 Outlook</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>注册即表示您同意我们的</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>系统提示</value>
@@ -1322,6 +1338,36 @@
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>停止朗读</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>正在把你说的话转成文字</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>口述停止前的剩余时间</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>语音功能需要账户</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>口述和朗读都在服务器上运行。登录一次，你就可以对聊天说话，并让它朗读回复。</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>添加图片</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>图片大于 10 MB。</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>只能添加图片。</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>无法添加该图片。</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>图片功能需要账户</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>登录后即可在消息中附带图片。</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>您好{0}！我是来让您的应用体验更棒的！有问题或需要帮助吗？</value>

@@ -66,6 +66,28 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     }
     //#endif
 
+    //#if (signalR == true)
+    /// <summary>
+    /// Takes an image the user attached to an AI chat message and answers with the id it was stored under, which is
+    /// all the client needs to build the attachment url it puts in the message.
+    /// <para>
+    /// The id is minted here rather than accepted from the client: an attachment id is the whole address of a blob
+    /// (See <see cref="GetFilePath(Guid, AttachmentKind)"/>), so a caller-chosen one would let a user overwrite somebody else's attachment -
+    /// their profile picture included - by naming its id.
+    /// </para>
+    /// </summary>
+    [HttpPost]
+    [RequestSizeLimit(11 * 1024 * 1024 /*11MB*/)]
+    public async Task<IActionResult> UploadAiChatImage(IFormFile? file, CancellationToken cancellationToken)
+    {
+        var attachmentId = Guid.CreateSequentialGuid();
+
+        var result = await UploadAttachment(attachmentId, [AttachmentKind.AiChatImage], file, cancellationToken);
+
+        return result is OkObjectResult ? Ok(attachmentId.ToString()) : result;
+    }
+    //#endif
+
     [AllowAnonymous]
     [HttpGet("{attachmentId}/{kind}")]
     [AppResponseCache(MaxAge = 3600 * 24 * 7, UserAgnostic = true)]
@@ -84,6 +106,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             //#if (module == "Sales" || module == "Admin")
             AttachmentKind.ProductPrimaryImageMedium => "image/webp",
+            //#endif
+            //#if (signalR == true)
+            AttachmentKind.AiChatImage => "image/webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => "image/webp",
             _ => "application/octet-stream" // The *Original kinds keep the uploaded bytes verbatim.
@@ -215,6 +240,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
                 AttachmentKind.UserProfileImageSmall => (true, 256, 256),
                 //#if (module == "Sales" || module == "Admin")
                 AttachmentKind.ProductPrimaryImageMedium => (true, 512, 512),
+                //#endif
+                //#if (signalR == true)
+                AttachmentKind.AiChatImage => (true, 512, 512),
                 //#endif
                 _ => (false, 0, 0)
             };
@@ -384,14 +412,24 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
     /// client influenced - the file name used to flow into ExpandEnvironmentVariables, so a name ending
     /// ".%TEMP%" expanded a server environment value straight into the storage key.
     /// </summary>
-    private string GetFilePath(Guid attachmentId, AttachmentKind kind)
+    private string GetFilePath(Guid attachmentId, AttachmentKind kind) => GetFilePath(AppSettings, attachmentId, kind);
+
+    /// <inheritdoc cref="GetFilePath(Guid, AttachmentKind)"/>
+    /// <remarks>
+    /// Static so that whoever needs a blob can work out where it is without asking this controller or the database
+    /// for it - <c>AppChatbot</c> reads an attached image straight off storage this way.
+    /// </remarks>
+    public static string GetFilePath(ServerApiSettings appSettings, Guid attachmentId, AttachmentKind kind)
     {
         var directory = kind switch
         {
             //#if (module == "Sales" || module == "Admin")
-            AttachmentKind.ProductPrimaryImageMedium or AttachmentKind.ProductPrimaryImageOriginal => AppSettings.ProductImagesDir,
+            AttachmentKind.ProductPrimaryImageMedium or AttachmentKind.ProductPrimaryImageOriginal => appSettings.ProductImagesDir,
             //#endif
-            AttachmentKind.UserProfileImageSmall or AttachmentKind.UserProfileImageOriginal => AppSettings.UserProfileImagesDir,
+            //#if (signalR == true)
+            AttachmentKind.AiChatImage => appSettings.AiChatImagesDir,
+            //#endif
+            AttachmentKind.UserProfileImageSmall or AttachmentKind.UserProfileImageOriginal => appSettings.UserProfileImagesDir,
             _ => throw new NotImplementedException()
         };
 
@@ -401,6 +439,9 @@ public partial class AttachmentController : AppControllerBase, IAttachmentContro
         {
             //#if (module == "Sales" || module == "Admin")
             AttachmentKind.ProductPrimaryImageMedium => $"{directory}{attachmentId}_{kind}.webp",
+            //#endif
+            //#if (signalR == true)
+            AttachmentKind.AiChatImage => $"{directory}{attachmentId}_{kind}.webp",
             //#endif
             AttachmentKind.UserProfileImageSmall => $"{directory}{attachmentId}_{kind}.webp",
             _ => $"{directory}{attachmentId}_{kind}"

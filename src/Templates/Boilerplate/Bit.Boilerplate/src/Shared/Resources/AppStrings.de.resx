@@ -411,6 +411,22 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="Ok" xml:space="preserve">
     <value>OK</value>
   </data>
+    <!-- Identity pages -->
+    <data name="Close" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+    <data name="SignInWithPasskeyButtonText" xml:space="preserve">
+    <value>Mit einem Passkey anmelden</value>
+  </data>
+    <data name="OpenGmail" xml:space="preserve">
+    <value>Gmail öffnen</value>
+  </data>
+    <data name="OpenOutlook" xml:space="preserve">
+    <value>Outlook öffnen</value>
+  </data>
+    <data name="AgreeToTermsMessage" xml:space="preserve">
+    <value>Mit der Registrierung akzeptierst du unsere</value>
+  </data>
   <!--#if (signalR == true) -->
   <data name="SystemPromptsTitle" xml:space="preserve">
     <value>Systemprompts</value>
@@ -1322,6 +1338,36 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="AiChatPanelStopReading" xml:space="preserve">
     <value>Vorlesen beenden</value>
+  </data>
+  <data name="AiChatPanelTranscribing" xml:space="preserve">
+    <value>Das Gesagte wird in Text umgewandelt</value>
+  </data>
+  <data name="AiChatPanelDictationTimeLeft" xml:space="preserve">
+    <value>Verbleibende Zeit, bis das Diktat endet</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInTitle" xml:space="preserve">
+    <value>Sprachfunktionen erfordern ein Konto</value>
+  </data>
+  <data name="AiChatPanelSpeechSignInMessage" xml:space="preserve">
+    <value>Diktieren und Vorlesen laufen beide auf dem Server. Melden Sie sich einmal an, dann können Sie mit dem Chat sprechen und sich von ihm antworten lassen.</value>
+  </data>
+  <data name="AiChatPanelAttachImage" xml:space="preserve">
+    <value>Bild anhängen</value>
+  </data>
+  <data name="AiChatPanelImageTooLarge" xml:space="preserve">
+    <value>Das Bild ist größer als 10 MB.</value>
+  </data>
+  <data name="AiChatPanelOnlyImagesAllowed" xml:space="preserve">
+    <value>Es können nur Bilder angehängt werden.</value>
+  </data>
+  <data name="AiChatPanelAttachmentFailed" xml:space="preserve">
+    <value>Das Bild konnte nicht angehängt werden.</value>
+  </data>
+  <data name="AiChatPanelImageSignInTitle" xml:space="preserve">
+    <value>Bilder erfordern ein Konto</value>
+  </data>
+  <data name="AiChatPanelImageSignInMessage" xml:space="preserve">
+    <value>Melden Sie sich an, um ein Bild mit Ihrer Nachricht zu senden.</value>
   </data>
   <data name="AiChatPanelInitialResponse" xml:space="preserve">
     <value>Hallo{0}! Ich bin hier, um Ihr App-Erlebnis fantastisch zu machen! Haben Sie eine Frage oder brauchen Sie Hilfe?</value>
