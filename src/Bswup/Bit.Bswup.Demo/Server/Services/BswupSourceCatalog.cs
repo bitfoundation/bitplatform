@@ -1,8 +1,7 @@
-using System.Text;
+﻿using System.Text;
 using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Bswup.Demo.Server.Dtos;
-using System.Text.RegularExpressions;
 
 namespace Bit.Bswup.Demo.Server.Services;
 
@@ -19,7 +18,7 @@ namespace Bit.Bswup.Demo.Server.Services;
 /// answers straight out of it.
 /// </para>
 /// </summary>
-public static partial class BswupSourceCatalog
+public static class BswupSourceCatalog
 {
     private const string ReadmeResource = "BswupDocs/README.md";
     private const string SourcePrefix = "BswupSource/";

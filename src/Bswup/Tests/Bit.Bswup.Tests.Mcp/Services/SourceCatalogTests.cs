@@ -203,7 +203,7 @@ public class SourceCatalogTests
         foreach (var file in BswupSourceCatalog.SourceFiles)
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(file.Description), $"{file.Path} has no description");
-            Assert.IsFalse(file.Description!.Contains('<') && file.Description.Contains("/>"), $"{file.Path}: markup, not a description");
+            Assert.IsFalse(file.Description!.Contains('<'), $"{file.Path}: markup, not a description");
         }
     }
 

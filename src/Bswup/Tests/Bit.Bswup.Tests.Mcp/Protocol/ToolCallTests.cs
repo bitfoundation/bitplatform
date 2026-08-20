@@ -307,6 +307,31 @@ public class ToolCallTests
     }
 
     [TestMethod]
+    public async Task InspectBswupServiceWorker_StopsReadingAUrlListThatRunsPastTheLengthCap()
+    {
+        // The 200-URL cap applies only after the list is split, so the split itself is bounded by
+        // length - otherwise a body of any size is parsed in full before anything is discarded.
+        var urls = string.Join("\n", Enumerable.Range(0, 6_000).Select(index => $"_framework/asset{index}.dll"));
+
+        Assert.IsTrue(urls.Length > 64_000, "the fixture has to reach the cap for this to test anything");
+
+        var result = await _server.CallAsync("InspectBswupServiceWorker", new { script = ServiceWorkerFixtures.Clean, assetUrls = urls });
+        var analysis = McpTestServer.StructuredOf(result, "InspectBswupServiceWorker").GetProperty("assets");
+
+        Assert.AreEqual(200, analysis.GetProperty("assets").GetArrayLength());
+
+        // Cutting mid-URL would invent an entry nobody passed, so every one that came back has to
+        // be a whole URL from the list.
+        var analyzed = analysis.GetProperty("assets").EnumerateArray().Select(asset => asset.GetProperty("url").GetString()).ToArray();
+
+        CollectionAssert.IsSubsetOf(analyzed, urls.Split('\n'), "a cut inside the cap must land on a separator");
+
+        var notes = string.Join("\n", analysis.GetProperty("notes").EnumerateArray().Select(note => note.GetString()));
+
+        StringAssert.Contains(notes, "ran past 64000 characters");
+    }
+
+    [TestMethod]
     public async Task GetBswupEvents_ReturnsTheMessagesAHandlerSwitchesOn()
     {
         var result = await _server.CallAsync("GetBswupEvents");
@@ -445,5 +470,52 @@ public class ToolCallTests
         var text = await _server.CallTextAsync("GetBswupSourceFile", new { path = "Demo/Client/wwwroot/service-worker.published.js" });
 
         Assert.AreEqual(BswupSourceCatalog.GetSourceFile("Demo/Client/wwwroot/service-worker.published.js"), text);
+    }
+
+    [TestMethod]
+    public async Task SourceFileWindow_NamesTheRangeWhenStartLineIsPastTheEnd()
+    {
+        // A startLine past the end used to be clamped onto the last line, which handed back the
+        // window the caller already had and read as the next one. The line count and the range
+        // say what to ask for instead, the way an unknown path names the paths that exist.
+        const string path = "Demo/Client/wwwroot/service-worker.published.js";
+
+        var lines = BswupSourceCatalog.SourceFiles.Single(file => file.Path == path).Lines;
+
+        var past = await _server.CallTextAsync("GetBswupSourceFile", new { path, startLine = lines + 1 });
+
+        StringAssert.Contains(past, $"{lines} lines");
+        StringAssert.Contains(past, $"no line {lines + 1}");
+        StringAssert.Contains(past, $"between 1 and {lines}");
+    }
+
+    [TestMethod]
+    public async Task SourceFileWindow_ReadsFromTheStartWhenStartLineIsBelowTheRange()
+    {
+        // Below the range there is nothing to disambiguate - line 0, which is what a caller
+        // counting from zero asks for, can only mean the start of the file - so erroring there
+        // would spend a call saying what the obvious reading already says.
+        const string path = "Demo/Client/wwwroot/service-worker.published.js";
+
+        var text = await _server.CallTextAsync("GetBswupSourceFile", new { path, startLine = 0 });
+
+        Assert.AreEqual(BswupSourceCatalog.GetSourceFile(path), text);
+    }
+
+    [TestMethod]
+    public async Task SourceFileWindow_CountsTheSameLinesTheListingAdvertises()
+    {
+        // Splitting on the newline that ends a file leaves an empty element behind, and counting
+        // it would put the window one line ahead of what GetBswupSourceFiles advertises. The two
+        // disagreeing is worse than either being wrong alone: the range the window names would
+        // then invite a call whose entire answer is that line which is not there.
+        foreach (var file in BswupSourceCatalog.SourceFiles.Where(file => file.Lines > 1))
+        {
+            var last = await _server.CallTextAsync("GetBswupSourceFile", new { path = file.Path, startLine = file.Lines });
+            var header = $"[lines {file.Lines}-{file.Lines} of {file.Lines} - this is the end of the file]";
+
+            StringAssert.StartsWith(last, header,
+                $"the last line of '{file.Path}' does not line up with the {file.Lines} lines the listing advertises");
+        }
     }
 }

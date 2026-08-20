@@ -1,4 +1,4 @@
-using Bit.Bswup.Demo.Client;
+﻿using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Dtos;
 
 namespace Bit.Bswup.Demo.Server.Services;
@@ -54,16 +54,29 @@ public static class BswupSearchIndex
 
     private static readonly Lazy<Entry[]> _entries = new(Build);
 
+    /// <summary>The words a question is phrased with, which every entry answers to equally.</summary>
     private static readonly HashSet<string> _stopWords = new(StringComparer.OrdinalIgnoreCase)
     {
         "how", "the", "and", "for", "with", "from", "that", "this", "what", "when", "where", "which",
         "does", "did", "are", "was", "you", "your", "than", "then", "its", "but", "any", "some",
         "please", "help", "about", "into", "way", "make", "want", "need", "would", "should", "could",
-        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto",
-        // Every entry in this index is about Bswup in a Blazor app, so these three separate
-        // nothing - and they do worse than nothing, because a term that matches an entry counts
-        // towards the "how many terms matched" multiplier. Left in, the longest documents won
-        // every query on the strength of a word that is in all of them.
+        "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
+    };
+
+    /// <summary>
+    /// The words every entry in this index carries because of what the index is about. They
+    /// separate nothing, and they do worse than nothing: a term that matches an entry counts
+    /// towards the "how many terms matched" multiplier, so left in, the longest documents win
+    /// every query on the strength of a word that is in all of them.
+    /// <para>
+    /// Unlike a stop word they are dropped only when the query says something else as well.
+    /// "bswup", "what is bswup" and "bit-bswup.js" are what a caller reaches for first and are
+    /// made of nothing but these, so dropping them unconditionally would have the library
+    /// answer its own name with no results at all.
+    /// </para>
+    /// </summary>
+    private static readonly HashSet<string> _ambientWords = new(StringComparer.OrdinalIgnoreCase)
+    {
         "bswup", "bit", "blazor"
     };
 
@@ -216,15 +229,24 @@ public static class BswupSearchIndex
     {
         if (string.IsNullOrWhiteSpace(query)) return [];
 
-        return [.. query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
-                              StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
-            // the words a question is phrased with do worse than nothing.
-            .Where(term => term.Length > 2 && _stopWords.Contains(term) is false)
+        var split = query.Split(['.', ',', ';', ':', '?', '!', '"', '\'', '(', ')', '[', ']', '{', '}', '/', '\\', '<', '>', '-', '_', ' ', '\t', '\n', '\r'],
+                                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            // Every term is counted in every entry's body, so the work is terms x corpus. No question
-            // is phrased in more words than this, while a pasted file as a query would scan for hours.
-            .Take(MaxTerms)];
+            .ToArray();
+
+        // One- and two-letter words ("a", "in", "do") match everything and rank nothing - and
+        // the words a question is phrased with do worse than nothing.
+        var words = split.Where(term => term.Length > 2 && _stopWords.Contains(term) is false).ToArray();
+
+        // The words the whole index shares go only if the query says something else as well:
+        // a name-only query is made of nothing but them, and an empty answer to "bswup" reads
+        // as "no such library" (see _ambientWords).
+        var terms = words.Where(term => _ambientWords.Contains(term) is false).ToArray();
+        if (terms.Length == 0) terms = words;
+
+        // Every term is counted in every entry's body, so the work is terms x corpus. No question
+        // is phrased in more words than this, while a pasted file as a query would scan for hours.
+        return [.. terms.Take(MaxTerms)];
     }
 
     private static Entry[] Build()

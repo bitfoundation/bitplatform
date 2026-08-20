@@ -1,4 +1,4 @@
-using ModelContextProtocol.Server;
+﻿using ModelContextProtocol.Server;
 using System.ComponentModel;
 using Bit.Bswup.Demo.Client;
 using Bit.Bswup.Demo.Server.Dtos;
@@ -38,16 +38,34 @@ namespace Bit.Bswup.Demo.Server.Controllers;
 public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> logger) : ControllerBase
 {
     /// <summary>
-    /// The most text one call hands back. The docs pages land below it; the library's TypeScript
-    /// sources - the service worker alone runs past 120,000 characters - do not, which is what
-    /// <c>startLine</c> on <see cref="GetBswupSourceFile"/> is for. Roughly four thousand tokens:
-    /// enough for any answer worth reading in one piece, and well short of the point where a
-    /// single call crowds out the conversation it was meant to inform.
+    /// The most source text one call hands back. The library's TypeScript runs far past it - the
+    /// service worker alone is over 120,000 characters - so a file comes back a window at a time,
+    /// which is what <c>startLine</c> on <see cref="GetBswupSourceFile"/> is for. Roughly four
+    /// thousand tokens: enough for any stretch worth reading in one piece, and well short of the
+    /// point where a single call crowds out the conversation it was meant to inform.
     /// </summary>
-    private const int MaxDocumentLength = 16_000;
+    private const int MaxWindowLength = 16_000;
+
+    /// <summary>
+    /// The most of a rendered docs page one call hands back. Larger than a source window, and
+    /// deliberately: a page has no continuation to offer, so reaching this cap loses the rest of
+    /// the page outright rather than deferring it. The largest page renders to a third of it, so
+    /// it is a backstop against a page nobody expected rather than a budget anything is cut to.
+    /// </summary>
+    private const int MaxDocumentLength = 40_000;
 
     // The most asset URLs one inspection will decide on.
     private const int MaxAnalyzedAssetUrls = 200;
+
+    /// <summary>
+    /// The most <c>assetUrls</c> text one inspection will parse. The cap on URLs applies only
+    /// after the list has been split, so without this a body of any size would be broken into an
+    /// array in full before the first 200 of it were kept. Two hundred URLs of any plausible
+    /// length fit inside this several times over, so a real question never reaches it.
+    /// </summary>
+    private const int MaxAssetUrlsLength = 64_000;
+
+    private static readonly char[] AssetUrlSeparators = ['\n', '\r', ',', ';'];
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBswup), Title = "Search everything about Bswup",
@@ -127,7 +145,19 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
 
         if (string.IsNullOrWhiteSpace(assetUrls)) return inspection;
 
-        var urls = assetUrls.Split(['\n', '\r', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // The URL cap below applies only after the list has been split, so the split is bounded
+        // here instead: cut at a separator inside the length cap, never mid-URL, which would
+        // invent an entry nobody passed and then report a verdict on it.
+        var text = assetUrls;
+        var cut = text.Length > MaxAssetUrlsLength;
+
+        if (cut)
+        {
+            var boundary = text.LastIndexOfAny(AssetUrlSeparators, MaxAssetUrlsLength);
+            text = text[..(boundary > 0 ? boundary : MaxAssetUrlsLength)];
+        }
+
+        var urls = text.Split(AssetUrlSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // Every URL is run against every pattern, so an agent that pastes a whole manifest in
         // turns one call into a lot of matching. The cap sits far above the handful of assets a
@@ -135,7 +165,16 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         // truncated list would read as 'these are all of them'.
         var analysis = BswupServiceWorkerInspector.AnalyzeAssets(script, urls.Take(MaxAnalyzedAssetUrls));
 
-        if (urls.Length > MaxAnalyzedAssetUrls)
+        if (cut)
+        {
+            // The count is of what survived the cut, so it is a floor on what was passed rather
+            // than the total; naming it as the total would understate what is still missing.
+            analysis = analysis with
+            {
+                Notes = [.. analysis.Notes, $"The URL list ran past {MaxAssetUrlsLength} characters and was read only that far; of the more than {urls.Length} URLs that left, the first {MaxAnalyzedAssetUrls} were analyzed. Ask again with the rest to cover them."]
+            };
+        }
+        else if (urls.Length > MaxAnalyzedAssetUrls)
         {
             analysis = analysis with
             {
@@ -232,7 +271,7 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     [Description("Gets one source file listed by GetBswupSourceFiles, verbatim - e.g. 'Demo/Client/wwwroot/service-worker.published.js' for a deployed Blazor Web App's configuration, 'Sample/BasicSample/wwwroot/index.html' for a complete hand-written splash and handler, or 'Library/Scripts/bit-bswup.sw.ts' for the engine itself. The library's TypeScript runs to tens of thousands of characters, so a long file comes back one window at a time and names the line to continue from - read a window, not a whole file, unless you truly need all of it.")]
     public string GetBswupSourceFile(
         [Description("A path from GetBswupSourceFiles, e.g. 'Demo/Client/wwwroot/service-worker.published.js' or 'Library/Scripts/bit-bswup.sw.ts'.")] string path,
-        [Description("The 1-based line to start reading at. Defaults to the start of the file; a windowed answer names the line to pass here to continue.")] int startLine = 1)
+        [Description("The 1-based line to start reading at, up to the file's line count as GetBswupSourceFiles reports it - past that the call is answered with the range rather than with lines. Defaults to the start of the file; a windowed answer names the line to pass here to continue.")] int startLine = 1)
     {
         var content = BswupSourceCatalog.GetSourceFile(path);
 
@@ -283,17 +322,36 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
     }
 
     /// <summary>
-    /// At most <see cref="MaxDocumentLength"/> characters of <paramref name="content"/>, starting
+    /// At most <see cref="MaxWindowLength"/> characters of <paramref name="content"/>, starting
     /// at <paramref name="startLine"/> and cut at a line boundary. A window that does not reach the
     /// end says where it stopped and how to go on, because a caller who cannot tell a partial
     /// answer from a complete one reads the missing half as "not there".
     /// </summary>
     private static string Window(string content, int startLine, string path)
     {
-        if (startLine <= 1 && content.Length <= MaxDocumentLength) return content;
+        if (startLine <= 1 && content.Length <= MaxWindowLength) return content;
 
         var lines = content.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n');
-        var first = Math.Clamp(startLine, 1, lines.Length);
+
+        // A trailing newline ends the last line rather than starting another one. Splitting on it
+        // leaves an empty element behind either way, and counting that as a line would put this
+        // total one ahead of the Lines GetBswupSourceFiles advertises for the same file - so the
+        // range named below would invite a call that comes back with nothing in it.
+        if (lines.Length > 0 && lines[^1].Length == 0) lines = lines[..^1];
+
+        // A startLine past the end used to be clamped, which answered a call for line 900 of a
+        // 500-line file with line 500 - the window the caller already has, read back as if it
+        // were the next one. Naming the range is what the unknown-path answer above does.
+        if (startLine > lines.Length)
+        {
+            return $"'{path}' has {lines.Length} lines, so there is no line {startLine}. " +
+                   $"Pass a startLine between 1 and {lines.Length}, or omit it to read from the start.";
+        }
+
+        // Below the range there is nothing to disambiguate: line 0 - what a caller counting from
+        // zero asks for - can only mean the start of the file, and an error would spend a call
+        // saying so.
+        var first = Math.Max(startLine, 1);
 
         var taken = new List<string>();
         var length = 0;
@@ -302,7 +360,7 @@ public class McpController(HtmlRenderer htmlRenderer, ILogger<McpController> log
         {
             // The first line is always taken, however long it is: a minified file is one line, and
             // a window that could hold none of it would answer every call with an empty string.
-            if (taken.Count > 0 && length + lines[i].Length + 1 > MaxDocumentLength) break;
+            if (taken.Count > 0 && length + lines[i].Length + 1 > MaxWindowLength) break;
 
             taken.Add(lines[i]);
             length += lines[i].Length + 1;

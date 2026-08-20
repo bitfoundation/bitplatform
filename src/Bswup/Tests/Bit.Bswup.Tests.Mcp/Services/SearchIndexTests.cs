@@ -130,6 +130,20 @@ public class SearchIndexTests
     }
 
     [TestMethod]
+    [DataRow("bswup")]
+    [DataRow("what is bswup")]
+    [DataRow("bit bswup blazor")]
+    [DataRow("bit-bswup.js")]
+    public void Search_ForTheLibrarysOwnNameStillAnswers(string query)
+    {
+        // Those shared words are dropped only when the query says something else as well.
+        // These are the first thing anyone types, and every word of them is on that list - so
+        // filtered out unconditionally they would have the library answer its own name with
+        // nothing at all, which reads as "no such thing" rather than "ask more precisely".
+        Assert.IsTrue(Search(query, 5).Length > 0, $"'{query}' came back empty");
+    }
+
+    [TestMethod]
     public void Search_MatchesAcrossThePluralAHeadingHappensToUse()
     {
         // Nobody phrases a question in the number the heading is written in.
