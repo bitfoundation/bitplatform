@@ -10,6 +10,19 @@
        prerendering the HeadOutlet emits a real <title> element into this head. A second,
        earlier one would win in the served HTML (browsers and crawlers take the first). *@
     <meta name="description" content="Brouter - a modern, declarative, nestable router for Blazor with async guards, data loaders, named routes and view transitions." />
+
+    @* Link previews. A documentation site is shared by URL more than it is browsed to, so the
+       card a chat client or a social site unfurls IS the first impression for most readers. The
+       title is deliberately static here rather than per-page: crawlers read the head of the
+       prerendered response, and only <PageTitle> is per-page. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Brouter" />
+    <meta property="og:title" content="Brouter - routing for Blazor, done right" />
+    <meta property="og:description" content="A modern, declarative, nestable router for Blazor: async guards, data loaders with stale-while-revalidate caching, keep-alive, view transitions and compile-time-safe URLs." />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Brouter - routing for Blazor, done right" />
+    <meta name="twitter:description" content="A modern, declarative, nestable router for Blazor: async guards, data loaders, keep-alive, view transitions and compile-time-safe URLs." />
+
     <link rel="stylesheet" href="app.css" />
     @* Synchronous on purpose: applies the light/dark theme before first paint. *@
     <script src="theme.js"></script>

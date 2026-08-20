@@ -1,48 +1,62 @@
-/* Nav panel | page | rail. The two side columns are fixed-width and the page takes what is
-   left, so the reading measure grows with the window instead of the margins doing it. */
+/* Nav panel | page | rail. The two side columns are fixed-width and the page takes what is left,
+   so the reading measure grows with the window instead of the margins doing it. */
 .bb-docs {
     display: grid;
     grid-template-columns: var(--bb-nav-panel-width) minmax(0, 1fr) var(--bb-rail-width);
-    gap: 2rem;
+    gap: 2.5rem;
     align-items: start;
 }
 
-.bb-docs-menu-toggle {
-    display: none;
+.bb-docs-main {
+    min-width: 0;
 }
 
-.bb-docs-menu-toggle svg {
-    width: 16px;
-    height: 16px;
+/* Deliberately uncapped. The reading measure is enforced on the PROSE - paragraphs, notes and
+   lists carry `max-width: var(--bb-measure)` from app.css - so the things that are not prose keep
+   the whole column: a code sample gets its lines without wrapping and an API table gets its
+   columns without breaking words. Capping the container instead would starve both to protect a
+   line length the paragraphs are already holding on their own. */
+.bb-docs-content {
+    min-width: 0;
 }
 
-/* BitNavPanel's column: a quiet list that scrolls under the sticky header, with no frame of its
-   own - the page's own background is the panel, and the rows are the only chrome in it. */
+/* ---------- Nav panel ----------
+
+   A quiet list that scrolls under the sticky header, with no frame of its own: the page's own
+   background is the panel, and the rows are the only chrome in it. A hairline down its trailing
+   edge separates it from the page without drawing a box around it. */
 .bb-docs-sidebar {
     position: sticky;
-    top: calc(var(--bb-header-height) + 1.5rem);
-    max-height: calc(100vh - var(--bb-header-height) - 3rem);
+    top: calc(var(--bb-header-height) + 1.75rem);
+    max-height: calc(100vh - var(--bb-header-height) - 3.5rem);
     overflow-y: auto;
-    padding-right: .5rem;
-    /* Keep the persistent sidebar out of the page view transition (same trick as the header). */
+    padding: 0 1rem 2rem 0;
+    border-inline-end: 1px solid var(--bb-border);
+    /* Persistent chrome: keep it out of the page's view transition, like the header. */
     view-transition-name: bb-docs-sidebar;
 }
 
-.bb-docs-section {
-    margin-bottom: 1.25rem;
+.bb-docs-nav-title {
+    padding-inline-start: .625rem;
+    margin-bottom: 1rem;
+    color: var(--bb-text);
 }
 
-/* The group headers use Fluent's Overline: small, spaced and uppercase, so they read as labels
+.bb-docs-section {
+    margin-bottom: 1.5rem;
+}
+
+/* The group labels use Fluent's Overline: small, spaced and uppercase, so they read as labels
    over the rows rather than as the first row of each group. */
-.bb-docs-section h4 {
-    font-size: .625rem;
-    font-weight: 400;
-    line-height: 1.66;
+.bb-docs-group {
+    font-size: .6875rem;
+    font-weight: 600;
+    line-height: 1.4;
     text-transform: uppercase;
-    letter-spacing: .08333em;
+    letter-spacing: .06em;
     color: var(--bb-text-soft);
     margin: 0 0 .375rem;
-    padding-inline-start: .5rem;
+    padding-inline-start: .625rem;
 }
 
 .bb-docs-section ul {
@@ -52,50 +66,194 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
+    /* The indent guide: one hairline behind the whole group, which is what makes a set of rows
+       read as belonging to the label above them. */
+    border-inline-start: 1px solid var(--bb-border);
 }
 
-/* The sidebar anchors are rendered by <BrouterLink> - they carry that component's scope, not
-   this file's, so they are reached through ::deep. */
+/* The sidebar anchors are rendered by <BrouterLink>, so they carry that component's scope rather
+   than this file's and are reached through ::deep. */
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-docs-section ::deep a {
+    position: relative;
     display: block;
-    padding: .4rem .5rem;
-    border-radius: var(--bb-radius);
+    padding: .375rem .625rem;
+    margin-inline-start: -1px;
+    border-inline-start: 2px solid transparent;
+    border-start-end-radius: var(--bb-radius);
+    border-end-end-radius: var(--bb-radius);
     font-size: .875rem;
-    line-height: 1.5;
+    line-height: 1.45;
     color: var(--bb-text-muted);
     text-decoration: none;
     transition: background var(--bb-motion-duration-short) var(--bb-motion-easing),
-                color var(--bb-motion-duration-short) var(--bb-motion-easing);
+                color var(--bb-motion-duration-short) var(--bb-motion-easing),
+                border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
 }
 
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-docs-section ::deep a:hover {
     color: var(--bb-text);
     background: var(--bb-surface-hover);
+    border-inline-start-color: var(--bb-border-strong);
     text-decoration: none;
 }
 
-/* The selected row: a tinted band plus the accent bar down its leading edge, drawn with an inset
-   shadow rather than a border so the row's geometry is identical whether it is selected or not. */
+/* The selected row: it takes over its own stretch of the group's indent guide and tints the row
+   behind it. The border is on every row, transparent until selected, so selecting one never
+   shifts the text by a pixel. */
 /* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 .bb-docs-section ::deep a.active {
     font-weight: 600;
     color: var(--bb-primary);
     background: var(--bb-primary-soft);
-    box-shadow: inset 2px 0 0 0 var(--bb-primary);
+    border-inline-start-color: var(--bb-primary);
 }
 
-.bb-docs-content {
+.bb-docs-nav-foot {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bb-docs-nav-foot a,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-nav-foot ::deep a {
+    padding: .25rem .625rem;
+    font-size: .8125rem;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+}
+
+.bb-docs-nav-foot a:hover,
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-docs-nav-foot ::deep a:hover {
+    color: var(--bb-primary);
+    text-decoration: none;
+}
+
+/* ---------- Topbar: breadcrumb, and the panel's toggle at narrow widths ---------- */
+
+.bb-docs-topbar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
     min-width: 0;
-    max-width: var(--bb-measure);
 }
 
-/* Below the content cap the rail is the first column to go: it is navigation within a page the
+.bb-crumbs {
+    min-width: 0;
+}
+
+.bb-crumbs ol {
+    display: flex;
+    align-items: center;
+    gap: .4375rem;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: .8125rem;
+    color: var(--bb-text-soft);
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-crumbs ::deep a {
+    color: var(--bb-text-muted);
+    text-decoration: none;
+}
+
+/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
+.bb-crumbs ::deep a:hover {
+    color: var(--bb-primary);
+    text-decoration: underline;
+}
+
+.bb-crumbs li[aria-current="page"] {
+    color: var(--bb-text);
+    font-weight: 600;
+}
+
+.bb-crumb-sep {
+    color: var(--bb-border-strong);
+}
+
+.bb-docs-menu-toggle {
+    display: none;
+    align-items: center;
+    gap: .4375rem;
+    flex: none;
+    height: 32px;
+    padding: 0 .75rem;
+    border: 1px solid var(--bb-border-strong);
+    border-radius: var(--bb-radius);
+    background: var(--bb-surface);
+    color: var(--bb-text);
+    font-family: inherit;
+    font-size: .8125rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.bb-docs-menu-toggle:hover {
+    background: var(--bb-surface-hover);
+}
+
+.bb-docs-menu-toggle svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* The drawer's backdrop only exists at the widths where there is a drawer. It is rendered
+   whenever the panel is open, so it needs this floor for the case where the reader opens the
+   panel on a phone and then widens the window past the breakpoint. */
+.bb-docs-scrim {
+    display: none;
+}
+
+/* ---------- Under the page ---------- */
+
+.bb-docs-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--bb-border);
+}
+
+.bb-docs-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    font-size: .8125rem;
+    color: var(--bb-text-muted);
+    text-decoration: none;
+}
+
+.bb-docs-edit:hover {
+    color: var(--bb-primary);
+    text-decoration: underline;
+}
+
+.bb-docs-edit svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ---------- Responsive ----------
+
+   Below the content cap the rail is the first column to go: it is navigation within a page the
    reader can already see, so it is the least costly thing to drop. */
 @media (max-width: 1200px) {
     .bb-docs {
         grid-template-columns: var(--bb-nav-panel-width) minmax(0, 1fr);
+        gap: 2rem;
     }
 
     .bb-rail {
@@ -103,8 +261,8 @@
     }
 }
 
-/* Tablet and below: the nav panel folds into a drawer opened from the button above the page,
-   which is the same move the header's own links make. */
+/* Tablet and below: the nav panel becomes a drawer over the page rather than a block that pushes
+   it down - the reader opened it to leave this page, not to scroll past it. */
 @media (max-width: 960px) {
     .bb-docs {
         display: block;
@@ -112,25 +270,57 @@
 
     .bb-docs-menu-toggle {
         display: inline-flex;
-        margin-bottom: 1rem;
     }
 
     .bb-docs-sidebar {
-        display: none;
-        position: static;
+        position: fixed;
+        top: var(--bb-header-height);
+        bottom: 0;
+        inset-inline-start: 0;
+        z-index: 1050;
+        width: min(86vw, 320px);
         max-height: none;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
+        padding: 1.25rem 1rem 2rem;
         background: var(--bb-surface);
-        border: 1px solid var(--bb-border);
-        border-radius: var(--bb-radius);
+        border-inline-end: 1px solid var(--bb-border);
+        box-shadow: var(--bb-shadow-flyout);
+        /* Rendered but out of view, and out of the tab order with it - a panel that is merely
+           translated off-screen still takes Tab stops from the page behind it. */
+        visibility: hidden;
+        transform: translateX(-100%);
+        transition: transform var(--bb-motion-duration) var(--bb-motion-enter),
+                    visibility var(--bb-motion-duration);
     }
 
     .bb-docs-sidebar.bb-open {
-        display: block;
+        visibility: visible;
+        transform: translateX(0);
     }
 
-    .bb-docs-content {
-        max-width: none;
+    .bb-docs-scrim {
+        display: block;
+        position: fixed;
+        inset: var(--bb-header-height) 0 0;
+        z-index: 1040;
+        background: var(--bb-scrim);
+    }
+}
+
+/* The drawer opens from the inline start, so in a right-to-left document it opens from the right
+   and has to slide the other way. */
+@media (max-width: 960px) {
+    [dir="rtl"] .bb-docs-sidebar {
+        transform: translateX(100%);
+    }
+
+    [dir="rtl"] .bb-docs-sidebar.bb-open {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 600px) {
+    .bb-docs-topbar {
+        flex-wrap: wrap;
+        gap: .625rem;
     }
 }

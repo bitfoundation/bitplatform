@@ -18,22 +18,15 @@
         color: var(--bb-text);
     }
 
+    /* The fields themselves are the site's own inputs (app.css) - what a JSON argument needs on
+       top of that is a monospaced face and room for a long value. */
     .mcp-field input,
     .mcp-field textarea,
     .mcp-field select {
-        padding: .45rem .7rem;
-        border: 1px solid var(--bb-border);
-        border-radius: var(--bb-radius-sm);
-        background: var(--bb-surface);
-        color: var(--bb-text);
         font-family: var(--bb-mono);
         font-size: .85rem;
         width: 100%;
         max-width: 46rem;
-    }
-
-    .mcp-field textarea {
-        resize: vertical;
     }
 
 .mcp-hint,
@@ -75,7 +68,7 @@
 
 .mcp-exchange {
     border: 1px solid var(--bb-border);
-    border-radius: var(--bb-radius-sm);
+    border-radius: var(--bb-radius-lg);
     padding: .5rem .75rem;
     margin-bottom: .5rem;
 }
@@ -116,7 +109,7 @@
 /* The server's own instructions: long, worth reading once, not worth scrolling past every visit. */
 .mcp-instructions {
     border: 1px solid var(--bb-border);
-    border-radius: var(--bb-radius-sm);
+    border-radius: var(--bb-radius-lg);
     padding: .5rem .75rem;
     margin: 1rem 0;
 }
@@ -142,7 +135,7 @@
     max-height: 24rem;
     overflow: auto;
     border: 1px solid var(--bb-border);
-    border-radius: var(--bb-radius-sm);
+    border-radius: var(--bb-radius-lg);
 }
 
 /* What completion/complete answered with: values to click, not prose to read. */
