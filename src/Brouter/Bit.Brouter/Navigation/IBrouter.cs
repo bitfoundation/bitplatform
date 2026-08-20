@@ -146,7 +146,8 @@ public interface IBrouter
     /// though with new component instances since the old ones are already gone. A guard that means
     /// to send the user elsewhere should redirect instead. A reload requested while a navigation is
     /// already in flight does nothing: that navigation is already rebuilding the page the user is
-    /// actually heading to. Nor does a reload with no route committed - a not-found fallback or an
+    /// actually heading to. In flight counts from the moment the navigation starts - including while
+    /// its guards or hooks are still awaiting, before anything has committed. Nor does a reload with no route committed - a not-found fallback or an
     /// error boundary on screen - do anything: there is no chain to rebuild.
     /// </summary>
     /// <remarks>
@@ -243,9 +244,9 @@ public interface IBrouter
     /// is stale too and the whole pipeline (guards, loaders, redirects) should run again. Content that
     /// isn't on screen and isn't retained is unaffected either way.
     /// <br/>
-    /// While a navigation is in flight this degrades to the plain overload - retained content is still
-    /// released, but the visible chain is left to the navigation, which is about to replace it with
-    /// fresh instances anyway. Rebuilding it underneath a running pipeline would corrupt the commit.
+    /// While a navigation is in flight - from the moment it starts, guards and hooks included - this
+    /// degrades to the plain overload: retained content is still released, but the visible chain is
+    /// left to the navigation, which is about to replace it with fresh instances anyway. Rebuilding it underneath a running pipeline would corrupt the commit.
     /// </summary>
     /// <remarks>
     /// Default implementation throws <see cref="NotSupportedException"/>; the shipped

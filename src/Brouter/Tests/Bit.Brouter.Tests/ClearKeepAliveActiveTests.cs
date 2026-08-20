@@ -259,6 +259,65 @@ public class ClearKeepAliveActiveTests : BunitTestContext
     }
 
     [TestMethod]
+    public void IncludeActive_from_a_ui_event_handler_rebuilds_outlet_hosted_content()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/outlet/t");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => cut.Find("[data-testid=olayout] [data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent));
+        log.Clear();
+
+        // The outlet's TRANSIENT path, from a UI event handler: the sibling outlet test above goes
+        // through /parent/k1 (keep-alive, so the retained-entries region renders it) and drives the
+        // API through InvokeAsync, where each render request flushes on its own. Here the drop and
+        // the re-mount are requested inside one event handler, and the content is merely the
+        // current match rather than a retained entry - the combination the documented use cases
+        // actually take for a page that lives in a layout's outlet.
+        cut.Find("[data-testid=clear-active]").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=olayout] [data-testid=stateful]").Count);
+            Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
+            CollectionAssert.Contains(log, "deactivated:Disposing");
+            CollectionAssert.Contains(log, "activated:first=True");
+        });
+    }
+
+    [TestMethod]
+    public async Task IncludeActive_leaves_a_navigation_waiting_in_its_guard_alone()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        // A navigation parked in its async enter guard has not started its pipeline yet, so the
+        // in-flight counter the sibling test relies on is still 0 - but the pipeline (and the
+        // Matched reset that makes re-mounting here unsafe) is one continuation away. The
+        // includeActive half stands down for the decision phase too; the hidden-content half still
+        // runs, which is what makes the downgrade a downgrade rather than a bail-out.
+        Task<BrouterNavigationOutcome> pending = null!;
+        await cut.InvokeAsync(() => { pending = brouter.NavigateAsync("/slow-guard").AsTask(); });
+        await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
+
+        Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent);
+
+        await cut.InvokeAsync(() => cut.Instance.GuardGate.SetResult());
+        var outcome = await pending;
+
+        Assert.AreEqual(BrouterNavigationStatus.Succeeded, outcome.Status);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(nav.Uri.EndsWith("/slow-guard"), nav.Uri);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=slow-guard]").Count);
+            // The page the navigation left is gone, not rebuilt by the reset and stranded beside it.
+            Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
+        });
+    }
+
+    [TestMethod]
     public async Task IncludeActive_leaves_an_already_in_flight_navigation_alone()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");

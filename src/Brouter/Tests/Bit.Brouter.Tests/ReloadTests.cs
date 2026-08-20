@@ -301,6 +301,111 @@ public class ReloadTests : BunitTestContext
     }
 
     [TestMethod]
+    public void Reload_from_a_ui_event_handler_rebuilds_outlet_hosted_content()
+    {
+        var (cut, _) = RenderAt<ReloadHost>("http://localhost/outlet/t");
+        var log = cut.Instance.ProbeLog;
+        cut.WaitForAssertion(() => cut.Find("[data-testid=olayout] [data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        cut.WaitForAssertion(() => Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent));
+        log.Clear();
+
+        // Content hosted by a BrouterOutlet is rendered by a different renderer than inline content
+        // (per-entry, in the outlet component) and torn down by a different call (DropChild rather
+        // than the inline DropAllContent), so the UI-event-handler path - where render requests
+        // batch - is worth pinning down here too. A survivor that merely LOOKS rebuilt is the real
+        // hazard: it would still hold the dropped entry's lifecycle context and never receive
+        // another route callback, hence the probe assertions alongside the state one.
+        cut.Find("[data-testid=reload-btn]").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=olayout] [data-testid=stateful]").Count);
+            Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent);
+            CollectionAssert.Contains(log, "deactivated:Disposing");
+            CollectionAssert.Contains(log, "activated:first=True");
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_that_fails_into_the_router_level_boundary_leaves_only_the_error_ui()
+    {
+        var (cut, brouter) = RenderAt<ErrorContentHost>("http://localhost/rooterr");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=rooterr-page]"));
+
+        // The route has no boundary of its own, so the failure lands on the ROUTER-level one, whose
+        // branch empties the committed chain (everything routed is evicted). That is exactly the
+        // shape the cancel restore watches for, so without a discriminator the restore would fire
+        // and re-mount the page this reload already tore down - on screen beside the ErrorContent
+        // that replaced it. A realistic pairing: an app-wide boundary plus a loader that starts
+        // failing on the very state change ReloadAsync exists for.
+        cut.Instance.RootErrShouldFail = true;
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=root-boundary]").Count);
+            Assert.AreEqual(0, cut.FindAll("[data-testid=rooterr-page]").Count);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_cancelled_by_a_loader_restores_the_page_with_its_data()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
+        cut.WaitForAssertion(() => Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1")));
+
+        // A loader cancels LATER than a guard does: by then the pipeline has nulled the whole
+        // matched chain's LoadedData and this reload has evicted the cached results, so the routes
+        // hold nothing to render with. The restore has to put the pre-reload results back or the
+        // page comes back blank-of-data - visibly intact, silently empty.
+        cut.Instance.CancelInLoader = true;
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=layout]").Count);
+            Assert.IsTrue(cut.Find("[data-testid=child-data]").TextContent.Contains("child-1"),
+                cut.Find("[data-testid=child-data]").TextContent);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_stands_down_while_a_navigation_waits_in_its_guard()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        var navigated = 0;
+        brouter.OnNavigated += _ => { navigated++; return ValueTask.CompletedTask; };
+
+        // The navigation is parked in its DECISION phase (an async enter guard), so its pipeline has
+        // not started: _processingNavigation is still 0 and the generation is unbumped. It is on its
+        // way all the same - reloading here tears down a page it is about to replace and supersedes
+        // it with the reload's own pipeline, resolving the caller's awaited NavigateAsync as
+        // Superseded even though the navigation arrives moments later.
+        Task<BrouterNavigationOutcome> pending = null!;
+        await cut.InvokeAsync(() => { pending = brouter.NavigateAsync("/slow-guard").AsTask(); });
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        // Stood down: the page is untouched, state and all, rather than rebuilt behind the guard.
+        Assert.AreEqual("count:1", cut.Find("[data-testid=stateful]").TextContent);
+
+        await cut.InvokeAsync(() => cut.Instance.GuardGate.SetResult());
+        var outcome = await pending;
+
+        Assert.AreEqual(BrouterNavigationStatus.Succeeded, outcome.Status);
+        Assert.AreEqual(1, navigated);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsTrue(nav.Uri.EndsWith("/slow-guard"), nav.Uri);
+            Assert.AreEqual(1, cut.FindAll("[data-testid=slow-guard]").Count);
+        });
+    }
+
+    [TestMethod]
     public async Task Reload_stands_down_while_a_navigation_is_already_in_flight()
     {
         var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");

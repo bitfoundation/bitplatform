@@ -11,6 +11,9 @@
    the re-mount collapse into one - the path app code actually takes (the docs' sign-out /
    switch-tenant buttons), and the one cut.InvokeAsync cannot reproduce. *@
 <button data-testid="clear-active" @onclick="() => Router.ClearKeepAlive(includeActive: true)">clear-active</button>
+@* Same batching point for the pipeline-running sibling: a reload whose chain has no async loader
+   completes inside the handler, so its teardown and re-match collapse into one render too. *@
+<button data-testid="reload-btn" @onclick="async () => await Router.ReloadAsync()">reload</button>
 
 <Brouter>
     <Broute Path="/plain">
@@ -63,6 +66,30 @@
         <Content><div data-testid="teardown-nav-target">target</div></Content>
     </Broute>
 
+    @* Outlet-hosted TRANSIENT child (no KeepAlive): the child's content lives in the layout's
+       BrouterOutlet rather than at its declaration site, so it is rendered by BrouterOutlet's
+       per-entry path instead of the route's inline renderer. Both a reset and a reload must give
+       it a new entry - and a new lifecycle session the probe can report on. *@
+    <Broute Path="/outlet">
+        <Content>
+            <div data-testid="olayout"><BrouterOutlet /></div>
+        </Content>
+        <ChildContent>
+            <Broute Path="/t">
+                <Content>
+                    <StatefulCounter />
+                    <LifecycleProbe Log="ProbeLog" />
+                </Content>
+            </Broute>
+        </ChildContent>
+    </Broute>
+
+    @* Guard that parks the DECISION phase (OnLocationChanging) until the test releases it: the
+       window where a navigation is under way but its pipeline has not started yet. *@
+    <Broute Path="/slow-guard" Guard="SlowGuard">
+        <Content><div data-testid="slow-guard">slow-guard</div></Content>
+    </Broute>
+
     <Broute Path="/other">
         <Content><div data-testid="other">other</div></Content>
     </Broute>
@@ -101,10 +128,25 @@
         return ValueTask.FromResult<object?>($"parent-{ParentLoaderRuns}");
     }
 
+    // Set by the tests to make the child loader cancel the NEXT pass - the reload bail-out that
+    // happens AFTER the pipeline has already nulled the chain's LoadedData, unlike the guard's.
+    public bool CancelInLoader { get; set; }
+
     private ValueTask<object?> ChildLoader(BrouterNavigationContext ctx)
     {
         ChildLoaderRuns++;
         LastLoadWasReload = ctx.IsReload;
+        if (CancelInLoader)
+        {
+            ctx.Cancel();
+            return ValueTask.FromResult<object?>(null);
+        }
         return ValueTask.FromResult<object?>($"child-{ChildLoaderRuns}");
     }
+
+    // Completed by the tests. Async on purpose: the navigation sits inside its guard - approved by
+    // nothing yet, pipeline not started - for as long as the test needs.
+    public TaskCompletionSource GuardGate { get; } = new();
+
+    private async ValueTask SlowGuard(BrouterNavigationContext ctx) => await GuardGate.Task;
 }
