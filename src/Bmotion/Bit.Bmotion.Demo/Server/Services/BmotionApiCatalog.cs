@@ -58,6 +58,13 @@ public static class BmotionApiCatalog
     public static BmotionApiTypeDto[] TypeSummaries => _typeSummaries.Value;
 
     /// <summary>
+    /// The endings that put a '.' before a space without ending a sentence. "motion.dev" is not among
+    /// them and does not need to be: its '.' has no space after it, so it never reads as a boundary in
+    /// the first place - and a summary that does end on "motion.dev." has ended.
+    /// </summary>
+    private static readonly string[] _abbreviations = ["e.g.", "i.e.", "etc.", "cf.", "vs."];
+
+    /// <summary>
     /// The first sentence of a summary, for a listing. A summary that opens with a code sample has
     /// no sentence to take - the text before the sample is kept whole rather than cut at the first
     /// '.' inside the code, which would end the description mid-expression.
@@ -76,11 +83,19 @@ public static class BmotionApiCatalog
         for (var index = text.IndexOf(". ", StringComparison.Ordinal); index > 0;
              index = text.IndexOf(". ", index + 1, StringComparison.Ordinal))
         {
-            // "e.g." and "motion.dev" end in a '.' followed by a space without ending a sentence.
-            // A sentence that would be cut to almost nothing is not the one the writer meant.
-            if (index < 24) continue;
+            var candidate = text[..(index + 1)];
 
-            return text[..(index + 1)];
+            // Whether this '.' ends a sentence is a question about the word in front of it, not about
+            // how far into the text it falls: "coasts to a stop (e.g. momentum after a drag)" used to
+            // be cut to "coasts to a stop (e.g." the moment it ran past the 24th character, and a
+            // genuinely short first sentence was run on into the next one for finishing before it.
+            if (_abbreviations.Any(abbreviation => candidate.EndsWith(abbreviation, StringComparison.OrdinalIgnoreCase))) continue;
+
+            // A boundary that leaves a single word behind is an initial or a fragment rather than a
+            // sentence, and describes no type.
+            if (candidate.Contains(' ') is false) continue;
+
+            return candidate;
         }
 
         return text.EndsWith('.') || text.Length <= 240 ? text : $"{text[..237]}...";

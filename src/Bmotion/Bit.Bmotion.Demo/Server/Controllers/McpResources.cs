@@ -24,8 +24,12 @@ public static class McpResources
 
         // The guide is an embedded resource, so an empty one means it was not embedded in this build.
         // Saying so is an answer; an empty document reads as a library with nothing written about it.
+        //
+        // Bounded by the same MaxDocumentLength as everything else this server hands out: a resource is
+        // pinned into a conversation the same way a tool answer lands in one, and the whole README is
+        // the largest document here. What is cut says so, and says to read the sections one at a time.
         return readme.Length > 0
-            ? readme
+            ? McpController.Truncate(readme)
             : "The Bit.Bmotion guide is not available in this build: the README was not embedded in the assembly.";
     }
 

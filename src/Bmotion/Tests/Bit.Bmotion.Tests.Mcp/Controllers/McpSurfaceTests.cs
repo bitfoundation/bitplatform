@@ -159,7 +159,17 @@ public class McpSurfaceTests
     {
         var controller = new McpController();
 
-        Assert.AreEqual(BmotionSourceCatalog.Readme, McpResources.Guide());
+        // The whole guide is the one document with no tool of its own, so what it has to match is the
+        // bound: a client that pins bmotion://guide reads the README cut to the same
+        // MaxDocumentLength as every other document here, not an unbounded one.
+        var guide = McpResources.Guide();
+        var readme = BmotionSourceCatalog.Readme;
+
+        StringAssert.StartsWith(guide, readme[..Math.Min(readme.Length, McpController.MaxDocumentLength)],
+                                "The guide resource does not read as the README.");
+        Assert.IsTrue(readme.Length <= McpController.MaxDocumentLength
+                      || guide.Contains("[truncated at line ", StringComparison.Ordinal),
+                      $"The guide resource hands out all {guide.Length} characters of the README unbounded.");
 
         foreach (var section in BmotionSourceCatalog.GuideSections)
         {

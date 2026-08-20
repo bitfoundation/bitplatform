@@ -189,6 +189,20 @@ public class TransitionSpecTests
                       $"Nothing said the stiffness is ignored. Warnings: {string.Join(" | ", result.Warnings)}");
     }
 
+    /// <summary>
+    /// 'visualDuration' is motion.dev's spelling of the same argument, and the parser writes it to the
+    /// same spring.Duration - so it switches the spring to the derived model too, and the stiffness
+    /// beside it is just as unused as it is under the 'duration' spelling.
+    /// </summary>
+    [TestMethod]
+    public void Parse_VisualDurationWithStiffness_WarnsThatTheStiffnessIsUnused()
+    {
+        var result = BmotionTransitionSpec.Parse("spring(visualDuration: 0.6, stiffness: 260)");
+
+        Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("the explicit values are unused", StringComparison.OrdinalIgnoreCase)),
+                      $"Nothing said the stiffness is ignored. Warnings: {string.Join(" | ", result.Warnings)}");
+    }
+
     [TestMethod]
     public void Parse_BounceWithoutDuration_WarnsThatTheDurationDefaultApplies()
     {

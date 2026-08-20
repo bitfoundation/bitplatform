@@ -37,6 +37,12 @@ public static partial class BmotionTransitionSpec
     private static readonly string[] _springArguments =
         ["stiffness", "damping", "mass", "bounce", "duration", "visualduration", "velocity", "restspeed", "restdelta", "delay"];
 
+    /// <summary>
+    /// The spring arguments that describe the feel and let the engine derive the physics from it.
+    /// Spelled as they are written in C#, because these are the names the warning quotes back.
+    /// </summary>
+    private static readonly string[] _springFeelArguments = ["bounce", "duration", "visualDuration"];
+
     private static readonly string[] _tweenArguments = ["duration", "delay", "steps"];
 
     private static readonly string[] _inertiaArguments =
@@ -156,13 +162,17 @@ public static partial class BmotionTransitionSpec
         // Either of the two is enough to switch the spring over: the engine's test is
         // "Duration.HasValue || Bounce.HasValue", and whichever was not given takes its default.
         var hasPhysics = named.ContainsKey("stiffness") || named.ContainsKey("damping");
-        var hasFeel = named.ContainsKey("bounce") || named.ContainsKey("duration");
 
-        if (hasPhysics && hasFeel)
+        // 'visualDuration' is motion.dev's name for the same argument, and the switch below writes it
+        // to the very same spring.Duration - so it turns the derived model on exactly as 'duration'
+        // does, and has to be looked for here too or the warning misses the spec that needs it most.
+        var feel = _springFeelArguments.Where(named.ContainsKey).ToArray();
+
+        if (hasPhysics && feel.Length > 0)
         {
-            var given = named.ContainsKey("bounce") && named.ContainsKey("duration") ? "'bounce' and 'duration'"
-                      : named.ContainsKey("bounce") ? "'bounce'"
-                      : "'duration'";
+            var given = feel.Length == 1
+                ? $"'{feel[0]}'"
+                : $"{string.Join(", ", feel[..^1].Select(name => $"'{name}'"))} and '{feel[^1]}'";
 
             warnings.Add($"Both {given} and 'stiffness'/'damping' were given. The derived model wins: the engine " +
                          "computes stiffness and damping from bounce (default 0.25) and duration (default 0.5), " +

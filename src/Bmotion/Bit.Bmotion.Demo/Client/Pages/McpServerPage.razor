@@ -132,12 +132,12 @@
         </div>
 
         <div class="mcp-lab-stage">
-            @if (_simulation is { Samples.Length: > 1 })
+            @if (_replayOf is { Samples.Length: > 1 })
             {
                 @* @key on the replay counter: changing it re-mounts the element, which is what makes
                    the keyframe animation play again rather than sit at its resting value. *@
                 <Bmotion Animate="Bm.To(x: _replayFrames)"
-                         Transition="Bm.Tween(_simulation.SettleSeconds, BmEase.Linear)"
+                         Transition="Bm.Tween(_replayOf.SettleSeconds, BmEase.Linear)"
                          @key="_replay">
                     <div class="box box-sm" />
                 </Bmotion>
@@ -153,22 +153,48 @@
     {
         <p class="mcp-error">@_error</p>
     }
-    else if (_simulation is not null)
+
+    @* One block per transition asked about, in the order asked. A spec the server could not read is
+       one failed candidate rather than a failed measurement, so the ones beside it - the ones after
+       it included - still report their numbers, which is the whole point of asking for several. *@
+    @foreach (var simulation in _simulations)
     {
-        <div class="mcp-metrics">
-            <div><span>Settles in</span><strong>@_simulation.SettleSeconds.ToString("0.00")s</strong></div>
-            <div><span>Overshoot</span><strong>@_simulation.OvershootPercent.ToString("0.#")%</strong></div>
-            <div><span>Crossings</span><strong>@_simulation.TargetCrossings</strong></div>
-            <div><span>90% at</span><strong>@_simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+        <div class="mcp-result">
+            @if (_simulations.Length > 1)
+            {
+                <h3 class="mcp-result-title">
+                    @simulation.Transition
+                    @if (ReferenceEquals(simulation, _replayOf))
+                    {
+                        <span class="mcp-result-tag">replaying</span>
+                    }
+                </h3>
+            }
+
+            @if (simulation.Error is not null)
+            {
+                @* The server read the spec and could not make sense of it, and said why - which is a
+                   better message than anything this page could compose about it. *@
+                <p class="mcp-error">@simulation.Error</p>
+            }
+            else
+            {
+                <div class="mcp-metrics">
+                    <div><span>Settles in</span><strong>@simulation.SettleSeconds.ToString("0.00")s</strong></div>
+                    <div><span>Overshoot</span><strong>@simulation.OvershootPercent.ToString("0.#")%</strong></div>
+                    <div><span>Crossings</span><strong>@simulation.TargetCrossings</strong></div>
+                    <div><span>90% at</span><strong>@simulation.TimeTo90Percent.ToString("0.00")s</strong></div>
+                </div>
+
+                <pre class="mcp-sparkline">@simulation.Sparkline</pre>
+                <p class="mcp-reading">@simulation.Reading</p>
+
+                @foreach (var warning in simulation.Warnings ?? [])
+                {
+                    <p class="mcp-warning">@warning</p>
+                }
+            }
         </div>
-
-        <pre class="mcp-sparkline">@_simulation.Sparkline</pre>
-        <p class="mcp-reading">@_simulation.Reading</p>
-
-        @foreach (var warning in _simulation.Warnings ?? [])
-        {
-            <p class="mcp-warning">@warning</p>
-        }
     }
 </div>
 
@@ -472,8 +498,9 @@
     // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather
     // than sharing them: the client project does not reference the host, and these are the four
     // fields the page renders out of each - not the whole contract.
-    private sealed record Simulation(double SettleSeconds, double OvershootPercent, int TargetCrossings,
-        double TimeTo90Percent, Sample[]? Samples, string Sparkline, string Reading, string[]? Warnings, string? Error);
+    private sealed record Simulation(string Transition, double SettleSeconds, double OvershootPercent,
+        int TargetCrossings, double TimeTo90Percent, Sample[]? Samples, string Sparkline, string Reading,
+        string[]? Warnings, string? Error);
 
     private sealed record Sample(double Seconds, double Value);
 
@@ -616,7 +643,10 @@
     private bool _busy;
     private int _replay;
     private string? _error;
-    private Simulation? _simulation;
+    private Simulation[] _simulations = [];
+
+    /// <summary>The measured candidate the stage is replaying: the first one the server could read.</summary>
+    private Simulation? _replayOf;
     private double[] _replayFrames = [];
 
     private string _properties = "x, opacity";
@@ -713,35 +743,26 @@
         try
         {
             // The tool measures however many transitions it is given and answers with one result per
-            // transition; this panel asks about one at a time. Samples are opt-in because most callers
-            // read the sparkline and the numbers - the replay below is the case that needs the curve.
+            // transition, in the order asked - and the box takes the same semicolon-separated list the
+            // tool documents, so what comes back is a comparison rather than a single answer. Samples
+            // are opt-in because most callers read the sparkline and the numbers - the replay below is
+            // the case that needs the curve.
             var results = await GetAsync<Simulation[]>(
                 $"api/mcp/SimulateBmotionTransition?includeSamples=true&transition={Uri.EscapeDataString(spec)}");
 
-            var result = results?.FirstOrDefault();
+            // Every candidate is kept, the unreadable ones included: the server reports a spec it could
+            // not parse as a result of its own, so showing only the first would hide the measurements of
+            // everything after a typo - which is the comparison the panel was asked for.
+            _simulations = results ?? [];
+            _error = results is null ? Unreachable : null;
 
-            if (result is null)
-            {
-                _error = Unreachable;
-                _simulation = null;
-            }
-            else if (result.Error is not null)
-            {
-                // The server read the spec and could not make sense of it, and said why - which is a
-                // better message than anything this page could compose about it.
-                _error = result.Error;
-                _simulation = null;
-            }
-            else
-            {
-                _simulation = result;
-
-                // The samples are evenly spaced in time, so they are keyframes as they stand: replaying
-                // them with a linear tween of the measured settle time reproduces the motion the server
-                // measured, rather than a second animation that merely resembles it.
-                _replayFrames = [.. (result.Samples ?? []).Select(sample => sample.Value / 100 * 220)];
-                _replay++;
-            }
+            // The stage holds one box, so it replays the first candidate that measured. The samples are
+            // evenly spaced in time, so they are keyframes as they stand: replaying them with a linear
+            // tween of the measured settle time reproduces the motion the server measured, rather than a
+            // second animation that merely resembles it.
+            _replayOf = _simulations.FirstOrDefault(result => result.Error is null && result.Samples is { Length: > 1 });
+            _replayFrames = [.. (_replayOf?.Samples ?? []).Select(sample => sample.Value / 100 * 220)];
+            _replay++;
         }
         finally
         {
@@ -976,6 +997,23 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: .8125rem;
         white-space: pre;
+    }
+
+    .mcp-result + .mcp-result { margin-block-start: 1.5rem; border-block-start: 1px solid var(--bit-clr-brd-sec); }
+
+    .mcp-result-title {
+        margin-block: 1rem 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--bit-clr-fg-pri);
+    }
+
+    .mcp-result-tag {
+        margin-inline-start: .5rem;
+        font-size: .6875rem;
+        font-weight: 400;
+        color: var(--bit-clr-pri);
     }
 
     .mcp-reading, .mcp-warning, .mcp-error { font-size: .875rem; color: var(--bit-clr-fg-sec); }
