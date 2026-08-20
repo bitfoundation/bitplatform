@@ -46,6 +46,8 @@ public partial class BitThemeSwitcher : BitComponentBase
 
     [Inject] private BitThemeManager _themeManager { get; set; } = default!;
 
+    [Inject] private BitThemeNotifications _themeNotifications { get; set; } = default!;
+
 
 
     /// <summary>The design systems this instance offers, resolved from <see cref="DesignSystems"/>.</summary>
@@ -164,6 +166,11 @@ public partial class BitThemeSwitcher : BitComponentBase
     {
         if (firstRender && NoDesignSystem is false)
         {
+            // Subscribed before the read below rather than after it: a theme applied in between - by another
+            // switcher on the page, or by the app itself - would otherwise fall in the gap and leave this
+            // picker showing a design system the page is no longer wearing.
+            _themeNotifications.ThemeChanged += HandleOnThemeChanged;
+
             // The theme script restores the persisted theme on its own, so the page is already painted in
             // the right design system by the time this runs; it is the picker that would still be showing
             // whatever InitialTheme resolved to. Read the applied theme back - JS interop, hence after the
@@ -225,6 +232,32 @@ public partial class BitThemeSwitcher : BitComponentBase
     /// first offered design system for a theme none of them claims.
     /// </summary>
     private string? ResolveDesignSystem(string? theme) => (FindDesignSystem(theme) ?? _designSystems.FirstOrDefault())?.Value;
+
+    /// <summary>
+    /// Follows the applied theme for the rest of the component's life, the way the first interactive render
+    /// picks it up once: the theme is a document-wide piece of state that anything can change - a sibling
+    /// switcher, the app's own code, or the OS while following the system theme - and a picker that only
+    /// read it at startup would go stale on the first such change.
+    /// </summary>
+    private void HandleOnThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        // A null new theme means "unknown" rather than a theme name (see BitThemeChangedEventArgs), so it is
+        // left alone for the same reason the read at startup is: resolving it would answer "the first design
+        // system" and overwrite what the picker already knows.
+        if (e.NewTheme.HasValue() is false) return;
+
+        var applied = ResolveDesignSystem(e.NewTheme);
+
+        // Raised from the JS interop callback thread, hence the hop back onto the renderer's before touching
+        // component state.
+        _ = InvokeAsync(() =>
+        {
+            if (applied == _designSystem) return;
+
+            _designSystem = applied;
+            StateHasChanged();
+        });
+    }
 
     private string GetDesignSystemClass()
     {
@@ -294,5 +327,19 @@ public partial class BitThemeSwitcher : BitComponentBase
         // Nothing to re-render for: which of the two buttons is visible follows the document's own bit-theme
         // attribute in CSS, and the design system is unchanged by definition.
         await OnChange.InvokeAsync(applied ?? target);
+    }
+
+
+
+    protected override ValueTask DisposeAsync(bool disposing)
+    {
+        if (IsDisposed is false && disposing)
+        {
+            // BitThemeNotifications is scoped, so a leaked handler would keep this component rooted for the
+            // lifetime of the circuit and re-render it after teardown.
+            _themeNotifications.ThemeChanged -= HandleOnThemeChanged;
+        }
+
+        return base.DisposeAsync(disposing);
     }
 }

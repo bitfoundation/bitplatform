@@ -32,7 +32,7 @@ public partial class BitThemeSwitcherDemo
             Name = "DesignSystems",
             Type = "IEnumerable<BitThemeSwitcherItem>?",
             DefaultValue = "null",
-            Description = "The design systems offered by the picker. Defaults to the three that ship with the library (DefaultDesignSystems). The first item is also the fallback the picker shows for an applied theme that no item claims.",
+            Description = "The design systems offered by the picker. Defaults to the four that ship with the library (DefaultDesignSystems). The first item is also the fallback the picker shows for an applied theme that no item claims.",
             LinkType = LinkType.Link,
             Href = "#theme-switcher-item",
         },

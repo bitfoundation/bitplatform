@@ -62,6 +62,11 @@ public partial class SideRail
     {
         var sideRailItems = await JSRuntime.GetSideRailItems();
 
+        // A null read is the JS runtime saying it could not be asked (prerendering, a disconnected
+        // circuit) rather than the page saying it has no sections, so the rail keeps what it has -
+        // spreading it into _items below would throw.
+        if (sideRailItems is null) return;
+
         if (ItemsChanged(sideRailItems, _sideRailItems) is false && _hadNotes == HasNotes) return;
 
         // Persist the snapshot the change-check compares against; otherwise ItemsChanged stays
