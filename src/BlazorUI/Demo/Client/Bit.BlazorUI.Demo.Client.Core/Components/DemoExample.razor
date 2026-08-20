@@ -62,9 +62,18 @@ else
             {
                 @* BitCollapse animates both directions, which means the panel has to stay in the DOM
                    while it is closed. inert keeps that hidden copy out of the tab order and the
-                   accessibility tree, so a keyboard user never lands on a code block they cannot see. *@
+                   accessibility tree, so a keyboard user never lands on a code block they cannot see.
+
+                   What the panel holds is only mounted once the reader has actually asked for it. A
+                   page like DataGrid or Dropdown carries 50-130KB of sample source across its examples,
+                   and putting all of it in the document - in the prerendered HTML, in the render tree,
+                   and through a Prism pass on boot - for panels most readers never open is the single
+                   most expensive thing these pages do. Once mounted it stays mounted, so closing the
+                   panel again still has something to animate shut. *@
                 <div class="code-panel" inert="@(showCode is false)">
                     <BitCollapse Expanded="showCode">
+                    @if (_isCodeMounted)
+                    {
                         <div class="code-holder" id="@_codeElementId">
                             <BitActionButton Class="@($"copy-btn{(isCodeCopied ? " copied" : "")}")"
                                              Styles="@(new() { Content = (isCodeCopied ? "" : "display: none") })"
@@ -93,6 +102,7 @@ else
                 }
             </pre>
                         </div>
+                    }
                     </BitCollapse>
                 </div>
             }
