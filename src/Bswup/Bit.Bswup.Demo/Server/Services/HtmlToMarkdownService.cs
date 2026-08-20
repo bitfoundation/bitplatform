@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using HtmlAgilityPack;
 using System.Text.RegularExpressions;
@@ -67,6 +67,14 @@ public static partial class HtmlToMarkdownService
         var name = node.Name.ToLowerInvariant();
 
         if (_skippedElements.Contains(name)) return;
+
+        // A subtree hidden from assistive technology is decorative by the page's own
+        // declaration - the home page's reproduction of the install splash, a key hint on a
+        // search box - and a model reading this document is in the same position as a screen
+        // reader: it has the prose, not the picture. Carrying that text through would add
+        // fragments ("68%", "Ctrl K") that describe the page's furniture rather than the
+        // product.
+        if (node.GetAttributeValue("aria-hidden", string.Empty).Equals("true", StringComparison.OrdinalIgnoreCase)) return;
 
         switch (name)
         {

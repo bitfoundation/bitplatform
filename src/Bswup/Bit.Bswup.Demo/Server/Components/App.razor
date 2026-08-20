@@ -34,10 +34,15 @@
         <title>bit Bswup - Blazor Service Worker Update Progress</title>
         <meta name="description" content="Install progress, controlled background updates and offline support for Blazor WebAssembly apps - with a single script tag." />
     }
-    @* One tag per scheme, matching --bit-clr-bg-pri in each theme block of app.css. A single
-       fixed value would paint the browser chrome dark behind a light page. *@
+    @* One tag per scheme, matching the page canvas in each theme block of app.css. A single
+       fixed value would paint the browser chrome dark behind a light page.
+
+       These cover the case where the site's theme still follows the OS preference. Once the
+       header's toggle overrides it, demo.js writes a third tag carrying the chosen colour -
+       otherwise a reader on a dark desktop who switched this site to light would keep the dark
+       browser chrome. *@
     <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0F1318" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
     <link href="manifest.json" rel="manifest" />
     <link rel="icon" href="favicon.ico" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
