@@ -11,7 +11,7 @@
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
     <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
     <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
   </ItemGroup>
@@ -31,8 +31,7 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\README.md" LogicalName="ButilDocs/README.md" />
 
-    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
-                      Exclude="..\Client\bin\**;..\Client\obj\**">
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css" Exclude="..\Client\bin\**;..\Client\obj\**">
       <LogicalName>ButilSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 
@@ -52,8 +51,7 @@
          left out on purpose: they are a smaller copy of this demo's pages, and the demo itself is
          embedded above. The shared service registration is the exception - it is the piece the
          setup guide has to show, and the piece most easily got wrong. -->
-    <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor"
-                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Bit.Butil.Samples.Core\Pages\**;..\..\Samples\Bit.Butil.Samples.Core\Shared\**;..\..\Samples\Bit.Butil.Samples.Maui\Platforms\**">
+    <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\index.html;..\..\Samples\**\*.razor" Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\Bit.Butil.Samples.Core\Pages\**;..\..\Samples\Bit.Butil.Samples.Core\Shared\**;..\..\Samples\Bit.Butil.Samples.Maui\Platforms\**">
       <LogicalName>ButilSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

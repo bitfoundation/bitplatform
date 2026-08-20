@@ -22,9 +22,8 @@ public partial class AppAiChatPanel
     private AiChatMessage? _lastAssistantMessage;
     private List<AiChatMessage> _chatMessages = []; // TODO: Persist these values in client-side storage to retain them across app restarts.
 
-    private string AiChatPanelPrompt1 = "How can I start developing using bit BlazorUI packages?";
+    private string AiChatPanelPrompt1 = "Explain BitGrid and BitStack for a developer familiar with Bootstrap's grid system?";
     private string AiChatPanelPrompt2 = "How can I benefit from the theme implementation in bit BlazorUI?";
-    private string AiChatPanelPrompt3 = "Explain BitGrid and BitStack for a developer familiar with Bootstrap's grid system?";
 
 
     protected override async Task OnAfterFirstRenderAsync()

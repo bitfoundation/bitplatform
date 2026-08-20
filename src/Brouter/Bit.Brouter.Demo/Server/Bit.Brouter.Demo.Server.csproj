@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -12,7 +12,7 @@
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
@@ -39,15 +39,7 @@
     <ItemGroup>
         <EmbeddedResource Include="..\..\README.md" LogicalName="BrouterDocs/README.md" />
 
-        <!-- What this site can teach about routing, and nothing else of it. The glob used to take
-             every stylesheet, script, layout and search box of a documentation site as well - site
-             chrome, which answers no question about Brouter, and which the source tools then had to
-             list and hand out by the tens of thousands of characters. What stays is the route table,
-             the pages it routes to, the services registration (it registers the custom constraint)
-             and the hosting files. The documentation pages among those components are dropped again
-             at runtime, by BrouterSourceCatalog: their prose is served rendered, by the docs tool. -->
-        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Shared\**;..\Client\McpDemoClient.cs;..\Client\DocsCatalog.cs;..\Client\GalleryCatalog.cs">
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css;..\Client\**\*.js" Exclude="..\Client\bin\**;..\Client\obj\**">
             <LogicalName>BrouterSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
@@ -63,17 +55,13 @@
              left out on purpose: it is a smaller copy of this demo's pages, and the demo itself is
              embedded above. Its service registration is the exception - it is the shared method the
              two containers of a Web App both call, which is exactly what the setup guide has to show. -->
-        <!-- Error.razor is the template's own error page: every setup guide would quote it whole,
-             and it says nothing about routing. -->
-        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj"
-                          Exclude="..\..\Samples\Core\*.razor;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\**\Error.razor">
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj" Exclude="..\..\Samples\Core\*.razor;..\..\Samples\Core\Pages\**;..\..\Samples\Core\Shared\**;..\..\Samples\**\bin\**;..\..\Samples\**\obj\**">
             <LogicalName>BrouterSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <!-- Named outright: %(RecursiveDir) only captures what a '**' matched, so a glob with a fixed
              folder prefix would flatten this file to the Sample/ root. -->
-        <EmbeddedResource Include="..\..\Samples\Core\Extensions\IServiceCollectionExtensions.cs"
-                          LogicalName="BrouterSource/Sample/Core/Extensions/IServiceCollectionExtensions.cs" />
+        <EmbeddedResource Include="..\..\Samples\Core\Extensions\IServiceCollectionExtensions.cs" LogicalName="BrouterSource/Sample/Core/Extensions/IServiceCollectionExtensions.cs" />
     </ItemGroup>
 
 </Project>

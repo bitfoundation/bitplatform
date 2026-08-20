@@ -1,4 +1,4 @@
-@using Bit.BlazorUI.Demo.Shared.Dtos.AiChat
+﻿@using Bit.BlazorUI.Demo.Shared.Dtos.AiChat
 @inherits AppComponentBase
 
 <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" OnChange="isMatched => _isSmallScreen = isMatched" />
@@ -76,28 +76,19 @@
                 @if (_chatMessages.Count == 1)
                 {
                     <BitStack Alignment=" BitAlignment.Center" FitHeight FillContent Class="default-prompt-container">
-                        @* <BitButton FixedColor
+                        <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
                                    OnClick="() => SendPromptMessage(AiChatPanelPrompt1)">
                             @AiChatPanelPrompt1
-                        </BitButton> *@
-
+                        </BitButton>
                         <BitButton FixedColor
                                    Variant="BitVariant.Outline"
                                    Class="default-prompt-button"
                                    Color="BitColor.SecondaryBackground"
                                    OnClick="() => SendPromptMessage(AiChatPanelPrompt2)">
                             @AiChatPanelPrompt2
-                        </BitButton>
-
-                        <BitButton FixedColor
-                                   Variant="BitVariant.Outline"
-                                   Class="default-prompt-button"
-                                   Color="BitColor.SecondaryBackground"
-                                   OnClick="() => SendPromptMessage(AiChatPanelPrompt3)">
-                            @AiChatPanelPrompt3
                         </BitButton>
                     </BitStack>
                 }

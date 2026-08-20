@@ -11,7 +11,7 @@
     <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
     <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,8 +31,7 @@
     <EmbeddedResource Include="..\..\README.md" LogicalName="BmotionDocs/README.md" />
 
     <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
-    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
-                      Exclude="..\Client\bin\**;..\Client\obj\**">
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css" Exclude="..\Client\bin\**;..\Client\obj\**">
       <LogicalName>BmotionSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 

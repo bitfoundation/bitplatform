@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -12,7 +12,7 @@
         <ProjectReference Include="..\Client\Bit.Bswup.Demo.Client.csproj" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.11" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.1.0" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
         <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
     </ItemGroup>
@@ -41,24 +41,15 @@
 
         <EmbeddedResource Include="..\..\Bit.Bswup\BswupProgress.razor" LogicalName="BswupSource/Library/BswupProgress.razor" WithCulture="false" />
 
-        <!-- This site's own Bswup configuration, and nothing else of it. A blanket glob over the
-             client used to embed every page, layout, stylesheet and script of the demo - a
-             documentation site's chrome, which answers no question about Bswup, and which
-             GetBswupSourceFiles then had to list and GetBswupSourceFile hand out by the tens of
-             thousands of characters. What this site can teach about Bswup is in these three files. -->
-        <EmbeddedResource Include="..\Client\wwwroot\service-worker.js;..\Client\wwwroot\service-worker.published.js" WithCulture="false">
-            <LogicalName>BswupSource/Demo/Client/wwwroot/%(Filename)%(Extension)</LogicalName>
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css;..\Client\**\*.js" Exclude="..\Client\bin\**;..\Client\obj\**" WithCulture="false">
+            <LogicalName>BswupSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
         <EmbeddedResource Include="Components\App.razor" LogicalName="BswupSource/Demo/Server/Components/App.razor" WithCulture="false" />
 
         <!-- The minimal samples - one per hosting model. Their host documents, service-worker files
-             and project files are what GetBswupSetupGuide hands out as working setup; the sample
-             apps' own pages, layouts and imports are left out, because they demonstrate nothing
-             about Bswup. SampleBswupProgressBar.razor is the exception - it IS a worked handler. -->
-        <EmbeddedResource Include="..\..\Samples\**\App.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js;..\..\Samples\**\SampleBswupProgressBar.razor"
-                          Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**"
-                          WithCulture="false">
+             and project files are what GetBswupSetupGuide hands out as working setup. -->
+        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js" Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**" WithCulture="false">
             <LogicalName>BswupSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
     </ItemGroup>
