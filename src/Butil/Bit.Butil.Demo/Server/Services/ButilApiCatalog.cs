@@ -64,6 +64,26 @@ public static class ButilApiCatalog
     /// <summary>The injectable services only - the classes marked [ButilService].</summary>
     public static ButilApiTypeDto[] Services => [.. Types.Where(t => t.IsInjectable)];
 
+    private static readonly Lazy<ButilApiTypeDto[]> _listing = new(() =>
+        [.. Types.Select(t => IsCallableSurface(t) ? t : t with { Summary = null })]);
+
+    /// <summary>
+    /// Every public type, as the listing hands them out: name and kind for all of them, and a
+    /// summary for the ones the listing exists to be chosen from.
+    /// <para>
+    /// A caller reading this is picking something to call - a service to inject, or a static class
+    /// to call through - and for those the summary is what separates two names. The rest of the
+    /// surface is options records, event args, handles and enums, which nobody picks off a list:
+    /// they are met in a signature and then looked up by the name that signature gave. Their
+    /// summaries were two thirds of an answer that came to 45,000 characters, for a question every
+    /// one of them answers better on its own.
+    /// </para>
+    /// </summary>
+    public static ButilApiTypeDto[] TypeListing => _listing.Value;
+
+    /// <summary>The types a caller reaches for by name: the injectable services and the static classes.</summary>
+    private static bool IsCallableSurface(ButilApiTypeDto type) => type.IsInjectable || type.Kind == "Static class";
+
     /// <summary>
     /// The full reference of one type - its members with their signatures and documentation - or
     /// null when no public type goes by that name.
@@ -76,6 +96,39 @@ public static class ButilApiCatalog
         // Every hit costs a full reflection walk plus an XML lookup per member, and the search index
         // asks for all of them at once; the answer only changes when the assembly does.
         return _typeDetails.GetOrAdd(type.FullName ?? type.Name, _ => BuildTypeDetails(type));
+    }
+
+    /// <summary>
+    /// The same reference, held to what one answer may cost a client's context window.
+    /// <para>
+    /// A handful of types are enormous - the extension classes carry sixty members, each with the
+    /// XML remarks that explain its caveats - and a document tool truncates for exactly this reason.
+    /// Cutting mid-member would be the wrong cut here: the members ARE the answer, and the last one
+    /// is as likely to be the one asked about as the first. The remarks are what the size is, so
+    /// they are what goes, leaving every member with its signature, its defaults and its summary,
+    /// and a sentence saying where the rest is.
+    /// </para>
+    /// </summary>
+    public static ButilApiTypeDetailsDto Trim(ButilApiTypeDetailsDto details, int maxLength)
+    {
+        if (Length(details) <= maxLength) return details;
+
+        return details with
+        {
+            Members = [.. details.Members.Select(m => m with { Remarks = null })],
+            Remarks = $"{details.Remarks}\n\n[The per-member remarks are omitted here: this type's full reference is longer " +
+                      $"than {maxLength:N0} characters. Ask for one member's caveats with SearchButil(query: \"{details.Name}.<member>\"), " +
+                      $"or read the page at {details.DocsUrl ?? "the documentation site"}.]".TrimStart()
+        };
+    }
+
+    /// <summary>Roughly what the reference costs on the wire - the text of it, without the JSON around it.</summary>
+    private static int Length(ButilApiTypeDetailsDto details)
+    {
+        return (details.Summary?.Length ?? 0)
+             + (details.Remarks?.Length ?? 0)
+             + details.Members.Sum(m => m.Name.Length + (m.Signature?.Length ?? 0) + (m.Type?.Length ?? 0)
+                                      + (m.Default?.Length ?? 0) + (m.Summary?.Length ?? 0) + (m.Remarks?.Length ?? 0));
     }
 
     /// <summary>True when the class is registered by AddBitButilServices, i.e. injectable by its own name.</summary>

@@ -108,6 +108,52 @@ public class SearchTests : McpTestBase
     }
 
     [Test]
+    public async Task A_snippet_is_prose_rather_than_the_markup_it_was_found_in()
+    {
+        // A docs page is indexed as the Razor component that renders it, because that is where its
+        // prose lives - but a window cut out of that source is attribute soup, and a snippet is the
+        // one part of a hit that is read rather than acted on. Hits used to quote things like
+        // `jectAs="Clipboard clipboard" /> <div class="stack"> <DemoSection Title=`.
+        var result = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "clipboard", limit = 20 });
+
+        var pages = result.Hits.Where(hit => hit.Kind == "Docs page").ToArray();
+
+        Assert.That(pages, Is.Not.Empty, "A search for an API that has a page found none.");
+
+        Assert.Multiple(() =>
+        {
+            foreach (var hit in pages)
+            {
+                Assert.That(hit.Snippet, Is.Not.Empty, $"The '{hit.Title}' hit quotes nothing.");
+                Assert.That(hit.Snippet, Does.Not.Contain("<").And.Not.Contain("=\""),
+                    $"The '{hit.Title}' hit quotes markup rather than prose: {hit.Snippet}");
+            }
+        });
+    }
+
+    [Test]
+    public async Task The_page_documenting_this_server_is_not_in_the_corpus_it_serves()
+    {
+        // It quotes example queries and every tool name, so it matched questions about the library
+        // as readily as questions about itself - and what it explains is what the client was handed
+        // at initialize. It is still a page: GetButilDocsPage(slug: "mcp-server") answers with it.
+        var queries = new[] { "copy text to clipboard", "search", "tools", "mcp server" };
+
+        foreach (var query in queries)
+        {
+            var result = await CallStructuredAsync<SearchResult>("SearchButil", new { query, limit = 50 });
+
+            Assert.That(result.Hits.Where(hit => hit.Kind == "Docs page" && hit.Title == "MCP server"), Is.Empty,
+                $"'{query}' surfaced the page documenting this server.");
+        }
+
+        var page = Text(await CallAsync("GetButilDocsPage", new { slug = "mcp-server" }));
+
+        Assert.That(page, Does.StartWith("Bit.Butil documentation page: /mcp-server"),
+            "The page is out of the search corpus, not out of reach.");
+    }
+
+    [Test]
     public async Task The_limit_is_honoured()
     {
         var result = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "storage", limit = 3 });

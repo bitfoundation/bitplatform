@@ -135,20 +135,43 @@ public class ToolSurfaceTests : McpTestBase
     }
 
     [Test]
-    public void Tools_that_answer_with_data_publish_an_output_schema()
+    public void No_tool_publishes_an_output_schema()
     {
+        // An output schema is not free and it is not what it looks like: declaring one makes the SDK
+        // send the answer twice, as structuredContent and as the identical JSON in the text block
+        // the protocol wants there anyway. The three data tools carried both, plus 2,800 characters
+        // of schema in every tools/list. The JSON a client parses is the same either way.
         Assert.Multiple(() =>
         {
             foreach (var tool in _tools)
             {
-                var structured = ButilMcp.StructuredTools.Contains(tool.Name, StringComparer.Ordinal);
-
-                Assert.That(tool.ReturnJsonSchema.HasValue, Is.EqualTo(structured),
-                    structured
-                        ? $"{tool.Name} is declared with UseStructuredContent, so it must publish an output schema."
-                        : $"{tool.Name} answers with prose and should not publish an output schema.");
+                Assert.That(tool.ReturnJsonSchema.HasValue, Is.False,
+                    $"{tool.Name} publishes an output schema, so every one of its answers is now sent twice.");
             }
         });
+    }
+
+    [Test]
+    public async Task A_data_tool_answers_with_its_json_once()
+    {
+        // The other half of the same promise, from the wire rather than from the declaration.
+        foreach (var tool in ButilMcp.DataTools)
+        {
+            var result = await CallRawAsync(tool, tool switch
+            {
+                "SearchButil" => new { query = "clipboard" },
+                "PlanButilFeature" => (object)new { apis = "Clipboard" },
+                _ => new { typeName = "Clipboard" }
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StructuredContent, Is.Null,
+                    $"{tool} answered with structuredContent as well as text - the same JSON, paid for twice.");
+
+                Assert.That(Text(result), Does.StartWith("{"), $"{tool} answers with data, so its text block is the JSON of it.");
+            });
+        }
     }
 
     [Test]

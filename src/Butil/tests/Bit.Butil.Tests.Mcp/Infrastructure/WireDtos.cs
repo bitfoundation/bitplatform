@@ -35,7 +35,6 @@ public sealed record ApiInspection(
     string[]? Inject,
     string? BrowserSupport,
     string[]? Requires,
-    string[]? Notes,
     string[]? Disposables,
     string[]? NextCalls);
 

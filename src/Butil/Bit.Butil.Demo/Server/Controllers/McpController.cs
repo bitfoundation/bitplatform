@@ -35,9 +35,15 @@ namespace Bit.Butil.Demo.Server.Controllers;
 /// to ask a person for confirmation first, which is the difference between an agent that consults
 /// the documentation and one that guesses rather than interrupt; and OpenWorld = false says the
 /// answers come from this build rather than from the web, so a disagreement with a search result is
-/// this library's version of the truth. The tools that answer with data also set
-/// UseStructuredContent, which publishes an output schema and puts the object itself in
-/// structuredContent - a client that can consume it no longer has to re-parse JSON out of prose.
+/// this library's version of the truth.
+/// </para>
+/// <para>
+/// None of them publishes an output schema. The three that answer with data used to, and the schema
+/// is not what it cost: a tool declared with UseStructuredContent answers with the object in
+/// structuredContent AND the same JSON, byte for byte, in a text block, because the protocol asks a
+/// server to keep answering clients that cannot read a schema. So every search, every reference and
+/// every plan crossed the wire twice, and the schemas themselves were a third of what tools/list
+/// costs a session before a single call is made. What a client gets now is the same JSON, once.
 /// </para>
 /// </summary>
 [ApiController]
@@ -57,7 +63,7 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchButil), Title = "Search everything about Bit.Butil",
-                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Searches everything known about Bit.Butil at once - the reference guide, the documentation pages, every public type and member, the browser-support matrix and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Use this first whenever you do not already know which service or member does the job. Example queries: 'copy text to clipboard', 'keep the screen awake', 'detect when an element scrolls into view', 'store data offline', 'read a file the user picked'.")]
     public ButilSearchResultDto SearchButil(string query, int limit = 12)
     {
@@ -97,8 +103,8 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetButilApiDetails), Title = "Full reference of one type",
-                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Gets the full reference of one Bit.Butil type: every method with its complete signature and default parameter values, every property, event or enum value, each with the XML documentation that ships with the library. Call it before using a member you are unsure about, e.g. 'Clipboard', 'LocalStorage', 'Geolocation', 'ElementReferenceExtensions', 'ButilEvents', 'ButilSubscription'. Omit the type name to get every public type instead - the injectable services, the static extension classes, the option types, enums and event/key-code catalogs - with its kind and summary.")]
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
+    [Description("Gets the full reference of one Bit.Butil type: every method with its complete signature and default parameter values, every property, event or enum value, each with the XML documentation that ships with the library. Call it before using a member you are unsure about, e.g. 'Clipboard', 'LocalStorage', 'Geolocation', 'ElementReferenceExtensions', 'ButilEvents', 'ButilSubscription'. Omit the type name to list every public type instead: the injectable services and the static extension classes with a summary each, and the option, handle, event-argument and enum types by name and kind.")]
     public ButilApiDetailsResultDto GetButilApiDetails(string? typeName = null)
     {
         var needle = (typeName ?? string.Empty).Trim();
@@ -106,11 +112,21 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
         // No name at all is a request for the list, not a failed lookup: it is the one call an agent
         // makes when it does not yet know what to ask for, and answering "no type called ''" to it
         // would be technically true and useless.
-        if (needle.Length == 0) return new ButilApiDetailsResultDto { Types = ButilApiCatalog.Types };
+        if (needle.Length == 0)
+        {
+            return new ButilApiDetailsResultDto
+            {
+                Types = ButilApiCatalog.TypeListing,
+                Message = "Summaries are listed for the services and the static classes - what a caller picks one of. " +
+                          "The option, handle, event-argument and enum types are named here and documented in full by " +
+                          "GetButilApiDetails with that name, which is how they are reached anyway: from a signature."
+            };
+        }
 
         var details = ButilApiCatalog.GetTypeDetails(needle);
 
-        if (details is not null) return new ButilApiDetailsResultDto { Details = details };
+        // Held to the same cap as every document this server hands out - see ButilApiCatalog.Trim.
+        if (details is not null) return new ButilApiDetailsResultDto { Details = ButilApiCatalog.Trim(details, DocsPageRenderer.MaxDocumentLength) };
 
         // Capped: a "did you mean" listing the whole public surface is the client's context window
         // spent on nothing, and the caller who wants all of it asks for it by name above.
@@ -130,7 +146,7 @@ public class McpController(HtmlRenderer htmlRenderer, NavigationManager navigati
 
     [HttpGet]
     [McpServerTool(Name = nameof(PlanButilFeature), Title = "What an API, or a set of them, needs from the page",
-                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false, UseStructuredContent = true)]
+                   ReadOnly = true, Idempotent = true, Destructive = false, OpenWorld = false)]
     [Description("Reports what using Butil APIs entails beyond their signatures: which engines implement each browser API underneath, what the calling page has to arrange first (HTTPS, a permission prompt, a user gesture), what each returns that has to be disposed, how they behave while the app is prerendering - and, across the whole set, the combined requirements and the ordered checklist for shipping it. Call it before writing the code, not after: these are the mistakes that compile and then silently do nothing. Pass one name for one API or several separated by newlines, commas or semicolons; each may be a service ('Clipboard'), a member ('Geolocation.WatchPosition') or a docs slug ('web-authn').")]
     public ButilFeaturePlanDto PlanButilFeature(string apis)
     {

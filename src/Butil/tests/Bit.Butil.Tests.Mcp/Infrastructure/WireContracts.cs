@@ -46,10 +46,18 @@ public static class ButilMcp
     ];
 
     /// <summary>
-    /// The tools declared with UseStructuredContent: the ones that publish an output schema and put
-    /// the object itself in structuredContent, so a client does not have to re-parse prose.
+    /// The tools that answer with data rather than with a document - their text block is the JSON of
+    /// an object, and the suite deserializes it.
+    /// <para>
+    /// None of them declares UseStructuredContent, and that is asserted rather than assumed: the SDK
+    /// answers such a tool with the object in structuredContent AND the same JSON, byte for byte, in
+    /// a text block that the protocol wants there regardless. Every search, reference and plan was
+    /// therefore paid for twice, on top of the output schemas sitting in every tools/list. Turning it
+    /// off costs a client nothing - the JSON it parses is the same JSON - so a schema reappearing
+    /// here is a doubling of the answer, which is what this list exists to catch.
+    /// </para>
     /// </summary>
-    public static readonly string[] StructuredTools =
+    public static readonly string[] DataTools =
     [
         "SearchButil", "GetButilApiDetails", "PlanButilFeature"
     ];

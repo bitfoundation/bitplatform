@@ -23,6 +23,17 @@ public static partial class HtmlToMarkdownService
         "script", "style", "svg", "path", "template", "noscript", "head"
     };
 
+    /// <summary>
+    /// Widgets that only say anything once a person has clicked something. A demo console renders
+    /// here as its title, a Clear button and the sentence it shows while it is empty - and it is
+    /// empty in every page this server renders, because nothing interacts with it. Four of them on
+    /// a page is a few hundred characters of an agent's context spent on an empty output pane.
+    /// </summary>
+    private static readonly HashSet<string> _skippedClasses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "demo-console"
+    };
+
     // Elements that start on their own line and are followed by a blank one.
     private static readonly HashSet<string> _blockElements = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -67,6 +78,7 @@ public static partial class HtmlToMarkdownService
         var name = node.Name.ToLowerInvariant();
 
         if (_skippedElements.Contains(name)) return;
+        if (IsSkippedByClass(node)) return;
 
         // Before anything else, because a grid table is a <div>: every API-reference table on this
         // site, the browser-support matrix and the tool list are CSS grids carrying the ARIA roles
@@ -329,6 +341,21 @@ public static partial class HtmlToMarkdownService
     }
 
     /// <summary>A real table, or the ARIA role a grid of &lt;div&gt;s uses to be one.</summary>
+    /// <summary>Whether the node is one of the interactive widgets that say nothing until clicked.</summary>
+    private static bool IsSkippedByClass(HtmlNode node)
+    {
+        var classes = node.GetAttributeValue("class", string.Empty);
+
+        if (classes.Length == 0) return false;
+
+        foreach (var name in classes.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (_skippedClasses.Contains(name)) return true;
+        }
+
+        return false;
+    }
+
     private static bool IsTable(HtmlNode node) =>
         node.Name.Equals("table", StringComparison.OrdinalIgnoreCase) || Role(node) is "table" or "grid" or "treegrid";
 

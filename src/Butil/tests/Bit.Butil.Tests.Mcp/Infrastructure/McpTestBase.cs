@@ -81,17 +81,35 @@ public abstract partial class McpTestBase
     /// </summary>
     protected static JsonElement Structured(CallToolResult result, string tool)
     {
-        Assert.That(result.StructuredContent, Is.Not.Null,
-            $"{tool} is declared with UseStructuredContent, so it must answer with structuredContent.");
+        // Read out of the text block, which is where the JSON is. None of these tools declares
+        // UseStructuredContent any more: with it, the SDK answers with the object in
+        // structuredContent AND the identical JSON in a text block - the protocol asks for the text
+        // half either way - so every data answer crossed the wire twice. The suite reads the copy
+        // every client is guaranteed to get.
+        Assert.That(result.StructuredContent, Is.Null,
+            $"{tool} answered with structuredContent, which is the same JSON the text block already carries.");
 
-        var content = result.StructuredContent!.Value;
+        var text = Text(result);
+
+        Assert.That(text, Is.Not.Empty, $"{tool} answered with no content at all.");
+
+        JsonElement content;
+
+        try
+        {
+            content = JsonSerializer.Deserialize<JsonElement>(text, JsonOptions);
+        }
+        catch (JsonException exception)
+        {
+            throw new AssertionException($"{tool} answers with data, so its text block has to be the JSON of it: {exception.Message}\n{text}");
+        }
 
         return content.ValueKind is JsonValueKind.Object && content.TryGetProperty("result", out var wrapped)
             ? wrapped
             : content;
     }
 
-    /// <summary>Calls a tool declared with UseStructuredContent and deserializes its payload.</summary>
+    /// <summary>Calls a tool that answers with data and deserializes its payload.</summary>
     protected async Task<T> CallStructuredAsync<T>(string tool, object? arguments = null)
     {
         var result = await CallAsync(tool, arguments);
@@ -99,11 +117,7 @@ public abstract partial class McpTestBase
 
         var value = payload.Deserialize<T>(JsonOptions);
 
-        Assert.That(value, Is.Not.Null, $"{tool} answered with structured content that did not deserialize: {payload}");
-
-        // Structured content is the machine-readable half of the answer, but the protocol also
-        // requires the text half - a client that cannot consume schemas still has to get something.
-        Assert.That(Text(result), Is.Not.Empty, $"{tool} answered with structured content but no text content.");
+        Assert.That(value, Is.Not.Null, $"{tool} answered with a payload that did not deserialize: {payload}");
 
         return value!;
     }

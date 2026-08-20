@@ -181,7 +181,12 @@ public static partial class ButilXmlDocs
         {
             var label = element.Value.Trim();
 
-            return label.Length == 0 ? href : $"[{label}]({href})";
+            // Most of these links are written with the URL as their own text, and a Markdown link
+            // whose label IS its target is the same string twice - which every answer carrying that
+            // member then pays for. The bare URL renders as a link anywhere this text is read.
+            return label.Length == 0 || string.Equals(label, href, StringComparison.OrdinalIgnoreCase)
+                ? href
+                : $"[{label}]({href})";
         }
 
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;

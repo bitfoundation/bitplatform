@@ -55,6 +55,77 @@ public class ToolBehaviourTests : McpTestBase
     }
 
     [Test]
+    public async Task The_api_list_summarises_what_a_caller_picks_from()
+    {
+        // The listing is read to choose something to call, and what a caller calls is a service or a
+        // static class - the summary is what separates two of those names. Everything else on the
+        // surface is an options record, a handle, an event-args type or an enum, met in a signature
+        // and then looked up by that name. Their summaries were two thirds of a 45,000-character
+        // answer to a question each of them answers better on its own.
+        var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails");
+
+        var types = result.Types!;
+        var callable = types.Where(type => type.IsInjectable || type.Kind == "Static class").ToArray();
+        var rest = types.Except(callable).ToArray();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(callable, Is.Not.Empty);
+            Assert.That(rest, Is.Not.Empty);
+
+            // Most carry one - a handful of static classes have no XML summary in the library
+            // itself, and this listing cannot invent what was never written.
+            Assert.That(callable.Count(type => string.IsNullOrWhiteSpace(type.Summary) is false),
+                Is.GreaterThan(callable.Length - 10),
+                "The listing dropped the summaries of the types it exists to be chosen from.");
+
+            foreach (var name in new[] { "Clipboard", "LocalStorage", "Geolocation" })
+            {
+                Assert.That(callable.Single(type => type.Name == name).Summary, Is.Not.Null.And.Not.Empty,
+                    $"{name} is listed without the summary that separates it from the name next to it.");
+            }
+
+            Assert.That(rest.Where(type => string.IsNullOrWhiteSpace(type.Summary) is false), Is.Empty,
+                "The listing carries summaries for types nobody picks off a list; they are one call away by name.");
+
+            // Every name is still here - the listing lost prose, not reach.
+            Assert.That(types.Select(type => type.Name), Does.Contain("ClipboardItem").And.Contain("ButilEvents"));
+        });
+    }
+
+    [Test]
+    public async Task No_type_reference_exceeds_the_documented_cap()
+    {
+        // The same promise the document tools keep, on the tool that answers with data. A handful of
+        // types are enormous - the extension classes are sixty members with their remarks - and one
+        // of them uncapped was 30,000 characters. The members are the answer, so the remarks are
+        // what goes, and the reference says where they went.
+        foreach (var typeName in new[] { "ElementReferenceExtensions", "Window", "ButilKeyCodes", "Clipboard" })
+        {
+            var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName });
+            var text = Text(await CallRawAsync("GetButilApiDetails", new { typeName }));
+
+            Assert.That(text.Length, Is.LessThanOrEqualTo(ButilMcp.MaxDocumentLength + 2_000),
+                $"{typeName} came back at {text.Length} characters.");
+
+            var details = result.Details;
+
+            Assert.That(details, Is.Not.Null);
+
+            // Trimmed or not, every member is still named with its signature: cutting the list would
+            // hide the member that was asked about as readily as any other.
+            Assert.That(details!.Members, Is.Not.Empty);
+            Assert.That(details.Members.Where(member => string.IsNullOrWhiteSpace(member.Name)), Is.Empty);
+
+            if (details.Members.Any(member => member.Remarks is null) && details.Remarks is not null)
+            {
+                Assert.That(details.Members.All(member => member.Remarks is null) is false || details.Remarks!.Contains("omitted", StringComparison.Ordinal),
+                    Is.True, $"{typeName} dropped the remarks without saying so.");
+            }
+        }
+    }
+
+    [Test]
     public async Task Api_details_carry_the_signatures_and_the_shipped_documentation()
     {
         var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Clipboard" });
@@ -120,7 +191,8 @@ public class ToolBehaviourTests : McpTestBase
     [Test]
     public async Task Plan_reports_what_the_page_has_to_arrange_first()
     {
-        var inspection = await InspectAsync("Clipboard");
+        var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "Clipboard" });
+        var inspection = plan.Apis.Single();
 
         Assert.Multiple(() =>
         {
@@ -133,10 +205,40 @@ public class ToolBehaviourTests : McpTestBase
             // served over plain http fails silently rather than loudly.
             Assert.That(string.Join(" ", inspection.Requires ?? []), Does.Contain("Secure context").IgnoreCase);
 
-            // Prerendering is the first note on every API, because it is the first mistake.
-            Assert.That(string.Join(" ", inspection.Notes ?? []), Does.Contain("Prerendering"));
-
             Assert.That(inspection.NextCalls, Is.Not.Null.And.Not.Empty);
+
+            // Prerendering is the first mistake anyone makes with this library, so it is stated in
+            // every plan - once, in the checklist. Each API used to repeat the same paragraph in a
+            // Notes list of its own, which for a five-API feature was the same advice five times
+            // over, said again by the checklist, about rules the instructions had already given.
+            Assert.That(string.Join(" ", plan.Checklist), Does.Contain("OnAfterRenderAsync"));
+        });
+    }
+
+    [Test]
+    public async Task A_plan_says_each_thing_once()
+    {
+        // The checklist speaks for the whole set and names the APIs each item applies to, so nothing
+        // in a plan needs to repeat it per API. This is the assertion that keeps it that way: a
+        // plan of five APIs must not cost five copies of the prerendering paragraph.
+        var plan = await CallStructuredAsync<FeaturePlan>(
+            "PlanButilFeature", new { apis = "Clipboard, Geolocation, MediaDevices, WakeLock, LocalStorage" });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.Apis, Has.Length.EqualTo(5));
+
+            // Nothing per-API is prose about what to do - the fields are what the API IS.
+            foreach (var api in plan.Apis)
+            {
+                Assert.That(string.Join(" ", api.Requires ?? []), Does.Not.Contain("OnAfterRenderAsync"),
+                    $"{api.Api} carries the plan's advice as well as its own preconditions.");
+            }
+
+            // And the checklist itself states each rule once rather than once per API it applies to.
+            var prerender = plan.Checklist.Count(item => item.Contains("OnAfterRenderAsync", StringComparison.Ordinal));
+
+            Assert.That(prerender, Is.EqualTo(1), "The checklist states the prerendering rule more than once.");
         });
     }
 

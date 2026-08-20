@@ -99,10 +99,6 @@ Accept: application/json, text/event-stream
                                 {
                                     <span class="mcp-chip ok" title="readOnlyHint: the tool changes nothing">read-only</span>
                                 }
-                                @if (tool.HasOutputSchema)
-                                {
-                                    <span class="mcp-chip" title="The tool publishes an outputSchema and answers with structuredContent">typed</span>
-                                }
                             </div>
                         </div>
                         <div class="td-cell" role="cell">@Summarize(tool.Description, 180)</div>
@@ -307,7 +303,7 @@ Accept: application/json, text/event-stream
 <ApiTable Title="What the server exposes">
     <ApiMember Name="Tools" Signature="@ToolsSignature" Description="Search, the exact API of every service, what an API or a whole feature needs from the page, the setup per hosting model, the docs pages, the guide and the demo's own source files. Seven of them: a listing is not a tool here, it is what a retrieval tool answers when called with no argument, and the docs index doubles as the browser-support matrix." />
     <ApiMember Name="Tool annotations" Signature="readOnlyHint, idempotentHint, destructiveHint, openWorldHint" Description="Every tool here reads, reads only from this process, and answers the same way twice. A client that is told so can consult the documentation without stopping to ask permission first." />
-    <ApiMember Name="Output schemas" Signature="@OutputSchemasSignature" Description="The ones that answer with data publish an outputSchema and return structuredContent alongside the text, so a client can consume the object instead of re-parsing JSON out of prose." />
+    <ApiMember Name="Answers" Signature="one text block per call" Description="A tool that reads a document answers with Markdown; a tool that answers with data - search, the API reference, a plan - answers with the JSON of it. No tool publishes an outputSchema, and that is a size decision rather than a typing one: declaring one makes the SDK send the object in structuredContent AND the identical JSON in the text block the protocol wants there anyway, so every one of those answers used to cross the wire twice." />
     <ApiMember Name="Instructions" Signature="returned by initialize" Description="The one block of text the server writes into the model's context before it has called anything: which tool to reach for first, and the four rules that separate Butil code that compiles from Butil code that works." />
     <ApiMember Name="Prompts" Signature="@PromptsSignature" Description="Ready-made workflows, each spending its words on the order to call the tools in and the mistakes that compile." />
     <ApiMember Name="Resources" Signature="butil://guide, butil://guide/{heading}, butil://api, butil://api/{typeName}, butil://docs/{slug}, butil://source/{path}, butil://support" Description="The same knowledge as documents a client can attach or browse, addressed by URI." />
@@ -367,10 +363,6 @@ Accept: application/json, text/event-stream
     private string ToolsSignature => _tools.Count == 0
         ? "over MCP and as GET /api/mcp/{tool}"
         : $"{_tools.Count}, over MCP and as GET /api/mcp/{{tool}}";
-
-    private string OutputSchemasSignature => _tools.Count == 0
-        ? "on the tools that answer with data"
-        : $"{_tools.Count(tool => tool.HasOutputSchema)} of the {_tools.Count} tools";
 
     private string PromptsSignature => _prompts.Count == 0 ? "prompts/list" : string.Join(", ", _prompts);
 
@@ -512,8 +504,7 @@ Accept: application/json, text/event-stream
                 // Absent means "assume the worst", which is the whole reason a server states it.
                 ReadOnly: tool.TryGetProperty("annotations", out var annotations)
                           && annotations.TryGetProperty("readOnlyHint", out var readOnly)
-                          && readOnly.ValueKind is JsonValueKind.True,
-                HasOutputSchema: tool.TryGetProperty("outputSchema", out _)));
+                          && readOnly.ValueKind is JsonValueKind.True));
         }
 
         // tools/list has no defined order - this one arrives in whatever order the server reflected
@@ -1011,8 +1002,7 @@ Accept: application/json, text/event-stream
     }
 
     /// <param name="ReadOnly">The server's readOnlyHint - what lets a client skip asking first.</param>
-    /// <param name="HasOutputSchema">Whether the tool also answers with typed structuredContent.</param>
-    private record ToolInfo(string Name, string Description, string[] Arguments, bool ReadOnly, bool HasOutputSchema);
+    private record ToolInfo(string Name, string Description, string[] Arguments, bool ReadOnly);
 
     /// <param name="Reference">The "ref" object verbatim - a ref/prompt or a ref/resource.</param>
     /// <param name="Argument">The name of the argument being completed within it.</param>

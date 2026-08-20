@@ -1,5 +1,6 @@
 using Bit.Butil.Demo.Client.Docs;
 using Bit.Butil.Demo.Server.Dtos;
+using System.Text.RegularExpressions;
 
 namespace Bit.Butil.Demo.Server.Services;
 
@@ -15,9 +16,16 @@ namespace Bit.Butil.Demo.Server.Services;
 /// search is enough to know what to ask for next.
 /// </para>
 /// </summary>
-public static class ButilSearchIndex
+public static partial class ButilSearchIndex
 {
-    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted)
+    /// <param name="Body">The text this entry is matched against.</param>
+    /// <param name="Prose">
+    /// What a hit on this entry quotes back, when that is not the text it was matched against. A
+    /// docs page is indexed as the Razor component that renders it, because the prose an agent is
+    /// searching for lives in that component's attributes - but a window cut out of the markup is
+    /// unreadable, and a hit is read by whoever asked for it. Null means the body is already prose.
+    /// </param>
+    private sealed record Entry(string Kind, string Title, string? Context, string Tool, string Body, string Boosted, string? Prose = null)
     {
         /// <summary>
         /// The title split into words, camel-case humps included, so "WriteText" is found by
@@ -47,6 +55,9 @@ public static class ButilSearchIndex
     }
 
     private const int MaxTerms = 16;
+
+    /// <summary>The page that documents this MCP server - see where it is skipped in <see cref="Build"/>.</summary>
+    private const string McpServerPageSlug = "mcp-server";
 
     // PublicationOnly rather than the default: the default mode caches the exception a failed build
     // threw and rethrows it for the lifetime of the process, so one transient failure would leave
@@ -97,7 +108,7 @@ public static class ButilSearchIndex
                 Title = hit.Entry.Title,
                 Context = hit.Entry.Context,
                 Tool = hit.Entry.Tool,
-                Snippet = Snippet(hit.Entry.Body, terms)
+                Snippet = Snippet(hit.Entry.Prose ?? hit.Entry.Body, terms)
             })];
     }
 
@@ -261,6 +272,49 @@ public static class ButilSearchIndex
     private static string PageText(DocLink link)
         => ButilSourceCatalog.GetSourceFile($"Demo/Client/Pages/{link.PageType.Name}.razor") ?? string.Empty;
 
+    /// <summary>
+    /// The prose of a docs page, for a hit to quote: the page's own summary, then every long quoted
+    /// string in the component that renders it.
+    /// <para>
+    /// Those quoted strings are the documentation - a page writes its lead and each section's
+    /// explanation as attribute values - while everything shorter is a CSS class, an element name or
+    /// an identifier. Taking only the long ones leaves sentences, which is what a snippet is for;
+    /// the markup stays in <see cref="Entry.Body"/>, where it can still be matched.
+    /// </para>
+    /// </summary>
+    private static string PageProse(DocLink link)
+    {
+        var source = PageText(link);
+        var prose = new System.Text.StringBuilder(link.Summary);
+
+        // Attribute values only - the raw string literals a page writes its code samples in are not
+        // prose, and they are quoted with """ rather than with a single ".
+        foreach (Match match in QuotedProseRegex().Matches(source))
+        {
+            var text = match.Groups["text"].Value.Trim();
+
+            if (IsProse(text)) prose.Append(' ').Append(text);
+        }
+
+        return prose.ToString();
+    }
+
+    /// <summary>
+    /// A sentence rather than a value that happened to be quoted. Long enough to be prose, with
+    /// spaces in it, and none of the punctuation that gives away markup or a line of code - a raw
+    /// string holding a code sample is delimited by three quotes, so its lines arrive here too.
+    /// </summary>
+    private static bool IsProse(string text)
+    {
+        return text.Length >= 40
+            && text.Contains(' ', StringComparison.Ordinal)
+            && text.IndexOfAny(['<', '>', '{', '}', ';', '=']) < 0;
+    }
+
+    /// <summary>A double-quoted value in a Razor component - which is where a docs page's prose is written.</summary>
+    [GeneratedRegex("\"(?<text>[^\"\n]+)\"")]
+    private static partial Regex QuotedProseRegex();
+
     private static Entry[] Build()
     {
         var entries = new List<Entry>(4096);
@@ -277,11 +331,16 @@ public static class ButilSearchIndex
         {
             foreach (var link in group.Links)
             {
+                // The page documenting this server is left out of the corpus it serves: it quotes
+                // example queries and every tool name, so it matches questions about the library
+                // itself - and what it explains is what the client was handed at initialize.
+                if (string.Equals(link.Url, McpServerPageSlug, StringComparison.Ordinal)) continue;
+
                 // The types behind a page are boosted, so "LocalStorage" finds the page titled
                 // "Local & Session Storage" - which does not contain the word at all.
                 entries.Add(new Entry("Docs page", link.Title, group.Title,
                     $"GetButilDocsPage(slug: \"{link.Url}\")", $"{link.Summary}\n{PageText(link)}",
-                    $"{link.Url} {string.Join(' ', link.TypeNames())}"));
+                    $"{link.Url} {string.Join(' ', link.TypeNames())}", PageProse(link)));
             }
         }
 

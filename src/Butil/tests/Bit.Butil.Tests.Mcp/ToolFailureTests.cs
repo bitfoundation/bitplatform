@@ -57,8 +57,12 @@ public class ToolFailureTests : McpTestBase
         Assert.Multiple(() =>
         {
             Assert.That(blank.Details, Is.Null);
-            Assert.That(blank.Message, Is.Null, "An empty type name is a request for the list, so there is nothing to refuse.");
             Assert.That(blank.Types, Is.Not.Null.And.Not.Empty);
+
+            // A listing may explain itself - it says which of the types it names carry a summary -
+            // but an empty type name is not a miss, so nothing here may read as a refusal.
+            Assert.That(blank.Message ?? string.Empty, Does.Not.Contain("Did you mean").And.Not.Contain("has no public type"),
+                "An empty type name is a request for the list, so there is nothing to refuse.");
 
             // The same listing, not merely one of the same size: a blank argument that took some
             // other path through the tool could answer with as many types and the wrong ones.
