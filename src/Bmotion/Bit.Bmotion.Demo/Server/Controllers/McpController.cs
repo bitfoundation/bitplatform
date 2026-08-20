@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Reflection;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
@@ -173,18 +173,28 @@ public class McpController : ControllerBase
     {
         var specs = (transition ?? string.Empty)
             .Split([';', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            // Simulating dozens at once would spend more of the client's context than any comparison
-            // is read with; the interesting comparisons are between two and four candidates.
-            .Take(MaxSimulatedTransitions)
             .ToArray();
 
         // An empty argument is still a question - the lab answers it with the default tween, and
         // saying nothing at all would read as a server that failed rather than a spec that was blank.
         if (specs.Length == 0) specs = [string.Empty];
 
+        // Simulating dozens at once would spend more of the client's context than any comparison is
+        // read with; the interesting comparisons are between two and four candidates. The ones over
+        // that limit come back unmeasured rather than not at all: a caller who asked about ten and
+        // received eight answers cannot tell which two were left out, or that any were.
+        var overLimit = specs.Skip(MaxSimulatedTransitions).Select(spec => BmotionMotionLab.NotMeasured(spec,
+            $"Not measured: {nameof(SimulateBmotionTransition)} measures at most {MaxSimulatedTransitions} " +
+            "transitions per call, and this one came after those. Call it again with this spec to measure it.",
+            from, to));
+
         // Every run owns its engine and its frame clock (see BmotionMotionLab), so the comparison
-        // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for.
-        var results = await Task.WhenAll(specs.Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
+        // costs one simulation rather than the sum of them. Task.WhenAll keeps the order asked for,
+        // and the unmeasured ones are the tail of that same order.
+        var measured = await Task.WhenAll(specs.Take(MaxSimulatedTransitions)
+                                               .Select(spec => BmotionMotionLab.SimulateAsync(spec, from, to)));
+
+        BmotionSimulationDto[] results = [.. measured, .. overLimit];
 
         return includeSamples ? results : [.. results.Select(result => result with { Samples = [] })];
     }
@@ -487,7 +497,11 @@ public class McpController : ControllerBase
     /// the rest matters and how to reach it, so when the text came from a named source file the
     /// notice carries the call that reads on from where this answer stopped.
     /// </summary>
-    internal static string Truncate(string text, string? sourcePath = null, int firstLine = 1)
+    /// <param name="continuation">
+    /// What to name instead of the default follow-up call. A resource is read by clients that need
+    /// not have this server's tools available, so what one of them names has to be another resource.
+    /// </param>
+    internal static string Truncate(string text, string? sourcePath = null, int firstLine = 1, string? continuation = null)
     {
         if (text.Length <= MaxDocumentLength) return text;
 
@@ -496,9 +510,10 @@ public class McpController : ControllerBase
         // Where the reader got to, in the units the follow-up call is written in.
         var line = firstLine + kept.Count(character => character == '\n');
 
-        var howToContinue = sourcePath is null
-            ? "Call GetBmotionGuideSection for one section at a time."
-            : $"Call GetBmotionSourceFile(path: \"{sourcePath}\", fromLine: {line}) to read on from there.";
+        var howToContinue = continuation
+            ?? (sourcePath is null
+                ? "Call GetBmotionGuideSections to list the guide's sections, then GetBmotionGuideSection for one at a time."
+                : $"Call GetBmotionSourceFile(path: \"{sourcePath}\", fromLine: {line}) to read on from there.");
 
         return $"{kept}\n\n[truncated at line {line} - the full text is longer than " +
                $"{MaxDocumentLength} characters. {howToContinue}]";

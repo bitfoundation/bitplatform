@@ -1,4 +1,4 @@
-@page "/mcp-server"
+﻿@page "/mcp-server"
 @using System.Net.Http.Json
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -154,9 +154,11 @@
         <p class="mcp-error">@_error</p>
     }
 
-    @* One block per transition asked about, in the order asked. A spec the server could not read is
-       one failed candidate rather than a failed measurement, so the ones beside it - the ones after
-       it included - still report their numbers, which is the whole point of asking for several. *@
+    @* One block per transition asked about, in the order asked, and one for every transition asked
+       about: a spec the server could not read, or would not measure because the list ran past the
+       tool's per-call limit, is one failed candidate rather than a failed measurement. The ones
+       beside it - the ones after it included - still report their numbers, which is the whole point
+       of asking for several, and no candidate goes missing without saying why. *@
     @foreach (var simulation in _simulations)
     {
         <div class="mcp-result">
@@ -750,9 +752,11 @@
             var results = await GetAsync<Simulation[]>(
                 $"api/mcp/SimulateBmotionTransition?includeSamples=true&transition={Uri.EscapeDataString(spec)}");
 
-            // Every candidate is kept, the unreadable ones included: the server reports a spec it could
-            // not parse as a result of its own, so showing only the first would hide the measurements of
-            // everything after a typo - which is the comparison the panel was asked for.
+            // Every candidate is kept, the ones with no numbers included: the server answers a spec it
+            // could not parse - or one past the number it measures in a single call - with a result of
+            // its own that says so, so the panel can show a block per candidate without knowing the
+            // limit itself. Showing only the first would hide the measurements of everything after a
+            // typo, which is the comparison the panel was asked for.
             _simulations = results ?? [];
             _error = results is null ? Unreachable : null;
 

@@ -1,4 +1,4 @@
-using Bit.Bmotion.Demo.Client.Shared;
+﻿using Bit.Bmotion.Demo.Client.Shared;
 
 namespace Bit.Bmotion.Tests.Mcp.Controllers;
 
@@ -213,7 +213,9 @@ public class McpControllerTests
 
     /// <summary>
     /// Simulating dozens at once would spend more of a client's context than any comparison is read
-    /// with, and the interesting comparisons are between two and four candidates.
+    /// with, and the interesting comparisons are between two and four candidates. What is over the
+    /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
+    /// caller cannot tell which candidates were never run - or that any were left out at all.
     /// </summary>
     [TestMethod]
     public async Task SimulateBmotionTransition_IsCappedRatherThanRunningWhateverArrives()
@@ -222,7 +224,23 @@ public class McpControllerTests
 
         var results = await _controller.SimulateBmotionTransition(many);
 
-        Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Length);
+        Assert.AreEqual(40, results.Length);
+        Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Count(result => result.Error is null));
+
+        // The measured ones come first, in the order asked, and every one after them says why it has
+        // no numbers - in Error and in Reading both, as an unreadable spec does.
+        Assert.IsTrue(results.Take(McpController.MaxSimulatedTransitions).All(result => result.Error is null));
+
+        foreach (var unmeasured in results.Skip(McpController.MaxSimulatedTransitions))
+        {
+            StringAssert.Contains(unmeasured.Error, "Not measured");
+            StringAssert.Contains(unmeasured.Error, McpController.MaxSimulatedTransitions.ToString());
+            Assert.AreEqual(unmeasured.Error, unmeasured.Reading);
+        }
+
+        // The unmeasured ones are the specs asked about, not blanks: the caller reads them to know
+        // which candidates to send in the next call.
+        Assert.AreEqual($"tween({9 / 100.0})", results[8].Transition);
     }
 
     /// <summary>

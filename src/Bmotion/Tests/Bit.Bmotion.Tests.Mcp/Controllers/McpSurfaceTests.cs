@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 using ModelContextProtocol.Server;
 using System.Text.RegularExpressions;
@@ -186,6 +186,26 @@ public class McpSurfaceTests
         {
             Assert.AreEqual(controller.GetBmotionSourceFile(file.Path), McpResources.Source(file.Path),
                             $"The source file '{file.Path}' reads differently through the resource.");
+        }
+    }
+
+    /// <summary>
+    /// The guide is longer than the bound, so this resource is normally read cut - and a client can
+    /// mount resources without mounting tools, so what the cut names has to be reachable from where
+    /// the reader is standing: the sibling resource, and the headings its template needs.
+    /// </summary>
+    [TestMethod]
+    public void Resources_TheGuideCutShort_NamesTheResourceThatReadsTheRest()
+    {
+        var guide = McpResources.Guide();
+
+        if (BmotionSourceCatalog.Readme.Length <= McpController.MaxDocumentLength) Assert.Inconclusive("The README fits within the bound in this build.");
+
+        StringAssert.Contains(guide, "bmotion://guide/", "The cut guide does not name the resource that reads the rest.");
+
+        foreach (var section in BmotionSourceCatalog.GuideSections)
+        {
+            StringAssert.Contains(guide, section.Heading, $"The cut guide never names its '{section.Heading}' section.");
         }
     }
 
