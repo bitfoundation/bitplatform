@@ -1,0 +1,23 @@
+﻿@page "/components"
+@inherits AppComponentBase
+
+<PageOutlet Url="components"
+            Title="Components"
+            Keywords="Blazor component list, Blazor UI catalog, Blazor controls"
+            Description="Browse every bit BlazorUI component - buttons, inputs, pickers, layouts, navigation, surfaces, charts, grids and more - with live demos and full API docs." />
+
+<DocsArticle Eyebrow="Documentation"
+             Title="Components"
+             Lead="Every component in the library, with what it is for. Search by name, by the name another library uses for it, or by what you want it to do."
+             GitHubUrl="ComponentsPage.razor"
+             HideSideRail>
+    <ComponentGallery InitialFilter="@Query" />
+</DocsArticle>
+
+@code {
+    /// <summary>
+    /// The term the header's search box hands over when Enter did not narrow to a single component.
+    /// Landing here already filtered is what makes that a results page rather than a dead end.
+    /// </summary>
+    [SupplyParameterFromQuery(Name = "q")] public string? Query { get; set; }
+}

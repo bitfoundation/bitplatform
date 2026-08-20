@@ -6,6 +6,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Components/ComponentGallery.razor.css",
+        "inputFile": "Components/ComponentGallery.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Components/DemoExample.razor.css",
         "inputFile": "Components/DemoExample.razor.scss",
         "minify": { "enabled": false },
@@ -14,6 +20,12 @@
     {
         "outputFile": "Components/DemoPage.razor.css",
         "inputFile": "Components/DemoPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
+        "outputFile": "Components/DocPager.razor.css",
+        "inputFile": "Components/DocPager.razor.scss",
         "minify": { "enabled": false },
         "options": { "sourceMap": false }
     },

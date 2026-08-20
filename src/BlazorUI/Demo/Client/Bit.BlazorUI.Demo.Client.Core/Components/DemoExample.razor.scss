@@ -15,10 +15,18 @@
     }
 }
 
+// The source and the live preview, framed together as one stage under the example's title rule.
+// The frame is new: on the old card-based page this block sat on a card of the same color and
+// needed no edge, but the page is an article on the secondary surface now, and without a hairline
+// the preview reads as a shaded rectangle someone forgot to finish.
 .box-content {
     width: 100%;
+    overflow: hidden;
     min-height: rem2(70px);
     box-sizing: border-box;
+    margin-top: rem2(12px);
+    // border-radius: $bit-shape-radius-surface;
+    // border: rem2(1px) solid $bit-color-border-secondary;
 }
 
 .code-panel {
@@ -27,8 +35,11 @@
     // preview below it upwards.
     overflow: hidden;
 
-    // Collapsed, the panel is squeezed to nothing, so the rule above would draw a stray line across
-    // an empty strip.
+    // Open, the source is separated from the preview under it by the same hairline the rest of the
+    // page uses. Collapsed, the panel is squeezed to nothing, so that rule would draw a stray line
+    // across an empty strip.
+    border-bottom: rem2(1px) solid $bit-color-border-secondary;
+
     &[inert] {
         border-bottom: none;
     }
@@ -36,14 +47,21 @@
 
 .code-holder {
     position: relative;
+
+    // The panel around it already draws the frame, so the source is text on that surface rather
+    // than a second box inside the first.
+    pre {
+        border: none;
+        border-radius: 0;
+    }
 }
 
 // The stage the component is shown on: kept on the plain surface so a demo is never tinted by
 // the page behind it.
 .example-container {
     overflow: auto;
-    padding: rem2(24px);
-    background-color: $bit-color-background-primary;
+    // padding: rem2(24px);
+    // background-color: $bit-color-background-primary;
 
     @include lt-lg {
         padding: rem2(16px);

@@ -70,8 +70,15 @@
         flex-flow: row wrap;
         margin-top: rem2(32px);
 
+        // Four figures do not fit on one row of a phone, and wrapping them as a flex row leaves the
+        // one that starts the second row carrying a divider with nothing to its left. Two fixed
+        // columns instead, so which items begin a row is known and the dividers can be dropped from
+        // exactly those.
         @include lt-lg {
+            display: grid;
+            column-gap: rem2(24px);
             justify-content: center;
+            grid-template-columns: repeat(2, minmax(0, max-content));
         }
     }
 
@@ -87,6 +94,15 @@
 
         &:last-child {
             padding-right: 0;
+        }
+
+        @include lt-lg {
+            padding-right: 0;
+
+            &:nth-child(odd) {
+                padding-left: 0;
+                border-left: none;
+            }
         }
     }
 

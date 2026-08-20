@@ -1,10 +1,15 @@
 @import 'abstracts/_functions.scss';
+@import 'abstracts/_media-queries.scss';
 @import 'abstracts/_bit-css-variables.scss';
+@import 'abstracts/_docs.scss';
 
 // The docs shell sits on top of the component library, so it has to make a few decisions the
 // library deliberately leaves open: how the site chrome is typeset, how far a line of prose may
-// run, and how strongly a surface is separated from the page. They live here as custom properties
-// because the global stylesheet and every scoped .razor.scss have to agree on them.
+// run, how strongly a surface is separated from the page. The reasoning lives in
+// abstracts/_docs.scss; this file publishes the handful of those values that unscoped rules and
+// scoped .razor.scss files both have to agree on, and then styles the two things no single
+// component owns - the document itself, and the prose inside an article.
+
 :root {
     // The library's own type token rather than a stack of this file's: the `*` rule below puts this
     // face on every element, which beats inheritance - so a fixed Segoe UI stack here would dress
@@ -13,15 +18,66 @@
     // where every preset declares the token, so the chrome follows the preset along with the components.
     --demo-font-sans: var(--bit-tpg-font-family);
     --demo-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    // Surfaces are separated by a hairline border rather than a drop shadow: on a documentation
-    // page the same card repeats dozens of times, and stacked shadows read as noise long before
-    // they read as depth. Square, because rounding every one of those repeats is exactly the
-    // decoration the borders are there to avoid. Anything that does need a radius takes the
-    // library's own $bit-shape-border-radius rather than inventing a second shape scale.
-    --demo-content-width: #{rem2(1200px)};
+
+    // The component pages' article column, unchanged from before the redesign.
+    --demo-content-width: #{$doc-width-marketing};
+    // The prose pages' shell. It holds the article AND the "on this page" rail inside one cap, so
+    // it is wider than the column above to leave the article the same measure.
+    --demo-docs-width: #{$doc-width-content};
+    --demo-marketing-width: #{$doc-width-marketing};
     // Comfortable reading measure for prose; long descriptions get capped at this, tables and
     // examples still use the full column.
-    --demo-measure: 76ch;
+    --demo-header-height: #{$doc-header-height};
+
+    // The height of DemoPage's reduced-motion toggle bar. Two unrelated stylesheets need to agree
+    // on it: the bar sizes itself from this value, and every other sticky element on a demo page
+    // offsets its own top by it so they stack instead of overlapping. It stays 0 while the bar is
+    // hidden, which is every state except reduced motion.
+    --demo-motion-bar-height: 0rem;
+    // How far an anchored heading has to stop short of the sticky chrome above it. The default
+    // clears the app header; a page that pins a second bar (the multi-API pivot) raises it.
+    --demo-section-scroll-margin: #{rem2(90px)};
+}
+
+// The site ignores prefers-reduced-motion everywhere except the component demo pages.
+//
+// That sounds backwards until you look at what the setting is protecting the reader from. On a
+// documentation page the animation IS the subject: a reader who has come to see how BitCollapse
+// opens or how a callout enters is not served by a page that shows them nothing happening. So the
+// component pages honour the setting - they are where a reader might be caught out by motion they
+// did not ask for - and each one carries a ForceAnimation toggle to turn it back on for the sake of
+// the demonstration. Everywhere else, on the marketing and guide pages whose motion is a handful of
+// 200ms hovers, the setting is ignored rather than leaving the site feeling broken.
+//
+// The mechanics: the library collapses its --bit-mot-* tokens under the query below, and its own
+// .bit-fam class (BitComponentBase.ForceAnimation) points them back at the untouched -full values.
+// This restores them at :root, which this stylesheet can do because it is linked after the library's;
+// the demo pages then opt back IN to the reduction through .demo-reduced-motion.
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
+        --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
+        --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
+        --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full, 1.3s);
+        --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
+        --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
+
+        // The bar's own height, which the sticky pivot bar under it offsets itself by.
+        --demo-motion-bar-height: #{rem2(32px)};
+    }
+
+    // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
+    // values, re-applied to this subtree. Mirrors the block in Styles/Fluent/motion.fluent.scss -
+    // 0.01ms rather than 0ms, because a zero-duration transition never fires transitionend, and the
+    // looping tokens calmed rather than collapsed, because a near-zero loop renders as flicker.
+    .demo-reduced-motion {
+        --bit-mot-duration: 0.01ms;
+        --bit-mot-duration-short: 0.01ms;
+        --bit-mot-duration-long: 0.01ms;
+        --bit-mot-duration-spinner: 4s;
+        --bit-mot-easing-spinner: linear;
+        --bit-mot-loop-factor: 3;
+    }
 }
 
 * {
@@ -44,6 +100,10 @@ code, kbd, pre, samp {
     font-family: var(--demo-font-mono);
 }
 
+h1, h2, h3, h4, h5, h6, p, figure {
+    margin: 0;
+}
+
 // Scoped to the docs chrome on purpose: the scrollbars inside .example-container belong to the
 // components being demonstrated and must keep looking like whatever the library renders. Both
 // properties are theme-driven, which also fixes the hardcoded light gutters in the dark theme.
@@ -60,14 +120,6 @@ html, body, .site-content, pre, .table-view, .side-rail {
     scrollbar-width: none;
 }
 
-h1, h2, h3, h4, h5 {
-    margin: 0;
-}
-
-p {
-    margin: 0;
-}
-
 .bit-blazor-hybrid {
     *:not(input) {
         -webkit-user-select: none;
@@ -79,20 +131,284 @@ p {
     }
 }
 
-// The height of DemoPage's reduced-motion toggle bar, published here because two unrelated
-// stylesheets need to agree on it: the bar sizes itself from this value, and every other sticky
-// element on a demo page offsets its own top by it so they stack instead of overlapping. It stays
-// 0 while the bar is hidden, which is every state except reduced motion.
-:root {
-    --demo-motion-bar-height: 0rem;
+#components-reconnect-modal {
+    color: black;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    :root {
-        --demo-motion-bar-height: #{rem2(32px)};
+
+// BitLayout's own skip link, which is an ancestor of everything MainLayout writes and therefore out
+// of reach of any scoped rule. It only needs the docs focus ring; its position is the library's.
+.bit-lyt-skp:focus-visible {
+    outline: rem2(2px) solid $bit-color-primary;
+    outline-offset: rem2(2px);
+}
+
+
+// ── Article layout ────────────────────────────────────────────────────────────────────────────
+// Every documentation page - the component demos and the prose pages alike - is the same two
+// columns: an article that owns the measure, and the "on this page" rail beside it. Declared
+// globally rather than in one component's scoped sheet because both DocsArticle and DemoPage build
+// it, and a page's own sections have to be able to sit inside it.
+.doc-shell {
+    width: 100%;
+    display: flex;
+    margin: 0 auto;
+    align-items: flex-start;
+    max-width: var(--demo-docs-width);
+}
+
+.doc-main {
+    // min-width:0 is what lets a wide example or a long code line scroll inside the column instead
+    // of stretching it and pushing the rail off screen.
+    min-width: 0;
+    flex: 1 1 auto;
+    padding: $doc-space-xl $doc-space-lg $doc-space-3xl;
+
+    @include lt-lg {
+        padding: $doc-space-lg $doc-space-md $doc-space-2xl;
+    }
+
+    @include sm {
+        padding: $doc-space-md $doc-space-sm $doc-space-xl;
     }
 }
 
+// The page opening: eyebrow / breadcrumb, title, badges, then a lead paragraph. The lead is prose,
+// not one more boxed section - after the H1 the reader should hit a sentence, not another frame.
+.doc-head {
+    margin-bottom: $doc-space-lg;
+}
+
+// The small label above the title - the section of the site this page belongs to.
+.doc-eyebrow {
+    margin-bottom: $doc-space-2xs;
+
+    @include doc-eyebrow;
+}
+
+// Scoped through .doc-head so it outranks BitText's own typography class, which sets a font-size at
+// the same specificity and would otherwise win or lose on stylesheet order alone.
+.doc-head .doc-title {
+    overflow-wrap: anywhere;
+
+    @include doc-display(2rem, 2.75rem);
+}
+
+.doc-lead {
+    margin-top: $doc-space-sm;
+}
+
+.doc-head-actions {
+    margin-top: $doc-space-md;
+}
+
+// A section of an article. Anchored, so it has to clear the sticky chrome; separated from the next
+// by air and a hairline rather than by a card, so a long page reads as one document instead of a
+// stack of boxes.
+.doc-section {
+    scroll-margin-top: var(--demo-section-scroll-margin);
+    padding-block: $doc-space-xl;
+    border-top: rem2(1px) solid $bit-color-border-secondary;
+
+    &:first-of-type {
+        border-top: none;
+        padding-top: 0;
+    }
+
+    &:last-of-type {
+        padding-bottom: 0;
+    }
+
+    @include sm {
+        padding-block: $doc-space-lg;
+    }
+}
+
+.doc-section-head {
+    margin-bottom: $doc-space-md;
+}
+
+.doc-section-title {
+    overflow-wrap: anywhere;
+    scroll-margin-top: var(--demo-section-scroll-margin);
+}
+
+.doc-section-lead {
+    margin-top: $doc-space-2xs;
+}
+
+
+// ── Prose ─────────────────────────────────────────────────────────────────────────────────────
+// What a documentation page's running text looks like.
+//
+// Every rule here is bounded to the section's own children, and never reaches an arbitrary depth.
+// That is not tidiness: on a component page this same wrapper also contains the live previews,
+// where the markup belongs to the component being demonstrated. A descendant selector for `ul`
+// would re-indent the list a BitNav renders; one for `code` would re-skin the output of the
+// Text demo. The prose stops at the section's own children, and the components are left alone.
+.doc-prose {
+    color: $bit-color-foreground-secondary;
+
+    // One rhythm for everything a section can hold - paragraphs, lists, code boxes, accordions,
+    // tables, examples - rather than a rule per pair of element types, which is how a page ends up
+    // with <br /> tags standing in for the combinations nobody wrote a rule for.
+    > * + * {
+        margin-top: $doc-space-sm;
+    }
+
+    > p {
+        line-height: 1.65;
+    }
+
+    > ul,
+    > ol {
+        margin: 0;
+        line-height: 1.65;
+        padding-inline-start: $doc-space-md;
+
+        li + li {
+            margin-top: $doc-space-3xs;
+        }
+    }
+
+    > h3,
+    > h4 {
+        margin-top: $doc-space-md;
+        margin-bottom: $doc-space-2xs;
+        color: $bit-color-foreground-primary;
+        scroll-margin-top: var(--demo-section-scroll-margin);
+    }
+
+    > p b, > p strong,
+    > ul b, > ul strong,
+    > ol b, > ol strong {
+        font-weight: $bit-typography-fw-semibold;
+        color: $bit-color-foreground-primary;
+    }
+
+    // Inline code only: a <code> inside a <pre> is a highlighted block and keeps the syntax theme's
+    // own surface.
+    > p code,
+    > ul li code,
+    > ol li code {
+        @include doc-code-inline;
+    }
+}
+
+
+// ── Code ──────────────────────────────────────────────────────────────────────────────────────
+// The one code surface for the whole site: the sample panels on a component page and any raw <pre>
+// a demo renders as output. CodeBox draws its own (it resets with `all: revert` first), and Prism
+// paints the tokens; everything around them is the theme's.
+pre {
+    margin: 0;
+    width: 100%;
+    display: flex;
+    overflow: auto;
+    direction: ltr;
+    flex-flow: column;
+    position: relative;
+    line-height: 1.6;
+    font-size: rem2(13px);
+    // Just enough to keep an empty output pane from collapsing to a hairline.
+    min-height: rem2(44px);
+    max-height: rem2(464px);
+    box-sizing: border-box;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-family: var(--demo-font-mono);
+    padding: rem2(16px) rem2(56px) rem2(16px) rem2(16px);
+    background-color: $bit-color-background-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+
+    @include doc-scrollbar(8px);
+}
+
+code {
+    line-height: 1.6;
+    font-family: var(--demo-font-mono);
+
+    span {
+        font-family: inherit;
+    }
+}
+
+
+// ── Syntax highlighting ───────────────────────────────────────────────────────────────────────
+// Prism ships one palette, tuned for a dark background. The vendored stylesheet does carry a light
+// set of token colors, but it gates them on a `bit-blazorui-light-theme` body class that nothing
+// applies any more - so every code block on the site was painting Monokai's greens and yellows onto
+// a white surface. #a6e22e on white is about 1.7:1; the reader was left to guess.
+//
+// Re-gated here, on the bit-theme attribute the library's own theme script keeps current, so the
+// switch happens with the theme rather than with a class somebody has to remember to set. The
+// selector outranks Prism's own (which is two classes) regardless of stylesheet order, and every
+// value below clears 4.5:1 on the light surfaces.
+:root:not([bit-theme$='dark']) {
+    .token.cdata,
+    .token.comment,
+    .token.doctype,
+    .token.prolog {
+        color: #5b6472;
+    }
+
+    .token.constant,
+    .token.deleted,
+    .token.property,
+    .token.symbol,
+    .token.tag {
+        color: #bb0044;
+    }
+
+    .token.attr-name,
+    .token.builtin,
+    .token.char,
+    .token.inserted,
+    .token.selector,
+    .token.string {
+        color: #557a00;
+    }
+
+    .token.atrule,
+    .token.attr-value,
+    .token.class-name,
+    .token.function {
+        color: #8d6000;
+    }
+
+    .token.keyword {
+        color: #006e7d;
+    }
+
+    .token.boolean,
+    .token.number {
+        color: #7c3aed;
+    }
+
+    .token.important,
+    .token.regex {
+        color: #a8480a;
+    }
+}
+
+
+// ── Component search ──────────────────────────────────────────────────────────────────────────
+// The suggestion row of the header's finder: the component's name over the category it lives in,
+// so ChartLegacy and Chart, or Toggle and ToggleButton, are told apart before the reader commits.
+// Global rather than scoped to ComponentSearchBox because the row is rendered inside BitSearchBox's
+// callout, which is not a DOM descendant of the box on every platform.
+.cmp-search-item {
+    overflow: hidden;
+    padding-block: rem2(2px);
+}
+
+.cmp-search-item-name {
+    font-weight: $bit-typography-fw-medium;
+}
+
+
+// ── Demo-page leftovers ───────────────────────────────────────────────────────────────────────
+// The sticky tab bar the multi-API demo pages (Dropdown, DatePicker, ...) put over their examples.
 .pivot-sticky-header {
     z-index: 10;
     opacity: 0.85;
@@ -109,15 +425,10 @@ p {
 }
 
 // A page hosting this bar has one more sticky layer over its examples, so DemoExample's anchored
-// section titles need more clearance than the 7rem they fall back to. Published as a variable on
-// the page rather than a selector into the pivot's markup, so it holds for any pivot that adopts
-// the class.
-.page-container:has(.pivot-sticky-header) {
+// section titles need more clearance than the default. Published as a variable on the page rather
+// than a selector into the pivot's markup, so it holds for any pivot that adopts the class.
+.doc-main:has(.pivot-sticky-header) {
     --demo-section-scroll-margin: 11rem;
-}
-
-#components-reconnect-modal {
-    color: black;
 }
 
 // The Color sections of the Slider, Toggle, NavBar and Pivot demos put the *Background roles on a

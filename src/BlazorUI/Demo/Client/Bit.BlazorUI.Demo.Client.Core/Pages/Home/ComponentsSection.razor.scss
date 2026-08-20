@@ -1,72 +1,50 @@
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-.list-group {
-    width: 100%;
+.categories-lead {
+    margin-top: $doc-space-2xs;
+}
+
+.category-grid {
+    display: grid;
+    gap: $doc-space-2xs;
+    margin-top: $doc-space-lg;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(180px), 1fr));
+}
+
+.category {
     display: flex;
-    flex-flow: row wrap;
-    margin-top: rem2(25px);
-    align-items: flex-start;
-    justify-content: space-between;
+    min-width: 0;
+    gap: rem2(2px);
+    flex-flow: column nowrap;
+    text-decoration: none;
+    padding: $doc-space-sm;
+    color: $bit-color-foreground-primary;
 
-    .list-col {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: rem2(248px);
-        margin-right: rem2(64px);
+    @include doc-surface;
+    @include doc-surface-interactive;
 
-        &:last-child {
-            margin-right: 0;
-        }
-
-        @include lg {
-            margin-right: rem2(16px);
-        }
-
-        @include md {
-            width: rem2(174px);
-            margin-right: rem2(25px);
-        }
-
-        @include sm {
-            width: 100%;
-            margin-right: 0;
-        }
+    &:focus-visible {
+        @include doc-focus-ring;
     }
+}
 
-    .list {
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        align-items: flex-start;
-        width: 100%;
-        margin-bottom: rem2(24px);
+.category-name {
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+}
 
-        &:last-child {
-            margin-bottom: 0;
-        }
+.category-count {
+    font-size: $bit-typography-fs-2xs;
+    color: $bit-color-foreground-tertiary;
+    font-variant-numeric: tabular-nums;
+}
 
-        @include lg {
-            margin-bottom: rem2(32px);
-        }
+.categories-cta {
+    display: flex;
+    margin-top: $doc-space-lg;
+}
 
-        @include md {
-            margin-bottom: rem2(40px);
-        }
-
-        @include sm {
-            margin-bottom: rem2(24px);
-        }
-    }
-
-    ::deep .featured {
-        padding: 0 rem2(4px);
-        margin: rem2(3px) rem2(8px);
-        color: $bit-color-warning-text;
-        background-color: $bit-color-warning;
-        border-radius: $bit-shape-border-radius;
-    }
+::deep .category-icon {
+    font-size: rem2(20px);
+    margin-bottom: $doc-space-2xs;
 }

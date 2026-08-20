@@ -1,43 +1,42 @@
-@import '../../Styles/abstracts/_functions.scss';
-@import '../../Styles/abstracts/_media-queries.scss';
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-.card-list {
+.benefits-lead {
+    margin-top: $doc-space-2xs;
+}
+
+.benefit-grid {
     display: grid;
-    gap: rem2(20px);
-    margin-top: rem2(20px);
-    grid-template-columns: repeat(3, 1fr);
+    gap: $doc-space-sm;
+    margin-top: $doc-space-lg;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 
-    @include lt-lg {
-        grid-template-columns: repeat(2, 1fr);
+    @include lt-xl {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     @include lt-md {
         grid-template-columns: 1fr;
     }
+}
 
-    .benefit-card {
-        padding: rem2(24px);
-        box-sizing: border-box;
-        border-radius: $bit-shape-border-radius;
-        border: rem2(1px) solid $bit-color-border-secondary;
-        transition: border-color $bit-motion-duration $bit-motion-easing;
+.benefit {
+    display: flex;
+    gap: $doc-space-3xs;
+    flex-flow: column nowrap;
+    padding: $doc-space-md;
 
-        &:hover {
-            border-color: $bit-color-primary;
-        }
+    @include doc-surface;
+
+    // The border is the only thing that moves. On a grid of six cards a lift-and-shadow on hover
+    // reads as the page twitching; a border taking the accent reads as a target.
+    transition: border-color $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        border-color: $bit-color-primary;
     }
+}
 
-    .benefit-card-icon {
-        display: flex;
-        width: rem2(40px);
-        height: rem2(40px);
-        align-items: center;
-        font-size: rem2(20px);
-        justify-content: center;
-        margin-bottom: rem2(16px);
-        border-radius: $bit-shape-border-radius;
-        background-color: $bit-color-background-secondary;
-        border: rem2(1px) solid $bit-color-border-secondary;
-    }
+::deep .benefit-icon {
+    font-size: rem2(22px);
+    margin-bottom: $doc-space-2xs;
 }

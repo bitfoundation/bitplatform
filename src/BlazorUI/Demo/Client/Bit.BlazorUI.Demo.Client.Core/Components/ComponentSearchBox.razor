@@ -1,0 +1,34 @@
+﻿@inherits AppComponentBase
+
+@* The site's component search. Built on BitSearchBox's own suggestion support rather than a
+   hand-rolled combobox: the docs site is the library's showcase, so the one control every visitor
+   touches should be the library's own - keyboard navigation, the callout, the highlighting and the
+   accessible announcements all included. *@
+<BitSearchBox Immediate
+              HighlightSuggestItems
+              Id="@_rootId"
+              DebounceTime="150"
+              MaxSuggestCount="8"
+              MinSuggestTriggerChars="1"
+              AriaLabel="Search components"
+              Placeholder="@Placeholder"
+              IconName="@BitIconName.Search"
+              Class="@($"cmp-search {Class}".Trim())"
+              SuggestItems="_names"
+              SuggestFilterFunction="Matches"
+              SuggestItemTemplate="_suggestTemplate"
+              OnSuggestItemSelect="GoToComponent"
+              OnSearch="HandleSearch"
+              NoResultsText="No component matches. Try a name like Dropdown, Grid or Chart." />
+
+@code {
+    // The suggestion row shows the component's name over the category it lives in, which is what
+    // separates a Chart from a ChartLegacy, or a Toggle from a ToggleButton, at a glance.
+    private readonly RenderFragment<string> _suggestTemplate = name =>
+        @<BitStack Gap="0" AutoHeight Class="cmp-search-item">
+            <BitText Typography="BitTypography.Body2" Class="cmp-search-item-name">@name</BitText>
+            <BitText Typography="BitTypography.Caption1" Color="BitColor.TertiaryForeground" NoWrap>
+                @ComponentCatalog.Items.FirstOrDefault(i => i.Name == name)?.Category
+            </BitText>
+        </BitStack>;
+}

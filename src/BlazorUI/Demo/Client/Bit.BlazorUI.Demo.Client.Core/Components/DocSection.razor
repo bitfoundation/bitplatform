@@ -1,0 +1,52 @@
+﻿@* One section of a documentation article: an anchored heading, an optional line of context, then
+   the content. The heading carries the id and the example-section-title marker, which is what puts
+   the section in the "on this page" rail and lets the scroll spy follow it - the same contract
+   DemoExample uses, so a prose page and a component page build their rail the same way. *@
+<section class="doc-section">
+    <div class="doc-section-head">
+        <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Baseline">
+            <BitText Element="h2"
+                     Id="@Id"
+                     example-section-title
+                     Class="doc-section-title"
+                     Typography="BitTypography.H4"
+                     Color="BitColor.PrimaryForeground">@Title</BitText>
+            @HeaderActions
+        </BitStack>
+
+        @if (Description.HasValue() || DescriptionTemplate is not null)
+        {
+            <div class="doc-section-lead">
+                @if (DescriptionTemplate is not null)
+                {
+                    @DescriptionTemplate
+                }
+                else
+                {
+                    <BitText Element="p" Color="BitColor.SecondaryForeground">@Description</BitText>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="doc-prose">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    /// <summary>The anchor. Also the id the rail scrolls to, so it has to be unique on the page.</summary>
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    /// <summary>One line under the heading saying what the section is for.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>Anything that belongs on the heading row itself - a tag, a link to the source.</summary>
+    [Parameter] public RenderFragment? HeaderActions { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

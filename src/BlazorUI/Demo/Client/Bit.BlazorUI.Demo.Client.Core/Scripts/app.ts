@@ -17,7 +17,10 @@ function getSideRailItems() {
     // layout-flushing read, and this runs right after Blazor has written to the DOM.
     return Array.from(document.querySelectorAll<HTMLElement>('[example-section-title]')).map((element) => ({
         id: element.id,
-        title: (element.textContent ?? '').trim()
+        title: (element.textContent ?? '').trim(),
+        // The tag itself, so the rail can nest an example under the section that hosts it. Anything
+        // that is not a heading counts as a leaf.
+        level: /^H[1-6]$/.test(element.tagName) ? parseInt(element.tagName[1], 10) : 3
     }));
 }
 
@@ -27,10 +30,16 @@ const sideRailScrollSpies: { [key: string]: () => void } = {};
 // the spy move the highlight itself. Both copies of the list - the sticky rail and the responsive
 // panel - can be mounted at the same time, so this walks every entry rather than one known id.
 function applySideRailActiveItem(activeId: string | null) {
+    const activeItems: HTMLElement[] = [];
+
     document.querySelectorAll<HTMLElement>('[data-rail-item]').forEach((item) => {
         const isActive = item.dataset.railItem === activeId;
 
         item.classList.toggle('active', isActive);
+
+        if (isActive) {
+            activeItems.push(item);
+        }
 
         const link = item.querySelector('button, a');
         if (link == null) return;
@@ -41,6 +50,58 @@ function applySideRailActiveItem(activeId: string | null) {
             link.removeAttribute('aria-current');
         }
     });
+
+    // After the loop, not inside it: keepSideRailItemInView measures, and a measurement taken between
+    // two of the class toggles above would force the layout the browser has just been told is dirty.
+    activeItems.forEach((item) => keepSideRailItemInView(item, true));
+}
+
+// A page with more sections than the rail is tall makes the rail a scroller of its own, and on such
+// a page the entry the spy has just emphasized is regularly one the reader cannot see: the rail
+// stays where it was while the page moves on. So the rail follows - it scrolls itself just enough
+// to bring the active entry back inside, and only ever itself, which is why this does the arithmetic
+// by hand rather than calling scrollIntoView (that one walks up every scrollable ancestor and would
+// take the page with it, fighting the very scroll that triggered this).
+function keepSideRailItemInView(item: HTMLElement, smooth: boolean) {
+    const container = item.closest<HTMLElement>('.side-rail, .side-rail-panel');
+    if (container == null) return;
+
+    // Nothing to follow when the whole list fits; the rail is only a scroller on the long pages.
+    if (container.scrollHeight - container.clientHeight <= 1) return;
+
+    const itemRect = item.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // One entry's worth of breathing room on the side it came in from, so the active entry is never
+    // flush against the edge with the next one hidden right behind it. Overshooting at the two ends
+    // of the list costs nothing - the scroll clamps there anyway.
+    const margin = itemRect.height;
+
+    let delta = 0;
+
+    if (itemRect.top < containerRect.top + margin) {
+        delta = itemRect.top - containerRect.top - margin;
+    } else if (itemRect.bottom > containerRect.bottom - margin) {
+        delta = itemRect.bottom - containerRect.bottom + margin;
+    }
+
+    if (delta === 0) return;
+
+    // Smooth while the reader scrolls, so the rail reads as following along rather than jumping;
+    // instant when a list is being shown for the first time (the panel opening), where there is no
+    // previous position for an animation to come from. Reduced motion turns the animation off.
+    const behavior: ScrollBehavior = smooth && window.matchMedia('(prefers-reduced-motion: reduce)').matches === false
+        ? 'smooth'
+        : 'instant';
+
+    container.scrollTo({ top: container.scrollTop + delta, behavior });
+}
+
+// The panel copy of the rail is mounted long after the spy last moved the highlight, so it comes up
+// scrolled to the top no matter where in the page the reader is. Called once the panel has rendered.
+function scrollSideRailToActiveItem() {
+    document.querySelectorAll<HTMLElement>('.side-rail-panel [data-rail-item].active')
+        .forEach((item) => keepSideRailItemInView(item, false));
 }
 
 function registerSideRailScrollSpy(id: string, dotnetObj: any, activeItemMethodName: string, sectionsChangedMethodName: string, sectionIds: string[]) {
@@ -162,6 +223,36 @@ function registerWindowResizeListener(id: string, dotnetObj: any, methodName: st
     const listener = () => dotnetObj.invokeMethodAsync(methodName);
     windowResizeListeners[id] = listener;
     window.addEventListener('resize', listener);
+}
+
+// The first caller wins: the header's search box registers on every page, and a second copy of the
+// control (the gallery's) must not steal the shortcut from it.
+let searchShortcutRootId: string | null = null;
+
+function registerSearchShortcut(rootElementId: string) {
+    if (searchShortcutRootId != null) return;
+
+    searchShortcutRootId = rootElementId;
+
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+        const isCommandK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
+
+        // A bare "/" is the other conventional docs shortcut, but only while the reader is not
+        // already typing somewhere - otherwise it would swallow the character.
+        const target = e.target as HTMLElement | null;
+        const isTyping = target != null &&
+            (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        const isSlash = e.key === '/' && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+        if (!isCommandK && !isSlash) return;
+
+        const input = document.getElementById(searchShortcutRootId!)?.querySelector('input');
+        if (input == null) return;
+
+        e.preventDefault();
+        input.focus();
+        input.select();
+    });
 }
 
 function unregisterWindowResizeListener(id: string) {

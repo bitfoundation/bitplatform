@@ -2,9 +2,9 @@
 
 public partial class SideRail
 {
-    private bool _hadNotes;
     private bool _isPanelOpen;
     private bool _hasPanelOpened;
+    private bool _shouldScrollPanelToActiveItem;
     private bool _shouldScanSections = true;
     private string? _activeItemId;
     private List<SideRailItem> _items { get; set; } = [];
@@ -13,12 +13,6 @@ public partial class SideRail
     private readonly string _scrollSpyId = $"SideRailSpy-{Guid.NewGuid()}";
     private readonly string _resizeListenerId = $"SideRail-{Guid.NewGuid()}";
 
-
-    /// <summary>
-    /// Whether the hosting page renders a Notes section (id "notes-section"). The rail cannot see
-    /// it in the DOM the way it sees the example headings, so the page has to say so.
-    /// </summary>
-    [Parameter] public bool HasNotes { get; set; }
 
 
     protected override Task OnParamsSetAsync()
@@ -48,6 +42,14 @@ public partial class SideRail
             await ScanSections();
         }
 
+        // The panel's list is a second copy of the rail, rendered only now, so the spy has never had
+        // the chance to bring its active entry into view the way it does for the sticky rail.
+        if (_shouldScrollPanelToActiveItem)
+        {
+            _shouldScrollPanelToActiveItem = false;
+            await JSRuntime.ScrollSideRailToActiveItem();
+        }
+
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -67,19 +69,14 @@ public partial class SideRail
         // spreading it into _items below would throw.
         if (sideRailItems is null) return;
 
-        if (ItemsChanged(sideRailItems, _sideRailItems) is false && _hadNotes == HasNotes) return;
+        if (ItemsChanged(sideRailItems, _sideRailItems) is false) return;
 
         // Persist the snapshot the change-check compares against; otherwise ItemsChanged stays
         // true forever and the StateHasChanged below schedules an endless render loop (which in
         // WASM runs entirely in microtasks and freezes the browser tab).
         _sideRailItems = sideRailItems;
-        _hadNotes = HasNotes;
 
-        _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
-        if (HasNotes)
-        {
-            _items.Insert(0, new() { Id = "notes-section", Title = "Notes" });
-        }
+        _items = [.. sideRailItems];
 
         StateHasChanged();
 
@@ -93,6 +90,7 @@ public partial class SideRail
     {
         _isPanelOpen = true;
         _hasPanelOpened = true;
+        _shouldScrollPanelToActiveItem = true;
     }
 
     private async Task ScrollToItem(SideRailItem targetItem)

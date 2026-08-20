@@ -1,0 +1,163 @@
+@import '_functions.scss';
+@import '_media-queries.scss';
+@import '_bit-css-variables.scss';
+
+// The documentation layer's own design system.
+//
+// The component library already owns every design-system decision a *component* makes - color,
+// shape, size, motion, type - and publishes them as --bit-* tokens. What it deliberately says
+// nothing about is how a *documentation site* is put together: how far a column of prose may run,
+// how much air sits between two sections, how a surface is separated from the page. Those are the
+// decisions this file makes, once, so the global stylesheet and every scoped .razor.scss agree
+// instead of each re-inventing a number.
+//
+// Everything here is either derived from a --bit-* token (so all four presets - Fluent, Fluent 2,
+// Material, Cupertino - and both schemes re-skin the docs chrome for free) or is a pure layout
+// value the library has no opinion about.
+
+
+// ── Rhythm ────────────────────────────────────────────────────────────────────────────────────
+// One 4px-based scale for the whole site. Named by step rather than by pixel count so a section
+// can ask for "the gap between two blocks" without restating what that measures.
+$doc-space-3xs: rem2(4px);
+$doc-space-2xs: rem2(8px);
+$doc-space-xs: rem2(12px);
+$doc-space-sm: rem2(16px);
+$doc-space-md: rem2(24px);
+$doc-space-lg: rem2(32px);
+$doc-space-xl: rem2(48px);
+$doc-space-2xl: rem2(64px);
+$doc-space-3xl: rem2(96px);
+
+
+// ── Measure & widths ──────────────────────────────────────────────────────────────────────────
+// The docs column is wider than the marketing column: an API table needs the room, a hero does
+// not. Both are published as custom properties in app.scss too, because a couple of unscoped
+// rules need them.
+$doc-width-content: rem2(1280px); // docs pages: article + "on this page" rail
+$doc-width-marketing: rem2(1200px); // home page and the app chrome above it
+$doc-width-prose: 72ch; // a paragraph inside either of the above
+
+// The app header is sticky, so anything that scrolls to an anchor has to clear it. One value,
+// stated here, rather than the four slightly different magic numbers the pages used to carry.
+$doc-header-height: rem2(65px);
+
+
+// ── Focus ─────────────────────────────────────────────────────────────────────────────────────
+// The docs chrome draws its own focus ring rather than relying on the UA default, which is
+// invisible on the dark schemes. It is deliberately NOT declared globally: inside an example the
+// focus ring belongs to the component being demonstrated, and a second outline over it would show
+// readers something the library does not actually render.
+@mixin doc-focus-ring($offset: 2px) {
+    outline: rem2(2px) solid $bit-color-primary;
+    outline-offset: rem2($offset);
+    border-radius: $bit-shape-radius-control;
+}
+
+// Applies the ring to every focusable descendant of a piece of chrome.
+@mixin doc-focusable-children($offset: 2px) {
+    a:focus-visible,
+    button:focus-visible,
+    [tabindex]:focus-visible {
+        @include doc-focus-ring($offset);
+    }
+}
+
+
+// ── Surfaces ──────────────────────────────────────────────────────────────────────────────────
+// Surfaces are separated by a hairline rather than a drop shadow. On a documentation page the same
+// card repeats dozens of times, and stacked shadows read as noise long before they read as depth.
+// The radius comes from the library's surface family, so Cupertino's softer corners and Fluent's
+// tighter ones both come through.
+@mixin doc-surface($background: $bit-color-background-primary) {
+    background-color: $background;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    border-radius: $bit-shape-radius-surface;
+}
+
+// A surface that reacts to the pointer - a gallery card, a quick link. The lift is small and the
+// border does most of the work, so the effect survives a theme whose shadows are nearly invisible.
+// Both properties transition on the theme's own motion tokens, which is what makes them collapse
+// under prefers-reduced-motion and come back with a demo page's ForceAnimation toggle.
+@mixin doc-surface-interactive {
+    transition: border-color $bit-motion-duration $bit-motion-easing,
+                background-color $bit-motion-duration $bit-motion-easing,
+                transform $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        transform: translateY(rem2(-2px));
+        border-color: $bit-color-border-primary;
+        background-color: $bit-color-background-primary-hover;
+    }
+
+    &:active {
+        transform: none;
+    }
+}
+
+
+// ── Scrollbars ────────────────────────────────────────────────────────────────────────────────
+// Theme-driven on both scrollbar models. Only ever applied to docs chrome: the scrollbars inside
+// an example belong to the component being demonstrated and must keep looking like whatever the
+// library renders.
+@mixin doc-scrollbar($size: 8px) {
+    scrollbar-width: thin;
+    scrollbar-color: $bit-color-border-primary transparent;
+
+    &::-webkit-scrollbar {
+        width: rem2($size);
+    }
+
+    &::-webkit-scrollbar:horizontal {
+        height: rem2($size);
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: rem2($size);
+        background-color: $bit-color-border-primary;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: $bit-color-foreground-tertiary;
+    }
+
+    &::-webkit-scrollbar-button {
+        display: none;
+    }
+}
+
+
+// ── Type ──────────────────────────────────────────────────────────────────────────────────────
+// A marketing headline wants more than the H1 token gives an application page title, and no token
+// describes that size - so the two display sizes the site uses are fluid, stated here once rather
+// than re-derived in each hero.
+@mixin doc-display($min: 2rem, $max: 3.5rem) {
+    font-size: clamp(#{$min}, 5vw, #{$max});
+    line-height: 1.1;
+    letter-spacing: rem2(-1px);
+}
+
+// The small, spaced, upper-case label that opens a section ("Components", "On this page"). It is
+// the one place the docs use letter-spacing as a signal rather than a correction.
+@mixin doc-eyebrow {
+    font-weight: $bit-typography-fw-semibold;
+    font-size: $bit-typography-fs-2xs;
+    letter-spacing: rem2(1px);
+    text-transform: uppercase;
+    color: $bit-color-foreground-tertiary;
+}
+
+// Inline code inside prose. A distinct surface rather than a distinct color, so it stays legible
+// on every preset without picking a syntax color out of the air.
+@mixin doc-code-inline {
+    font-size: 0.9em;
+    padding: rem2(2px) rem2(6px);
+    font-family: var(--demo-font-mono);
+    border-radius: $bit-shape-radius-xs;
+    background-color: $bit-color-background-secondary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+}
