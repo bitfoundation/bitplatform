@@ -64,10 +64,13 @@
         <None Include="..\..\Bit.BlazorUI\Styles\**\*.scss" Link="theme-styles\%(RecursiveDir)%(Filename)%(Extension)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <!-- The Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras (see
-             BitExtraThemePresets), but they are stylesheets of the same theming system: the palette,
+        <!-- The Fluent 2, Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras
+             (see BitExtraThemePresets), but they are stylesheets of the same theming system: the palette,
              contrast and token-contract tests read every packaged preset out of one theme-styles tree,
              so they are linked in beside the core ones. -->
+        <None Include="..\..\Bit.BlazorUI.Extras\Styles\Fluent2\*.scss" Link="theme-styles\Fluent2\%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Include="..\..\Bit.BlazorUI.Extras\Styles\Material\*.scss" Link="theme-styles\Material\%(Filename)%(Extension)">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>

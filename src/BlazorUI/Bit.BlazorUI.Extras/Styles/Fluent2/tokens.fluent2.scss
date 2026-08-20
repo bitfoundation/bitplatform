@@ -1,0 +1,200 @@
+// Fluent 2 preset - the scheme-independent tokens: shape, size, typography and motion. Values are
+// the Fluent 2 design tokens as the reference implementation publishes them
+// (github.com/microsoft/fluentui, packages/tokens/src/global) plus the component geometry those
+// tokens are assembled into in packages/react-components; the palette lives in colors.fluent2-*.scss
+// and the elevation, whose ambient/key alphas differ per scheme, in shadows.fluent2-*.scss.
+//
+// Fluent 2 is the successor to the Fluent the core stylesheet implements, so this bundle reads as a
+// retune rather than a re-skin: the corner grows from 2px to 4px, the greys lose their warmth, the
+// brand moves from #0078D4 to #0F6CBD, the flat callout shadow becomes an ambient+key pair, control
+// labels go semibold, and the focus indicator becomes one black/white stroke instead of the role's
+// own color.
+//
+// This bundle is override-only and TOKENS ONLY: every rule below declares --bit-* custom properties
+// under [bit-theme="fluent2*"] selectors and wins over the Fluent defaults on source order, so it
+// must be linked AFTER bit.blazorui.css. It never selects a component class.
+:root[bit-theme="fluent2"],
+:root [bit-theme="fluent2"],
+:root[bit-theme="fluent2-light"],
+:root [bit-theme="fluent2-light"],
+:root[bit-theme="fluent2-dark"],
+:root [bit-theme="fluent2-dark"] {
+    /*---- Shape ----*/
+    // The corner scale is Fluent 2's borderRadius ramp: none 0 / small 2 / medium 4 / large 6 /
+    // xLarge 8 / 2xLarge 12 / 3xLarge 16 / circular. Medium (4px) is the default corner - Fluent 1
+    // rounded controls at 2px, which is the single most visible difference between the two.
+    --bit-shp-brd-radius: 0.25rem; //4px - borderRadiusMedium
+    --bit-shp-radius-none: 0;
+    --bit-shp-radius-xs: 0.125rem; //2px - borderRadiusSmall
+    --bit-shp-radius-sm: 0.25rem; //4px - borderRadiusMedium
+    --bit-shp-radius-md: 0.375rem; //6px - borderRadiusLarge
+    --bit-shp-radius-lg: 0.5rem; //8px - borderRadiusXLarge
+    --bit-shp-radius-xl: 0.75rem; //12px - borderRadius2XLarge
+    --bit-shp-radius-2xl: 1rem; //16px - borderRadius3XLarge
+    --bit-shp-radius-full: 9999px; //borderRadiusCircular
+    // Per family: fields, buttons, tags, cards, menus and tooltips all take borderRadiusMedium;
+    // only the dialog surface goes up to borderRadiusXLarge.
+    --bit-shp-radius-control: 0.25rem; //4px
+    --bit-shp-radius-surface: 0.25rem; //4px - Card
+    --bit-shp-radius-popup: 0.25rem; //4px - MenuPopover / PopoverSurface / Tooltip
+    --bit-shp-radius-dialog: 0.5rem; //8px - DialogSurface
+    // A Fluent 2 button, tag and in-field chip are all the control corner; only the checkbox box is
+    // shaped apart, at borderRadiusSmall.
+    --bit-shp-radius-button: var(--bit-shp-radius-control);
+    --bit-shp-radius-chip: var(--bit-shp-radius-control);
+    --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
+    // strokeWidthThin / strokeWidthThick.
+    --bit-shp-brd-width: 0.0625rem; //1px
+    --bit-shp-brd-width-thick: 0.125rem; //2px
+    // Fluent 2's focus indicator is a 2px colorStrokeFocus2 stroke laid over a 1px colorStrokeFocus1
+    // one - which is exactly what the focus-ring recipe draws, given a 1px offset: the inner ring is
+    // --bit-clr-bg-pri and the outer is --bit-clr-*-focus, both of which colors.fluent2-*.scss sets
+    // to Fluent 2's own two.
+    --bit-shp-focus-ring-width: 0.125rem; //2px - strokeWidthThick
+    --bit-shp-focus-ring-offset: 0.0625rem; //1px - strokeWidthThin
+
+    /*---- Size ----*/
+    // Fluent 2 fixes its control geometry in px, and every one of those numbers is a whole step of
+    // the 8px spacing unit - so they are written as spacing multiples rather than as absolute
+    // lengths, and the compact/spacious density presets keep working on this preset.
+    // Heights: 24 / 32 / 40 - Button and Input small/medium/large.
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    // Button padding: spacingHorizontalS / M / L across, and the vertical padding that adds up to
+    // the heights above with the 16 / 20 / 22px label line boxes.
+    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.375); //3px
+    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
+    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    // Fluent 2 gives a labeled button a 96px floor (its small size uses 64px, which is not a token
+    // of its own here). Icon-only buttons opt out of the floor and stay square.
+    --bit-siz-ctrl-min-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 12); //96px
+    // Glyphs: the 16 / 20 / 24 icon ramp. rem, like type, so density does not shrink them.
+    --bit-siz-icon-sm: 1rem; //16px
+    --bit-siz-icon-md: 1.25rem; //20px
+    --bit-siz-icon-lg: 1.5rem; //24px
+    // Checkbox box / radio ring: Fluent 2 draws 16px at medium and 20px at large, i.e. half the
+    // control height, which is what the small size follows too.
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    // Popup list rows track the control heights - a Fluent 2 MenuItem is 32px.
+    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    // Tab: spacingVerticalM over and under the 20px label line box; the selection indicator is
+    // strokeWidthThicker, a step above the 2px Fluent 1 drew.
+    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+    --bit-siz-tab-indicator: 0.1875rem; //3px - strokeWidthThicker
+    // Divider: strokeWidthThin, re-declared here rather than inherited so a scoped fluent2 region
+    // resolves it against this preset's border width.
+    --bit-siz-divider: var(--bit-shp-brd-width);
+    // ProgressBar: 2px at medium and 4px at large are Fluent 2's two thicknesses; small keeps the
+    // ladder going with a hairline.
+    --bit-siz-track-sm: 0.0625rem; //1px
+    --bit-siz-track-md: 0.125rem; //2px
+    --bit-siz-track-lg: 0.25rem; //4px
+    // Spinner stroke: strokeWidthThick.
+    --bit-siz-spinner-stroke: 0.125rem; //2px
+    // Switch: the 40x20 track with a 14px thumb at the medium anchor; sm and lg scale around it. The
+    // knob's inset from the track edge is derived from the two, so it stays 2px - (20 - 14) / 2 less
+    // the 1px stroke - at every size.
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.25); //10px
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.25); //18px
+    // Slider handle: 16px at medium and 20px at large are Fluent 2's two sizes.
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+
+    /*---- Spacing / layout ----*/
+    // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
+    // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
+    // scoped fluent2 region resolves the inset against this preset's spacing unit.
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-layout-dialog-actions-direction: row;
+    --bit-layout-dialog-actions-justify: flex-end;
+    --bit-layout-dialog-actions-align: center;
+
+    /*---- Typography ----*/
+    // Segoe UI Variable is the Fluent 2 typeface (Windows 11 and the Office web apps ship it); the
+    // Text optical size is the one meant for UI copy. fontFamilyBase, which still names plain Segoe
+    // UI, is the fallback chain behind it.
+    --bit-tpg-font-family: "Segoe UI Variable Text", "Segoe UI Variable Static Text", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+    // Fluent 2 sets its control labels semibold (Button medium and large are fontWeightSemibold).
+    --bit-tpg-font-weight: 600;
+    // The font-size ramp is Fluent 2's, end to end: fontSizeBase100..600 then Hero700..900. There is
+    // no 18px step in Fluent 2, so the ramp's upper half moves up one Fluent 2 size each.
+    --bit-tpg-fs-2xs: 0.625rem; //10px - fontSizeBase100
+    --bit-tpg-fs-xs: 0.75rem; //12px - fontSizeBase200
+    --bit-tpg-fs-sm: 0.875rem; //14px - fontSizeBase300
+    --bit-tpg-fs-md: 1rem; //16px - fontSizeBase400
+    --bit-tpg-fs-lg: 1.25rem; //20px - fontSizeBase500
+    --bit-tpg-fs-xl: 1.5rem; //24px - fontSizeBase600
+    --bit-tpg-fs-2xl: 1.75rem; //28px - fontSizeHero700
+    --bit-tpg-fs-3xl: 2rem; //32px - fontSizeHero800
+    --bit-tpg-fs-4xl: 2.5rem; //40px - fontSizeHero900
+    // Segoe UI Variable is not tracked, and Fluent 2 does not upper-case control labels.
+    --bit-tpg-ctrl-letter-spacing: normal;
+    --bit-tpg-ctrl-text-transform: none;
+    // h1..h6 are already the Fluent 2 title ramp in the core stylesheet (Large Title 40/52, Title 1
+    // 32/40, Title 2 28/36, Title 3 24/32, Subtitle 1 20/28, Subtitle 2 16/22, all semibold), so
+    // they are left alone here. The BitText variants below are not: the core's carry tracking and an
+    // upper-cased button label that Fluent 2 has no use for.
+    --bit-tpg-subtitle1-font-size: 1rem; //16px - Subtitle 2
+    --bit-tpg-subtitle1-font-weight: 600;
+    --bit-tpg-subtitle1-line-height: 1.375; //22px
+    --bit-tpg-subtitle1-letter-spacing: 0;
+    --bit-tpg-subtitle2-font-size: 0.875rem; //14px - Body 1 Strong
+    --bit-tpg-subtitle2-font-weight: 600;
+    --bit-tpg-subtitle2-line-height: 1.4286; //20px
+    --bit-tpg-subtitle2-letter-spacing: 0;
+    --bit-tpg-body1-font-size: 1rem; //16px - Body 2
+    --bit-tpg-body1-font-weight: 400;
+    --bit-tpg-body1-line-height: 1.375; //22px
+    --bit-tpg-body1-letter-spacing: 0;
+    --bit-tpg-body2-font-size: 0.875rem; //14px - Body 1
+    --bit-tpg-body2-font-weight: 400;
+    --bit-tpg-body2-line-height: 1.4286; //20px
+    --bit-tpg-body2-letter-spacing: 0;
+    --bit-tpg-button-font-size: 0.875rem; //14px - the Button label
+    --bit-tpg-button-font-weight: 600;
+    --bit-tpg-button-line-height: 1.4286; //20px
+    --bit-tpg-button-letter-spacing: 0;
+    --bit-tpg-button-text-transform: none;
+    --bit-tpg-caption1-font-size: 0.75rem; //12px - Caption 1
+    --bit-tpg-caption1-font-weight: 400;
+    --bit-tpg-caption1-line-height: 1.3333; //16px
+    --bit-tpg-caption1-letter-spacing: 0;
+    --bit-tpg-caption2-font-size: 0.625rem; //10px - Caption 2
+    --bit-tpg-caption2-font-weight: 400;
+    --bit-tpg-caption2-line-height: 1.4; //14px
+    --bit-tpg-caption2-letter-spacing: 0;
+    // Fluent 2 has no overline style; it keeps Caption 2's metrics and the tracking an upper-cased
+    // eyebrow needs to stay legible.
+    --bit-tpg-overline-font-size: 0.625rem; //10px
+    --bit-tpg-overline-font-weight: 600;
+    --bit-tpg-overline-line-height: 1.4; //14px
+    --bit-tpg-overline-letter-spacing: 0.08333em;
+
+    /*---- Motion ----*/
+    // durationFaster / durationNormal / durationSlow, and the curves Fluent 2 names for state
+    // changes (curveEasyEase) and for popup entry and exit (curveDecelerateMax, curveAccelerateMax).
+    // Only the -full tokens are set: the plain ones are what the reduced-motion query collapses, and
+    // declaring them here would outweigh it.
+    --bit-mot-duration-short-full: 100ms;
+    --bit-mot-duration-full: 200ms;
+    --bit-mot-duration-long-full: 300ms;
+    --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+    --bit-mot-easing-decelerate: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.9, 0.1, 1, 0.2);
+}

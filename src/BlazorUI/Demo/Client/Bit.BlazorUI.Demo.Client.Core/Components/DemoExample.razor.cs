@@ -24,8 +24,14 @@ public partial class DemoExample
         showCode = RenderForMcpClient;
     }
 
+    // Only once: the code shown here comes from constant fields and the collapsed panel keeps it
+    // mounted, so there is never a second thing to highlight. Re-running it on every render made
+    // any interaction inside any example re-tokenize the code of every example on the page, since
+    // the state change re-renders the whole demo and with it all of its DemoExample children.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender is false) return;
+
         await JSRuntime.InvokeVoid("highlightSnippet", _codeElementId);
     }
 

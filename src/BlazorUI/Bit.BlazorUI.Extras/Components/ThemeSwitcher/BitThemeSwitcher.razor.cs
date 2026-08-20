@@ -2,33 +2,42 @@
 
 /// <summary>
 /// BitThemeSwitcher is the chrome for the two choices a themed app usually puts in its header: which design
-/// system it is dressed in (Fluent, Material, Cupertino - see <see cref="BitExtraThemePresets"/>) and whether
-/// that design system is showing its light or its dark scheme. Both halves resolve to one <c>bit-theme</c>
-/// name applied through <see cref="BitThemeManager"/>, so the two controls stay two views of a single piece
-/// of state: switching the design system keeps the current scheme, and toggling the scheme keeps the current
-/// design system.
+/// system it is dressed in (Fluent, Fluent 2, Material, Cupertino - see <see cref="BitExtraThemePresets"/>)
+/// and whether that design system is showing its light or its dark scheme. Both halves resolve to one
+/// <c>bit-theme</c> name applied through <see cref="BitThemeManager"/>, so the two controls stay two views of
+/// a single piece of state: switching the design system keeps the current scheme, and toggling the scheme
+/// keeps the current design system.
 /// </summary>
 /// <remarks>
-/// The Material and Cupertino design systems need their stylesheet bundle linked after the core one to have
-/// any effect (see <see cref="BitExtraThemePresets"/>); offering an item whose bundle the host page does not
-/// link leaves the app on the Fluent defaults.
+/// The Fluent 2, Material and Cupertino design systems need their stylesheet bundle linked after the core one
+/// to have any effect (see <see cref="BitExtraThemePresets"/>); offering an item whose bundle the host page
+/// does not link leaves the app on the Fluent defaults.
 /// </remarks>
 public partial class BitThemeSwitcher : BitComponentBase
 {
     /// <summary>
-    /// The design systems offered when <see cref="DesignSystems"/> is not set: the three that ship with the
+    /// The design systems offered when <see cref="DesignSystems"/> is not set: the four that ship with the
     /// library. Fluent comes first, and is therefore also the fallback for an applied theme that none of the
     /// items claim (a custom preset, or the <c>system</c> pseudo-preset) - it is the design system the core
     /// stylesheet carries, so it is what such a theme is actually painted with.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Fluent's pair is spelled <c>light</c> / <c>dark</c> rather than <c>fluent-light</c> / <c>fluent-dark</c>
     /// (which name the same palettes) because those two are the theme names
     /// <see cref="BitThemeManager.ToggleDarkLightAsync"/> flips between by default - see the toggle handler.
+    /// </para>
+    /// <para>
+    /// Fluent 2 follows Fluent rather than sitting at the end: it is the same design language one generation
+    /// on, so the two read as a pair. <c>fluent</c> is a prefix of <c>fluent2</c> as plain text, but
+    /// <see cref="FindDesignSystem"/> matches a family on <c>"{Value}-"</c>, and <c>fluent2-dark</c> does not
+    /// start with <c>fluent-</c> - so neither of the two ever claims the other's theme names.
+    /// </para>
     /// </remarks>
     public static readonly IReadOnlyList<BitThemeSwitcherItem> DefaultDesignSystems =
     [
         new() { Text = "Fluent", Value = "fluent", LightTheme = BitThemePresets.Light, DarkTheme = BitThemePresets.Dark },
+        new() { Text = "Fluent 2", Value = BitExtraThemePresets.Fluent2, LightTheme = BitExtraThemePresets.Fluent2Light, DarkTheme = BitExtraThemePresets.Fluent2Dark },
         new() { Text = "Material", Value = BitExtraThemePresets.Material, LightTheme = BitExtraThemePresets.MaterialLight, DarkTheme = BitExtraThemePresets.MaterialDark },
         new() { Text = "Cupertino", Value = BitExtraThemePresets.Cupertino, LightTheme = BitExtraThemePresets.CupertinoLight, DarkTheme = BitExtraThemePresets.CupertinoDark },
     ];

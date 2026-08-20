@@ -20,20 +20,33 @@
         <BitButton IconOnly FixedColor
                    Size="BitSize.Small"
                    AriaLabel="On this page"
+                   Class="side-rail-fab-btn"
                    Variant="BitVariant.Text"
                    Color="BitColor.SecondaryBackground"
                    IconName="@BitIconName.BulletedList"
-                   OnClick="() => _isPanelOpen = true" />
+                   OnClick="OpenPanel" />
     </div>
 
+    @* BitPanel renders its content whether it is open or not, so a second copy of the list would
+       otherwise sit in every page at every width - including the wide ones, where the panel can
+       never open. It is mounted on the first open and stays mounted from then on, so that closing
+       it still has something to slide out. *@
     <BitPanel @bind-IsOpen="_isPanelOpen" Position="BitPanelPosition.End" Size="280">
-        <nav class="side-rail-panel" aria-label="On this page">
-            @_railContent
-        </nav>
+        @if (_hasPanelOpened)
+        {
+            <nav class="side-rail-panel" aria-label="On this page">
+                @_railContent
+            </nav>
+        }
     </BitPanel>
 }
 
 @code {
+    @* data-rail-item is how the scroll spy finds the entry to emphasize: the highlight is a class
+       and an aria-current, and moving those in the DOM costs a fraction of re-rendering the list on
+       every section the reader scrolls past. What is rendered here is the starting state, kept
+       right by OnActiveItemChanged, so a list mounted mid-scroll is born pointing at the right
+       entry; from there the spy takes over. *@
     private RenderFragment _railContent =>
         @<text>
             <BitText Element="p" Typography="BitTypography.Overline" Color="BitColor.TertiaryForeground">
@@ -43,7 +56,7 @@
                 @foreach (var item in _items)
                 {
                     var isActive = item.Id == _activeItemId;
-                    <li class="@(isActive ? "active" : null)">
+                    <li data-rail-item="@item.Id" class="@(isActive ? "active" : null)">
                         <BitLink OnClick="@(() => ScrollToItem(item))" NoUnderline Color="BitColor.Info" Class="side-rail-link"
                                  aria-current="@(isActive ? "location" : null)">
                             <BitText Typography="BitTypography.Body2" Align="BitTextAlign.Start">

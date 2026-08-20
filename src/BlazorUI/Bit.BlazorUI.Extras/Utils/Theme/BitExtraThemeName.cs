@@ -2,8 +2,8 @@
 
 /// <summary>
 /// <see cref="BitThemeName"/> factories for the design-system presets that ship with this package, so the
-/// Material and Cupertino names slot into <see cref="BitThemeManager.SetThemeAsync(BitThemeName)"/> the same
-/// way the core <see cref="BitThemeName.Fluent"/> family does.
+/// Fluent 2, Material and Cupertino names slot into <see cref="BitThemeManager.SetThemeAsync(BitThemeName)"/>
+/// the same way the core <see cref="BitThemeName.Fluent"/> family does.
 /// </summary>
 /// <remarks>
 /// A separate type rather than more members on <see cref="BitThemeName"/>: that struct lives in the core
@@ -14,6 +14,15 @@
 /// </remarks>
 public static class BitExtraThemeName
 {
+    /// <summary>Fluent 2 base preset (<c>"fluent2"</c>; requires <c>bit.blazorui.fluent2.css</c>).</summary>
+    public static BitThemeName Fluent2 { get; } = BitThemeName.Custom(BitExtraThemePresets.Fluent2);
+
+    /// <summary>Fluent 2 light preset (<c>"fluent2-light"</c>).</summary>
+    public static BitThemeName Fluent2Light { get; } = BitThemeName.Custom(BitExtraThemePresets.Fluent2Light);
+
+    /// <summary>Fluent 2 dark preset (<c>"fluent2-dark"</c>).</summary>
+    public static BitThemeName Fluent2Dark { get; } = BitThemeName.Custom(BitExtraThemePresets.Fluent2Dark);
+
     /// <summary>Material base preset (<c>"material"</c>; requires <c>bit.blazorui.material.css</c>).</summary>
     public static BitThemeName Material { get; } = BitThemeName.Custom(BitExtraThemePresets.Material);
 

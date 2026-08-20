@@ -42,6 +42,7 @@ public static class ScssCompilerService
             "../../../Bit.BlazorUI/Styles/Fluent/bit.blazorui.fluent-dark.scss:../../../Bit.BlazorUI/wwwroot/styles/bit.blazorui.fluent-dark.css",
             "../../../Bit.BlazorUI/Styles/Fluent/bit.blazorui.fluent-light.scss:../../../Bit.BlazorUI/wwwroot/styles/bit.blazorui.fluent-light.css",
             "../../../Bit.BlazorUI.Extras/Styles/bit.blazorui.extras.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.extras.css",
+            "../../../Bit.BlazorUI.Extras/Styles/Fluent2/bit.blazorui.fluent2.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.fluent2.css",
             "../../../Bit.BlazorUI.Extras/Styles/Material/bit.blazorui.material.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.material.css",
             "../../../Bit.BlazorUI.Extras/Styles/Cupertino/bit.blazorui.cupertino.scss:../../../Bit.BlazorUI.Extras/wwwroot/styles/bit.blazorui.cupertino.css",
             "../../../Bit.BlazorUI.Icons/Styles/bit.blazorui.icons.scss:../../../Bit.BlazorUI.Icons/wwwroot/styles/bit.blazorui.icons.css",

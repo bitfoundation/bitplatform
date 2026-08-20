@@ -6,7 +6,7 @@
 
 <DemoPage Name="ThemeSwitcher"
           SecondaryNames="@(["DesignSystem", "DarkMode", "Theming"])"
-          Description="BitThemeSwitcher is the chrome for the two choices a themed app usually puts in its header: which design system it is dressed in (Fluent, Material, Cupertino) and whether that design system is showing its light or its dark scheme. Both halves resolve to one bit-theme name applied through BitThemeManager, so switching the design system keeps the current scheme and toggling the scheme keeps the current design system."
+          Description="BitThemeSwitcher is the chrome for the two choices a themed app usually puts in its header: which design system it is dressed in (Fluent, Fluent 2, Material, Cupertino) and whether that design system is showing its light or its dark scheme. Both halves resolve to one bit-theme name applied through BitThemeManager, so switching the design system keeps the current scheme and toggling the scheme keeps the current design system."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           GitHubExtrasUrl="ThemeSwitcher/BitThemeSwitcher.razor.cs"
@@ -25,16 +25,16 @@
         </BitText>
         <br />
         <BitText>
-            The Material and Cupertino design systems are override-only stylesheet bundles that ship in that same
+            The Fluent 2, Material and Cupertino design systems are override-only stylesheet bundles that ship in that same
             package, so offering them only does something on a page that links the bundle after the core stylesheet
             (see the <BitLink Href="/theming#presets">Presets</BitLink> section of the Theming page). This website
-            links both, which is why the switchers below actually re-skin it.
+            links all three, which is why the switchers below actually re-skin it.
         </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
             <div>
-                The default switcher: the three packaged design systems, and the light/dark toggle. It acts on the
+                The default switcher: the four packaged design systems, and the light/dark toggle. It acts on the
                 document, so a pick here re-skins this whole website live - exactly like the one in the site header,
                 which is this very component.
             </div>

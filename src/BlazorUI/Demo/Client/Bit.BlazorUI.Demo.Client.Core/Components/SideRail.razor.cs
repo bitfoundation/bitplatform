@@ -4,6 +4,8 @@ public partial class SideRail
 {
     private bool _hadNotes;
     private bool _isPanelOpen;
+    private bool _hasPanelOpened;
+    private bool _shouldScanSections = true;
     private string? _activeItemId;
     private List<SideRailItem> _items { get; set; } = [];
     private SideRailItem[] _sideRailItems { get; set; } = [];
@@ -19,6 +21,17 @@ public partial class SideRail
     [Parameter] public bool HasNotes { get; set; }
 
 
+    protected override Task OnParamsSetAsync()
+    {
+        // A render the hosting page drives can bring a different set of sections with it, so it is
+        // the one kind of render worth re-reading the DOM after. The renders the rail schedules for
+        // itself never are - and those are the frequent ones - so scanning is gated on this flag
+        // instead of running after every render.
+        _shouldScanSections = true;
+
+        return base.OnParamsSetAsync();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -29,33 +42,53 @@ public partial class SideRail
             await JSRuntime.RegisterWindowResizeListener(_resizeListenerId, _dotnetObj, nameof(OnWindowResize));
         }
 
-        var sideRailItems = await JSRuntime.GetSideRailItems();
-
-        if (ItemsChanged(sideRailItems, _sideRailItems) || _hadNotes != HasNotes)
+        if (_shouldScanSections)
         {
-            // Persist the snapshot the change-check compares against; otherwise ItemsChanged stays
-            // true forever and the StateHasChanged below schedules an endless render loop (which in
-            // WASM runs entirely in microtasks and freezes the browser tab).
-            _sideRailItems = sideRailItems;
-            _hadNotes = HasNotes;
-
-            _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
-            if (HasNotes)
-            {
-                _items.Insert(0, new() { Id = "notes-section", Title = "Notes" });
-            }
-
-            StateHasChanged();
-
-            // (Re)arm the spy with the new id list; it reports back the entry to emphasize as the
-            // reader scrolls, starting with an immediate report for the current scroll position.
-            await JSRuntime.RegisterSideRailScrollSpy(_scrollSpyId, _dotnetObj!, nameof(OnActiveItemChanged), [.. _items.Select(i => i.Id)]);
+            _shouldScanSections = false;
+            await ScanSections();
         }
 
         await base.OnAfterRenderAsync(firstRender);
     }
 
 
+
+    /// <summary>
+    /// Reads the section headings out of the DOM and rebuilds the rail from them. Only called when
+    /// the sections can actually have changed: a render driven by the page, or the spy reporting
+    /// that the elements it was watching have left the document (see <see cref="OnSectionsChanged"/>).
+    /// </summary>
+    private async Task ScanSections()
+    {
+        var sideRailItems = await JSRuntime.GetSideRailItems();
+
+        if (ItemsChanged(sideRailItems, _sideRailItems) is false && _hadNotes == HasNotes) return;
+
+        // Persist the snapshot the change-check compares against; otherwise ItemsChanged stays
+        // true forever and the StateHasChanged below schedules an endless render loop (which in
+        // WASM runs entirely in microtasks and freezes the browser tab).
+        _sideRailItems = sideRailItems;
+        _hadNotes = HasNotes;
+
+        _items = [.. sideRailItems, new() { Id = "api-section", Title = "API" }, new() { Id = "feedback-section", Title = "Feedback" }];
+        if (HasNotes)
+        {
+            _items.Insert(0, new() { Id = "notes-section", Title = "Notes" });
+        }
+
+        StateHasChanged();
+
+        // (Re)arm the spy with the new id list; it moves the highlight in the DOM itself and reports
+        // back where the reader is, starting with an immediate report for the current scroll position.
+        await JSRuntime.RegisterSideRailScrollSpy(_scrollSpyId, _dotnetObj!, nameof(OnActiveItemChanged),
+                                                  nameof(OnSectionsChanged), [.. _items.Select(i => i.Id)]);
+    }
+
+    private void OpenPanel()
+    {
+        _isPanelOpen = true;
+        _hasPanelOpened = true;
+    }
 
     private async Task ScrollToItem(SideRailItem targetItem)
     {
@@ -70,7 +103,7 @@ public partial class SideRail
 
     private static bool ItemsChanged(SideRailItem[] newItems, SideRailItem[] oldItems)
     {
-        if(newItems is null || oldItems is null) return false;
+        if (newItems is null || oldItems is null) return true;
 
         if (newItems.Length != oldItems.Length) return true;
 
@@ -84,14 +117,26 @@ public partial class SideRail
 
 
 
+    /// <summary>
+    /// The spy has already emphasized the entry in the DOM - moving a class is not worth a render of
+    /// the whole list on every section the reader scrolls past - so this only keeps the C# copy of
+    /// the state in step, for the next list the rail does render (the panel opening, the sections
+    /// changing) to come up already pointing at the right entry.
+    /// </summary>
     [JSInvokable]
-    public async Task OnActiveItemChanged(string? activeItemId)
+    public void OnActiveItemChanged(string? activeItemId)
     {
-        if (_activeItemId == activeItemId) return;
-
         _activeItemId = activeItemId;
+    }
 
-        await InvokeAsync(StateHasChanged);
+    /// <summary>
+    /// The spy reports that the sections it was watching have left the document - a pivot tab swap,
+    /// which nothing else announces to the rail.
+    /// </summary>
+    [JSInvokable]
+    public Task OnSectionsChanged()
+    {
+        return InvokeAsync(ScanSections);
     }
 
     [JSInvokable]

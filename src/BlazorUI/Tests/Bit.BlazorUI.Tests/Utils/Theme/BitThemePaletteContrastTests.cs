@@ -26,6 +26,8 @@ public sealed class BitThemePaletteContrastTests
     [DataTestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss")]
     [DataRow("Fluent", "colors.fluent-dark.scss")]
+    [DataRow("Fluent2", "colors.fluent2-light.scss")]
+    [DataRow("Fluent2", "colors.fluent2-dark.scss")]
     [DataRow("Material", "colors.material-light.scss")]
     [DataRow("Material", "colors.material-dark.scss")]
     [DataRow("Cupertino", "colors.cupertino-light.scss")]

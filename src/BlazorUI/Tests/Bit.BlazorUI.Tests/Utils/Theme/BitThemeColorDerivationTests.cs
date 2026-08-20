@@ -606,6 +606,8 @@ public sealed class BitThemeColorDerivationTests
     [DataTestMethod]
     [DataRow("Fluent", "colors.fluent-light.scss", BitThemeColorScheme.Light)]
     [DataRow("Fluent", "colors.fluent-dark.scss", BitThemeColorScheme.Dark)]
+    [DataRow("Fluent2", "colors.fluent2-light.scss", BitThemeColorScheme.Light)]
+    [DataRow("Fluent2", "colors.fluent2-dark.scss", BitThemeColorScheme.Dark)]
     [DataRow("Material", "colors.material-light.scss", BitThemeColorScheme.Light)]
     [DataRow("Material", "colors.material-dark.scss", BitThemeColorScheme.Dark)]
     [DataRow("Cupertino", "colors.cupertino-light.scss", BitThemeColorScheme.Light)]

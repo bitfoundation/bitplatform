@@ -42,14 +42,14 @@ public class BitThemeSwitcherTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitThemeSwitcherShouldOfferTheThreePackagedDesignSystems()
+    public void BitThemeSwitcherShouldOfferTheFourPackagedDesignSystems()
     {
         RegisterServices();
 
         var component = RenderComponent<BitThemeSwitcher>();
 
         CollectionAssert.AreEqual(
-            new[] { "fluent", "material", "cupertino" },
+            new[] { "fluent", "fluent2", "material", "cupertino" },
             BitThemeSwitcher.DefaultDesignSystems.Select(i => i.Value).ToArray());
 
         // Fluent's pair is the core light/dark one rather than fluent-light / fluent-dark: those two are what
@@ -58,8 +58,10 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual(BitThemePresets.Light, fluent.LightTheme);
         Assert.AreEqual(BitThemePresets.Dark, fluent.DarkTheme);
 
-        Assert.AreEqual(BitExtraThemePresets.MaterialDark, BitThemeSwitcher.DefaultDesignSystems[1].DarkTheme);
-        Assert.AreEqual(BitExtraThemePresets.CupertinoLight, BitThemeSwitcher.DefaultDesignSystems[2].LightTheme);
+        Assert.AreEqual(BitExtraThemePresets.Fluent2Light, BitThemeSwitcher.DefaultDesignSystems[1].LightTheme);
+        Assert.AreEqual(BitExtraThemePresets.Fluent2Dark, BitThemeSwitcher.DefaultDesignSystems[1].DarkTheme);
+        Assert.AreEqual(BitExtraThemePresets.MaterialDark, BitThemeSwitcher.DefaultDesignSystems[2].DarkTheme);
+        Assert.AreEqual(BitExtraThemePresets.CupertinoLight, BitThemeSwitcher.DefaultDesignSystems[3].LightTheme);
 
         Assert.AreEqual("Fluent", SelectedDesignSystem(component));
     }
@@ -87,6 +89,10 @@ public class BitThemeSwitcherTests : BunitTestContext
     [DataRow("material", "Material")]
     [DataRow("dark", "Fluent")]
     [DataRow("fluent-light", "Fluent")]
+    // Fluent and Fluent 2 share a prefix but not a token, so neither claims the other's names.
+    [DataRow("fluent2", "Fluent 2")]
+    [DataRow("fluent2-light", "Fluent 2")]
+    [DataRow("fluent2-dark", "Fluent 2")]
     // Neither a custom preset nor the system pseudo-preset is claimed by any item, so both fall back to the
     // first one - the design system the core stylesheet actually paints them with.
     [DataRow("acme-dark", "Fluent")]

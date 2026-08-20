@@ -1,0 +1,25 @@
+// Fluent 2 preset - dark elevation. The same ambient+key ramp as the light palette, over the darker
+// alphas Fluent 2 uses on a dark surface: colorNeutralShadowAmbient rgba(0,0,0,0.24) and
+// colorNeutralShadowKey rgba(0,0,0,0.28). See shadows.fluent2-light.scss for the level-per-family
+// mapping.
+:root[bit-theme="fluent2-dark"],
+:root [bit-theme="fluent2-dark"] {
+    --bit-shd-cal: 0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28); //shadow16
+    --bit-shd-cal2: 0 0 8px rgba(0, 0, 0, 0.24), 0 14px 28px rgba(0, 0, 0, 0.28); //shadow28
+
+    --bit-shd-sm: 0 0 2px rgba(0, 0, 0, 0.24), 0 1px 2px rgba(0, 0, 0, 0.28); //shadow2
+    --bit-shd-nm: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28); //shadow4
+    --bit-shd-md: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
+    --bit-shd-lg: 0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28); //shadow16
+    --bit-shd-xl: 0 0 8px rgba(0, 0, 0, 0.24), 0 14px 28px rgba(0, 0, 0, 0.28); //shadow28
+    --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
+
+    --bit-shd-card: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28); //shadow4
+    --bit-shd-popup: 0 0 2px rgba(0, 0, 0, 0.24), 0 8px 16px rgba(0, 0, 0, 0.28); //shadow16
+    --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
+    --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
+    --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
+    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
+    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28); //shadow4
+    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.24), 0 -2px 4px rgba(0, 0, 0, 0.28); //shadow4, mirrored
+}

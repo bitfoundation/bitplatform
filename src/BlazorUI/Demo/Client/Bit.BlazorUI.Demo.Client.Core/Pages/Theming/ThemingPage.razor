@@ -24,7 +24,7 @@
             Using bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
             the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br /><br />
-            The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, packaged Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package (one extra stylesheet link each &mdash; see <i>Presets</i>), and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
+            The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, packaged Fluent&nbsp;2, Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package (one extra stylesheet link each &mdash; see <i>Presets</i>), and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
         </BitText>
 
         <br /><br />
@@ -405,7 +405,7 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <BitText>
-                <BitTag>BitThemePresets</BitTag> exposes the built-in theme names, and <BitTag>BitExtraThemePresets</BitTag> (in the <BitTag>Bit.BlazorUI.Extras</BitTag> package, next to the stylesheet bundles that implement them) the Material and Cupertino ones. Use them with <BitTag>SetThemeAsync</BitTag>, <BitTag>BitThemeName</BitTag>, or directly as the <BitTag>bit-theme</BitTag> attribute value.
+                <BitTag>BitThemePresets</BitTag> exposes the built-in theme names, and <BitTag>BitExtraThemePresets</BitTag> (in the <BitTag>Bit.BlazorUI.Extras</BitTag> package, next to the stylesheet bundles that implement them) the Fluent&nbsp;2, Material and Cupertino ones. Use them with <BitTag>SetThemeAsync</BitTag>, <BitTag>BitThemeName</BitTag>, or directly as the <BitTag>bit-theme</BitTag> attribute value.
             </BitText>
 
             <br />
@@ -424,6 +424,9 @@ public static class BitThemePresets
 // Bit.BlazorUI.Extras - the design systems that ship as their own stylesheet bundle
 public static class BitExtraThemePresets
 {
+    public const string Fluent2        = "fluent2";          // alias for fluent2-light
+    public const string Fluent2Light   = "fluent2-light";
+    public const string Fluent2Dark    = "fluent2-dark";
     public const string Material       = "material";         // alias for material-light
     public const string MaterialLight  = "material-light";
     public const string MaterialDark   = "material-dark";
@@ -435,19 +438,26 @@ public static class BitExtraThemePresets
             <br />
 
             <BitText>
-                The Fluent presets are self-contained in <BitTag>bit.blazorui.css</BitTag>. The Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package as separate override-only bundles that re-value the global tokens under <BitTag>:root[bit-theme="&hellip;"]</BitTag> &mdash; their palettes come out of the same seed-derivation pipeline as the packaged Fluent colors (so they clear the same WCAG contrast gates), and their shape, size, typography, and motion values follow the Material&nbsp;3 spec and the Apple HIG respectively. Link the bundle you use <b>after</b> the core stylesheet and set the <BitTag>bit-theme</BitTag> attribute; nothing else is involved:
+                The Fluent presets are self-contained in <BitTag>bit.blazorui.css</BitTag>. The Fluent&nbsp;2, Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package as separate override-only bundles that re-value the global tokens under <BitTag>:root[bit-theme="&hellip;"]</BitTag> &mdash; their palettes come out of the same seed-derivation pipeline as the packaged Fluent colors (so they clear the same WCAG contrast gates), and their shape, size, typography, and motion values follow the published Fluent&nbsp;2 design tokens, the Material&nbsp;3 spec and the Apple HIG respectively. Link the bundle you use <b>after</b> the core stylesheet and set the <BitTag>bit-theme</BitTag> attribute; nothing else is involved:
             </BitText>
 
             <br />
 
             <BitText>
-                Fonts: the Material ramp is Roboto, which only Android and ChromeOS ship - the <BitTag>Bit.BlazorUI.Assets</BitTag> stylesheet (<BitTag>bit.blazorui.assets.css</BitTag>, see <i>Getting Started</i>) bundles a Roboto <BitTag>@@font-face</BitTag> next to its Segoe UI one, so link it to get the Material type on every device. The Cupertino ramp is San Francisco, which is not redistributable: Apple devices render it natively and everything else falls back to Helvetica / Arial, as Apple's own sites do.
+                Fluent&nbsp;2 is the one preset that is a generation of the core theme rather than a different design language, so it reads as a retune: the control corner grows from 2px to 4px (<BitTag>borderRadiusMedium</BitTag>) with an 8px dialog, the greys lose the warmth Fluent&nbsp;1 gave them, the brand moves to <BitTag>#0F6CBD</BitTag> (<BitTag>brandWeb.80</BitTag>), the flat callout shadow becomes Fluent&nbsp;2's ambient&nbsp;+&nbsp;key pair (<BitTag>shadow2</BitTag>&hellip;<BitTag>shadow64</BitTag>), controls sit on the 24&nbsp;/&nbsp;32&nbsp;/&nbsp;40 height ladder with 96px-wide labeled buttons and 16&nbsp;/&nbsp;20&nbsp;/&nbsp;24 glyphs, labels go semibold, and the focus indicator becomes one <BitTag>colorStrokeFocus2</BitTag> stroke (black on light, white on dark) instead of the role's own color.
+            </BitText>
+
+            <br />
+
+            <BitText>
+                Fonts: the Material ramp is Roboto, which only Android and ChromeOS ship - the <BitTag>Bit.BlazorUI.Assets</BitTag> stylesheet (<BitTag>bit.blazorui.assets.css</BitTag>, see <i>Getting Started</i>) bundles a Roboto <BitTag>@@font-face</BitTag> next to its Segoe UI one, so link it to get the Material type on every device. The Cupertino ramp is San Francisco, which is not redistributable: Apple devices render it natively and everything else falls back to Helvetica / Arial, as Apple's own sites do. The Fluent&nbsp;2 ramp asks for Segoe UI Variable first (Windows&nbsp;11 ships it) and falls back to the same Segoe UI chain the core Fluent theme uses.
             </BitText>
 
             <br />
 
             <CodeBox Language="cshtml">&lt;link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" /&gt;
 &lt;link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" /&gt;
+&lt;!-- or: _content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css --&gt;
 &lt;!-- or: _content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css --&gt;
 
 &lt;html bit-theme="material-dark"&gt;</CodeBox>
@@ -544,7 +554,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
             <br />
 
             <BitText>
-                Every value that a design system decides once &mdash; the type ramp and weights, the corner radius of each component family, the elevation of each surface family, control heights, icon and checkbox sizes, the spinner stroke, entry/exit motion curves, the disabled alpha &mdash; is a global token that the component CSS reads and never hard-codes. That is what makes a Material or a Cupertino look a <i>stylesheet</i> rather than a fork: a preset is one <BitTag>:root[bit-theme="&hellip;"]</BitTag> block that re-values the tokens, and every component follows in step. The packaged Material and Cupertino presets (see <i>Presets</i> above) are built exactly this way; the anatomy below is for when you want the same treatment for another design system &mdash; or a house variant of those two.
+                Every value that a design system decides once &mdash; the type ramp and weights, the corner radius of each component family, the elevation of each surface family, control heights, icon and checkbox sizes, the spinner stroke, entry/exit motion curves, the disabled alpha &mdash; is a global token that the component CSS reads and never hard-codes. That is what makes a Material or a Cupertino look a <i>stylesheet</i> rather than a fork: a preset is one <BitTag>:root[bit-theme="&hellip;"]</BitTag> block that re-values the tokens, and every component follows in step. The packaged Fluent&nbsp;2, Material and Cupertino presets (see <i>Presets</i> above) are built exactly this way; the anatomy below is for when you want the same treatment for another design system &mdash; or a house variant of those three.
             </BitText>
 
             <br />
@@ -645,7 +655,7 @@ await BitThemeManager.ApplyBitThemeAsync(BitThemeUtilities.Merge(material, brand
             <br />
 
             <BitText>
-                <b>What stays per-component.</b> A preset re-values tokens and nothing else: it never selects a component class, because anything a design system decides differently has to be a token the components already read &mdash; the packaged Material and Cupertino bundles are pure <BitTag>:root[bit-theme="&hellip;"]</BitTag> token blocks, down to their pill button corners, their switch geometry and their slider handles. What stays per-component is geometry no design system has an opinion about (a clock dial, an avatar coin ladder, the loader shapes, the length of a slider): it is exposed as that component's own <BitTag>--bit-&lt;cmp&gt;-*</BitTag> variables (see <i>Per-component variables</i>) for an application to retune on the instances it wants, not for a theme to fork the library from.
+                <b>What stays per-component.</b> A preset re-values tokens and nothing else: it never selects a component class, because anything a design system decides differently has to be a token the components already read &mdash; the packaged Fluent&nbsp;2, Material and Cupertino bundles are pure <BitTag>:root[bit-theme="&hellip;"]</BitTag> token blocks, down to their pill button corners, their switch geometry and their slider handles. What stays per-component is geometry no design system has an opinion about (a clock dial, an avatar coin ladder, the loader shapes, the length of a slider): it is exposed as that component's own <BitTag>--bit-&lt;cmp&gt;-*</BitTag> variables (see <i>Per-component variables</i>) for an application to retune on the instances it wants, not for a theme to fork the library from.
             </BitText>
         </BitCard>
 
