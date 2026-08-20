@@ -224,6 +224,9 @@
         border: 1px solid var(--bm-accent-line);
     }
 
+    /* Filled with the accent rather than with the accent-to-secondary gradient the boxes use: this
+       one carries a word, and white does not clear 4.5:1 over the light half of that gradient. The
+       gradient is decoration here; the label is not. */
     .nest-btn {
         border: none;
         cursor: pointer;
@@ -231,7 +234,7 @@
         padding: .6rem 1.1rem;
         border-radius: 8px;
         color: var(--bm-primary-text);
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
+        background: var(--bm-primary);
     }
 
     /* A fixed stage with a marked centre, so "the pin slipped off its anchor" is visible rather

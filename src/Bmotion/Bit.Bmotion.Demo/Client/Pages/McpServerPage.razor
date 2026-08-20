@@ -1143,13 +1143,18 @@
         opacity: .8;
     }
 
-    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+    /* minmax(0, 1fr) rather than the implicit auto track: an auto column is sized from its
+       contents, so one long resource name makes the row wider than the column it is in and the
+       whole page scrolls sideways on a phone. */
+    .mcp-resources { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem; }
 
-    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; }
+    .mcp-resources li { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: baseline; min-width: 0; }
+
+    .mcp-resources code, .mcp-resources span { min-width: 0; overflow-wrap: anywhere; }
 
     .mcp-resources span { font-size: .8125rem; color: var(--bit-clr-fg-sec); }
 
-    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; gap: .6rem; }
+    .mcp-principles { margin: 1rem 0 1.25rem; padding-left: 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; }
 
     .mcp-principles li { color: var(--bit-clr-fg-sec); }
 
