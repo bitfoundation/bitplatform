@@ -1,6 +1,8 @@
 ﻿@* Per-parameter keep-alive: /notes/{id:int} is declared KeepAlive with KeepAliveMax="2", so each
    visited id keeps its OWN instance up to the budget and the least-recently-used one is evicted
-   beyond it. The instance stamp changes only when this note was evicted and rebuilt. *@
+   beyond it. The instance stamp changes only when this note was evicted and rebuilt - or when
+   one of the resets below (ClearKeepAlive, ClearKeepAlive(includeActive: true), ReloadAsync)
+   threw the instance away. *@
 
 @inject IBrouter brouter
 
@@ -19,13 +21,18 @@
     <BrouterLink Href="/notes/2" class="btn">Note 2</BrouterLink>
     <BrouterLink Href="/notes/3" class="btn">Note 3</BrouterLink>
     <button @onclick="@(() => brouter.ClearKeepAlive())">ClearKeepAlive()</button>
+    <button @onclick="@(() => brouter.ClearKeepAlive(includeActive: true))">ClearKeepAlive(includeActive: true)</button>
+    <button @onclick="@(() => brouter.ReloadAsync().AsTask())">ReloadAsync()</button>
 </div>
 
 <p class="muted">
     Edit notes 1 and 2, then visit note 3: the budget is 2, so the least-recently-used note is
     evicted and returns with a fresh instance stamp and an empty draft. The cache key is the
     template's parameter values, so query-string variations share one instance.
-    <code>ClearKeepAlive()</code> disposes every retained page across the app at once.
+    <code>ClearKeepAlive()</code> disposes every retained page across the app at once - but never the
+    visible one. <code>ClearKeepAlive(includeActive: true)</code> rebuilds that one too (same URL, new
+    instance stamp, empty draft, no pipeline), and <code>ReloadAsync()</code> does the same while
+    re-running guards and loaders.
 </p>
 
 @code {

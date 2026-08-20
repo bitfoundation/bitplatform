@@ -208,6 +208,10 @@
                 <td><code>RevalidateAsync()</code> appears to do nothing</td>
                 <td>It's a no-op when no route in the current chain declares a <code>Loader</code>.</td>
             </tr>
+            <tr>
+                <td><code>ReloadAsync()</code> appears to do nothing</td>
+                <td>A reload stands down while a navigation is in flight (that navigation is already rebuilding the page the user is heading to) and does nothing when no route is committed - a not-found fallback or an error boundary on screen. Otherwise it always rebuilds - it evicts this URL's cached results first, so a <code>StaleTime</code> can't quietly serve the data the discarded instances were showing.</td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -261,6 +265,10 @@
             <tr>
                 <td>Memory grows as the user browses</td>
                 <td>Retained pages accumulate up to their budget. Call <code>ClearKeepAlive()</code> on sign-out or memory pressure - and check that every <code>OnNavigating</code>/<code>OnNavigated</code>/<code>OnError</code> subscription is unsubscribed in <code>Dispose</code>.</td>
+            </tr>
+            <tr>
+                <td>The page keeps the previous user's / tenant's state after switching</td>
+                <td>Re-navigating to the current URL can't fix it: Blazor reuses a component whose route and parameters didn't change, so the stale instance stays (the built-in <code>Router</code> behaves the same way). Use <code>ClearKeepAlive(includeActive: true)</code> to rebuild the visible page in place, or <code>ReloadAsync()</code> when its loaded data is stale too.</td>
             </tr>
         </tbody>
     </table>

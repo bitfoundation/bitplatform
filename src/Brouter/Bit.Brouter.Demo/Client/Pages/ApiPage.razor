@@ -138,9 +138,11 @@
             <tr><td>ResolveUrl(name, parameters, query)</td><td>The same substitution, returned as a string instead of navigated to.</td></tr>
             <tr><td>NavigateWithQuery(mutate, replace = true)</td><td>Functional query update over a <code>BrouterQueryBuilder</code>; untouched parameters and the fragment survive.</td></tr>
             <tr><td>RevalidateAsync()</td><td>Re-runs the current chain's loaders in place. No URL change, no guards, content stays visible.</td></tr>
+            <tr><td>ReloadAsync()</td><td>Rebuilds the current chain: components disposed and recreated, route guards and loaders re-run. No URL change, no navigation hooks, no leave guards. Loaders can tell a reload apart via <code>BrouterNavigationContext.IsReload</code>. Re-navigating to the same URL cannot do this - Blazor keeps the component.</td></tr>
             <tr><td>PreloadAsync(url)</td><td>Speculatively runs the destination's loaders. No guards, no render, failures swallowed.</td></tr>
             <tr><td>ClearLoaderCache()</td><td>Drops every cached loader result - e.g. on sign-out.</td></tr>
-            <tr><td>ClearKeepAlive()</td><td>Disposes every retained keep-alive component.</td></tr>
+            <tr><td>ClearKeepAlive()</td><td>Disposes every retained keep-alive component. The visible page keeps its instance.</td></tr>
+            <tr><td>ClearKeepAlive(includeActive)</td><td>With <code>includeActive: true</code> the page on screen is disposed and rebuilt in place too - fresh instance, no navigation, no guards or loaders re-run.</td></tr>
             <tr><td>SetConfirmExternalNavigationAsync(enabled)</td><td>Arms/disarms the browser's "leave site?" dialog at runtime. Idempotent.</td></tr>
         </tbody>
     </table>
@@ -259,7 +261,7 @@
             <tr><td>From / To</td><td>Source and destination <code>BrouterLocation</code>.</td></tr>
             <tr><td>NavigationType</td><td><code>Push</code> / <code>Replace</code> / <code>Pop</code> (Back/Forward).</td></tr>
             <tr><td>CancellationToken</td><td>Fires when a newer navigation supersedes this one. Thread it through your async calls.</td></tr>
-            <tr><td>IsRevalidation / IsPreload</td><td>Why this loader is running, when it isn't a plain navigation.</td></tr>
+            <tr><td>IsRevalidation / IsPreload / IsReload</td><td>Why this loader is running, when it isn't a plain navigation. <code>IsReload</code> is set while <code>ReloadAsync()</code> rebuilds the chain - the URL is unchanged and the components were disposed and recreated.</td></tr>
             <tr><td>Route / Parameters</td><td>The matched route and its bound values (set once matching has run).</td></tr>
             <tr><td>Cancel() / Redirect(url)</td><td>Stop the navigation, or send it elsewhere.</td></tr>
             <tr><td>IsCancelled / RedirectUrl</td><td>What a previous step in the chain already decided.</td></tr>

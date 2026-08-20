@@ -651,9 +651,120 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // content and any kept children held by outlets), keeping only the currently active route.
     // Backs IBrouter.ClearKeepAlive. Runs on the renderer dispatcher like every other reader; each
     // affected route/outlet issues its own re-render so the dropped subtrees are disposed.
-    internal void ClearKeepAlive()
+    //
+    // includeActive extends it to the content on screen: every matched route also tears its live
+    // content down (deactivated, unmounted, disposed by the render each drop issues), and the
+    // re-mount phase below then rebuilds the committed chain in place. No navigation, no pipeline:
+    // guards and loaders don't re-run and the chain keeps the data it already loaded, so this is
+    // the cheap "throw the instances away" reset next to the full ReloadAsync. Both phases run
+    // synchronously on this dispatcher, so on the normal path the unmount and the re-mount land in
+    // the same turn and every departing subtree is disposed before its replacement mounts (the
+    // ordering UnrenderDepartedRoutes depends on). The exception is the supersession path below,
+    // where the re-mount is deliberately skipped and the screen stays empty until the navigation
+    // that took over commits.
+    internal void ClearKeepAlive(bool includeActive = false)
     {
-        foreach (var route in GetRoutesSnapshot()) route.ClearKeepAlive();
+        // A navigation pipeline is already mid-flight: it owns what is on screen until it commits,
+        // so the includeActive half must not run. That pipeline has ALREADY reset every route's
+        // Matched flag (it does so before awaiting its guards and loaders), and re-mounting the
+        // committed chain here would mark those departing routes matched again - breaking the
+        // precondition UnrenderDepartedRoutes states outright ("each departed route's Matched flag
+        // is already false"), so at commit the old content is re-rendered instead of unmounted and
+        // stays on screen beside the new page with its subscriptions still held: the SectionOutlet
+        // double-subscription failure (#12752) that method exists to prevent. The generation
+        // snapshot below cannot catch this - a pipeline bumps _lifecycleNavGeneration when it
+        // STARTS, so one that was already running has consumed its bump and compares equal - which
+        // is why this reads _processingNavigation instead, exactly as RunPendingRematchCoreAsync
+        // does for the same "a pipeline is mid-flight" condition. _processingLocationChanging adds
+        // the decision phase - a navigation awaiting an async hook or guard, whose pipeline (and
+        // its Matched reset) is moments away - so the same stand-down covers a navigation from the
+        // instant it starts rather than from the instant it commits; see ReloadCoreAsync, which
+        // reads the pair the same way.
+        //
+        // Downgrading rather than bailing outright keeps the call meaningful: retained (hidden)
+        // content is not touched by the pipeline, so releasing it is still correct and still the
+        // caller's main purpose, while the visible chain gets its fresh instances from the
+        // pipeline's own commit moments later.
+        if (includeActive && (_processingNavigation > 0 || _processingLocationChanging > 0)) includeActive = false;
+
+        // Dropping content runs user code (Dispose, OnDeactivated) that can start a navigation. That
+        // navigation supersedes this reset and owns the screen from then on, so the sweep stops and
+        // the re-mount below is skipped: re-mounting the old chain would stage arrivals the new
+        // pipeline has already invalidated and put back content it is about to depart. Watched via
+        // _lifecycleNavGeneration, which a navigation bumps the moment its pipeline starts (long
+        // before it commits) and which a revalidation never touches. Note this covers only
+        // navigations that start HERE; one already in flight was handled above.
+        var generation = _lifecycleNavGeneration;
+
+        // Live content goes first, leaf -> root over the committed chain - the order disposal, a
+        // real navigation's departures and ReloadAsync's teardown all use. A child must receive its
+        // Disposing deactivation, and flush whatever it flushes through context its parent provides,
+        // before the parent's content is torn down. The sweep below cannot do this: it walks routes
+        // in REGISTRATION order, which is parent-before-child, so it would deactivate a layout ahead
+        // of the page nested inside it.
+        if (includeActive)
+        {
+            var committed = _committedChain;
+            for (var i = committed.Length - 1; i >= 0; i--)
+            {
+                committed[i].DropAllContent();
+                if (_disposed || generation != _lifecycleNavGeneration) return;
+            }
+        }
+
+        // Now the retained (hidden) content of every registered route, including keep-alive routes
+        // that are nowhere near the current chain. The committed chain's routes are visited again
+        // here, which is cheap and harmless: their content is already gone, so the drop finds
+        // nothing left to deactivate.
+        foreach (var route in GetRoutesSnapshot())
+        {
+            route.ClearKeepAlive(includeActive);
+            if (includeActive && (_disposed || generation != _lifecycleNavGeneration)) return;
+        }
+
+        if (includeActive is false) return;
+
+        // The drops above unmatched the routes whose visible content they removed; putting the
+        // committed chain back on screen is what makes this a reset rather than a teardown.
+        RemountCommittedChain(_committedChain);
+    }
+
+    /// <summary>
+    /// Mounts an already-committed chain in place, after its live instances were torn down: stages
+    /// the route-lifecycle arrivals the fresh instances will need, re-marks the chain matched (one
+    /// render from the top, which mounts the content and re-hands outlet-hosted children to their
+    /// outlets - see <see cref="Broute.SetMatched"/>), and requests this component's own render so
+    /// <c>OnAfterRenderAsync</c> flushes those arrivals.
+    /// </summary>
+    /// <remarks>
+    /// Shared by <see cref="ClearKeepAlive"/>'s re-mount phase and <see cref="ReloadCoreAsync"/>'s
+    /// cancel restore. Both rebuild the SAME url from the data the chain already holds, so the
+    /// context is <c>from == to</c> and no matching runs. The rebuilt content is brand new, so its
+    /// route lifecycle starts over: the callers' drops already fired the Disposing deactivations,
+    /// and these arrivals give the new instances their activation once the render lands. Arrivals
+    /// are staged BEFORE the render request for the same reason the pipeline's commit stages before
+    /// its StateHasChanged - a synchronous OnAfterRenderAsync must not find the queue still empty.
+    /// </remarks>
+    private void RemountCommittedChain(Broute[] chain)
+    {
+        if (chain.Length == 0) return;
+
+        var location = CurrentLocation;
+        var leaf = chain[^1];
+        var ctx = new BrouterNavigationContext(location, location, CancellationToken.None)
+        {
+            NavigationType = BrouterNavigationType.Replace,
+            Route = leaf,
+            Parameters = new BrouterRouteParameters(leaf.Parameters),
+        };
+        StageArrivals(ctx, chain);
+
+        leaf.SetMatched();
+
+        // SetMatched renders the ROUTE subtree; the arrivals staged above are flushed by THIS
+        // component's OnAfterRenderAsync, which only runs if this component itself re-renders -
+        // hence the extra request, mirroring the commit phase's StateHasChanged.
+        StateHasChanged();
     }
 
     // Reads the snapshot, not the live List: mirrors SelectWinner/ProcessNavigationAsync so name
@@ -684,6 +795,16 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     // the late-registration rematch while any pipeline is in flight (its own commit matches
     // against the grown route set, or its finally re-schedules the check once idle).
     private int _processingNavigation;
+
+    // Depth of currently-executing OnLocationChanging frames - the DECISION phase of a navigation
+    // that is already under way but whose pipeline has not started yet, so _processingNavigation is
+    // still 0 and _lifecycleNavGeneration has not been bumped. A counter for the same reason as
+    // _processingNavigation: the phase runs user code (OnNavigate, guards, OnNavigating) that can
+    // start another navigation. Read together with _processingNavigation by the callers that must
+    // stand down while a navigation is in flight (ReloadAsync, ClearKeepAlive's includeActive half),
+    // whose whole hazard is tearing down a page some other navigation is already replacing - which
+    // is just as true while that navigation is awaiting an async guard as it is after it commits.
+    private int _processingLocationChanging;
 
     // Late-registration rematch bookkeeping (see RegisterRoute / RequestLateRegistrationRematch).
     // _rematchRequested: a post-boot registration happened and hasn't been evaluated yet.
@@ -928,7 +1049,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// OnAfterRenderAsync once the commit render has landed. Stamped with the current lifecycle
     /// navigation generation; see <see cref="_pendingLifecycleFlush"/>.
     /// </summary>
-    private void StageArrivals(BrouterNavigationContext ctx, List<Broute> chain)
+    private void StageArrivals(BrouterNavigationContext ctx, IReadOnlyList<Broute> chain)
     {
         var version = _lifecycleNavGeneration;
         foreach (var node in chain)
@@ -1686,6 +1807,11 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
         var service = _brouterService;
 
+        // See _processingLocationChanging: marks the decision phase as in flight for the whole of
+        // the awaited user code below. Immediately before the try so the finally's decrement always
+        // balances; nothing above this point awaits, so no caller can observe the gap.
+        _processingLocationChanging++;
+
         try
         {
             // Lazy route loading first: the target may live in an assembly that isn't loaded yet,
@@ -1764,6 +1890,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             context.PreventNavigation();
             ResolveNavigationOutcome(to.FullUri, BrouterNavigationOutcome.Failed(ex));
             await SafeInvokeOnError(from, to, ex);
+        }
+        finally
+        {
+            _processingLocationChanging--;
         }
     }
 
@@ -2015,7 +2145,8 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// navigation the changing handler never observed - the full pipeline runs, including guards and
     /// the reactive URL-restore fallback in <see cref="HandleSideEffects"/>.
     /// </summary>
-    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade, BrouterNavigationType navType)
+    private async ValueTask ProcessNavigationAsync(BrouterLocation from, BrouterLocation to, bool decisionAlreadyMade,
+        BrouterNavigationType navType, bool isReload = false)
     {
         // Now that we own the renderer's dispatcher (via InvokeAsync from the LocationChanged
         // handler, or from the boot navigator's lifecycle for the initial render), publish the
@@ -2040,7 +2171,7 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
         oldCts?.Cancel();
         var token = newCts.Token;
 
-        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType };
+        var ctx = new BrouterNavigationContext(from, to, token) { NavigationType = navType, IsReload = isReload };
         var service = _brouterService;
 
         // Awaited-navigation bookkeeping: capture the awaiter this pipeline is responsible for (the
@@ -2077,7 +2208,13 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // the new route - so the JS side reads the OUTGOING page's scroll offset, not the new
             // one's. Awaited so the read is ordered ahead of the render batch on Blazor Server too.
             // No-op unless Options.RestoreScrollPosition is enabled and `from` is a real page.
-            await service.SaveScrollPositionAsync(from);
+            // A reload never leaves the page, so there is no outgoing offset to remember: saving
+            // here would overwrite the entry for this very URL with the position the rebuilt page
+            // is about to lose anyway.
+            if (isReload is false)
+            {
+                await service.SaveScrollPositionAsync(from);
+            }
 
             // No ConfigureAwait(false) anywhere in this pipeline: subsequent calls
             // (StateHasChanged, NavigationManager.NavigateTo, route/component state mutations,
@@ -2103,9 +2240,17 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
                 if (token.IsCancellationRequested || version != _navVersion) return;
                 if (leaveOk is false) return;
 
-                await service.InvokeOnNavigating(ctx);
-                if (HandleSideEffects(ctx, from)) return;
-                if (token.IsCancellationRequested || version != _navVersion) return;
+                // A reload runs the full matching path (guards, RedirectTo, loaders) because its
+                // chain is being established from nothing - but it is not a navigation, so the
+                // navigation hooks stay silent on both ends (see the OnNavigated skip below). The
+                // leave phase above is already a no-op for it: the caller emptied the committed
+                // chain when it tore the old instances down.
+                if (isReload is false)
+                {
+                    await service.InvokeOnNavigating(ctx);
+                    if (HandleSideEffects(ctx, from)) return;
+                    if (token.IsCancellationRequested || version != _navVersion) return;
+                }
             }
 
             // Snapshot the route list before any awaits / chain walks below: routes can register
@@ -2497,7 +2642,10 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // animates: there is no meaningful outgoing page - just the blank document, or, after
             // prerendering, static HTML visually identical to what the interactive pass is about to
             // render, where a transition reads as a spurious double-render flash of the same page.
-            if (Options.ViewTransitions && string.IsNullOrEmpty(from.FullUri) is false)
+            // A reload rebuilds the same page at the same URL: animating it would read as a flash of
+            // the page cross-fading into itself, so reloads never transition (same rationale as the
+            // initial load above).
+            if (Options.ViewTransitions && string.IsNullOrEmpty(from.FullUri) is false && isReload is false)
             {
                 viewTransitionStarted = await service.BeginViewTransitionAsync(navType);
                 if (token.IsCancellationRequested || version != _navVersion) return;
@@ -2560,15 +2708,27 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
             // of a superseded navigation (and overwrite the new one's UI / scroll position).
             if (token.IsCancellationRequested || version != _navVersion) return;
 
-            await service.InvokeOnNavigated(ctx);
-            if (token.IsCancellationRequested || version != _navVersion) return;
+            // A reload is not a navigation: OnNavigating never ran for it (the caller enters the
+            // pipeline with the decision already made) and OnNavigated must stay symmetric with it,
+            // so analytics/title handlers don't record a second visit to the page the user is
+            // already on. Loaders that do care see it on BrouterNavigationContext.IsReload.
+            if (isReload is false)
+            {
+                await service.InvokeOnNavigated(ctx);
+                if (token.IsCancellationRequested || version != _navVersion) return;
+            }
 
             // Stage the post-navigation DOM effects (fragment/top scroll, focus). They can't run
             // here: fragment and focus selectors must resolve against the NEW route's DOM, which
             // isn't committed until the render triggered below flushes. OnAfterRenderAsync applies
             // them once that render lands. Only the latest staged location is ever applied, so a
             // superseded navigation can't scroll/focus on behalf of the page the user left.
-            _pendingEffectsLocation = to;
+            // Skipped for reloads: the viewport is where the user left it, and re-applying the
+            // fragment scroll / autofocus would yank it around while they are still reading.
+            if (isReload is false)
+            {
+                _pendingEffectsLocation = to;
+            }
 
             // Stage the route-lifecycle arrivals (activation / renavigation per route; see
             // IBrouterRoute). OnAfterRenderAsync fires them once the render below has landed: only
@@ -3011,6 +3171,145 @@ public class Brouter : ComponentBase, IDisposable, IAsyncDisposable
     /// Loader failures route to error boundaries and OnError exactly like navigation loads.
     /// </summary>
     internal Task RevalidateAsync() => InvokeAsync(() => RevalidateCoreAsync().AsTask());
+
+    /// <summary>
+    /// Rebuilds the currently committed route chain from scratch: every live component instance of
+    /// those routes (the visible content plus anything they were retaining via
+    /// <see cref="Broute.KeepAlive"/>) is deactivated, unmounted and disposed, their cached loader
+    /// results for this URL are evicted, and the same URL is then matched again - so the page comes
+    /// back with fresh instances, fresh state and freshly loaded data. The heavy counterpart of
+    /// <see cref="RevalidateAsync"/>, which refreshes only loader data and keeps the instances.
+    /// Not a navigation: the URL and history entry are untouched, OnNavigating/OnNavigated do not
+    /// fire, and neither do scroll/focus effects or view transitions (see ProcessNavigationAsync's
+    /// isReload branches). Enter guards, RedirectTo and loaders DO run, as they must for a chain
+    /// being matched from nothing; the leave phase finds nothing to ask because the teardown below
+    /// empties the committed chain first. If the re-match is cancelled the chain is put back rather
+    /// than left blank, a reload requested while a navigation is already in flight stands down, and
+    /// a reload with nothing committed does nothing at all (see the comments inside).
+    /// Backs <see cref="IBrouter.ReloadAsync"/>.
+    /// </summary>
+    internal Task ReloadAsync() => InvokeAsync(() => ReloadCoreAsync().AsTask());
+
+    private async ValueTask ReloadCoreAsync()
+    {
+        if (_disposed) return;
+
+        // A navigation pipeline is already mid-flight, so the router's state is half-committed and
+        // the two reads below would disagree: CurrentLocation is published when a pipeline STARTS
+        // (its destination), while _committedChain is only swapped at commit (still the old page).
+        // Reloading on that pair would evict cache keys built from the old chain's templates paired
+        // with the new url, tear down a page the pipeline is already replacing, and then supersede
+        // the user's real navigation with a reload pipeline - completing their navigation with
+        // OnNavigated, the pending scroll/focus effects and the view transition all silently
+        // skipped, and their awaited NavigateAsync resolving Superseded despite arriving. The
+        // in-flight navigation already delivers what a reload would (fresh instances, freshly
+        // matched chain) for the page the user is actually going to, so stand down. Read via
+        // _processingNavigation, the counter kept for exactly this condition and used the same way
+        // by RunPendingRematchCoreAsync; the generation snapshot below cannot see an already-running
+        // pipeline, because a pipeline bumps the generation when it starts.
+        //
+        // _processingLocationChanging covers the other half of "already in flight": a navigation
+        // parked in its decision phase, awaiting an async OnNavigate hook, leave guard or enter
+        // guard. Its pipeline hasn't started - _processingNavigation is 0 and the generation is
+        // unbumped - but it is every bit as much on its way, and reloading in that window is the
+        // same defect: the page is torn down, the reload's own pipeline re-matches the old url,
+        // and the user's awaited NavigateAsync resolves Superseded despite arriving moments later.
+        if (_processingNavigation > 0 || _processingLocationChanging > 0) return;
+
+        var to = CurrentLocation;
+        var chain = _committedChain;
+        // Nothing is committed, so there is no chain to rebuild - and running the pipeline anyway
+        // would not be a harmless no-op: re-matching a url the router never rendered fires the
+        // not-found path (the OnNotFound hook, the NotFoundUrl redirect that moves the address bar)
+        // or an error boundary, for a page the caller never had on screen. Reload rebuilds what is
+        // rendered; with nothing rendered it does nothing.
+        if (chain.Length == 0) return;
+
+        // A navigation started by the teardown's user code (Dispose, OnDeactivated) supersedes this
+        // reload and owns the screen from that point on. It bumps _lifecycleNavGeneration the moment
+        // its pipeline starts - long before it commits and swaps _committedChain - so that is what
+        // the checks below watch: re-matching `to` after it would supersede the user's navigation
+        // with the reload's own pipeline and put the page back at the URL they just left.
+        var generation = _lifecycleNavGeneration;
+
+        // Snapshot the loader results the chain is currently rendering with, for the cancel restore
+        // at the end: everything below (the cache eviction, then the pipeline nulling LoadedData on
+        // the matched chain before its loaders run) destroys them, and a restore has nowhere else
+        // to get them back from.
+        var loadedData = new object?[chain.Length];
+        for (var i = 0; i < chain.Length; i++) loadedData[i] = chain[i].LoadedData;
+
+        // Evict this URL's cached loader results for the chain first: the rebuilt instances must
+        // load fresh data, not re-serve what the instances being discarded were showing. Only
+        // this chain's entries go - ClearLoaderCache is the app-wide hammer.
+        foreach (var node in chain)
+        {
+            _brouterService.LoaderCache.Remove(BrouterLoaderCache.MakeKey(node.FullTemplate, to));
+        }
+
+        // Leaf -> root, mirroring disposal order (and the departure order of a real navigation):
+        // each route deactivates its content, unmatches and re-renders without it, so the whole
+        // subtree is disposed before the re-match below mounts its replacement. Doing the
+        // teardown here rather than inside the pipeline keeps the "dispose, then mount" ordering
+        // that UnrenderDepartedRoutes relies on for subscription-holding content (a layout's
+        // SectionOutlet must release its subscription before the new one registers).
+        for (var i = chain.Length - 1; i >= 0; i--)
+        {
+            chain[i].DropAllContent();
+            if (_disposed || generation != _lifecycleNavGeneration) return;
+        }
+
+        // Nothing of the old chain is on screen any more, so the pipeline below has no
+        // departures to notify and nothing to unrender.
+        _committedChain = [];
+
+        // Full pipeline (decisionAlreadyMade: false), because the chain is being matched from
+        // nothing: enter guards must re-authorize the rebuilt page and RedirectTo must be honoured,
+        // exactly as on a first arrival. The leave phase is already a no-op - the committed chain
+        // was emptied above - so a dirty-form leave guard can't veto an explicit reload request,
+        // and OnNavigating/OnNavigated stay silent because this is not a navigation (isReload).
+        await ProcessNavigationAsync(to, to, decisionAlreadyMade: false, BrouterNavigationType.Replace, isReload: true);
+
+        // The pipeline can decide not to render anything: an enter guard (or the OnNavigate hook)
+        // calling ctx.Cancel() returns without committing. For a NAVIGATION that is harmless - the
+        // page the user was on is still mounted, which is exactly what "cancel" means - but this
+        // reload destroyed that page up front, so the same bail-out would leave the routed region
+        // blank, at an unchanged url, with no error UI and no NotFound fallback (HandleSideEffects
+        // doesn't even restore the url here: from == to). Put the chain back instead, so a
+        // cancelled reload also leaves the user where they were - with fresh instances, since the
+        // old ones are gone, and with the loader results they were showing, put back below. A guard
+        // that means to evict the user should Redirect, which commits a real navigation and skips
+        // this restore.
+        //
+        // Deliberately narrow: only when nothing else took the screen. A committed reload, a
+        // redirect that already committed, and a not-found all leave content behind
+        // (_committedChain non-empty, or _noRouteMatched with the NotFound fallback rendered),
+        // while a redirect or superseding navigation still resolving keeps _processingNavigation
+        // above zero. The router-level error boundary needs its own discriminator: that branch of
+        // RenderNavigationError empties _committedChain (everything routed is evicted) and leaves
+        // _noRouteMatched false, so without the _navError check the restore would fire and re-mount
+        // the torn-down page next to the ErrorContent that replaced it. A route-level boundary
+        // excludes itself already - it commits the boundary chain.
+        if (_disposed is false
+            && _committedChain.Length == 0
+            && _processingNavigation == 0
+            && _noRouteMatched is false
+            && _navError is null)
+        {
+            // The routes' LoadedData was nulled when the pipeline staged its matched chain (and the
+            // cache entries this reload evicted are gone), so the routes hold nothing to render
+            // with any more: a loader that cancels would otherwise put the page back with an empty
+            // BrouterRouteData. Put the pre-reload results back, all of them, so the restored page
+            // is the consistent "what was on screen before" rather than a mix of stale and blank.
+            for (var i = 0; i < chain.Length; i++)
+            {
+                chain[i].LoadedData = loadedData[i];
+            }
+
+            _committedChain = chain;
+            RemountCommittedChain(chain);
+        }
+    }
 
     private async ValueTask RevalidateCoreAsync()
     {

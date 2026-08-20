@@ -120,6 +120,43 @@
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Switch tenant, impersonate, sign out - and leave nothing behind</h3>
+    <p class="bb-card-desc">
+        Revalidation is the wrong tool when it isn't only the <em>data</em> that went stale: the
+        components themselves are holding the previous user's world - what they read once in
+        <code>OnInitialized</code>, their filters, their half-typed drafts. Re-navigating to the
+        current URL cannot clear that, because Blazor reuses a component whose route and parameters
+        didn't change (the built-in <code>Router</code> behaves the same way). Throw the instances
+        away instead.
+    </p>
+    <pre class="bb-code"><span class="k">private async</span> Task SwitchTenantAsync(<span class="k">int</span> tenantId)
+{
+    <span class="k">await</span> auth.SwitchTenantAsync(tenantId);
+
+    brouter.ClearLoaderCache();     <span class="c">// nothing cached belongs to this tenant</span>
+    brouter.ClearKeepAlive();       <span class="c">// drop the retained (hidden) pages of the previous one</span>
+    <span class="k">await</span> brouter.ReloadAsync();   <span class="c">// and rebuild the page on screen: guards + loaders re-run</span>
+}
+
+<span class="c">// When only the instances are stale - the loaded data is tenant-agnostic - one call</span>
+<span class="c">// does the same rebuild without running the pipeline at all:</span>
+brouter.ClearKeepAlive(includeActive: <span class="k">true</span>);</pre>
+    <p class="bb-card-desc">
+        <code>ReloadAsync()</code> disposes the matched chain, evicts its cached results and matches
+        the URL again - so enter guards get to re-authorize the rebuilt page (a guard that now says
+        no should <code>Redirect</code>, not <code>Cancel</code>) and the loaders start from nothing.
+        It is not a navigation: the URL and history entry don't move,
+        <code>OnNavigating</code>/<code>OnNavigated</code> stay silent, no leave guard can veto it,
+        and loaders can tell it apart with <code>ctx.IsReload</code>. On sign-out, pair
+        <code>ClearKeepAlive()</code> with a navigation to the login page instead - there is no page
+        left to rebuild.
+    </p>
+    <div class="bb-try">
+        <BrouterLink Href="/notes/1" class="btn btn-outline">/notes/1 - both resets, live</BrouterLink>
+    </div>
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Make navigation feel instant</h3>
     <p class="bb-card-desc">
         Two settings, applied together, remove most perceived latency: preload on intent so the
@@ -250,7 +287,9 @@ brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, _tags),
         firing. Pause them: <code>OnDeactivated</code> arrives with
         <code>Reason = Hidden</code> instead of <code>Disposing</code>, and <code>OnActivated</code>
         is the cue to resume. Add <code>RestoreScrollPosition = true</code> so the window position
-        comes back with the component, and call <code>brouter.ClearKeepAlive()</code> on sign-out.
+        comes back with the component, and call <code>brouter.ClearKeepAlive()</code> on sign-out - or
+        <code>ClearKeepAlive(includeActive: true)</code> when the page on screen is holding the same
+        no-longer-valid state, as in the switch-tenant recipe above.
     </p>
     <div class="bb-try">
         <BrouterLink Href="/sticky" class="btn btn-outline">/sticky vs /fleeting</BrouterLink>
