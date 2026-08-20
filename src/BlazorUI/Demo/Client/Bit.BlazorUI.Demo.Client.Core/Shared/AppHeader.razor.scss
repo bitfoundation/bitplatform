@@ -92,55 +92,20 @@
     mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
 }
 
-.toggle-theme-btn {
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    height: rem2(32px);
-    min-width: rem2(32px);
-    border-radius: 50%;
-    color: $bit-color-primary-text;
-    background-color: $bit-color-primary;
-
-    .icon-container {
-        height: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: center;
-
-        .bit-icon {
-            margin: 0 rem2(4px);
-        }
-    }
-
-    &.dark-theme {
-        .icon-container {
-            padding: 2px 0px 0 1px;
-        }
-    }
-}
+// The theme switcher needs no rule of its own here: BitThemeSwitcher.scss sizes its buttons to the same
+// 32px the github mark beside it uses, and its --bit-ths-gap default already matches the header stack's.
 
 // The document's bit-theme attribute is the library's own live theme state, kept current by the
-// theme script itself, so the dark/light swap keys off it - and the two selectors are exact
-// complements, so exactly one of each pair is visible in every possible state. The old body
-// classes were applied only from the script's onChange callback and could go missing (e.g. after
-// a hot reload), which rendered both theme toggle buttons at once.
+// theme script itself, so the logo swap keys off it - and the two selectors are exact complements,
+// so exactly one logo is painted in every possible state. The old body classes were applied only
+// from the script's onChange callback and could go missing (e.g. after a hot reload).
 :root[bit-theme$='dark'] {
-    .light-theme {
-        display: none;
-    }
-
     .logo {
         background-image: url('images/bit-logo-dark.svg');
     }
 }
 
 :root:not([bit-theme$='dark']) {
-    .dark-theme {
-        display: none;
-    }
-
     .logo {
         background-image: url('images/bit-logo-light.svg');
     }

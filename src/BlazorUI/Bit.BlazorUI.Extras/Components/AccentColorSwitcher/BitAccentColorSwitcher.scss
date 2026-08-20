@@ -7,8 +7,8 @@
     // since picking that swatch clears every accent override and leaves exactly that primary. The
     // Fluent light primary here (BitAccentColorPresets.Blue - a literal, not $clr-pri, which an
     // applied accent rewrites while this swatch has to keep showing the color underneath it); the
-    // Material and Cupertino bundles retune it to their own seeds in components.*.scss. A custom
-    // preset sets it on .bit-acs to its own primary.
+    // two rules below retune it to the Material and Cupertino seeds. A custom preset sets it on
+    // .bit-acs to its own primary.
     --bit-acs-ntr: #1276C6;
 
     // The seeds the packaged Material and Cupertino palettes are generated from (M3 baseline

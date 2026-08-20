@@ -20,9 +20,11 @@
     <link rel="preload" href="_content/Bit.BlazorUI.Assets/fonts/segoe-ui-semilight.woff2" as="font" type="font/woff2" crossorigin>
 
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.material.css" />
-    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.cupertino.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <!-- The Material and Cupertino design-system presets ship with Bit.BlazorUI.Extras as override-only
+         token bundles, so they must be linked after the core stylesheet that carries the Fluent defaults. -->
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Legacy/styles/bit.blazorui.legacy.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI.Assets/styles/bit.blazorui.assets.css" />

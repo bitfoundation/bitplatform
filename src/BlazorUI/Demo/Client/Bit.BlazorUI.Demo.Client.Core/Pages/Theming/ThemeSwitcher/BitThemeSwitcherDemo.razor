@@ -1,0 +1,108 @@
+@page "/components/themeswitcher"
+
+<PageOutlet Url="components/themeswitcher"
+            Title="ThemeSwitcher"
+            Description="BitThemeSwitcher offers the design system an app is dressed in and the light/dark scheme it shows, as one control that keeps both halves of the applied theme in step." />
+
+<DemoPage Name="ThemeSwitcher"
+          SecondaryNames="@(["DesignSystem", "DarkMode", "Theming"])"
+          Description="BitThemeSwitcher is the chrome for the two choices a themed app usually puts in its header: which design system it is dressed in (Fluent, Material, Cupertino) and whether that design system is showing its light or its dark scheme. Both halves resolve to one bit-theme name applied through BitThemeManager, so switching the design system keeps the current scheme and toggling the scheme keeps the current design system."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          GitHubExtrasUrl="ThemeSwitcher/BitThemeSwitcher.razor.cs"
+          GitHubDemoUrl="../Theming/ThemeSwitcher/BitThemeSwitcherDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The Material and Cupertino design systems are override-only stylesheet bundles that ship in that same
+            package, so offering them only does something on a page that links the bundle after the core stylesheet
+            (see the <BitLink Href="/theming#presets">Presets</BitLink> section of the Theming page). This website
+            links both, which is why the switchers below actually re-skin it.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                The default switcher: the three packaged design systems, and the light/dark toggle. It acts on the
+                document, so a pick here re-skins this whole website live - exactly like the one in the site header,
+                which is this very component.
+            </div>
+            <br />
+            <BitThemeSwitcher />
+        </DemoExample>
+
+        <DemoExample Title="Design systems" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                DesignSystems replaces the offered list. Value is the stem the two scheme names share, so an item
+                needs LightTheme and DarkTheme spelled out only when its themes are not named "{Value}-light" and
+                "{Value}-dark" - as with Fluent, whose pair the core stylesheet calls "light" and "dark". The first
+                item is also the fallback the picker shows for an applied theme that no item claims.
+            </div>
+            <br />
+            <BitThemeSwitcher DesignSystems="customDesignSystems" />
+        </DemoExample>
+
+        <DemoExample Title="Parts" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                NoColorScheme and NoDesignSystem drop either half, for chrome that has room for only one of them or
+                that puts them in different places:
+            </div>
+            <br />
+            <BitThemeSwitcher NoColorScheme />
+            <br />
+            <BitThemeSwitcher NoDesignSystem />
+        </DemoExample>
+
+        <DemoExample Title="Icons & titles" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                Each control names what it does through its own title (which is also its accessible label), and the
+                two toggle glyphs are Fluent UI icon names. Every one of them is a parameter:
+            </div>
+            <br />
+            <BitThemeSwitcher DesignSystemTitle="Skin"
+                              DarkSchemeTitle="Go dark"
+                              LightSchemeTitle="Go light"
+                              DarkSchemeIconName="@BitIconName.Brightness"
+                              LightSchemeIconName="@BitIconName.Sunny" />
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                OnChange reports the theme that was applied, whichever half of the control applied it. That is the
+                hook for whatever else has to follow the theme but is not painted by the page - the site header uses
+                it to repaint the native status bar on MAUI.
+            </div>
+            <br />
+            <BitThemeSwitcher OnChange="t => changedTheme = t" />
+            <br />
+            <div>Applied theme: @changedTheme</div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example6RazorCode" Id="example6">
+            <div>Use Style, Class, Styles and Classes to customize the switcher:</div>
+            <br />
+            <BitThemeSwitcher Style="padding:0.5rem;border:1px dashed gray;border-radius:0.5rem" />
+            <br />
+            <BitThemeSwitcher Classes="@(new() { ColorSchemeButton = "custom-scheme-btn" })" />
+            <br />
+            <BitThemeSwitcher Styles="@(new() { Root = "gap:1.5rem", ColorSchemeButton = "border-radius:0.25rem" })" />
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example7RazorCode" Id="example7">
+            <div>Use Dir="BitDir.Rtl" to change the direction of the switcher:</div>
+            <br />
+            <BitThemeSwitcher Dir="BitDir.Rtl" />
+        </DemoExample>
+    </Examples>
+</DemoPage>

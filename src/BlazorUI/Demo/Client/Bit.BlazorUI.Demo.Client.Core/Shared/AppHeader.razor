@@ -29,24 +29,14 @@
                 <AccentColorSwitcher Placement="AccentColorSwitcherPlacement.Header" />
             }
 
-            <BitDropdown TItem="BitDropdownItem<string>" TValue="string"
-                         FitWidth
-                         NoBorder
-                         Transparent
-                         Class="design-system-dd"
-                         Items="_designSystems"
-                         @bind-Value="_designSystem"
-                         OnSelectItem="WrapHandled<BitDropdownItem<string>>(OnDesignSystemChanged)"
-                         Title="Design system" />
-
             <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
 
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn dark-theme" title="Turn on light">
-                <span class="icon-container"><i class="bit-icon bit-icon--Sunny"></i></span>
-            </button>
-            <button @onclick="WrapHandled(ToggleTheme)" class="toggle-theme-btn light-theme" title="Turn off light">
-                <span class="icon-container"><i class="bit-icon bit-icon--ClearNight"></i></span>
-            </button>
+            @* The design system picker and the light/dark toggle are both this component's; all that is
+               left here is the two things it cannot know about - the theme to show before JS interop is
+               reachable (see OnInitAsync) and the native shell that follows the applied scheme. *@
+            <BitThemeSwitcher Class="theme-switcher"
+                              InitialTheme="@_initialTheme"
+                              OnChange="WrapHandled<string>(OnThemeChanged)" />
         </BitStack>
     </BitStack>
 </div>

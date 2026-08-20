@@ -198,6 +198,7 @@ public partial class MainLayout
             [
                 new() { Text = "Theming", Url = "/theming", Description = "Theme, DesignTokens, Dark, Light" },
                 new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
+                new() { Text = "ThemeSwitcher", Url = "/components/themeswitcher", Description = "DesignSystem, DarkMode, Theming" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

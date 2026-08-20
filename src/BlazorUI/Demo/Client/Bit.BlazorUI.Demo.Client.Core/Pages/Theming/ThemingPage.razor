@@ -24,7 +24,7 @@
             Using bit BlazorUI, you can customize the look and feel of your app using the theme features by specifying
             the color of the components, the darkness of the surfaces, the level of shadow, the appropriate opacity of elements, etc.
             <br /><br />
-            The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, packaged Material and Cupertino presets ship in the box (one extra stylesheet link each &mdash; see <i>Presets</i>), and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
+            The default theme is based on the Microsoft Fluent design system. Light and dark variants are bundled, packaged Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package (one extra stylesheet link each &mdash; see <i>Presets</i>), and the entire token set is overridable so you can tailor color, motion, density, typography, and layout to match your product.
         </BitText>
 
         <br /><br />
@@ -405,31 +405,37 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <BitText>
-                <BitTag>BitThemePresets</BitTag> exposes the built-in theme names. Use them with <BitTag>SetThemeAsync</BitTag>, <BitTag>BitThemeName</BitTag>, or directly as the <BitTag>bit-theme</BitTag> attribute value.
+                <BitTag>BitThemePresets</BitTag> exposes the built-in theme names, and <BitTag>BitExtraThemePresets</BitTag> (in the <BitTag>Bit.BlazorUI.Extras</BitTag> package, next to the stylesheet bundles that implement them) the Material and Cupertino ones. Use them with <BitTag>SetThemeAsync</BitTag>, <BitTag>BitThemeName</BitTag>, or directly as the <BitTag>bit-theme</BitTag> attribute value.
             </BitText>
 
             <br />
 
-            <CodeBox Language="csharp">public static class BitThemePresets
+            <CodeBox Language="csharp">// Bit.BlazorUI - the presets the core stylesheet carries
+public static class BitThemePresets
 {
     public const string Light          = "light";
     public const string Dark           = "dark";
     public const string Fluent         = "fluent";           // alias for fluent-light
     public const string FluentLight    = "fluent-light";
     public const string FluentDark     = "fluent-dark";
+    public const string System         = "system";           // pseudo-preset: follow OS
+}
+
+// Bit.BlazorUI.Extras - the design systems that ship as their own stylesheet bundle
+public static class BitExtraThemePresets
+{
     public const string Material       = "material";         // alias for material-light
     public const string MaterialLight  = "material-light";
     public const string MaterialDark   = "material-dark";
     public const string Cupertino      = "cupertino";        // alias for cupertino-light
     public const string CupertinoLight = "cupertino-light";
     public const string CupertinoDark  = "cupertino-dark";
-    public const string System         = "system";           // pseudo-preset: follow OS
 }</CodeBox>
 
             <br />
 
             <BitText>
-                The Fluent presets are self-contained in <BitTag>bit.blazorui.css</BitTag>. The Material and Cupertino presets ship as separate override-only bundles that re-value the global tokens under <BitTag>:root[bit-theme="&hellip;"]</BitTag> &mdash; their palettes come out of the same seed-derivation pipeline as the packaged Fluent colors (so they clear the same WCAG contrast gates), and their shape, size, typography, and motion values follow the Material&nbsp;3 spec and the Apple HIG respectively. Link the bundle you use <b>after</b> the core stylesheet and set the <BitTag>bit-theme</BitTag> attribute; nothing else is involved:
+                The Fluent presets are self-contained in <BitTag>bit.blazorui.css</BitTag>. The Material and Cupertino presets ship with the <BitTag>Bit.BlazorUI.Extras</BitTag> package as separate override-only bundles that re-value the global tokens under <BitTag>:root[bit-theme="&hellip;"]</BitTag> &mdash; their palettes come out of the same seed-derivation pipeline as the packaged Fluent colors (so they clear the same WCAG contrast gates), and their shape, size, typography, and motion values follow the Material&nbsp;3 spec and the Apple HIG respectively. Link the bundle you use <b>after</b> the core stylesheet and set the <BitTag>bit-theme</BitTag> attribute; nothing else is involved:
             </BitText>
 
             <br />
@@ -441,8 +447,8 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <CodeBox Language="cshtml">&lt;link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" /&gt;
-&lt;link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.material.css" /&gt;
-&lt;!-- or: _content/Bit.BlazorUI/styles/bit.blazorui.cupertino.css --&gt;
+&lt;link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" /&gt;
+&lt;!-- or: _content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css --&gt;
 
 &lt;html bit-theme="material-dark"&gt;</CodeBox>
 
@@ -455,6 +461,15 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <br />
 
             <BitText>
+                Letting the visitor pick among these is ready-made as the <BitTag>BitThemeSwitcher</BitTag> component in
+                the same <BitTag>Bit.BlazorUI.Extras</BitTag> package &mdash; the design system picker and the light/dark
+                toggle in this site's own header are that component. See the
+                <BitLink Href="/components/themeswitcher">ThemeSwitcher demo page</BitLink> for the full API.
+            </BitText>
+
+            <br />
+
+            <BitText>
                 For type-safety, the <BitTag>BitThemeName</BitTag> readonly struct wraps a normalized (trimmed, lower-cased) preset name and converts implicitly to <BitTag>string</BitTag>:
             </BitText>
 
@@ -462,8 +477,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
             <CodeBox Language="csharp">// Built-in factories
 await _bitThemeManager.SetThemeAsync(BitThemeName.FluentDark);
-await _bitThemeManager.SetThemeAsync(BitThemeName.MaterialDark);
 await _bitThemeManager.SetThemeAsync(BitThemeName.System);
+
+// The Bit.BlazorUI.Extras design systems, on their own factory type
+await _bitThemeManager.SetThemeAsync(BitExtraThemeName.MaterialDark);
 
 // Custom theme name (matches your CSS selector)
 var corporate = BitThemeName.Custom("acme-dark");

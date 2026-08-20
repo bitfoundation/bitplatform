@@ -78,8 +78,8 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.extras.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.extras.css;wwwroot/styles/bit.blazorui.material.css;wwwroot/styles/bit.blazorui.cupertino.css">
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.extras.scss:wwwroot/styles/bit.blazorui.extras.css Styles/Material/bit.blazorui.material.scss:wwwroot/styles/bit.blazorui.material.css Styles/Cupertino/bit.blazorui.cupertino.scss:wwwroot/styles/bit.blazorui.cupertino.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>

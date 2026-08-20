@@ -3,7 +3,9 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Type-safe wrapper for the <c>bit-theme</c> attribute name. Use the static factories
 /// (<see cref="Light"/>, <see cref="Dark"/>, <see cref="Fluent"/>, etc.) for the well-known presets;
-/// call <see cref="Custom(string)"/> for app-specific theme names that match your CSS.
+/// call <see cref="Custom(string)"/> for app-specific theme names that match your CSS. The Material and
+/// Cupertino design systems ship with the <c>Bit.BlazorUI.Extras</c> package; their names are the
+/// factories on <c>BitExtraThemeName</c> there.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -44,24 +46,6 @@ public readonly struct BitThemeName : IEquatable<BitThemeName>
 
     /// <summary>Fluent dark preset (<c>"fluent-dark"</c>).</summary>
     public static BitThemeName FluentDark { get; } = new(BitThemePresets.FluentDark);
-
-    /// <summary>Material base preset (<c>"material"</c>; requires the packaged <c>bit.blazorui.material.css</c> stylesheet).</summary>
-    public static BitThemeName Material { get; } = new(BitThemePresets.Material);
-
-    /// <summary>Material light preset (<c>"material-light"</c>).</summary>
-    public static BitThemeName MaterialLight { get; } = new(BitThemePresets.MaterialLight);
-
-    /// <summary>Material dark preset (<c>"material-dark"</c>).</summary>
-    public static BitThemeName MaterialDark { get; } = new(BitThemePresets.MaterialDark);
-
-    /// <summary>Cupertino base preset (<c>"cupertino"</c>; requires the packaged <c>bit.blazorui.cupertino.css</c> stylesheet).</summary>
-    public static BitThemeName Cupertino { get; } = new(BitThemePresets.Cupertino);
-
-    /// <summary>Cupertino light preset (<c>"cupertino-light"</c>).</summary>
-    public static BitThemeName CupertinoLight { get; } = new(BitThemePresets.CupertinoLight);
-
-    /// <summary>Cupertino dark preset (<c>"cupertino-dark"</c>).</summary>
-    public static BitThemeName CupertinoDark { get; } = new(BitThemePresets.CupertinoDark);
 
     /// <summary>Special pseudo-preset that follows OS <c>prefers-color-scheme</c> (<c>"system"</c>).</summary>
     public static BitThemeName System { get; } = new(BitThemePresets.System);

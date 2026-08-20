@@ -1,5 +1,9 @@
 // Cupertino design-system preset for bit BlazorUI.
 //
+// Ships with Bit.BlazorUI.Extras rather than with the core package: the core stylesheet carries the
+// components and the Fluent defaults, and a design system is an opt-in re-skin of those - so it is a
+// separate bundle, served as _content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css.
+//
 // Override-only bundle: link it AFTER the main bit.blazorui.css (which carries the components and
 // the Fluent defaults) and activate it with bit-theme="cupertino" (follows the light palette),
 // "cupertino-light" or "cupertino-dark" - on <html> for the whole app or on any element for a

@@ -564,6 +564,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Theming/ThemeSwitcher/BitThemeSwitcherDemo.razor.css",
+        "inputFile": "Pages/Theming/ThemeSwitcher/BitThemeSwitcherDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Theming/ThemingPage.razor.css",
         "inputFile": "Pages/Theming/ThemingPage.razor.scss",
         "minify": { "enabled": false },

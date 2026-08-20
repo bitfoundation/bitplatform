@@ -82,8 +82,8 @@
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.js --minify --outfile=wwwroot/scripts/bit.blazorui.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.css;wwwroot/styles/bit.blazorui.fluent.css;wwwroot/styles/bit.blazorui.fluent-dark.css;wwwroot/styles/bit.blazorui.fluent-light.css;wwwroot/styles/bit.blazorui.material.css;wwwroot/styles/bit.blazorui.cupertino.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.css Styles/Material/bit.blazorui.material.scss:wwwroot/styles/bit.blazorui.material.css Styles/Cupertino/bit.blazorui.cupertino.scss:wwwroot/styles/bit.blazorui.cupertino.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.css;wwwroot/styles/bit.blazorui.fluent.css;wwwroot/styles/bit.blazorui.fluent-dark.css;wwwroot/styles/bit.blazorui.fluent-light.css">
+        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
     </Target>
 
     <ItemGroup>
