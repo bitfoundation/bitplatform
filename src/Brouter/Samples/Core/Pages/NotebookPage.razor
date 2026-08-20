@@ -1,6 +1,8 @@
 ﻿@* Per-parameter keep-alive: /notes/{id:int} is declared KeepAlive with KeepAliveMax="2", so each
    visited id keeps its OWN instance up to the budget and the least-recently-used one is evicted
-   beyond it. The instance stamp changes only when this note was evicted and rebuilt. *@
+   beyond it. The instance stamp changes only when this note was evicted and rebuilt - or when
+   one of the resets below (ClearKeepAlive, ClearKeepAlive(includeActive: true), ReloadAsync)
+   threw the instance away. *@
 
 @inject IBrouter brouter
 

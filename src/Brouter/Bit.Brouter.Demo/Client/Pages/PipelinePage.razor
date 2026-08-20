@@ -233,12 +233,12 @@
 
 @* ============================== Variants ============================== *@
 
-<h2 style="margin: 1.75rem 0 .75rem;">The three other ways loaders run</h2>
+<h2 style="margin: 1.75rem 0 .75rem;">The other ways loaders run</h2>
 
 <div class="bb-card">
-    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Navigation vs revalidation vs preload</h3>
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Navigation vs reload vs revalidation vs preload</h3>
     <p class="bb-card-desc">
-        Not everything that runs a loader is a navigation. Two operations deliberately run a
+        Not everything that runs a loader is a navigation. Three operations deliberately run a
         <em>subset</em> of the pipeline, and knowing which subset explains their guarantees.
     </p>
     <table class="bb-table">
@@ -246,31 +246,47 @@
             <tr>
                 <th>Step</th>
                 <th>Navigation</th>
+                <th><code>ReloadAsync()</code></th>
                 <th><code>RevalidateAsync()</code></th>
                 <th><code>PreloadAsync()</code></th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>Leave guards &amp; locks</td><td>✓</td><td>-</td><td>-</td></tr>
-            <tr><td>OnNavigating / OnNavigated</td><td>✓</td><td>-</td><td>-</td></tr>
-            <tr><td>Enter guards</td><td>✓</td><td>-</td><td>-</td></tr>
-            <tr><td>URL changes</td><td>✓</td><td>-</td><td>-</td></tr>
-            <tr><td>Loaders</td><td>✓</td><td>✓ <code>IsRevalidation</code></td><td>✓ <code>IsPreload</code></td></tr>
-            <tr><td>Render</td><td>✓</td><td>✓ (content stays visible meanwhile)</td><td>-</td></tr>
-            <tr><td>Scroll, focus &amp; lifecycle</td><td>✓</td><td>-</td><td>-</td></tr>
-            <tr><td>Errors</td><td>boundary + <code>OnError</code></td><td>boundary + <code>OnError</code></td><td>swallowed</td></tr>
+            <tr><td>Leave guards &amp; locks</td><td>✓</td><td>- (nothing is being left)</td><td>-</td><td>-</td></tr>
+            <tr><td>OnNavigating / OnNavigated</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Enter guards</td><td>✓</td><td>✓ (matched from nothing)</td><td>-</td><td>-</td></tr>
+            <tr><td>URL changes</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Loaders</td><td>✓</td><td>✓ <code>IsReload</code> (cache evicted)</td><td>✓ <code>IsRevalidation</code></td><td>✓ <code>IsPreload</code></td></tr>
+            <tr><td>Render</td><td>✓</td><td>✓ (old instances disposed first)</td><td>✓ (content stays visible meanwhile)</td><td>-</td></tr>
+            <tr><td>Scroll, focus &amp; view transition</td><td>✓</td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>Route lifecycle</td><td>✓</td><td>✓ <code>Disposing</code> → fresh activation</td><td>-</td><td>-</td></tr>
+            <tr><td>Errors</td><td>boundary + <code>OnError</code></td><td>boundary + <code>OnError</code></td><td>boundary + <code>OnError</code></td><td>swallowed</td></tr>
         </tbody>
     </table>
     <p class="bb-card-desc">
         <strong>Revalidation</strong> is "refresh what's on screen after a mutation": same URL, no
         guards, no flash of pending UI, and it's a no-op if nothing in the current chain has a
-        loader. <strong>Preloading</strong> is speculative - it must never have side effects, which
+        loader. <strong>Reload</strong> is the heavy one next to it - the current chain's components
+        are disposed and recreated, so it is what you reach for when the page's <em>derived</em>
+        state is stale and not just its data (switching tenant, impersonating a user). It runs the
+        matching half of the pipeline because its chain is being built from nothing, which is why
+        enter guards and <code>RedirectTo</code> get a say and leave guards do not.
+        <strong>Preloading</strong> is speculative - it must never have side effects, which
         is exactly why guards are skipped and failures are swallowed. Branch on
-        <code>ctx.IsRevalidation</code> / <code>ctx.IsPreload</code> when a loader should behave
-        differently (skipping a telemetry ping on a preload, say).
+        <code>ctx.IsReload</code> / <code>ctx.IsRevalidation</code> / <code>ctx.IsPreload</code>
+        when a loader should behave differently (skipping a telemetry ping on a preload, say).
     </p>
     <p class="bb-card-desc">
-        The fourth case is the shortest: <code>Navigate(url, forceLoad: true)</code> skips the
+        A reload requested while a navigation is in flight - from the moment that navigation starts,
+        guards included - does nothing: that navigation is already rebuilding the page the user is
+        heading to. Neither does a reload with nothing committed (a not-found fallback or an error
+        boundary on screen): there is no chain to rebuild. The lighter
+        <code>ClearKeepAlive(includeActive: true)</code> throws the instances away without running
+        any of this pipeline at all - see
+        <BrouterLink Href="/docs/lifecycle">lifecycle &amp; keep-alive</BrouterLink>.
+    </p>
+    <p class="bb-card-desc">
+        The last case is the shortest: <code>Navigate(url, forceLoad: true)</code> skips the
         pipeline entirely. The browser loads a new document, so the SPA process that would have run
         the guards is replaced outright - which is also why <code>NavigateAsync</code> doesn't
         offer it, as there would be nothing left alive to resolve the task.

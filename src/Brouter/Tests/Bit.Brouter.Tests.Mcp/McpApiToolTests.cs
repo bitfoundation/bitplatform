@@ -91,6 +91,31 @@ public class McpApiToolTests
     }
 
     [TestMethod]
+    public async Task An_overloaded_method_is_served_as_one_member_per_overload()
+    {
+        // The catalog keys methods by name AND signature for this reason: collapsing overloads would
+        // hide the one an agent needs while still answering "yes, that method exists" - the failure
+        // mode this server is built to prevent. IBrouter.ClearKeepAlive is the case in the surface:
+        // the parameterless overload and the includeActive one do materially different things.
+        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "IBrouter" });
+
+        Assert.IsNotNull(result.Details);
+
+        var overloads = result.Details.Members
+            .Where(member => member.Name == "ClearKeepAlive")
+            .ToArray();
+
+        Assert.AreEqual(2, overloads.Length, "Both ClearKeepAlive overloads must be listed, not just one.");
+        CollectionAssert.AreEquivalent(new[] { "()", "(bool includeActive)" }, overloads.Select(o => o.Signature).ToArray());
+
+        foreach (var overload in overloads)
+        {
+            Assert.IsFalse(string.IsNullOrWhiteSpace(overload.Summary),
+                $"ClearKeepAlive{overload.Signature} arrived without its documentation.");
+        }
+    }
+
+    [TestMethod]
     public async Task An_options_reference_reports_a_reference_typed_default_rather_than_null()
     {
         // "Constraints starts out holding a registry" and "Constraints starts out null" are different

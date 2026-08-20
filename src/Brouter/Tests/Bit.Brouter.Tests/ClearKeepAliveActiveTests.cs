@@ -340,4 +340,28 @@ public class ClearKeepAliveActiveTests : BunitTestContext
             Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
         });
     }
+
+    [TestMethod]
+    public async Task IncludeActive_still_releases_retained_content_while_a_navigation_is_in_flight()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/ka");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+
+        await cut.InvokeAsync(() => brouter.Navigate("/plain"));
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("div[hidden] [data-testid=stateful]")));
+
+        // What the two siblings above assert is what the reset must NOT do to an in-flight
+        // navigation. This is the other half of that bargain: the downgrade is a downgrade, not a
+        // bail-out, so the retained /ka instance - which no navigation owns - is released anyway.
+        await cut.InvokeAsync(() => brouter.Navigate("/teardown-nav-target"));
+        await cut.InvokeAsync(() => brouter.ClearKeepAlive(includeActive: true));
+        Assert.AreEqual(0, cut.FindAll("div[hidden] [data-testid=stateful]").Count);
+
+        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.FindAll("[data-testid=teardown-nav-target]").Count));
+
+        // Really disposed rather than merely unrendered: returning recreates it.
+        await cut.InvokeAsync(() => brouter.Navigate("/ka"));
+        cut.WaitForAssertion(() => Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent));
+    }
 }

@@ -437,4 +437,78 @@ public class ReloadTests : BunitTestContext
             Assert.AreEqual(0, cut.FindAll("[data-testid=stateful]").Count);
         });
     }
+
+    [TestMethod]
+    public async Task Reload_is_not_vetoed_by_a_leave_guard()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/leave-guarded");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        cut.Find("[data-testid=inc]").Click();
+
+        // The route's leave guard cancels everything it is asked about. A reload never leaves the
+        // page, so it is not asked: the teardown empties the committed chain before the pipeline
+        // runs, leaving its leave phase nothing to consult. Were it consulted, the veto would abort
+        // the re-match and strand the user on a blank routed region.
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() => Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent));
+        Assert.AreEqual(0, cut.Instance.LeaveGuardRuns);
+
+        // Still armed for real departures - the reload neither disarmed nor consumed it.
+        await cut.InvokeAsync(() => brouter.Navigate("/other"));
+        cut.WaitForAssertion(() => Assert.AreEqual(1, cut.Instance.LeaveGuardRuns));
+        Assert.AreEqual(0, cut.FindAll("[data-testid=other]").Count);
+    }
+
+    [TestMethod]
+    public async Task Reload_honours_a_redirect_from_the_re_matching_guard()
+    {
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/data/view");
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-testid=child-data]")));
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+
+        // A guard that means to send the user elsewhere redirects rather than cancels: unlike the
+        // cancel path there is nothing to restore, because the redirect commits a real navigation.
+        cut.Instance.RedirectGuardTo = "/other";
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, cut.FindAll("[data-testid=other]").Count);
+            // The torn-down page must not be put back beside the page it redirected to.
+            Assert.AreEqual(0, cut.FindAll("[data-testid=layout]").Count);
+            // A redirect IS a navigation, so this one moves the url - the reload itself never does.
+            Assert.IsTrue(nav.Uri.EndsWith("/other"), nav.Uri);
+        });
+    }
+
+    [TestMethod]
+    public async Task Reload_does_not_run_a_view_transition()
+    {
+        Services.Configure<BrouterOptions>(o => o.ViewTransitions = true);
+        var module = Context!.JSInterop.SetupModule("./_content/Bit.Brouter/bit-brouter.js");
+        module.Mode = JSRuntimeMode.Loose;
+        module.Setup<bool>("beginViewTransition", _ => true).SetResult(true);
+        module.SetupVoid("completeViewTransition").SetVoidResult();
+
+        var (cut, brouter) = RenderAt<ReloadHost>("http://localhost/plain");
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+
+        // A real navigation animates, so the handshake is demonstrably wired up in this fixture...
+        await cut.InvokeAsync(() => brouter.Navigate("/other"));
+        cut.WaitForAssertion(() => cut.Find("[data-testid=other]"));
+        var afterNavigation = module.Invocations.Count(i => i.Identifier == "beginViewTransition");
+        Assert.AreEqual(1, afterNavigation);
+
+        await cut.InvokeAsync(() => brouter.Navigate("/plain"));
+        cut.WaitForAssertion(() => cut.Find("[data-testid=stateful]"));
+        var beforeReload = module.Invocations.Count(i => i.Identifier == "beginViewTransition");
+
+        // ...but a reload rebuilds the same page at the same url, where an animation reads as the
+        // page cross-fading into itself.
+        await cut.InvokeAsync(() => brouter.ReloadAsync().AsTask());
+        cut.WaitForAssertion(() => Assert.AreEqual("count:0", cut.Find("[data-testid=stateful]").TextContent));
+
+        Assert.AreEqual(beforeReload, module.Invocations.Count(i => i.Identifier == "beginViewTransition"));
+    }
 }

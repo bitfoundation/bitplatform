@@ -1,7 +1,9 @@
 ﻿@* Per-parameter keep-alive demo. The /notes/{id:int} route is declared with
    KeepAlive KeepAliveMax="2": each visited id keeps its OWN live instance (draft, clicks and all),
    up to the budget - beyond it the least-recently-used hidden note is evicted (disposed).
-   Also demos IBrouter.ClearKeepAlive(), which drops every retained page on demand. *@
+   Also demos the three IBrouter resets: ClearKeepAlive(), which drops every retained page on
+   demand; ClearKeepAlive(includeActive: true), which rebuilds the visible one too; and
+   ReloadAsync(), which rebuilds it and re-runs the pipeline behind it. *@
 
 @inject IBrouter brouter
 
