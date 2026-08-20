@@ -458,7 +458,7 @@ public static partial class BmotionTransitionSpec
         // "spring(damping: 30)" would come back measured as a spring with a stiffness of 30. The
         // space after the separator is closed up first, which leaves only the gaps between
         // arguments to split on.
-        var pairs = NameSeparatorSpaceRegex().Replace(text, "$1");
+        var pairs = NameSeparatorSpaceRegex().Replace(text, "$1$2");
 
         var parts = pairs.Contains(',')
             ? SplitOutsideBrackets(pairs)
@@ -510,7 +510,7 @@ public static partial class BmotionTransitionSpec
     /// of "damping = 30". Closing it up leaves the pair as one token for the split that follows. A
     /// name is a bare identifier, so this cannot match inside a bezier list or a quoted value.
     /// </summary>
-    [GeneratedRegex(@"(?<=\b[A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*")]
+    [GeneratedRegex(@"(\b[A-Za-z_][A-Za-z0-9_]*)\s*([:=])\s*")]
     private static partial Regex NameSeparatorSpaceRegex();
 
     [GeneratedRegex(@"^\s*(Bm|Motion|BmTransition)\s*\.\s*", RegexOptions.IgnoreCase)]
