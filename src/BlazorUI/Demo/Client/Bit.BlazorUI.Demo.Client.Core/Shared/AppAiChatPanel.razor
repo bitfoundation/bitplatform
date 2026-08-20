@@ -22,7 +22,7 @@
                  ModeFull="_isSmallScreen is true"
                  Modeless="_isSmallScreen is false"
                  OnDismiss="WrapHandled(HandleOnDismissPanel)"
-                 Classes="@(new() { Container = "panel-cnt" })">
+                 Classes="@(new() { Container = $"panel-cnt{(_isMaximized ? " maximized" : null)}" })">
         <Header>
             <BitStack Horizontal Alignment="BitAlignment.Center">
                 <BitText Typography="BitTypography.H4">AI chat panel</BitText>
@@ -39,6 +39,15 @@
                            Variant="BitVariant.Text"
                            OnClick="WrapHandled(ClearChat)"
                            Color="BitColor.SecondaryBackground" />
+
+                <BitButton IconOnly
+                           FixedColor
+                           Style="padding:10px"
+                           Variant="BitVariant.Text"
+                           Color="BitColor.SecondaryBackground"
+                           OnClick="() => _isMaximized = !_isMaximized"
+                           Title="@(_isMaximized ? "Restore" : "Maximize")"
+                           IconName="@(_isMaximized ? BitIconName.BackToWindow : BitIconName.FullScreen)" />
             </BitStack>
         </Header>
         <Body>

@@ -3,7 +3,7 @@ using Boilerplate.Shared.Features.Chatbot;
 namespace Boilerplate.Tests.Features.Chatbot;
 
 /// <summary>
-/// <c>AiChatMessage.Successful</c> is the typed signal for "this answer was cancelled or failed". The client sets it
+/// <c>AiChatMessageResponse.Successful</c> is the typed signal for "this answer was cancelled or failed". The client sets it
 /// and renders it as the "Canceled" tag, and the server drops those turns from the history it resends to the model
 /// (See <see cref="AppChatbotHistoryTests"/>) - but only if the flag actually crosses the wire. It carried a
 /// <c>[JsonIgnore]</c> for exactly as long as the flag was a client-only concern, and putting it back would not break
@@ -47,7 +47,7 @@ public class AiChatMessageWireContractTests
         })
         {
             Assert.Contains("successful", json, StringComparison.OrdinalIgnoreCase,
-                $"{name} does not put AiChatMessage.Successful on the wire, so the server cannot tell a canceled answer from a real one and will replay truncated answers to the model. Payload: {json}");
+                $"{name} does not put AiChatMessageResponse.Successful on the wire, so the server cannot tell a canceled answer from a real one and will replay truncated answers to the model. Payload: {json}");
 
             var received = JsonSerializer.Deserialize<StartChatRequest>(json, HubPayloadOptions)!;
 

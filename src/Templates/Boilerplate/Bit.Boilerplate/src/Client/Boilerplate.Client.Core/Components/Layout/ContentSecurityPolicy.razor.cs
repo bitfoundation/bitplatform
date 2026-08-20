@@ -62,6 +62,7 @@ public partial class ContentSecurityPolicy
         //#if (signalR == true)
         connectSrc.Add("https://*.service.signalr.net");
         connectSrc.Add(apiUrl.Replace("http:", "ws:").Replace("https:", "wss:"));
+        mediaSrc.Add("blob:");
         //#endif
 
         // --- Add Google Fonts ---

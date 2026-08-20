@@ -108,7 +108,12 @@ public partial class ResetPasswordPage
 
         try
         {
-            var resendModel = new SendResetPasswordTokenRequestDto { Email = model.Email, PhoneNumber = model.PhoneNumber };
+            var resendModel = new SendResetPasswordTokenRequestDto
+            {
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                ReturnUrl = ReturnUrlQueryString
+            };
 
             await identityController.SendResetPasswordToken(resendModel, CurrentCancellationToken);
 

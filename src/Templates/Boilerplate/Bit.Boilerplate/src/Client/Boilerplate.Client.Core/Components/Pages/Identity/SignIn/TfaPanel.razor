@@ -9,15 +9,21 @@
         <BitOtpInput AutoFocus
                      NoValidate
                      Length="6"
+                     NormalizeDigits
+                     @bind-Value="otpCode"
+                     IsLoading="IsWaiting"
                      Size="BitSize.Large"
                      Type="BitInputType.Number"
-                     OnChange="@(value => Model.TwoFactorCode = value)"
+                     InputMode="BitInputMode.Tel"
+                     OnChange="@(_ => SyncTwoFactorCode())"
                      OnFill="WrapHandled(OnTokenProvided.InvokeAsync)"
                      Label="@Localizer[nameof(AppStrings.Code)]" />
 
         <BitTextField NoValidate
                       Immediate
-                      OnChange="@(value => Model.TwoFactorCode = value)"
+                      @bind-Value="recoveryCode"
+                      IsEnabled="IsWaiting is false"
+                      OnChange="@(_ => SyncTwoFactorCode())"
                       Label="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]"
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                       Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />

@@ -13,6 +13,12 @@ public enum AttachmentKind
     /// Resized to fit within 512*512px, preserving the aspect ratio.
     /// </summary>
     ProductPrimaryImageMedium,
-    ProductPrimaryImageOriginal
+    ProductPrimaryImageOriginal,
+    //#endif
+    //#if (signalR == true)
+    /// <summary>
+    /// An image the user attached to a message in the AI chat panel.
+    /// </summary>
+    AiChatImage
     //#endif
 }

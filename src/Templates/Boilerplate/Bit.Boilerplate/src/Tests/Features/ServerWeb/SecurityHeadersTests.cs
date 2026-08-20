@@ -23,10 +23,9 @@ public class SecurityHeadersTests
     /// message box, so it needs <c>microphone=(self)</c>.
     /// <para>
     /// This gets a test because the failure is invisible everywhere it would plausibly be looked for: the header is
-    /// only sent outside Development, Chrome on Android gates <c>SpeechRecognition</c> on this feature while Chrome on
-    /// desktop does not, and the browser reports the refusal as the same generic <c>not-allowed</c> that a user
-    /// declining the microphone prompt produces. So tightening it back to <c>()</c> breaks dictation on phones, in
-    /// production only, with an error message that blames the user.
+    /// only sent outside Development, and the browser reports the refusal as a <c>getUserMedia</c> rejection that
+    /// cannot be told apart from the user declining the microphone prompt. So tightening it back to <c>()</c> breaks
+    /// dictation in production only, with an error message that blames the user.
     /// </para>
     /// </summary>
     [TestMethod]

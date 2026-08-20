@@ -54,7 +54,7 @@ SCSS is compiled to CSS during the same build pipeline. You'll also learn how to
 ```json
 {
     "devDependencies": {
-        "esbuild": "0.28.1",
+        "esbuild": "0.28.2",
         "sass": "1.102.0",
         "typescript": "7.0.2"
     }
@@ -262,7 +262,7 @@ After running the commands, your `package.json` should look like this:
         "uuid": "^11.0.3"
     },
     "devDependencies": {
-        "esbuild": "0.28.1",
+        "esbuild": "0.28.2",
         "sass": "1.102.0",
         "typescript": "7.0.2",
         "@types/uuid": "^10.0.0"

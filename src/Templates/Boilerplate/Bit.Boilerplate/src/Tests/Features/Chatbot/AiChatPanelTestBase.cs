@@ -8,27 +8,6 @@ namespace Boilerplate.Tests.Features.Chatbot;
 public abstract class AiChatPanelTestBase : AppPageTest
 {
     /// <summary>
-    /// Stands in for the <c>SpeechRecognition</c> a headless browser has no microphone to feed.
-    /// <para>
-    /// The recognizer that is listening registers itself under <c>window.__microphoneProbe</c>, so a test can report
-    /// speech the way a real engine would - including reporting one utterance many times, which every engine does
-    /// while it revises what it heard and Android's does again after it has settled.
-    /// </para>
-    /// </summary>
-    protected const string MicrophoneProbeScript = """
-        (() => {
-            const probe = { recognizer: null, startCount: 0 };
-            window.__microphoneProbe = probe;
-
-            window.SpeechRecognition = function () {
-                const recognizer = this;
-                this.start = () => { probe.recognizer = recognizer; probe.startCount++; };
-                this.stop = () => { recognizer.onend?.(); };
-            };
-        })();
-        """;
-
-    /// <summary>
     /// Opens the floating chat button and waits for the panel, including its locally rendered greeting - which is
     /// the signal that the panel is fully interactive rather than merely present in the DOM.
     /// </summary>
