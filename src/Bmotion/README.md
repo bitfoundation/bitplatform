@@ -921,14 +921,15 @@ real animation engine off-screen** - a headless `IBmotionInterop` lets it constr
 is measured in microseconds:
 
 - **`SimulateBmotionTransition`** plays a transition and reports how long it takes to settle, how
-  far it overshoots and what the curve looks like. A spring has no duration argument, so this is
-  the only way to know what one does before shipping it. `CompareBmotionTransitions` ranks several.
+  far it overshoots and what the curve looks like. Nothing in a transition states its own settle
+  time - a spring's falls out of the physics - so this is the only way to know what one does before
+  shipping it. Pass several at once, separated by semicolons, to rank them side by side.
 - **`AnalyzeBmotionAnimation`** starts an animation and reports which playback path the engine
   chose - the browser compositor, or the C# frame loop. That choice is exactly what decides whether
   the animation plays or silently snaps on Blazor Server, and nothing in a build log says which.
 - **`ReviewBmotionCode`** checks written markup for the mistakes that compile cleanly and then do
   nothing: an `Exit` with no presence component, a `@foreach` with no `@key`, a spring whose
-  duration the engine ignores.
+  stiffness the engine discards because `bounce` or `duration` was set alongside it.
 - **`GetBmotionRecipes`** / **`GetBmotionRecipe`** hand over complete, copy-pasteable patterns - a
   staggered list, a modal, a scroll reveal, a shared-element transition - each with the caveat that
   is not visible in the code.
@@ -942,7 +943,8 @@ is measured in microseconds:
   for the four common jobs: building an animation, adding Bmotion to an app, tuning how something
   feels, and debugging an animation that does not move.
 
-Start with the `GetBmotionOverview` tool. See
+Start with the `SearchBmotion` tool, or read `GetBmotionOverview` once for the rules that are not
+visible in any signature. See
 [McpController](Bit.Bmotion.Demo/Server/Controllers/McpController.cs) and
 [BmotionMotionLab](Bit.Bmotion.Demo/Server/Services/BmotionMotionLab.cs).
 

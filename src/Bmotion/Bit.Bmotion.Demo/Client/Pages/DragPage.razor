@@ -381,6 +381,10 @@
         display: flex;
         height: 3.5rem;
         color: var(--bm-primary-text);
+        /* 20px/700 counts as large text, which is the bar white can clear over the light half of
+           this gradient - see .box in motion-samples.css, which is sized for the same reason. */
+        font-size: 1.25rem;
+        font-weight: 700;
         border-radius: 8px;
         align-items: center;
         justify-content: center;

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using Bit.Bmotion.Demo.Server.Services;
@@ -17,16 +17,30 @@ namespace Bit.Bmotion.Demo.Server.Controllers;
 public static class McpResources
 {
     [McpServerResource(UriTemplate = "bmotion://guide", Name = "Bit.Bmotion guide", MimeType = "text/markdown")]
-    [Description("The complete Bit.Bmotion guide (the library README), every section in one document.")]
+    [Description("The Bit.Bmotion guide (the library README), every section in one document - bounded, so a guide longer than the limit arrives cut, with the sections it did not reach named. Read bmotion://guide/{heading} for any one of them in full.")]
     public static string Guide()
     {
         var readme = BmotionSourceCatalog.Readme;
 
         // The guide is an embedded resource, so an empty one means it was not embedded in this build.
         // Saying so is an answer; an empty document reads as a library with nothing written about it.
-        return readme.Length > 0
-            ? readme
-            : "The Bit.Bmotion guide is not available in this build: the README was not embedded in the assembly.";
+        if (readme.Length == 0)
+        {
+            return "The Bit.Bmotion guide is not available in this build: the README was not embedded in the assembly.";
+        }
+
+        // Bounded by the same MaxDocumentLength as everything else this server hands out: a resource is
+        // pinned into a conversation the same way a tool answer lands in one, and the whole README is
+        // the largest document here - well over the limit, so this one is normally read cut.
+        //
+        // What the notice names is the sibling resource rather than the tools that read the guide: a
+        // client can mount this server's resources without its tools, and a heading is not guessable,
+        // so the headings come with it. Cut without them, the rest of the guide has no address.
+        var headings = string.Join(", ", BmotionSourceCatalog.GuideSections.Select(section => section.Heading));
+
+        return McpController.Truncate(readme, continuation:
+            $"Read the rest one section at a time from bmotion://guide/{{heading}}. " +
+            $"The guide's sections, in order, are: {headings}.");
     }
 
     [McpServerResource(UriTemplate = "bmotion://guide/{heading}", Name = "Guide section", MimeType = "text/markdown")]
@@ -44,7 +58,9 @@ public static class McpResources
     [Description("Every public Bit.Bmotion type with its kind and summary.")]
     public static string ApiList()
     {
-        var lines = BmotionApiCatalog.Types.Select(type => $"- **{type.Name}** ({type.Kind}) - {type.Summary}");
+        // The one-line summaries, as GetBmotionApiList uses: a pinned index of 66 types is read to
+        // find a name, and the full prose behind each one is what bmotion://api/{typeName} is for.
+        var lines = BmotionApiCatalog.TypeSummaries.Select(type => $"- **{type.Name}** ({type.Kind}) - {type.Summary}");
 
         return $"# Bit.Bmotion public API\n\n{string.Join('\n', lines)}";
     }
@@ -153,7 +169,7 @@ public static class McpResources
 
         return content is null
             ? $"No source file at '{path}'."
-            : McpController.Truncate(content);
+            : McpController.Truncate(content, path);
     }
 
     [McpServerResource(UriTemplate = "bmotion://setup/{renderMode}", Name = "Setup guide", MimeType = "text/markdown")]
