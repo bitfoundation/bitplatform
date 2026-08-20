@@ -33,7 +33,7 @@ public class McpToolFailureTests
     {
         // Answering GetBrouterSetupGuide without a render mode would mean guessing at the one thing
         // the caller is asking about.
-        foreach (var tool in new[] { "GetBrouterSetupGuide", "SearchBrouter", "GetBrouterGuideSection", "GetBrouterApiDetails", "GetBrouterSourceFile" })
+        foreach (var tool in new[] { "GetBrouterSetupGuide", "SearchBrouter", "InspectBrouterRouteTemplates" })
         {
             var result = await McpCall.RawAsync(tool);
 
@@ -42,15 +42,29 @@ public class McpToolFailureTests
     }
 
     [TestMethod]
-    public async Task A_long_answer_is_cut_at_the_cap_and_says_that_it_was()
+    public void A_long_answer_is_cut_at_the_cap_and_says_that_it_was()
     {
-        // The demo's own MCP page is the longest file here, and comfortably past the cap.
-        var file = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/Pages/McpPage.razor" });
+        // Nothing this server hands out is over the cap any more - the documentation pages are served
+        // rendered rather than as their own source, and what is left of the demo's source is code. So
+        // the cut is exercised where it lives, which is also the only way to state the rule that no
+        // real file happens to test: a cut never falls between the halves of a surrogate pair, since
+        // half a pair is not text and a client re-encoding the answer would mangle or reject it.
+        var emoji = "\U0001F680";
 
-        Assert.IsTrue(file.Length > MaxDocumentLength, "The file used to exercise truncation is no longer longer than the cap.");
-        Assert.IsTrue(file.Length < MaxDocumentLength + 200, $"The answer is {file.Length} characters; it should have been cut at {MaxDocumentLength}.");
-        StringAssert.Contains(file, "[truncated");
-        StringAssert.Contains(file, "the full text is longer than");
+        var text = new string('x', MaxDocumentLength - 1) + emoji + new string('y', 100);
+
+        var truncated = Bit.Brouter.Demo.Server.Controllers.McpController.Truncate(text);
+
+        StringAssert.Contains(truncated, "[truncated");
+        StringAssert.Contains(truncated, "the full text is longer than");
+
+        var kept = truncated[..truncated.IndexOf("\n\n[truncated", StringComparison.Ordinal)];
+
+        Assert.AreEqual(MaxDocumentLength - 1, kept.Length, "The cut fell in the middle of a surrogate pair.");
+        Assert.IsFalse(char.IsHighSurrogate(kept[^1]), "The kept text ends on half a character.");
+
+        // What fits is handed over whole, without a notice about a cut that did not happen.
+        Assert.AreEqual(text[..100], Bit.Brouter.Demo.Server.Controllers.McpController.Truncate(text[..100]));
     }
 
     [TestMethod]
@@ -59,10 +73,15 @@ public class McpToolFailureTests
         // Every prose tool an agent calls in the ordinary course of working, at its largest answer.
         (string Tool, Dictionary<string, object?>? Arguments)[] calls =
         [
-            ("GetBrouterOverview", null),
             ("GetBrouterSetupGuide", new() { ["renderMode"] = "auto" }),
             ("GetBrouterGuideSection", new() { ["heading"] = "Data loader" }),
+            ("GetBrouterGuideSection", null),
             ("GetBrouterDocsPage", new() { ["slug"] = "api" }),
+            ("GetBrouterDocsPage", null),
+            ("GetBrouterApi", null),
+            ("GetBrouterApi", new() { ["typeName"] = "IBrouterRoute" }),
+            ("GetBrouterRouteConstraints", null),
+            ("GetBrouterSourceFile", null),
             ("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" }),
         ];
 
@@ -99,10 +118,9 @@ public class McpToolFailureTests
         "SearchBrouter" => new() { ["query"] = "guard" },
         "GetBrouterSetupGuide" => new() { ["renderMode"] = "server" },
         "GetBrouterGuideSection" => new() { ["heading"] = "Quick start" },
-        "GetBrouterApiDetails" => new() { ["typeName"] = "IBrouter" },
+        "GetBrouterApi" => new() { ["typeName"] = "IBrouter" },
         "GetBrouterSourceFile" => new() { ["path"] = "Demo/Client/AppRouter.razor" },
-        "InspectBrouterRouteTemplate" => new() { ["template"] = "/users/{id:int}" },
-        "AnalyzeBrouterRouteTable" => new() { ["templates"] = "/users/{id:int}" },
+        "InspectBrouterRouteTemplates" => new() { ["templates"] = "/users/{id:int}" },
         _ => null
     };
 }

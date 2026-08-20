@@ -65,8 +65,8 @@ public class RouterOracleTests
 
             Assert.AreEqual(refused, predicted,
                 refused
-                    ? $"The router refuses '{a}' next to '{b}', and AnalyzeBrouterRouteTable calls the pair fine."
-                    : $"The router accepts '{a}' next to '{b}', and AnalyzeBrouterRouteTable calls the pair ambiguous.");
+                    ? $"The router refuses '{a}' next to '{b}', and InspectBrouterRouteTemplates calls the pair fine."
+                    : $"The router accepts '{a}' next to '{b}', and InspectBrouterRouteTemplates calls the pair ambiguous.");
         }
     }
 

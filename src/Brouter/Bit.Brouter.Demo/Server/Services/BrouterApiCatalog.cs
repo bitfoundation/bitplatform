@@ -41,6 +41,97 @@ public static class BrouterApiCatalog
     public static BrouterApiTypeDto[] Types => _types.Value;
 
     /// <summary>
+    /// The index of the public types, as GetBrouterApi answers when it is called without a name.
+    /// <para>
+    /// A summary is cut to its first sentence here: what an index is for is choosing what to read
+    /// next, and the paragraph that follows the first sentence is the answer to the call the reader
+    /// has not made yet. Whole summaries made this list four times longer than the reference of the
+    /// one type anybody wanted.
+    /// </para>
+    /// </summary>
+    public static string RenderIndex()
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("# Bit.Brouter public API").AppendLine();
+        builder.AppendLine($"{Types.Length} public types. Call `GetBrouterApi(typeName: \"...\")` for one of them in full - ")
+               .AppendLine("its parameters, properties, methods or enum values, with the default value each one really has.")
+               .AppendLine();
+
+        foreach (var type in Types)
+        {
+            builder.Append($"- **{type.Name}** ({type.Kind})");
+            if (FirstSentence(type.Summary) is string summary) builder.Append($" - {summary}");
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// The full reference of one type as Markdown, or null when no public type goes by that name.
+    /// <para>
+    /// Markdown rather than an object, and one renderer rather than two: the tool and the
+    /// <c>brouter://api/{typeName}</c> resource hand out the same text, so neither can drift from
+    /// the other - and a reference a model reads costs less as prose than as JSON sent twice, once
+    /// under an output schema and once as the text that mirrors it.
+    /// </para>
+    /// </summary>
+    public static string? RenderType(string typeName)
+    {
+        var details = GetTypeDetails(typeName);
+        if (details is null) return null;
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"# {details.Name} ({details.Kind})").AppendLine();
+        builder.AppendLine($"`{details.FullName}`");
+
+        if (details.BaseType is not null) builder.AppendLine($" - inherits `{details.BaseType}`");
+        if (details.Implements?.Length > 0) builder.AppendLine($" - implements {string.Join(", ", details.Implements.Select(i => $"`{i}`"))}");
+
+        builder.AppendLine();
+
+        if (details.Summary is not null) builder.AppendLine(details.Summary).AppendLine();
+        if (details.Remarks is not null) builder.AppendLine(details.Remarks).AppendLine();
+
+        foreach (var group in details.Members.GroupBy(member => member.Kind))
+        {
+            builder.AppendLine($"## {group.Key}").AppendLine();
+
+            foreach (var member in group)
+            {
+                builder.Append($"- **{member.Name}**{member.Signature}");
+                if (member.Type is not null) builder.Append($" : `{member.Type}`");
+                if (member.Default is not null) builder.Append($" = `{member.Default}`");
+                if (member.Required) builder.Append(" **(required)**");
+                if (member.Summary is not null) builder.Append($" - {member.Summary}");
+                builder.AppendLine();
+
+                // The caveats live in the remarks, which is exactly the half of the documentation
+                // an agent writing against a member needs and the least likely to be remembered.
+                if (member.Remarks is not null) builder.AppendLine($"  {member.Remarks.Replace("\n", "\n  ", StringComparison.Ordinal)}");
+            }
+
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>The first sentence of a summary, for a listing that is read to choose by.</summary>
+    private static string? FirstSentence(string? summary)
+    {
+        if (string.IsNullOrWhiteSpace(summary)) return null;
+
+        var text = summary.ReplaceLineEndings(" ").Trim();
+
+        var stop = text.IndexOf(". ", StringComparison.Ordinal);
+
+        return stop > 0 ? text[..(stop + 1)] : text;
+    }
+
+    /// <summary>
     /// The full reference of one type - its Blazor parameters, properties, methods, events or enum
     /// values - or null when no public type goes by that name.
     /// </summary>

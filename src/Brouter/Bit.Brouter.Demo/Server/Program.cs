@@ -3,6 +3,7 @@ using Bit.Brouter.Demo.Server.Controllers;
 using Bit.Brouter.Demo.Server.Services;
 using Microsoft.AspNetCore.Components.Web;
 using ModelContextProtocol.Protocol;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +14,12 @@ builder.Services.AddRazorComponents()
 // register the very same services the WebAssembly container does.
 builder.Services.AddDemoServices();
 
-// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it.
-builder.Services.AddControllers();
+// The MCP server (Controllers/McpController.cs) and the plain HTTP endpoints that mirror it. A
+// member with nothing in it is left out of the JSON, exactly as the MCP transport leaves it out, so
+// the browser view of a tool is the answer an agent gets rather than that answer plus a column of
+// nulls - and a test comparing the two surfaces compares like with like.
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull);
 
 builder.Services.AddMcpServer(options =>
 {

@@ -40,21 +40,22 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 - **Search** across everything at once (`SearchBrouter`) - the guide below, the docs pages, every
   public member, the constraints and the demo's sources - with the exact follow-up call on each hit.
 - **Setup** per Blazor render mode (`GetBrouterSetupGuide`), as the real files of a working project.
-- **The exact API** (`GetBrouterApiList` / `GetBrouterApiDetails`), reflected out of the shipped
-  assembly with every parameter's type, default value and XML documentation.
-- **Route-template checking** (`InspectBrouterRouteTemplate`, `AnalyzeBrouterRouteTable`) using
-  Brouter's own parser: parameters, constraints, specificity ranking, ambiguous pairs, real errors.
-- **The docs and the guide** as text, the constraint catalog, the demo's source files, and the typed
-  routes the source generator emitted for this very site.
+- **The exact API** (`GetBrouterApi`), reflected out of the shipped assembly with every parameter's
+  type, default value and XML documentation.
+- **Route-template checking** (`InspectBrouterRouteTemplates`) using Brouter's own parser: one
+  template in full, or a whole table ranked by specificity with the ambiguous pairs and real errors.
+- **The guide and the docs** as text (`GetBrouterGuideSection`, `GetBrouterDocsPage`), the
+  constraint catalog (`GetBrouterRouteConstraints`) and the demo's own source (`GetBrouterSourceFile`).
 - **Resources** (`brouter://guide/...`, `brouter://api/...`, `brouter://docs/...`) and **prompts**
   for the four common jobs: adding Brouter to an app, implementing a routing feature, migrating off
   the built-in Router, and debugging a route that will not match.
 - **Server instructions** handed over at `initialize` - the working rules an agent reads before it
-  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), output schemas with
-  validated structured results, and `completion/complete` for every argument that is a key into a
-  closed set: the docs slugs, the guide headings, the type names, the source paths.
+  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), an output schema on the
+  two tools whose answer is an object, and `completion/complete` for every argument that is a key
+  into a closed set: the docs slugs, the guide headings, the type names, the source paths.
 
-Start with the `GetBrouterOverview` tool. See
+Eight tools, and one rule across the reference ones: pass the key of the thing you want and you get
+that thing; leave it out and you get the index of what there is. Start with `SearchBrouter`. See
 [McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
 is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
 calls them and prints every JSON-RPC message in both directions - so the server can be tried, and

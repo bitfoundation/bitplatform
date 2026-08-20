@@ -1,11 +1,10 @@
 ﻿using Bit.Brouter.Demo.Client;
-using Bit.Brouter.Demo.Server.Dtos;
 
 namespace Bit.Brouter.Tests.Mcp;
 
 /// <summary>
 /// The tools that answer about the shipped library rather than about text someone wrote: the public
-/// API read out of the assembly, the constraints, and the source generator's real output.
+/// API read out of the assembly, and the route constraints.
 /// <para>
 /// These are the answers an agent writes code against, and the whole point of reading them off the
 /// assembly is that they cannot drift from it. So the tests check the things that would silently
@@ -13,81 +12,104 @@ namespace Bit.Brouter.Tests.Mcp;
 /// parameter is reported as one with the default value it really has, and that a member an agent
 /// asks about by name resolves.
 /// </para>
+/// <para>
+/// Both answer in Markdown rather than with an object, which is what these assertions read. That is
+/// not a formatting preference: a tool that publishes an output schema sends its answer twice, once
+/// as the object and once as the JSON text the spec asks for on its behalf, and a reference nobody
+/// validates is the wrong place to spend that.
+/// </para>
 /// </summary>
 [TestClass]
 public class McpApiToolTests
 {
+    private static Task<string> ApiAsync(string? typeName = null)
+        => McpCall.TextAsync("GetBrouterApi", typeName is null ? null : new() { ["typeName"] = typeName });
+
+    /// <summary>The index's entries: "- **Name** (Kind) - summary".</summary>
+    private static string[] IndexEntries(string index)
+        => [.. index.Split('\n').Select(line => line.Trim()).Where(line => line.StartsWith("- **", StringComparison.Ordinal))];
+
     [TestMethod]
-    public async Task The_api_list_covers_the_library_and_classifies_what_it_finds()
+    public async Task The_api_index_covers_the_library_and_classifies_what_it_finds()
     {
-        var types = await McpCall.StructuredAsync<BrouterApiTypeDto[]>("GetBrouterApiList");
-        var byName = types.ToDictionary(type => type.Name, StringComparer.Ordinal);
+        var index = await ApiAsync();
 
         foreach (var expected in new[] { "Brouter", "Broute", "BrouterLink", "BrouterOutlet", "IBrouter", "BrouterOptions" })
         {
-            Assert.IsTrue(byName.ContainsKey(expected), $"'{expected}' is missing from the public API listing.");
+            StringAssert.Contains(index, $"- **{expected}** (", $"'{expected}' is missing from the public API index.");
         }
 
-        Assert.AreEqual("Component", byName["Broute"].Kind);
-        Assert.AreEqual("Interface", byName["IBrouter"].Kind);
-        Assert.AreEqual("Enum", byName["BrouterScrollMode"].Kind);
+        StringAssert.Contains(index, "- **Broute** (Component)");
+        StringAssert.Contains(index, "- **IBrouter** (Interface)");
+        StringAssert.Contains(index, "- **BrouterScrollMode** (Enum)");
 
-        // A nested or compiler-generated type in the listing means the filter stopped working.
-        foreach (var type in types)
-        {
-            Assert.IsFalse(type.Name.Contains('<') && type.Name.Contains('>') && type.Name.Contains("__", StringComparison.Ordinal),
-                $"'{type.Name}' is a compiler-generated type and should not be listed.");
-        }
+        // The index is what a caller picks a type from, so it has to name the call that reads one.
+        StringAssert.Contains(index, "GetBrouterApi(typeName:");
+
+        // A nested or compiler-generated type in the index means the filter stopped working.
+        Assert.IsFalse(index.Contains("__", StringComparison.Ordinal), "A compiler-generated type is listed in the API index.");
     }
 
     [TestMethod]
     public async Task Public_types_carry_the_summary_their_xml_documentation_gives_them()
     {
         // The XML file is emitted next to the assembly and has to be copied wherever the app runs.
-        // When it is not, every summary comes back null and the reference degrades to a list of names.
-        var types = await McpCall.StructuredAsync<BrouterApiTypeDto[]>("GetBrouterApiList");
-        var documented = types.Count(type => string.IsNullOrWhiteSpace(type.Summary) is false);
+        // When it is not, every summary comes back empty and the reference degrades to a list of names.
+        var entries = IndexEntries(await ApiAsync());
 
-        Assert.IsTrue(documented > types.Length * 3 / 4,
-            $"Only {documented} of {types.Length} public types have a summary - the Bit.Brouter XML documentation is not being read.");
+        Assert.IsTrue(entries.Length > 30, $"Only {entries.Length} public types are listed at all.");
+
+        var documented = entries.Count(entry => entry.Contains(") - ", StringComparison.Ordinal));
+
+        Assert.IsTrue(documented > entries.Length * 3 / 4,
+            $"Only {documented} of {entries.Length} public types have a summary - the Bit.Brouter XML documentation is not being read.");
+    }
+
+    [TestMethod]
+    public async Task The_index_summarizes_rather_than_reprinting_the_whole_reference()
+    {
+        // An index is read to choose what to read next. Whole summaries made this listing several
+        // times longer than the reference of the one type the caller was going to ask for anyway.
+        var index = await ApiAsync();
+        var route = await ApiAsync("IBrouterRoute");
+
+        var entry = IndexEntries(index).Single(line => line.StartsWith("- **IBrouterRoute**", StringComparison.Ordinal));
+
+        Assert.IsTrue(entry.Length < route.Length,
+            "The index entry for a type is not shorter than the type's own reference.");
     }
 
     [TestMethod]
     public async Task A_component_reference_reports_its_blazor_parameters_with_types_and_defaults()
     {
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "Broute" });
+        var broute = await ApiAsync("Broute");
 
-        Assert.IsNull(result.Message);
-        Assert.IsNotNull(result.Details);
-        Assert.AreEqual("Broute", result.Details.Name);
-        Assert.AreEqual("Component", result.Details.Kind);
-        Assert.AreEqual("Bit.Brouter.Broute", result.Details.FullName);
+        StringAssert.StartsWith(broute, "# Broute (Component)");
+        StringAssert.Contains(broute, "`Bit.Brouter.Broute`");
 
-        var path = result.Details.Members.Single(member => member.Name == "Path");
-        Assert.AreEqual("Parameter", path.Kind, "Path is a Blazor [Parameter] and has to be reported as one.");
-        Assert.AreEqual("string", path.Type);
+        // "Parameter" means a Blazor [Parameter] - the distinction an agent needs before writing a tag.
+        StringAssert.Contains(broute, "## Parameter");
+
+        var path = MemberLine(broute, "Path");
+        StringAssert.Contains(path, "`string`");
 
         // The default is read off a freshly constructed instance, which is the only way it stays true.
-        var group = result.Details.Members.Single(member => member.Name == "Group");
-        Assert.AreEqual("bool", group.Type);
-        Assert.AreEqual("false", group.Default);
-
-        Assert.IsFalse(string.IsNullOrWhiteSpace(group.Summary), "The parameter arrived without its documentation.");
+        var group = MemberLine(broute, "Group");
+        StringAssert.Contains(group, "`bool`");
+        StringAssert.Contains(group, "= `false`");
+        Assert.IsTrue(group.Contains(" - ", StringComparison.Ordinal), "The parameter arrived without its documentation.");
     }
 
     [TestMethod]
     public async Task A_service_reference_reports_its_methods_with_their_signatures()
     {
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "IBrouter" });
+        var brouter = await ApiAsync("IBrouter");
 
-        Assert.IsNotNull(result.Details);
+        StringAssert.Contains(brouter, "## Method");
+        StringAssert.Contains(brouter, "- **NavigateAsync**(");
 
-        var navigate = result.Details.Members.First(member => member.Name.StartsWith("NavigateAsync", StringComparison.Ordinal));
-
-        Assert.AreEqual("Method", navigate.Kind);
-        Assert.IsNotNull(navigate.Signature);
-        StringAssert.StartsWith(navigate.Signature, "(");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(navigate.Summary), "IBrouter.NavigateAsync arrived without its documentation.");
+        var navigate = MemberLine(brouter, "NavigateAsync");
+        Assert.IsTrue(navigate.Contains(" - ", StringComparison.Ordinal), "IBrouter.NavigateAsync arrived without its documentation.");
     }
 
     [TestMethod]
@@ -97,22 +119,21 @@ public class McpApiToolTests
         // hide the one an agent needs while still answering "yes, that method exists" - the failure
         // mode this server is built to prevent. IBrouter.ClearKeepAlive is the case in the surface:
         // the parameterless overload and the includeActive one do materially different things.
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "IBrouter" });
+        var brouter = await ApiAsync("IBrouter");
 
-        Assert.IsNotNull(result.Details);
+        StringAssert.Contains(brouter, "- **ClearKeepAlive**()");
+        StringAssert.Contains(brouter, "- **ClearKeepAlive**(bool includeActive)");
+    }
 
-        var overloads = result.Details.Members
-            .Where(member => member.Name == "ClearKeepAlive")
-            .ToArray();
+    [TestMethod]
+    public async Task A_members_remarks_are_served_with_it_rather_than_dropped()
+    {
+        // The remarks carry the caveats - the half of the documentation an agent writing against a
+        // member most needs and is least likely to have remembered.
+        var broute = await ApiAsync("Broute");
 
-        Assert.AreEqual(2, overloads.Length, "Both ClearKeepAlive overloads must be listed, not just one.");
-        CollectionAssert.AreEquivalent(new[] { "()", "(bool includeActive)" }, overloads.Select(o => o.Signature).ToArray());
-
-        foreach (var overload in overloads)
-        {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(overload.Summary),
-                $"ClearKeepAlive{overload.Signature} arrived without its documentation.");
-        }
+        StringAssert.Contains(broute, "KeepAlive");
+        Assert.IsTrue(broute.Length > 4000, "The component reference is too short to be carrying the remarks as well.");
     }
 
     [TestMethod]
@@ -120,149 +141,92 @@ public class McpApiToolTests
     {
         // "Constraints starts out holding a registry" and "Constraints starts out null" are different
         // facts, and only one of them is true.
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "BrouterOptions" });
+        var options = await ApiAsync("BrouterOptions");
 
-        Assert.IsNotNull(result.Details);
-
-        var caseSensitive = result.Details.Members.Single(member => member.Name == "CaseSensitive");
-        Assert.AreEqual("false", caseSensitive.Default);
-
-        var constraints = result.Details.Members.Single(member => member.Name == "Constraints");
-        Assert.IsNotNull(constraints.Default, "BrouterOptions.Constraints is reported as having no default, but it starts out holding a registry.");
+        StringAssert.Contains(MemberLine(options, "CaseSensitive"), "= `false`");
+        StringAssert.Contains(MemberLine(options, "Constraints"), "= `",
+            "BrouterOptions.Constraints is reported as having no default, but it starts out holding a registry.");
     }
 
     [TestMethod]
     public async Task An_enum_reference_reports_its_values()
     {
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "BrouterScrollMode" });
+        var mode = await ApiAsync("BrouterScrollMode");
 
-        Assert.IsNotNull(result.Details);
-        Assert.AreEqual("Enum", result.Details.Kind);
-        Assert.IsTrue(result.Details.Members.All(member => member.Kind == "EnumValue"));
-        CollectionAssert.Contains(result.Details.Members.Select(member => member.Name).ToArray(), "ToTop");
+        StringAssert.StartsWith(mode, "# BrouterScrollMode (Enum)");
+        StringAssert.Contains(mode, "## EnumValue");
+        StringAssert.Contains(mode, "- **ToTop**");
     }
 
     [TestMethod]
     public async Task A_type_is_found_by_the_name_a_caller_would_write()
     {
-        // Casing, and the generic spelling a caller reads in the listing.
+        // Casing, and the generic spelling a caller reads in the index.
         foreach (var typeName in new[] { "broute", "BROUTE" })
         {
-            var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = typeName });
-
-            Assert.IsNotNull(result.Details, $"'{typeName}' did not resolve to Broute.");
-            Assert.AreEqual("Broute", result.Details.Name);
+            StringAssert.StartsWith(await ApiAsync(typeName), "# Broute (Component)", $"'{typeName}' did not resolve to Broute.");
         }
 
-        var generic = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "BrouterAwait<TValue>" });
-        Assert.IsNotNull(generic.Details, "A generic type does not resolve under the name the listing shows for it.");
+        StringAssert.StartsWith(await ApiAsync("BrouterAwait<TValue>"), "# BrouterAwait",
+            "A generic type does not resolve under the name the index shows for it.");
     }
 
     [TestMethod]
     public async Task A_misspelled_type_answers_with_the_names_it_could_have_meant()
     {
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "Brout" });
+        var answer = await ApiAsync("Brout");
 
-        Assert.IsNull(result.Details);
-        Assert.IsNotNull(result.Message);
-        StringAssert.Contains(result.Message, "Did you mean");
-        StringAssert.Contains(result.Message, "Broute");
+        StringAssert.Contains(answer, "Did you mean");
+        StringAssert.Contains(answer, "Broute");
     }
 
     [TestMethod]
-    public async Task An_unrecognizable_type_points_at_the_listing_tool()
+    public async Task An_unrecognizable_type_points_at_the_index()
     {
-        var result = await McpCall.StructuredAsync<BrouterApiDetailsResultDto>("GetBrouterApiDetails", new() { ["typeName"] = "HttpClient" });
+        var answer = await ApiAsync("HttpClient");
 
-        Assert.IsNull(result.Details);
-        StringAssert.Contains(result.Message!, "GetBrouterApiList");
+        StringAssert.Contains(answer, "GetBrouterApi");
+        StringAssert.Contains(answer, "index");
     }
 
     [TestMethod]
     public async Task Every_route_constraint_comes_with_a_rule_and_both_kinds_of_example()
     {
-        var constraints = await McpCall.StructuredAsync<BrouterConstraintDto[]>("GetBrouterRouteConstraints");
+        var constraints = await McpCall.TextAsync("GetBrouterRouteConstraints");
 
-        Assert.AreEqual(ConstraintCatalog.All.Count, constraints.Length);
-
-        foreach (var constraint in constraints)
+        foreach (var constraint in ConstraintCatalog.All)
         {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(constraint.Rule), $"'{constraint.Token}' states no rule.");
-            Assert.IsFalse(string.IsNullOrWhiteSpace(constraint.PassExample), $"'{constraint.Token}' shows no passing value.");
-            Assert.IsFalse(string.IsNullOrWhiteSpace(constraint.FailExample), $"'{constraint.Token}' shows no failing value.");
-            Assert.AreNotEqual(constraint.PassExample, constraint.FailExample);
+            var row = constraints.Split('\n').SingleOrDefault(line => line.StartsWith($"| `{{value:{constraint.Token}}}` |", StringComparison.Ordinal));
+
+            Assert.IsNotNull(row, $"'{constraint.Token}' has no row in the constraint table.");
+
+            var cells = row.Split('|', StringSplitOptions.TrimEntries).Where(cell => cell.Length > 0).ToArray();
+
+            Assert.AreEqual(5, cells.Length, $"'{constraint.Token}' does not state all five of token, category, rule, pass and fail.");
+            StringAssert.Contains(row, constraint.Rule, $"'{constraint.Token}' states no rule.");
+            StringAssert.Contains(row, $"`{constraint.PassExample}`", $"'{constraint.Token}' shows no passing value.");
+            StringAssert.Contains(row, $"`{constraint.FailExample}`", $"'{constraint.Token}' shows no failing value.");
             Assert.IsTrue(constraint.Category is "type" or "validation" or "custom" or "chain", $"'{constraint.Token}' is filed under '{constraint.Category}'.");
         }
 
         // The custom one the demo registers, and constraint chaining, are what a reader is least
         // likely to guess at and most likely to need.
-        CollectionAssert.Contains(constraints.Select(constraint => constraint.Category).ToArray(), "custom");
-        CollectionAssert.Contains(constraints.Select(constraint => constraint.Category).ToArray(), "chain");
+        StringAssert.Contains(constraints, "| custom |");
+        StringAssert.Contains(constraints, "| chain |");
+
+        // A constraint is written in a template, so the table says where to check the finished one.
+        StringAssert.Contains(constraints, "InspectBrouterRouteTemplates");
     }
 
-    [TestMethod]
-    public async Task Every_constraints_try_url_is_a_single_escaped_path_segment()
+    /// <summary>The rendered line for one member, which is where its type, default and summary are.</summary>
+    private static string MemberLine(string reference, string memberName)
     {
-        // The value goes into one URL segment: a passing example carrying a slash, a space or a '#'
-        // would otherwise produce a different URL than the one that exercises the constraint.
-        var constraints = await McpCall.StructuredAsync<BrouterConstraintDto[]>("GetBrouterRouteConstraints");
+        var line = reference.Split('\n')
+                           .Select(text => text.Trim())
+                           .FirstOrDefault(text => text.StartsWith($"- **{memberName}**", StringComparison.Ordinal));
 
-        foreach (var constraint in constraints)
-        {
-            StringAssert.StartsWith(constraint.TryUrl, "/c/");
+        Assert.IsNotNull(line, $"'{memberName}' is missing from the reference.");
 
-            var segments = constraint.TryUrl.Split('/');
-            Assert.AreEqual(4, segments.Length, $"'{constraint.TryUrl}' is not the three-segment demo route it is meant to be.");
-            Assert.AreEqual(constraint.PassExample, Uri.UnescapeDataString(segments[3]),
-                $"'{constraint.TryUrl}' does not carry the passing example it advertises.");
-        }
-    }
-
-    [TestMethod]
-    public async Task The_typed_routes_tool_shows_the_generators_real_output_for_this_site()
-    {
-        var result = await McpCall.StructuredAsync<BrouterTypedRoutesResultDto>("GetBrouterTypedRoutes");
-
-        Assert.IsNull(result.Message, $"The typed-route generator's output could not be read back: {result.Message}");
-        Assert.IsNotNull(result.TypedRoutes);
-        Assert.AreEqual("Bit.Brouter.Demo.Client", result.TypedRoutes.GeneratedFor);
-        StringAssert.Contains(result.TypedRoutes.HowItWorks, "Bit.Brouter.Generators");
-        Assert.IsTrue(result.TypedRoutes.Builders.Length > 10, "Barely any URL builders were found; the generator did not run for this build.");
-        Assert.IsTrue(result.TypedRoutes.Names.Count > 0, "No route-name constants were found, so NavigateToName has nothing to show.");
-    }
-
-    [TestMethod]
-    public async Task Every_typed_route_builder_shows_the_url_it_builds()
-    {
-        var result = await McpCall.StructuredAsync<BrouterTypedRoutesResultDto>("GetBrouterTypedRoutes");
-
-        foreach (var builder in result.TypedRoutes!.Builders)
-        {
-            StringAssert.StartsWith(builder.Signature, "(", $"'{builder.Method}' shows no parameter list.");
-
-            // A builder is a URL builder: an example that is not a URL means it was invoked with
-            // arguments it could not use, and shows the caller nothing.
-            if (builder.ExampleUrl is null) continue;
-
-            StringAssert.StartsWith(builder.ExampleUrl, "/", $"'{builder.Method}' produced '{builder.ExampleUrl}', which is not a URL.");
-        }
-
-        var withExample = result.TypedRoutes.Builders.Count(builder => builder.ExampleUrl is not null);
-        Assert.IsTrue(withExample > result.TypedRoutes.Builders.Length / 2,
-            $"Only {withExample} of {result.TypedRoutes.Builders.Length} builders produced an example URL.");
-    }
-
-    [TestMethod]
-    public async Task Every_named_route_constant_names_a_route_of_this_sites_table()
-    {
-        var result = await McpCall.StructuredAsync<BrouterTypedRoutesResultDto>("GetBrouterTypedRoutes");
-        var routeTable = await McpCall.TextAsync("GetBrouterSourceFile", new() { ["path"] = "Demo/Client/AppRouter.razor" });
-
-        foreach (var (constant, name) in result.TypedRoutes!.Names)
-        {
-            Assert.IsFalse(string.IsNullOrWhiteSpace(name), $"BrouterRoutes.Names.{constant} is empty.");
-            StringAssert.Contains(routeTable, $"Name=\"{name}\"",
-                $"BrouterRoutes.Names.{constant} points at a route named '{name}' that the route table does not declare.");
-        }
+        return line;
     }
 }
