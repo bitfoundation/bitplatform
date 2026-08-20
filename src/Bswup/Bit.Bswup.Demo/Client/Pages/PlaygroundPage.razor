@@ -20,7 +20,7 @@
 
     <div class="playground-grid">
         <section class="playground-card">
-            <h3>Service worker status</h3>
+            <h3><Icon Name="pulse" />Service worker status</h3>
             <dl class="status-list" aria-live="polite">
                 <div><dt>Service worker</dt><dd id="pg-sw-supported">…</dd></div>
                 <div><dt>This page</dt><dd id="pg-sw-controller">…</dd></div>
@@ -35,7 +35,7 @@
         </section>
 
         <section class="playground-card">
-            <h3>Cache buckets</h3>
+            <h3><Icon Name="database" />Cache buckets</h3>
             <p>
                 Bswup's buckets are scope-qualified:
                 <code>bit-bswup:&lt;scope-path&gt; - &lt;version&gt;</code>.
@@ -44,7 +44,7 @@
         </section>
 
         <section class="playground-card">
-            <h3>Update lifecycle</h3>
+            <h3><Icon Name="arrow-sync" />Update lifecycle</h3>
             <p>
                 <code>checkForUpdate()</code> re-fetches the service worker script; if nothing changed you
                 will see <code>UPDATE_NOT_FOUND</code> in the log below. <code>skipWaiting()</code>
@@ -57,7 +57,7 @@
         </section>
 
         <section class="playground-card">
-            <h3>Storage &amp; reset</h3>
+            <h3><Icon Name="wrench" />Storage &amp; reset</h3>
             <p>
                 <code>persistStorage()</code> requests eviction-resistant storage (browsers may prompt or
                 apply engagement heuristics). <code>forceRefresh()</code> clears this app's caches,

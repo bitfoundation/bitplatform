@@ -1,12 +1,37 @@
-﻿<div class="code-block">
-    <div class="code-block-header">
-        <span class="code-block-lang">@Language</span>
-        <button type="button" class="code-block-copy" data-demo-action="copy-code">Copy</button>
-    </div>
-    <pre><code>@Code.Trim('\r', '\n')</code></pre>
-</div>
+﻿@* A code sample: a header naming the language (and, when it matters, the file
+   the sample belongs in), a copy button, and the highlighted sample itself.
 
-@code {
-    [Parameter] public string Code { get; set; } = string.Empty;
-    [Parameter] public string Language { get; set; } = "code";
-}
+   The highlighting is done in C# (CodeBlock.razor.cs) rather than by a script
+   after render, for three reasons: the colours are in the prerendered HTML, so
+   a crawler and a reader with JavaScript off both get them; there is no
+   highlighting library to download on a site whose whole subject is what it
+   costs to download an app; and nothing has to re-run when Blazor replaces the
+   subtree on a client-side navigation.
+
+   The markup below is written with no whitespace between <pre>, <code> and the
+   sample, because inside a <pre> every space and newline in the template is
+   content. *@
+
+<div class="code-block">
+    <div class="code-block-header">
+        <div class="code-block-meta">
+            <span class="code-block-lang">@Language</span>
+            @if (string.IsNullOrWhiteSpace(Title) is false)
+            {
+                <span class="code-block-title">@Title</span>
+            }
+        </div>
+
+        @* The button carries the accessible name, so both glyphs stay decorative;
+           the label is a polite live region so the confirmation is announced and
+           not only seen. Colour is never the only signal - the icon changes to a
+           check and the word changes to "Copied". *@
+        <button type="button" class="code-block-copy" data-demo-action="copy-code"
+                aria-label="@($"Copy the {Language} sample to the clipboard")">
+            <Icon Name="copy" Class="code-block-copy-icon" />
+            <Icon Name="checkmark" Class="code-block-copy-check" />
+            <span class="code-block-copy-label" aria-live="polite">Copy</span>
+        </button>
+    </div>
+    <pre><code>@_html</code></pre>
+</div>

@@ -70,8 +70,9 @@
         <code>resources/read</code>.
     </li>
     <li>
-        <b>Bounded work.</b> The two tools that parse a file you submit run against a time budget and say
-        so in their answer when they hit it, rather than reporting a partial scan as a finished one.
+        <b>Bounded work.</b> <code>InspectBswupServiceWorker</code>, the one tool that parses a file you
+        submit, runs against a time budget and says so in its answer when it hits it, rather than
+        reporting a partial scan as a finished one.
     </li>
 </ul>
 
@@ -375,8 +376,11 @@ else
     </li>
 </ul>
 <p>
-    Ask the server for its own source with
-    <code>GetBswupSourceFile(path: "Demo/Server/Program.cs")</code> - it hands out the files it is running.
+    <code>GetBswupSourceFile</code> hands out this site's own service-worker files and host document, the
+    two sample projects and the library's TypeScript - the files an answer about Bswup is actually made
+    of. It deliberately does not hand out the rest of this site: a documentation site's pages, layouts
+    and stylesheets answer no question about Bswup, and every one of them listed is context an agent
+    pays for before it has asked anything.
 </p>
 
 <div class="pager">
@@ -491,10 +495,11 @@ else
         new("Review a service worker", "tools/call", "InspectBswupServiceWorker",
             new() { ["script"] = SampleServiceWorker }),
 
-        new("Will this asset be cached?", "tools/call", "AnalyzeBswupAssetCaching",
+        new("Will these assets be cached?", "tools/call", "InspectBswupServiceWorker",
             new() { ["script"] = SampleServiceWorker, ["assetUrls"] = SampleAssetUrls }),
 
-        new("Look up a setting", "tools/call", "GetBswupServiceWorkerSettings", []),
+        new("Look up one setting", "tools/call", "GetBswupServiceWorkerSettings",
+            new() { ["name"] = "assetsExclude" }),
 
         new("List every tool", "tools/list", null, []),
     ];
@@ -506,12 +511,11 @@ else
         ["SearchBswup.query"] = "cache an external CDN script",
         ["SearchBswup.limit"] = "5",
         ["GetBswupDocsPage.slug"] = "events",
-        ["GetBswupGuideSection.heading"] = "JavaScript API",
         ["GetBswupSetupGuide.hostingModel"] = "blazor-web-app",
         ["GetBswupSourceFile.path"] = "Demo/Client/wwwroot/service-worker.published.js",
+        ["GetBswupServiceWorkerSettings.name"] = "assetsExclude",
         ["InspectBswupServiceWorker.script"] = SampleServiceWorker,
-        ["AnalyzeBswupAssetCaching.script"] = SampleServiceWorker,
-        ["AnalyzeBswupAssetCaching.assetUrls"] = SampleAssetUrls,
+        ["InspectBswupServiceWorker.assetUrls"] = SampleAssetUrls,
     };
 
     protected override void OnInitialized()
@@ -737,7 +741,7 @@ else
                     Name = name,
                     Type = type,
                     Required = required?.Contains(name) == true,
-                    // The two tools that take a whole file need a box a file fits in.
+                    // The arguments that take a whole file need a box a file fits in.
                     Multiline = prefill.Contains('\n') || name is "script" or "assetUrls",
                     Value = prefill
                 });

@@ -16,7 +16,7 @@
     Long-lived HTTP caching makes repeat visits and updates dramatically faster - the service worker
     revalidates content by hash, so stale HTTP caches are never a correctness problem.
 </p>
-<CodeBlock Language="csharp" Code="@ServerCacheCode" />
+<CodeBlock Language="csharp" Title="Program.cs" Code="@ServerCacheCode" />
 
 <h2>3. Defer Blazor's startup</h2>
 <p>
@@ -39,9 +39,9 @@
     Create (or edit) <code>wwwroot/service-worker.js</code> and <code>wwwroot/service-worker.published.js</code>.
     The only <em>mandatory</em> line is the <code>importScripts</code> call; everything else is tuning:
 </p>
-<CodeBlock Language="javascript" Code="@ServiceWorkerCode" />
+<CodeBlock Language="javascript" Title="wwwroot/service-worker.js" Code="@ServiceWorkerCode" />
 <p>Then make sure the service worker is registered in your project file:</p>
-<CodeBlock Language="xml" Code="@CsprojCode" />
+<CodeBlock Language="xml" Title="YourApp.Client.csproj" Code="@CsprojCode" />
 <p>See the <a href="service-worker">Service Worker Settings</a> reference for every available option.</p>
 
 <h2>6. Pick a progress UI</h2>
