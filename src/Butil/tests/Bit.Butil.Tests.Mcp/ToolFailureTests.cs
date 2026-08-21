@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
 namespace Bit.Butil.Tests.Mcp;
@@ -15,37 +15,36 @@ namespace Bit.Butil.Tests.Mcp;
 /// while it happens.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class ToolFailureTests : McpTestBase
 {
-    [Test]
+    [TestMethod]
     public async Task An_unknown_type_is_answered_with_the_nearest_names()
     {
         var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Clip" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(result.Details, Is.Null);
-            Assert.That(result.Message, Does.Contain("Did you mean"));
-            Assert.That(result.Message, Does.Contain("Clipboard"));
-        });
+            Assert.IsNull(result.Details);
+            Assert.Contains("Did you mean", result.Message!);
+            Assert.Contains("Clipboard", result.Message!);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unrecognisable_type_is_pointed_at_the_listing()
     {
         var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "Telepathy" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(result.Details, Is.Null);
-            Assert.That(result.Message, Does.Contain("GetButilApiDetails with no type name"));
-            Assert.That(result.Message, Does.Contain("SearchButil"));
-        });
+            Assert.IsNull(result.Details);
+            Assert.Contains("GetButilApiDetails with no type name", result.Message!);
+            Assert.Contains("SearchButil", result.Message!);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_empty_argument_is_the_listing_rather_than_a_failed_lookup()
     {
         // Contains("") matches every type, so a naive "did you mean" here would spend a client's
@@ -54,22 +53,23 @@ public class ToolFailureTests : McpTestBase
         var blank = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName = "   " });
         var omitted = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(blank.Details, Is.Null);
-            Assert.That(blank.Types, Is.Not.Null.And.Not.Empty);
+            Assert.IsNull(blank.Details);
+            Assert.IsNotEmpty(blank.Types ?? []);
 
             // A listing may explain itself - it says which of the types it names carry a summary -
             // but an empty type name is not a miss, so nothing here may read as a refusal.
-            Assert.That(blank.Message ?? string.Empty, Does.Not.Contain("Did you mean").And.Not.Contain("has no public type"),
+            Assert.DoesNotContain("Did you mean", blank.Message ?? string.Empty,
+                "An empty type name is a request for the list, so there is nothing to refuse.");
+            Assert.DoesNotContain("has no public type", blank.Message ?? string.Empty,
                 "An empty type name is a request for the list, so there is nothing to refuse.");
 
             // The same listing, not merely one of the same size: a blank argument that took some
             // other path through the tool could answer with as many types and the wrong ones.
-            Assert.That(blank.Types!.Select(type => type.Name),
-                Is.EqualTo(omitted.Types!.Select(type => type.Name)).AsCollection,
+            Assert.AreSequenceEqual(omitted.Types!.Select(type => type.Name), blank.Types!.Select(type => type.Name),
                 "A blank type name answered with a different list than omitting it.");
-        });
+        }
 
         // The same for the three that answer with a document.
         foreach (var (tool, argument) in new[] { ("GetButilDocsPage", "slug"), ("GetButilGuideSection", "heading"), ("GetButilSourceFile", "path") })
@@ -77,72 +77,72 @@ public class ToolFailureTests : McpTestBase
             var text = Text(await CallAsync(tool, new Dictionary<string, object?>(StringComparer.Ordinal) { [argument] = "  " }));
             var listing = Text(await CallAsync(tool));
 
-            Assert.That(text, Is.EqualTo(listing),
+            Assert.AreEqual(listing, text,
                 $"{tool} read a blank {argument} as something other than a request for its listing.");
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unknown_hosting_model_lists_the_ones_that_exist()
     {
         var text = Text(await CallAsync("GetButilSetupGuide", new { hostingModel = "react-native" }));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("not a known hosting model"));
+            Assert.Contains("not a known hosting model", text);
 
             foreach (var model in ButilMcp.HostingModels)
             {
-                Assert.That(text, Does.Contain(model), $"The refusal does not offer '{model}' as an alternative.");
+                Assert.Contains(model, text, $"The refusal does not offer '{model}' as an alternative.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unknown_docs_slug_lists_the_slugs_that_exist()
     {
         var text = Text(await CallAsync("GetButilDocsPage", new { slug = "clipbored" }));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("No documentation page has the slug 'clipbored'"));
-            Assert.That(text, Does.Contain("clipboard"), "The available slugs are listed, and the one that was meant is among them.");
-        });
+            Assert.Contains("No documentation page has the slug 'clipbored'", text);
+            Assert.Contains("clipboard", text, "The available slugs are listed, and the one that was meant is among them.");
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unknown_guide_heading_lists_the_headings_that_exist()
     {
         var text = Text(await CallAsync("GetButilGuideSection", new { heading = "How to install Node" }));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("has no section called"));
-            Assert.That(text, Does.Contain("Getting started"));
-        });
+            Assert.Contains("has no section called", text);
+            Assert.Contains("Getting started", text);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_partial_source_path_is_answered_with_the_paths_it_could_mean()
     {
         var text = Text(await CallAsync("GetButilSourceFile", new { path = "ClipboardPage" }));
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(text, Does.Contain("Did you mean"));
-            Assert.That(text, Does.Contain("Demo/Client/Pages/ClipboardPage.razor"));
-        });
+            Assert.Contains("Did you mean", text);
+            Assert.Contains("Demo/Client/Pages/ClipboardPage.razor", text);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unknown_source_path_is_pointed_at_the_listing()
     {
         var text = Text(await CallAsync("GetButilSourceFile", new { path = "somewhere/else.txt" }));
 
-        Assert.That(text, Does.Contain("Call GetButilSourceFile with no path"));
+        Assert.Contains("Call GetButilSourceFile with no path", text);
     }
 
-    [Test]
+    [TestMethod]
     public async Task Source_paths_cannot_walk_out_of_the_embedded_set()
     {
         // The catalog is a dictionary of embedded resources, not a directory, so there is nothing
@@ -161,85 +161,85 @@ public class ToolFailureTests : McpTestBase
         {
             var text = Text(await CallAsync("GetButilSourceFile", new { path = attempt }));
 
-            Assert.That(text, Does.StartWith("No source file at"), $"'{attempt}' was answered with something other than a miss.");
+            Assert.StartsWith("No source file at", text, $"'{attempt}' was answered with something other than a miss.");
         }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_unknown_api_name_is_answered_with_candidates()
     {
         var inspection = await InspectAsync("Clipbo");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(inspection.IsKnown, Is.False);
-            Assert.That(inspection.Message, Does.Contain("Clipboard"));
-        });
+            Assert.IsFalse(inspection.IsKnown);
+            Assert.Contains("Clipboard", inspection.Message!);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_empty_api_name_says_what_the_argument_wants()
     {
         var inspection = await InspectAsync("   ");
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(inspection.IsKnown, Is.False);
-            Assert.That(inspection.Message, Does.Contain("Clipboard"), "The refusal shows the three shapes of name the argument accepts.");
-            Assert.That(inspection.Message, Does.Contain("web-authn"));
-        });
+            Assert.IsFalse(inspection.IsKnown);
+            Assert.Contains("Clipboard", inspection.Message!, "The refusal shows the three shapes of name the argument accepts.");
+            Assert.Contains("web-authn", inspection.Message!);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_search_that_matches_nothing_says_which_kind_of_nothing()
     {
         // Two different empties, and an agent cannot tell them apart from an empty list: nothing
         // matched, or the query was phrased entirely in words this index drops before matching.
         var unmatched = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "quantum flux capacitor" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(unmatched.Hits, Is.Empty);
-            Assert.That(unmatched.Message, Does.Contain("Nothing in Bit.Butil matches"));
-            Assert.That(unmatched.Message, Does.Contain("GetButilDocsPage with no"));
-        });
+            Assert.IsEmpty(unmatched.Hits);
+            Assert.Contains("Nothing in Bit.Butil matches", unmatched.Message!);
+            Assert.Contains("GetButilDocsPage with no", unmatched.Message!);
+        }
 
         var unsearchable = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "how do I get the browser" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(unsearchable.Hits, Is.Empty);
-            Assert.That(unsearchable.Message, Does.Contain("no searchable term"));
-        });
+            Assert.IsEmpty(unsearchable.Hits);
+            Assert.Contains("no searchable term", unsearchable.Message!);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_empty_search_is_answered_rather_than_refused()
     {
         var result = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(result.Hits, Is.Empty);
-            Assert.That(result.Message, Is.Not.Null.And.Not.Empty);
-        });
+            Assert.IsEmpty(result.Hits);
+            Assert.IsFalse(string.IsNullOrEmpty(result.Message));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_search_limit_is_clamped_rather_than_honoured_blindly()
     {
         var none = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "storage", limit = 0 });
         var many = await CallStructuredAsync<SearchResult>("SearchButil", new { query = "storage", limit = 10_000 });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(none.Hits, Has.Length.EqualTo(1), "A limit of zero is clamped to one rather than answering with nothing.");
-            Assert.That(many.Hits.Length, Is.LessThanOrEqualTo(50), "The upper clamp is what stops one query returning the whole index.");
-            Assert.That(many.Hits, Is.Not.Empty);
-        });
+            Assert.HasCount(1, none.Hits, "A limit of zero is clamped to one rather than answering with nothing.");
+            Assert.IsLessThanOrEqualTo(50, many.Hits.Length, "The upper clamp is what stops one query returning the whole index.");
+            Assert.IsNotEmpty(many.Hits);
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_search_query_that_is_a_whole_file_is_bounded()
     {
         // Every term is counted against every entry, so the work is terms x corpus. A pasted file
@@ -250,14 +250,14 @@ public class ToolFailureTests : McpTestBase
         var result = await CallStructuredAsync<SearchResult>("SearchButil", new { query });
         var elapsed = DateTime.UtcNow - started;
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(result.Hits, Is.Not.Empty, "The real terms in the query should still match.");
-            Assert.That(elapsed, Is.LessThan(TimeSpan.FromSeconds(30)), $"A {query.Length}-character query took {elapsed}.");
-        });
+            Assert.IsNotEmpty(result.Hits, "The real terms in the query should still match.");
+            Assert.IsLessThan(TimeSpan.FromSeconds(30), elapsed, $"A {query.Length}-character query took {elapsed}.");
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task An_empty_plan_says_what_the_argument_wants_and_still_answers_with_the_rules()
     {
         // This is the only tool here whose argument is genuinely required - an empty one is not a
@@ -266,20 +266,22 @@ public class ToolFailureTests : McpTestBase
         // attached, which reads as an answer and teaches nothing.
         var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "" });
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
-            Assert.That(plan.Apis, Has.Length.EqualTo(1));
-            Assert.That(plan.Apis[0].IsKnown, Is.False);
-            Assert.That(plan.Apis[0].Message, Does.Contain("Clipboard").And.Contain("web-authn"),
+            Assert.HasCount(1, plan.Apis);
+            Assert.IsFalse(plan.Apis[0].IsKnown);
+            Assert.Contains("Clipboard", plan.Apis[0].Message!,
+                "The refusal shows the three shapes of name the argument accepts.");
+            Assert.Contains("web-authn", plan.Apis[0].Message!,
                 "The refusal shows the three shapes of name the argument accepts.");
 
             // Registration and prerendering hold for every Butil call, whatever the feature is.
-            Assert.That(plan.Checklist, Is.Not.Empty);
-            Assert.That(string.Join(" ", plan.Checklist), Does.Contain("AddBitButilServices()"));
-        });
+            Assert.IsNotEmpty(plan.Checklist);
+            Assert.Contains("AddBitButilServices()", string.Join(" ", plan.Checklist));
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task No_refusal_leaks_anything_about_the_server()
     {
         // A caller here is an arbitrary MCP client. Whatever went wrong belongs in the server's log,
@@ -294,23 +296,22 @@ public class ToolFailureTests : McpTestBase
             Text(await CallRawAsync("PlanButilFeature", new { apis = "nope" })),
         };
 
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var answer in answers)
             {
-                Assert.That(answer, Does.Not.Contain("   at "), $"An answer carries a stack frame: {answer}");
-                Assert.That(answer, Does.Not.Contain("Exception"), $"An answer names an exception type: {answer}");
-                Assert.That(answer, Does.Not.Match(@"[A-Za-z]:\\"), $"An answer carries a filesystem path: {answer}");
-                Assert.That(answer, Does.Not.Contain("/home/"), $"An answer carries a filesystem path: {answer}");
+                Assert.DoesNotContain("   at ", answer, $"An answer carries a stack frame: {answer}");
+                Assert.DoesNotContain("Exception", answer, $"An answer names an exception type: {answer}");
+                Assert.DoesNotMatchRegex(@"[A-Za-z]:\\", answer, $"An answer carries a filesystem path: {answer}");
+                Assert.DoesNotContain("/home/", answer, $"An answer carries a filesystem path: {answer}");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_call_to_a_tool_that_does_not_exist_is_an_error_rather_than_a_hang()
     {
         // The one case that SHOULD be a protocol error: the tool itself is not there.
-        Assert.That(async () => await Mcp.CallToolAsync("GetButilTeaAndBiscuits", cancellationToken: Ct),
-            Throws.Exception);
+        await Assert.ThrowsAsync<Exception>(async () => await Mcp.CallToolAsync("GetButilTeaAndBiscuits", cancellationToken: Ct));
     }
 }

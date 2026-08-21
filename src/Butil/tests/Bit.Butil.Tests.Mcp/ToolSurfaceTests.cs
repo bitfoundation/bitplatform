@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Client;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
@@ -15,19 +15,22 @@ namespace Bit.Butil.Tests.Mcp;
 /// documentation one.
 /// </para>
 /// </summary>
-[TestFixture]
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class ToolSurfaceTests : McpTestBase
 {
     private IList<McpClientTool> _tools = null!;
 
-    [OneTimeSetUp]
+    /// <summary>
+    /// Listed once for the fixture: every test below reads the same advertised surface, and what it
+    /// reads off each tool is data the client already holds rather than another call.
+    /// </summary>
+    [TestInitialize]
     public async Task ListTools()
     {
-        _tools = await Mcp.ListToolsAsync(cancellationToken: Ct);
+        _tools = await OncePerFixtureAsync(async () => await Mcp.ListToolsAsync(cancellationToken: Ct));
     }
 
-    [Test]
+    [TestMethod]
     public void Server_advertises_exactly_the_expected_tools()
     {
         var advertised = _tools.Select(tool => tool.Name).OrderBy(name => name, StringComparer.Ordinal).ToArray();
@@ -35,82 +38,82 @@ public class ToolSurfaceTests : McpTestBase
 
         // Both directions on purpose. A missing tool breaks a client that calls it; an unexpected
         // one is a tool nobody wrote a description, an annotation or a test for.
-        Assert.That(advertised, Is.EqualTo(expected).AsCollection,
+        Assert.AreSequenceEqual(expected, advertised,
             "The advertised tool names have changed. Renaming or removing one breaks every client that already holds the old name.");
     }
 
-    [Test]
+    [TestMethod]
     public void Every_tool_carries_a_title_and_a_description()
     {
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
-                Assert.That(tool.Title, Is.Not.Null.And.Not.Empty, $"{tool.Name} has no title for a person to read in a tool picker.");
+                Assert.IsFalse(string.IsNullOrEmpty(tool.Title), $"{tool.Name} has no title for a person to read in a tool picker.");
 
                 // The description is the only thing an agent has to choose with. These are written
                 // to be read - a one-liner would defeat the point of the server.
-                Assert.That(tool.Description, Is.Not.Null.And.Not.Empty, $"{tool.Name} has no description.");
-                Assert.That(tool.Description!.Length, Is.GreaterThan(80),
+                Assert.IsFalse(string.IsNullOrEmpty(tool.Description), $"{tool.Name} has no description.");
+                Assert.IsGreaterThan(80, tool.Description!.Length,
                     $"{tool.Name}'s description is too thin for an agent to choose it from: '{tool.Description}'.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public void Every_tool_is_annotated_read_only_and_closed_world()
     {
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
                 var annotations = tool.ProtocolTool.Annotations;
 
-                Assert.That(annotations, Is.Not.Null, $"{tool.Name} carries no annotations.");
+                Assert.IsNotNull(annotations, $"{tool.Name} carries no annotations.");
 
                 // A client told a tool is read-only can run it without stopping to ask a person -
                 // the difference between an agent that consults the documentation and one that
                 // guesses rather than interrupt.
-                Assert.That(annotations!.ReadOnlyHint, Is.True, $"{tool.Name} must be annotated read-only.");
-                Assert.That(annotations.IdempotentHint, Is.True, $"{tool.Name} must be annotated idempotent.");
-                Assert.That(annotations.DestructiveHint, Is.False, $"{tool.Name} must be annotated non-destructive.");
+                Assert.IsTrue(annotations!.ReadOnlyHint, $"{tool.Name} must be annotated read-only.");
+                Assert.IsTrue(annotations.IdempotentHint, $"{tool.Name} must be annotated idempotent.");
+                Assert.IsFalse(annotations.DestructiveHint, $"{tool.Name} must be annotated non-destructive.");
 
                 // OpenWorld = false says the answers come from this build rather than from the web,
                 // so a disagreement with a search result is this library's version of the truth.
-                Assert.That(annotations.OpenWorldHint, Is.False, $"{tool.Name} must be annotated closed-world.");
+                Assert.IsFalse(annotations.OpenWorldHint, $"{tool.Name} must be annotated closed-world.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public void Every_tool_declares_exactly_the_parameters_it_takes()
     {
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
                 var schema = tool.JsonSchema;
 
-                Assert.That(schema.ValueKind, Is.EqualTo(JsonValueKind.Object), $"{tool.Name} has no input schema object.");
-                Assert.That(schema.GetProperty("type").GetString(), Is.EqualTo("object"));
+                Assert.AreEqual(JsonValueKind.Object, schema.ValueKind, $"{tool.Name} has no input schema object.");
+                Assert.AreEqual("object", schema.GetProperty("type").GetString());
 
                 string[] declared = schema.TryGetProperty("properties", out var properties)
                     ? [.. properties.EnumerateObject().Select(property => property.Name)]
                     : [];
 
-                Assert.That(declared, Is.EquivalentTo(ButilMcp.Tools[tool.Name]),
+                CollectionAssert.AreEquivalent(ButilMcp.Tools[tool.Name], declared,
                     $"{tool.Name} does not declare the parameters the suite expects.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public void Every_parameter_is_typed_and_every_optional_one_states_its_default()
     {
         // An argument an agent has to guess the shape of is an argument it gets wrong - and an
         // optional one it cannot see the default of is worse, because omitting it is then a guess
         // too. SearchButil's `limit` is the case: a client has to know it gets twelve hits.
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
@@ -122,36 +125,36 @@ public class ToolSurfaceTests : McpTestBase
 
                 foreach (var property in properties.EnumerateObject())
                 {
-                    Assert.That(property.Value.TryGetProperty("type", out _), Is.True,
+                    Assert.IsTrue(property.Value.TryGetProperty("type", out _),
                         $"{tool.Name}.{property.Name} declares no type, so a client cannot know what to send.");
 
                     if (required.Contains(property.Name)) continue;
 
-                    Assert.That(property.Value.TryGetProperty("default", out _), Is.True,
+                    Assert.IsTrue(property.Value.TryGetProperty("default", out _),
                         $"{tool.Name}.{property.Name} is optional but publishes no default, so a client cannot tell what omitting it does.");
                 }
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public void No_tool_publishes_an_output_schema()
     {
         // An output schema is not free and it is not what it looks like: declaring one makes the SDK
         // send the answer twice, as structuredContent and as the identical JSON in the text block
         // the protocol wants there anyway. The three data tools carried both, plus 2,800 characters
         // of schema in every tools/list. The JSON a client parses is the same either way.
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
-                Assert.That(tool.ReturnJsonSchema.HasValue, Is.False,
+                Assert.IsFalse(tool.ReturnJsonSchema.HasValue,
                     $"{tool.Name} publishes an output schema, so every one of its answers is now sent twice.");
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public async Task A_data_tool_answers_with_its_json_once()
     {
         // The other half of the same promise, from the wire rather than from the declaration.
@@ -164,20 +167,20 @@ public class ToolSurfaceTests : McpTestBase
                 _ => new { typeName = "Clipboard" }
             });
 
-            Assert.Multiple(() =>
+            using (Assert.Scope())
             {
-                Assert.That(result.StructuredContent, Is.Null,
+                Assert.IsNull(result.StructuredContent,
                     $"{tool} answered with structuredContent as well as text - the same JSON, paid for twice.");
 
-                Assert.That(Text(result), Does.StartWith("{"), $"{tool} answers with data, so its text block is the JSON of it.");
-            });
+                Assert.StartsWith("{", Text(result), $"{tool} answers with data, so its text block is the JSON of it.");
+            }
         }
     }
 
-    [Test]
+    [TestMethod]
     public void Required_arguments_are_marked_required()
     {
-        Assert.Multiple(() =>
+        using (Assert.Scope())
         {
             foreach (var tool in _tools)
             {
@@ -190,29 +193,29 @@ public class ToolSurfaceTests : McpTestBase
                     // The argument of each of these IS the question: a call without it is not a
                     // broader call, it is a call that cannot be answered.
                     case "SearchButil":
-                        Assert.That(required, Does.Contain("query"));
-                        Assert.That(required, Does.Not.Contain("limit"), "limit has a default and must stay optional.");
+                        Assert.Contains("query", required);
+                        Assert.DoesNotContain("limit", required, "limit has a default and must stay optional.");
                         break;
 
-                    case "GetButilSetupGuide": Assert.That(required, Does.Contain("hostingModel")); break;
-                    case "PlanButilFeature": Assert.That(required, Does.Contain("apis")); break;
+                    case "GetButilSetupGuide": Assert.Contains("hostingModel", required); break;
+                    case "PlanButilFeature": Assert.Contains("apis", required); break;
 
                     // The retrieval tools are the other half of the fold that removed the listing
                     // tools: calling one with nothing is how a client asks what it can return.
                     // Marking the argument required would put those four listings back out of reach
                     // and leave nothing in their place.
                     default:
-                        Assert.That(tool.Name, Is.AnyOf([.. ButilMcp.ListingTools]),
+                        Assert.Contains(tool.Name, ButilMcp.ListingTools,
                             $"{tool.Name} requires none of its arguments but is not one of the tools that lists on an empty call.");
-                        Assert.That(required, Is.Empty,
+                        Assert.IsEmpty(required,
                             $"{tool.Name} lists what it can return when called with no argument, so its argument cannot be required.");
                         break;
                 }
             }
-        });
+        }
     }
 
-    [Test]
+    [TestMethod]
     public void The_tool_list_itself_fits_in_a_context_window()
     {
         // tools/list is put in front of the model on every session this server is connected to, so
@@ -224,7 +227,7 @@ public class ToolSurfaceTests : McpTestBase
                                     + tool.JsonSchema.GetRawText().Length
                                     + (tool.ReturnJsonSchema?.GetRawText().Length ?? 0));
 
-        Assert.That(size, Is.LessThan(12_000),
+        Assert.IsLessThan(12_000, size,
             $"The advertised tool surface is {size} characters, which every session pays for up front.");
     }
 

@@ -1,12 +1,12 @@
-using Bit.Butil.Tests.E2E.Infrastructure;
-using NUnit.Framework;
+﻿using Bit.Butil.Tests.E2E.Infrastructure;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
 
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class StorageTests : ButilPageTest
 {
-    [Test]
+    [TestMethod]
     public async Task LocalStorage_RoundTrips_StringValues()
     {
         await ClickAndExpectAsync("ls-clear", "ls:clear");
@@ -14,7 +14,7 @@ public class StorageTests : ButilPageTest
         await ClickAndExpectAsync("ls-get", "ls:get:butil-e2e-value");
     }
 
-    [Test]
+    [TestMethod]
     public async Task LocalStorage_RoundTrips_TypedPayload_ViaJsonGenerics()
     {
         await ClickAndExpectAsync("ls-clear", "ls:clear");
@@ -22,7 +22,7 @@ public class StorageTests : ButilPageTest
         await ClickAndExpectAsync("ls-typed-get", "ls:typed-get:42/answer");
     }
 
-    [Test]
+    [TestMethod]
     public async Task SessionStorage_RoundTrips_StringValues()
     {
         await ClickAndExpectAsync("ss-clear", "ss:clear");
@@ -30,13 +30,13 @@ public class StorageTests : ButilPageTest
         await ClickAndExpectAsync("ss-get", "ss:get:butil-e2e-svalue");
     }
 
-    [Test]
+    [TestMethod]
     public async Task LocalStorage_RemoveItem_Removes_The_Key()
     {
         await ClickAndExpectAsync("ls-remove", "ls:removed:True");
     }
 
-    [Test]
+    [TestMethod]
     public async Task LocalStorage_Reports_Length_Key_And_ContainsKey()
     {
         // After clear + two known writes: length is 2, the first key is "alpha",

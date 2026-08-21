@@ -1,6 +1,6 @@
 ﻿using Bit.Butil.Tests.E2E.Infrastructure;
 using Microsoft.Playwright;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
 
@@ -15,49 +15,53 @@ namespace Bit.Butil.Tests.E2E;
 /// mechanism in a real browser: modules arrive on demand, one at a time, self-contained (a module and the
 /// helpers it depends on both work), and the calls behave exactly as in bundle mode.
 /// </remarks>
-[Parallelizable(ParallelScope.Self)]
+[TestClass]
 public class LazyScriptsTests : ButilHarnessTestBase
 {
     protected override string HarnessRoute => "/e2e?lazy=1";
 
-    [Test]
+    [TestMethod]
     public async Task Page_Starts_Without_The_Bundle()
     {
         // No <script> tag for the bundle was written, and nothing has been called yet.
         var bundleScripts = await Page.EvaluateAsync<int>("document.querySelectorAll('script[src*=\"bit-butil.js\"]').length");
-        Assert.That(bundleScripts, Is.Zero, "the bundle must not be on the page in lazy mode");
+        Assert.AreEqual(0, bundleScripts, "the bundle must not be on the page in lazy mode");
 
         var namespaces = await LoadedNamespacesAsync();
-        Assert.That(namespaces, Is.Empty, "no Butil module may be loaded before the first call");
+        Assert.IsEmpty(namespaces, "no Butil module may be loaded before the first call");
     }
 
-    [Test]
+    [TestMethod]
     public async Task First_Call_Imports_Only_That_Module()
     {
         await ClickAndExpectAsync("crypto-uuid", "crypto:uuid:");
 
         var namespaces = await LoadedNamespacesAsync();
-        Assert.That(namespaces, Does.Contain("crypto"));
+        Assert.Contains("crypto", namespaces);
         // Every module carries the prelude and utils it depends on.
-        Assert.That(namespaces, Does.Contain("utils"));
-        Assert.That(namespaces, Does.Contain("version"));
+        Assert.Contains("utils", namespaces);
+        Assert.Contains("version", namespaces);
         // ...and nothing else: no storage, no window, no document.
-        Assert.That(namespaces, Does.Not.Contain("storage"));
-        Assert.That(namespaces, Does.Not.Contain("window"));
-        Assert.That(namespaces, Does.Not.Contain("document"));
+        Assert.DoesNotContain("storage", namespaces);
+        Assert.DoesNotContain("window", namespaces);
+        Assert.DoesNotContain("document", namespaces);
     }
 
-    [Test]
+    [TestMethod]
     public async Task Modules_Accumulate_As_APIs_Are_Used()
     {
         await ClickAndExpectAsync("ls-clear", "ls:clear");
-        Assert.That(await LoadedNamespacesAsync(), Does.Contain("storage").And.Not.Contain("window"));
+        var afterStorage = await LoadedNamespacesAsync();
+        Assert.Contains("storage", afterStorage);
+        Assert.DoesNotContain("window", afterStorage);
 
         await ClickAndExpectAsync("window-base64", "window:b64:YnV0aWw=/butil");
-        Assert.That(await LoadedNamespacesAsync(), Does.Contain("storage").And.Contain("window"));
+        var afterWindow = await LoadedNamespacesAsync();
+        Assert.Contains("storage", afterWindow);
+        Assert.Contains("window", afterWindow);
     }
 
-    [Test]
+    [TestMethod]
     public async Task Calls_Behave_As_In_Bundle_Mode()
     {
         // The same flows the bundle-mode fixtures assert on, across the sync-fast (storage), async
@@ -73,7 +77,7 @@ public class LazyScriptsTests : ButilHarnessTestBase
         await ClickAndExpectAsync("history-scroll", "history:scroll:Manual");
     }
 
-    [Test]
+    [TestMethod]
     public async Task Modules_Are_Fetched_From_The_Package_Content_Path()
     {
         await ClickAndExpectAsync("cookie-set", "cookie:set");
@@ -83,8 +87,8 @@ public class LazyScriptsTests : ButilHarnessTestBase
         var requests = await Page.EvaluateAsync<string[]>(
             "() => performance.getEntriesByType('resource').map(e => e.name).filter(n => n.includes('/_content/Bit.Butil/'))");
 
-        Assert.That(requests, Has.Some.EndsWith("/_content/Bit.Butil/modules/cookie.js"));
-        Assert.That(requests, Has.None.EndsWith("/bit-butil.js"));
+        Assert.Contains((string name) => name.EndsWith("/_content/Bit.Butil/modules/cookie.js", StringComparison.Ordinal), requests);
+        Assert.DoesNotContain((string name) => name.EndsWith("/bit-butil.js", StringComparison.Ordinal), requests);
     }
 
     /// <summary>The <c>BitButil.*</c> keys currently registered on the page, or empty when nothing is loaded.</summary>

@@ -8,21 +8,21 @@
     <IsTestProject>true</IsTestProject>
     <LangVersion>latest</LangVersion>
 
-    <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner.
-         NUnit supports it via its MTP runner; these switches opt in. -->
-    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+         builds that test host into the assembly itself, and it only generates the entry point for
+         an executable project - as a library the runner never runs. -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+
+    <!-- Assert.Scope, which collects several assertion failures into one report, is still marked
+         experimental by MSTest. Most of the fixtures here check a whole answer at once - every cell
+         of a table, every tool's annotations - and are worth far less if the report stops at the
+         first cell that broke. -->
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="4.5.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="5.2.0" />
-    <PackageReference Include="NUnit.Analyzers" Version="4.9.0" />
-    <!-- Must track the Microsoft.Testing.Platform version NUnit's runner pulls in: the trx engine
-         binds to platform internals, and a mismatch fails the run with a MissingMethodException
-         after every test has already passed. -->
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.9.0" />
+    <PackageReference Include="MSTest" Version="4.3.3" />
     <!-- The client half of the same SDK the server is built on. The suite drives /mcp with a real
          protocol client rather than hand-rolled JSON-RPC, so what it exercises is what an editor,
          an agent host or Claude Code exercises - including the handshake and the schemas. -->

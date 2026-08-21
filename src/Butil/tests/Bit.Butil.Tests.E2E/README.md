@@ -1,6 +1,6 @@
-# Bit.Butil end-to-end tests
+﻿# Bit.Butil end-to-end tests
 
-NUnit + Microsoft.Playwright suite that boots `Bit.Butil.Samples.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via NUnit's MTP runner.
+MSTest + Microsoft.Playwright suite that boots `Bit.Butil.Samples.Web` (Blazor WASM) as a child process and exercises two deterministic harness pages. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via `EnableMSTestRunner`.
 
 ## First-time setup
 

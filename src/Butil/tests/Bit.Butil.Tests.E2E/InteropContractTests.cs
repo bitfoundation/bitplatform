@@ -1,5 +1,5 @@
-using System.Diagnostics;
-using NUnit.Framework;
+﻿using System.Diagnostics;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Butil.Tests.E2E;
 
@@ -17,10 +17,13 @@ namespace Bit.Butil.Tests.E2E;
 /// Runs under Node, which is already a build dependency of Bit.Butil (it compiles the TypeScript),
 /// and needs no browser - so unlike the rest of this suite it is fast and has nothing to install.
 /// </remarks>
-[TestFixture]
+[TestClass]
 public class InteropContractTests
 {
-    [Test]
+    /// <summary>Set by MSTest; the run's log, which is where the script's report belongs.</summary>
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
     public void Every_csharp_interop_call_resolves_against_the_bundle_and_its_lazy_module()
     {
         var root = LocateButilRoot();
@@ -29,10 +32,10 @@ public class InteropContractTests
         var sources = Path.Combine(root, "Bit.Butil");
         var modules = Path.Combine(root, "Bit.Butil", "wwwroot", "modules");
 
-        Assert.That(File.Exists(script), $"The verification script is missing: {script}");
-        Assert.That(File.Exists(bundle),
+        Assert.IsTrue(File.Exists(script), $"The verification script is missing: {script}");
+        Assert.IsTrue(File.Exists(bundle),
             $"The bundle is missing: {bundle}. Build Bit.Butil first - the bundle is generated, not checked in.");
-        Assert.That(Directory.Exists(modules),
+        Assert.IsTrue(Directory.Exists(modules),
             $"The lazy-loadable modules are missing: {modules}. Build Bit.Butil first - they are generated alongside the bundle.");
 
         var process = new Process
@@ -61,8 +64,8 @@ public class InteropContractTests
         var stderr = process.StandardError.ReadToEnd();
         process.WaitForExit();
 
-        Assert.That(process.ExitCode, Is.Zero, $"{stderr}{stdout}");
-        TestContext.Out.WriteLine(stdout.Trim());
+        Assert.AreEqual(0, process.ExitCode, $"{stderr}{stdout}");
+        TestContext.WriteLine(stdout.Trim());
     }
 
     /// <summary>

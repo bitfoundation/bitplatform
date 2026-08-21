@@ -1,10 +1,17 @@
 ﻿using System.Net;
 using System.Diagnostics;
 using System.Net.Sockets;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-// NOTE: deliberately in the assembly's root test namespace (not .Infrastructure) so the
-// [SetUpFixture] applies to every test in the assembly regardless of their namespace.
+// Fixtures run in parallel with each other; the tests inside one run in order. That is what the
+// [Parallelizable(ParallelScope.Self)] on each fixture used to say, expressed once for the assembly.
+// Sequential within a fixture is what McpTestBase.OncePerFixtureAsync is written against: the first
+// test of a fixture loads what the rest of them read. Workers = 0 lets the runner pick, which is the
+// processor count.
+[assembly: Parallelize(Workers = 0, Scope = ExecutionScope.ClassLevel)]
+
+// NOTE: deliberately in the assembly's root test namespace (not .Infrastructure), next to the
+// fixtures whose server it starts.
 namespace Bit.Butil.Tests.Mcp;
 
 /// <summary>
@@ -24,7 +31,7 @@ namespace Bit.Butil.Tests.Mcp;
 /// that makes this suite a smoke test against a real deployment.
 /// </para>
 /// </summary>
-[SetUpFixture]
+[TestClass]
 public class McpServerFixture
 {
     /// <summary>The origin the server answers on, without a trailing slash.</summary>
@@ -51,10 +58,11 @@ public class McpServerFixture
     /// </summary>
     public static string? ColdSearch { get; private set; }
 
-    private Process? _process;
+    // Static because MSTest's assembly-level hooks are: the process outlives every test instance.
+    private static Process? _process;
 
-    [OneTimeSetUp]
-    public async Task GlobalSetup()
+    [AssemblyInitialize]
+    public static async Task GlobalSetup(TestContext context)
     {
         var external = Environment.GetEnvironmentVariable("BUTIL_MCP_BASE_URL");
 
@@ -95,8 +103,10 @@ public class McpServerFixture
         };
 
         // Drain both pipes so the child's buffers never fill and stall the server it is hosting.
-        _process.OutputDataReceived += (_, e) => { if (e.Data is not null) TestContext.Progress.WriteLine(e.Data); };
-        _process.ErrorDataReceived += (_, e) => { if (e.Data is not null) TestContext.Progress.WriteLine(e.Data); };
+        // Written to the console rather than to the TestContext above: these lines keep arriving on
+        // a background thread long after this method - and eventually the whole run - has finished.
+        _process.OutputDataReceived += (_, e) => { if (e.Data is not null) Console.WriteLine(e.Data); };
+        _process.ErrorDataReceived += (_, e) => { if (e.Data is not null) Console.WriteLine(e.Data); };
 
         if (_process.Start() is false)
             throw new InvalidOperationException("Failed to start the Bit.Butil demo server process.");
@@ -107,14 +117,14 @@ public class McpServerFixture
         await WaitForReady(BaseUrl);
 
         // Before any fixture connects, so it is genuinely the first search this process answers.
-        // Asserted on in ResilienceTests rather than here: a failed assertion in a [SetUpFixture]
+        // Asserted on in ResilienceTests rather than here: a failed assertion in [AssemblyInitialize]
         // reports as every test erroring, which says nothing about what actually broke.
         using var firstSearch = await Http.GetAsync(Url("api/mcp/SearchButil?query=clipboard"));
         ColdSearch = firstSearch.IsSuccessStatusCode ? await firstSearch.Content.ReadAsStringAsync() : string.Empty;
     }
 
-    [OneTimeTearDown]
-    public void GlobalTeardown()
+    [AssemblyCleanup]
+    public static void GlobalTeardown()
     {
         Http?.Dispose();
 
@@ -189,7 +199,7 @@ public class McpServerFixture
         throw new InvalidOperationException("Could not locate Bit.Butil.Demo.Server.csproj relative to the test binaries.");
     }
 
-    private async Task WaitForReady(string baseUrl)
+    private static async Task WaitForReady(string baseUrl)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
 
