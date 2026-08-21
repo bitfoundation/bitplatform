@@ -13,6 +13,13 @@ namespace BitBlazorUI {
          */
         private static _corsTileOrigins: { [origin: string]: true } = {};
 
+        /**
+         * How long a layer is given, after its first tile error, to prove itself reachable before
+         * the origin is switched to CORS mode. Long enough for the rest of the initial batch of
+         * tiles to land, short enough that a genuinely blocked layer redraws without a visible wait.
+         */
+        private static readonly _tileCorsRetryDelay = 1_000;
+
         /** Origin of a tile url template, or null when it does not parse. */
         private static tileOrigin(urlTemplate: string): string | null {
             try {
@@ -33,8 +40,8 @@ namespace BitBlazorUI {
          * cross-origin isolated with Cross-Origin-Embedder-Policy: require-corp - the only COEP
          * value WebKit understands, and what the multi-threaded WebAssembly runtime needs there -
          * a cross-origin tile without a Cross-Origin-Resource-Policy header is blocked in no-cors
-         * mode instead, so the first layer on that host that fails to load a single tile marks the
-         * host and redraws itself in CORS mode (OSM, Carto, OpenTopoMap... all send
+         * mode instead, so the first layer on that host whose whole initial batch of tiles fails
+         * marks the host and redraws itself in CORS mode (OSM, Carto, OpenTopoMap... all send
          * Access-Control-Allow-Origin: *). Mirrors the no-cors then CORS retry the Extras/Legacy
          * script and stylesheet loaders do.
          */
@@ -48,7 +55,10 @@ namespace BitBlazorUI {
          * tile layer. `retry` is invoked at most once, and only when every tile of that layer
          * failed: a layer that loaded at least one tile is talking to a reachable server, so a
          * later error is an ordinary missing/failing tile and must not switch that host to CORS
-         * mode (which would break a tile server that sends no CORS headers).
+         * mode (which would break a tile server that sends no CORS headers). The decision is
+         * therefore deferred by `_tileCorsRetryDelay` from the first error, giving the rest of
+         * the initial batch of tiles - which a layer requests in parallel, so their results
+         * interleave - the chance to disprove it.
          */
         static createTileCorsFallback(urlTemplate: string, retry: () => void) {
             const origin = BitMapHelpers.tileOrigin(urlTemplate);
@@ -63,13 +73,27 @@ namespace BitBlazorUI {
                 && BitMapHelpers._corsTileOrigins[origin] !== true;
             let loaded = false;
             let retried = false;
+            let scheduled = false;
             return {
                 onTileLoad: () => { loaded = true; },
                 onTileError: () => {
-                    if (!enabled || loaded || retried) return;
-                    retried = true;
-                    BitMapHelpers._corsTileOrigins[origin!] = true;
-                    retry();
+                    if (!enabled || loaded || retried || scheduled) return;
+                    // The first error settles nothing on its own: the tiles of a layer are
+                    // requested in parallel, so an ordinary missing tile can report back before
+                    // any of its siblings has finished loading. Acting on it would switch a
+                    // perfectly reachable host to CORS mode - and break it for good when it
+                    // sends CORP but no Access-Control-Allow-Origin. Wait for the rest of the
+                    // batch instead and retry only if none of it loaded, which is the COEP
+                    // signature: every tile of the layer blocked, not just one.
+                    scheduled = true;
+                    setTimeout(() => {
+                        if (loaded || retried) return;
+                        retried = true;
+                        BitMapHelpers._corsTileOrigins[origin!] = true;
+                        // No longer inside the tile event, so the map may have been disposed
+                        // meanwhile; a failing redraw must not surface as an unhandled error.
+                        try { retry(); } catch { /* ignore */ }
+                    }, BitMapHelpers._tileCorsRetryDelay);
                 },
             };
         }
