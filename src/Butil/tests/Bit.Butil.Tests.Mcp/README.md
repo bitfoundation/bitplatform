@@ -45,9 +45,9 @@ suite runs the app the way the app runs.
 | `Infrastructure/McpServerFixture.cs` | Assembly-level `[SetUpFixture]`: boots the demo server on a free port, into its own artifacts path so a developer's running instance cannot lock the build. |
 | `Infrastructure/McpTestBase.cs` | A live `McpClient` per fixture, and the helpers the assertions are written in. |
 | `Infrastructure/WireContracts.cs` | The server's public inventory, written down — tool, resource and prompt names are identifiers clients store, so renaming one has to fail a test. Also parses the `Tool` strings hits hand back into real calls. |
-| `Infrastructure/WireDtos.cs` | The structured payloads, re-declared rather than shared with the server: these records **are** the contract a client codes against. |
+| `Infrastructure/WireDtos.cs` | The payloads the data tools answer with, re-declared rather than shared with the server: these records **are** the contract a client codes against. |
 | `ServerContractTests.cs` | The handshake — serverInfo, advertised capabilities, and the instructions the model carries all session. |
-| `ToolSurfaceTests.cs` | tools/list: the names, titles, descriptions, annotations, input and output schemas, and the standing context cost of the whole surface. |
+| `ToolSurfaceTests.cs` | tools/list: the names, titles, descriptions, annotations, input schemas, the absence of output schemas — which would double every answer — and the standing context cost of the whole surface. |
 | `ToolBehaviourTests.cs` | What each tool answers when called properly — including rendering **every** documentation page. |
 | `ToolFailureTests.cs` | Unresolvable arguments: a sentence naming the nearest candidates, never a protocol error, never a leak. |
 | `SearchTests.cs` | The entry-point tool: capabilities phrased as a person would phrase them, and every follow-up call a hit names actually invoked. |
@@ -61,7 +61,11 @@ suite runs the app the way the app runs.
 ## What a failure here usually means
 
 * **A tool, resource or prompt name changed** — that is a breaking change for every client that
-  already holds the old name, and `WireContracts.cs` is where you accept it deliberately.
+  already holds the old name, and `WireContracts.cs` is where you accept it deliberately. The count
+  is part of that contract: the surface is deliberately **seven** tools, because a description is
+  paid for in every request of every session. A listing is not a tool here — it is what a retrieval
+  tool answers when called with no argument — and `PlanButilFeature` answers for one API as well as
+  for a set, so an eighth tool appearing is a question to answer rather than a test to update.
 * **A documentation page stopped rendering** — it reads something from its surroundings that is not
   there when it renders outside the router. The tool answers with an apology instead of the page.
 * **A service reports no members or no summary** — the reflection walk or the XML documentation is

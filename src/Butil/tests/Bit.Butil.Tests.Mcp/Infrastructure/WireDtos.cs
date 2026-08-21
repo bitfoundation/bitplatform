@@ -24,9 +24,7 @@ public sealed record ApiTypeDetails(
     string? DocsUrl,
     ApiMember[] Members);
 
-public sealed record ApiDetailsResult(ApiTypeDetails? Details, string? Message);
-
-public sealed record Capability(string Api, string[] Services, string BrowserSupport, string[] Requires, string Summary, string DocsUrl);
+public sealed record ApiDetailsResult(ApiTypeDetails? Details, ApiType[]? Types, string? Message);
 
 public sealed record ApiInspection(
     string Query,
@@ -37,7 +35,6 @@ public sealed record ApiInspection(
     string[]? Inject,
     string? BrowserSupport,
     string[]? Requires,
-    string[]? Notes,
     string[]? Disposables,
     string[]? NextCalls);
 
@@ -51,16 +48,6 @@ public sealed record FeaturePlan(
     string[] Checklist,
     string[]? Ignored);
 
-public sealed record DocsPage(
-    string Group,
-    string Slug,
-    string Url,
-    string Title,
-    string Summary,
-    string[] Services,
-    string BrowserSupport,
-    string[] Requires);
-
-public sealed record GuideSection(string Heading, int Level, string? Parent, int Lines);
-
-public sealed record SourceFile(string Path, string Kind, string? Description, int Lines);
+// No record for the listings: they are answered as Markdown, not as structured content, which is
+// what let the four tools that used to serve them go away. DocsIndexRow in WireContracts.cs parses
+// the docs index, and McpTestBase.ListAsync reads the identifiers out of the other two.

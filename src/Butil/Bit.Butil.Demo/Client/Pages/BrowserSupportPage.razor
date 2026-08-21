@@ -1,4 +1,4 @@
-@page "/browser-support"
+﻿@page "/browser-support"
 @inject Bit.Butil.Window window
 @inject Bit.Butil.UserAgent userAgent
 @inject Bit.Butil.BackgroundSync backgroundSync
@@ -172,7 +172,7 @@ else
         {
             <div class="tdata-row" role="row">
                 <div class="td-cell" role="cell">
-                    <a href="@link.Url">@link.Icon @link.Title</a>
+                    <a href="@link.Url">@link.Title</a>
                 </div>
                 <div class="td-cell" role="cell">
                     <span class="support-chip @link.Support.CssClass()">@link.Support.Label()</span>

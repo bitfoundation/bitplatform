@@ -71,7 +71,7 @@ public class ServerContractTests : McpTestBase
 
         Assert.Multiple(() =>
         {
-            // The entry point. Fourteen tools with no stated order is fourteen guesses.
+            // The entry point. Seven tools with no stated order is seven guesses.
             Assert.That(instructions, Does.Contain("SearchButil"));
 
             // The four facts that decide whether code that compiles also runs.
@@ -98,5 +98,29 @@ public class ServerContractTests : McpTestBase
         // to be a deliberate decision rather than an accident.
         Assert.That(instructions.Length, Is.LessThan(6000),
             $"The server instructions are {instructions.Length} characters and are re-sent every session.");
+    }
+
+    [Test]
+    public async Task Instructions_are_the_map_of_the_tools()
+    {
+        // This routing used to be a GetButilOverview tool, which was the one thing on the server a
+        // client could never need: the instructions are already in the model's context by the time
+        // it would decide to call it. Removing it moved the job here, so here is where a tool that
+        // nothing points at now shows up.
+        var instructions = Mcp.ServerInstructions!;
+        var advertised = (await Mcp.ListToolsAsync(cancellationToken: Ct)).Select(tool => tool.Name).ToArray();
+
+        Assert.Multiple(() =>
+        {
+            foreach (var tool in advertised)
+            {
+                Assert.That(instructions, Does.Contain(tool),
+                    $"The instructions never mention {tool}, so nothing tells an agent when to reach for it.");
+            }
+
+            // The other half of the fold: an agent that does not know a listing is one empty call
+            // away goes looking for a listing tool, finds none, and guesses an argument instead.
+            Assert.That(instructions, Does.Contain("no argument"));
+        });
     }
 }

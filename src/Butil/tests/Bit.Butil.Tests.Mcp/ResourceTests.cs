@@ -115,17 +115,20 @@ public class ResourceTests : McpTestBase
 
         Assert.Multiple(() =>
         {
-            Assert.That(text, Does.StartWith("# Bit.Butil browser support"));
-            Assert.That(text, Does.Contain("| API | Services | Engines | Requires |"));
-            Assert.That(text, Does.Contain("[Clipboard](/clipboard)"));
+            // The matrix and the page index are one table now: the same rows answer "which engines
+            // run this" and "where is it written up", so the resource is the index.
+            Assert.That(text, Does.StartWith("# Bit.Butil documentation pages"));
+            Assert.That(text, Does.Contain("| Slug | Title | Summary | Services | Engines | Requires |"));
+
+            var rows = DocsIndexRow.ParseAll(text);
+
+            Assert.That(rows.Length, Is.GreaterThan(40), "The table should carry a row per documented API.");
+            Assert.That(rows.Select(row => row.Slug), Does.Contain("clipboard"));
 
             // The table is a map: only the name of each precondition, with the sentence explaining
-            // it one InspectButilApi call away.
+            // it one PlanButilFeature call away.
             Assert.That(text, Does.Contain("Secure context"));
             Assert.That(text, Does.Not.Contain("only available over HTTPS or on localhost"));
-
-            var rows = text.Split('\n').Count(line => line.StartsWith("| [", StringComparison.Ordinal));
-            Assert.That(rows, Is.GreaterThan(40), "The matrix should carry a row per documented API.");
         });
     }
 

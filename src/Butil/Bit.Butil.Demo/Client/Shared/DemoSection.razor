@@ -1,16 +1,18 @@
 @inject PageOutline outline
 @inject NavigationManager navManager
 
-@* One section per card, following the BlazorUI demo's page rhythm: a heading over a hairline,
-   the prose, the source, then the live sample on the plain surface. The library groups all of its
-   examples inside a single "Usage" card because they demonstrate one component; a Butil page
-   documents a whole browser API, one independent member per section, so each gets its own card. *@
+@* One section per Fluent 2 card: a heading with the members it documents beside it, the prose, the
+   source, then the live sample on its own stage. The library's demo groups all of its examples
+   inside a single "Usage" card because they demonstrate one component; a Butil page documents a
+   whole browser API, one independent member per section, so each gets its own card. *@
 
 <section class="page-section" id="@Slug">
     <div class="section-heading">
         <h2>
-            <a class="anchor" href="@Path#@Slug" aria-label="Link to this section">#</a>
             @Title
+            <a class="anchor" href="@Path#@Slug" aria-label="Link to this section">
+                <Icon Name="link" Size="16" />
+            </a>
         </h2>
         @if (string.IsNullOrWhiteSpace(Api) is false)
         {
@@ -30,7 +32,13 @@
 
     @if (ChildContent is not null)
     {
+        @* The stage says what it is before the reader clicks anything on it: on a page of prose and
+           source listings, the one region that really runs is worth marking as such. *@
         <div class="demo-area">
+            <span class="demo-area-tag">
+                <i aria-hidden="true"></i>
+                Live sample
+            </span>
             @ChildContent
         </div>
     }

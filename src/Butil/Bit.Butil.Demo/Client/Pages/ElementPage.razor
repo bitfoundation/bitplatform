@@ -1,4 +1,4 @@
-@page "/element"
+﻿@page "/element"
 @implements IAsyncDisposable
 @inject IJSRuntime js
 
@@ -39,7 +39,7 @@
 """)
              Language="razor">
     <div @ref="targetRef" @onpointerdown="CapturePointerId" data-demo="butil"
-         style="padding:0.8rem 1rem;border:2px solid #6366f1;border-radius:8px;max-width:20rem;">
+         class="demo-box">
         I am the target element - click me to record a pointer id.
     </div>
     <div class="field-row">
@@ -80,7 +80,7 @@ await box.ScrollIntoView(new ScrollIntoViewOptions
 });
 """)>
     <div @ref="scrollBoxRef"
-         style="height:8rem;max-width:20rem;overflow:auto;border:1px dashed #6366f1;border-radius:8px;padding:0.6rem;">
+         class="demo-box dashed" style="height:8rem;overflow:auto;">
         <div style="height:40rem;">
             This box is 40rem tall on the inside - use the buttons below to scroll it from C#.
         </div>
@@ -155,7 +155,7 @@ await box.RequestFullScreen(new FullScreenOptions
 });
 """)>
     <div @ref="fullscreenRef"
-         style="padding:1rem;border:1px solid #6366f1;border-radius:8px;max-width:20rem;background:#1e1b4b;color:#e0e7ff;">
+         class="demo-box">
         This panel goes fullscreen.
     </div>
     <div class="controls">
@@ -300,7 +300,7 @@ await input.SubscribeEvent<ButilKeyboardEventArgs>(
 await clickSub.DisposeAsync();
 """)>
     <div @ref="eventsBoxRef"
-         style="padding:0.8rem 1rem;border:1px dashed #6366f1;border-radius:8px;max-width:20rem;">
+         class="demo-box dashed">
         Click target - subscribe below, then click me.
     </div>
     <div class="field">

@@ -1,19 +1,34 @@
 @inject ThemeService theme
 
+@* Fluent 2's command bar: one 56px band, an identity block at the start, the utilities at the end,
+   and everything in it a 32px control on the 4px grid. The bar is the only chrome that is on every
+   page - the nav panel is not on the home page - so anything a reader must be able to reach from
+   anywhere lives here: search, the two outbound links, and the theme. *@
+
 <header class="header">
     <div class="container@(IsHomePage ? " home-page" : "")">
         <div class="header-start">
             @if (IsHomePage is false)
             {
-                <button class="menu-btn" title="Toggle navigation" aria-label="Header menu button"
+                <button class="icon-btn menu-btn" title="Toggle navigation" aria-label="Toggle navigation"
                         aria-expanded="@(IsNavPanelOpen ? "true" : "false")" aria-controls="nav-panel"
                         @onclick="OnToggleNavPanel">
-                    ☰
+                    <Icon Name="@(IsNavPanelOpen ? "dismiss" : "navigation")" Size="20" />
                 </button>
             }
-            <a class="logo" href="" aria-label="Homepage"></a>
-            <a class="link@(IsHomePage ? " active" : "")" href="">Home</a>
-            <a class="link@(IsHomePage ? "" : " active")" href="getting-started">Docs</a>
+
+            @* The mark and the name are one link to the home page rather than two things that
+               happen to sit together, which is also what keeps the target comfortably past 44px
+               on a phone once the name is hidden. *@
+            <a class="brand" href="" aria-label="bit Butil, homepage">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">Butil</span>
+            </a>
+
+            <nav class="header-nav" aria-label="Sections">
+                <a class="link@(IsHomePage ? " active" : "")" href="" aria-current="@(IsHomePage ? "page" : null)">Home</a>
+                <a class="link@(IsHomePage ? "" : " active")" href="getting-started" aria-current="@(IsHomePage ? null : "page")">Docs</a>
+            </nav>
         </div>
 
         <div class="header-end">
@@ -33,35 +48,23 @@
                pages: search has to work from the home page too. *@
             <SearchBox />
 
-            <a class="nuget-btn" target="_blank" rel="noopener noreferrer"
-               href="https://www.nuget.org/packages/Bit.Butil">NuGet</a>
+            <a class="icon-btn" target="_blank" rel="noopener noreferrer"
+               title="Bit.Butil on NuGet" aria-label="Bit.Butil on NuGet (opens in a new tab)"
+               href="https://www.nuget.org/packages/Bit.Butil">
+                <Icon Name="package" Size="20" />
+            </a>
 
-            <a class="github-btn" target="_blank" rel="noopener noreferrer" aria-label="Github repository"
+            <a class="icon-btn github-btn" target="_blank" rel="noopener noreferrer"
+               title="bitplatform on GitHub" aria-label="bitplatform on GitHub (opens in a new tab)"
                href="https://github.com/bitfoundation/bitplatform"></a>
 
             @* One button rather than the two the BlazorUI demo swaps between with CSS: without the
                library's icon font the glyph is inline SVG, which is cheaper to render once and
                relabel than to render twice and hide one. *@
-            <button class="toggle-theme-btn" @onclick="theme.Toggle"
-                    title="@(theme.IsDark ? "Turn on light" : "Turn off light")"
+            <button class="icon-btn" @onclick="theme.Toggle"
+                    title="@(theme.IsDark ? "Switch to the light theme" : "Switch to the dark theme")"
                     aria-label="@(theme.IsDark ? "Switch to the light theme" : "Switch to the dark theme")">
-                @if (theme.IsDark)
-                {
-                    @* Sunny *@
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
-                        <circle cx="12" cy="12" r="4.2" />
-                        <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
-                    </svg>
-                }
-                else
-                {
-                    @* Clear night *@
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
-                         aria-hidden="true" focusable="false">
-                        <path d="M21 13.3A9.2 9.2 0 1 1 10.7 3a7.4 7.4 0 0 0 10.3 10.3Z" />
-                    </svg>
-                }
+                <Icon Name="@(theme.IsDark ? "sun" : "moon")" Size="20" />
             </button>
         </div>
     </div>

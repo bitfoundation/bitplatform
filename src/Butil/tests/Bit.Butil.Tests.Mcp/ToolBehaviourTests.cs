@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Text.RegularExpressions;
+using NUnit.Framework;
 using Bit.Butil.Tests.Mcp.Infrastructure;
 
 namespace Bit.Butil.Tests.Mcp;
@@ -18,42 +19,14 @@ namespace Bit.Butil.Tests.Mcp;
 public class ToolBehaviourTests : McpTestBase
 {
     [Test]
-    public async Task Overview_is_the_map_of_everything_else()
-    {
-        var text = Text(await CallAsync("GetButilOverview"));
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(text, Does.Contain("Bit.Butil"));
-            Assert.That(text, Does.Contain("Which tool to call"));
-            Assert.That(text, Does.Contain("Rules of thumb when writing Butil code"));
-
-            // The overview is assembled from named README sections. When one is renamed the server
-            // says so in place of the text - which is the right behaviour, and a bug to fix here.
-            Assert.That(text, Does.Not.Contain("was not found in this build"),
-                "A section the overview quotes is missing from the README it was built against.");
-
-            // It states which build it answers for, and the count comes from the live catalog.
-            Assert.That(text, Does.Match(@"These tools answer from Bit\.Butil [^\s]+, loaded in this server"));
-            Assert.That(text, Does.Not.Contain("0 injectable services"));
-        });
-
-        // Every tool it tells an agent to reach for has to be a tool the server advertises.
-        var advertised = (await Mcp.ListToolsAsync(cancellationToken: Ct)).Select(tool => tool.Name).ToArray();
-
-        Assert.Multiple(() =>
-        {
-            foreach (var tool in advertised.Where(name => name != "GetButilOverview"))
-            {
-                Assert.That(text, Does.Contain(tool), $"The overview never mentions the {tool} tool.");
-            }
-        });
-    }
-
-    [Test]
     public async Task Api_list_is_the_shipped_public_surface()
     {
-        var types = await CallStructuredAsync<ApiType[]>("GetButilApiList");
+        var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails");
+
+        Assert.That(result.Details, Is.Null, "GetButilApiDetails with no type name is a request for the list, not for a type.");
+        Assert.That(result.Types, Is.Not.Null, "GetButilApiDetails with no type name must answer with every public type.");
+
+        var types = result.Types!;
 
         Assert.Multiple(() =>
         {
@@ -79,6 +52,77 @@ public class ToolBehaviourTests : McpTestBase
 
             Assert.That(types.Count(type => type.IsInjectable), Is.GreaterThan(40), "The injectable services are the reason the library exists.");
         });
+    }
+
+    [Test]
+    public async Task The_api_list_summarises_what_a_caller_picks_from()
+    {
+        // The listing is read to choose something to call, and what a caller calls is a service or a
+        // static class - the summary is what separates two of those names. Everything else on the
+        // surface is an options record, a handle, an event-args type or an enum, met in a signature
+        // and then looked up by that name. Their summaries were two thirds of a 45,000-character
+        // answer to a question each of them answers better on its own.
+        var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails");
+
+        var types = result.Types!;
+        var callable = types.Where(type => type.IsInjectable || type.Kind == "Static class").ToArray();
+        var rest = types.Except(callable).ToArray();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(callable, Is.Not.Empty);
+            Assert.That(rest, Is.Not.Empty);
+
+            // Most carry one - a handful of static classes have no XML summary in the library
+            // itself, and this listing cannot invent what was never written.
+            Assert.That(callable.Count(type => string.IsNullOrWhiteSpace(type.Summary) is false),
+                Is.GreaterThan(callable.Length - 10),
+                "The listing dropped the summaries of the types it exists to be chosen from.");
+
+            foreach (var name in new[] { "Clipboard", "LocalStorage", "Geolocation" })
+            {
+                Assert.That(callable.Single(type => type.Name == name).Summary, Is.Not.Null.And.Not.Empty,
+                    $"{name} is listed without the summary that separates it from the name next to it.");
+            }
+
+            Assert.That(rest.Where(type => string.IsNullOrWhiteSpace(type.Summary) is false), Is.Empty,
+                "The listing carries summaries for types nobody picks off a list; they are one call away by name.");
+
+            // Every name is still here - the listing lost prose, not reach.
+            Assert.That(types.Select(type => type.Name), Does.Contain("ClipboardItem").And.Contain("ButilEvents"));
+        });
+    }
+
+    [Test]
+    public async Task No_type_reference_exceeds_the_documented_cap()
+    {
+        // The same promise the document tools keep, on the tool that answers with data. A handful of
+        // types are enormous - the extension classes are sixty members with their remarks - and one
+        // of them uncapped was 30,000 characters. The members are the answer, so the remarks are
+        // what goes, and the reference says where they went.
+        foreach (var typeName in new[] { "ElementReferenceExtensions", "Window", "ButilKeyCodes", "Clipboard" })
+        {
+            var result = await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails", new { typeName });
+            var text = Text(await CallRawAsync("GetButilApiDetails", new { typeName }));
+
+            Assert.That(text.Length, Is.LessThanOrEqualTo(ButilMcp.MaxDocumentLength + 2_000),
+                $"{typeName} came back at {text.Length} characters.");
+
+            var details = result.Details;
+
+            Assert.That(details, Is.Not.Null);
+
+            // Trimmed or not, every member is still named with its signature: cutting the list would
+            // hide the member that was asked about as readily as any other.
+            Assert.That(details!.Members, Is.Not.Empty);
+            Assert.That(details.Members.Where(member => string.IsNullOrWhiteSpace(member.Name)), Is.Empty);
+
+            if (details.Members.Any(member => member.Remarks is null) && details.Remarks is not null)
+            {
+                Assert.That(details.Members.All(member => member.Remarks is null) is false || details.Remarks!.Contains("omitted", StringComparison.Ordinal),
+                    Is.True, $"{typeName} dropped the remarks without saying so.");
+            }
+        }
     }
 
     [Test]
@@ -145,9 +189,10 @@ public class ToolBehaviourTests : McpTestBase
     }
 
     [Test]
-    public async Task Inspect_reports_what_the_page_has_to_arrange_first()
+    public async Task Plan_reports_what_the_page_has_to_arrange_first()
     {
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "Clipboard" });
+        var plan = await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "Clipboard" });
+        var inspection = plan.Apis.Single();
 
         Assert.Multiple(() =>
         {
@@ -160,19 +205,49 @@ public class ToolBehaviourTests : McpTestBase
             // served over plain http fails silently rather than loudly.
             Assert.That(string.Join(" ", inspection.Requires ?? []), Does.Contain("Secure context").IgnoreCase);
 
-            // Prerendering is the first note on every API, because it is the first mistake.
-            Assert.That(string.Join(" ", inspection.Notes ?? []), Does.Contain("Prerendering"));
-
             Assert.That(inspection.NextCalls, Is.Not.Null.And.Not.Empty);
+
+            // Prerendering is the first mistake anyone makes with this library, so it is stated in
+            // every plan - once, in the checklist. Each API used to repeat the same paragraph in a
+            // Notes list of its own, which for a five-API feature was the same advice five times
+            // over, said again by the checklist, about rules the instructions had already given.
+            Assert.That(string.Join(" ", plan.Checklist), Does.Contain("OnAfterRenderAsync"));
         });
     }
 
     [Test]
-    public async Task Inspect_answers_a_member_as_a_question_about_its_api()
+    public async Task A_plan_says_each_thing_once()
+    {
+        // The checklist speaks for the whole set and names the APIs each item applies to, so nothing
+        // in a plan needs to repeat it per API. This is the assertion that keeps it that way: a
+        // plan of five APIs must not cost five copies of the prerendering paragraph.
+        var plan = await CallStructuredAsync<FeaturePlan>(
+            "PlanButilFeature", new { apis = "Clipboard, Geolocation, MediaDevices, WakeLock, LocalStorage" });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(plan.Apis, Has.Length.EqualTo(5));
+
+            // Nothing per-API is prose about what to do - the fields are what the API IS.
+            foreach (var api in plan.Apis)
+            {
+                Assert.That(string.Join(" ", api.Requires ?? []), Does.Not.Contain("OnAfterRenderAsync"),
+                    $"{api.Api} carries the plan's advice as well as its own preconditions.");
+            }
+
+            // And the checklist itself states each rule once rather than once per API it applies to.
+            var prerender = plan.Checklist.Count(item => item.Contains("OnAfterRenderAsync", StringComparison.Ordinal));
+
+            Assert.That(prerender, Is.EqualTo(1), "The checklist states the prerendering rule more than once.");
+        });
+    }
+
+    [Test]
+    public async Task Plan_answers_a_member_as_a_question_about_its_api()
     {
         // "Geolocation.SubscribeWatch" is a question about Geolocation. Answering "no such type"
         // would be technically true and useless.
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "Geolocation.SubscribeWatch" });
+        var inspection = await InspectAsync("Geolocation.SubscribeWatch");
 
         Assert.Multiple(() =>
         {
@@ -186,24 +261,24 @@ public class ToolBehaviourTests : McpTestBase
     }
 
     [Test]
-    public async Task Inspect_accepts_a_docs_slug()
+    public async Task Plan_accepts_a_docs_slug()
     {
         // "storage" is the slug of the "Local & Session Storage" page - a name no type goes by, and
         // exactly what a search hit and a docs listing both hand back.
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "storage" });
+        var inspection = await InspectAsync("storage");
 
         Assert.Multiple(() =>
         {
-            Assert.That(inspection.IsKnown, Is.True, $"A slug straight out of GetButilDocsList did not resolve: {inspection.Message}");
+            Assert.That(inspection.IsKnown, Is.True, $"A slug straight out of the docs index did not resolve: {inspection.Message}");
             Assert.That(inspection.Api, Is.EqualTo("Local & Session Storage"));
             Assert.That(inspection.Services, Is.EquivalentTo(new[] { "LocalStorage", "SessionStorage" }));
         });
     }
 
     [Test]
-    public async Task Every_docs_slug_is_something_inspect_can_resolve()
+    public async Task Every_docs_slug_is_something_the_planner_can_resolve()
     {
-        var pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+        var pages = await DocsIndexAsync();
 
         // A guide page documents no API, so it is allowed to be unknown to the inspector; every
         // page that documents services is not.
@@ -213,9 +288,9 @@ public class ToolBehaviourTests : McpTestBase
 
         foreach (var page in apiPages)
         {
-            var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = page.Slug });
+            var inspection = await InspectAsync(page.Slug);
 
-            Assert.That(inspection.IsKnown, Is.True, $"InspectButilApi('{page.Slug}') answered: {inspection.Message}");
+            Assert.That(inspection.IsKnown, Is.True, $"PlanButilFeature(apis: \"{page.Slug}\") answered: {inspection.Message}");
         }
     }
 
@@ -286,34 +361,39 @@ public class ToolBehaviourTests : McpTestBase
     }
 
     [Test]
-    public async Task Browser_support_is_the_whole_matrix()
+    public async Task The_docs_index_is_also_the_whole_support_matrix()
     {
-        var capabilities = await CallStructuredAsync<Capability[]>("GetButilBrowserSupport");
+        // Two tools once, one now: the rows that say where an API is documented are the rows that
+        // say which engines run it. Everything the matrix was consulted for has to still be here,
+        // or the fold quietly cost a reader the data rather than a tool description.
+        var pages = await DocsIndexAsync();
+
+        var apiPages = pages.Where(page => page.Services.Length > 0).ToArray();
 
         Assert.Multiple(() =>
         {
-            Assert.That(capabilities.Length, Is.GreaterThan(40));
+            Assert.That(apiPages.Length, Is.GreaterThan(40));
 
-            foreach (var capability in capabilities)
+            foreach (var page in apiPages)
             {
-                Assert.That(capability.Api, Is.Not.Empty);
-                Assert.That(capability.Summary, Is.Not.Empty);
-                Assert.That(capability.Services, Is.Not.Empty, $"{capability.Api} names no Bit.Butil type, so a reader cannot act on it.");
-                Assert.That(capability.BrowserSupport, Is.Not.Empty);
-                Assert.That(capability.DocsUrl, Does.StartWith("/"));
+                Assert.That(page.Title, Is.Not.Empty);
+                Assert.That(page.Engines, Is.Not.Empty, $"{page.Title} says nothing about which engines implement it.");
             }
 
             // The matrix is only useful if it distinguishes: a table where every row says the same
             // thing is a table nobody can choose between two APIs with.
-            Assert.That(capabilities.Select(capability => capability.BrowserSupport).Distinct().Count(), Is.GreaterThan(1));
-            Assert.That(capabilities.Any(capability => capability.Requires.Length > 0), Is.True);
+            Assert.That(apiPages.Select(page => page.Engines).Distinct(StringComparer.Ordinal).Count(), Is.GreaterThan(1));
+            Assert.That(apiPages.Any(page => page.Requires.Length > 0), Is.True);
+
+            // The preconditions are named, not spelled out - the sentence is a PlanButilFeature away.
+            Assert.That(string.Join(" ", apiPages.SelectMany(page => page.Requires)), Does.Contain("Secure context"));
         });
     }
 
     [Test]
     public async Task Docs_list_is_a_usable_index()
     {
-        var pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+        var pages = await DocsIndexAsync();
 
         Assert.Multiple(() =>
         {
@@ -322,10 +402,8 @@ public class ToolBehaviourTests : McpTestBase
             foreach (var page in pages)
             {
                 Assert.That(page.Slug, Is.Not.Empty);
-                Assert.That(page.Url, Is.EqualTo($"/{page.Slug}"));
                 Assert.That(page.Title, Is.Not.Empty);
-                Assert.That(page.Summary, Is.Not.Empty, $"The '{page.Title}' page has no summary, so nothing in the index says what it covers.");
-                Assert.That(page.Group, Is.Not.Empty);
+                Assert.That(page.Group, Is.Not.Empty, $"The '{page.Title}' row sits under no group heading.");
             }
 
             Assert.That(pages.Select(page => page.Slug).Distinct(StringComparer.OrdinalIgnoreCase).Count(), Is.EqualTo(pages.Length),
@@ -339,19 +417,22 @@ public class ToolBehaviourTests : McpTestBase
     [Test]
     public async Task Guide_sections_index_the_readme()
     {
-        var sections = await CallStructuredAsync<GuideSection[]>("GetButilGuideSections");
+        var listing = Text(await CallAsync("GetButilGuideSection"));
+        var sections = await ListAsync("GetButilGuideSection");
 
         Assert.Multiple(() =>
         {
             Assert.That(sections, Is.Not.Empty, "No guide sections means the README was not embedded into the published app.");
-            Assert.That(sections.Select(section => section.Heading), Does.Contain("Getting started"));
+            Assert.That(sections, Does.Contain("Getting started"));
 
-            foreach (var section in sections)
+            // Each entry states how much text asking for it would return, which is what makes the
+            // listing worth reading before choosing - and a zero is an empty section.
+            Assert.That(listing, Does.Not.Contain("(0 lines)"));
+
+            foreach (var heading in sections)
             {
-                Assert.That(section.Level, Is.InRange(2, 3));
-                Assert.That(section.Lines, Is.GreaterThan(0), $"The '{section.Heading}' section is empty.");
-                Assert.That(section.Parent, section.Level == 2 ? Is.Null : Is.Not.Null,
-                    $"'{section.Heading}' is a level-{section.Level} heading with Parent '{section.Parent}'.");
+                Assert.That(listing, Does.Match($@"`{Regex.Escape(heading)}` \(\d+ lines\)"),
+                    $"The '{heading}' entry does not say how long the section is.");
             }
         });
     }
@@ -359,16 +440,17 @@ public class ToolBehaviourTests : McpTestBase
     [Test]
     public async Task Every_guide_section_can_be_read_back_by_its_own_heading()
     {
-        var sections = await CallStructuredAsync<GuideSection[]>("GetButilGuideSections");
+        var sections = await ListAsync("GetButilGuideSection");
 
         // The listing exists to be used: a heading it hands out has to be a heading the reader
-        // accepts, or the pair of tools is broken in the one way nothing else would notice.
-        foreach (var section in sections)
+        // accepts, or calling the tool with and without an argument disagree in the one way nothing
+        // else would notice.
+        foreach (var heading in sections)
         {
-            var text = Text(await CallAsync("GetButilGuideSection", new { heading = section.Heading }));
+            var text = Text(await CallAsync("GetButilGuideSection", new { heading }));
 
-            Assert.That(text, Does.StartWith(new string('#', section.Level) + " "),
-                $"Reading back the '{section.Heading}' section did not return that section.");
+            Assert.That(text, Does.Match($@"^#{{2,3}} {Regex.Escape(heading)}"),
+                $"Reading back the '{heading}' section did not return that section.");
         }
     }
 
@@ -388,14 +470,18 @@ public class ToolBehaviourTests : McpTestBase
     [Test]
     public async Task Source_files_are_real_working_files()
     {
-        var files = await CallStructuredAsync<SourceFile[]>("GetButilSourceFiles");
+        var listing = Text(await CallAsync("GetButilSourceFile"));
+        var files = await ListAsync("GetButilSourceFile");
 
         Assert.Multiple(() =>
         {
             Assert.That(files, Is.Not.Empty, "No source files means the demo's sources were not embedded into the published app.");
-            Assert.That(files.Select(file => file.Kind).Distinct(), Is.EquivalentTo(new[] { "Demo", "Sample" }));
-            Assert.That(files.All(file => file.Lines > 0), Is.True);
-            Assert.That(files.Select(file => file.Path), Does.Contain("Demo/Client/Pages/ClipboardPage.razor"));
+            Assert.That(files, Does.Contain("Demo/Client/Pages/ClipboardPage.razor"));
+
+            // The listing is grouped by kind and each entry says how long the file is, which is what
+            // makes it a thing to choose from rather than a wall of paths.
+            Assert.That(listing, Does.Contain("## Demo").And.Contain("## Sample"));
+            Assert.That(listing, Does.Not.Contain("(0 lines)"));
         });
 
         var content = Text(await CallAsync("GetButilSourceFile", new { path = "Demo/Client/Pages/ClipboardPage.razor" }));
@@ -533,7 +619,7 @@ public class ToolBehaviourTests : McpTestBase
         // the app's router and layout, with no JS runtime; a page that reads something from its
         // surroundings throws, and the tool answers with an apology instead of the documentation.
         // Nothing but rendering all of them finds the one that does.
-        var pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+        var pages = await DocsIndexAsync();
 
         var failures = new List<string>();
 

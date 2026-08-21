@@ -135,20 +135,43 @@ public class ToolSurfaceTests : McpTestBase
     }
 
     [Test]
-    public void Tools_that_answer_with_data_publish_an_output_schema()
+    public void No_tool_publishes_an_output_schema()
     {
+        // An output schema is not free and it is not what it looks like: declaring one makes the SDK
+        // send the answer twice, as structuredContent and as the identical JSON in the text block
+        // the protocol wants there anyway. The three data tools carried both, plus 2,800 characters
+        // of schema in every tools/list. The JSON a client parses is the same either way.
         Assert.Multiple(() =>
         {
             foreach (var tool in _tools)
             {
-                var structured = ButilMcp.StructuredTools.Contains(tool.Name, StringComparer.Ordinal);
-
-                Assert.That(tool.ReturnJsonSchema.HasValue, Is.EqualTo(structured),
-                    structured
-                        ? $"{tool.Name} is declared with UseStructuredContent, so it must publish an output schema."
-                        : $"{tool.Name} answers with prose and should not publish an output schema.");
+                Assert.That(tool.ReturnJsonSchema.HasValue, Is.False,
+                    $"{tool.Name} publishes an output schema, so every one of its answers is now sent twice.");
             }
         });
+    }
+
+    [Test]
+    public async Task A_data_tool_answers_with_its_json_once()
+    {
+        // The other half of the same promise, from the wire rather than from the declaration.
+        foreach (var tool in ButilMcp.DataTools)
+        {
+            var result = await CallRawAsync(tool, tool switch
+            {
+                "SearchButil" => new { query = "clipboard" },
+                "PlanButilFeature" => (object)new { apis = "Clipboard" },
+                _ => new { typeName = "Clipboard" }
+            });
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StructuredContent, Is.Null,
+                    $"{tool} answered with structuredContent as well as text - the same JSON, paid for twice.");
+
+                Assert.That(Text(result), Does.StartWith("{"), $"{tool} answers with data, so its text block is the JSON of it.");
+            });
+        }
     }
 
     [Test]
@@ -172,15 +195,17 @@ public class ToolSurfaceTests : McpTestBase
                         break;
 
                     case "GetButilSetupGuide": Assert.That(required, Does.Contain("hostingModel")); break;
-                    case "GetButilApiDetails": Assert.That(required, Does.Contain("typeName")); break;
-                    case "InspectButilApi": Assert.That(required, Does.Contain("name")); break;
                     case "PlanButilFeature": Assert.That(required, Does.Contain("apis")); break;
-                    case "GetButilDocsPage": Assert.That(required, Does.Contain("slug")); break;
-                    case "GetButilGuideSection": Assert.That(required, Does.Contain("heading")); break;
-                    case "GetButilSourceFile": Assert.That(required, Does.Contain("path")); break;
 
+                    // The retrieval tools are the other half of the fold that removed the listing
+                    // tools: calling one with nothing is how a client asks what it can return.
+                    // Marking the argument required would put those four listings back out of reach
+                    // and leave nothing in their place.
                     default:
-                        Assert.That(required, Is.Empty, $"{tool.Name} takes no arguments, so nothing can be required.");
+                        Assert.That(tool.Name, Is.AnyOf([.. ButilMcp.ListingTools]),
+                            $"{tool.Name} requires none of its arguments but is not one of the tools that lists on an empty call.");
+                        Assert.That(required, Is.Empty,
+                            $"{tool.Name} lists what it can return when called with no argument, so its argument cannot be required.");
                         break;
                 }
             }
@@ -191,15 +216,15 @@ public class ToolSurfaceTests : McpTestBase
     public void The_tool_list_itself_fits_in_a_context_window()
     {
         // tools/list is put in front of the model on every session this server is connected to, so
-        // its total size is a standing cost. Fourteen richly described tools should be a few
-        // thousand tokens, not tens of thousands.
+        // its total size is a standing cost - and the reason the surface is seven tools rather than
+        // the fourteen it started as. Richly described, they should be a couple of thousand tokens.
         var size = _tools.Sum(tool => tool.Name.Length
                                     + (tool.Title?.Length ?? 0)
                                     + (tool.Description?.Length ?? 0)
                                     + tool.JsonSchema.GetRawText().Length
                                     + (tool.ReturnJsonSchema?.GetRawText().Length ?? 0));
 
-        Assert.That(size, Is.LessThan(80_000),
+        Assert.That(size, Is.LessThan(12_000),
             $"The advertised tool surface is {size} characters, which every session pays for up front.");
     }
 

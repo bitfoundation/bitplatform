@@ -1,4 +1,4 @@
-@page "/intersection-observer"
+﻿@page "/intersection-observer"
 @implements IAsyncDisposable
 @inject IJSRuntime js
 
@@ -35,10 +35,10 @@
 }
 """)
              Language="razor">
-    <div style="height:9rem;max-width:22rem;overflow:auto;border:1px dashed #6366f1;border-radius:8px;padding:0.6rem;">
+    <div class="demo-box dashed" style="height:9rem;max-width:22rem;overflow:auto;">
         <div style="height:10rem;">Scroll down inside this box...</div>
         <div @ref="targetRef"
-             style="padding:0.6rem 1rem;border:2px solid #22c55e;border-radius:8px;text-align:center;">
+             class="demo-marker">
             observed target
         </div>
         <div style="height:10rem;">...and back up again.</div>

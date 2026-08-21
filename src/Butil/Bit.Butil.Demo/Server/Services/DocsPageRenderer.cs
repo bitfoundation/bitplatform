@@ -181,11 +181,11 @@ public static class DocsPageRenderer
     public static string Unavailable(DocLink page, string? error)
     {
         // A narrative page - "Getting started", "Render modes" - documents no API, so its slug is
-        // not a name InspectButilApi can be asked about. Sending an agent there produces a second
+        // not a name PlanButilFeature can be asked about. Sending an agent there produces a second
         // miss on top of the first one.
         var instead = page.Support == ApiSupport.Guide
-            ? "call GetButilGuideSections for the same ground in the library's own reference guide, or GetButilApiList for its public API."
-            : $"call InspectButilApi(name: \"{page.Url}\") for what the API needs, and GetButilApiDetails for its members.";
+            ? "call GetButilGuideSection for the same ground in the library's own reference guide, or GetButilApiDetails with no type name for its public API."
+            : $"call PlanButilFeature(apis: \"{page.Url}\") for what the API needs, and GetButilApiDetails for its members.";
 
         return $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
                $"It is readable at /{page.Url} on the live documentation site. For the same material as text, {instead}";

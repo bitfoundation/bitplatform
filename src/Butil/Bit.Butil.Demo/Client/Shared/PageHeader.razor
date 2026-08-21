@@ -1,7 +1,7 @@
 @inject NavigationManager navManager
 
-@* A page opens the way every BlazorUI demo page does: an overline naming the area, the title,
-   then the lead as prose on the bare page rather than inside one more frame. *@
+@* A page opens the way every Fluent 2 detail page does: the trail that says where in the taxonomy
+   this is, the title, then the lead as prose on the bare page rather than inside one more frame. *@
 
 @* The lead is already a one-paragraph summary of the page written for a human, which is exactly
    what a description meta wants - so it is also emitted into the head rather than having every
@@ -29,28 +29,40 @@
 </HeadContent>
 
 <header class="page-header">
-    <span class="eyebrow">@Category</span>
+    @* A trail rather than a bare overline: the area is where this page sits, and on a site with
+       ten of them that is worth being a link back to the catalogue rather than a label. *@
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="">Docs</a>
+        <span class="breadcrumb-sep" aria-hidden="true">
+            <Icon Name="chevron-right" Size="12" />
+        </span>
+        <span class="eyebrow">@Category</span>
+    </nav>
+
     <h1>@Title</h1>
+
+    @if (string.IsNullOrWhiteSpace(Lead) is false)
+    {
+        <p class="page-lead">@Lead</p>
+    }
+
+    @if (string.IsNullOrWhiteSpace(InjectAs) is false || string.IsNullOrWhiteSpace(MdnUrl) is false)
+    {
+        <div class="page-header-links">
+            @if (string.IsNullOrWhiteSpace(InjectAs) is false)
+            {
+                <code class="inject-chip">@("@inject") Bit.Butil.@InjectAs</code>
+            }
+            @if (string.IsNullOrWhiteSpace(MdnUrl) is false)
+            {
+                <a class="mdn-link" href="@MdnUrl" target="_blank" rel="noopener noreferrer">
+                    <span>MDN reference</span>
+                    <Icon Name="open" Size="14" />
+                </a>
+            }
+        </div>
+    }
 </header>
-
-@if (string.IsNullOrWhiteSpace(Lead) is false)
-{
-    <p class="page-lead">@Lead</p>
-}
-
-@if (string.IsNullOrWhiteSpace(InjectAs) is false || string.IsNullOrWhiteSpace(MdnUrl) is false)
-{
-    <div class="page-header-links">
-        @if (string.IsNullOrWhiteSpace(InjectAs) is false)
-        {
-            <code class="inject-chip">@("@inject") Bit.Butil.@InjectAs</code>
-        }
-        @if (string.IsNullOrWhiteSpace(MdnUrl) is false)
-        {
-            <a class="mdn-link" href="@MdnUrl" target="_blank" rel="noopener noreferrer">MDN reference ↗</a>
-        }
-    </div>
-}
 
 @code {
     // The query and the fragment are navigation state, not identity - two urls that differ only
