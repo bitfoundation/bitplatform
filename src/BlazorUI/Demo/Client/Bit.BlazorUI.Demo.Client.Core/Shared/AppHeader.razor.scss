@@ -1,71 +1,137 @@
-﻿@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../Styles/abstracts/_docs.scss';
 
-.header {
+// The app bar. One row, three jobs: get back to the top of the site, move between its five
+// sections, and reach for the controls that apply to every page (search, source, accent, theme).
+// It is translucent rather than opaque so the page keeps scrolling visibly underneath, which is
+// what tells the reader the bar is pinned rather than part of the page.
+.app-header {
     width: 100%;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-bottom: rem2(1px) solid $bit-color-border-secondary;
 
     // Declared on the chrome rather than globally: inside an example the focus ring belongs to the
     // component being demonstrated, and a second outline over it would show readers something the
     // library does not actually render.
-    a:focus-visible,
-    button:focus-visible {
-        outline: rem2(2px) solid $bit-color-primary;
-        outline-offset: rem2(2px);
-        border-radius: $bit-shape-border-radius;
-    }
+    @include doc-focusable-children;
 }
 
-// The container and its two ends are BitStacks; only the bar's height, gutters and the home-page
-// width cap stay here, in ::deep because a stack's root div does not carry this file's scope
-// attribute.
-::deep .container {
-    margin-left: auto;
-    margin-right: auto;
-    min-height: rem2(65px);
-    padding-left: rem2(20px);
-    padding-right: rem2(20px);
+.app-header-inner {
+    gap: $doc-space-2xs;
+    display: flex;
+    margin-inline: auto;
+    align-items: center;
+    justify-content: space-between;
+    min-height: $doc-header-height;
+    padding-inline: rem2(20px);
+
+    // The bar is capped to the hero's measure on the home page and runs the full width of the window
+    // everywhere else, so stepping from the home page into the docs visibly opens the chrome out to
+    // the width of the documentation. It is the site telling the reader they have moved from the
+    // marketing page into the product.
+    &.marketing {
+        max-width: var(--demo-marketing-width);
+    }
 
     @include lt-lg {
-        padding-left: rem2(10px);
-        padding-right: rem2(10px);
-    }
-
-    &.home-page {
-        max-width: rem2(1200px);
+        padding-inline: rem2(10px);
     }
 }
 
-.logo {
-    cursor: pointer;
-    width: rem2(50px);
-    height: rem2(50px);
-    margin-right: rem2(30px);
+.app-header-start,
+.app-header-end {
+    gap: $doc-space-2xs;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+}
+
+.app-header-end {
+    flex-shrink: 0;
+}
+
+
+// ── Brand ─────────────────────────────────────────────────────────────────────────────────────
+.brand {
+    gap: $doc-space-2xs;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    text-decoration: none;
+    padding-inline: $doc-space-3xs;
+    margin-inline-end: $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include lt-lg {
+        margin-inline-end: $doc-space-2xs;
+    }
+}
+
+.brand-mark {
+    width: rem2(36px);
+    height: rem2(36px);
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+}
 
+.brand-name {
+    white-space: nowrap;
+    font-size: $bit-typography-fs-md;
+    font-weight: $bit-typography-fw-regular;
+    letter-spacing: rem2(-0.2px);
+
+    b {
+        font-weight: $bit-typography-fw-semibold;
+    }
+
+    // Below the width where the nav collapses, the bar has to hold the hamburger, the mark, the
+    // search box and three controls. The wordmark is the one thing whose job the mark beside it
+    // already does.
     @include lt-lg {
-        margin: 0 rem2(10px);
+        display: none;
     }
 }
 
-.link {
-    height: 100%;
+// The document's bit-theme attribute is the library's own live theme state, kept current by the
+// theme script itself, so the logo swap keys off it - and the two selectors are exact complements,
+// so exactly one logo is painted in every possible state.
+:root[bit-theme$='dark'] .brand-mark {
+    background-image: url('images/bit-logo-dark.svg');
+}
+
+:root:not([bit-theme$='dark']) .brand-mark {
+    background-image: url('images/bit-logo-light.svg');
+}
+
+
+// ── Primary nav ───────────────────────────────────────────────────────────────────────────────
+// Five links, and the current one carries a rule under it rather than a fill: a filled pill in the
+// accent would compete with the primary buttons the page below it uses for its actual calls to
+// action.
+.app-nav {
+    gap: $doc-space-3xs;
     display: flex;
-    cursor: pointer;
-    line-height: 1.5;
     align-items: center;
-    font-size: rem2(15px);
+
+    @include lt-lg {
+        display: none;
+    }
+}
+
+.app-nav-link {
+    display: flex;
+    position: relative;
+    white-space: nowrap;
+    align-items: center;
     text-decoration: none;
-    box-sizing: border-box;
-    padding: rem2(8px) rem2(12px);
-    border-radius: $bit-shape-border-radius;
+    height: rem2(36px);
+    padding-inline: $doc-space-xs;
+    font-size: $bit-typography-fs-sm;
+    border-radius: $bit-shape-radius-control;
     color: $bit-color-foreground-secondary;
-    transition: color $bit-motion-duration-short $bit-motion-easing;
+    transition: color $bit-motion-duration-short $bit-motion-easing,
+                background-color $bit-motion-duration-short $bit-motion-easing;
 
     &:hover {
         color: $bit-color-foreground-primary;
@@ -73,78 +139,67 @@
     }
 
     &.active {
-        font-weight: 600;
         color: $bit-color-primary;
+        font-weight: $bit-typography-fw-semibold;
+
+        &::after {
+            content: '';
+            left: $doc-space-xs;
+            right: $doc-space-xs;
+            bottom: rem2(-1px);
+            position: absolute;
+            height: rem2(2px);
+            border-radius: rem2(2px);
+            background-color: $bit-color-primary;
+        }
     }
 }
 
-// Sized to match the theme toggle next to it. The octocat circle only spans ~87% of the svg's
-// viewBox, so the mark is drawn oversized to put the VISIBLE glyph at the button's rem2(32px);
-// anything past the ~13% built-in padding clips at the box edge, which is under half a pixel.
-// The svg is a mask rather than a picture, so the mark is painted with the theme's primary color and
-// follows the accent the home page's "Make it yours" swatches apply - a colored asset could not.
-.github-btn {
-    cursor: pointer;
-    width: rem2(32px);
-    height: rem2(32px);
-    background-color: $bit-color-primary;
-    -webkit-mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
-    mask: url('images/github-mark.svg') center / rem2(37px) rem2(37px) no-repeat;
-}
 
-.toggle-theme-btn {
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    height: rem2(32px);
-    min-width: rem2(32px);
-    border-radius: 50%;
-    color: $bit-color-primary-text;
-    background-color: $bit-color-primary;
+// Shown only where .app-nav is not, and only on the home page (see the razor).
+.app-nav-compact {
+    display: none;
 
-    .icon-container {
-        height: 100%;
+    @include lt-lg {
         display: flex;
-        flex-wrap: nowrap;
         align-items: center;
-        justify-content: center;
+        white-space: nowrap;
+        text-decoration: none;
+        height: rem2(32px);
+        padding-inline: $doc-space-2xs;
+        font-size: $bit-typography-fs-sm;
+        color: $bit-color-foreground-secondary;
+        border-radius: $bit-shape-radius-control;
 
-        .bit-icon {
-            margin: 0 rem2(4px);
+        &:hover {
+            color: $bit-color-foreground-primary;
+            background-color: $bit-color-background-secondary;
         }
     }
-
-    &.dark-theme {
-        .icon-container {
-            padding: 2px 0px 0 1px;
-        }
-    }
 }
 
-// The document's bit-theme attribute is the library's own live theme state, kept current by the
-// theme script itself, so the dark/light swap keys off it - and the two selectors are exact
-// complements, so exactly one of each pair is visible in every possible state. The old body
-// classes were applied only from the script's onChange callback and could go missing (e.g. after
-// a hot reload), which rendered both theme toggle buttons at once.
-:root[bit-theme$='dark'] {
-    .light-theme {
-        display: none;
-    }
 
-    .logo {
-        background-image: url('images/bit-logo-dark.svg');
-    }
+// ── Controls ──────────────────────────────────────────────────────────────────────────────────
+// The octocat circle only spans ~87% of the svg's viewBox, so the mark is drawn oversized - at 116%
+// of the box - to put the VISIBLE glyph at the button's full size; anything past the ~13% built-in
+// padding clips at the box edge, which is under half a pixel. Sizing it off the control-height token
+// rather than a literal keeps it level with the theme switcher's buttons beside it under the presets
+// that make a control taller than Fluent's 32px (Material 40px, Cupertino 36px), and the percentage
+// mask keeps the glyph in proportion as it grows. The svg is a mask rather than a picture, so the
+// mark is painted with the theme's primary color and follows the accent the home page's
+// "Make it yours" swatches apply - a colored asset could not.
+.github-btn {
+    flex-shrink: 0;
+    width: $bit-size-control-md;
+    height: $bit-size-control-md;
+    background-color: $bit-color-primary;
+    -webkit-mask: url('images/github-mark.svg') center / 116% 116% no-repeat;
+    mask: url('images/github-mark.svg') center / 116% 116% no-repeat;
 }
 
-:root:not([bit-theme$='dark']) {
-    .dark-theme {
-        display: none;
-    }
-
-    .logo {
-        background-image: url('images/bit-logo-light.svg');
-    }
-}
+// The theme switcher needs no rule of its own here: BitThemeSwitcher.scss sizes its buttons off the
+// same --bit-siz-ctrl-md the github mark beside it now uses, and its --bit-ths-gap default already
+// matches this row's.
 
 ::deep {
     .menu-btn {
@@ -152,4 +207,18 @@
             display: none;
         }
     }
+
+    // Wide enough to show what it is for without pushing the nav around, and it gives up its width
+    // first when the bar runs out of room. Below the tablet breakpoint the nav drawer carries its
+    // own search box, so this one steps aside rather than shrinking to a stub.
+    .app-header-search {
+        width: rem2(240px);
+        max-width: 26vw;
+        flex-shrink: 1;
+
+        @include lt-lg {
+            display: none;
+        }
+    }
+
 }

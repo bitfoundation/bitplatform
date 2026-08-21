@@ -14,7 +14,7 @@
                Size="BitSize.Small"
                Variant="BitVariant.Text"
                Title="@(IsCopied ? "Copied" : "Copy")"
-+              AriaLabel="@(IsCopied ? "Copied" : $"Copy {Label}")"
+               AriaLabel="@(IsCopied ? "Copied" : $"Copy {Label}")"
                IconName="@(IsCopied ? BitIconName.Accept : BitIconName.Copy)"
                OnClick="HandleCopy" />
 </BitStack>

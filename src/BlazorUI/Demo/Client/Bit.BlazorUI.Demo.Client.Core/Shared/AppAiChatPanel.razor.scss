@@ -1,5 +1,4 @@
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../Styles/abstracts/_docs.scss';
 
 ::deep {
     .scr-container {
@@ -48,11 +47,6 @@
             font-size: 1.5rem;
             pointer-events: none;
         }
-    }
-
-    .body {
-        width: 600px;
-        max-width: 100%;
     }
 
     .body {

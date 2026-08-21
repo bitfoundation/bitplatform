@@ -7,7 +7,9 @@
 }
 
 ::deep .custom-rte-toolbar {
-    background-color: #f0f4ff;
+    // A custom toolbar surface has to follow the scheme like the toolbar it replaces: a fixed light
+    // tint keeps the buttons - which take the page foreground - invisible in every dark theme.
+    background-color: var(--bit-clr-pri-light);
 }
 
 ::deep .custom-rte-editor {

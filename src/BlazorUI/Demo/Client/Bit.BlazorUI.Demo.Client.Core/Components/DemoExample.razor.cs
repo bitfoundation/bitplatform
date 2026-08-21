@@ -4,6 +4,12 @@ public partial class DemoExample
 {
     private bool showCode;
 
+    // The code panel is mounted on the first open and stays mounted from then on (see the razor),
+    // so a page never pays - in its prerendered HTML, in its render tree, or in a Prism pass - for
+    // the tens of KB of sample source behind panels the reader never opens.
+    private bool _isCodeMounted;
+    private bool _isCodeHighlighted;
+
     [Parameter] public string Title { get; set; } = default!;
     [Parameter] public string Id { get; set; } = default!;
     [Parameter] public string RazorCode { get; set; } = default!;
@@ -13,25 +19,47 @@ public partial class DemoExample
 
     [Parameter] public bool PreventRenderForMcpClient { get; set; }
 
-    // The collapsed code panel stays rendered so it can animate shut, which would otherwise turn the
-    // page-wide highlight pass below into O(examples²) work. Highlighting only this example's own
+    // A panel the reader has opened stays rendered so it can animate shut, which would otherwise turn
+    // the page-wide highlight pass below into O(examples²) work. Highlighting only this example's own
     // container keeps it linear. Falls back to null - and so to the whole document, exactly as
     // before - for the rare DemoExample declared without an Id.
     private string? _codeElementId => Id.HasValue() ? $"{Id}-code" : null;
 
-    protected override async Task OnInitAsync()
+    protected override Task OnInitAsync()
     {
+        // The MCP branch prints the source as markdown rather than rendering the panel, so nothing
+        // there is mounted or highlighted; showCode only matters for the browser branch below.
         showCode = RenderForMcpClient;
+
+        return Task.CompletedTask;
     }
 
+    // Only once, and only after the reader has opened the panel: the code comes from constant
+    // fields and stays mounted once shown, so there is never a second thing to highlight.
+    // Re-running it on every render made any interaction inside any example re-tokenize the code of
+    // every example on the page, since the state change re-renders the whole demo and with it all
+    // of its DemoExample children.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (RenderForMcpClient) return;
+
+        if (_isCodeMounted is false || _isCodeHighlighted) return;
+
+        _isCodeHighlighted = true;
+
         await JSRuntime.InvokeVoid("highlightSnippet", _codeElementId);
     }
 
 
 
-    private void ToggleCode() => showCode = !showCode;
+    private void ToggleCode()
+    {
+        showCode = !showCode;
+
+        // Mounting on the way open only: the way shut has to keep the panel's content in the DOM
+        // for BitCollapse to animate it away.
+        _isCodeMounted = _isCodeMounted || showCode;
+    }
 
 
 

@@ -1,7 +1,8 @@
-@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../Styles/abstracts/_docs.scss';
 
+// The component pages share the prose pages' article shell (see DocsArticle and the .doc-* rules in
+// Styles/app.scss), so what is left here is only the two things those pages do not have: the
+// reduced-motion escape hatch, and the API tables.
 
 // The page-wide escape hatch from the reduced-motion collapse. It is meaningless when motion is not
 // being reduced, so it only exists in that state; --demo-motion-bar-height (app.scss) is 0 outside
@@ -16,45 +17,54 @@
         display: flex;
         position: sticky;
         align-items: center;
-        margin-bottom: 2rem;
-        padding: 0.5rem 1rem;
-        background-color: $bit-color-background-primary;
-        border-bottom: rem2(1px) solid $bit-color-border-secondary;
-        top: calc(rem2(66px) + #{$bit-env-inset-top});
+        margin-bottom: $doc-space-md;
+        padding: $doc-space-2xs $doc-space-sm;
+        top: calc(var(--demo-header-height) + 0.35rem + #{$bit-env-inset-top});
+
+        // Drawn as one more surface in the column under it - same corner family, stroked all round -
+        // so it does not read as a stray rule across the page.
+        @include doc-surface;
+        // background-color: $bit-color-background-secondary;
 
         .bit-ios & {
-            top: calc(rem2(66px) + env(safe-area-inset-top));
+            top: calc(var(--demo-header-height) + 0.35rem + env(safe-area-inset-top));
         }
     }
 }
 
-// min-width:0 is what lets a wide example or a code line scroll inside the column instead of
-// stretching it and pushing the rail off screen.
-.page-container.example {
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
 ::deep {
-    // The chrome sections are BitCards and the rail scrolls to them by id, so they have to stop
-    // short of the sticky headers; same for the plain lead section.
-    .page-lead,
-    .page-section {
-        scroll-margin: rem2(90px);
-    }
-
     .video-container video {
         width: 80%;
         border-width: $bit-shape-border-width;
         border-style: $bit-shape-border-style;
-        border-radius: $bit-shape-border-radius;
+        border-radius: $bit-shape-radius-surface;
         border-color: $bit-color-border-tertiary;
     }
 
-    .sec-con {
-        scroll-margin: rem2(90px);
+    // A one-line note above an example's live preview, rendered by the demo pages themselves.
+    .example-desc {
+        margin-bottom: rem2(8px);
     }
 
+    .title {
+        overflow-wrap: anywhere;
+        margin-bottom: rem2(50px);
+    }
+
+    // The anchors a parameter's type link jumps to (a sub-class or a sub-enum table).
+    .sec-con {
+        scroll-margin-top: var(--demo-section-scroll-margin);
+    }
+
+    .subclass-title,
+    .subenum-title,
+    .params-title {
+        overflow-wrap: anywhere;
+        margin-top: $doc-space-md;
+    }
+
+    // The densest thing on a documentation page and the most re-read, so it gets a sticky header, a
+    // hairline grid and a row highlight - and nothing else.
     .table-view {
         width: 100%;
         overflow: auto;
@@ -64,6 +74,8 @@
         box-sizing: border-box;
         margin-bottom: rem2(40px);
         border: rem2(1px) solid $bit-color-border-secondary;
+
+        @include doc-scrollbar(8px);
     }
 
     .th-row {
@@ -131,6 +143,9 @@
         }
     }
 
+    // A parameter table is a fixed set of four columns and the reader scans down the first one, so
+    // the name and type columns are held to a width rather than sized by content; the description
+    // takes whatever is left.
     .params-table {
         .th-cell,
         .td-cell {
@@ -145,9 +160,6 @@
             &:nth-child(3) {
                 width: 10rem;
             }
-
-            &:nth-child(4) {
-            }
         }
     }
 
@@ -160,9 +172,6 @@
 
             &:nth-child(2) {
                 width: 5rem;
-            }
-
-            &:nth-child(3) {
             }
         }
     }

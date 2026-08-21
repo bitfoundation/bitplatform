@@ -1,93 +1,69 @@
 @page "/iconography"
 
-@code {
-    private IEnumerable<IBitComponentParams> _cascadingParams = new List<IBitComponentParams>
-    {
-        new BitCardParams { Background = BitColorKind.Primary, FullWidth = true, Style = "padding: 1.5rem" },
-        new BitTextParams { Typography = BitTypography.Body1 },
-        new BitTagParams { Color = BitColor.TertiaryBackground },
-    };
-}
-
 <PageOutlet Url="iconography"
             Title="Iconography"
             Description="Browse and search the full set of Fabric (MDL2) icons available in bit BlazorUI, and copy any icon name with a click." />
 
-<section class="page-container">
-    <BitParams Parameters="_cascadingParams">
-        <BitText Element="h1" Typography="BitTypography.H3">Iconography</BitText>
+<DocsArticle Eyebrow="Documentation"
+             Title="Iconography"
+             Lead="bit BlazorUI uses a custom icon font from the MDL2 design system (Office UI Fabric icons). The glyphs scale, take the theme's colors, and cost nothing extra to render."
+             GitHubUrl="Iconography/IconographyPage.razor">
 
-        <br />
-
-        <BitText Element="p" Typography="BitTypography.H6">
-            bit BlazorUI is using a custom font for icons of its components.
-            This font is part of the MDL2 design system (Office UI fabric icons) and contains glyphs that you can scale, color, and style in any way.
+    <DocSection Id="install-icons" Title="Install the icon pack"
+                Description="The icons ship separately from the components, so an app that does not use them does not download them.">
+        <BitText Element="p">
+            Add the <code>Bit.BlazorUI.Icons</code> package and its stylesheet, as described in the
+            optional steps of the <BitLink Href="/getting-started#install">Getting started</BitLink> page.
         </BitText>
+        <CodeBox>dotnet add package Bit.BlazorUI.Icons</CodeBox>
+        <CodeBox Language="html">&lt;link href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" rel="stylesheet" /></CodeBox>
+    </DocSection>
 
-        <br /><br />
+    <DocSection Id="icon-list" Title="Browse the icons"
+                Description="Click any icon to open its details: a preview at every size and semantic color, its name, constant, CSS class and glyph, and the snippets to paste.">
 
-        <BitCard>
-            <BitText>
-                <b>Note:</b> To use these Icons, you need to add the <BitTag>Bit.BlazorUI.Icons</BitTag> nuget package to your project
-                as described in the Optional steps of the <BitLink Href="/getting-started">Getting started</BitLink> page.
-            </BitText>
-        </BitCard>
-
-        <br />
-
-        <BitCard>
-            <BitText Element="h2" Typography="BitTypography.H4" Gutter>Icon list</BitText>
-
-            <br />
-
-            <BitText Typography="BitTypography.Caption1" Gutter Element="div">
-                <b>Note</b>: click an icon to open its details. Use the panel to preview sizes, colors, and copy usage snippets.
-            </BitText>
-
+        @* A plain wrapper, because everything inside it is a Bit component and scoped CSS only lands
+           on elements written in this file. Without it the rules below would have nothing to
+           descend from - the page's own root markup is all components. *@
+        <div class="icon-browser">
             <BitSearchBox Immediate
-                          DebounceTime="300"
-                          OnClear="HandleClear"
-                          OnChange="HandleChange"
-                          Placeholder="Search icons"
-                          IconName="@BitIconName.Search"
-                          Class="iconography-search-box" />
+                      DebounceTime="300"
+                      OnClear="HandleClear"
+                      OnChange="HandleChange"
+                      Placeholder="Search icons"
+                      IconName="@BitIconName.Search"
+                      Class="iconography-search-box" />
 
-            <br />
-
-            <BitScrollablePane Height="23rem" OverflowX="BitOverflow.Hidden" Modern>
-                <BitStack Horizontal Wrap FitHeight Gap="1rem">
-                    @if (filteredIcons.Count == 0)
+        <BitScrollablePane Height="30rem" OverflowX="BitOverflow.Hidden" Modern Class="icon-scroller">
+            <BitStack Horizontal Wrap FitHeight Gap="0.5rem">
+                @if (filteredIcons.Count == 0)
+                {
+                    <BitText Element="p" Typography="BitTypography.Subtitle1">No icon matches that name.</BitText>
+                }
+                else
+                {
+                    foreach (var icon in filteredIcons)
                     {
-                        <BitText Element="p" Typography="BitTypography.H6">No result</BitText>
+                        <BitButton Variant="BitVariant.Text"
+                                   Title="@icon.Value"
+                                   AriaLabel="@icon.Value"
+                                   OnClick="() => OpenIconPanel(icon)"
+                                   Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
+                            <BitStack Gap="0.375rem" Alignment="BitAlignment.Center">
+                                <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
+                                <BitText Class="icon-name" Typography="BitTypography.Caption2">
+                                    @icon.Value
+                                </BitText>
+                            </BitStack>
+                        </BitButton>
                     }
-                    else
-                    {
-                        foreach (var icon in filteredIcons)
-                        {
-                            <BitButton Variant="BitVariant.Text" 
-                                       Title="@icon.Value"
-                                       AriaLabel="@icon.Value"
-                                       OnClick="() => OpenIconPanel(icon)"
-                                       Class="@($"icon-box {(selectedIcon?.Value == icon.Value ? "selected" : string.Empty)}")">
-                                <BitStack Gap="0.5rem" Alignment="BitAlignment.Center">
-                                    <BitIcon IconName="@icon.Value" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
-
-                                    <BitText Class="icon-name" Typography="BitTypography.Caption1">
-                                        @icon.Value
-                                    </BitText>
-                                </BitStack>
-                            </BitButton>
-                        }
-                    }
-                </BitStack>
+                }
+            </BitStack>
             </BitScrollablePane>
-        </BitCard>
+        </div>
+    </DocSection>
 
-        <br />
-
-        <FeedbackSection Url="IconographyPage.razor" />
-    </BitParams>
-</section>
+</DocsArticle>
 
 <div class="icon-details-panel-scope">
     <BitProPanel AutoToggleScroll Modeless ShowCloseButton
@@ -107,7 +83,7 @@
                             <BitIcon IconName="@selectedIcon.Value"
                                      Style="font-size: 3rem;"
                                      Color="BitColor.PrimaryForeground" />
-                            <BitText Gutter ForceBreak Typography="BitTypography.H5">
+                            <BitText Gutter ForceBreak Typography="BitTypography.H4">
                                 @selectedIcon.Value
                             </BitText>
 

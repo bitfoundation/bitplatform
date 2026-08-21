@@ -30,8 +30,9 @@
     padding: spacing(1.25);
     color: var(--bit-snb-fg);
     flex-flow: column nowrap;
-    border-radius: spacing(0.375);
+    border-radius: $shp-radius-popup;
     justify-content: space-between;
+    box-shadow: $box-shadow-snackbar;
     background-color: var(--bit-snb-bg);
 }
 
@@ -55,14 +56,14 @@
 }
 
 .bit-snb-ttl {
-    font-weight: 500;
-    font-size: spacing(2);
-    word-break: break-word;
+    font-weight: $tg-fw-medium;
+    font-size: $tg-fs-md;
+    overflow-wrap: anywhere;
 }
 
 .bit-snb-bdy {
-    word-break: break-word;
-    font-size: spacing(1.5);
+    overflow-wrap: anywhere;
+    font-size: $tg-fs-xs;
 }
 
 .bit-snb-elp {
@@ -75,7 +76,7 @@
     cursor: pointer;
     color: var(--bit-snb-fg);
     background-color: inherit;
-    border-radius: spacing(0.375);
+    border-radius: $shp-radius-popup;
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).

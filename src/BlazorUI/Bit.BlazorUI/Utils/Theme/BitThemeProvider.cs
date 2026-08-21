@@ -241,6 +241,11 @@ public class BitThemeProvider : ComponentBase
         // the document palette's value). See BitThemeMapper.AugmentWithSemanticAliasReSubstitution.
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVars);
 
+        // Same reason one tier lower: the per-family radii and elevations are declared on :root by
+        // family-tokens.scss, so re-declare the ones whose target this theme re-values - otherwise
+        // components inside the provider keep the document's corners and shadows.
+        BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVars);
+
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
     }
 }

@@ -1,45 +1,91 @@
 @page "/"
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages
+@inherits AppComponentBase
 
 <PageOutlet Url=""
             FullTitle="bit BlazorUI - Native, Open-Source Blazor UI Component Library"
             Title="Home"
-            Description="bit BlazorUI is an open-source set of 80+ native Blazor UI components for WebAssembly, Server, Hybrid (MAUI) and pre-rendering. Explore the docs." />
+            Description="bit BlazorUI is an open-source set of 100+ native Blazor UI components for WebAssembly, Server, Hybrid (MAUI) and pre-rendering. Explore the docs." />
 
-<div class="homepage-container">
-    <section class="homepage-section hero-section">
-        <div class="homepage-section-content">
+@* The home page alternates between the two page surfaces, section by section, separated by the same
+   hairline the rest of the site uses instead of shadows. That alternation is the only thing
+   dividing the page into chapters, which is why no section needs a heavier frame of its own. *@
+<div class="home">
+
+    <section class="home-section hero">
+        <div class="home-section-inner">
             <HeroSection />
         </div>
     </section>
 
-    <section class="homepage-section popular-components-section">
-        <div class="homepage-section-content">
+    <section class="home-section alternate">
+        <div class="home-section-inner">
             <PopularComponents />
         </div>
     </section>
 
-    <section class="homepage-section benefit-section">
-        <div class="homepage-section-content">
+    <section class="home-section">
+        <div class="home-section-inner">
             <BenefitsSection />
         </div>
     </section>
 
-    <section class="homepage-section ai-section">
-        <div class="homepage-section-content">
-            <div class="ai-section-info">
-                <BitText Element="h2" Typography="BitTypography.H3" Gutter>Built for the AI-assisted workflow</BitText>
-                <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">
-                    Connect your AI coding agent (GitHub Copilot, Cursor, Claude, Windsurf, and more) to the official
-                    bit BlazorUI MCP server, and it will discover components, pull accurate usage examples,
-                    and follow the library's best practices automatically.
+    <section class="home-section alternate">
+        <div class="home-section-inner split">
+            <div class="split-copy">
+                <BitText Element="h2" Typography="BitTypography.H3">One color in, a whole design system out</BitText>
+                <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                    Every component reads its color, shape, size, type and motion from CSS variables, so a
+                    theme is data rather than a stylesheet fork. Hand the theme factory a brand color and it
+                    derives complete light and dark palettes with the contrast already checked - or pick one
+                    of the four design systems that ship in the box.
                 </BitText>
-                <BitButton Href="/getting-started#ai-mcp" Variant="BitVariant.Outline"
-                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
-                    Set up AI integration
-                </BitButton>
+                <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                    The switcher in the header above re-skins this entire site live. Nothing on this page is a
+                    screenshot.
+                </BitText>
+                <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="split-actions">
+                    <BitButton Href="/theming" Variant="BitVariant.Outline"
+                               IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                        Explore theming
+                    </BitButton>
+                    <BitStack Horizontal Wrap FitWidth AutoHeight Gap="0.375rem" VerticalAlign="BitAlignment.Center">
+                        <BitTag Text="Fluent" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                        <BitTag Text="Fluent 2" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                        <BitTag Text="Material" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                        <BitTag Text="Cupertino" Size="BitSize.Small" Variant="BitVariant.Outline" Color="BitColor.SecondaryForeground" />
+                    </BitStack>
+                </BitStack>
             </div>
-            <div class="ai-section-code">
+            <div class="split-aside">
+                <CodeBox Language="csharp">await themeManager.ApplyTheme(
+    BitThemeFactory.CreateFromColor("#8b5cf6"));</CodeBox>
+                <CodeBox Language="css">:root[bit-theme="my-brand"] {
+    --bit-clr-pri: #8b5cf6;
+    --bit-shp-radius-surface: 12px;
+    --bit-tpg-font-family: "Inter", sans-serif;
+}</CodeBox>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section">
+        <div class="home-section-inner split">
+            <div class="split-copy">
+                <BitText Element="h2" Typography="BitTypography.H3">Built for the AI-assisted workflow</BitText>
+                <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
+                    Point your coding agent - GitHub Copilot, Cursor, Claude, Windsurf - at the official
+                    bit BlazorUI MCP server and it discovers components, pulls accurate usage examples, and
+                    follows the library's conventions without being told twice.
+                </BitText>
+                <BitStack Horizontal Wrap AutoSize Gap="0.75rem" Class="split-actions">
+                    <BitButton Href="/getting-started#ai-mcp" Variant="BitVariant.Outline"
+                               IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                        Set up AI integration
+                    </BitButton>
+                </BitStack>
+            </div>
+            <div class="split-aside">
                 <CodeBox Language="json">{
   "mcpServers": {
     "bitBlazorUI": {
@@ -52,37 +98,40 @@
         </div>
     </section>
 
-    <section class="homepage-section component-list-section">
-        <div class="homepage-section-content">
+    <section class="home-section alternate">
+        <div class="home-section-inner">
             <ComponentsSection />
         </div>
     </section>
 
-    <section class="homepage-section contribution-section">
-        <div class="homepage-section-content">
-            <BitText Element="h2" Typography="BitTypography.H3" Gutter>Start building with bit BlazorUI</BitText>
-            <BitText Typography="BitTypography.Body1" Gutter Style="max-width: 700px">
-                Free and open source, backed by a professional dedicated development team and an active community.
-                All components live on GitHub, so you can follow their production flow,
-                report bugs, fork the repo, and submit pull requests.
-            </BitText>
-            <BitStack Horizontal Wrap Gap="1rem">
-                <BitButton Href="/getting-started" Size="BitSize.Large"
-                           IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
-                    Get started
-                </BitButton>
-                @* The octocat is a masked span rather than an IconUrl image so it inherits the button's
-                   text color, which keeps it on the accent (and readable on the hover fill) instead of
-                   staying the one blue a colored asset would bake in. *@
-                <BitButton Size="BitSize.Large"
-                           Class="github-button"
-                           Variant="BitVariant.Outline"
-                           Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
-                    <span class="github-mark" aria-hidden="true"></span>GitHub
-                </BitButton>
-                <BitSpacer />
-                <GitHubEditButton GitHubUrl="Home/HomePage.razor" />
-            </BitStack>
+    <section class="home-section">
+        <div class="home-section-inner">
+            <div class="home-cta">
+                <BitText Element="h2" Typography="BitTypography.H3">Start building with bit BlazorUI</BitText>
+                <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="home-cta-lead">
+                    Free and open source, backed by a dedicated development team and an active community. Every
+                    component lives on GitHub, so you can follow how it is built, report a bug, fork it, or send
+                    a pull request.
+                </BitText>
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Href="/getting-started" Size="BitSize.Large"
+                               IconName="@BitIconName.ChevronRightSmall" IconPosition="BitIconPosition.End">
+                        Get started
+                    </BitButton>
+                    @* The octocat is a masked span rather than an IconUrl image so it inherits the button's
+                       text color, which keeps it on the accent (and readable on the hover fill) instead of
+                       staying the one blue a colored asset would bake in. *@
+                    <BitButton Size="BitSize.Large"
+                               Class="github-button"
+                               Variant="BitVariant.Outline"
+                               Href="https://github.com/bitfoundation/bitplatform" Target="_blank">
+                        <span class="github-mark" aria-hidden="true"></span>GitHub
+                    </BitButton>
+                    <BitSpacer />
+                    <GitHubEditButton GitHubUrl="Home/HomePage.razor" />
+                </BitStack>
+            </div>
         </div>
     </section>
+
 </div>

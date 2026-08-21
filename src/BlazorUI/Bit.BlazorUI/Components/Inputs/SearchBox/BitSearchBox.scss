@@ -4,14 +4,14 @@
     margin: 0;
     padding: 0;
     display: block;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
     box-sizing: border-box;
     font-family: $tg-font-family;
 
-    --bit-srb-height: #{spacing(4)};
-    --bit-srb-fontsize: #{spacing(1.75)};
-    --bit-srb-iconsize: #{spacing(2)};
+    --bit-srb-height: #{$siz-ctrl-md};
+    --bit-srb-fontsize: #{$tg-fs-sm};
+    --bit-srb-iconsize: #{$siz-icon-md};
 
     &.bit-dis {
         cursor: default;
@@ -139,7 +139,7 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
     line-height: spacing(2.5);
@@ -167,7 +167,7 @@
     box-sizing: border-box;
     height: var(--bit-srb-height);
     font-size: var(--bit-srb-fontsize);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: var(--bit-srb-clr-bg);
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -182,7 +182,7 @@
     color: var(--bit-srb-clr);
     width: var(--bit-srb-height);
     font-size: var(--bit-srb-iconsize);
-    transition: width $mot-duration ease 0s;
+    transition: width $mot-duration $mot-easing 0s;
 
     i {
         opacity: 1;
@@ -191,7 +191,7 @@
         height: unset;
         display: inline-block;
         color: var(--bit-srb-clr);
-        transition: opacity $mot-duration ease 0s;
+        transition: opacity $mot-duration $mot-easing 0s;
     }
 }
 
@@ -234,7 +234,7 @@
     height: auto;
     border: none;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     text-align: center;
@@ -247,8 +247,8 @@
     background-color: transparent;
     font-family: $tg-font-family;
     font-size: var(--bit-srb-fontsize);
-    border-start-end-radius: spacing(0.125);
-    border-end-end-radius: spacing(0.125);
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
 
     i {
         width: unset;
@@ -277,7 +277,7 @@
     display: flex;
     flex-shrink: 0;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     text-align: center;
@@ -292,8 +292,8 @@
     font-family: $tg-font-family;
     font-size: var(--bit-srb-iconsize);
     background-color: var(--bit-srb-clr);
-    border-end-end-radius: $shp-border-radius;
-    border-start-end-radius: $shp-border-radius;
+    border-end-end-radius: $shp-radius-control;
+    border-start-end-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style var(--bit-srb-clr);
     border-inline-start: none;
 
@@ -324,7 +324,7 @@
 .bit-srb-und {
     .bit-srb-cnt {
         border-radius: 0;
-        border-width: 0 0 spacing(0.125);
+        border-width: 0 0 $shp-border-width;
 
         @media (hover: hover) {
             &:hover {
@@ -515,21 +515,21 @@
 // These override the tokens that .bit-srb sets on the very same element, so they are qualified
 // with it to win on specificity rather than on where they happen to sit in the stylesheet.
 .bit-srb.bit-srb-sm {
-    --bit-srb-height: #{spacing(3)};
-    --bit-srb-fontsize: #{spacing(1.5)};
-    --bit-srb-iconsize: #{spacing(1.75)};
+    --bit-srb-height: #{$siz-ctrl-sm};
+    --bit-srb-fontsize: #{$tg-fs-xs};
+    --bit-srb-iconsize: #{$siz-icon-sm};
 }
 
 .bit-srb.bit-srb-md {
-    --bit-srb-height: #{spacing(4)};
-    --bit-srb-fontsize: #{spacing(1.75)};
-    --bit-srb-iconsize: #{spacing(2)};
+    --bit-srb-height: #{$siz-ctrl-md};
+    --bit-srb-fontsize: #{$tg-fs-sm};
+    --bit-srb-iconsize: #{$siz-icon-md};
 }
 
 .bit-srb.bit-srb-lg {
-    --bit-srb-height: #{spacing(5)};
-    --bit-srb-fontsize: #{spacing(2)};
-    --bit-srb-iconsize: #{spacing(2.5)};
+    --bit-srb-height: #{$siz-ctrl-lg};
+    --bit-srb-fontsize: #{$tg-fs-md};
+    --bit-srb-iconsize: #{$siz-icon-lg};
 }
 
 .bit-srb-ovl {
@@ -546,23 +546,23 @@
 .bit-srb-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     overflow: hidden;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
-    box-shadow: $box-shadow-callout;
+    box-shadow: $box-shadow-popup;
     background-color: $clr-bg-pri;
     animation-name: bit-fade-show, bit-slide-down;
-    border-radius: 0 0 spacing(0.25) spacing(0.25);
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    border-radius: 0 0 $shp-radius-popup $shp-radius-popup;
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-srb-scn {
     overflow: hidden auto;
-    max-height: spacing(88.875);
+    max-height: $siz-popup-max-height;
 }
 
 .bit-srb-itm {
@@ -571,7 +571,7 @@
     cursor: pointer;
     overflow: hidden;
     text-align: start;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     white-space: nowrap;
@@ -582,7 +582,7 @@
     text-decoration: none;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.875);
+    font-size: $tg-fs-sm;
     line-height: spacing(2.5);
     background-color: transparent;
     color: $clr-fg-pri;
@@ -614,7 +614,7 @@
 
 .bit-srb-hlt {
     padding: 0;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: inherit;
     background-color: transparent;
     text-decoration: underline;
@@ -626,7 +626,7 @@
     color: $clr-fg-pri;
     padding: spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
 }
 
 .bit-srb-chd {
@@ -645,7 +645,7 @@
     color: $clr-fg-sec;
     box-sizing: border-box;
     overflow-wrap: break-word;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(1) spacing(1.25);
 }
 
@@ -658,7 +658,7 @@
     min-height: spacing(4.5);
     padding: spacing(0.5) spacing(1);
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     overflow-wrap: break-word;
 }
 
@@ -668,7 +668,7 @@
     width: spacing(1.75);
     height: spacing(1.75);
     box-sizing: border-box;
-    border: spacing(0.25) $shp-border-style $clr-brd-pri;
+    border: $siz-spinner-stroke $shp-border-style $clr-brd-pri;
     border-block-start-color: $clr-pri;
 
     // The spinner tokens rather than a literal duration: a looping animation must slow down

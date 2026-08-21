@@ -207,8 +207,7 @@
 // downward elevation shadows of the theme. It is tinted with the primary foreground color so it stays
 // readable in a dark theme, where a black shadow over a dark surface is invisible.
 .bit-ftr-elv {
-    box-shadow: 0 rem2(-2px) rem2(4px) rem2(-1px) translucent(#{$clr-fg-pri}, 20%),
-                0 rem2(-4px) rem2(6px) rem2(-4px) translucent(#{$clr-fg-pri}, 14%);
+    box-shadow: $box-shadow-appbar-bottom;
 }
 
 

@@ -3,7 +3,7 @@
 .bit-chb {
     cursor: pointer;
     width: fit-content;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     font-family: $tg-font-family;
     --bit-chb-ico-opa: 0;
     --bit-chb-box-clr-brd: #{$clr-brd-pri};
@@ -110,7 +110,7 @@
     height: var(--bit-chb-box-size);
     border-style: $shp-border-style;
     border-width: $shp-border-width;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-selection;
     min-width: var(--bit-chb-box-size);
     border-color: var(--bit-chb-box-clr-brd);
     background-color: var(--bit-chb-box-clr-bg);
@@ -144,7 +144,7 @@
     display: flex;
     gap: spacing(1);
     cursor: inherit;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     position: relative;
     align-items: center;
@@ -196,7 +196,7 @@
     .bit-chb-idi {
         width: var(--bit-ch-ind-size);
         height: var(--bit-ch-ind-size);
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-selection;
         background-color: var(--bit-chb-ico-clr-bg);
 
         &::before {
@@ -443,23 +443,23 @@
 }
 
 .bit-chb-sm {
-    --bit-chb-box-size: #{spacing(1.75)};
+    --bit-chb-box-size: #{$siz-sel-sm};
     --bit-ch-ind-size: #{spacing(0.875)};
-    --bit-chb-lbl-fontsize: #{spacing(1.5)};
+    --bit-chb-lbl-fontsize: #{$tg-fs-xs};
     --bit-chb-ico-fontsize: #{spacing(1)};
 }
 
 .bit-chb-md {
-    --bit-chb-box-size: #{spacing(2.5)};
+    --bit-chb-box-size: #{$siz-sel-md};
     --bit-ch-ind-size: #{spacing(1.25)};
-    --bit-chb-lbl-fontsize: #{spacing(1.75)};
+    --bit-chb-lbl-fontsize: #{$tg-fs-sm};
     --bit-chb-ico-fontsize: #{spacing(1.375)};
 }
 
 .bit-chb-lg {
-    --bit-chb-box-size: #{spacing(3.25)};
+    --bit-chb-box-size: #{$siz-sel-lg};
     --bit-ch-ind-size: #{spacing(1.625)};
-    --bit-chb-lbl-fontsize: #{spacing(2)};
+    --bit-chb-lbl-fontsize: #{$tg-fs-md};
     --bit-chb-ico-fontsize: #{spacing(1.875)};
 }
 

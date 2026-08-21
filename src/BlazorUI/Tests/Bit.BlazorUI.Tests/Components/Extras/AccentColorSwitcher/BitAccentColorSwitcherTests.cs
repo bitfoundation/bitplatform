@@ -30,7 +30,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         // fresh visit - a switcher with nothing marked would read as "no accent chosen yet".
         var active = component.FindAll(".bit-acs-act");
         Assert.AreEqual(1, active.Count);
-        Assert.AreEqual("Blue", active[0].GetAttribute("title"));
+        Assert.AreEqual("Default", active[0].GetAttribute("title"));
         Assert.AreEqual("true", active[0].GetAttribute("aria-pressed"));
     }
 
@@ -194,7 +194,7 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         var active = component.FindAll(".bit-acs-act");
         Assert.AreEqual(1, active.Count);
-        Assert.AreEqual("Blue", active[0].GetAttribute("title"),
+        Assert.AreEqual("Default", active[0].GetAttribute("title"),
             "Nothing is persisted here, so the packaged primary is the active accent.");
     }
 

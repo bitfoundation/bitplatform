@@ -36,4 +36,28 @@ public class BitThemeBoxShadows
     public string? S23 { get; set; }
     public string? S24 { get; set; }
     public string? FocusRing { get; set; }
+
+    /// <summary>The resting elevation of a card (<c>--bit-shd-card</c>).</summary>
+    public string? Card { get; set; }
+
+    /// <summary>The elevation of callouts, menus and dropdown lists (<c>--bit-shd-popup</c>).</summary>
+    public string? Popup { get; set; }
+
+    /// <summary>The elevation of dialogs and modals (<c>--bit-shd-dialog</c>).</summary>
+    public string? Dialog { get; set; }
+
+    /// <summary>The elevation of panels and edge-anchored sheets (<c>--bit-shd-sheet</c>).</summary>
+    public string? Sheet { get; set; }
+
+    /// <summary>The elevation of tooltips (<c>--bit-shd-tooltip</c>).</summary>
+    public string? Tooltip { get; set; }
+
+    /// <summary>The elevation of snackbars / toasts (<c>--bit-shd-snackbar</c>).</summary>
+    public string? Snackbar { get; set; }
+
+    /// <summary>The shadow an elevated header casts downwards (<c>--bit-shd-appbar-top</c>).</summary>
+    public string? AppBarTop { get; set; }
+
+    /// <summary>The shadow an elevated footer casts upwards (<c>--bit-shd-appbar-bottom</c>).</summary>
+    public string? AppBarBottom { get; set; }
 }

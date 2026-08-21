@@ -24,6 +24,16 @@
     --bit-tgl-des-basis: auto;
     --bit-tgl-hds-width: fit-content;
 
+    // The geometry of the switch. The track and the knob come from the theme's switch tokens through
+    // the size classes below (which set the -base triple) and step up to the icon variant's floor
+    // when the knob has to hold a glyph; the inset of the knob from the padding edge of the track is
+    // derived from the two rather than being a knob of its own, so it holds the knob the same
+    // distance from the stroke on every side of whatever geometry a theme asks for.
+    --bit-tgl-trk-w: var(--bit-tgl-trk-w-base);
+    --bit-tgl-trk-h: var(--bit-tgl-trk-h-base);
+    --bit-tgl-thb-size: var(--bit-tgl-thb-size-base);
+    --bit-tgl-pad: calc((var(--bit-tgl-trk-h) - var(--bit-tgl-thb-size)) / 2 - #{$shp-border-width});
+
     // The unchecked track stays neutral whatever the Color is, so it keeps reading as "off" instead of
     // as a second, dimmer accent.
     --bit-tgl-trk-clr-bg: #{$clr-bg-pri};
@@ -234,7 +244,7 @@
 
 .bit-tgl-lbl {
     cursor: pointer;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     font-size: var(--bit-tgl-lbl-fontsize);
 }
@@ -307,9 +317,12 @@
     position: absolute;
     box-sizing: border-box;
     justify-content: center;
-    inset-block-start: 50%;
+    // Centered on the cross axis by auto margins against a zero block inset rather than by a 50% offset
+    // pulled back with translate: the layout centering resolves to a whole device pixel, where the transform
+    // left the knob half a pixel off (and blurred) at fractional zoom levels.
+    inset-block: 0;
+    margin-block: auto;
     inset-inline-start: var(--bit-tgl-pad);
-    translate: 0 -50%;
     width: var(--bit-tgl-thb-size);
     height: var(--bit-tgl-thb-size);
     background-color: var(--bit-tgl-thb-clr);
@@ -404,7 +417,7 @@
 .bit-tgl-stx {
     padding: 0;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     font-size: var(--bit-tgl-stx-fontsize);
 }
@@ -441,67 +454,67 @@
 
 .bit-tgl-sm {
     --bit-tgl-gap: #{spacing(0.25)};
-    --bit-tgl-pad: #{spacing(0.375)};
-    --bit-tgl-trk-w: #{spacing(4)};
-    --bit-tgl-trk-h: #{spacing(2)};
-    --bit-tgl-thb-size: #{spacing(1)};
+    --bit-tgl-trk-w-base: #{$siz-switch-w-sm};
+    --bit-tgl-trk-h-base: #{$siz-switch-h-sm};
+    --bit-tgl-thb-size-base: #{$siz-switch-thumb-sm};
     --bit-tgl-trk-w-ico: #{spacing(5)};
     --bit-tgl-trk-h-ico: #{spacing(2.5)};
     --bit-tgl-thb-size-ico: #{spacing(1.75)};
     --bit-tgl-ico-fontsize: #{spacing(1)};
-    --bit-tgl-spn-width: #{spacing(0.1875)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.125)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-2xs};
     --bit-tgl-cnn-pad: #{spacing(0.25)};
-    --bit-tgl-lbl-fontsize: #{spacing(1.5)};
-    --bit-tgl-stx-fontsize: #{spacing(1.5)};
-    --bit-tgl-des-fontsize: #{spacing(1.25)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-xs};
+    --bit-tgl-stx-fontsize: #{$tg-fs-xs};
+    --bit-tgl-des-fontsize: #{$tg-fs-2xs};
 }
 
 .bit-tgl-md {
     --bit-tgl-gap: #{spacing(0.25)};
-    --bit-tgl-pad: #{spacing(0.375)};
-    --bit-tgl-trk-w: #{spacing(5)};
-    --bit-tgl-trk-h: #{spacing(2.5)};
-    --bit-tgl-thb-size: #{spacing(1.5)};
+    --bit-tgl-trk-w-base: #{$siz-switch-w-md};
+    --bit-tgl-trk-h-base: #{$siz-switch-h-md};
+    --bit-tgl-thb-size-base: #{$siz-switch-thumb-md};
     --bit-tgl-trk-w-ico: #{spacing(6.5)};
     --bit-tgl-trk-h-ico: #{spacing(3.5)};
     --bit-tgl-thb-size-ico: #{spacing(2.5)};
     --bit-tgl-ico-fontsize: #{spacing(1.5)};
-    --bit-tgl-spn-width: #{spacing(0.25)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.5)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-xs};
     --bit-tgl-cnn-pad: #{spacing(0.375)};
-    --bit-tgl-lbl-fontsize: #{spacing(1.75)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-sm};
     --bit-tgl-stx-fontsize: inherit;
-    --bit-tgl-des-fontsize: #{spacing(1.5)};
+    --bit-tgl-des-fontsize: #{$tg-fs-xs};
 }
 
 .bit-tgl-lg {
     --bit-tgl-gap: #{spacing(0.375)};
-    --bit-tgl-pad: #{spacing(0.5)};
-    --bit-tgl-trk-w: #{spacing(6.5)};
-    --bit-tgl-trk-h: #{spacing(3.25)};
-    --bit-tgl-thb-size: #{spacing(2)};
+    --bit-tgl-trk-w-base: #{$siz-switch-w-lg};
+    --bit-tgl-trk-h-base: #{$siz-switch-h-lg};
+    --bit-tgl-thb-size-base: #{$siz-switch-thumb-lg};
     --bit-tgl-trk-w-ico: #{spacing(8)};
     --bit-tgl-trk-h-ico: #{spacing(4.25)};
     --bit-tgl-thb-size-ico: #{spacing(3.25)};
     --bit-tgl-ico-fontsize: #{spacing(2)};
-    --bit-tgl-spn-width: #{spacing(0.3125)};
-    --bit-tgl-cnn-fontsize: #{spacing(1.75)};
+    --bit-tgl-spn-width: #{$siz-spinner-stroke};
+    --bit-tgl-cnn-fontsize: #{$tg-fs-sm};
     --bit-tgl-cnn-pad: #{spacing(0.5)};
-    --bit-tgl-lbl-fontsize: #{spacing(2)};
-    --bit-tgl-stx-fontsize: #{spacing(2)};
-    --bit-tgl-des-fontsize: #{spacing(1.75)};
+    --bit-tgl-lbl-fontsize: #{$tg-fs-md};
+    --bit-tgl-stx-fontsize: #{$tg-fs-md};
+    --bit-tgl-des-fontsize: #{$tg-fs-sm};
 }
 
-// A knob holding a glyph needs room for it, so the whole toggle steps up to the geometry of its size
-// token's icon variant - the same step every size takes, so the sizes stay in proportion. The spinner
-// asks for no step of its own: it is drawn to the size of whichever knob it lands in.
+// A knob holding a glyph needs room for it, so the icon variant is a floor under the geometry rather
+// than a replacement of it: a switch whose theme already draws a knob big enough for a glyph (Material's
+// 24dp handle, the 27pt UISwitch thumb) keeps the geometry that theme asks for, while one drawn smaller
+// grows to the floor its size class holds - the same step every size takes, so the sizes stay in
+// proportion. The floor follows the spacing unit, so a compact density shrinks it along with the rest.
+// The spinner asks for no step of its own: it is drawn to the size of whichever knob it lands in.
 // It carries the root class along, so it outweighs the size classes that sit on the same element instead of
 // only beating them on source order.
 .bit-tgl.bit-tgl-tic {
-    --bit-tgl-trk-w: var(--bit-tgl-trk-w-ico);
-    --bit-tgl-trk-h: var(--bit-tgl-trk-h-ico);
-    --bit-tgl-thb-size: var(--bit-tgl-thb-size-ico);
+    --bit-tgl-trk-w: max(var(--bit-tgl-trk-w-base), var(--bit-tgl-trk-w-ico));
+    --bit-tgl-trk-h: max(var(--bit-tgl-trk-h-base), var(--bit-tgl-trk-h-ico));
+    --bit-tgl-thb-size: max(var(--bit-tgl-thb-size-base), var(--bit-tgl-thb-size-ico));
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).

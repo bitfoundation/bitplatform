@@ -115,6 +115,8 @@ public static class BitThemeSerialization
         theme.Typography ??= new BitThemeTypography();
         theme.Motion ??= new BitThemeMotion();
         theme.Layout ??= new BitThemeLayout();
+        theme.Size ??= new BitThemeSizes();
+        theme.Opacity ??= new BitThemeOpacities();
 
         // Color branch.
         var color = theme.Color;
@@ -149,8 +151,28 @@ public static class BitThemeSerialization
         typography.Caption2 ??= new BitThemeTypographyVariants();
         typography.Overline ??= new BitThemeLabelTypographyVariants();
         typography.Inherit ??= new BitThemeInheritTypographyVariants();
+        typography.FontSize ??= new BitThemeTypographyFontSizes();
+        typography.FontWeights ??= new BitThemeTypographyFontWeights();
+        typography.Control ??= new BitThemeControlTypography();
 
         // Layout branch.
         theme.Layout.Breakpoints ??= new BitThemeBreakpoints();
+
+        // Shape branch.
+        theme.Shape.Radius ??= new BitThemeShapeRadii();
+
+        // Size branch.
+        theme.Size.Control ??= new BitThemeSizeScale();
+        theme.Size.ControlPaddingX ??= new BitThemeSizeScale();
+        theme.Size.ControlPaddingY ??= new BitThemeSizeScale();
+        theme.Size.Icon ??= new BitThemeSizeScale();
+        theme.Size.Selection ??= new BitThemeSizeScale();
+        theme.Size.Item ??= new BitThemeSizeScale();
+        theme.Size.Track ??= new BitThemeSizeScale();
+        theme.Size.SliderThumb ??= new BitThemeSizeScale();
+        theme.Size.Switch ??= new BitThemeSwitchSizes();
+        theme.Size.Switch.Width ??= new BitThemeSizeScale();
+        theme.Size.Switch.Height ??= new BitThemeSizeScale();
+        theme.Size.Switch.Thumb ??= new BitThemeSizeScale();
     }
 }

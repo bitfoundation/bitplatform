@@ -1,17 +1,15 @@
-@import '../Styles/abstracts/_functions.scss';
-@import '../Styles/abstracts/_media-queries.scss';
-@import '../Styles/abstracts/_bit-css-variables.scss';
+@import '../Styles/abstracts/_docs.scss';
 
 // The "on this page" rail. It is navigation, not content, so it only earns its space on wide
 // screens; the entries themselves are plain BitLinks and get their size and color from BitText.
 .side-rail {
-    top: rem2(90px);
     overflow: auto;
     position: sticky;
     height: fit-content;
-    flex: 0 0 rem2(232px);
-    padding: 0 rem2(24px) 2rem;
-    max-height: calc(#{$bit-env-window-height} - #{rem2(110px)});
+    flex: 0 0 rem2(240px);
+    padding: 0 $doc-space-md $doc-space-lg;
+    top: calc(var(--demo-header-height) + #{$doc-space-md});
+    max-height: calc(#{$bit-env-window-height} - var(--demo-header-height) - #{$doc-space-xl});
 
     @include lt-xl {
         display: none;
@@ -28,12 +26,12 @@
         z-index: 10;
         display: block;
         position: fixed;
-        inset-inline-end: 3rem;
-        top: calc(4.5rem + #{$bit-env-inset-top});
+        inset-inline-end: $doc-space-xl;
+        top: calc(var(--demo-header-height) + #{$doc-space-2xs} + #{$bit-env-inset-top});
     }
 
     @include lt-md {
-        inset-inline-end: 2rem;
+        inset-inline-end: $doc-space-md;
     }
 }
 
@@ -45,16 +43,25 @@
     display: block;
     overflow: hidden auto;
     scrollbar-width: thin;
-    padding: rem2(20px) rem2(24px);
+    padding: $doc-space-md;
 }
 
 // Quiet by design: a small outlined circle whose only extra chrome is the page background behind
 // it, so the icon stays legible over whatever scrolls underneath.
 ::deep .side-rail-fab-btn {
-    width: rem2(32px);
-    height: rem2(32px);
+    width: rem2(34px);
+    height: rem2(34px);
     border-radius: 50%;
+    box-shadow: $bit-box-shadow-card;
     background-color: $bit-color-background-primary;
+    border: rem2(1px) solid $bit-color-border-secondary;
+}
+
+// The rail's own label. A plain element rather than a BitText so it carries this file's scope
+// attribute and needs no ::deep to reach.
+.side-rail-label {
+    margin: 0;
+    @include doc-eyebrow;
 }
 
 // The hairline is the rail's spine: it ties the entries together and, being the only rule in the
@@ -64,13 +71,28 @@
 ::deep .side-rail-list {
     padding: 0;
     list-style: none;
-    margin: rem2(10px) 0 0;
+    margin: $doc-space-2xs 0 0;
     border-inline-start: rem2(2px) solid $bit-color-border-secondary;
 
     li {
         position: relative;
-        padding: rem2(3px) rem2(12px);
         overflow-wrap: anywhere;
+        padding: rem2(3px) $doc-space-xs;
+    }
+
+    // An example belongs to the section above it, so it is indented under it rather than listed as
+    // one more peer. Without this a component page's rail is one flat run of twenty entries with no
+    // hint that "Basic" and "API" are different kinds of thing.
+    li.nested {
+        padding-inline-start: $doc-space-md;
+    }
+
+    .side-rail-link {
+        transition: color $bit-motion-duration-short $bit-motion-easing;
+
+        &:hover {
+            color: $bit-color-foreground-primary;
+        }
     }
 
     // The current section: its entry takes the primary color and some weight, and its stretch of
@@ -81,8 +103,8 @@
             content: '';
             top: 0;
             bottom: 0;
-            width: rem2(2px);
             position: absolute;
+            width: rem2(2px);
             inset-inline-start: rem2(-2px);
             background-color: $bit-color-primary;
         }
@@ -91,7 +113,7 @@
             color: $bit-color-primary;
 
             * {
-                font-weight: 600;
+                font-weight: $bit-typography-fw-semibold;
             }
         }
     }

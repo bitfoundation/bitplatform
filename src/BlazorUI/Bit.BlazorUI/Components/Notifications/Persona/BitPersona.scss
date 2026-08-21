@@ -2,7 +2,7 @@
 
 .bit-prs {
     display: flex;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     box-shadow: none;
     color: $clr-fg-pri;
     width: fit-content;
@@ -10,8 +10,18 @@
     align-items: center;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
+    // The type ramp cannot express either end of this component. The presence dot at the two smallest
+    // sizes is 8px and 12px across, and the glyph inside it has to stay smaller than the dot - under
+    // $tg-fs-2xs, the bottom of the ramp, which would already overflow it. The initials at the two
+    // largest sizes are the mirror of that: they are sized off the avatar rather than off the text and
+    // run past $tg-fs-4xl, the top of the ramp. Both are published as this component's own knobs, the
+    // way the switch and the slider handle publish their geometry, so a preset can still retune them
+    // instead of finding a literal it cannot reach.
+    --bit-prs-presence-glyph-sm: #{rem2(4px)};
+    --bit-prs-presence-glyph-md: #{rem2(6.8px)};
+    --bit-prs-initials-lg: #{rem2(42px)};
     --bit-prs-flex-direction: row;
     flex-direction: var(--bit-prs-flex-direction);
 
@@ -27,15 +37,15 @@
 }
 
 .bit-prs-cin {
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: relative;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
 }
 
 .bit-prs-imc {
     display: grid;
     overflow: hidden;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     position: relative;
     border-radius: 50%;
     place-items: center;
@@ -63,7 +73,7 @@
 
 .bit-prs-sqr {
     .bit-prs-imc {
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
     }
 }
 
@@ -72,11 +82,11 @@
     width: 100%;
     height: 100%;
     display: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     position: absolute;
     align-items: center;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     transition: all $mot-duration-short linear;
     color: var(--bit-prs-coin-clr-txt);
     background-color: var(--bit-prs-coin-clr-bg);
@@ -103,20 +113,20 @@
     position: absolute;
     border-radius: 50%;
     align-items: center;
-    right: spacing(-0.25);
     bottom: spacing(-0.25);
-    font-size: spacing(0.5);
+    inset-inline-end: spacing(-0.25);
+    font-size: var(--bit-prs-presence-glyph-sm);
     box-sizing: content-box;
     justify-content: center;
     forced-color-adjust: none;
     background-clip: border-box;
-    border: spacing(0.125) $shp-border-style $clr-brd-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 .bit-prs-rvs {
     .bit-prs-pre {
-        right: unset;
-        left: spacing(-0.25);
+        inset-inline-end: unset;
+        inset-inline-start: spacing(-0.25);
     }
 }
 
@@ -144,7 +154,7 @@
     border: none;
     display: flex;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     width: spacing(4);
     background: unset;
     color: transparent;
@@ -155,7 +165,7 @@
     text-decoration: none;
     box-sizing: border-box;
     justify-content: center;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     transform: translateX(-50%);
     font-family: $tg-font-family;
     background-color: transparent;
@@ -188,7 +198,7 @@
 
 .bit-prs-off {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-ntr-gray110;
+    border: $shp-border-width-thick $shp-border-style $clr-ntr-gray110;
 }
 
 .bit-prs-onl {
@@ -205,7 +215,7 @@
 
 .bit-prs-blk {
     background-color: $clr-ntr-white;
-    border: spacing(0.25) $shp-border-style $clr-err;
+    border: $shp-border-width-thick $shp-border-style $clr-err;
 }
 
 .bit-prs-bsy {
@@ -220,11 +230,11 @@
     }
 
     .bit-prs-pic {
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-stx,
@@ -240,7 +250,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(3);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -256,7 +266,7 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(4);
-        font-size: spacing(1.75);
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx,
@@ -272,23 +282,23 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -321,23 +331,23 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(6);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-pre {
         width: spacing(1.5);
         height: spacing(1.5);
-        font-size: spacing(0.85);
+        font-size: var(--bit-prs-presence-glyph-md);
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ttx {
@@ -369,23 +379,23 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(7);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-pre {
         width: spacing(2);
         height: spacing(2);
-        font-size: spacing(1.25);
+        font-size: $tg-fs-2xs;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
@@ -417,29 +427,29 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(9);
-        font-size: spacing(3.5);
+        font-size: $tg-fs-3xl;
     }
 
     .bit-prs-pre {
         width: spacing(2.5);
         height: spacing(2.5);
-        font-size: spacing(1.5);
+        font-size: $tg-fs-xs;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
@@ -467,35 +477,35 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(12.5);
-        font-size: spacing(5.25);
+        font-size: var(--bit-prs-initials-lg);
     }
 
     .bit-prs-pre {
         width: spacing(3.5);
         height: spacing(3.5);
-        font-size: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {
@@ -519,35 +529,35 @@
     .bit-prs-imc {
         aspect-ratio: 1;
         width: spacing(15);
-        font-size: spacing(5.25);
+        font-size: var(--bit-prs-initials-lg);
     }
 
     .bit-prs-pre {
         width: spacing(4);
         height: spacing(4);
-        font-size: spacing(2.5);
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-ptx {
-        font-weight: 400;
-        font-size: spacing(2.5);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-xl;
     }
 
     .bit-prs-stx {
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-ttx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     .bit-prs-otx {
         display: block;
-        font-weight: 400;
-        font-size: spacing(1.75);
+        font-weight: $tg-fw-regular;
+        font-size: $tg-fs-sm;
     }
 
     &.bit-prs-sqr {

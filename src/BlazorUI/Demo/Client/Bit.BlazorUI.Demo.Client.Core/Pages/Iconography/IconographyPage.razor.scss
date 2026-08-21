@@ -1,24 +1,39 @@
-@import '../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../Styles/abstracts/_docs.scss';
 
-::deep {
-    .iconography-search-box {
-        max-width: 19rem;
+.icon-browser {
+    display: flex;
+    gap: $doc-space-sm;
+    flex-flow: column nowrap;
+
+    ::deep .iconography-search-box {
+        max-width: rem2(320px);
     }
 
-    .icon-box {
-        margin: 1px;
+    // A fixed-height scroller rather than a thousand icons in the page flow: the grid is the one
+    // place on this site where the number of nodes, not the layout, is what costs.
+    ::deep .icon-scroller {
+        padding: $doc-space-sm;
+
+        @include doc-surface;
+    }
+
+    // The label is revealed on hover and focus rather than always shown: at rest the grid should
+    // read as a sheet of glyphs, which is how an icon is actually recognised.
+    ::deep .icon-box {
+        margin: rem2(1px);
         height: auto;
-        width: 5.125rem;
-        min-height: unset;
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: $bit-shape-border-radius;
-        transition: background-color 0.15s ease;
+        min-height: unset;
+        width: rem2(88px);
+        padding: $doc-space-2xs;
+        border-radius: $bit-shape-radius-surface;
+        transition: background-color $bit-motion-duration-short $bit-motion-easing;
 
         .icon-name {
             opacity: 0;
             text-align: center;
             overflow-wrap: anywhere;
+            transition: opacity $bit-motion-duration-short $bit-motion-easing;
         }
 
         &:hover,
@@ -34,7 +49,7 @@
         }
 
         &.selected {
-            outline: 1px solid $bit-color-border-primary;
+            outline: rem2(1px) solid $bit-color-primary;
         }
     }
 }

@@ -1,3 +1,7 @@
-﻿pre.code {
-    padding: 24px 80px 24px 24px;
+﻿@import '../../Styles/abstracts/_docs.scss';
+
+// The page is one long reference, so its samples are numerous and short. Capping them keeps a
+// section's prose and its code visible together instead of one block filling the viewport.
+.theming-doc ::deep .code-box-content {
+    max-height: rem2(420px);
 }

@@ -24,10 +24,10 @@
     font-family: $tg-font-family;
 
     // The size tokens live on the root so a single class swaps the metrics of every part at once.
-    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-font-size: #{$tg-fs-sm};
     --bit-nav-item-min-height: #{spacing(6)};
-    --bit-nav-des-font-size: #{spacing(1.5)};
-    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-des-font-size: #{$tg-fs-xs};
+    --bit-nav-header-font-size: #{$tg-fs-lg};
     --bit-nav-header-height: #{spacing(5.5)};
 
     ul {
@@ -65,7 +65,7 @@
     cursor: pointer;
     user-select: none;
     color: $clr-fg-pri;
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     min-width: spacing(3.375);
     background-color: transparent;
 
@@ -84,7 +84,7 @@
     gap: spacing(1.25);
     align-items: center;
     height: var(--bit-nav-header-height);
-    border-bottom: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-bottom: $siz-divider $shp-border-style $clr-brd-pri;
 
     .bit-nav-iit {
         gap: spacing(1.25);
@@ -108,7 +108,7 @@
 .bit-nav-ghd {
     flex-grow: 1;
     display: flex;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     font-size: var(--bit-nav-header-font-size);
 }
 
@@ -135,7 +135,7 @@
     box-sizing: border-box;
     border-color: transparent;
     min-height: var(--bit-nav-item-min-height);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border-inline-start-width: spacing(0.375);
     border-inline-start-style: $shp-border-style;
 
@@ -166,7 +166,7 @@
     gap: spacing(1);
     cursor: pointer;
     overflow: hidden;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     color: $clr-fg-pri;
     align-items: center;
@@ -174,6 +174,7 @@
     flex-flow: row nowrap;
     text-overflow: ellipsis;
     font-size: var(--bit-nav-item-font-size);
+    letter-spacing: $tg-ctrl-letter-spacing;
 }
 
 .bit-nav-des {
@@ -184,7 +185,7 @@
     text-align: start;
     color: $clr-fg-ter;
     white-space: nowrap;
-    font-weight: normal;
+    font-weight: $tg-fw-regular;
     font-size: var(--bit-nav-des-font-size);
     background: transparent;
     text-overflow: ellipsis;
@@ -218,8 +219,8 @@
     }
 
     .bit-nav-itm {
-        padding: 1rem;
-        font-size: 1rem;
+        padding: spacing(2);
+        font-size: $tg-fs-md;
     }
 
     .bit-nav-itx {
@@ -234,7 +235,7 @@
     @include accented-item-content;
 
     .bit-nav-itm {
-        font-weight: 600;
+        font-weight: $tg-fw-semibold;
     }
 }
 
@@ -250,31 +251,31 @@
 
 .bit-nav-sep {
     height: 0;
-    border: 1px solid $clr-brd-sec;
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
 }
 
 
 .bit-nav-sm {
-    --bit-nav-item-font-size: #{spacing(1.5)};
+    --bit-nav-item-font-size: #{$tg-fs-xs};
     --bit-nav-item-min-height: #{spacing(4.5)};
-    --bit-nav-des-font-size: #{spacing(1.25)};
-    --bit-nav-header-font-size: #{spacing(1.875)};
+    --bit-nav-des-font-size: #{$tg-fs-2xs};
+    --bit-nav-header-font-size: #{$tg-fs-sm};
     --bit-nav-header-height: #{spacing(4.5)};
 }
 
 .bit-nav-md {
-    --bit-nav-item-font-size: #{spacing(1.75)};
+    --bit-nav-item-font-size: #{$tg-fs-sm};
     --bit-nav-item-min-height: #{spacing(6)};
-    --bit-nav-des-font-size: #{spacing(1.5)};
-    --bit-nav-header-font-size: #{spacing(2.25)};
+    --bit-nav-des-font-size: #{$tg-fs-xs};
+    --bit-nav-header-font-size: #{$tg-fs-lg};
     --bit-nav-header-height: #{spacing(5.5)};
 }
 
 .bit-nav-lg {
-    --bit-nav-item-font-size: #{spacing(2)};
+    --bit-nav-item-font-size: #{$tg-fs-md};
     --bit-nav-item-min-height: #{spacing(7)};
-    --bit-nav-des-font-size: #{spacing(1.75)};
-    --bit-nav-header-font-size: #{spacing(2.625)};
+    --bit-nav-des-font-size: #{$tg-fs-sm};
+    --bit-nav-header-font-size: #{$tg-fs-xl};
     --bit-nav-header-height: #{spacing(6.5)};
 }
 
