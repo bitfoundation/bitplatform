@@ -173,7 +173,9 @@ public static class BitButil
     /// </summary>
     /// <param name="modulesPath">
     /// Where the module files are served from, relative to the app's base href, when it is not the default
-    /// <c>./_content/Bit.Butil/modules/</c>.
+    /// <c>./_content/Bit.Butil/modules/</c>. A root-relative path (<c>/cdn/butil/</c>) or an absolute URL
+    /// is taken as given; anything else is treated as relative to the base href, so a trailing slash and
+    /// the leading <c>./</c> a dynamic <c>import()</c> needs are both added when they are missing.
     /// </param>
     public static void UseLazyScripts(string? modulesPath = null)
     {
@@ -182,9 +184,32 @@ public static class BitButil
         if (string.IsNullOrWhiteSpace(modulesPath) is false) SetScriptModulesPath(modulesPath);
     }
 
+    /// <summary>
+    /// Normalizes a modules path into something the browser will accept as the specifier of a dynamic
+    /// <c>import()</c>: a trailing slash, and a leading <c>./</c> on a path that is merely relative.
+    /// </summary>
+    /// <remarks>
+    /// The trailing slash is only about how the path is concatenated with <c>&lt;module&gt;.js</c>.
+    /// The leading <c>./</c> matters more: a specifier that is not a URL and does not start with
+    /// <c>/</c>, <c>./</c> or <c>../</c> is a <i>bare module specifier</i> to the browser, resolved through
+    /// the page's import map rather than against <c>document.baseURI</c> - and with no import map entry
+    /// behind it, <c>import("_content/Bit.Butil/modules/clipboard.js")</c> fails outright with
+    /// <c>TypeError: Failed to resolve module specifier</c>. Since the path is documented as being
+    /// relative to the app's base href, spell that out here rather than let the first Butil call of an
+    /// app that wrote it the natural way throw.
+    /// </remarks>
     private static void SetScriptModulesPath(string modulesPath)
     {
-        _scriptModulesPath = modulesPath.EndsWith('/') ? modulesPath : modulesPath + "/";
+        var path = modulesPath.Trim();
+
+        var isUrl = path[0] == '/'                                          // "/x", and "//host/x"
+                 || path.StartsWith("./", StringComparison.Ordinal)
+                 || path.StartsWith("../", StringComparison.Ordinal)
+                 || path.IndexOf("://", StringComparison.Ordinal) > 0;      // "https://host/x"
+
+        if (isUrl is false) path = "./" + path;
+
+        _scriptModulesPath = path.EndsWith('/') ? path : path + "/";
     }
 
     /// <summary>

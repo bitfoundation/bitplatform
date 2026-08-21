@@ -60,6 +60,16 @@
              stage at which the WebAssembly SDK swaps in its trimmed assemblies, after ILLink has run and
              before compressed variants, service-worker manifests and fingerprinted endpoints are computed. -->
         <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);BitButilTrimScriptBundle</ResolvePublishStaticWebAssetsDependsOn>
+
+        <!-- Same appending trick, for the stage that gathers the assets themselves (see
+             BitButilSelectScriptAssets). The SDK collects them from three places in a fixed order - the
+             package assets it updates, this project's own, then the referenced projects' - and names the
+             three in the dependency list of one target: ResolveCoreStaticWebAssets on the .NET 9+ SDK,
+             ResolveStaticWebAssetsInputs on .NET 8, which has no such stage. Appending to both lists puts
+             the selection after every source has contributed, whichever SDK is in play; the second one to
+             be reached finds the target already built and does nothing. -->
+        <ResolveCoreStaticWebAssetsDependsOn>$(ResolveCoreStaticWebAssetsDependsOn);BitButilSelectScriptAssets</ResolveCoreStaticWebAssetsDependsOn>
+        <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);BitButilSelectScriptAssets</ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <!-- The runtime switch the C# side reads (BitButil.LazyScriptsEnabled): an AppContext switch through the
@@ -100,10 +110,16 @@
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
     does not publish 65 module files it never requests and a lazy-mode app does not publish a bundle it
-    never loads. Runs before the SDK processes package assets, so the removed items never reach the build
-    manifest that publish later resumes from.
+    never loads. Runs once the SDK has gathered the assets from every source (see the DependsOn properties
+    above) and long before the build manifest publish later resumes from is written, so the removed items
+    reach neither the build output nor the publish output.
+
+    Gathering assets from every source is what makes this work for a ProjectReference to Bit.Butil - the
+    layout the repository's own samples and tests use - as well as for the PackageReference a consumer has:
+    a referenced project contributes its assets after the package ones, so a step that ran any earlier
+    would find nothing to drop and silently publish the whole set.
     -->
-    <Target Name="BitButilSelectScriptAssets" BeforeTargets="UpdateExistingPackageStaticWebAssets"
+    <Target Name="BitButilSelectScriptAssets"
             Condition="'$(BitButilIncludeScriptBundle)' != 'true' or '$(BitButilIncludeScriptModules)' != 'true'">
         <ItemGroup>
             <_BitButilAsset Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.SourceId)' == 'Bit.Butil'" />

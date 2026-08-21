@@ -93,6 +93,25 @@ internal static class LazyScripts
             await fromCdn.IsSupported();
             Expect(relocated, ["import /cdn/butil/clipboard.js", "BitButil.clipboard.isSupported"],
                 "UseLazyScripts(modulesPath) changes where modules are imported from", failures, ref passed);
+
+            // A path that is merely relative to the base href - written the way the documentation reads,
+            // without the "./" - has to come out as a relative *URL*. Left bare it is a bare module
+            // specifier, which the browser resolves through the page's import map rather than against
+            // document.baseURI and, finding no entry, rejects with "Failed to resolve module specifier".
+            BitButil.UseLazyScripts("_content/Bit.Butil/modules");
+            var baseRelative = new RecordingJSRuntime();
+            var (fromBaseHref, _) = Resolve(baseRelative);
+            await fromBaseHref.IsSupported();
+            Expect(baseRelative, ["import ./_content/Bit.Butil/modules/clipboard.js", "BitButil.clipboard.isSupported"],
+                "a modules path relative to the base href is imported as a relative URL, not a bare specifier", failures, ref passed);
+
+            // An absolute URL is a URL already and must be passed through untouched.
+            BitButil.UseLazyScripts("https://cdn.example.com/butil/");
+            var absolute = new RecordingJSRuntime();
+            var (fromAbsolute, _) = Resolve(absolute);
+            await fromAbsolute.IsSupported();
+            Expect(absolute, ["import https://cdn.example.com/butil/clipboard.js", "BitButil.clipboard.isSupported"],
+                "an absolute modules URL is imported as given", failures, ref passed);
         }
         finally
         {

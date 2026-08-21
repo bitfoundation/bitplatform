@@ -29,7 +29,9 @@ public sealed class BitButilOptions
     /// <summary>
     /// Where the per-module scripts are served from when <see cref="LazyScripts"/> is on, relative to the app's
     /// base href. Default <c>./_content/Bit.Butil/modules/</c>; only needed when the package's static web assets
-    /// are served from somewhere else (a CDN, a custom base path).
+    /// are served from somewhere else (a CDN, a custom base path). Normalized the same way as the argument of
+    /// <see cref="BitButil.UseLazyScripts"/> - a missing trailing slash, and the leading <c>./</c> of a
+    /// base-href-relative path, are filled in.
     /// </summary>
     public string? ScriptModulesPath { get; set; }
 
