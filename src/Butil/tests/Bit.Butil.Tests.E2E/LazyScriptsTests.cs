@@ -91,6 +91,29 @@ public class LazyScriptsTests : ButilHarnessTestBase
         Assert.DoesNotContain((string name) => name.EndsWith("/bit-butil.js", StringComparison.Ordinal), requests);
     }
 
+    [TestMethod]
+    public async Task Only_The_Modules_Used_Are_Fetched_And_One_File_Each()
+    {
+        // Three APIs, three modules. Two things are being asserted at once, and both are the point of
+        // the feature: nothing that was not called is downloaded, and a module arrives as ONE file
+        // rather than as itself plus a request per dependency - the per-module files are built
+        // self-contained precisely so a lazy app does not pay a round trip for `utils`.
+        await ClickAndExpectAsync("ls-clear", "ls:clear");
+        await ClickAndExpectAsync("crypto-uuid", "crypto:uuid:");
+        await ClickAndExpectAsync("doc-title", "doc:title:butil-e2e-title");
+
+        var fetched = await Page.EvaluateAsync<string[]>(
+            """
+            () => [...new Set(performance.getEntriesByType('resource')
+                .map(entry => entry.name)
+                .filter(name => name.includes('/_content/Bit.Butil/modules/'))
+                .map(name => name.substring(name.lastIndexOf('/') + 1)))].sort()
+            """);
+
+        Assert.AreSequenceEqual(new[] { "crypto.js", "document.js", "storage.js" }, fetched,
+            $"a lazy app should fetch exactly one file per module it uses, but it fetched: {string.Join(", ", fetched)}");
+    }
+
     /// <summary>The <c>BitButil.*</c> keys currently registered on the page, or empty when nothing is loaded.</summary>
     private Task<string[]> LoadedNamespacesAsync()
         => Page.EvaluateAsync<string[]>("() => window.BitButil ? Object.keys(window.BitButil) : []");

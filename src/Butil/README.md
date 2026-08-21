@@ -259,9 +259,9 @@ consumer gets the warning at their own call site.
 ### Shipping only the JavaScript you use
 
 `bit-butil.js` covers every API in the package. The C# side of an unused API is trimmed away from a
-published app (see `AddBitButilServices` above); the JavaScript side can be too, in either of two
-ways. Both are set in the app's csproj, and both work from the same per-module build of the scripts
-(one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
+published app (see `AddBitButilServices` above); the JavaScript side can be tree-shaken too. There are two
+ways of tree-shaking it, both set in the app's csproj, and both working from the same per-module build of
+the scripts (one `Scripts/*.ts` file is one module, `BitButil.clipboard` for `Clipboard` and so on).
 
 **Publish-time bundle trimming - the default, nothing to add.** Keep the script tag. When the app is
 published trimmed - a Blazor WebAssembly publish is - the package's build logic reads the trimmed

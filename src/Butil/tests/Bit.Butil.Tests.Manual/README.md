@@ -130,8 +130,8 @@ read only partly would report `PASS` having verified less of it than the output 
 
 | | untrimmed | trimmed |
 | --- | --- | --- |
-| `Bit.Butil.dll` | 620,544 bytes | 116,224 bytes |
-| types in assembly | 791 | 147 |
+| `Bit.Butil.dll` | 622,080 bytes | 118,272 bytes |
+| types in assembly | 793 | 149 |
 | `[ButilService]` discovered / registered | 57 / 57 | 5 / 5 |
 | interop contract | 43 types captured | 10 checked, 33 trimmed away, 0 problems |
 | JavaScript modules called | 63 of 65 | 6 of 65 (clipboard, cookie, events, geolocation, storage, window) |

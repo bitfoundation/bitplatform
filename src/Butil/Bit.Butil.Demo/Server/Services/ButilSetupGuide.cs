@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.Butil.Demo.Server.Services;
@@ -40,6 +40,17 @@ public static partial class ButilSetupGuide
                 One project, one DI container, and `wwwroot/index.html` is the host page that carries both script
                 tags. Nothing prerenders, so a browser call is safe from the first render onwards - though
                 `OnAfterRenderAsync` is still the habit to keep if the code might ever move into a prerendered app.
+
+                This is also the one hosting model where the JavaScript tree-shaking of step 2 needs nothing said:
+                a WebAssembly publish trims `Bit.Butil.dll`, and it is the same assembly that calls the JavaScript
+                being served, so `bit-butil.js` is rebuilt from just the modules the app can still reach.
+
+                Two things in the sample below are this repository's rather than yours, and both should be
+                dropped when you copy it: its `.csproj` imports Bit.Butil's consumer-side targets by hand and
+                points them at the source tree (Butil reaches the sample as a `ProjectReference`; referencing
+                the NuGet package brings all of it automatically), and its `index.html` writes the script tag
+                from a script so that one build can be driven in both script-loading modes by the end-to-end
+                suite. Yours is the plain `<script>` tag of step 2, or no tag at all under lazy scripts.
                 """,
                 ["Sample/Bit.Butil.Samples.Web/", "Sample/Bit.Butil.Samples.Core/Extentions/"]),
 
@@ -66,6 +77,12 @@ public static partial class ButilSetupGuide
                 // register the very same services the WebAssembly container does.
                 builder.Services.AddDemoServices();
                 ```
+
+                The same "both containers" rule governs the JavaScript tree-shaking of step 2:
+                `<BitButilLazyScripts>true</BitButilLazyScripts>` belongs in both `.csproj` files, because both of
+                them run components that call Butil. Publish-time bundle trimming is off in this shape and should
+                stay off - the host serves the JavaScript out of its own, untrimmed reference to the package, which
+                says nothing about what the WebAssembly client calls.
 
                 The files below are this documentation site itself, which is exactly that shape. Its full host
                 `Program.cs` is `GetButilSourceFile(path: "Demo/Server/Program.cs")` - it carries endpoints of its
@@ -232,11 +249,11 @@ public static partial class ButilSetupGuide
         2. Add `<script src="_content/Bit.Butil/bit-butil.js"></script>` to the host page, BEFORE the Blazor script.
            The app boots as soon as the Blazor script runs, so `window.BitButil` has to exist by then. It is a static
            web asset of the package - there is nothing to copy into your own wwwroot. Two optional csproj switches
-           decide how much of that script a published app ships: by default a trimmed publish (standalone
-           WebAssembly) rebuilds `bit-butil.js` from only the modules the trimmed `Bit.Butil.dll` still calls
-           (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out); `<BitButilLazyScripts>true</BitButilLazyScripts>`
-           drops the script tag altogether and has each API `import()` its own module on first use, in every
-           hosting model - set it in every project that uses Butil.
+           tree-shake that JavaScript, so a published app ships only the modules it can still reach: by default a
+           trimmed publish (standalone WebAssembly) rebuilds `bit-butil.js` from only the modules the trimmed
+           `Bit.Butil.dll` still calls (`<BitButilTrimScripts>false</BitButilTrimScripts>` opts out);
+           `<BitButilLazyScripts>true</BitButilLazyScripts>` drops the script tag altogether and has each API
+           `import()` its own module on first use, in every hosting model - set it in every project that uses Butil.
         3. Call `AddBitButilServices()` in EVERY DI container that renders your components. A Blazor Web App with an
            interactive WebAssembly client has two of them (the host prerenders, the browser hydrates), and a missing
            registration in either one surfaces at runtime rather than at compile time.

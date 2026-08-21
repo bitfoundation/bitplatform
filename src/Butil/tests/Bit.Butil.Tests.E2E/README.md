@@ -44,8 +44,9 @@ dotnet test .\Bit.Butil.Tests.E2E.csproj
 * `*Tests.cs` - narrowly-scoped tests grouped by Butil surface.
 * `LazyScriptsTests.cs` - opens `/e2e?lazy=1`, which starts the sample with no `bit-butil.js` on the page and
   `BitButil.UseLazyScripts()` on (see `Bit.Butil.Samples.Web/Program.cs` and `index.html`), and proves the
-  per-module `import()` path in a real browser: modules arrive on first use, one at a time, and behave as
-  in bundle mode.
+  per-module `import()` path in a real browser: modules arrive on first use, one at a time, one file each
+  (a module carries its own dependencies, so there is no request per helper), nothing that was not called
+  is fetched, and the calls behave as in bundle mode.
 * `InteropContractTests.cs` - runs `Infrastructure/verify-interop-contract.mjs` under Node: every
   `BitButil.x.y` identifier the C# side invokes must resolve against the bundle **and** against its own
   lazy-loadable module file evaluated on its own.
