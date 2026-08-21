@@ -219,7 +219,10 @@ public class BrouterSourceCatalogTests
         Assert.IsNotNull(routeTable);
         Assert.IsFalse(routeTable.Contains("@*", StringComparison.Ordinal));
 
-        var catalog = files["Demo/Client/ConstraintCatalog.cs"].Description;
+        Assert.IsTrue(files.TryGetValue("Demo/Client/ConstraintCatalog.cs", out var constraintCatalog),
+            "'Demo/Client/ConstraintCatalog.cs' is not in the catalog, so its embedded resource is missing.");
+
+        var catalog = constraintCatalog.Description;
         Assert.IsNotNull(catalog);
         Assert.IsFalse(catalog.Contains("<", StringComparison.Ordinal), $"XML markup leaked into a description: {catalog}");
         Assert.IsFalse(catalog.Contains("///", StringComparison.Ordinal));

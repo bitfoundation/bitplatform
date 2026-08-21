@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -140,6 +140,7 @@ public class McpController(HtmlRenderer htmlRenderer, IOptions<BrouterOptions> b
         var candidates = BrouterApiCatalog.Types
             .Where(t => t.Name.Contains(typeName, StringComparison.OrdinalIgnoreCase))
             .Select(t => t.Name)
+            .Take(10)
             .ToArray();
 
         return candidates.Length > 0

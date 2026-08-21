@@ -111,8 +111,13 @@ public partial class McpCatalogConsistencyTests
             StringAssert.Contains(description, slug, $"'{slug}' is a documentation page the tool's description never names.");
         }
 
-        // And nothing it names is a page that has since been renamed away.
-        foreach (var quoted in QuotedSlugRegex().Matches(description).Select(match => match.Groups["slug"].Value))
+        // And nothing it names is a page that has since been renamed away. Only the quoted words the
+        // description lists as slugs are read as slugs - a quoted word in ordinary prose is not one.
+        var advertised = QuotedSlugRegex().Matches(description).Select(match => match.Groups["slug"].Value).ToArray();
+
+        Assert.IsTrue(advertised.Length > 0, "The tool's description no longer lists any slug, so nothing here is being checked.");
+
+        foreach (var quoted in advertised)
         {
             CollectionAssert.Contains(known, quoted, $"The tool's description advertises the slug '{quoted}', which no page has.");
         }
@@ -252,8 +257,10 @@ public partial class McpCatalogConsistencyTests
     [GeneratedRegex(@"^- \*\*(?<name>[^*]+)\*\* \((?<kind>[^)]+)\)", RegexOptions.Multiline)]
     private static partial Regex IndexEntryRegex();
 
-    // The docs tool's description quotes the slugs it advertises: 'faq', 'recipes', ...
-    [GeneratedRegex(@"'(?<slug>[a-z][a-z-]+)'")]
+    // The docs tool's description quotes the slugs it advertises as a list: 'faq', 'recipes', ... Only
+    // a quoted word that continues such a list - one introduced by ':' or continued by ',' - is a slug;
+    // a quoted word anywhere else in the prose is prose.
+    [GeneratedRegex(@"(?<=[:,] )'(?<slug>[a-z][a-z-]+)'")]
     private static partial Regex QuotedSlugRegex();
 
     // The source index lists a file as "- `path` (n lines) - description".
