@@ -1,4 +1,4 @@
-@page "/media-recorder"
+﻿@page "/media-recorder"
 @implements IAsyncDisposable
 @inject Bit.Butil.MediaDevices mediaDevices
 @inject Bit.Butil.MediaRecorder recorder
@@ -93,14 +93,14 @@ await recorder.RevokeObjectUrl(_playbackUrl);
             <span>@_state</span>
         </div>
         <video @ref="_livePreview" autoplay playsinline muted
-               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:120px"></video>
+               class="demo-video" style="min-height:120px"></video>
         @if (string.IsNullOrEmpty(_playbackUrl) is false)
         {
             <div class="field">
                 <span class="field-label">Recorded @FormatSize(_recordedSize) of @_recordedType</span>
             </div>
             <video src="@_playbackUrl" controls playsinline
-                   style="margin-top:0.5rem;max-width:100%;border-radius:8px;background:#111"></video>
+                   class="demo-video"></video>
         }
         <DemoConsole @ref="recordOutput" Title="recording output" />
     </DemoSection>

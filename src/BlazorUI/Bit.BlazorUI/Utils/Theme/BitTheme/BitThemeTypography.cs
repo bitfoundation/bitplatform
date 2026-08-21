@@ -7,6 +7,15 @@ public class BitThemeTypography
     public string? LineHeight { get; set; }
     public string? GutterSize { get; set; }
 
+    /// <summary>The font-size scale components read their text and glyph sizes from (<c>--bit-tpg-fs-*</c>).</summary>
+    public BitThemeTypographyFontSizes FontSize { get; set; } = new();
+
+    /// <summary>The font-weight scale components read their weights from (<c>--bit-tpg-fw-*</c>).</summary>
+    public BitThemeTypographyFontWeights FontWeights { get; set; } = new();
+
+    /// <summary>The tracking and case of the label of an interactive control (<c>--bit-tpg-ctrl-*</c>).</summary>
+    public BitThemeControlTypography Control { get; set; } = new();
+
     public BitThemeTypographyVariants H1 { get; set; } = new();
     public BitThemeTypographyVariants H2 { get; set; } = new();
     public BitThemeTypographyVariants H3 { get; set; } = new();
@@ -66,4 +75,63 @@ public class BitThemeLabelTypographyVariants : BitThemeTypographyVariants
 public class BitThemeInheritTypographyVariants : BitThemeLabelTypographyVariants
 {
     public string? FontFamily { get; set; }
+}
+
+/// <summary>
+/// The font-size scale (<c>--bit-tpg-fs-{2xs,xs,sm,md,lg,xl,2xl,3xl,4xl}</c>) every component reads its
+/// text and glyph sizes from. Values are lengths in <c>rem</c> by default, so type follows the root font
+/// size rather than the spacing unit or the density multiplier. Component size classes map
+/// <c>sm</c> to <see cref="Xs"/>, <c>md</c> to <see cref="Sm"/> and <c>lg</c> to <see cref="Md"/>.
+/// </summary>
+public class BitThemeTypographyFontSizes
+{
+    /// <summary><c>--bit-tpg-fs-2xs</c> (10px by default).</summary>
+    public string? Xxs { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-xs</c> (12px by default).</summary>
+    public string? Xs { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-sm</c> (14px by default).</summary>
+    public string? Sm { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-md</c> (16px by default).</summary>
+    public string? Md { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-lg</c> (18px by default).</summary>
+    public string? Lg { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-xl</c> (20px by default).</summary>
+    public string? Xl { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-2xl</c> (24px by default).</summary>
+    public string? Xxl { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-3xl</c> (28px by default).</summary>
+    public string? Xxxl { get; set; }
+
+    /// <summary><c>--bit-tpg-fs-4xl</c> (32px by default).</summary>
+    public string? Xxxxl { get; set; }
+}
+
+/// <summary>
+/// The font-weight scale (<c>--bit-tpg-fw-{light,regular,medium,semibold,bold}</c>). Components never
+/// write a literal weight, so a design system that ships a different face retunes the ramp here.
+/// </summary>
+public class BitThemeTypographyFontWeights
+{
+    public string? Light { get; set; }
+    public string? Regular { get; set; }
+    public string? Medium { get; set; }
+    public string? SemiBold { get; set; }
+    public string? Bold { get; set; }
+}
+
+/// <summary>
+/// The tracking and case of the label of an interactive control - buttons, tags, tabs, nav items
+/// (<c>--bit-tpg-ctrl-letter-spacing</c>, <c>--bit-tpg-ctrl-text-transform</c>).
+/// </summary>
+public class BitThemeControlTypography
+{
+    public string? LetterSpacing { get; set; }
+    public string? TextTransform { get; set; }
 }

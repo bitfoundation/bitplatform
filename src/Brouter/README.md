@@ -40,21 +40,22 @@ also a plain HTTP GET under `/api/mcp/...` if you just want to look. It offers:
 - **Search** across everything at once (`SearchBrouter`) - the guide below, the docs pages, every
   public member, the constraints and the demo's sources - with the exact follow-up call on each hit.
 - **Setup** per Blazor render mode (`GetBrouterSetupGuide`), as the real files of a working project.
-- **The exact API** (`GetBrouterApiList` / `GetBrouterApiDetails`), reflected out of the shipped
-  assembly with every parameter's type, default value and XML documentation.
-- **Route-template checking** (`InspectBrouterRouteTemplate`, `AnalyzeBrouterRouteTable`) using
-  Brouter's own parser: parameters, constraints, specificity ranking, ambiguous pairs, real errors.
-- **The docs and the guide** as text, the constraint catalog, the demo's source files, and the typed
-  routes the source generator emitted for this very site.
+- **The exact API** (`GetBrouterApi`), reflected out of the shipped assembly with every parameter's
+  type, default value and XML documentation.
+- **Route-template checking** (`InspectBrouterRouteTemplates`) using Brouter's own parser: one
+  template in full, or a whole table ranked by specificity with the ambiguous pairs and real errors.
+- **The guide and the docs** as text (`GetBrouterGuideSection`, `GetBrouterDocsPage`), the
+  constraint catalog (`GetBrouterRouteConstraints`) and the demo's own source (`GetBrouterSourceFile`).
 - **Resources** (`brouter://guide/...`, `brouter://api/...`, `brouter://docs/...`) and **prompts**
   for the four common jobs: adding Brouter to an app, implementing a routing feature, migrating off
   the built-in Router, and debugging a route that will not match.
 - **Server instructions** handed over at `initialize` - the working rules an agent reads before it
-  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), output schemas with
-  validated structured results, and `completion/complete` for every argument that is a key into a
-  closed set: the docs slugs, the guide headings, the type names, the source paths.
+  has called anything - plus per-tool annotations (`readOnly`, `openWorld`), an output schema on the
+  two tools whose answer is an object, and `completion/complete` for every argument that is a key
+  into a closed set: the docs slugs, the guide headings, the type names, the source paths.
 
-Start with the `GetBrouterOverview` tool. See
+Eight tools, and one rule across the reference ones: pass the key of the thing you want and you get
+that thing; leave it out and you get the index of what there is. Start with `SearchBrouter`. See
 [McpController](Bit.Brouter.Demo/Server/Controllers/McpController.cs). The site's `/docs/mcp` page
 is a live MCP client for that same endpoint: it handshakes, lists the tools, resources and prompts,
 calls them and prints every JSON-RPC message in both directions - so the server can be tried, and
@@ -115,6 +116,7 @@ code can be exercised in each render mode.
 - **View Transitions API**: `o.ViewTransitions = true` wraps each navigation's re-render in `document.startViewTransition` with **beautiful direction-aware default animations** out of the box (push glides forward, Back mirrors it, replace fades; overridable via plain CSS thanks to `@layer`, opt-out via `o.ViewTransitionDefaultAnimations`); `view-transition-name` morphs just work; inert on unsupported browsers
 - **.NET 10 `NotFound()` interop**: `NavigationManager.NotFound()` routes through Brouter's not-found handling, and an unmatched URL during static SSR sets a real HTTP 404
 - **Revalidation**: `brouter.RevalidateAsync()` re-runs the matched chain's loaders after a mutation - no guards, no URL change, current content stays while fresh data loads
+- **Reload (rebuild the page)**: `brouter.ReloadAsync()` disposes and recreates the matched chain's components (keep-alive instances included) and re-runs its loaders - the "arrive here for the first time" reset that re-navigating to the current URL can't give you, since Blazor reuses a component whose route and parameters didn't change
 - **Loader caching (stale-while-revalidate)**: per-route `StaleTime` (or a global default) caches loader results per URL - fresh hits skip the loader (instant Back/Forward), stale hits render immediately and refresh in the background (TanStack Router style); `GcTime`, entry cap, `Blocking` mode and `ClearLoaderCache()` included
 - **Link preloading**: `<BrouterLink Preload="Intent">` (hover/touch/focus with debounce), `Viewport` (IntersectionObserver) or `Render` warm the loader cache before the click; programmatic `brouter.PreloadAsync(url)`; guards never run on preloads (`ctx.IsPreload`)
 - **Deferred (streamed) data**: return unawaited `Task<T>`s inside the loader result and render them with `<BrouterAwait>` (`Pending`/`Resolved`/`Error`) - critical data blocks navigation, slow data streams in (React Router `<Await>` style)
@@ -124,7 +126,7 @@ code can be exercised in each render mode.
 - **Functional query updates**: `brouter.NavigateWithQuery(q => q.Set("page", 2))` updates one parameter and preserves the rest (typed values, multi-value support, replace-by-default)
 - **Source-generated typed routes** (`Bit.Brouter.Generators`): compile-time-safe URL builders generated from your `@page` directives and `<Broute>` declarations - `BrouterRoutes.Counter(1234)` instead of `"/counter/1234"`, with constraint-typed parameters and a `Names` class for named routes
 - **Named outlets**: `<BrouterOutlet Name="sidebar">` + `<BrouterView Name="sidebar">` let one route drive multiple regions of its parent layout (Vue named views / Angular secondary outlets style)
-- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand
+- **Keep-alive routes**: `<Broute KeepAlive>` keeps the rendered component mounted (hidden) when navigated away, so returning restores its exact state instead of recreating it (Vue `KeepAlive` / Angular `RouteReuseStrategy` style); `KeepAliveMax="N"` upgrades a parameterized route to per-parameter caching (`/item/1` and `/item/2` each resume their own state, LRU-evicted over the budget), and `brouter.ClearKeepAlive()` evicts retained pages on demand - `ClearKeepAlive(includeActive: true)` throws away the page on screen as well and rebuilds it in place
 - **Route lifecycle**: every routed component (keep-alive or not, at any depth) can receive `OnActivated` / `OnDeactivated` / `OnRenavigated` callbacks - implement `IBrouterRoute` on a page (auto-discovered) or derive from `BrouterRouteBase` (the Ionic `ionViewWillEnter` / Vue `onActivated` idea, with async support and a Disposing-vs-Hidden reason) - plus the pre-commit `OnDeactivating` / `OnRenavigating` lock callbacks above
 - **Async data `Loader`** exposed via the typed cascading `BrouterRouteData` wrapper (`Get<T>` / `TryGet<T>` / `GetOrDefault<T>`) - sequential root → leaf by default, with opt-in **`ParallelLoaders`** for independent loaders
 - Redirects with `RedirectTo`
@@ -389,6 +391,36 @@ await brouter.RevalidateAsync();   // re-runs the matched chain's loaders, re-re
 Not a navigation: the URL stays, guards and `OnNavigating`/`OnNavigated` don't run, and the current
 content remains visible while loaders work. Loaders can branch on `ctx.IsRevalidation`. For data on
 *other* pages, `brouter.ClearLoaderCache()` drops every cached loader result instead.
+
+### Reload (rebuild the current page)
+
+```csharp
+await AuthManager.SwitchTenant(tenantId);
+brouter.ClearKeepAlive();       // drop the retained (hidden) pages of the previous tenant
+await brouter.ReloadAsync();    // and rebuild the one on screen, re-running its guards and loaders
+```
+
+(If the page's *data* isn't stale - only the instances holding the previous tenant's state are -
+`brouter.ClearKeepAlive(includeActive: true)` does the same rebuild in one call and skips the
+pipeline entirely: see [keep-alive routes](#keep-alive-routes).)
+
+`ReloadAsync()` disposes the matched chain's components - the visible content plus anything those
+routes were keeping alive - evicts their cached loader results for this URL, and matches the URL
+again, so the page comes back with new instances, fresh state and freshly loaded data: the same
+result as arriving at the URL for the first time, without a full-page reload.
+
+Use it when something invalidated everything the page *derived*, not just its data - switching
+tenant, impersonating another user, changing a setting the page read once in `OnInitialized`.
+Re-navigating to the current URL is not an alternative: Blazor reuses a component whose route and
+parameters didn't change (the built-in `Router` behaves the same way), so `NavigateTo(currentUrl)`
+leaves the stale instance exactly where it is. Prefer `RevalidateAsync()` when only loader data is
+stale - it keeps component state and skips the remount.
+
+Not a navigation either: the URL and history entry are untouched, `OnNavigating`/`OnNavigated` don't
+fire, the scroll position is left alone, and no `LeaveGuard` can veto it (nothing is being left).
+Route guards, `RedirectTo` and loaders *do* run - the chain is matched from nothing - and can branch
+on `ctx.IsReload`. Retained instances of routes outside the current chain are untouched; pair it
+with `ClearKeepAlive()` (as above) to drop those too.
 
 ### Loader caching (stale-while-revalidate)
 
@@ -1090,11 +1122,20 @@ Retention is inherently bounded - one instance per `KeepAlive` route by default,
 ```csharp
 @inject IBrouter brouter
 ...
-brouter.ClearKeepAlive();  // dispose every retained (hidden) page; the visible one stays
+brouter.ClearKeepAlive();                       // dispose every retained (hidden) page; the visible one stays
+brouter.ClearKeepAlive(includeActive: true);    // ...and the visible one too - rebuilt in place, fresh instance
 ```
 
 Call it on sign-out, under memory pressure, or after invalidating the state those pages hold; the
 next visit to a dropped route recreates it fresh.
+
+`includeActive: true` extends it to the page on screen: the matched chain's components are
+deactivated (`Disposing`), unmounted, disposed and immediately rebuilt, so the user is looking at a
+brand-new instance in its initial state - no restored scroll, filters or drafts. It is *not* a
+navigation and not a reload: the URL, history entry and scroll position don't move, no hook or guard
+runs, and route loaders don't re-run (the rebuilt chain keeps the data it already loaded), so it is
+the cheap reset for "this state belongs to the previous user/tenant". When the data is stale too,
+use [`ReloadAsync()`](#reload-rebuild-the-current-page), which re-runs the whole pipeline.
 
 > Notes: turning on `KeepAlive` wraps the route's inline content in a `<div>` (the stable element
 > that preserves the subtree), which can affect direct-child CSS selectors. Retention applies to a

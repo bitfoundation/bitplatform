@@ -17,9 +17,9 @@
 @mixin ctp-size-medium {
     --bit-ctp-clk-size: #{spacing(32.5)};
     --bit-ctp-num-size: #{spacing(4)};
-    --bit-ctp-txt-fontsize: #{spacing(5.5)};
-    --bit-ctp-apb-fontsize: #{spacing(2.6)};
-    --bit-ctp-apk-fontsize: #{spacing(1.75)};
+    --bit-ctp-txt-fontsize: calc(#{$tg-fs-4xl} * 1.375);
+    --bit-ctp-apb-fontsize: #{$tg-fs-xl};
+    --bit-ctp-apk-fontsize: #{$tg-fs-sm};
     --bit-ctp-num-fontsize: inherit;
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
     --bit-ctp-thb-size: #{spacing(3.5)};
@@ -162,9 +162,9 @@
     margin: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(0.625) 0;
     overflow-wrap: break-word;
     color: $clr-fg-pri;
@@ -179,13 +179,13 @@
     display: flex;
     cursor: pointer;
     box-shadow: none;
-    height: spacing(4);
+    height: $siz-ctrl-md;
     position: relative;
     align-items: center;
     padding: 0 spacing(1);
     flex-flow: row nowrap;
     box-sizing: border-box;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
@@ -208,10 +208,10 @@
     cursor: pointer;
     border-radius: 0;
     box-shadow: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     box-sizing: border-box;
     text-overflow: ellipsis;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     background: none transparent;
     color: $clr-fg-pri;
     font-family: $tg-font-family;
@@ -256,7 +256,7 @@
     .bit-ctp-icn {
         border: none;
         flex: 1 1 0px;
-        text-align: left;
+        text-align: start;
     }
 
     &.bit-dis {
@@ -298,25 +298,25 @@
 .bit-ctp-cal {
     display: none;
     position: fixed;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     outline: transparent;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
     font-family: $tg-font-family;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-ctp-cac {
     outline: none;
     position: relative;
     overflow: hidden auto;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
 }
 
@@ -353,7 +353,7 @@
     outline: 0;
     line-height: 1;
     cursor: pointer;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     user-select: none;
     align-items: center;
     display: inline-flex;
@@ -438,7 +438,7 @@ span.bit-ctp-txt {
         min-width: calc(var(--bit-ctp-num-size) * 1.5);
         min-height: var(--bit-ctp-num-size);
         color: $clr-fg-pri;
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-control;
         border: $shp-border-width $shp-border-style $clr-brd-pri;
     }
 
@@ -542,7 +542,7 @@ span.bit-ctp-txt {
 .bit-ctp-pth {
     border: none;
     position: absolute;
-    border-radius: 100%;
+    border-radius: 50%;
     box-sizing: border-box;
     background-color: unset;
     width: var(--bit-ctp-thb-size);
@@ -556,7 +556,7 @@ span.bit-ctp-txt {
     color: var(--bit-ctp-clr);
     width: var(--bit-ctp-thb-size-min);
     height: var(--bit-ctp-thb-size-min);
-    border: spacing(0.25) $shp-border-style;
+    border: $shp-border-width-thick $shp-border-style;
     top: calc((var(--bit-ctp-thb-size-min) / 2 + var(--bit-ctp-num-gap)) * -1);
     left: calc((var(--bit-ctp-thb-size-min) - var(--bit-ctp-ptr-w)) / -2);
 }
@@ -628,10 +628,10 @@ span.bit-ctp-txt {
 .bit-ctp-abn {
     border: none;
     cursor: pointer;
-    font-weight: 600;
-    font-size: spacing(1.75);
+    font-weight: $tg-fw-semibold;
+    font-size: $tg-fs-sm;
     padding: spacing(0.75) spacing(1.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     background-color: transparent;
     font-family: $tg-font-family;
     color: var(--bit-ctp-clr);
@@ -668,10 +668,10 @@ span.bit-ctp-txt {
     inset-inline-end: 0;
     width: spacing(3.75);
     max-width: spacing(5);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
     background-color: transparent;
     color: $clr-fg-pri;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     @media (hover: hover) {
         &:hover {
@@ -722,8 +722,8 @@ span.bit-ctp-txt {
         overflow: hidden;
         animation-name: unset;
         transform: translateY(-100%);
-        box-shadow: $box-shadow-callout;
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
 
         .bit-ctp-clk {
             margin: spacing(2) auto;
@@ -733,7 +733,7 @@ span.bit-ctp-txt {
             width: 100%;
             min-width: spacing(4);
             max-width: spacing(5);
-            font-size: spacing(2.5);
+            font-size: $tg-fs-xl;
         }
     }
 }
@@ -767,10 +767,10 @@ span.bit-ctp-txt {
     --bit-ctp-thb-size-min: #{spacing(1.5)};
     --bit-ctp-clk-size: #{spacing(26)};
     --bit-ctp-num-size: #{spacing(3.25)};
-    --bit-ctp-txt-fontsize: #{spacing(4.25)};
-    --bit-ctp-apb-fontsize: #{spacing(2)};
-    --bit-ctp-apk-fontsize: #{spacing(1.5)};
-    --bit-ctp-num-fontsize: #{spacing(1.5)};
+    --bit-ctp-txt-fontsize: #{$tg-fs-4xl};
+    --bit-ctp-apb-fontsize: #{$tg-fs-md};
+    --bit-ctp-apk-fontsize: #{$tg-fs-xs};
+    --bit-ctp-num-fontsize: #{$tg-fs-xs};
     --bit-ctp-tlb-minwidth: #{spacing(26)};
 }
 
@@ -783,10 +783,10 @@ span.bit-ctp-txt {
     --bit-ctp-thb-size-min: #{spacing(2)};
     --bit-ctp-clk-size: #{spacing(39)};
     --bit-ctp-num-size: #{spacing(4.75)};
-    --bit-ctp-txt-fontsize: #{spacing(6.5)};
-    --bit-ctp-apb-fontsize: #{spacing(3)};
-    --bit-ctp-apk-fontsize: #{spacing(2.25)};
-    --bit-ctp-num-fontsize: #{spacing(2.25)};
+    --bit-ctp-txt-fontsize: calc(#{$tg-fs-4xl} * 1.625);
+    --bit-ctp-apb-fontsize: #{$tg-fs-2xl};
+    --bit-ctp-apk-fontsize: #{$tg-fs-lg};
+    --bit-ctp-num-fontsize: #{$tg-fs-lg};
     --bit-ctp-tlb-minwidth: #{spacing(39)};
 }
 
@@ -806,11 +806,11 @@ span.bit-ctp-txt {
     .bit-ctp-tlb {
         color: CanvasText;
         background-color: Canvas;
-        border-bottom: 1px solid CanvasText;
+        border-bottom: $shp-border-width $shp-border-style CanvasText;
     }
 
     .bit-ctp-clk {
-        border: 1px solid CanvasText;
+        border: $shp-border-width $shp-border-style CanvasText;
     }
 
     .bit-ctp-pin,

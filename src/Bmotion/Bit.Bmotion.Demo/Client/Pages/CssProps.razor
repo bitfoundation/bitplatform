@@ -265,9 +265,12 @@
     .track { width: 100%; display: flex; justify-content: flex-start; align-items: flex-start; }
     .track-wide { min-height: 60px; }
 
+    /* Solid, for the same reason .nest-btn on the gestures page is: the label has to stay readable,
+       and 12.8px white does not clear 4.5:1 over the light half of the boxes' gradient. What this
+       sample is showing is the padding animating, which the fill has nothing to do with. */
     .pad-box {
-        background: linear-gradient(135deg, var(--bm-primary), var(--bm-secondary));
-        border-radius: 10px; color: #fff; font-weight: 700; font-size: .8rem;
+        background: var(--bm-primary);
+        border-radius: 10px; color: var(--bm-primary-text); font-weight: 700; font-size: .8rem;
         display: inline-flex; align-items: center; justify-content: center;
     }
 

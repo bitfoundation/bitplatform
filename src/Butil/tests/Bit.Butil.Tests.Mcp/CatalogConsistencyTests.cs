@@ -19,8 +19,7 @@ namespace Bit.Butil.Tests.Mcp;
 public class CatalogConsistencyTests : McpTestBase
 {
     private ApiType[] _types = null!;
-    private Capability[] _capabilities = null!;
-    private DocsPage[] _pages = null!;
+    private DocsIndexRow[] _pages = null!;
 
     /// <summary>
     /// The full reference of every advertised type, fetched once. Several of the tests below walk
@@ -32,9 +31,16 @@ public class CatalogConsistencyTests : McpTestBase
     [OneTimeSetUp]
     public async Task LoadCatalogs()
     {
-        _types = await CallStructuredAsync<ApiType[]>("GetButilApiList");
-        _capabilities = await CallStructuredAsync<Capability[]>("GetButilBrowserSupport");
-        _pages = await CallStructuredAsync<DocsPage[]>("GetButilDocsList");
+        // Both listings come from the tool that also retrieves the single item, called with no
+        // argument - which is the whole of what replaced the four listing tools this suite used to
+        // call, so exercising them here is exercising that fold.
+        // An empty list is the same failure as a missing one: every test below walks _types, and a
+        // reflection walk that found nothing would let all of them pass by having nothing to check.
+        _types = (await CallStructuredAsync<ApiDetailsResult>("GetButilApiDetails")).Types is { Length: > 0 } types
+            ? types
+            : throw new InvalidOperationException("GetButilApiDetails with no type name did not answer with the type list.");
+
+        _pages = await DocsIndexAsync();
 
         foreach (var type in _types)
         {
@@ -54,20 +60,6 @@ public class CatalogConsistencyTests : McpTestBase
     }
 
     [Test]
-    public void Every_service_the_support_matrix_names_is_a_type_the_library_ships()
-    {
-        var known = _types.Select(type => type.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var dangling = _capabilities
-            .SelectMany(capability => capability.Services.Select(service => (capability.Api, Service: service)))
-            .Where(entry => known.Contains(entry.Service) is false)
-            .ToArray();
-
-        Assert.That(dangling, Is.Empty,
-            $"The support matrix names types that are not in the library: {string.Join(", ", dangling.Select(entry => $"{entry.Api} -> {entry.Service}"))}.");
-    }
-
-    [Test]
     public void Every_service_a_docs_page_names_is_a_type_the_library_ships()
     {
         var known = _types.Select(type => type.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -82,31 +74,54 @@ public class CatalogConsistencyTests : McpTestBase
     }
 
     [Test]
-    public void Every_row_of_the_support_matrix_links_to_a_page_that_exists()
+    public async Task The_support_matrix_and_the_page_index_are_one_table()
     {
-        var slugs = _pages.Select(page => page.Slug).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // They were two tools once, over two projections of the same nav, and the pair could drift:
+        // an API the matrix knew about and the index did not, or the reverse. Folding them removed
+        // the drift rather than testing for it - so what is asserted now is the fold itself, since
+        // the resource and the tool answering differently would put the old bug straight back.
+        var resource = await Mcp.ReadResourceAsync("butil://support", cancellationToken: Ct);
 
-        var broken = _capabilities.Where(capability => slugs.Contains(capability.DocsUrl.TrimStart('/')) is false).ToArray();
+        var matrix = string.Join("\n", resource.Contents
+            .OfType<ModelContextProtocol.Protocol.TextResourceContents>()
+            .Select(content => content.Text));
 
-        Assert.That(broken.Select(capability => capability.DocsUrl), Is.Empty);
-    }
+        // Records hold their list cells as arrays, which compare by reference - so the rows are
+        // flattened to their text to be compared by what they say.
+        static string Row(DocsIndexRow row) => string.Join(" | ",
+            row.Group, row.Slug, row.Title, row.Summary, string.Join(",", row.Services), row.Engines, string.Join(",", row.Requires));
 
-    [Test]
-    public void The_support_matrix_covers_every_api_page_and_nothing_else()
-    {
-        // Both are projections of the same nav, so a page that documents a browser API is a row in
-        // the matrix, and a row in the matrix is a page. A drift between the two would show up as
-        // an API that GetButilBrowserSupport cannot see.
-        var apiPages = _pages.Where(page => page.Services.Length > 0).Select(page => page.Title).ToArray();
+        Assert.Multiple(() =>
+        {
+            // Every cell, not just the slug: the same rows carrying a different summary, a
+            // different engines column or a different service list is the drift this asserts away.
+            Assert.That(DocsIndexRow.ParseAll(matrix).Select(Row),
+                Is.EqualTo(_pages.Select(Row)).AsCollection,
+                "butil://support and GetButilDocsPage with no slug are meant to be the same table.");
 
-        Assert.That(_capabilities.Select(capability => capability.Api), Is.EquivalentTo(apiPages));
+            // Every row carries what an agent chooses an API on: which engines run it, and what the
+            // page has to arrange first. A row with an empty engines cell is a matrix that lost the
+            // column it exists for.
+            Assert.That(_pages.Where(page => string.IsNullOrWhiteSpace(page.Engines)), Is.Empty);
+
+            // And what it covers, which is the only cell that separates indexed-db from
+            // cache-storage from storage-manager without fetching all three pages to find out.
+            Assert.That(_pages.Where(page => string.IsNullOrWhiteSpace(page.Summary)), Is.Empty,
+                "Nothing in the index would say what a page covers.");
+
+            // The guide pages are in the table, so it has to say so: they are the rows an agent
+            // would otherwise read as browser APIs that no engine implements.
+            Assert.That(_pages.Where(page => page.Group == "Overview").Select(page => page.Engines).Distinct(),
+                Is.EqualTo(new[] { "Guide" }).AsCollection);
+        });
     }
 
     [Test]
     public void Every_type_the_list_advertises_can_be_fetched_in_full()
     {
-        // GetButilApiList exists to pick the type to pass to GetButilApiDetails. A name in the first
-        // that the second cannot resolve is a dead end an agent has no way to recover from.
+        // GetButilApiDetails with no type name exists to pick the type to pass to it with one. A
+        // name in the first answer that the second cannot resolve is a dead end an agent has no way
+        // to recover from.
         var failures = new List<string>();
 
         foreach (var type in _types)
@@ -226,16 +241,16 @@ public class CatalogConsistencyTests : McpTestBase
     [Test]
     public async Task Every_source_file_the_listing_advertises_can_be_fetched()
     {
-        var files = await CallStructuredAsync<SourceFile[]>("GetButilSourceFiles");
+        var files = await ListAsync("GetButilSourceFile");
 
         var failures = new List<string>();
 
-        foreach (var file in files)
+        foreach (var path in files)
         {
-            var text = Text(await CallAsync("GetButilSourceFile", new { path = file.Path }));
+            var text = Text(await CallAsync("GetButilSourceFile", new { path }));
 
-            if (text.StartsWith("No source file at", StringComparison.Ordinal)) failures.Add($"{file.Path} is listed but cannot be fetched.");
-            else if (text.Length == 0) failures.Add($"{file.Path} came back empty.");
+            if (text.StartsWith("No source file at", StringComparison.Ordinal)) failures.Add($"{path} is listed but cannot be fetched.");
+            else if (text.Length == 0) failures.Add($"{path} came back empty.");
         }
 
         Assert.Multiple(() =>
@@ -251,9 +266,7 @@ public class CatalogConsistencyTests : McpTestBase
         // The demo's pages are the working examples the tools point at - "each page IS a working
         // example" is the claim the prompts make. A page whose source was not embedded breaks that
         // for exactly one API, silently.
-        var files = (await CallStructuredAsync<SourceFile[]>("GetButilSourceFiles"))
-            .Select(file => file.Path)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var files = (await ListAsync("GetButilSourceFile")).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var missing = _pages
             .Select(page => (page.Slug, Guess: $"Demo/Client/Pages/{page.Title.Replace(" ", string.Empty, StringComparison.Ordinal).Replace("&", string.Empty, StringComparison.Ordinal)}Page.razor"))
@@ -275,11 +288,13 @@ public class CatalogConsistencyTests : McpTestBase
             .OfType<ModelContextProtocol.Protocol.TextResourceContents>()
             .Select(content => content.Text));
 
-        var sections = await CallStructuredAsync<GuideSection[]>("GetButilGuideSections");
+        var sections = await ListAsync("GetButilGuideSection");
 
-        var missing = sections.Where(section => whole.Contains($" {section.Heading}", StringComparison.Ordinal) is false).ToArray();
+        // Matched as a heading rather than as prose: the guide mentioning a section's words in a
+        // sentence is not the same as the guide still having that section.
+        var missing = sections.Where(heading => whole.Contains($"## {heading}", StringComparison.Ordinal) is false).ToArray();
 
-        Assert.That(missing.Select(section => section.Heading), Is.Empty,
+        Assert.That(missing, Is.Empty,
             "The section index lists headings that are not in the guide it was built from.");
     }
 }

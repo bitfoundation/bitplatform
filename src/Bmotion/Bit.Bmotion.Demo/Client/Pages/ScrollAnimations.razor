@@ -180,18 +180,24 @@
         (<code>"some"</code>, <code>"all"</code>, or a <code>0..1</code> threshold).
     </p>
 
-    @for (int i = 0; i < 12; i++)
-    {
-        var idx = i;
-        <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
-                WhileInView="Bm.To(opacity: 1, x: 0)"
-                Transition="Bm.Tween(0.5, BmEase.BackOut)"
-                Once="true">
-            <div class="inview-band @(idx % 2 == 0 ? "from-left" : "from-right")">
-                Section @(idx + 1)
-            </div>
-        </Bmotion>
-    }
+    @* Each band waits 60 pixels off its place, so on a narrow screen the ones that come in from
+       the right start outside the viewport - and a page that scrolls sideways because something
+       has not arrived yet is a bug, not an entrance. overflow-x: clip rather than hidden: hidden
+       would make this a scroll container and break position: sticky for anything inside it. *@
+    <div class="inview-strip">
+        @for (int i = 0; i < 12; i++)
+        {
+            var idx = i;
+            <Bmotion Initial="@(Bm.To(opacity: 0, x: idx % 2 == 0 ? -60 : 60))"
+                    WhileInView="Bm.To(opacity: 1, x: 0)"
+                    Transition="Bm.Tween(0.5, BmEase.BackOut)"
+                    Once="true">
+                <div class="inview-band @(idx % 2 == 0 ? "from-left" : "from-right")">
+                    Section @(idx + 1)
+                </div>
+            </Bmotion>
+        }
+    </div>
 
     <CodeSnippet Code="@_inViewCode" />
 </div>
@@ -243,6 +249,8 @@
             transparent 12px 24px);
         border: 1px solid var(--bm-accent-line);
     }
+
+    .inview-strip { overflow-x: clip; }
 
     .inview-band {
         height: 5rem;

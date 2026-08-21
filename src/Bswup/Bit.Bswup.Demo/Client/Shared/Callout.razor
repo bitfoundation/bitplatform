@@ -1,4 +1,19 @@
-﻿<div class="callout callout-@Type">
+﻿@* Fluent 2's MessageBar as a documentation aside: an intent icon, a title, and
+   the body - on a tinted surface whose inline-start stripe repeats the icon's
+   colour.
+
+   The intent is carried three ways over: the icon's shape, the title's wording
+   ("Caution" is not "Tip"), and only then the colour. That is deliberate - a
+   reader who cannot separate the four hues still gets the intent from the first
+   two. The icon is decorative for exactly the same reason: the title beside it
+   already says what it says.
+
+   Not role="alert" or role="status": these are part of the prose, present from
+   the first render, and an assertive live region exists to interrupt someone
+   when something CHANGED. *@
+
+<div class="callout callout-@Type">
+    <Icon Name="@IntentIcon" Class="callout-icon" />
     <div class="callout-title">@(Title ?? DefaultTitle)</div>
     <div class="callout-body">@ChildContent</div>
 </div>
@@ -6,7 +21,9 @@
 @code {
     /// <summary>note | tip | warning | danger</summary>
     [Parameter] public string Type { get; set; } = "note";
+
     [Parameter] public string? Title { get; set; }
+
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private string DefaultTitle => Type switch
@@ -15,5 +32,13 @@
         "warning" => "Warning",
         "danger" => "Caution",
         _ => "Note"
+    };
+
+    private string IntentIcon => Type switch
+    {
+        "tip" => "lightbulb",
+        "warning" => "warning",
+        "danger" => "error",
+        _ => "info"
     };
 }

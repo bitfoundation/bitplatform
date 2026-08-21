@@ -180,25 +180,32 @@
 
     .layout-strip { display: flex; gap: .75rem; flex-wrap: wrap; width: 100%; }
 
+    /* 20px at 700 is deliberate rather than decorative: at that size and weight the label counts
+       as large text, which is the bar the lighter tones below can actually clear against white. */
     .layout-tile {
         width: 3.75rem;
         height: 3.75rem;
         display: flex;
         color: #fff;
         font-weight: 700;
-        font-size: 1.1rem;
+        font-size: 1.25rem;
         border-radius: 8px;
         align-items: center;
         justify-content: center;
     }
 
-    /* Five distinguishable tiles drawn from the theme's own two accents rather than five
-       unrelated hexes, so the set still reads as one palette in either theme. */
-    .tone-0 { background: var(--bm-primary); }
-    .tone-1 { background: color-mix(in srgb, var(--bm-primary) 60%, var(--bm-secondary)); }
-    .tone-2 { background: var(--bm-secondary); }
-    .tone-3 { background: color-mix(in srgb, var(--bm-primary) 75%, #000 25%); }
-    .tone-4 { background: color-mix(in srgb, var(--bm-secondary) 70%, #000 30%); }
+    /* Five distinguishable tiles, fixed rather than derived from the theme's accents.
+
+       They were derived once, and it did not survive the dark theme: the accent that is dark
+       enough for a white label in the light theme is the light end of the ramp in the dark one,
+       where the same label stops reading. What these tiles are demonstrating is FLIP, not colour,
+       so they are pinned to five shades that each clear 4.5:1 against white in both themes and
+       stay clearly apart from one another. */
+    .tone-0 { background: #1276C6; }
+    .tone-1 { background: #124265; }
+    .tone-2 { background: #C25520; }
+    .tone-3 { background: #7E3714; }
+    .tone-4 { background: #4D4D4D; }
 
     .tab-stage { align-items: flex-start; }
 

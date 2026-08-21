@@ -1,7 +1,21 @@
 ﻿@* Rendered by NotFoundPage, which covers both a deep link the server could not route and
    client-side navigation to an unknown route (via the router's NotFoundPage parameter). *@
 
-<div class="page-hero">
-    <h1>404</h1>
-    <p>There is nothing at this address. Head back to the <a href="/">demos home</a>.</p>
+<div class="error-page">
+    <span class="error-code" aria-hidden="true">404</span>
+
+    <h1>This page does not exist</h1>
+
+    <p>
+        There is nothing at this address. The documentation starts at the basics, and the search
+        in the header will find any page by name or by the feature it covers.
+    </p>
+
+    <div class="hero-actions">
+        <a class="btn-primary" href="/basic">
+            Read the docs
+            <Icon Path="@Icons.ArrowRight" />
+        </a>
+        <a class="btn-secondary" href="/">Back to home</a>
+    </div>
 </div>

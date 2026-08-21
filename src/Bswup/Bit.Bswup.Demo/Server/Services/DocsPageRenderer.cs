@@ -76,5 +76,5 @@ public static class DocsPageRenderer
     public static string Unavailable(DocsPageInfo page, string? error) =>
         $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
         $"It is readable at {page.Url} on the live documentation site. For the same material as text, " +
-        $"call SearchBswup(query: \"{page.Keywords.Split(' ').FirstOrDefault()}\") or GetBswupGuideSections.";
+        $"call SearchBswup(query: \"{page.Keywords.Split(' ').FirstOrDefault()}\").";
 }

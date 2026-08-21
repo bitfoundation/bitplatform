@@ -12,26 +12,37 @@
 
    Items navigate on mousedown so the click wins the race against the input's blur closing the
    dropdown. The input is a WAI-ARIA combobox: ArrowUp/ArrowDown move the highlighted option,
-   Enter activates it, Escape closes. *@
+   Enter activates it, Escape closes. demo.js focuses it from Ctrl/Cmd+K and from "/" - the
+   shortcut is advertised by the key hint inside the field, so it is discoverable rather than
+   folklore. *@
 
 <div class="docs-search">
-    <svg class="docs-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
+    <Icon Name="search" Class="docs-search-icon" />
     <input type="search"
            class="docs-search-input"
            placeholder="Search docs"
            aria-label="Search documentation"
+           aria-keyshortcuts="Control+K"
            autocomplete="off"
            role="combobox"
            aria-autocomplete="list"
            aria-expanded="@(_results is null ? "false" : "true")"
            aria-controls="docs-search-listbox"
            aria-activedescendant="@(_results is { Length: > 0 } ? $"docs-search-option-{_activeIndex}" : null)"
+           data-demo-search
            value="@_query"
            @oninput="OnInput"
            @onkeydown="OnKeyDown"
            @onblur="OnBlur" />
+
+    @* Hidden while there is a query, because it would sit on top of the text being typed.
+       aria-hidden as well as decorative: the shortcut is already announced through
+       aria-keyshortcuts on the field itself, and reading "Control K" after the label would
+       just be the same fact twice. *@
+    @if (_query.Length == 0)
+    {
+        <span class="kbd docs-search-kbd" aria-hidden="true">Ctrl K</span>
+    }
 
     @if (_results is { Length: > 0 })
     {
@@ -48,6 +59,9 @@
                     @onmousedown="@(() => Go(entry))" @onmousedown:preventDefault>
                     <span class="docs-search-result-title">@entry.Title</span>
                     <span class="docs-search-result-section">@DocsCatalog.SectionOf(entry)</span>
+                    @* The description is what turns a list of page names into a list of
+                       answers - the reason to pick this row over the one below it. *@
+                    <span class="docs-search-result-desc">@entry.Description</span>
                 </li>
             }
         </ul>

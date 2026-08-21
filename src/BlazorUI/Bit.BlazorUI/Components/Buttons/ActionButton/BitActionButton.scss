@@ -12,6 +12,8 @@
     background-color: transparent;
     padding: var(--bit-acb-padding);
     font-size: var(--bit-acb-fontsize);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
     transition: color $mot-duration-short $mot-easing;
 
@@ -30,7 +32,7 @@
     &:focus-visible {
         @include focus-ring(var(--bit-acb-clr-focus));
 
-        border-radius: $shp-border-radius;
+        border-radius: $shp-radius-button;
     }
 
     &.bit-dis {
@@ -59,7 +61,7 @@
 
 .bit-acb-spn {
     border-radius: 50%;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     width: var(--bit-acb-spn-size);
     height: var(--bit-acb-spn-size);
     border-color: $clr-brd-sec;
@@ -125,15 +127,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            height: 1px;
+            height: $shp-border-width;
             content: "";
             position: absolute;
-            background-color: currentColor;
+            background-color: currentcolor;
         }
 
         @media (hover: hover) {
             &:hover::after {
-                height: 2px;
+                height: $shp-border-width-thick;
             }
         }
     }
@@ -152,20 +154,23 @@
 }
 
 
+// The x padding sits one ramp step below the standalone button's (an action button is Fluent's
+// light, link-like command - Material's "text button" - which every design system pads tighter
+// than a filled button), so the token still drives it.
 .bit-acb-sm {
-    --bit-acb-fontsize: #{spacing(1.25)};
+    --bit-acb-fontsize: #{$tg-fs-xs};
     --bit-acb-spn-size: #{spacing(1.25)};
-    --bit-acb-padding: #{spacing(0.50)} #{spacing(1)};
+    --bit-acb-padding: #{$siz-ctrl-pad-y-sm} #{calc($siz-ctrl-pad-x-sm * 0.667)};
 }
 
 .bit-acb-md {
-    --bit-acb-fontsize: #{spacing(1.75)};
+    --bit-acb-fontsize: #{$tg-fs-sm};
     --bit-acb-spn-size: #{spacing(1.75)};
-    --bit-acb-padding: #{spacing(0.75)} #{spacing(1.5)};
+    --bit-acb-padding: #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm};
 }
 
 .bit-acb-lg {
-    --bit-acb-fontsize: #{spacing(2.25)};
+    --bit-acb-fontsize: #{$tg-fs-md};
     --bit-acb-spn-size: #{spacing(2.25)};
-    --bit-acb-padding: #{spacing(1.00)} #{spacing(2.00)};
+    --bit-acb-padding: #{$siz-ctrl-pad-y-lg} #{$siz-ctrl-pad-x-md};
 }

@@ -50,10 +50,10 @@ public class HttpMirrorTests
     [TestMethod]
     public async Task ProseTools_AnswerAsText()
     {
-        var response = await _server.Http.GetAsync("/api/mcp/GetBswupOverview");
+        var response = await _server.Http.GetAsync("/api/mcp/GetBswupSetupGuide?hostingModel=standalone-wasm");
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "# bit Bswup");
+        StringAssert.Contains(await response.Content.ReadAsStringAsync(), "# Setting Bswup up");
     }
 
     [TestMethod]
@@ -93,16 +93,29 @@ public class HttpMirrorTests
     }
 
     [TestMethod]
-    public async Task AnalyzeBswupAssetCaching_TakesAWholeFileInThePostBody()
+    public async Task InspectBswupServiceWorker_DecidesAssetsInTheSameCallAsTheReview()
     {
-        var analysis = await _server.PostJsonAsync("/api/mcp/AnalyzeBswupAssetCaching",
+        // The asset analysis rides on the inspection rather than on a tool of its own, so the
+        // caller uploads the file once instead of twice.
+        var report = await _server.PostJsonAsync("/api/mcp/InspectBswupServiceWorker",
             new { script = ServiceWorkerFixtures.Clean, assetUrls = "css/app.css\nservice-worker.js" });
 
-        var assets = analysis.GetProperty("assets").EnumerateArray()
+        var assets = report.GetProperty("assets").GetProperty("assets").EnumerateArray()
             .ToDictionary(asset => asset.GetProperty("url").GetString()!, asset => asset.GetProperty("cached").GetBoolean());
 
         Assert.IsTrue(assets["css/app.css"]);
         Assert.IsFalse(assets["service-worker.js"]);
+    }
+
+    [TestMethod]
+    public async Task InspectBswupServiceWorker_LeavesTheAssetAnalysisOutWhenNoUrlsWereAskedAbout()
+    {
+        var report = await _server.PostJsonAsync("/api/mcp/InspectBswupServiceWorker",
+            new { script = ServiceWorkerFixtures.Clean });
+
+        // The MVC mirror writes nulls where the MCP transport omits them; either way there is no
+        // analysis to read.
+        Assert.AreEqual(JsonValueKind.Null, report.GetProperty("assets").ValueKind);
     }
 
     [TestMethod]

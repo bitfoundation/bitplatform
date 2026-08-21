@@ -1,31 +1,5 @@
 namespace Bit.Butil.Demo.Server.Dtos;
 
-/// <summary>One page of the documentation site (mirrors an entry of the client's DocsNav).</summary>
-public record ButilDocsPageDto
-{
-    /// <summary>The sidebar group the page belongs to, e.g. "Storage".</summary>
-    public required string Group { get; init; }
-
-    /// <summary>The value to pass to GetButilDocsPage, e.g. "clipboard".</summary>
-    public required string Slug { get; init; }
-
-    /// <summary>The page's path on the live documentation site.</summary>
-    public required string Url { get; init; }
-
-    public required string Title { get; init; }
-
-    public required string Summary { get; init; }
-
-    /// <summary>The Bit.Butil public types the page documents - empty for a guide page.</summary>
-    public required string[] Services { get; init; }
-
-    /// <summary>How widely the underlying browser API is implemented, e.g. "Chromium only".</summary>
-    public required string BrowserSupport { get; init; }
-
-    /// <summary>The preconditions the API imposes: HTTPS, a permission prompt, a user gesture.</summary>
-    public required string[] Requires { get; init; }
-}
-
 /// <summary>One heading of the library's README, which doubles as its reference guide.</summary>
 public record ButilGuideSectionDto
 {
@@ -103,11 +77,18 @@ public record ButilApiTypeDetailsDto
     public required ButilApiMemberDto[] Members { get; init; }
 }
 
-/// <summary>What GetButilApiDetails answers: the type's reference, or why there is none.</summary>
+/// <summary>What GetButilApiDetails answers: the type's reference, the list to pick one from, or why there is none.</summary>
 public record ButilApiDetailsResultDto
 {
     /// <summary>The full reference of the type, when a public type goes by the requested name.</summary>
     public ButilApiTypeDetailsDto? Details { get; init; }
+
+    /// <summary>
+    /// Every public type, set instead of Details when the call named none. A listing does not earn
+    /// a tool of its own - it is what the retrieval tool answers when asked for nothing in
+    /// particular, which is the one moment a caller wants it.
+    /// </summary>
+    public ButilApiTypeDto[]? Types { get; init; }
 
     /// <summary>Set instead of Details when nothing matched - it names the closest candidates.</summary>
     public string? Message { get; init; }
@@ -134,7 +115,18 @@ public record ButilCapabilityDto
     public required string DocsUrl { get; init; }
 }
 
-/// <summary>What using one Butil API entails, beyond the signatures of its members.</summary>
+/// <summary>
+/// What using one Butil API entails, beyond the signatures of its members.
+/// <para>
+/// Data about the API, and nothing that reads as advice: the prose telling a caller what to do
+/// about any of it is the plan's <see cref="ButilFeaturePlanDto.Checklist"/>, written once for the
+/// whole set and naming the APIs each item applies to. This carried its own copy of that advice
+/// once - the same paragraph about prerendering, permissions and disposal repeated per API, in a
+/// plan that then said all of it again in the checklist, about a client that had already read the
+/// same rules in the server's instructions. Four copies of a paragraph is four times the tokens and
+/// no more likely to be followed.
+/// </para>
+/// </summary>
 public record ButilApiInspectionDto
 {
     /// <summary>The name that was looked up.</summary>
@@ -158,9 +150,6 @@ public record ButilApiInspectionDto
 
     /// <summary>The preconditions the calling page has to satisfy before the call can succeed.</summary>
     public string[]? Requires { get; init; }
-
-    /// <summary>What is easy to get wrong: prerendering, disposal, gestures, fast invoke.</summary>
-    public string[]? Notes { get; init; }
 
     /// <summary>Members whose result has to be disposed - a subscription or a handle on real hardware.</summary>
     public string[]? Disposables { get; init; }

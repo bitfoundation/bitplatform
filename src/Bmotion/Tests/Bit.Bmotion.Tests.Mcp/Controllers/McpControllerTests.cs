@@ -1,4 +1,4 @@
-using Bit.Bmotion.Demo.Client.Shared;
+﻿using Bit.Bmotion.Demo.Client.Shared;
 
 namespace Bit.Bmotion.Tests.Mcp.Controllers;
 
@@ -24,10 +24,10 @@ public class McpControllerTests
 
         Assert.IsTrue(overview.Length > 2_000, $"The overview is only {overview.Length} characters.");
 
-        // The three things it promises: what the library is, how to wire it, and what to call next.
+        // The three things it promises: what the library is, how to wire it, and how to work.
         StringAssert.Contains(overview, "## Installation");
         StringAssert.Contains(overview, "## Quick Start");
-        StringAssert.Contains(overview, "## Which tool to call");
+        StringAssert.Contains(overview, "## How to work");
         StringAssert.Contains(overview, "## Rules of thumb when writing Bmotion code");
 
         // The rule that decides whether an animation works at all in production.
@@ -172,7 +172,7 @@ public class McpControllerTests
         var content = BmotionSourceCatalog.GetSourceFile(longest.Path)!;
         var answer = _controller.GetBmotionSourceFile(longest.Path);
 
-        if (content.Length <= 40_000)
+        if (content.Length <= McpController.MaxDocumentLength)
         {
             Assert.AreEqual(content, answer, "A file inside the limit was altered.");
 
@@ -181,12 +181,16 @@ public class McpControllerTests
 
         StringAssert.Contains(answer, "[truncated");
         Assert.IsTrue(answer.Length < content.Length);
+
+        // A cut that says only that it happened leaves the caller to guess how to reach the rest.
+        StringAssert.Contains(answer, nameof(McpController.GetBmotionSourceFile));
+        StringAssert.Contains(answer, "fromLine:");
     }
 
     [TestMethod]
-    public async Task CompareBmotionTransitions_MeasuresEachCandidateSeparately()
+    public async Task SimulateBmotionTransition_MeasuresEachCandidateSeparately()
     {
-        var results = await _controller.CompareBmotionTransitions(
+        var results = await _controller.SimulateBmotionTransition(
             "spring(stiffness: 260, damping: 12); spring(stiffness: 260, damping: 30); tween(0.3, BackOut)");
 
         Assert.AreEqual(3, results.Length);
@@ -199,9 +203,9 @@ public class McpControllerTests
     }
 
     [TestMethod]
-    public async Task CompareBmotionTransitions_AcceptsNewlinesAsWellAsSemicolons()
+    public async Task SimulateBmotionTransition_AcceptsNewlinesAsWellAsSemicolons()
     {
-        var results = await _controller.CompareBmotionTransitions("spring(stiffness: 200, damping: 20)\ntween(0.4)\r\ninertia(velocity: 300)");
+        var results = await _controller.SimulateBmotionTransition("spring(stiffness: 200, damping: 20)\ntween(0.4)\r\ninertia(velocity: 300)");
 
         Assert.AreEqual(3, results.Length);
         CollectionAssert.AreEqual(new[] { "Spring", "Tween", "Inertia" }, results.Select(result => result.Kind).ToArray());
@@ -209,37 +213,83 @@ public class McpControllerTests
 
     /// <summary>
     /// Simulating dozens at once would spend more of a client's context than any comparison is read
-    /// with, and the interesting comparisons are between two and four candidates.
+    /// with, and the interesting comparisons are between two and four candidates. What is over the
+    /// cap is still answered: fewer results than transitions asked about is a silent cut, and the
+    /// caller cannot tell which candidates were never run - or that any were left out at all.
     /// </summary>
     [TestMethod]
-    public async Task CompareBmotionTransitions_IsCappedRatherThanRunningWhateverArrives()
+    public async Task SimulateBmotionTransition_IsCappedRatherThanRunningWhateverArrives()
     {
         var many = string.Join("; ", Enumerable.Range(1, 40).Select(i => $"tween({i / 100.0})"));
 
-        var results = await _controller.CompareBmotionTransitions(many);
+        var results = await _controller.SimulateBmotionTransition(many);
 
-        Assert.AreEqual(8, results.Length);
+        Assert.AreEqual(40, results.Length);
+        Assert.AreEqual(McpController.MaxSimulatedTransitions, results.Count(result => result.Error is null));
+
+        // The measured ones come first, in the order asked, and every one after them says why it has
+        // no numbers - in Error and in Reading both, as an unreadable spec does.
+        Assert.IsTrue(results.Take(McpController.MaxSimulatedTransitions).All(result => result.Error is null));
+
+        foreach (var unmeasured in results.Skip(McpController.MaxSimulatedTransitions))
+        {
+            StringAssert.Contains(unmeasured.Error, "Not measured");
+            StringAssert.Contains(unmeasured.Error, McpController.MaxSimulatedTransitions.ToString());
+            Assert.AreEqual(unmeasured.Error, unmeasured.Reading);
+        }
+
+        // The unmeasured ones are the specs asked about, not blanks: the caller reads them to know
+        // which candidates to send in the next call.
+        Assert.AreEqual($"tween({9 / 100.0})", results[8].Transition);
     }
 
+    /// <summary>
+    /// A blank spec is a question the lab has an answer for - the library's own default tween - and
+    /// answering with nothing at all would read as a server that failed rather than a spec that was
+    /// empty. This is also what the demo page's lab sends before anyone types into it.
+    /// </summary>
     [TestMethod]
     [DataRow("")]
     [DataRow("   ")]
     [DataRow(";;;")]
     [DataRow(null)]
-    public async Task CompareBmotionTransitions_NothingToCompare_IsAnEmptyAnswerRatherThanAThrow(string? transitions)
+    public async Task SimulateBmotionTransition_NothingToSimulate_MeasuresTheDefaultTween(string? transitions)
     {
-        Assert.AreEqual(0, (await _controller.CompareBmotionTransitions(transitions!)).Length);
+        var results = await _controller.SimulateBmotionTransition(transitions!);
+
+        Assert.AreEqual(1, results.Length);
+        Assert.IsNull(results[0].Error);
+        Assert.AreEqual("Tween", results[0].Kind);
     }
 
     [TestMethod]
-    public async Task CompareBmotionTransitions_OneUnreadableCandidate_DoesNotCostTheOthers()
+    public async Task SimulateBmotionTransition_OneUnreadableCandidate_DoesNotCostTheOthers()
     {
-        var results = await _controller.CompareBmotionTransitions("spring(stiffness: 200, damping: 20); swoosh(1); tween(0.4)");
+        var results = await _controller.SimulateBmotionTransition("spring(stiffness: 200, damping: 20); swoosh(1); tween(0.4)");
 
         Assert.AreEqual(3, results.Length);
         Assert.IsNull(results[0].Error);
         Assert.IsNotNull(results[1].Error);
         Assert.IsNull(results[2].Error);
+    }
+
+    /// <summary>
+    /// The samples are the largest part of a simulation and the part a caller reading settle time
+    /// and overshoot never looks at, so they are asked for rather than sent. Everything that
+    /// describes the motion in words - the sparkline, the reading - is there either way.
+    /// </summary>
+    [TestMethod]
+    public async Task SimulateBmotionTransition_SamplesAreOptIn()
+    {
+        var lean = (await _controller.SimulateBmotionTransition("spring(stiffness: 260, damping: 12)")).Single();
+        var full = (await _controller.SimulateBmotionTransition("spring(stiffness: 260, damping: 12)", includeSamples: true)).Single();
+
+        Assert.AreEqual(0, lean.Samples.Length);
+        Assert.IsTrue(full.Samples.Length > 1);
+
+        Assert.AreEqual(full.SettleSeconds, lean.SettleSeconds);
+        Assert.AreEqual(full.Sparkline, lean.Sparkline);
+        Assert.AreEqual(full.Reading, lean.Reading);
     }
 
     [TestMethod]
@@ -263,21 +313,72 @@ public class McpControllerTests
         StringAssert.Contains(result.Transition, "Bm.Tween");
     }
 
+    /// <summary>
+    /// The demo pages used to be a listing of their own, overlapping this one entry for entry. What
+    /// only they carried - the title, the route and the keywords, and a description written to say
+    /// what the page demonstrates - has to survive the merge, or the merge lost the better half.
+    /// </summary>
     [TestMethod]
-    public void GetBmotionDemoPages_ListsEveryPage_WithASourceFileThatResolves()
+    public void GetBmotionSourceFiles_CarriesEveryDemoPage_Described()
     {
-        var pages = _controller.GetBmotionDemoPages();
+        var files = _controller.GetBmotionSourceFiles();
 
-        Assert.AreEqual(NavItem.All.Length, pages.Length);
-
-        foreach (var page in pages)
+        foreach (var page in NavItem.All)
         {
-            Assert.AreNotEqual(string.Empty, page.Title.Trim());
-            Assert.AreNotEqual(string.Empty, page.Description.Trim());
-            Assert.AreNotEqual(string.Empty, page.Keywords.Trim());
-            Assert.IsNotNull(BmotionSourceCatalog.GetSourceFile(page.SourcePath),
-                             $"'{page.Title}' points at '{page.SourcePath}', which is not embedded.");
+            var file = files.SingleOrDefault(entry => entry.Path == page.SourcePath);
+
+            Assert.IsNotNull(file, $"'{page.Title}' points at '{page.SourcePath}', which is not embedded.");
+            Assert.AreEqual("Demo page", file.Kind);
+            Assert.AreEqual(page.Title, file.Title);
+            Assert.AreEqual(page.Href, file.Slug);
+            Assert.AreEqual(page.Keywords, file.Keywords);
+
+            // Not merely non-empty: the description has to be the page's own sentence rather than
+            // whatever comment came first in the file, which is what it used to be.
+            Assert.AreEqual(page.Description, file.Description);
         }
+    }
+
+    [TestMethod]
+    public void GetBmotionSourceFiles_Filter_NarrowsWithoutLosingTheKind()
+    {
+        var pages = _controller.GetBmotionSourceFiles("Demo page");
+
+        Assert.IsTrue(pages.All(page => page.Kind == "Demo page"));
+
+        // Every navigable page, plus the handful under Pages/ that have no nav entry - the error and
+        // not-found pages - which is why this is not an equality against NavItem.All.
+        Assert.IsTrue(pages.Length >= NavItem.All.Length);
+        Assert.IsTrue(NavItem.All.All(page => pages.Any(file => file.Path == page.SourcePath)));
+
+        // A keyword only a nav entry knows, so a hit proves the merged fields are searched.
+        var dragging = _controller.GetBmotionSourceFiles("constraints");
+
+        Assert.IsTrue(dragging.Any(file => file.Path.EndsWith("DragPage.razor", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void GetBmotionSourceFile_ALineRange_ReturnsThatSliceAndSaysWhereItIs()
+    {
+        var answer = _controller.GetBmotionSourceFile("Demo/Client/Pages/Springs.razor", fromLine: 10, toLine: 14);
+
+        StringAssert.Contains(answer, "lines 10-14 of ");
+
+        // The header, a blank line, and the five lines asked for.
+        Assert.AreEqual(7, answer.Split('\n').Length);
+    }
+
+    /// <summary>
+    /// An off-by-something is not a request worth refusing: the range is clamped, and the header
+    /// says what came back so the caller can correct itself.
+    /// </summary>
+    [TestMethod]
+    public void GetBmotionSourceFile_ARangePastTheEnd_IsClampedRatherThanRefused()
+    {
+        var answer = _controller.GetBmotionSourceFile("Demo/Client/Pages/Springs.razor", fromLine: 90_000, toLine: 99_000);
+
+        StringAssert.Contains(answer, " of ");
+        Assert.IsFalse(answer.Contains("No source file", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -320,7 +421,7 @@ public class McpControllerTests
     public void ReviewBmotionCode_CodeLongerThanTheLimit_ReviewsWhatFitsAndNamesWhatDidNot()
     {
         const string Markup =
-            "<Bmotion Animate=\"Bm.To(opacity: 1)\" Transition=\"Bm.Spring(duration: 0.5)\"><div /></Bmotion>";
+            "<Bmotion Animate=\"Bm.To(opacity: 1)\" Transition=\"Bm.Spring(stiffness: 300, duration: 0.5)\"><div /></Bmotion>";
 
         var review = _controller.ReviewBmotionCode(Markup + new string('\n', 60_000) + Markup);
 
@@ -330,7 +431,7 @@ public class McpControllerTests
                       "Nothing said the code was cut short.");
 
         // And the rules still ran over the part that fit.
-        Assert.IsTrue(review.Findings.Any(finding => finding.Rule == "spring-duration-without-bounce"),
+        Assert.IsTrue(review.Findings.Any(finding => finding.Rule == "spring-physics-overridden-by-duration"),
                       "The head of the code was not reviewed.");
     }
 

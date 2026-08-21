@@ -8,7 +8,7 @@
     font-weight: $tg-font-weight;
     color: var(--bit-drm-clr-txt);
     background-color: var(--bit-drm-clr);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     // The border is on the root rather than on the button so that it wraps the whole drop menu, and it
     // is declared here rather than only in the outlined variant so that turning that variant on does not
     // resize the button. It is transparent until a variant paints it, which is also what makes a border
@@ -86,7 +86,7 @@
     background-color: transparent;
     font-size: var(--bit-drm-font-size);
     padding: var(--bit-drm-padding);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 }
 
 // The chevron flips over while the callout is open. The independent `rotate` property is used rather
@@ -123,7 +123,7 @@
     box-sizing: border-box;
     border-color: $clr-brd-sec;
     border-top-color: currentcolor;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     border-style: $shp-border-style;
     animation: bit-drm-spinner-animation $mot-duration-spinner $mot-easing-spinner infinite;
 }
@@ -167,8 +167,8 @@
     max-width: var(--bit-drm-cal-mxw, none);
     opacity: var(--bit-drm-cal-opa);
     transform: var(--bit-drm-cal-tra);
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     transition: opacity $mot-duration-short $mot-easing, transform $mot-duration $mot-easing;
     --bit-drm-transform-factor: 1;
@@ -273,8 +273,8 @@
         display: block;
         overflow: hidden;
         max-height: unset;
-        box-shadow: $box-shadow-callout;
-        transition: transform $mot-duration ease-out, opacity $mot-duration-short linear;
+        box-shadow: $box-shadow-sheet;
+        transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short linear;
 
         // On these screens the drop menu is a panel sized against the screen, so the MaxHeight cap of the
         // callout does not apply to it. That cap is declared with two classes (.bit-drm-cal.bit-drm-mxh),
@@ -489,16 +489,16 @@
 
 
 .bit-drm-sm {
-    --bit-drm-font-size: #{spacing(1.5)};
+    --bit-drm-font-size: #{$tg-fs-xs};
     --bit-drm-padding: #{spacing(0.5)} #{spacing(1.0)};
 }
 
 .bit-drm-md {
-    --bit-drm-font-size: #{spacing(1.75)};
+    --bit-drm-font-size: #{$tg-fs-sm};
     --bit-drm-padding: #{spacing(1.0)} #{spacing(1.5)};
 }
 
 .bit-drm-lg {
-    --bit-drm-font-size: #{spacing(2.0)};
+    --bit-drm-font-size: #{$tg-fs-md};
     --bit-drm-padding: #{spacing(1.25)} #{spacing(2.0)};
 }

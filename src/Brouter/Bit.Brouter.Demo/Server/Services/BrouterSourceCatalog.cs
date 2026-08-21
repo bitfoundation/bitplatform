@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Brouter.Demo.Server.Dtos;
 using System.Text.RegularExpressions;
+using Bit.Brouter.Demo.Client;
 
 namespace Bit.Brouter.Demo.Server.Services;
 
@@ -31,6 +32,56 @@ public static partial class BrouterSourceCatalog
 
     /// <summary>The library's README, in full.</summary>
     public static string Readme => _readme.Value;
+
+    /// <summary>
+    /// The guide's sections, as the index GetBrouterGuideSection answers with when it is called
+    /// without a heading. Plain text rather than a list of objects: an index is read, not parsed,
+    /// and the same list as JSON costs twice the characters to say the same thing.
+    /// </summary>
+    public static string RenderGuideIndex()
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("# Bit.Brouter reference guide").AppendLine();
+        builder.AppendLine("The library's README, section by section. Call `GetBrouterGuideSection(heading: \"...\")` for one of them; ")
+               .AppendLine("a section's line count is there so a heading that runs to hundreds of lines is a deliberate choice rather than a surprise.")
+               .AppendLine();
+
+        foreach (var section in GuideSections)
+        {
+            builder.AppendLine($"{(section.Level == 2 ? "-" : "  -")} {section.Heading} ({section.Lines} lines)");
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// The files GetBrouterSourceFile can hand out, as the index it answers with when it is called
+    /// without a path.
+    /// </summary>
+    public static string RenderSourceIndex()
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("# Bit.Brouter source files").AppendLine();
+        builder.AppendLine("Working code this server can hand out verbatim. Call `GetBrouterSourceFile(path: \"...\")` for one.").AppendLine();
+
+        foreach (var group in SourceFiles.GroupBy(file => file.Kind))
+        {
+            builder.AppendLine($"## {group.Key}").AppendLine();
+
+            foreach (var file in group)
+            {
+                builder.Append($"- `{file.Path}` ({file.Lines} lines)");
+                if (file.Description is not null) builder.Append($" - {file.Description}");
+                builder.AppendLine();
+            }
+
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
 
     /// <summary>Every heading of the README, in reading order.</summary>
     public static BrouterGuideSectionDto[] GuideSections => _guideSections.Value;
@@ -163,6 +214,8 @@ public static partial class BrouterSourceCatalog
             if (normalized.StartsWith(DemoPrefix, StringComparison.OrdinalIgnoreCase) is false &&
                 normalized.StartsWith(SamplePrefix, StringComparison.OrdinalIgnoreCase) is false) continue;
 
+            if (IsDocumentationPage(normalized)) continue;
+
             var content = ReadResource(resource);
             if (content is null) continue;
 
@@ -171,6 +224,27 @@ public static partial class BrouterSourceCatalog
 
         return files.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
+
+    /// <summary>
+    /// The components DocsCatalog renders, which this catalog does not hand out.
+    /// <para>
+    /// A documentation page's Razor source is that page's prose with markup around it, and
+    /// GetBrouterDocsPage already serves the page itself - rendered, as the reader sees it. Handing
+    /// the same text out a second time as source teaches nothing about routing and costs thousands
+    /// of characters to say so; the pages that DO teach it - the ones the route table routes to -
+    /// stay. The catalog is the single source of truth for which is which, so a page added to the
+    /// site is excluded here without anyone remembering to.
+    /// </para>
+    /// </summary>
+    private static bool IsDocumentationPage(string resourceName)
+    {
+        var fileName = resourceName[(resourceName.LastIndexOf('/') + 1)..];
+
+        return _documentationPageFiles.Value.Contains(fileName);
+    }
+
+    private static readonly Lazy<FrozenSet<string>> _documentationPageFiles = new(() =>
+        DocsCatalog.AllPages.Select(page => $"{page.PageType.Name}.razor").ToFrozenSet(StringComparer.OrdinalIgnoreCase));
 
     private static BrouterSourceFileDto[] BuildSourceFileList()
     {

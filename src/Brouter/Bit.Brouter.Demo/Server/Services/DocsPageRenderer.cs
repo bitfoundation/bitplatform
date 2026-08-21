@@ -1,3 +1,4 @@
+using System.Text;
 using System.Collections.Concurrent;
 using Bit.Brouter.Demo.Client;
 using Microsoft.AspNetCore.Components.Web;
@@ -49,6 +50,32 @@ public static class DocsPageRenderer
         return $"No documentation page has the slug '{slug}'. Available slugs: {slugs}.";
     }
 
+    /// <summary>
+    /// The pages, as the index GetBrouterDocsPage answers with when it is called without a slug -
+    /// the sidebar of the site, in the order it reads in.
+    /// </summary>
+    public static string RenderIndex()
+    {
+        var builder = new StringBuilder();
+
+        builder.AppendLine("# Bit.Brouter documentation").AppendLine();
+        builder.AppendLine("Call `GetBrouterDocsPage(slug: \"...\")` for one of these pages.").AppendLine();
+
+        foreach (var section in DocsCatalog.Sections)
+        {
+            builder.AppendLine($"## {section.Title}").AppendLine();
+
+            foreach (var page in section.Pages)
+            {
+                builder.AppendLine($"- `{(page.Slug.Length == 0 ? "overview" : page.Slug)}` - **{page.Title}**: {page.Description}");
+            }
+
+            builder.AppendLine();
+        }
+
+        return builder.ToString();
+    }
+
     /// <summary>The page as Markdown, or a null <c>Markdown</c> and the reason it could not be rendered.</summary>
     public static async ValueTask<(string? Markdown, string? Error)> TryRenderMarkdownAsync(HtmlRenderer htmlRenderer, DocsPageInfo page)
     {
@@ -81,5 +108,5 @@ public static class DocsPageRenderer
     public static string Unavailable(DocsPageInfo page, string? error) =>
         $"The '{page.Title}' documentation page could not be rendered on the server{(error is null ? null : $": {error}")}. " +
         $"It is readable at {page.Url} on the live documentation site. For the same material as text, " +
-        $"call SearchBrouter(query: \"{page.Keywords.Split(' ').FirstOrDefault()}\") or GetBrouterGuideSections.";
+        $"call SearchBrouter(query: \"{page.Keywords.Split(' ').FirstOrDefault()}\") or GetBrouterGuideSection.";
 }

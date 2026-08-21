@@ -35,7 +35,7 @@ public class ResilienceTests : McpTestBase
 
             await using var client = await McpClient.CreateAsync(transport, cancellationToken: Ct);
 
-            var overview = await client.CallToolAsync("GetButilOverview", cancellationToken: Ct);
+            var overview = await client.CallToolAsync("GetButilGuideSection", new Dictionary<string, object?> { ["heading"] = "Getting started" }, cancellationToken: Ct);
             var page = await client.CallToolAsync("GetButilDocsPage", new Dictionary<string, object?> { ["slug"] = "clipboard" }, cancellationToken: Ct);
             var search = await client.CallToolAsync("SearchButil", new Dictionary<string, object?> { ["query"] = $"storage {index}" }, cancellationToken: Ct);
 
@@ -93,16 +93,15 @@ public class ResilienceTests : McpTestBase
         // library back.
         var probes = new (string Tool, object? Arguments)[]
         {
-            ("GetButilOverview", null),
-            ("GetButilApiList", null),
-            ("GetButilBrowserSupport", null),
-            ("GetButilDocsList", null),
-            ("GetButilGuideSections", null),
-            ("GetButilSourceFiles", null),
+            // The listing form of each retrieval tool: an empty call is a real call here, not a
+            // missing argument, so it has to be as stable as any other.
+            ("GetButilApiDetails", null),
+            ("GetButilDocsPage", null),
+            ("GetButilGuideSection", null),
+            ("GetButilSourceFile", null),
             ("GetButilSetupGuide", new { hostingModel = "web-app" }),
             ("GetButilDocsPage", new { slug = "troubleshooting" }),
             ("GetButilApiDetails", new { typeName = "LocalStorage" }),
-            ("InspectButilApi", new { name = "WakeLock" }),
             ("PlanButilFeature", new { apis = "Clipboard, WakeLock" }),
         };
 
@@ -224,7 +223,7 @@ public class ResilienceTests : McpTestBase
             Assert.That(plan.RequiresSecureContext, Is.True, "A wake lock needs a secure context, and the plan is where an agent finds that out.");
         });
 
-        var inspection = await CallStructuredAsync<ApiInspection>("InspectButilApi", new { name = "WakeLock" });
+        var inspection = (await CallStructuredAsync<FeaturePlan>("PlanButilFeature", new { apis = "WakeLock" })).Apis.Single();
 
         Assert.That(inspection.NextCalls, Is.Not.Null.And.Not.Empty);
 

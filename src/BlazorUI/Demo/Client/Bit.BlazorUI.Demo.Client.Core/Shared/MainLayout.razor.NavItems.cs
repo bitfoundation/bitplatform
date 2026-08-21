@@ -5,8 +5,11 @@ public partial class MainLayout
 
     public static readonly List<BitNavItem> NavItems =
     [
-        new() { Text = "Overview", Url = "/overview", AdditionalUrls = ["/components"] },
+        new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
+        // The searchable index of the whole library. It used to share a route with Overview, which
+        // meant the site had a "Docs" page and a "Components" page that were the same page.
+        new() { Text = "All components", Url = "/components", Description = "Catalog, Gallery, Index" },
         new()
         {
             Text = "Buttons",
@@ -198,6 +201,7 @@ public partial class MainLayout
             [
                 new() { Text = "Theming", Url = "/theming", Description = "Theme, DesignTokens, Dark, Light" },
                 new() { Text = "AccentColorSwitcher", Url = "/components/accentcolorswitcher", Description = "Accent, Brand, Theming" },
+                new() { Text = "ThemeSwitcher", Url = "/components/themeswitcher", Description = "DesignSystem, DarkMode, Theming" },
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },

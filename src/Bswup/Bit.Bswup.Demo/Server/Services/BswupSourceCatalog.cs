@@ -1,8 +1,7 @@
-using System.Text;
+﻿using System.Text;
 using System.Reflection;
 using System.Collections.Frozen;
 using Bit.Bswup.Demo.Server.Dtos;
-using System.Text.RegularExpressions;
 
 namespace Bit.Bswup.Demo.Server.Services;
 
@@ -19,7 +18,7 @@ namespace Bit.Bswup.Demo.Server.Services;
 /// answers straight out of it.
 /// </para>
 /// </summary>
-public static partial class BswupSourceCatalog
+public static class BswupSourceCatalog
 {
     private const string ReadmeResource = "BswupDocs/README.md";
     private const string SourcePrefix = "BswupSource/";
@@ -180,7 +179,7 @@ public static partial class BswupSourceCatalog
             {
                 Path = file.Key,
                 Kind = KindOf(file.Key),
-                Description = DescribeSource(file.Value),
+                Description = DescribeSource(file.Key),
                 Lines = CountLines(file.Value)
             })
             .OrderBy(file => file.Kind, StringComparer.Ordinal)
@@ -209,68 +208,76 @@ public static partial class BswupSourceCatalog
     }
 
     /// <summary>
-    /// A one-line description of a source file, taken from whatever the file itself already says:
-    /// its leading razor/C#/JS comment, or - for a docs page - its &lt;PageTitle&gt;.
+    /// What a file is, said by the role it plays rather than lifted out of its own text.
+    /// <para>
+    /// This used to be parsed out of whatever comment came first in the file, and on a curated set
+    /// that reads badly: the sample splash was described by the markup someone had commented out
+    /// inside it, a host document by an aside about screen readers, and every service-worker file
+    /// by its version stamp. A guess that is wrong is worse than no description, because a caller
+    /// picks the file to spend its next call on from exactly this line. The set these tools hand
+    /// out is small and deliberate (see the EmbeddedResource items in the .csproj), so each entry
+    /// can simply say what it is for.
+    /// </para>
     /// </summary>
-    private static string? DescribeSource(string content)
+    private static string? DescribeSource(string path)
     {
-        var leadingComment = LeadingRazorCommentRegex().Match(content);
-        if (leadingComment.Success) return Summarize(leadingComment.Groups["text"].Value);
+        var name = Path.GetFileName(path);
 
-        var summary = XmlSummaryRegex().Match(content);
-        if (summary.Success)
+        return path switch
         {
-            // An XML summary is markup, and its tags fall into two kinds. <paramref name="Slug"/>
-            // and <see cref="BswupProgress"/> ARE the word the sentence is built around, so deleting
-            // them leaves "One documentation page: is its route" - they are replaced by what they
-            // name. Everything else (<c>, <para>) only wraps text that is kept anyway.
-            var text = summary.Groups["text"].Value.Replace("///", " ", StringComparison.Ordinal);
+            "Library/Scripts/bit-bswup.ts" =>
+                "The page script: registers the worker, owns Blazor's startup, dispatches every lifecycle message to the page's handler, installs the global BitBswup API.",
+            "Library/Scripts/bit-bswup.sw.ts" =>
+                "The service-worker engine: every self.* setting, the asset lists, precaching, serving and update staging. What every answer here about caching is read out of.",
+            "Library/Scripts/bit-bswup.progress.ts" =>
+                "The built-in splash script: the default bitBswupHandler, and the code driving the element ids BswupProgress renders.",
+            "Library/Scripts/bit-bswup.sw-cleanup.ts" =>
+                "The self-destructing cleanup worker a service-worker file is replaced with to back Bswup out.",
+            "Library/BswupProgress.razor" =>
+                "The BswupProgress component: the splash markup and the parameters it publishes as data-* attributes.",
+            "Sample/BasicSample/wwwroot/index.html" =>
+                "The standalone sample's host document: a complete hand-written splash and handler, which is what a first install needs - Blazor has not started yet, so no component can paint one.",
+            "Sample/FullSample/Client/Shared/SampleBswupProgressBar.razor" =>
+                "A custom splash: BswupProgress with the app's own ChildContent and handler.",
+            "Sample/FullSample/Server/Bit.Bswup.FullSample.Server.csproj" =>
+                "The host project's project file. The Bswup wiring lives in the client project.",
+            _ when name.Equals("service-worker.js", StringComparison.OrdinalIgnoreCase) =>
+                $"The development service-worker file of {ProjectOf(path)}.",
+            _ when name.Equals("service-worker.published.js", StringComparison.OrdinalIgnoreCase) =>
+                $"The published service-worker file of {ProjectOf(path)} - what deployed builds ship.",
+            _ when name.Equals("App.razor", StringComparison.OrdinalIgnoreCase) && path.Contains("/Components/", StringComparison.OrdinalIgnoreCase) =>
+                $"The host document of {ProjectOf(path)}: the Blazor script with autostart=\"false\", the bit-bswup.js tag and the splash.",
+            _ when name.Equals("App.razor", StringComparison.OrdinalIgnoreCase) =>
+                $"The root component of {ProjectOf(path)}; its host document is index.html.",
+            _ when name.Equals("Program.cs", StringComparison.OrdinalIgnoreCase) =>
+                $"The startup of {ProjectPartOf(path)}. Bswup needs nothing here.",
+            _ when path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) =>
+                $"The project file of {ProjectPartOf(path)}: the ServiceWorker item, the assets manifest and the fingerprinting switch.",
+            _ => null
+        };
+    }
 
-            text = XmlReferenceRegex().Replace(text, match => LastIdentifier(match.Groups["name"].Value));
+    /// <summary>Which of the three projects a path belongs to, named the way a caller would name it.</summary>
+    private static string ProjectOf(string path)
+    {
+        if (path.StartsWith("Demo/", StringComparison.OrdinalIgnoreCase)) return "this documentation site";
+        if (path.StartsWith("Sample/BasicSample/", StringComparison.OrdinalIgnoreCase)) return "the standalone WebAssembly sample";
+        if (path.StartsWith("Sample/FullSample/", StringComparison.OrdinalIgnoreCase)) return "the Blazor Web App sample";
 
-            return Summarize(XmlTagRegex().Replace(text, string.Empty));
-        }
-
-        var title = PageTitleRegex().Match(content);
-        if (title.Success) return Summarize(title.Groups["text"].Value);
-
-        var lineComment = LeadingLineCommentRegex().Match(content);
-        if (lineComment.Success) return Summarize(lineComment.Value.Replace("//", " ", StringComparison.Ordinal));
-
-        // Nothing at the top of the file said what it is - the first commentary in it will do
-        // (the service-worker files, for one, explain themselves right above their settings).
-        var comment = RazorCommentRegex().Match(content);
-
-        return comment.Success ? Summarize(comment.Groups["text"].Value) : null;
+        return "the library";
     }
 
     /// <summary>
-    /// The word a doc-comment reference reads as. A cref is written as "T:Some.Namespace.Type" or
-    /// "M:Type.Method(System.String)"; a paramref name is already just the identifier.
+    /// The same, but naming which half of a two-project sample the file belongs to. The Blazor Web
+    /// App sample has a Program.cs and a .csproj on both sides, and only one of each carries the
+    /// Bswup wiring, so for those files the sample's name alone would not say which is which.
     /// </summary>
-    private static string LastIdentifier(string name)
+    private static string ProjectPartOf(string path)
     {
-        var colon = name.IndexOf(':', StringComparison.Ordinal);
-        if (colon >= 0) name = name[(colon + 1)..];
+        if (path.StartsWith("Sample/FullSample/Server/", StringComparison.OrdinalIgnoreCase)) return "the Blazor Web App sample's host project";
+        if (path.StartsWith("Sample/FullSample/", StringComparison.OrdinalIgnoreCase)) return "the Blazor Web App sample's client project";
 
-        var parenthesis = name.IndexOf('(', StringComparison.Ordinal);
-        if (parenthesis >= 0) name = name[..parenthesis];
-
-        var dot = name.LastIndexOf('.');
-
-        return dot >= 0 && dot < name.Length - 1 ? name[(dot + 1)..] : name;
-    }
-
-    private static string? Summarize(string text)
-    {
-        text = WhitespaceRegex().Replace(text, " ").Trim();
-        if (text.Length == 0) return null;
-
-        // The first sentence is the description; the rest is the file's own commentary.
-        var stop = text.IndexOf(". ", StringComparison.Ordinal);
-        if (stop > 0) text = text[..(stop + 1)];
-
-        return text.Length <= 220 ? text : $"{text[..217]}...";
+        return ProjectOf(path);
     }
 
     /// <summary>
@@ -313,28 +320,4 @@ public static partial class BswupSourceCatalog
 
     private static string Normalize(string path) => path.Replace('\\', '/').Trim('/');
 
-    [GeneratedRegex(@"^\s*@\*(?<text>.*?)\*@", RegexOptions.Singleline)]
-    private static partial Regex LeadingRazorCommentRegex();
-
-    [GeneratedRegex(@"@\*(?<text>.*?)\*@", RegexOptions.Singleline)]
-    private static partial Regex RazorCommentRegex();
-
-    [GeneratedRegex(@"<[^>]+>")]
-    private static partial Regex XmlTagRegex();
-
-    /// <summary>An XML doc tag whose meaning is the identifier in its attribute, not its body.</summary>
-    [GeneratedRegex(@"<(?:paramref|typeparamref|see|seealso)\s+(?:name|cref)\s*=\s*""(?<name>[^""]*)""\s*/?>")]
-    private static partial Regex XmlReferenceRegex();
-
-    [GeneratedRegex(@"///\s*<summary>(?<text>.*?)</summary>", RegexOptions.Singleline)]
-    private static partial Regex XmlSummaryRegex();
-
-    [GeneratedRegex(@"<PageTitle>(?<text>.*?)</PageTitle>", RegexOptions.Singleline | RegexOptions.IgnoreCase)]
-    private static partial Regex PageTitleRegex();
-
-    [GeneratedRegex(@"^\s*(//[^\n]*\n)+")]
-    private static partial Regex LeadingLineCommentRegex();
-
-    [GeneratedRegex(@"\s+")]
-    private static partial Regex WhitespaceRegex();
 }

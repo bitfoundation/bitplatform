@@ -43,7 +43,7 @@ public class RateLimitTests
         // shares one bucket, which is also what happens behind a proxy.
         for (int request = 1; request <= PermitLimit; request++)
         {
-            var response = await _client.GetAsync("/api/mcp/GetBswupServiceWorkerModes");
+            var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, $"request {request} of the window was rejected");
         }
@@ -55,7 +55,7 @@ public class RateLimitTests
     [TestMethod]
     public async Task AGetPastTheLimit_IsRefusedWith429()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupServiceWorkerModes");
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
 
         Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode);
     }
@@ -82,7 +82,7 @@ public class RateLimitTests
     [TestMethod]
     public async Task ARefusalSaysHowLongToWait()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupServiceWorkerModes");
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
 
         Assert.AreEqual(HttpStatusCode.TooManyRequests, response.StatusCode);
         Assert.IsTrue(response.Headers.TryGetValues("Retry-After", out var values), "a throttled client is told nothing about when to come back");
@@ -92,7 +92,7 @@ public class RateLimitTests
     [TestMethod]
     public async Task ARefusalIsASmallMachineReadableBody_NotTheSites404Page()
     {
-        var response = await _client.GetAsync("/api/mcp/GetBswupServiceWorkerModes");
+        var response = await _client.GetAsync("/api/mcp/GetBswupJsApi?name=version");
         var body = await response.Content.ReadAsStringAsync();
 
         Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);

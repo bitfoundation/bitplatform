@@ -79,7 +79,7 @@
             </RowTemplate>
             <FooterTemplate>
                 <BitStack Alignment="BitAlignment.Center" Style="padding: 0.5rem;">
-                    <BitText Typography="BitTypography.Caption1">— end of the list —</BitText>
+                    <BitText Typography="BitTypography.Caption1">- end of the list -</BitText>
                 </BitStack>
             </FooterTemplate>
         </BitBasicList>
@@ -164,7 +164,7 @@
     <DemoExample Title="ItemsProvider" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
         <div>
             An <b>ItemsProvider</b> is called for the region the list is about to show, with a StartIndex, a Count
-            and a CancellationToken, and answers with those items and the total count of the whole set — that total
+            and a CancellationToken, and answers with those items and the total count of the whole set - that total
             is what sizes the scroll range. Rows whose items have not arrived yet render the
             <b>VirtualizePlaceholder</b>. Scrolling asks for a new region far more often than the regions differ, so
             the calls are debounced by <b>ItemsProviderDelay</b> (100ms by default; set it to 0 for a provider that
@@ -197,7 +197,7 @@
         <div>
             The list has one row type, so grouping is a matter of what the items are: a provider that returns
             headings and entries in one flat sequence, and a RowTemplate that renders each kind differently. That
-            keeps the virtualization intact — the headings scroll and are recycled exactly like the entries — which
+            keeps the virtualization intact - the headings scroll and are recycled exactly like the entries - which
             a separate list per group could not do.
         </div>
         <br />
@@ -237,7 +237,7 @@
             <b>LoadMore</b> renders one page of <b>LoadMoreSize</b> items at a time and appends the next one on each
             click of the button below them. The button carries the <b>LoadMoreText</b> label, or a
             <b>LoadMoreTemplate</b> of your own whose context tells it whether a page is being loaded at that moment.
-            It disappears once every page has been loaded — a page shorter than the one asked for is the last one, so
+            It disappears once every page has been loaded - a page shorter than the one asked for is the last one, so
             a provider that runs out never costs an extra empty round trip.
         </div>
         <br />
@@ -356,7 +356,7 @@
             <b>AutoLoad</b> turns the LoadMore mode into an infinite scrolling list: a marker sitting after the last
             loaded item is watched, and the next page is asked for as soon as it comes into view.
             <b>AutoLoadThreshold</b> moves that moment earlier by the given number of pixels, so the page is already
-            on its way before the end is reached. The LoadMore element keeps being rendered — it is the marker — so
+            on its way before the end is reached. The LoadMore element keeps being rendered - it is the marker - so
             give it a LoadMoreTemplate of a spinner rather than of a button here.
         </div>
         <br />
@@ -400,7 +400,7 @@
         <div>
             A reference to the list gives access to its methods: <b>ScrollToStartAsync</b>,
             <b>ScrollToEndAsync</b>, <b>ScrollToOffsetAsync</b> and <b>ScrollToIndexAsync</b> move the scroll
-            position (optionally animated), and <b>RefreshDataAsync</b> reloads the items — which is also how a list
+            position (optionally animated), and <b>RefreshDataAsync</b> reloads the items - which is also how a list
             bound to a collection that is mutated in place, rather than replaced, is told to notice. In LoadMore mode
             <b>LoadMoreAsync</b> loads the next page the same way the button does.
         </div>
@@ -424,7 +424,7 @@
     <DemoExample Title="Style & Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
             <b>Style</b> and <b>Class</b> apply to the root element, while <b>Styles</b> and <b>Classes</b> reach the
-            individual parts of the list — its root, header, footer, loading container, and the button and the text
+            individual parts of the list - its root, header, footer, loading container, and the button and the text
             of its LoadMore mode.
         </div>
         <br />

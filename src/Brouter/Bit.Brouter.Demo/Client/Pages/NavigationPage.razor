@@ -116,6 +116,32 @@ brouter.NavigateWithQuery(q =&gt; q.SetAll(<span class="s">"tag"</span>, tags).R
 </div>
 
 <div class="bb-card">
+    <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Navigating to the URL you're already on</h3>
+    <p class="bb-card-desc">
+        It does far less than it looks like it does. Blazor reuses a component whose route and
+        parameters didn't change - the built-in <code>Router</code> behaves the same way - so
+        <code>Navigate(currentUrl)</code> re-runs the pipeline but leaves the very instance you were
+        trying to refresh exactly where it was. Three deliberate operations cover what people
+        actually mean by it, none of them a navigation:
+    </p>
+    <table class="bb-table">
+        <thead><tr><th>Call</th><th>What it rebuilds</th></tr></thead>
+        <tbody>
+            <tr><td><code>RevalidateAsync()</code></td><td>Loader data only. Components and their state stay, content stays on screen while it refreshes. See <BrouterLink Href="/docs/data-loading">Data loading</BrouterLink>.</td></tr>
+            <tr><td><code>ClearKeepAlive(includeActive: true)</code></td><td>The component instances, and nothing else: no pipeline, no guards, no loaders - the rebuilt chain keeps the data it already had. See <BrouterLink Href="/docs/lifecycle">Lifecycle &amp; keep-alive</BrouterLink>.</td></tr>
+            <tr><td><code>ReloadAsync()</code></td><td>Both: the chain is disposed and matched again, so enter guards, <code>RedirectTo</code> and loaders all re-run (<code>ctx.IsReload</code>). No leave guard can veto it - nothing is being left.</td></tr>
+        </tbody>
+    </table>
+    <p class="bb-card-desc">
+        None of the three moves the URL, the history entry or the scroll position by itself, and none
+        fires <code>OnNavigating</code>/<code>OnNavigated</code> - the one exception is a guard that
+        redirects during a reload, which commits a real navigation like any other redirect. The
+        <BrouterLink Href="/docs/navigation-pipeline">pipeline page</BrouterLink> has the
+        step-by-step comparison.
+    </p>
+</div>
+
+<div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-danger"></span> Not-found handling</h3>
     <p class="bb-card-desc">
         When nothing matches, the router follows <code>NotFoundUrl</code> (this demo's

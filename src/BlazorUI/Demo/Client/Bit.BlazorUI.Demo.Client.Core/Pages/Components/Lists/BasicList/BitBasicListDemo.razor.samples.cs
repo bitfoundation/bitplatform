@@ -74,7 +74,7 @@ public class Person
     </RowTemplate>
     <FooterTemplate>
         <BitStack Alignment=""BitAlignment.Center"" Style=""padding: 0.5rem;"">
-            <BitText Typography=""BitTypography.Caption1"">— end of the list —</BitText>
+            <BitText Typography=""BitTypography.Caption1"">- end of the list -</BitText>
         </BitStack>
     </FooterTemplate>
 </BitBasicList>";

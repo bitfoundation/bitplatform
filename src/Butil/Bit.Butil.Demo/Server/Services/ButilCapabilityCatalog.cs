@@ -98,7 +98,7 @@ public static class ButilCapabilityCatalog
                 IsKnown = false,
                 Message = candidates.Length > 0
                     ? $"Bit.Butil has nothing called '{query}'. Did you mean: {string.Join(", ", candidates)}?"
-                    : $"Bit.Butil has nothing called '{query}'. Call GetButilBrowserSupport for every documented API, or SearchButil(query: \"{query}\")."
+                    : $"Bit.Butil has nothing called '{query}'. Call GetButilDocsPage with no slug for every documented API, or SearchButil(query: \"{query}\")."
             };
         }
 
@@ -126,7 +126,6 @@ public static class ButilCapabilityCatalog
             Inject = inject.Length > 0 ? inject : null,
             BrowserSupport = link?.Support.Label() ?? "See the member's XML documentation",
             Requires = link?.Needs.Labels() ?? [],
-            Notes = Notes(link, services, disposables),
             Disposables = disposables.Length > 0 ? disposables : null,
             NextCalls = [.. nextCalls]
         };
@@ -172,7 +171,8 @@ public static class ButilCapabilityCatalog
             "and add the bit-butil.js script to the host page before the Blazor script.",
 
             "Call the browser from OnAfterRenderAsync or from an event handler, never from OnInitializedAsync: " +
-            "during prerender there is no JS runtime, reads come back as safe defaults and void calls are no-ops."
+            "during prerender there is no JS runtime, reads come back as safe defaults and void calls are no-ops - " +
+            "so nothing throws, and a false from IsSupported() is indistinguishable from a genuine one."
         };
 
         if (secure)
@@ -196,9 +196,9 @@ public static class ButilCapabilityCatalog
 
         if (limited.Length > 0)
         {
+            // Where to call IsSupported() from, and why, is the prerendering item above - said once.
             checklist.Add($"Feature-detect and provide a fallback - these do not run in every engine: {Join(limited)}. " +
-                "Every wrapper that can be absent exposes IsSupported(); call it in OnAfterRenderAsync, because during " +
-                "prerender a false is indistinguishable from a genuine one.");
+                "Every wrapper that can be absent exposes IsSupported().");
         }
 
         if (experimental.Length > 0)
@@ -212,7 +212,7 @@ public static class ButilCapabilityCatalog
             checklist.Add("Dispose what you open: " +
                 $"{string.Join("; ", disposing.Select(i => $"{i.Api} ({string.Join(", ", i.Disposables!.Take(3))})"))}. " +
                 "A subscription detaches its listener on disposal; a handle is holding a camera, a lock or a file open " +
-                "until it is disposed.");
+                "until it is disposed. Disposal is idempotent and safe during teardown.");
         }
 
         if (known.Any(i => i.Services!.Any(s => _fastInvokeServices.Contains(s, StringComparer.OrdinalIgnoreCase))))
@@ -300,44 +300,6 @@ public static class ButilCapabilityCatalog
         }
 
         return type;
-    }
-
-    private static string[] Notes(DocLink? link, string[] services, string[] disposables)
-    {
-        var notes = new List<string>
-        {
-            "Prerendering: reads return a safe default (\"\" / [] / default(T)) and void calls are no-ops while there is " +
-            "no JS runtime, so nothing throws - but a false from IsSupported() during prerender is indistinguishable " +
-            "from a genuine false. Branch on a result only from OnAfterRenderAsync."
-        };
-
-        if (link is not null && link.Support is not ApiSupport.Broad and not ApiSupport.Guide)
-        {
-            notes.Add($"Not implemented everywhere ({link.Support.Label()}): feature-detect with IsSupported() and have a fallback path.");
-        }
-
-        if (link is not null && link.Needs.HasFlag(ApiNeeds.UserGesture))
-        {
-            notes.Add("The browser only honours this from inside a user gesture; awaiting something else first can spend it.");
-        }
-
-        if (link is not null && link.Needs.HasFlag(ApiNeeds.Permission))
-        {
-            notes.Add("A dismissed or denied prompt comes back as false/null rather than as an exception - treat it as a normal branch.");
-        }
-
-        if (disposables.Length > 0)
-        {
-            notes.Add("Returns something to dispose: a ButilSubscription detaches its listener, and a handle releases the " +
-                      "hardware or the lock it is holding. Disposal is idempotent and safe during teardown.");
-        }
-
-        if (services.Any(s => _fastInvokeServices.Contains(s, StringComparer.OrdinalIgnoreCase)))
-        {
-            notes.Add("Backed by synchronous JavaScript, so BitButil.UseFastInvoke() applies on Blazor WebAssembly.");
-        }
-
-        return [.. notes];
     }
 
     private static string Join(IEnumerable<DocLink> links) => string.Join(", ", links.Select(l => l.Title));

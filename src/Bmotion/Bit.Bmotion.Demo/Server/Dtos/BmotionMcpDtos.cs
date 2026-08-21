@@ -312,36 +312,31 @@ public record BmotionRecipeResultDto
     public string? Message { get; init; }
 }
 
-/// <summary>One page of the Bit.Bmotion demo site.</summary>
-public record BmotionDemoPageDto
-{
-    /// <summary>The route, e.g. "springs". Empty for the landing page.</summary>
-    public required string Slug { get; init; }
-
-    public required string Title { get; init; }
-
-    /// <summary>What the page demonstrates.</summary>
-    public required string Description { get; init; }
-
-    /// <summary>Space-separated search terms the page covers.</summary>
-    public required string Keywords { get; init; }
-
-    /// <summary>The source file to pass to GetBmotionSourceFile for the page behind this demo.</summary>
-    public required string SourcePath { get; init; }
-}
-
 /// <summary>One source file the MCP server can hand out verbatim.</summary>
 public record BmotionSourceFileDto
 {
     /// <summary>The path to pass to GetBmotionSourceFile.</summary>
     public required string Path { get; init; }
 
-    /// <summary>Demo, Library or Host.</summary>
+    /// <summary>"Demo page", "Demo" or "Host".</summary>
     public required string Kind { get; init; }
 
+    /// <summary>What the file is. For a demo page, what the page demonstrates.</summary>
     public string? Description { get; init; }
 
     public required int Lines { get; init; }
+
+    /// <summary>The demo page's title, e.g. "Springs". Null for a file that is not a demo page.</summary>
+    public string? Title { get; init; }
+
+    /// <summary>
+    /// The route the demo page is served at, e.g. "springs" - empty for the landing page, null for
+    /// a file that is not a demo page.
+    /// </summary>
+    public string? Slug { get; init; }
+
+    /// <summary>Space-separated search terms the demo page covers. Null for anything else.</summary>
+    public string? Keywords { get; init; }
 }
 
 /// <summary>Everything this server exposes over MCP, for the demo page that documents it.</summary>

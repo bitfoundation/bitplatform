@@ -11,6 +11,10 @@
     --bit-mot-duration-short: var(--bit-mot-duration-short-full);
     --bit-mot-duration-long: var(--bit-mot-duration-long-full);
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
+    // Entry / exit curves for popups, callouts and sheets (Fluent's decelerate-max and
+    // accelerate-max). Standard easing above is for state changes on an element that stays put.
+    --bit-mot-easing-decelerate: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --bit-mot-easing-accelerate: cubic-bezier(0.9, 0.1, 1, 0.2);
 
     // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations above,
     // because those collapse to 0.01ms under reduced motion and a near-zero looping duration renders

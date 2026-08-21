@@ -1,8 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 .bit-pnl {
-    font-weight: 400;
-    font-size: spacing(2);
+    font-weight: $tg-fw-regular;
+    font-size: $tg-fs-md;
     z-index: $zindex-modal;
     font-family: $tg-font-family;
     --bit-pnl-transform-factor: 1;
@@ -26,8 +26,8 @@
     box-sizing: border-box;
     z-index: $zindex-callout;
     background-color: $clr-bg-pri;
-    box-shadow: $box-shadow-callout;
-    transition: transform $mot-duration ease-out, opacity $mot-duration-short ease-in;
+    box-shadow: $box-shadow-sheet;
+    transition: transform $mot-duration $mot-easing-decelerate, opacity $mot-duration-short $mot-easing-accelerate;
 }
 
 .bit-pnl-start {

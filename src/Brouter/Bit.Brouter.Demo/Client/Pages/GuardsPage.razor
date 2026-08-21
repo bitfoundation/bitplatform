@@ -21,7 +21,10 @@
         send it elsewhere (redirect targets resolve route-relatively against the destination, and a
         redirect to the current target is a no-op, so loops can't form). Long-running guards should
         honor <code>ctx.CancellationToken</code> - it fires when a newer navigation supersedes this
-        one. Guards do <em>not</em> run again for <code>RevalidateAsync()</code> or preloads.
+        one. Guards do <em>not</em> run again for <code>RevalidateAsync()</code> or preloads -
+        but they <em>do</em> for <code>ReloadAsync()</code>, whose chain is matched from
+        nothing: a guard that means to refuse the rebuilt page should <code>Redirect</code>
+        rather than <code>Cancel</code>, since a cancelled reload simply puts the page back.
     </p>
     <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"g1"</span> Guard=<span class="s">"@@GuardEvenSecond"</span>&gt; ... &lt;/<span class="k">Broute</span>&gt;
 

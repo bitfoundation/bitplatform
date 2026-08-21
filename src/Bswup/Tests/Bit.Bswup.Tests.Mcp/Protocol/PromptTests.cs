@@ -139,7 +139,7 @@ public class PromptTests
         StringAssert.Contains(text, "SearchBswup");
         StringAssert.Contains(text, "GetBswupServiceWorkerSettings");
         StringAssert.Contains(text, "InspectBswupServiceWorker");
-        StringAssert.Contains(text, "AnalyzeBswupAssetCaching");
+        StringAssert.Contains(text, "assetUrls", "the caching check rides on the same call as the review");
         StringAssert.Contains(text, "ABOVE the `self.importScripts");
     }
 

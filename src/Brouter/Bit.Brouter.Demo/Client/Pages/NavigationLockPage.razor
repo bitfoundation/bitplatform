@@ -52,8 +52,8 @@
 
 @if (_prompt is not null)
 {
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 1000;">
-        <div class="bb-card" style="max-width: 26rem; margin: 0;"
+    <div style="position: fixed; inset: 0; background: var(--bb-scrim); display: grid; place-items: center; z-index: 1100; padding: 1rem;">
+        <div class="bb-card" style="max-width: 26rem; margin: 0; border-radius: var(--bb-radius-xl); box-shadow: var(--bb-shadow-dialog);"
              role="dialog" aria-modal="true" aria-labelledby="lock-prompt-title"
              tabindex="-1" @ref="_promptDialog">
             <h3 id="lock-prompt-title" class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Unsaved changes</h3>

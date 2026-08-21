@@ -124,7 +124,7 @@ public class McpCompletionTests
 
         foreach (var typeName in (await CompleteResourceAsync("brouter://api/{typeName}", "typeName", "")).Values)
         {
-            var result = await McpCall.TextAsync("GetBrouterApiDetails", new() { ["typeName"] = typeName });
+            var result = await McpCall.TextAsync("GetBrouterApi", new() { ["typeName"] = typeName });
 
             Assert.IsFalse(result.Contains("has no public type called", StringComparison.Ordinal), $"'{typeName}' is offered but not accepted.");
         }

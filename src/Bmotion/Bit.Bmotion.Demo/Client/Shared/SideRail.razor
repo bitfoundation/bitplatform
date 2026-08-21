@@ -58,7 +58,11 @@
         {
             _selfRef ??= DotNetObjectReference.Create(this);
 
-            var items = await JS.InvokeAsync<RailItem[]>("bmCollectSections");
+            // The heading anchors are hung by the same pass that collects the rail's entries, so
+            // the icon has to travel out to it. Handing it over keeps Shared/Icons.cs the one
+            // place the site's icons are drawn, rather than leaving a second copy of the path
+            // data in a script that nothing would ever update alongside it.
+            var items = await JS.InvokeAsync<RailItem[]>("bmCollectSections", Icons.Link);
             if (items.Length == 0) return;
 
             _items = items;

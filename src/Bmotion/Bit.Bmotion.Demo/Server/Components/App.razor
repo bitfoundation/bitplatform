@@ -8,12 +8,27 @@
        prerendering the HeadOutlet emits a real <title> element into this head. A second,
        earlier one would win in the served HTML (browsers and crawlers take the first). *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Bit.Bmotion demos - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations." />
+    <meta name="description" content="Bit.Bmotion - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations, with all of the maths in C#." />
+    <meta name="color-scheme" content="light dark" />
+    @* Painted behind the browser's own chrome on the platforms that colour it. Two declarations,
+       one per scheme, so the bar matches the theme the page is actually in - the values are the
+       --bm-clr-bg-1 of each theme in theme.css, which a meta tag cannot read a variable for. *@
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1F1F1F" media="(prefers-color-scheme: dark)" />
+
+    @* What a link to the site looks like when it is shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bmotion" />
+    <meta property="og:title" content="Bmotion - a Blazor-native animation library" />
+    <meta property="og:description" content="Springs, gestures, layout animations and variants for Blazor. All of the maths in C#, none of the JavaScript wiring, and no animation library shipped alongside it." />
+    <meta name="twitter:card" content="summary" />
+
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/motion-samples.css" />
+
     @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
        the stylesheets key off the data-theme attribute, and setting it after the first paint would
        show the reader a flash of the other theme. This is the same decision js/demo.js makes for
@@ -28,6 +43,7 @@
             document.documentElement.setAttribute('data-theme', theme);
         })();
     </script>
+
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>

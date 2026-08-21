@@ -340,7 +340,7 @@ private bool isHeaderScrolled;";
                Alignment=""BitAlignment.SpaceBetween""
                AriaLabel=""Reader actions"">
         <span>Chapter 3</span>
-        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"">Contents</BitButton>
+        <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">Contents</BitButton>
     </BitHeader>
     <div class=""scroll-demo-row scroll-demo-row--offset"">
         <BitToggleButton @bind-IsChecked=""isImmersiveMode"" OnText=""Leave immersive mode"" OffText=""Enter immersive mode"" />

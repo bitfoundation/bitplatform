@@ -16,7 +16,7 @@
     margin: var(--bit-ldn-rng-8);
     width: var(--bit-ldn-rng-64);
     height: var(--bit-ldn-rng-64);
-    border: var(--bit-ldn-rng-8) solid var(--bit-ldn-color);
+    border: var(--bit-ldn-rng-8) $shp-border-style var(--bit-ldn-color);
     animation: bit-ldn-rng-anm calc(1.2s * var(--bit-ldn-mot-factor, 1)) cubic-bezier(0.5, 0, 0.5, 1) infinite;
     border-color: var(--bit-ldn-color) transparent transparent transparent;
 }

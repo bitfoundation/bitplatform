@@ -8,10 +8,13 @@
  * elements instead of three sets of vendor pseudo-elements that only ever agreed by accident.
  */
 .bit-sld {
-    --bit-sld-thumb: #{spacing(2)};
-    --bit-sld-rail: #{spacing(0.5)};
+    // The thumb and the rail follow the theme (Material's 20dp handle on a 4dp track, the 28pt
+    // UISlider knob on a 2pt one); the length stays this component's own knob. The size classes
+    // below step the thumb, so this is the medium one a slider carrying no size class draws.
+    --bit-sld-thumb: #{$siz-slider-thumb-md};
+    --bit-sld-rail: #{$siz-track-md};
     --bit-sld-length: #{spacing(24)};
-    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-clr-rail: #{$clr-bg-sec};
 
     // The focus ring is drawn by a single rule further down, so which color it takes is carried here rather
@@ -149,7 +152,7 @@
     background-color: $clr-bg-pri;
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
-    border: spacing(0.25) $shp-border-style var(--bit-sld-clr);
+    border: $shp-border-width-thick $shp-border-style var(--bit-sld-clr);
     transition: border-color $mot-duration-short $mot-easing,
                 box-shadow $mot-duration-short $mot-easing,
                 inset-inline-start $mot-duration-short $mot-easing,
@@ -344,7 +347,7 @@
     padding: 0;
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
     overflow-wrap: break-word;
@@ -354,7 +357,7 @@
 .bit-sld-vlb {
     display: block;
     box-shadow: none;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     white-space: nowrap;
     color: $clr-fg-pri;
     box-sizing: border-box;
@@ -412,7 +415,7 @@
     justify-content: center;
     color: var(--bit-sld-clr-on);
     background-color: var(--bit-sld-clr);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-popup;
     padding: spacing(0.25) spacing(0.75);
     font-size: calc(var(--bit-sld-font-size) * 0.9);
     transition: opacity $mot-duration-short $mot-easing;
@@ -588,23 +591,23 @@
  * Sizes
  * --------------------------------------------------------------------------------------------------- */
 .bit-sld-sm {
-    --bit-sld-thumb: #{spacing(1.5)};
+    --bit-sld-thumb: #{$siz-slider-thumb-sm};
     --bit-sld-rail: #{spacing(0.375)};
-    --bit-sld-font-size: #{spacing(1.5)};
+    --bit-sld-font-size: #{$tg-fs-xs};
     --bit-sld-length: #{spacing(18)};
 }
 
 .bit-sld-md {
-    --bit-sld-thumb: #{spacing(2)};
+    --bit-sld-thumb: #{$siz-slider-thumb-md};
     --bit-sld-rail: #{spacing(0.5)};
-    --bit-sld-font-size: #{spacing(1.75)};
+    --bit-sld-font-size: #{$tg-fs-sm};
     --bit-sld-length: #{spacing(24)};
 }
 
 .bit-sld-lg {
-    --bit-sld-thumb: #{spacing(3)};
+    --bit-sld-thumb: #{$siz-slider-thumb-lg};
     --bit-sld-rail: #{spacing(0.75)};
-    --bit-sld-font-size: #{spacing(2)};
+    --bit-sld-font-size: #{$tg-fs-md};
     --bit-sld-length: #{spacing(30)};
 }
 

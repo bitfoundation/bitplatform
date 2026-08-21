@@ -41,23 +41,22 @@
 
         <EmbeddedResource Include="..\..\Bit.Bswup\BswupProgress.razor" LogicalName="BswupSource/Library/BswupProgress.razor" WithCulture="false" />
 
-        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css;..\Client\**\*.js"
-                          Exclude="..\Client\bin\**;..\Client\obj\**"
-                          WithCulture="false">
-            <LogicalName>BswupSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        <!-- This site's own Bswup configuration, and nothing else of it. A blanket glob over the
+             client used to embed every page, layout, stylesheet and script of the demo - a
+             documentation site's chrome, which answers no question about Bswup, and which
+             GetBswupSourceFiles then had to list and GetBswupSourceFile hand out by the tens of
+             thousands of characters. What this site can teach about Bswup is in these three files. -->
+        <EmbeddedResource Include="..\Client\wwwroot\service-worker.js;..\Client\wwwroot\service-worker.published.js" WithCulture="false">
+            <LogicalName>BswupSource/Demo/Client/wwwroot/%(Filename)%(Extension)</LogicalName>
         </EmbeddedResource>
 
-        <EmbeddedResource Include="Program.cs" LogicalName="BswupSource/Demo/Server/Program.cs" WithCulture="false" />
-
-        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**'
-             matched, so it starts at the folder below and would drop the one the components live in. -->
-        <EmbeddedResource Include="Components\**\*.razor" WithCulture="false">
-            <LogicalName>BswupSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-        </EmbeddedResource>
+        <EmbeddedResource Include="Components\App.razor" LogicalName="BswupSource/Demo/Server/Components/App.razor" WithCulture="false" />
 
         <!-- The minimal samples - one per hosting model. Their host documents, service-worker files
-             and project files are what GetBswupSetupGuide hands out as working setup. -->
-        <EmbeddedResource Include="..\..\Samples\**\*.razor;..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js"
+             and project files are what GetBswupSetupGuide hands out as working setup; the sample
+             apps' own pages, layouts and imports are left out, because they demonstrate nothing
+             about Bswup. SampleBswupProgressBar.razor is the exception - it IS a worked handler. -->
+        <EmbeddedResource Include="..\..\Samples\**\App.razor;..\..\Samples\**\Program.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.html;..\..\Samples\**\wwwroot\*.js;..\..\Samples\**\SampleBswupProgressBar.razor"
                           Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**"
                           WithCulture="false">
             <LogicalName>BswupSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>

@@ -104,12 +104,14 @@ public class BrouterSourceCatalogTests
     {
         var paths = BrouterSourceCatalog.SourceFiles.Select(file => file.Path).ToArray();
 
-        // The route table, a page behind it, the catalogs the demo is driven by, and one file per
-        // sample project - the set the tools and the setup guides actually reach for.
+        // The route table, the pages behind it, the registration that adds the custom constraint,
+        // the hosting files, and one file per sample project - the set the tools and the setup
+        // guides actually reach for.
         foreach (var expected in new[]
         {
             "Demo/Client/AppRouter.razor",
-            "Demo/Client/DocsCatalog.cs",
+            "Demo/Client/Pages/DataPage.razor",
+            "Demo/Client/Extensions/IServiceCollectionExtensions.cs",
             "Demo/Client/Program.cs",
             "Demo/Server/Program.cs",
             "Demo/Server/Components/Pages/Host.razor",
@@ -119,8 +121,32 @@ public class BrouterSourceCatalogTests
             CollectionAssert.Contains(paths, expected, $"'{expected}' is not embedded.");
         }
 
-        Assert.IsTrue(paths.Count(path => path.StartsWith("Demo/", StringComparison.Ordinal)) > 30,
+        Assert.IsTrue(paths.Count(path => path.StartsWith("Demo/", StringComparison.Ordinal)) > 20,
             "Barely any of the demo's files are embedded; the glob is not matching what it used to.");
+    }
+
+    [TestMethod]
+    public void What_the_site_is_rather_than_what_it_teaches_is_not_handed_out_as_source()
+    {
+        var paths = BrouterSourceCatalog.SourceFiles.Select(file => file.Path).ToArray();
+
+        // A documentation page's Razor source is that page's prose with markup around it, and the
+        // docs tool already serves the page itself, rendered. Handing the same text over a second
+        // time teaches nothing about routing and costs thousands of characters to say so.
+        foreach (var page in Bit.Brouter.Demo.Client.DocsCatalog.AllPages)
+        {
+            var component = $"{page.PageType.Name}.razor";
+
+            Assert.IsFalse(paths.Any(path => path.EndsWith(component, StringComparison.OrdinalIgnoreCase)),
+                $"'{component}' is a documentation page, and is being handed out as source as well as rendered.");
+        }
+
+        // Stylesheets, scripts and the site's own chrome answer no question about Brouter either.
+        foreach (var noise in new[] { ".css", ".js", "/Shared/", "McpDemoClient.cs" })
+        {
+            Assert.IsFalse(paths.Any(path => path.Contains(noise, StringComparison.OrdinalIgnoreCase)),
+                $"'{noise}' files are embedded, and there is no question about routing they answer.");
+        }
     }
 
     [TestMethod]
@@ -193,7 +219,10 @@ public class BrouterSourceCatalogTests
         Assert.IsNotNull(routeTable);
         Assert.IsFalse(routeTable.Contains("@*", StringComparison.Ordinal));
 
-        var catalog = files["Demo/Client/DocsCatalog.cs"].Description;
+        Assert.IsTrue(files.TryGetValue("Demo/Client/ConstraintCatalog.cs", out var constraintCatalog),
+            "'Demo/Client/ConstraintCatalog.cs' is not in the catalog, so its embedded resource is missing.");
+
+        var catalog = constraintCatalog.Description;
         Assert.IsNotNull(catalog);
         Assert.IsFalse(catalog.Contains("<", StringComparison.Ordinal), $"XML markup leaked into a description: {catalog}");
         Assert.IsFalse(catalog.Contains("///", StringComparison.Ordinal));
@@ -206,13 +235,16 @@ public class BrouterSourceCatalogTests
     }
 
     [TestMethod]
-    public void Most_files_say_what_they_are()
+    public void Most_of_the_demos_files_say_what_they_are()
     {
         // Not a hard requirement of any single file - but a listing where nothing is described is a
         // listing nobody can choose from, and that is what a broken description pass looks like.
-        var described = BrouterSourceCatalog.SourceFiles.Count(file => file.Description is not null);
+        // The demo's files are the ones that carry a comment saying what they demonstrate; the
+        // sample projects are boilerplate hosting, quoted whole by the setup guides.
+        var demo = BrouterSourceCatalog.SourceFiles.Where(file => file.Kind == "Demo").ToArray();
+        var described = demo.Count(file => file.Description is not null);
 
-        Assert.IsTrue(described > BrouterSourceCatalog.SourceFiles.Length / 2,
-            $"Only {described} of {BrouterSourceCatalog.SourceFiles.Length} source files carry a description.");
+        Assert.IsTrue(described > demo.Length / 2,
+            $"Only {described} of {demo.Length} of the demo's source files carry a description.");
     }
 }

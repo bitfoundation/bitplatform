@@ -63,6 +63,22 @@ public partial class IconographyPage
 
 
 
+    /// <summary>
+    /// The install snippets are constant, so one Prism pass on the first render is all they need.
+    /// The panel's own snippets are highlighted when it opens (see <see cref="OpenIconPanel"/>).
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _js.InvokeVoid("highlightSnippet");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+
+
     private void HandleClear()
     {
         filteredIcons = allIcons;
@@ -84,6 +100,11 @@ public partial class IconographyPage
         isIconPanelOpen = true;
         copyFeedbackKey = null;
         await EnsureGlyphsLoadedAsync();
+
+        // The panel's usage snippets are new markup every time a different icon is picked, so they
+        // are highlighted here rather than once on the first render.
+        StateHasChanged();
+        await _js.InvokeVoid("highlightSnippet");
     }
 
     private async Task CloseIconPanel()

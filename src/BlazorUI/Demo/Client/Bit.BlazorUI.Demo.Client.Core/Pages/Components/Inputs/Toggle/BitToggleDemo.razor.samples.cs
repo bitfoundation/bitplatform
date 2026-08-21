@@ -341,7 +341,7 @@ private async Task FocusTheToggle()
 <BitToggle Color=""BitColor.SevereWarning"" Label=""SevereWarning"" Value />
 <BitToggle Color=""BitColor.Error"" Label=""Error"" Value />
 
-<div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
+<div class=""inverted-panel"" style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
     <BitToggle Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Value />
     <BitToggle Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Value />
     <BitToggle Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Value />

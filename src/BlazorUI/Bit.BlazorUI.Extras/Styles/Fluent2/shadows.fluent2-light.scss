@@ -1,0 +1,34 @@
+// Fluent 2 preset - light elevation. Fluent 2 casts every shadow as a pair: a tight ambient ring
+// that separates the surface from what is under it, and an offset key shadow that gives it height.
+// The ramp is shadow2 / 4 / 8 / 16 / 28 / 64, named for the key blur, over
+// colorNeutralShadowAmbient rgba(0,0,0,0.12) and colorNeutralShadowKey rgba(0,0,0,0.14). It lives
+// beside the palette rather than in tokens.fluent2.scss because those two alphas are per-scheme.
+// Scoped-preset twins: see the note in colors.fluent-light.scss.
+:root[bit-theme="fluent2"],
+:root [bit-theme="fluent2"],
+:root[bit-theme="fluent2-light"],
+:root [bit-theme="fluent2-light"] {
+    // The legacy callout primitives: what a floating surface and a heavier one are lifted by.
+    --bit-shd-cal: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-cal2: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
+
+    // The generic ramp, mapped onto Fluent 2's six levels.
+    --bit-shd-sm: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14); //shadow2
+    --bit-shd-nm: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-md: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-lg: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
+    --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+
+    // Per surface family, at the level Fluent 2's own components sit at: Card shadow4, MenuPopover
+    // and PopoverSurface shadow16, DialogSurface and OverlayDrawer shadow64, Tooltip and Toast
+    // shadow8. App bars cast the card shadow towards the content they cover.
+    --bit-shd-card: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-popup: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.12), 0 -2px 4px rgba(0, 0, 0, 0.14); //shadow4, mirrored
+}

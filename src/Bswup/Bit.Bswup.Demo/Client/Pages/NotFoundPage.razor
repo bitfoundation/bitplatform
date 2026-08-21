@@ -1,4 +1,4 @@
-@page "/not-found"
+﻿@page "/not-found"
 
 @* Rendered two ways, which is why it is a component and not markup inlined in Routes.razor:
    - client-side, as the <NotFound> fragment of the router (a link to a URL with no page); and
@@ -18,5 +18,16 @@
 <div class="docs-not-found">
     <h1>404</h1>
     <p role="alert">Sorry, there's nothing at this address.</p>
-    <a class="button-primary" href="/">Back to the docs</a>
+    @* Two ways out rather than one: back to the front door, or straight into the
+       page most people who mistype a docs URL were actually looking for. *@
+    <div class="hero-actions">
+        <a class="button-primary button-large" href="/">
+            <Icon Name="arrow-left" />
+            Back to the docs
+        </a>
+        <a class="button-secondary button-large" href="getting-started">
+            <Icon Name="book" />
+            Getting Started
+        </a>
+    </div>
 </div>

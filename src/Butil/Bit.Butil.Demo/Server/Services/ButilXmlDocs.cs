@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Xml.Linq;
 using System.Collections.Frozen;
 using System.Text.RegularExpressions;
@@ -181,7 +181,13 @@ public static partial class ButilXmlDocs
         {
             var label = element.Value.Trim();
 
-            return label.Length == 0 ? href : $"[{label}]({href})";
+            // Most of these links are written with the URL as their own text, and a Markdown link
+            // whose label IS its target is the same string twice - which every answer carrying that
+            // member then pays for. An autolink is the same URL once, and unlike a bare one it is a
+            // link in plain Markdown rather than only where bare URLs happen to be linkified.
+            return label.Length == 0 || string.Equals(label, href, StringComparison.OrdinalIgnoreCase)
+                ? $"<{href}>"
+                : $"[{label}]({href})";
         }
 
         var target = element.Attribute("cref")?.Value ?? element.Attribute("langword")?.Value ?? element.Value;

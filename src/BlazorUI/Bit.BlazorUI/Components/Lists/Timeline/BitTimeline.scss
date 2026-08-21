@@ -111,7 +111,7 @@
     --bit-tln-dvd-ins-s: auto;
     --bit-tln-dvd-ins-e: auto;
     --bit-tln-dvd-height: 50%;
-    --bit-tln-dvd-width: #{spacing(0.25)};
+    --bit-tln-dvd-width: #{$shp-border-width-thick};
     --bit-tln-dvd-dir-s: to top;
     --bit-tln-dvd-dir-e: to bottom;
     --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
@@ -156,7 +156,7 @@
     min-height: 100%;
     align-items: center;
     flex-direction: var(--bit-tln-itm-flexdir);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
 
     // A disabled item takes no pointer events at all, so the hover plate never shows up on one.
     @media (hover: hover) {
@@ -316,7 +316,7 @@
     --bit-tln-dvd-top-e: unset;
     --bit-tln-dvd-ins-s: 0;
     --bit-tln-dvd-ins-e: 50%;
-    --bit-tln-dvd-height: #{spacing(0.25)};
+    --bit-tln-dvd-height: #{$shp-border-width-thick};
     --bit-tln-dvd-width: 50%;
     --bit-tln-dvd-dir-s: to left;
     --bit-tln-dvd-dir-e: to right;
@@ -496,15 +496,15 @@
 
 .bit-tln-sm, .bit-tln-ism {
     --bit-tln-dot-size: #{spacing(2.5)};
-    --bit-tln-font-size: #{spacing(1.5)};
+    --bit-tln-font-size: #{$tg-fs-xs};
 }
 
 .bit-tln-md, .bit-tln-imd {
     --bit-tln-dot-size: #{spacing(3.75)};
-    --bit-tln-font-size: #{spacing(1.75)};
+    --bit-tln-font-size: #{$tg-fs-sm};
 }
 
 .bit-tln-lg, .bit-tln-ilg {
     --bit-tln-dot-size: #{spacing(5.25)};
-    --bit-tln-font-size: #{spacing(2)};
+    --bit-tln-font-size: #{$tg-fs-md};
 }

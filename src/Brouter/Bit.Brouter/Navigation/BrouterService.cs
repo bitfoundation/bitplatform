@@ -50,10 +50,12 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
 
     public void ClearLoaderCache() => LoaderCache.Clear();
 
-    public void ClearKeepAlive()
+    public void ClearKeepAlive() => ClearKeepAlive(includeActive: false);
+
+    public void ClearKeepAlive(bool includeActive)
     {
         EnsureMounted();
-        _activeBrouter!.ClearKeepAlive();
+        _activeBrouter!.ClearKeepAlive(includeActive);
     }
 
     internal void Attach(Brouter brouter, NavigationManager navManager)
@@ -180,6 +182,12 @@ internal sealed class BrouterService : IBrouter, IAsyncDisposable
     {
         EnsureMounted();
         return new ValueTask(_activeBrouter!.RevalidateAsync());
+    }
+
+    public ValueTask ReloadAsync()
+    {
+        EnsureMounted();
+        return new ValueTask(_activeBrouter!.ReloadAsync());
     }
 
     public ValueTask PreloadAsync(string url)

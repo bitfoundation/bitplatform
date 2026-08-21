@@ -72,7 +72,20 @@
         its own instance - <code>/notes/1</code> and <code>/notes/2</code> are two live components;
         query-string variations share one - with least-recently-used eviction beyond the budget.
         <code>brouter.ClearKeepAlive()</code> disposes everything retained (sign-out, memory
-        pressure).
+        pressure) - but never the page on screen, which keeps its instance and its state.
+    </p>
+    <p class="bb-card-desc">
+        <code>brouter.ClearKeepAlive(includeActive: true)</code> is the version that includes it:
+        the matched chain's live components are deactivated
+        (<code>Disposing</code>), disposed and rebuilt in place, so the visible page comes back as a
+        brand-new instance in its initial state - no restored scroll, filters or form drafts. It is
+        deliberately <em>not</em> a navigation and not a reload: the URL, history entry and scroll
+        position don't move, no hook or guard runs, and loaders don't re-run (the rebuilt chain is
+        handed the data it already loaded). Reach for it after switching tenant or impersonating a
+        user, where re-navigating to the current URL cannot help - Blazor reuses a component whose
+        route and parameters didn't change, so the stale instance simply stays. When the page's
+        <em>data</em> is stale too, <BrouterLink Href="/docs/data-loading"><code>ReloadAsync()</code></BrouterLink>
+        runs the whole pipeline again.
     </p>
     <pre class="bb-code">&lt;<span class="k">Broute</span> Path=<span class="s">"/notes/{id:int}"</span> KeepAlive=<span class="s">"true"</span> KeepAliveMax=<span class="s">"2"</span>
         Component=<span class="s">"@@typeof(NotebookPage)"</span> /&gt;</pre>

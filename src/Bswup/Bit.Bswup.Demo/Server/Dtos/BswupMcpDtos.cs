@@ -1,29 +1,13 @@
 namespace Bit.Bswup.Demo.Server.Dtos;
 
-/// <summary>One page of the documentation site (mirrors an entry of the client's DocsCatalog).</summary>
-public record BswupDocsPageDto
-{
-    /// <summary>The sidebar section the page belongs to, e.g. "Reference".</summary>
-    public required string Section { get; init; }
-
-    /// <summary>The value to pass to GetBswupDocsPage. Empty string for the home page.</summary>
-    public required string Slug { get; init; }
-
-    /// <summary>The page's URL on the live documentation site.</summary>
-    public required string Url { get; init; }
-
-    public required string Title { get; init; }
-
-    public required string Description { get; init; }
-
-    /// <summary>Space-separated search terms the page covers - useful for picking the right slug.</summary>
-    public required string Keywords { get; init; }
-}
-
-/// <summary>One heading of the library's README, which doubles as its reference guide.</summary>
+/// <summary>
+/// One heading of the library's README. The README is reachable as a resource rather than through
+/// a tool - the documentation site says everything it says, in pages sized to a question - so this
+/// is the shape behind a resource listing, not behind a tool result.
+/// </summary>
 public record BswupGuideSectionDto
 {
-    /// <summary>The heading text, e.g. "JavaScript API". Pass it to GetBswupGuideSection.</summary>
+    /// <summary>The heading text, e.g. "JavaScript API".</summary>
     public required string Heading { get; init; }
 
     /// <summary>Markdown heading level: 2 for a top-level section, 3 for a sub-section.</summary>
@@ -39,17 +23,17 @@ public record BswupGuideSectionDto
 /// <summary>
 /// One configurable knob of Bswup: a <c>bit-bswup.js</c> script-tag attribute, a <c>self.*</c>
 /// setting of the service-worker file, or a parameter of the <c>BswupProgress</c> component.
+/// <para>
+/// Which of the three it is, where the value is written, and which documentation page carries the
+/// prose are the same for every entry one tool returns, so they are said once in that tool's
+/// description instead of once per entry. Repeated here they were a fifth of the reply - a caller
+/// reading twenty-four settings was told twenty-four times that they go in service-worker.js.
+/// </para>
 /// </summary>
 public record BswupOptionDto
 {
     /// <summary>The name exactly as written where it is configured, e.g. "updateInterval".</summary>
     public required string Name { get; init; }
-
-    /// <summary>Script attribute, Service worker setting or Progress parameter.</summary>
-    public required string Kind { get; init; }
-
-    /// <summary>Where the value is written, e.g. "&lt;script src=\"...bit-bswup.js\"&gt; attribute".</summary>
-    public required string SetIn { get; init; }
 
     public string? Type { get; init; }
 
@@ -67,31 +51,40 @@ public record BswupOptionDto
     /// description that could have gone stale.
     /// </summary>
     public required bool VerifiedFromSource { get; init; }
-
-    /// <summary>The tool call that returns the full prose for this option.</summary>
-    public string? Docs { get; init; }
 }
 
 /// <summary>
 /// Everything the service-worker file can configure: the settings themselves, plus the built-in
-/// asset filters the shipped worker applies around them.
+/// asset filters and the <c>self.mode</c> presets the shipped worker applies around them.
+/// <para>
+/// The three lists beyond <see cref="Settings"/> are null unless the settings they explain are in
+/// the answer. Asked about one setting by name, a caller gets that setting: eighteen asset
+/// patterns and four presets alongside it would be most of the reply and none of the answer.
+/// </para>
 /// </summary>
 public record BswupServiceWorkerSettingsDto
 {
-    /// <summary>Every <c>self.*</c> setting, with its type, default and caveats.</summary>
+    /// <summary>The <c>self.*</c> settings that were asked for, with type, default and caveats.</summary>
     public required BswupOptionDto[] Settings { get; init; }
 
     /// <summary>The asset include patterns the shipped worker applies before the file's own.</summary>
-    public required string[] DefaultAssetsInclude { get; init; }
+    public string[]? DefaultAssetsInclude { get; init; }
 
     /// <summary>The asset exclude patterns the shipped worker applies before the file's own. An exclude beats an include.</summary>
-    public required string[] DefaultAssetsExclude { get; init; }
+    public string[]? DefaultAssetsExclude { get; init; }
+
+    /// <summary>The <c>self.mode</c> presets, with the settings each of them fills in.</summary>
+    public BswupModeDto[]? Modes { get; init; }
 
     /// <summary>The rules that decide whether a setting takes effect at all.</summary>
     public required string[] Notes { get; init; }
 }
 
-/// <summary>A preset bundle of service-worker settings selectable with a single <c>self.mode</c> value.</summary>
+/// <summary>
+/// A preset bundle of service-worker settings selectable with a single <c>self.mode</c> value.
+/// That a preset never overrides a setting the file assigns itself holds for all four of them, so
+/// it is said once in the notes of the reply rather than once per preset.
+/// </summary>
 public record BswupModeDto
 {
     /// <summary>The value to assign to <c>self.mode</c>, e.g. "FullOffline".</summary>
@@ -99,12 +92,6 @@ public record BswupModeDto
 
     /// <summary>The settings the preset fills in, in the order the worker applies them.</summary>
     public required Dictionary<string, string> Settings { get; init; }
-
-    /// <summary>
-    /// A preset only fills settings the file has not assigned itself, so an explicit assignment
-    /// always wins - including an explicitly falsy one.
-    /// </summary>
-    public required string Note { get; init; }
 }
 
 /// <summary>One lifecycle message Bswup hands to the page's handler function.</summary>
@@ -241,6 +228,14 @@ public record BswupServiceWorkerInspectionDto
 
     /// <summary>Behavior of this configuration that is easy to be surprised by.</summary>
     public required string[] Notes { get; init; }
+
+    /// <summary>
+    /// What this configuration does with the asset URLs the caller passed, or null when none were.
+    /// It rides on the inspection rather than living in a tool of its own because the question is
+    /// always about a file that is being checked anyway - and sending that file twice is the one
+    /// cost neither side can do anything about after the fact.
+    /// </summary>
+    public BswupAssetAnalysisDto? Assets { get; init; }
 }
 
 /// <summary>What the service worker does with one asset URL under the inspected configuration.</summary>
@@ -277,14 +272,10 @@ public record BswupInspectRequestDto
 {
     /// <summary>The full content of the service-worker.js file to check, verbatim.</summary>
     public required string Script { get; init; }
-}
 
-/// <summary>The body of the POST form of AnalyzeBswupAssetCaching, for the same reason.</summary>
-public record BswupAssetAnalysisRequestDto
-{
-    /// <summary>The full content of the service-worker.js file whose lists should decide these assets.</summary>
-    public required string Script { get; init; }
-
-    /// <summary>The asset URLs to decide - one per line, or separated by commas or semicolons.</summary>
-    public required string AssetUrls { get; init; }
+    /// <summary>
+    /// Optional asset URLs to decide under that same file - one per line, or separated by commas
+    /// or semicolons. Left out, the reply is the inspection alone.
+    /// </summary>
+    public string? AssetUrls { get; init; }
 }

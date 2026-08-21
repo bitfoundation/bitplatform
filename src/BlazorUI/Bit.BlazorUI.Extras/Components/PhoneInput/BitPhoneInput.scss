@@ -5,7 +5,7 @@
     padding: 0;
     width: fit-content;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
 }
 
@@ -19,10 +19,10 @@
 
 .bit-phi-lbl {
     display: block;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     color: $clr-fg-pri;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(0.625) 0;
 }
 
@@ -31,15 +31,16 @@
     align-items: stretch;
     flex-flow: row nowrap;
     box-sizing: border-box;
-    min-height: spacing(4);
-    border-radius: $shp-border-radius;
+    min-height: $siz-ctrl-md;
+    border-radius: $shp-radius-control;
     background-color: $clr-bg-pri;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 }
 
 .bit-phi-fcs .bit-phi-fgp {
+    @include focus-ring($clr-pri);
+
     border-color: $clr-pri;
-    box-shadow: 0 0 0 1px $clr-pri;
 }
 
 .bit-phi-drp {
@@ -57,12 +58,12 @@
     box-sizing: border-box;
     padding: 0 spacing(1);
     background-color: transparent;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     border-block: none;
     border-inline-start: none;
-    border-start-start-radius: $shp-border-radius;
-    border-end-start-radius: $shp-border-radius;
+    border-start-start-radius: $shp-radius-control;
+    border-end-start-radius: $shp-radius-control;
     border-inline-end: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:hover {
@@ -116,11 +117,11 @@
     color: $clr-fg-pri;
     box-sizing: border-box;
     background-color: transparent;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     padding: 0 spacing(1);
-    border-start-end-radius: $shp-border-radius;
-    border-end-end-radius: $shp-border-radius;
+    border-start-end-radius: $shp-radius-control;
+    border-end-end-radius: $shp-radius-control;
 
     &::placeholder {
         color: $clr-fg-ter;
@@ -145,21 +146,21 @@
 
 .bit-phi-cal {
     display: none;
-    font-weight: 400;
+    font-weight: $tg-fw-regular;
     overflow: hidden;
     position: fixed;
     box-sizing: border-box;
     z-index: $zindex-callout;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-duration: $mot-duration-long;
-    box-shadow: $box-shadow-callout;
-    border-radius: $shp-border-radius;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
     background-color: $clr-bg-pri;
     font-family: $tg-font-family;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
     animation-name: bit-fade-show, bit-slide-down;
-    animation-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+    animation-timing-function: $mot-easing-decelerate;
 }
 
 .bit-phi-sbx {
@@ -175,7 +176,7 @@
     color: $clr-fg-pri;
     box-sizing: border-box;
     background-color: $clr-bg-pri;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     padding: spacing(1) spacing(1.5);
 }
@@ -207,7 +208,7 @@
     flex-flow: row nowrap;
     box-sizing: border-box;
     background-color: transparent;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
 
@@ -239,15 +240,16 @@
 .bit-phi-nor {
     color: $clr-fg-ter;
     box-sizing: border-box;
-    font-size: spacing(1.75);
+    font-size: $tg-fs-sm;
     padding: spacing(0.75) spacing(1.5);
 }
 
 .bit-phi {
     &.bit-phi-err.bit-phi-fcs .bit-phi-fgp,
     &.bit-inv.bit-phi-fcs .bit-phi-fgp {
+        @include focus-ring($clr-err);
+
         border-color: $clr-err;
-        box-shadow: 0 0 0 1px $clr-err;
     }
 
     &.bit-phi-err .bit-phi-fgp,
@@ -262,8 +264,9 @@
     }
 
     &.bit-phi-fcs .bit-phi-fgp {
+        @include focus-ring($color);
+
         border-color: $color;
-        box-shadow: 0 0 0 1px $color;
     }
 }
 

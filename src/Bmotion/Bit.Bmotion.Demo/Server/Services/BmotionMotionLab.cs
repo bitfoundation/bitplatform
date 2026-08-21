@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Bit.Bmotion.Demo.Server.Dtos;
 
 namespace Bit.Bmotion.Demo.Server.Services;
@@ -235,6 +235,14 @@ public static class BmotionMotionLab
         // or two before the task itself reports done. Nothing is left to tick either way.
         return (frames, await WaitOrAbandonAsync(animation));
     }
+
+    /// <summary>
+    /// The answer for a transition that was asked about but never run - one past the per-call limit,
+    /// say. It carries the reason where a failed spec carries its parse error, so a caller renders it
+    /// beside the measured ones instead of being handed back fewer answers than questions.
+    /// </summary>
+    public static BmotionSimulationDto NotMeasured(string spec, string reason, double from, double to)
+        => Unreadable(spec, reason, from, to);
 
     /// <summary>
     /// The answer for a transition spec that could not be read: no measurement, and the explanation

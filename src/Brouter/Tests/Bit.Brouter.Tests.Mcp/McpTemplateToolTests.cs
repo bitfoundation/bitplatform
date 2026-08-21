@@ -3,24 +3,36 @@
 namespace Bit.Brouter.Tests.Mcp;
 
 /// <summary>
-/// The two tools that are not documentation: they run Brouter's own parser over a template an agent
-/// is about to ship, and report what the router made of it.
+/// The one tool that is not documentation: it runs Brouter's own parser over the templates an agent
+/// is about to ship, and reports what the router made of them.
 /// <para>
-/// Their value rests entirely on the answer being the router's rather than an opinion about it, and
+/// Its value rests entirely on the answer being the router's rather than an opinion about it, and
 /// the parser is internal - reached by reflection, with a deliberate "unavailable" answer if that
 /// surface ever moves. Which makes the first assertion here the important one: an unavailable
 /// parser is a successful tool call that quietly stops checking anything, and only a test that
 /// looks at the verdict can tell the difference.
 /// </para>
+/// <para>
+/// One template and a set of them are the same call, and answer differently on purpose: the first
+/// carries the whole of what the parser made of that template, the second carries how the templates
+/// relate. Both halves of that are asserted here, because the split is what a caller sending one
+/// template and a caller sending a table each depend on.
+/// </para>
 /// </summary>
 [TestClass]
 public class McpTemplateToolTests
 {
-    private static Task<BrouterTemplateInspectionDto> InspectAsync(string template)
-        => McpCall.StructuredAsync<BrouterTemplateInspectionDto>("InspectBrouterRouteTemplate", new() { ["template"] = template });
+    private static async Task<BrouterTemplateInspectionDto> InspectAsync(string template)
+    {
+        var analysis = await AnalyzeAsync(template);
 
-    private static Task<BrouterRouteTableAnalysisDto> AnalyzeAsync(string templates)
-        => McpCall.StructuredAsync<BrouterRouteTableAnalysisDto>("AnalyzeBrouterRouteTable", new() { ["templates"] = templates });
+        Assert.AreEqual(1, analysis.Routes.Length, $"One template came back as {analysis.Routes.Length} routes.");
+
+        return analysis.Routes[0];
+    }
+
+    private static Task<BrouterRouteAnalysisDto> AnalyzeAsync(string templates)
+        => McpCall.StructuredAsync<BrouterRouteAnalysisDto>("InspectBrouterRouteTemplates", new() { ["templates"] = templates });
 
     [TestMethod]
     public async Task The_routers_own_parser_is_the_one_answering()
@@ -171,7 +183,7 @@ public class McpTemplateToolTests
     {
         // "" is what a child route declares to be its parent's index; refusing it would send an agent
         // looking for a syntax it does not need.
-        var inspection = await InspectAsync("");
+        var inspection = await InspectAsync(string.Empty);
 
         Assert.IsTrue(inspection.IsValid);
         Assert.AreEqual(0, inspection.Segments!.Length);
@@ -196,7 +208,28 @@ public class McpTemplateToolTests
             new[] { "/users/new", "/users/{id:int}", "/users/{id}", "/{*path}" },
             analysis.Routes.Select(route => route.Template).ToArray());
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3, 4 }, analysis.Routes.Select(route => route.MatchOrder).ToArray());
+        CollectionAssert.AreEqual(new int?[] { 1, 2, 3, 4 }, analysis.Routes.Select(route => route.MatchOrder).ToArray());
+
+        // What a set is asked about is how its templates relate. The detail of one of them is a
+        // further call away, on whichever template the ranking turned out to make interesting.
+        Assert.IsTrue(analysis.Routes.All(route => route.Segments is null && route.Notes is null),
+            "A ranked set answered with the segments of every template in it.");
+
+        Assert.IsTrue(analysis.Routes.All(route => route.Shape is not null),
+            "A ranked set left out the shapes, which are what say why two templates collide.");
+    }
+
+    [TestMethod]
+    public async Task One_template_is_answered_about_rather_than_ranked()
+    {
+        var analysis = await AnalyzeAsync("/users/{id:int}");
+
+        var route = analysis.Routes.Single();
+
+        Assert.IsNotNull(route.Segments, "A single template came back without the detail the call is for.");
+        Assert.IsNull(route.MatchOrder, "A single template was given a rank among no other templates.");
+        Assert.IsNull(route.Shape, "A single template came back with a comparison key and nothing to compare it to.");
+        Assert.AreEqual(0, analysis.Ambiguous.Length);
     }
 
     [TestMethod]
@@ -254,15 +287,21 @@ public class McpTemplateToolTests
     }
 
     [TestMethod]
-    public async Task An_empty_route_table_answers_with_the_caveat_rather_than_with_nothing()
+    public async Task An_empty_argument_is_answered_as_the_index_route_rather_than_with_nothing()
     {
+        // "" is a template - it is what a child route declares to be its parent's index - so an
+        // argument holding nothing else is answered about, rather than with an empty list that
+        // would read as "there is nothing to say about this".
         var analysis = await AnalyzeAsync("   \n  \n");
 
-        Assert.AreEqual(0, analysis.Routes.Length);
-        Assert.AreEqual(0, analysis.Ambiguous.Length);
+        var route = analysis.Routes.Single();
 
-        // The standing caveat: specificity ranks routes that all match, it does not decide matching.
-        Assert.IsTrue(analysis.Notes.Length > 0);
+        Assert.IsTrue(route.IsValid);
+        Assert.AreEqual(string.Empty, route.Template);
+        Assert.AreEqual(0, route.Segments!.Length);
+
+        Assert.IsTrue(analysis.Notes.Any(note => note.Contains("index route", StringComparison.Ordinal)),
+            "Nothing in the answer says what the empty template is.");
     }
 
     [TestMethod]

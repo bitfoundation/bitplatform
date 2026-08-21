@@ -1,71 +1,64 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages
 @inherits AppComponentBase
 
-<BitText Element="h2" Typography="BitTypography.H3" Gutter>Why bit BlazorUI?</BitText>
+<BitText Element="h2" Typography="BitTypography.H3">Why bit BlazorUI?</BitText>
+<BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="benefits-lead">
+    Six things that are difficult to retrofit into a component library, and are therefore worth
+    checking before you commit to one.
+</BitText>
 
-<div class="card-list">
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.Code" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>Native Blazor UI</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            bit BlazorUI components are written entirely in C# and provide high performance in all interactive Blazor modes (WASM, Server, Hybrid, pre-rendering).
+<div class="benefit-grid">
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.Code" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">Native Blazor UI</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            Every component is written in C#, with no JavaScript framework underneath - which is why the
+            same code renders under WASM, Server, Hybrid and static pre-rendering without changing.
         </BitText>
     </div>
 
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.SpeedHigh" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>Performance centric</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            One of the most important aspects of the bit BlazorUI is its performance.
-            Using 5 components, for example, only adds <b>50KB</b> to your app, and using +40 components adds only <b>200KB</b> in total (dll + css + js).
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.SpeedHigh" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">Performance centric</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            Five components add about <b>50&nbsp;KB</b> to an app; forty add about <b>200&nbsp;KB</b>
+            in total - dll, css and js together. You pay for what you use and nothing else.
         </BitText>
     </div>
 
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.Brush" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>Easy to customize</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            bit BlazorUI components are implemented in a standard format, making it simple to customize their styles and functionalities.
-            A single brand color fed to the theme factory produces complete light and dark palettes.
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.Brush" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">Themed from one color</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            A single brand color fed to the theme factory produces complete light and dark palettes,
+            and four design-system presets - Fluent, Fluent&nbsp;2, Material and Cupertino - ship in the box.
         </BitText>
     </div>
 
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.LocaleLanguage" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>RTL &amp; multi-culture</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            Right-to-left rendering is a first-class feature: every component supports the RTL direction out of the box,
-            making bit BlazorUI a solid base for multilingual applications.
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.LocaleLanguage" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">RTL &amp; multi-culture</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            Right-to-left is a first-class direction on every component rather than a stylesheet added
+            afterwards, which makes this a solid base for a genuinely multilingual application.
         </BitText>
     </div>
 
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.Robot" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>AI-ready</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            The official MCP server lets AI coding agents like GitHub Copilot, Cursor, and Claude discover components,
-            fetch accurate examples, and follow best practices automatically.
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.Robot" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">AI-ready</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            The official MCP server lets Copilot, Cursor, Claude and Windsurf discover components, pull
+            accurate examples, and follow the library's conventions without being told twice.
         </BitText>
     </div>
 
-    <div class="benefit-card">
-        <div class="benefit-card-icon">
-            <BitIcon IconName="@BitIconName.Teamwork" Color="BitColor.Primary" />
-        </div>
-        <BitText Element="h3" Typography="BitTypography.H5" Gutter>Dedicated dev team</BitText>
-        <BitText Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground">
-            A professional and dedicated team creates bit BlazorUI components, and they also actively contribute to the open-source project on GitHub.
-            This ensures a consistent flow of updates and easy access to technical support.
+    <div class="benefit">
+        <BitIcon IconName="@BitIconName.Teamwork" Color="BitColor.Primary" Class="benefit-icon" />
+        <BitText Element="h3" Typography="BitTypography.H6">Dedicated dev team</BitText>
+        <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">
+            A professional team builds these components in the open, on the same repository you can file
+            an issue on - which is what keeps the release cadence and the support predictable.
         </BitText>
     </div>
 </div>

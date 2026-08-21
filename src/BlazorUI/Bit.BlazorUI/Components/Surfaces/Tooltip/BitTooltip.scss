@@ -1,14 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
 
-:root {
-    --bit-shd-ttp-clr: rgba(0, 0, 0, 0.1);
-}
-
-:root[bit-theme="dark"],
-:root[bit-theme="fluent-dark"] {
-    --bit-shd-ttp-clr: rgba(255, 255, 255, 0.1);
-}
-
 .bit-ttp {
     position: relative;
     display: inline-flex;
@@ -32,17 +23,20 @@
     pointer-events: none;
     transition: all $mot-duration linear;
     --bit-ttp-arrow-spacing: #{spacing(1.25)};
+    // One contract for every placement rule below, so the arrow's shadow is re-skinned in one place.
+    --bit-ttp-arrow-shadow-color: #{translucent($clr-fg-pri, 10%)};
 }
 
 .bit-ttp-ctn {
     height: auto;
-    font-weight: 500;
+    font-weight: $tg-fw-medium;
     position: absolute;
     text-align: center;
     width: max-content;
     height: max-content;
     padding: spacing(1.25);
-    font-size: spacing(1.5);
+    font-size: $tg-fs-xs;
+    border-radius: $shp-radius-popup;
     z-index: $zindex-callout;
     color: $clr-fg-pri;
     background-color: $clr-bg-sec;
@@ -66,7 +60,7 @@
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
         bottom: calc(100% + var(--bit-ttp-arrow-spacing));
     }
 
@@ -74,7 +68,7 @@
         bottom: 100%;
         left: calc(50% - spacing(0.25));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -82,14 +76,14 @@
     .bit-ttp-ctn {
         right: calc(100% - var(--bit-ttp-arrow-spacing));
         bottom: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         bottom: 100%;
         right: calc(100% - var(--bit-ttp-arrow-spacing));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -97,14 +91,14 @@
     .bit-ttp-ctn {
         left: calc(100% - var(--bit-ttp-arrow-spacing));
         bottom: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         left: 100%;
         bottom: 100%;
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -112,14 +106,14 @@
     .bit-ttp-ctn {
         left: calc(100% + var(--bit-ttp-arrow-spacing));
         bottom: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         left: calc(100% + var(--bit-ttp-arrow-spacing));
         bottom: calc(100% - var(--bit-ttp-arrow-spacing));
         transform: rotate(-45deg) translateY(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -127,7 +121,7 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
         left: calc(100% + var(--bit-ttp-arrow-spacing));
     }
 
@@ -135,7 +129,7 @@
         top: calc(50% - spacing(0.25));
         left: calc(100% + var(--bit-ttp-arrow-spacing));
         transform: rotate(-45deg) translateY(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -143,14 +137,14 @@
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-arrow-spacing));
         left: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         top: calc(100% - var(--bit-ttp-arrow-spacing));
         left: calc(100% + var(--bit-ttp-arrow-spacing));
         transform: rotate(-135deg) translateY(-50%);
-        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -158,14 +152,14 @@
     .bit-ttp-ctn {
         top: calc(100% + var(--bit-ttp-arrow-spacing));
         left: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         top: calc(100% + var(--bit-ttp-arrow-spacing));
         left: calc(100% - var(--bit-ttp-arrow-spacing));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -173,7 +167,7 @@
     .bit-ttp-ctn {
         left: 50%;
         transform: translateX(-50%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
         top: calc(100% + var(--bit-ttp-arrow-spacing));
     }
 
@@ -181,7 +175,7 @@
         top: calc(100% + var(--bit-ttp-arrow-spacing));
         left: calc(50% - spacing(0.25));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -189,14 +183,14 @@
     .bit-ttp-ctn {
         top: calc(100% + var(--bit-ttp-arrow-spacing));
         right: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         top: calc(100% + var(--bit-ttp-arrow-spacing));
         right: calc(100% - var(--bit-ttp-arrow-spacing));
         transform: rotate(45deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -204,14 +198,14 @@
     .bit-ttp-ctn {
         top: calc(100% - var(--bit-ttp-arrow-spacing));
         right: calc(100% + var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         top: calc(100% - var(--bit-ttp-arrow-spacing));
         right: calc(100% + var(--bit-ttp-arrow-spacing));
         transform: rotate(-135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -219,7 +213,7 @@
     .bit-ttp-ctn {
         bottom: 50%;
         transform: translateY(50%);
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
         right: calc(100% + var(--bit-ttp-arrow-spacing));
     }
 
@@ -227,7 +221,7 @@
         top: calc(50% - spacing(0.25));
         right: calc(100% + var(--bit-ttp-arrow-spacing));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }
 
@@ -235,13 +229,13 @@
     .bit-ttp-ctn {
         right: calc(100% + var(--bit-ttp-arrow-spacing));
         bottom: calc(100% - var(--bit-ttp-arrow-spacing));
-        box-shadow: $box-shadow-callout;
+        box-shadow: $box-shadow-tooltip;
     }
 
     .bit-ttp-arw {
         right: calc(100% + var(--bit-ttp-arrow-spacing));
         bottom: calc(100% - var(--bit-ttp-arrow-spacing));
         transform: rotate(135deg) translateX(-50%);
-        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-shd-ttp-clr);
+        box-shadow: spacing(-0.25) spacing(-0.25) spacing(0.25) 0 var(--bit-ttp-arrow-shadow-color);
     }
 }

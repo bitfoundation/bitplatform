@@ -1,4 +1,4 @@
-@page "/barcode-detector"
+﻿@page "/barcode-detector"
 @implements IAsyncDisposable
 @inject Bit.Butil.BarcodeDetector barcodeDetector
 @inject Bit.Butil.MediaDevices mediaDevices
@@ -84,7 +84,7 @@ await _scan!.DisposeAsync();
             <span>@_status</span>
         </div>
         <video @ref="_video" autoplay playsinline muted
-               style="margin-top:1rem;max-width:100%;border-radius:8px;background:#111;min-height:160px"></video>
+               class="demo-video" style="min-height:160px"></video>
         @if (_hits.Count > 0)
         {
             <div class="field">

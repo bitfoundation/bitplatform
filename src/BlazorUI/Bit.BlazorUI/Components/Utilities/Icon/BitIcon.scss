@@ -2,7 +2,7 @@
 
 .bit-ico {
     padding: spacing(0.5);
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-control;
     border-style: $shp-border-style;
     border-width: $shp-border-width;
 
@@ -124,13 +124,13 @@
 
 
 .bit-ico-sm {
-    font-size: spacing(1.5);
+    font-size: $siz-icon-sm;
 }
 
 .bit-ico-md {
-    font-size: spacing(2.5);
+    font-size: $siz-icon-md;
 }
 
 .bit-ico-lg {
-    font-size: spacing(3.5);
+    font-size: $siz-icon-lg;
 }

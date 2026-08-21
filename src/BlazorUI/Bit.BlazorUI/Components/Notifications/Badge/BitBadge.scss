@@ -24,7 +24,7 @@
 
 .bit-bdg-ctn {
     cursor: default;
-    font-weight: 600;
+    font-weight: $tg-fw-semibold;
     gap: spacing(0.5);
     position: absolute;
     align-items: center;
@@ -329,28 +329,28 @@
 
 .bit-bdg-sm {
     --bit-bdg-height: #{spacing(2)};
-    --bit-bdg-boradius: #{spacing(1)};
+    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.5)};
-    --bit-bdg-fontsize: #{spacing(1.25)};
+    --bit-bdg-fontsize: #{$tg-fs-xs};
 }
 
 .bit-bdg-md {
     --bit-bdg-height: #{spacing(2.5)};
-    --bit-bdg-fontsize: #{spacing(1.5)};
-    --bit-bdg-boradius: #{spacing(1.25)};
+    --bit-bdg-fontsize: #{$tg-fs-sm};
+    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-padding: 0 #{spacing(0.75)};
 }
 
 .bit-bdg-lg {
     --bit-bdg-height: #{spacing(3)};
     --bit-bdg-padding: 0 #{spacing(1)};
-    --bit-bdg-boradius: #{spacing(1.5)};
-    --bit-bdg-fontsize: #{spacing(1.75)};
+    --bit-bdg-boradius: #{$shp-radius-full};
+    --bit-bdg-fontsize: #{$tg-fs-md};
 }
 
 .bit-bdg-dot {
     --bit-bdg-padding: 0;
-    --bit-bdg-boradius: 50%;
+    --bit-bdg-boradius: #{$shp-radius-full};
     --bit-bdg-width: #{spacing(1.125)};
     --bit-bdg-height: #{spacing(1.125)};
 }

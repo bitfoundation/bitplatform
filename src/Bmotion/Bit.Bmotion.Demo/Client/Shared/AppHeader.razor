@@ -1,35 +1,40 @@
 ﻿@inject IJSRuntime JS
 
-@* The site header: the bit mark and the two top-level destinations at one end, the repository
-   link and the theme switch at the other. It mirrors the Bit.BlazorUI docs header so the two
-   sites read as one product.
+@* The site header: the mark, the library's name and the two top-level destinations at one end;
+   the search, the repository and the theme switch at the other.
 
    It is the one piece of chrome the landing page and the docs share, and it adapts to which of
-   the two it is sitting on: the bar narrows to the landing page's own width there, and the menu
-   button goes away because that page has no nav panel to open. *@
+   the two it is sitting on: the menu button only exists on a docs page, because the landing page
+   has no nav panel to open. *@
 
-<div class="header">
-    <div class="container@(IsHomePage ? " home-page" : "")">
+<header class="app-header">
+    <div class="app-header-inner">
         <div class="header-start">
             @* Only exists on a docs page, and only at the widths where the nav panel is a drawer;
                CSS hides it above them. *@
             @if (IsHomePage is false)
             {
-                <button type="button" class="menu-btn" @onclick="OnToggleNav"
+                <button type="button" class="icon-btn menu-btn" @onclick="OnToggleNav"
                         aria-label="Toggle navigation" aria-controls="nav-panel"
                         aria-expanded="@(IsNavOpen ? "true" : "false")"
                         disabled="@IsHydrating">
-                    <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <path d="M0 2.5h16v1H0v-1zm0 5h16v1H0v-1zm0 5h16v1H0v-1z" />
-                    </svg>
+                    <Icon Path="@Icons.Menu" />
                 </button>
             }
 
-            <a class="logo" href="/" aria-label="Homepage"></a>
-            <a class="wordmark" href="/">Bmotion</a>
+            <a class="header-brand" href="/" aria-label="Bmotion home">
+                <span class="logo" aria-hidden="true"></span>
+                <span class="wordmark">Bmotion</span>
+            </a>
 
-            <a class="link@(IsHomePage ? " active" : "")" href="/">Home</a>
-            <a class="link@(IsHomePage ? "" : " active")" href="/basic">Docs</a>
+            <span class="header-version">@Version</span>
+
+            <nav class="header-links" aria-label="Sections">
+                <a class="link@(IsHomePage ? " active" : "")" href="/"
+                   aria-current="@(IsHomePage ? "page" : null)">Home</a>
+                <a class="link@(IsHomePage ? "" : " active")" href="/basic"
+                   aria-current="@(IsHomePage ? null : "page")">Docs</a>
+            </nav>
         </div>
 
         <div class="header-end">
@@ -43,29 +48,41 @@
                 </span>
             }
 
-            <a class="github-btn" target="_blank" rel="noopener noreferrer"
-               aria-label="Github repository" href="https://github.com/bitfoundation/bitplatform"></a>
-
-            @* Exact complements: CSS shows the sun in the dark theme and the moon in the light one,
-               so exactly one of the pair is ever visible - including on the prerendered document,
-               which carries no data-theme attribute yet. *@
-            <button type="button" class="toggle-theme-btn dark-theme" @onclick="ToggleTheme"
-                    title="Turn on light" aria-label="Turn on light">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0-13a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1zm0 14a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1zM4 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm14 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1zM6.34 6.34a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm9.2 9.2a1 1 0 0 1 1.41 0l.71.71a1 1 0 0 1-1.41 1.41l-.71-.71a1 1 0 0 1 0-1.41zm2.12-9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 1 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0zm-9.2 9.2a1 1 0 0 1 0 1.41l-.71.71a1 1 0 0 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0z" />
-                </svg>
+            @* Below the width where it has room for its label it collapses to the icon, which is
+               why the accessible name is on the button rather than only in the text inside it. *@
+            <button type="button" class="header-search" @onclick="OnOpenSearch"
+                    aria-label="Search the docs" aria-keyshortcuts="Control+K Meta+K"
+                    disabled="@IsHydrating">
+                <Icon Path="@Icons.Search" />
+                <span class="search-label">Search docs</span>
+                <span class="kbd" aria-hidden="true">@ShortcutHint</span>
             </button>
-            <button type="button" class="toggle-theme-btn light-theme" @onclick="ToggleTheme"
-                    title="Turn off light" aria-label="Turn off light">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                    <path d="M21.3 13.6A9.2 9.2 0 0 1 10.4 2.7a1 1 0 0 0-1.3-1.15A10.2 10.2 0 1 0 22.45 14.9a1 1 0 0 0-1.15-1.3z" />
-                </svg>
+
+            <a class="icon-btn" target="_blank" rel="noopener noreferrer"
+               aria-label="Bit.Bmotion on GitHub (opens in a new tab)"
+               href="https://github.com/bitfoundation/bitplatform">
+                <span class="github-mark" aria-hidden="true"></span>
+            </a>
+
+            @* Exact complements: CSS shows the sun in the dark theme and the moon in the light
+               one, so exactly one of the pair is ever visible - including on the prerendered
+               document, which carries no data-theme attribute yet. *@
+            <button type="button" class="icon-btn dark-theme" @onclick="ToggleTheme"
+                    title="Switch to the light theme" aria-label="Switch to the light theme">
+                <Icon Path="@Icons.Sun" />
+            </button>
+            <button type="button" class="icon-btn light-theme" @onclick="ToggleTheme"
+                    title="Switch to the dark theme" aria-label="Switch to the dark theme">
+                <Icon Path="@Icons.Moon" />
             </button>
         </div>
     </div>
-</div>
+</header>
 
 @code {
+    /// <summary>The release the docs describe, shown next to the name.</summary>
+    private const string Version = "net8+";
+
     /// <summary>True while the prerendered markup is on screen and the WebAssembly runtime is still loading.</summary>
     [Parameter] public bool IsHydrating { get; set; }
 
@@ -75,10 +92,20 @@
     /// <summary>Raised by the menu button at the widths where the nav panel is a drawer.</summary>
     [Parameter] public EventCallback OnToggleNav { get; set; }
 
+    /// <summary>Raised by the search button. The layout owns the palette, so it owns opening it.</summary>
+    [Parameter] public EventCallback OnOpenSearch { get; set; }
+
+    /// <summary>
+    /// The shortcut printed on the search button's keycap. The layout resolves it once from the
+    /// browser rather than guessing: the same physical key is Ctrl on Windows and Linux and Cmd on
+    /// a Mac, and a keycap showing the wrong one is worse than no keycap at all.
+    /// </summary>
+    [Parameter] public string ShortcutHint { get; set; } = "Ctrl K";
+
     /// <summary>
     /// True on the landing page. The layout owns this - it is the same flag that decides whether
-    /// the page gets the docs shell at all - so the two can never disagree about which of the site's
-    /// two faces is on screen.
+    /// the page gets the docs shell at all - so the two can never disagree about which of the
+    /// site's two faces is on screen.
     /// </summary>
     [Parameter] public bool IsHomePage { get; set; }
 

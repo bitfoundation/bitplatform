@@ -63,28 +63,44 @@ public class CatalogConsistencyTests
     }
 
     [TestMethod]
-    public void EveryOptionsDocsPointer_NamesAPageThatExists()
+    public void EveryReferenceTool_NamesTheDocumentationPageBehindIt()
     {
-        var options = BswupScriptCatalog.ScriptOptions
-            .Concat(BswupScriptCatalog.WorkerSettings)
-            .Concat(BswupProgressCatalog.Parameters)
-            .Where(option => option.Docs is not null);
-
-        foreach (var option in options)
+        // Every entry used to carry its own pointer at the page with the prose - the same string,
+        // once per setting. It is said once in the tool's description now, which means nothing
+        // repeats it if the page is renamed, so it is checked here instead.
+        var pages = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            AssertOnlyRealTools(option.Docs!, $"the Docs pointer of {option.Name}");
+            ["GetBswupScriptOptions"] = "script-options",
+            ["GetBswupServiceWorkerSettings"] = "service-worker",
+            ["GetBswupProgressUI"] = "progress-ui",
+        };
 
-            // The match has to succeed before the slug is looked up. An empty slug is valid -
-            // it is the introduction page's own - but it is also what a pointer that names no
-            // slug at all yields, and that one would sail through the assertion below.
-            var match = Regex.Match(option.Docs!, "slug: \"(?<slug>[^\"]*)\"");
+        foreach (var (tool, slug) in pages)
+        {
+            var method = typeof(McpController).GetMethod(tool);
 
-            Assert.IsTrue(match.Success, $"the Docs pointer of {option.Name} names no slug: {option.Docs}");
+            Assert.IsNotNull(method, tool);
 
-            var slug = match.Groups["slug"].Value;
+            var description = method.GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), inherit: true)
+                                    .OfType<System.ComponentModel.DescriptionAttribute>()
+                                    .First().Description;
 
-            Assert.IsNotNull(DocsCatalog.FindBySlug(slug), $"{option.Name} points at the '{slug}' page, which does not exist");
+            Assert.IsNotNull(DocsCatalog.FindBySlug(slug), $"{tool} points at the '{slug}' page, which does not exist");
+            StringAssert.Contains(description, $"'{slug}'", $"{tool} does not say which page carries its prose");
         }
+    }
+
+    [TestMethod]
+    public void ReferenceEntries_DoNotRepeatWhatIsTrueOfEveryOneOfThem()
+    {
+        // Where the value is written and which page documents it are the same for every entry one
+        // tool returns. Carried per entry they were a fifth of the reply: a caller reading
+        // twenty-four settings was told twenty-four times that they go in service-worker.js.
+        var properties = typeof(Bit.Bswup.Demo.Server.Dtos.BswupOptionDto).GetProperties().Select(property => property.Name).ToArray();
+
+        CollectionAssert.DoesNotContain(properties, "Kind");
+        CollectionAssert.DoesNotContain(properties, "SetIn");
+        CollectionAssert.DoesNotContain(properties, "Docs");
     }
 
     [TestMethod]
@@ -127,21 +143,37 @@ public class CatalogConsistencyTests
     }
 
     [TestMethod]
-    public void EverySearchHitPointingAtAGuideSection_NamesAHeadingThatResolves()
+    public void EverySearchHitPointingAtANamedEntry_NamesOneThatResolves()
     {
+        // A hit is meant to be followed verbatim, and these calls are narrowed to the entry the
+        // hit is about - so a name that has drifted turns the saving into a wasted call that
+        // silently answers with the whole catalog instead.
         var hits = new[] { "cache", "update", "progress", "worker", "install", "handler", "cleanup", "upgrade" }
             .SelectMany(term => BswupSearchIndex.Search(term, 50))
-            .Where(hit => hit.Tool.StartsWith("GetBswupGuideSection", StringComparison.Ordinal))
+            .Where(hit => hit.Tool.Contains("(name: \"", StringComparison.Ordinal))
             .DistinctBy(hit => hit.Tool)
             .ToArray();
 
-        Assert.IsTrue(hits.Length > 0, "no hit pointed at a guide section, so nothing below was checked");
+        Assert.IsTrue(hits.Length > 0, "no hit named a narrowed call, so nothing below was checked");
+
+        var known = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["GetBswupScriptOptions"] = [.. BswupScriptCatalog.ScriptOptions.Select(option => option.Name)],
+            ["GetBswupServiceWorkerSettings"] = [.. BswupScriptCatalog.WorkerSettings.Select(setting => setting.Name)],
+            ["GetBswupEvents"] = [.. BswupScriptCatalog.Events.Select(message => message.Name)],
+            ["GetBswupJsApi"] = [.. BswupScriptCatalog.JsApi.Select(member => member.Name)],
+        };
 
         foreach (var hit in hits)
         {
-            var heading = Regex.Match(hit.Tool, "heading: \"(?<heading>[^\"]*)\"").Groups["heading"].Value;
+            var match = Regex.Match(hit.Tool, "^(?<tool>\\w+)\\(name: \"(?<name>[^\"]*)\"\\)$");
 
-            Assert.IsNotNull(BswupSourceCatalog.GetGuideSection(heading), $"the guide has no '{heading}' section");
+            Assert.IsTrue(match.Success, $"'{hit.Tool}' is not a call anyone can make verbatim");
+
+            var tool = match.Groups["tool"].Value;
+
+            Assert.IsTrue(known.ContainsKey(tool), $"'{hit.Tool}' narrows a tool that takes no name");
+            CollectionAssert.Contains(known[tool], match.Groups["name"].Value, hit.Tool);
         }
     }
 

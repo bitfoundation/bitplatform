@@ -132,8 +132,8 @@ $bit-grd-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
 .bit-grd {
     --bit-grd-span: 1;
     --bit-grd-cols: 12;
-    --bit-grd-cgap: 4px;
-    --bit-grd-rgap: 4px;
+    --bit-grd-cgap: #{spacing(0.5)};
+    --bit-grd-rgap: #{spacing(0.5)};
     --bit-grd-cols-xs: var(--bit-grd-cols);
     --bit-grd-cols-sm: var(--bit-grd-cols-xs);
     --bit-grd-cols-md: var(--bit-grd-cols-sm);

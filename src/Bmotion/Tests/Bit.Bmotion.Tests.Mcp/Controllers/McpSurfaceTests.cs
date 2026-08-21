@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 using ModelContextProtocol.Server;
 using System.Text.RegularExpressions;
@@ -46,8 +46,8 @@ public class McpSurfaceTests
     }
 
     /// <summary>
-    /// The overview is the tool an agent is told to start with, and its "Which tool to call" section
-    /// is the map it navigates by. A name that has drifted there sends it to a tool that is not here.
+    /// The overview names the tools of the working order it lays out. A name that has drifted there
+    /// sends an agent to a tool that is not here.
     /// </summary>
     [TestMethod]
     public void Overview_EveryToolItSendsAnAgentTo_Exists()
@@ -56,21 +56,26 @@ public class McpSurfaceTests
     }
 
     /// <summary>
-    /// The map has to be complete as well as correct: a tool listed nowhere in the overview is one
-    /// an agent that read the overview has no reason to call. The overview does not list itself,
-    /// which is the one omission that costs nothing - it is already being read.
+    /// The overview must not grow back into a directory of the tools.
+    /// <para>
+    /// It used to carry one, and a client already holds every one of those descriptions from
+    /// <c>tools/list</c> before it calls anything - so the section was the largest block of the
+    /// answer and said nothing the caller could not already read. What belongs here is the part
+    /// that is nowhere else: the order to work in, and the rules no signature shows. A handful of
+    /// tool names in that order is the point; naming nearly all of them means the directory is
+    /// back.
+    /// </para>
     /// </summary>
     [TestMethod]
-    public void Overview_MentionsEveryOtherToolTheServerExposes()
+    public void Overview_DoesNotRestateTheToolCatalog()
     {
         var overview = new McpController().GetBmotionOverview();
 
-        var unmentioned = ToolNames
-            .Where(name => name != nameof(McpController.GetBmotionOverview))
-            .Where(name => overview.Contains(name, StringComparison.Ordinal) is false)
-            .ToArray();
+        var mentioned = ToolNames.Count(name => overview.Contains(name, StringComparison.Ordinal));
 
-        Assert.AreEqual(0, unmentioned.Length, $"Exposed but never mentioned in the overview: {string.Join(", ", unmentioned)}.");
+        Assert.IsTrue(mentioned <= ToolNames.Length / 2,
+                      $"The overview names {mentioned} of {ToolNames.Length} tools, which is a tool directory - " +
+                      "and every client already has one from tools/list.");
     }
 
     [TestMethod]
@@ -154,7 +159,17 @@ public class McpSurfaceTests
     {
         var controller = new McpController();
 
-        Assert.AreEqual(BmotionSourceCatalog.Readme, McpResources.Guide());
+        // The whole guide is the one document with no tool of its own, so what it has to match is the
+        // bound: a client that pins bmotion://guide reads the README cut to the same
+        // MaxDocumentLength as every other document here, not an unbounded one.
+        var guide = McpResources.Guide();
+        var readme = BmotionSourceCatalog.Readme;
+
+        StringAssert.StartsWith(guide, readme[..Math.Min(readme.Length, McpController.MaxDocumentLength)],
+                                "The guide resource does not read as the README.");
+        Assert.IsTrue(readme.Length <= McpController.MaxDocumentLength
+                      || guide.Contains("[truncated at line ", StringComparison.Ordinal),
+                      $"The guide resource hands out all {guide.Length} characters of the README unbounded.");
 
         foreach (var section in BmotionSourceCatalog.GuideSections)
         {
@@ -171,6 +186,26 @@ public class McpSurfaceTests
         {
             Assert.AreEqual(controller.GetBmotionSourceFile(file.Path), McpResources.Source(file.Path),
                             $"The source file '{file.Path}' reads differently through the resource.");
+        }
+    }
+
+    /// <summary>
+    /// The guide is longer than the bound, so this resource is normally read cut - and a client can
+    /// mount resources without mounting tools, so what the cut names has to be reachable from where
+    /// the reader is standing: the sibling resource, and the headings its template needs.
+    /// </summary>
+    [TestMethod]
+    public void Resources_TheGuideCutShort_NamesTheResourceThatReadsTheRest()
+    {
+        var guide = McpResources.Guide();
+
+        if (BmotionSourceCatalog.Readme.Length <= McpController.MaxDocumentLength) Assert.Inconclusive("The README fits within the bound in this build.");
+
+        StringAssert.Contains(guide, "bmotion://guide/", "The cut guide does not name the resource that reads the rest.");
+
+        foreach (var section in BmotionSourceCatalog.GuideSections)
+        {
+            StringAssert.Contains(guide, section.Heading, $"The cut guide never names its '{section.Heading}' section.");
         }
     }
 

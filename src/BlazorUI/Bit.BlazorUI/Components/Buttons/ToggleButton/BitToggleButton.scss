@@ -11,10 +11,13 @@
     justify-content: center;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
+    min-width: $siz-ctrl-min-width;
     border-width: $shp-border-width;
     border-style: $shp-border-style;
-    border-radius: $shp-border-radius;
+    border-radius: $shp-radius-button;
     font-size: var(--bit-tgb-fontsize);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
 
     // a gap rather than a margin on the icon, so reversing the icon position keeps the spacing on the right side
     gap: var(--bit-tgb-icn-margin);
@@ -106,7 +109,7 @@
 
 .bit-tgb-spn {
     border-radius: 50%;
-    border-width: spacing(0.2125);
+    border-width: $siz-spinner-stroke;
     width: var(--bit-tgb-spn-size);
     height: var(--bit-tgb-spn-size);
     border-color: $clr-brd-sec;
@@ -247,30 +250,30 @@
 
 
 .bit-tgb-sm {
-    padding: spacing(0.5) spacing(1.5);
-    --bit-tgb-fontsize: #{spacing(1.5)};
+    padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
+    --bit-tgb-fontsize: #{$tg-fs-xs};
     --bit-tgb-ntx-pad: #{spacing(0.5)};
     --bit-tgb-ntx-icn-size: #{spacing(2.00)};
     --bit-tgb-spn-size: #{spacing(2.00)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.25)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-2xs};
 }
 
 .bit-tgb-md {
-    padding: spacing(0.75) spacing(2);
-    --bit-tgb-fontsize: #{spacing(1.75)};
+    padding: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md;
+    --bit-tgb-fontsize: #{$tg-fs-sm};
     --bit-tgb-ntx-pad: #{spacing(0.75)};
     --bit-tgb-ntx-icn-size: #{spacing(2.35)};
     --bit-tgb-spn-size: #{spacing(2.35)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.50)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-xs};
 }
 
 .bit-tgb-lg {
-    padding: spacing(1) spacing(2.5);
-    --bit-tgb-fontsize: #{spacing(2)};
+    padding: $siz-ctrl-pad-y-lg $siz-ctrl-pad-x-lg;
+    --bit-tgb-fontsize: #{$tg-fs-md};
     --bit-tgb-ntx-pad: #{spacing(1.0)};
     --bit-tgb-ntx-icn-size: #{spacing(3.35)};
     --bit-tgb-spn-size: #{spacing(2.75)};
-    --bit-tgb-lbl-fontsize: #{spacing(1.75)};
+    --bit-tgb-lbl-fontsize: #{$tg-fs-sm};
 }
 
 
@@ -313,6 +316,8 @@
 }
 
 .bit-tgb-ntx {
+    // Icon-only toggle buttons stay square whatever the design system's labeled-button minimum is.
+    min-width: auto;
     padding: var(--bit-tgb-ntx-pad);
     --bit-tgb-icn-margin: 0;
     --bit-tgb-fontsize: var(--bit-tgb-ntx-icn-size);
