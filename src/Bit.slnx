@@ -48,6 +48,7 @@
   </Folder>
   <Folder Name="/Bmotion/Tests/">
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+    <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
@@ -62,6 +63,10 @@
     <Project Path="BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />
     <Project Path="BlazorUI/Bit.BlazorUI.SourceGenerators/Bit.BlazorUI.SourceGenerators.csproj" />
     <Project Path="BlazorUI/Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
+  </Folder>
+  <Folder Name="/BlazorUI/Tests/Performance/">
+    <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
+    <Project Path="BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost/Bit.BlazorUI.Tests.Performance.TestHost.csproj" />
   </Folder>
   <Folder Name="/BlazorUI/Demo/">
     <File Path="BlazorUI/Demo/.gitignore" />
@@ -102,6 +107,10 @@
     <Project Path="Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj" />
     <Project Path="Brouter/Bit.Brouter/Bit.Brouter.csproj" />
   </Folder>
+  <Folder Name="/Brouter/Bit.Brouter.Demo/">
+    <Project Path="Brouter/Bit.Brouter.Demo/Client/Bit.Brouter.Demo.Client.csproj" />
+    <Project Path="Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj" />
+  </Folder>
   <Folder Name="/Brouter/Samples/" />
   <Folder Name="/Brouter/Samples/Auto/">
     <Project Path="Brouter/Samples/Auto/Bit.Brouter.Samples.Auto/Bit.Brouter.Samples.Auto.csproj" />
@@ -118,11 +127,18 @@
     <Project Path="Brouter/Samples/Wasm/Bit.Brouter.Samples.Wasm.Client/Bit.Brouter.Samples.Wasm.Client.csproj" />
   </Folder>
   <Folder Name="/Brouter/Tests/">
+    <Project Path="Brouter/Tests/Bit.Brouter.Benchmarks/Bit.Brouter.Benchmarks.csproj" />
     <Project Path="Brouter/Tests/Bit.Brouter.Tests/Bit.Brouter.Tests.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Generators/Bit.Brouter.Tests.Generators.csproj" />
+    <Project Path="Brouter/Tests/Bit.Brouter.Tests.Mcp/Bit.Brouter.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/Butil/">
     <File Path="Butil/README.md" />
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Bit.Butil.Demo/">
+    <Project Path="Butil/Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Butil/Samples/">
     <Project Path="Butil/Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />
@@ -130,6 +146,11 @@
       <Deploy />
     </Project>
     <Project Path="Butil/Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
+  </Folder>
+  <Folder Name="/Butil/Tests/">
+    <Project Path="Butil/tests/Bit.Butil.Tests.E2E/Bit.Butil.Tests.E2E.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Manual/Bit.Butil.Tests.Manual.csproj" />
+    <Project Path="Butil/tests/Bit.Butil.Tests.Mcp/Bit.Butil.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/CodeAnalyzers/">
     <File Path="CodeAnalyzers/README.md" />
