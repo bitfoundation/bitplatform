@@ -237,6 +237,23 @@ html, body, .site-content, pre, .table-view, .side-rail {
     margin-top: $doc-space-2xs;
 }
 
+// A subsection of a chapter (DocSection Level="3"). A long reference page needs a second level -
+// a reader looking for "Per-component variables" should be able to jump to it rather than scroll
+// a chapter of it - but the second level must not read as one more chapter: no hairline, less air,
+// a smaller heading. The rail nests it under the chapter above it, keyed off the h3 in the DOM.
+.doc-subsection {
+    scroll-margin-top: var(--demo-section-scroll-margin);
+    padding-top: $doc-space-md;
+
+    @include sm {
+        padding-top: $doc-space-sm;
+    }
+}
+
+.doc-subsection-head {
+    margin-bottom: $doc-space-2xs;
+}
+
 
 // ── Prose ─────────────────────────────────────────────────────────────────────────────────────
 // What a documentation page's running text looks like.
@@ -268,6 +285,15 @@ html, body, .site-content, pre, .table-view, .side-rail {
 
         li + li {
             margin-top: $doc-space-3xs;
+        }
+
+        // A list nested under one of its own items - the three things prefers-contrast changes,
+        // the tokens of one family - takes the same indent step as its parent instead of the
+        // browser's 40px, so a two-level list still reads on the docs' rhythm.
+        ul,
+        ol {
+            margin: $doc-space-3xs 0 0;
+            padding-inline-start: $doc-space-md;
         }
     }
 

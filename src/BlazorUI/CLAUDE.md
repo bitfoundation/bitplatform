@@ -73,10 +73,12 @@ beside it. The two kinds of page differ only in what the sections hold.
 Shared by both:
 
 - **`SideRail`** - the "on this page" rail, built purely from headings marked
-  `example-section-title` in the DOM. `DocSection` marks its own `h2`, `DemoExample` marks its `h3`,
-  and `DemoPage` marks the headings of its cards; nothing declares its contents in C#. The rail
-  indents an example under the section that hosts it, keyed off the heading level the DOM read
-  reports.
+  `example-section-title` in the DOM. `DocSection` marks its own heading - an `h2`, or an `h3` when
+  it is nested inside another one as `Level="3"` - `DemoExample` marks its `h3`, and `DemoPage`
+  marks the headings of its cards; nothing declares its contents in C#. The rail indents an example,
+  or a subsection, under the section that hosts it, keyed off the heading level the DOM read
+  reports. A page long enough that a flat list of chapters stops helping (Theming) groups its
+  sections into chapters of `Level="3"` subsections rather than growing the flat run.
 - **`ComponentCatalog`** - the one list of components, DERIVED from `MainLayout.NavItems` rather
   than written out again. It powers the `/components` gallery, the home page's category grid, the
   header's search box, the category shown above a component's title, and the prev/next pager at the

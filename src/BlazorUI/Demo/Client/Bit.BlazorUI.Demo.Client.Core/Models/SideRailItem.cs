@@ -11,9 +11,9 @@ public class SideRailItem
     public string? Title { get; set; }
 
     /// <summary>
-    /// The heading's level, so the rail can indent a section's examples under the section itself
-    /// instead of listing two different kinds of thing as one flat run. 2 for the sections of an
-    /// article, 3 for the examples inside one.
+    /// The heading's level, so the rail can indent what belongs to a section under the section
+    /// itself instead of listing two different kinds of thing as one flat run. 2 for the sections
+    /// of an article, 3 for the examples - or the subsections - inside one.
     /// </summary>
     public int Level { get; set; } = 2;
 }

@@ -1,15 +1,20 @@
 ﻿@* One section of a documentation article: an anchored heading, an optional line of context, then
    the content. The heading carries the id and the example-section-title marker, which is what puts
    the section in the "on this page" rail and lets the scroll spy follow it - the same contract
-   DemoExample uses, so a prose page and a component page build their rail the same way. *@
-<section class="doc-section">
-    <div class="doc-section-head">
+   DemoExample uses, so a prose page and a component page build their rail the same way.
+
+   Level="3" makes the same thing a subsection, hosted inside another section's content: an h3
+   instead of an h2, quieter chrome, and a rail entry indented under the section above it. That is
+   what keeps a long reference page (Theming) navigable without its rail reading as one flat run
+   of twenty peers. *@
+<section class="@(_isSub ? "doc-subsection" : "doc-section")">
+    <div class="@(_isSub ? "doc-subsection-head" : "doc-section-head")">
         <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Baseline">
-            <BitText Element="h2"
+            <BitText Element="@(_isSub ? "h3" : "h2")"
                      Id="@Id"
                      example-section-title
                      Class="doc-section-title"
-                     Typography="BitTypography.H4"
+                     Typography="@(_isSub ? BitTypography.H5 : BitTypography.H4)"
                      Color="BitColor.PrimaryForeground">@Title</BitText>
             @HeaderActions
         </BitStack>
@@ -35,6 +40,8 @@
 </section>
 
 @code {
+    private bool _isSub => Level > 2;
+
     /// <summary>The anchor. Also the id the rail scrolls to, so it has to be unique on the page.</summary>
     [Parameter, EditorRequired] public string Id { get; set; } = default!;
 
@@ -44,6 +51,13 @@
     [Parameter] public string? Description { get; set; }
 
     [Parameter] public RenderFragment? DescriptionTemplate { get; set; }
+
+    /// <summary>
+    /// 2 for a chapter of the article, 3 for a subsection nested inside one. The rail reads the
+    /// heading level out of the DOM, so a level-3 section is indented under the chapter that hosts
+    /// it - the same treatment a component page's examples get inside its Usage section.
+    /// </summary>
+    [Parameter] public int Level { get; set; } = 2;
 
     /// <summary>Anything that belongs on the heading row itself - a tag, a link to the source.</summary>
     [Parameter] public RenderFragment? HeaderActions { get; set; }
